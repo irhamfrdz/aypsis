@@ -280,6 +280,10 @@
 </div>
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+@endpush
+
 @push('scripts')
 <script>
     function toggleTransitFields() {
@@ -385,4 +389,19 @@
         });
     });
 </script>
+    {{-- Choices.js for searchable Nama Kapal --}}
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const namaKapalEl = document.getElementById('nama_kapal');
+            if (namaKapalEl && typeof Choices !== 'undefined') {
+                const namaKapalChoices = new Choices(namaKapalEl, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    searchPlaceholderValue: 'Cari nama kapal...'
+                });
+                namaKapalEl.choicesInstance = namaKapalChoices;
+            }
+        });
+    </script>
 @endpush
