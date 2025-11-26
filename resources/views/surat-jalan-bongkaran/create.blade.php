@@ -35,11 +35,6 @@
                             | BL: <strong>{{ request('no_bl') }}</strong>
                         @endif
                     </div>
-                    <input type="hidden" name="kapal_id" value="{{ $selectedKapal->id }}">
-                    <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
-                    @if(request('no_bl'))
-                        <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">
-                    @endif
                 </div>
                 <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}"
                    class="text-blue-600 hover:text-blue-800 text-xs font-medium">
@@ -77,6 +72,15 @@
         <!-- Form -->
         <form action="{{ route('surat-jalan-bongkaran.store') }}" method="POST" class="p-4">
             @csrf
+            
+            <!-- Hidden inputs for selected kapal and voyage -->
+            @if($selectedKapal && $noVoyage)
+                <input type="hidden" name="kapal_id" value="{{ $selectedKapal->id }}">
+                <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+                @if(request('no_bl'))
+                    <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">
+                @endif
+            @endif
 
     <!-- Alert Messages -->
     @if(session('error'))
