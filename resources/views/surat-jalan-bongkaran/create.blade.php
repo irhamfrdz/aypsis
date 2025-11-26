@@ -174,142 +174,135 @@
                         @enderror
                     </div>
 
-                    <!-- Aktifitas -->
-                    <div class="md:col-span-2 lg:col-span-3">
-                        <label for="aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                        <select name="aktifitas" id="aktifitas"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('aktifitas') border-red-300 @enderror">
-                            <option value="">Pilih aktifitas</option>
-                            @foreach($masterKegiatans as $kegiatan)
-                                <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('aktifitas') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
-                                    {{ $kegiatan->nama_kegiatan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('aktifitas')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-
+                <!-- Aktifitas -->
+                <div>
+                    <label for="aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
+                    <select name="aktifitas" id="aktifitas"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('aktifitas') border-red-500 @enderror">
+                        <option value="">Pilih aktifitas</option>
+                        @foreach($masterKegiatans as $kegiatan)
+                            <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('aktifitas') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                {{ $kegiatan->nama_kegiatan }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('aktifitas')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-            </div>
-        </div>
 
-        <!-- Informasi Pengiriman Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Informasi Pengiriman</h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Pengirim -->
-                    <div>
-                        <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                        <input type="text" name="pengirim" id="pengirim" readonly
-                               value="{{ old('pengirim', isset($selectedContainer) ? $selectedContainer->pengirim : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('pengirim') border-red-300 @enderror"
-                               placeholder="Pengirim akan terisi otomatis">
-                        @error('pengirim')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        @if(isset($selectedContainer) && $selectedContainer->pengirim)
-                            <p class="mt-1 text-xs text-green-600">
-                                Pengirim terisi otomatis dari BL: {{ $selectedContainer->pengirim }}
-                            </p>
-                        @endif
-                    </div>
-
-                    <!-- Tujuan Alamat -->
-                    <div>
-                        <label for="tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>
-                        <input type="text" name="tujuan_alamat" id="tujuan_alamat"
-                               value="{{ old('tujuan_alamat', isset($selectedContainer) ? $selectedContainer->alamat_pengiriman : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_alamat') border-red-300 @enderror"
-                               placeholder="Masukkan tujuan alamat">
-                        @error('tujuan_alamat')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        @if(isset($selectedContainer) && $selectedContainer->alamat_pengiriman)
-                            <p class="mt-1 text-xs text-blue-600">
-                                Default dari BL: {{ $selectedContainer->alamat_pengiriman }}
-                            </p>
-                        @endif
-                    </div>
-
-                    <!-- Tujuan Pengambilan -->
-                    <div>
-                        <label for="tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
-                        <select name="tujuan_pengambilan" id="tujuan_pengambilan"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_pengambilan') border-red-300 @enderror">
-                            <option value="">Pilih tujuan pengambilan</option>
-                            @foreach($tujuanKegiatanUtamas as $tujuan)
-                                <option value="{{ $tujuan->ke }}" {{ old('tujuan_pengambilan') == $tujuan->ke ? 'selected' : '' }}>
-                                    {{ $tujuan->ke }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('tujuan_pengambilan')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Tujuan Pengiriman -->
-                    <div>
-                        <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                        <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman"
-                               value="{{ old('tujuan_pengiriman') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_pengiriman') border-red-300 @enderror"
-                               placeholder="Masukkan tujuan pengiriman">
-                        @error('tujuan_pengiriman')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Jenis Pengiriman -->
-                    <div>
-                        <label for="jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
-                        @php
-                            $defaultJenisPengiriman = '';
-                            if (isset($selectedContainer) && isset($selectedContainer->jenis_pengiriman)) {
-                                $defaultJenisPengiriman = strtolower($selectedContainer->jenis_pengiriman);
-                            }
-                            $selectedJenisPengiriman = old('jenis_pengiriman', $defaultJenisPengiriman);
-                        @endphp
-                        <select name="jenis_pengiriman" id="jenis_pengiriman"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_pengiriman') border-red-300 @enderror">
-                            <option value="">Pilih jenis pengiriman</option>
-                            <option value="fcl" {{ $selectedJenisPengiriman == 'fcl' ? 'selected' : '' }}>FCL</option>
-                            <option value="lcl" {{ $selectedJenisPengiriman == 'lcl' ? 'selected' : '' }}>LCL</option>
-                            <option value="cargo" {{ $selectedJenisPengiriman == 'cargo' ? 'selected' : '' }}>Cargo</option>
-                        </select>
-                        @error('jenis_pengiriman')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        @if(isset($selectedContainer) && $selectedContainer->jenis_pengiriman)
-                            <p class="mt-1 text-xs text-blue-600">
-                                Default dari BL: {{ strtoupper($selectedContainer->jenis_pengiriman) }}
-                            </p>
-                        @else
-                            <p class="mt-1 text-xs text-gray-500">
-                                Tidak ada data di BL, silakan pilih jenis pengiriman
-                            </p>
-                        @endif
-                    </div>
-
-                    <!-- Tanggal Ambil Barang -->
-                    <div>
-                        <label for="tanggal_ambil_barang" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Ambil Barang</label>
-                        <input type="date" name="tanggal_ambil_barang" id="tanggal_ambil_barang"
-                               value="{{ old('tanggal_ambil_barang') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_ambil_barang') border-red-300 @enderror">
-                        @error('tanggal_ambil_barang')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <!-- Informasi Pengiriman -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Pengiriman</h3>
                 </div>
-            </div>
-        </div>
+
+                <!-- Pengirim -->
+                <div>
+                    <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
+                    <input type="text" name="pengirim" id="pengirim" readonly
+                           value="{{ old('pengirim', isset($selectedContainer) ? $selectedContainer->pengirim : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('pengirim') border-red-500 @enderror"
+                           placeholder="Pengirim akan terisi otomatis">
+                    @error('pengirim')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $selectedContainer->pengirim)
+                        <p class="mt-1 text-xs text-green-600">
+                            Otomatis dari kontainer terpilih
+                        </p>
+                    @endif
+                </div>
+
+                <!-- Tujuan Alamat -->
+                <div>
+                    <label for="tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>
+                    <input type="text" name="tujuan_alamat" id="tujuan_alamat"
+                           value="{{ old('tujuan_alamat', isset($selectedContainer) ? $selectedContainer->alamat_pengiriman : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_alamat') border-red-500 @enderror"
+                           placeholder="Masukkan tujuan alamat">
+                    @error('tujuan_alamat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $selectedContainer->alamat_pengiriman)
+                        <p class="mt-1 text-xs text-blue-600">
+                            Otomatis dari kontainer terpilih
+                        </p>
+                    @endif
+                </div>
+
+                <!-- Tujuan Pengambilan -->
+                <div>
+                    <label for="tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
+                    <select name="tujuan_pengambilan" id="tujuan_pengambilan"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_pengambilan') border-red-500 @enderror">
+                        <option value="">Pilih tujuan pengambilan</option>
+                        @foreach($tujuanKegiatanUtamas as $tujuan)
+                            <option value="{{ $tujuan->ke }}" {{ old('tujuan_pengambilan') == $tujuan->ke ? 'selected' : '' }}>
+                                {{ $tujuan->ke }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('tujuan_pengambilan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tujuan Pengiriman -->
+                <div>
+                    <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                    <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman" readonly
+                           value="{{ old('tujuan_pengiriman', isset($selectedContainer) ? $selectedContainer->pelabuhan_tujuan : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tujuan_pengiriman') border-red-500 @enderror"
+                           placeholder="Tujuan pengiriman akan terisi otomatis">
+                    @error('tujuan_pengiriman')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $selectedContainer->pelabuhan_tujuan)
+                        <p class="mt-1 text-xs text-green-600">
+                            Otomatis dari BL: {{ $selectedContainer->pelabuhan_tujuan }}
+                        </p>
+                    @endif
+                </div>
+
+                <!-- Jenis Pengiriman -->
+                <div>
+                    <label for="jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
+                    @php
+                        $defaultJenisPengiriman = '';
+                        if (isset($selectedContainer) && isset($selectedContainer->jenis_pengiriman)) {
+                            $defaultJenisPengiriman = $selectedContainer->jenis_pengiriman;
+                        }
+                        $selectedJenisPengiriman = old('jenis_pengiriman', $defaultJenisPengiriman);
+                    @endphp
+                    <select name="jenis_pengiriman" id="jenis_pengiriman"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jenis_pengiriman') border-red-500 @enderror">
+                        <option value="">Pilih jenis pengiriman</option>
+                        <option value="Import" {{ $selectedJenisPengiriman == 'Import' ? 'selected' : '' }}>Import</option>
+                        <option value="Export" {{ $selectedJenisPengiriman == 'Export' ? 'selected' : '' }}>Export</option>
+                        <option value="Domestik" {{ $selectedJenisPengiriman == 'Domestik' ? 'selected' : '' }}>Domestik</option>
+                    </select>
+                    @error('jenis_pengiriman')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $selectedContainer->jenis_pengiriman)
+                        <p class="mt-1 text-xs text-blue-600">
+                            Otomatis dari kontainer terpilih: {{ $selectedContainer->jenis_pengiriman }}
+                        </p>
+                    @else
+                        <p class="mt-1 text-xs text-gray-500">Belum ada jenis pengiriman dari kontainer</p>
+                    @endif
+                </div>
+
+                <!-- Tanggal Ambil Barang -->
+                <div>
+                    <label for="tanggal_ambil_barang" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Ambil Barang</label>
+                    <input type="date" name="tanggal_ambil_barang" id="tanggal_ambil_barang"
+                           value="{{ old('tanggal_ambil_barang') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_ambil_barang') border-red-500 @enderror">
+                    @error('tanggal_ambil_barang')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 <!-- Informasi Personal -->
                 <div class="md:col-span-2 mt-4">
