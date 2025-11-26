@@ -376,12 +376,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnBulkDelete = document.getElementById('btnBulkDelete');
     const btnCancelSelection = document.getElementById('btnCancelSelection');
 
+    // Load selected items from sessionStorage
+    let selectedInvoices = JSON.parse(sessionStorage.getItem('selectedInvoices') || '[]');
+
+    // Initialize checkboxes based on stored selection
+    function initializeCheckboxes() {
+        rowCheckboxes.forEach(checkbox => {
+            if (selectedInvoices.includes(checkbox.value)) {
+                checkbox.checked = true;
+            }
+        });
+        updateSelectAllState();
+        updateBulkActions();
+    }
+
+    // Save selected items to sessionStorage
+    function saveSelectedItems() {
+        sessionStorage.setItem('selectedInvoices', JSON.stringify(selectedInvoices));
+    }
+
+    // Initialize on page load
+    initializeCheckboxes();
+
+    // Clear selection if there's a success message (bulk operation completed)
+    @if(session('success'))
+    selectedInvoices = [];
+    sessionStorage.removeItem('selectedInvoices');
+    updateBulkActions();
+    @endif
+
     // Handle select all checkbox
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function() {
+            const currentPageIds = Array.from(rowCheckboxes).map(cb => cb.value);
+            
+            if (this.checked) {
+                // Add current page items to selection
+                currentPageIds.forEach(id => {
+                    if (!selectedInvoices.includes(id)) {
+                        selectedInvoices.push(id);
+                    }
+                });
+            } else {
+                // Remove current page items from selection
+                selectedInvoices = selectedInvoices.filter(id => !currentPageIds.includes(id));
+            }
+            
             rowCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
+            
+            saveSelectedItems();
             updateBulkActions();
         });
     }
@@ -389,6 +434,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle individual checkboxes
     rowCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
+            const invoiceId = this.value;
+            
+            if (this.checked) {
+                if (!selectedInvoices.includes(invoiceId)) {
+                    selectedInvoices.push(invoiceId);
+                }
+            } else {
+                selectedInvoices = selectedInvoices.filter(id => id !== invoiceId);
+            }
+            
+            saveSelectedItems();
             updateSelectAllState();
             updateBulkActions();
         });
@@ -396,14 +452,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update select all checkbox state
     function updateSelectAllState() {
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const totalBoxes = rowCheckboxes.length;
+        const currentPageIds = Array.from(rowCheckboxes).map(cb => cb.value);
+        const currentPageSelectedCount = currentPageIds.filter(id => selectedInvoices.includes(id)).length;
+        const totalCurrentPage = currentPageIds.length;
 
         if (selectAllCheckbox) {
-            if (checkedBoxes.length === 0) {
+            if (currentPageSelectedCount === 0) {
                 selectAllCheckbox.checked = false;
                 selectAllCheckbox.indeterminate = false;
-            } else if (checkedBoxes.length === totalBoxes) {
+            } else if (currentPageSelectedCount === totalCurrentPage) {
                 selectAllCheckbox.checked = true;
                 selectAllCheckbox.indeterminate = false;
             } else {
@@ -415,14 +472,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update bulk actions visibility and count
     function updateBulkActions() {
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        
         if (selectedCount) {
-            selectedCount.textContent = checkedBoxes.length;
+            selectedCount.textContent = selectedInvoices.length;
         }
 
         if (bulkActions) {
-            if (checkedBoxes.length > 0) {
+            if (selectedInvoices.length > 0) {
                 bulkActions.classList.remove('hidden');
             } else {
                 bulkActions.classList.add('hidden');
@@ -433,6 +488,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cancel selection
     if (btnCancelSelection) {
         btnCancelSelection.addEventListener('click', function() {
+            selectedInvoices = [];
+            sessionStorage.removeItem('selectedInvoices');
+            
             rowCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });
@@ -447,16 +505,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Bulk pranota handler
     if (btnBulkPranota) {
         btnBulkPranota.addEventListener('click', function() {
-            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-
-            if (selectedIds.length === 0) {
+            if (selectedInvoices.length === 0) {
                 alert('Pilih minimal satu invoice untuk dimasukan ke pranota');
                 return;
             }
 
             // Open modal with invoice details
-            openPranotaModal(selectedIds);
+            openPranotaModal(selectedInvoices);
         });
     }
 
@@ -733,6 +788,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Close modal
                 closePranotaModal();
                 
+                // Clear selection
+                selectedInvoices = [];
+                sessionStorage.removeItem('selectedInvoices');
+                
                 // Show success message
                 alert('Pranota berhasil dibuat dengan nomor: ' + (data.pranota.nomor_pranota || data.pranota.no_invoice));
                 
@@ -790,17 +849,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Bulk delete handler
     if (btnBulkDelete) {
         btnBulkDelete.addEventListener('click', function() {
-            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-
-            if (selectedIds.length === 0) {
+            if (selectedInvoices.length === 0) {
                 alert('Pilih minimal satu invoice untuk dihapus');
                 return;
             }
 
-            const message = selectedIds.length === 1
+            const message = selectedInvoices.length === 1
                 ? 'Apakah Anda yakin ingin menghapus invoice ini?'
-                : `Apakah Anda yakin ingin menghapus ${selectedIds.length} invoice yang dipilih?`;
+                : `Apakah Anda yakin ingin menghapus ${selectedInvoices.length} invoice yang dipilih?`;
 
             if (!confirm(message)) {
                 return;
@@ -823,7 +879,7 @@ document.addEventListener('DOMContentLoaded', function() {
             methodField.value = 'DELETE';
             form.appendChild(methodField);
 
-            selectedIds.forEach(id => {
+            selectedInvoices.forEach(id => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'ids[]';
