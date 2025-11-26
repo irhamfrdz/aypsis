@@ -113,7 +113,7 @@
             position: absolute;
             top: 140mm;  /* 14cm dari atas */
             left: 10mm;  /* 1cm dari kiri */
-            font-size: 17px;
+            font-size: 24px; /* Increased from 17px */
             font-weight: bold;
         }
         
@@ -215,6 +215,12 @@
                 page-break-inside: avoid !important;
                 margin: 0 !important;
                 background: white !important;
+            }
+
+            /* Print-specific override for nomor-seal to ensure clarity on print */
+            .nomor-seal {
+                font-size: 26px !important;
+                font-weight: bold !important;
             }
             
             /* Aggressively hide browser headers/footers */
