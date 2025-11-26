@@ -245,7 +245,7 @@ class SuratJalanBongkaranController extends Controller
             $selectedContainer = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $request->no_bl)
-                                   ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman']);
+                                   ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'jenis_pengiriman']);
                                    
             // Debug: log the container data
             if ($selectedContainer) {
@@ -257,6 +257,8 @@ class SuratJalanBongkaranController extends Controller
                     'pengirim' => $selectedContainer->pengirim,
                     'penerima' => $selectedContainer->penerima,
                     'alamat_pengiriman' => $selectedContainer->alamat_pengiriman,
+                    'pelabuhan_tujuan' => $selectedContainer->pelabuhan_tujuan,
+                    'jenis_pengiriman' => $selectedContainer->jenis_pengiriman,
                 ]);
             }
         }
