@@ -288,11 +288,17 @@
                             <select name="aktifitas" id="aktifitas"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('aktifitas') border-red-500 @enderror">
                                 <option value="">-- Pilih Aktifitas --</option>
-                                <option value="bongkar" {{ old('aktifitas') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
-                                <option value="muat" {{ old('aktifitas') == 'muat' ? 'selected' : '' }}>Muat</option>
-                                <option value="pindah" {{ old('aktifitas') == 'pindah' ? 'selected' : '' }}>Pindah</option>
-                                <option value="sortir" {{ old('aktifitas') == 'sortir' ? 'selected' : '' }}>Sortir</option>
-                                <option value="lainnya" {{ old('aktifitas') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                @if(isset($kegiatanSuratJalan) && $kegiatanSuratJalan->count() > 0)
+                                    @foreach($kegiatanSuratJalan as $keg)
+                                        <option value="{{ $keg->nama_kegiatan }}" {{ old('aktifitas') == $keg->nama_kegiatan ? 'selected' : '' }}>{{ $keg->nama_kegiatan }}</option>
+                                    @endforeach
+                                @else
+                                    <option value="bongkar" {{ old('aktifitas') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
+                                    <option value="muat" {{ old('aktifitas') == 'muat' ? 'selected' : '' }}>Muat</option>
+                                    <option value="pindah" {{ old('aktifitas') == 'pindah' ? 'selected' : '' }}>Pindah</option>
+                                    <option value="sortir" {{ old('aktifitas') == 'sortir' ? 'selected' : '' }}>Sortir</option>
+                                    <option value="lainnya" {{ old('aktifitas') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                @endif
                             </select>
                             @error('aktifitas')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

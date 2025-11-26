@@ -132,7 +132,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
-        $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+                $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+                // Load kegiatan list from master_kegiatans (use same type as surat jalan if available)
+                $kegiatanSuratJalan = \App\Models\MasterKegiatan::where(function($q) {
+                        $q->where('type', 'kegiatan tanda terima')
+                            ->orWhere('type', 'kegiatan surat jalan');
+                })->where('status', 'Aktif')
+                    ->orderBy('nama_kegiatan')
+                    ->get(['id', 'nama_kegiatan']);
         $master_kapals = MasterKapal::where('status', 'aktif')->get();
         
         // Debug: pastikan data tujuan ada
@@ -170,7 +177,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         $containerOptions = array_values($merged);
 
-        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions'));
+        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions', 'kegiatanSuratJalan'));
     }
 
     /**
