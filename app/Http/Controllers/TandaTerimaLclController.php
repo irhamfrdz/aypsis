@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
 use App\Models\Term;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use App\Models\JenisBarang;
 use App\Models\MasterTujuanKirim;
 use App\Models\Karyawan;
@@ -38,12 +40,40 @@ class TandaTerimaLclController extends Controller
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
             ->get();
         
+        // Include all non-inactive containers (many records use 'available'/'rented' etc.)
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
+        $stockKontainers = StockKontainer::active()->get();
+        $merged = [];
+        foreach ($kontainers as $k) {
+            $nomor = $k->nomor_kontainer;
+            $merged[$nomor] = [
+                'value' => $nomor,
+                'label' => $nomor . ' (Kontainer)',
+                'size' => $k->ukuran ?? null,
+                'source' => 'kontainer',
+                'status' => $k->status ?? null,
+            ];
+        }
+        foreach ($stockKontainers as $s) {
+            $nomor = $s->nomor_kontainer;
+            if (!isset($merged[$nomor])) {
+                $merged[$nomor] = [
+                    'value' => $nomor,
+                    'label' => $nomor . ' (Stock)',
+                    'size' => $s->ukuran ?? null,
+                    'source' => 'stock',
+                    'status' => $s->status ?? null,
+                ];
+            }
+        }
+        $containerOptions = array_values($merged);
+
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
             'jenisBarangs', 
             'masterTujuanKirims', 
             'supirs'
-        ));
+        , 'containerOptions'));
     }
 
     /**
@@ -213,7 +243,34 @@ class TandaTerimaLclController extends Controller
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
             ->get();
         
-        return view('tanda-terima-tanpa-surat-jalan.edit-lcl', compact('tandaTerima'));
+        $kontainers = Kontainer::where('status', 'active')->get();
+        $stockKontainers = StockKontainer::active()->get();
+        $merged = [];
+        foreach ($kontainers as $k) {
+            $nomor = $k->nomor_kontainer;
+            $merged[$nomor] = [
+                'value' => $nomor,
+                'label' => $nomor . ' (Kontainer)',
+                'size' => $k->ukuran ?? null,
+                'source' => 'kontainer',
+                'status' => $k->status ?? null,
+            ];
+        }
+        foreach ($stockKontainers as $s) {
+            $nomor = $s->nomor_kontainer;
+            if (!isset($merged[$nomor])) {
+                $merged[$nomor] = [
+                    'value' => $nomor,
+                    'label' => $nomor . ' (Stock)',
+                    'size' => $s->ukuran ?? null,
+                    'source' => 'stock',
+                    'status' => $s->status ?? null,
+                ];
+            }
+        }
+        $containerOptions = array_values($merged);
+
+        return view('tanda-terima-tanpa-surat-jalan.edit-lcl', compact('tandaTerima', 'containerOptions'));
     }
 
     /**

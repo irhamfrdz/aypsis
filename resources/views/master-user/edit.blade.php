@@ -709,6 +709,23 @@
                                 <td><input type="checkbox" name="permissions[tanda-terima][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima']['export']) && $userMatrixPermissions['tanda-terima']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Tanda Terima Tanpa Surat Jalan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima (Tanpa Surat Jalan)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['view']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['create']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['update']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['delete']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Gate In --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

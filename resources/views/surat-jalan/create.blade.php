@@ -342,25 +342,28 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
                     <div class="relative">
-                        <select name="nomor_kontainer"
-                                id="nomor-kontainer-select"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
-                            <option value="">Pilih Nomor Kontainer</option>
+                        <input type="hidden" name="nomor_kontainer" id="nomor_kontainer" value="{{ old('nomor_kontainer') }}">
+                        <input type="text" id="nomor_kontainer_search" placeholder="Cari atau ketik nomor kontainer..." value="{{ old('nomor_kontainer') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
+                        <div id="nomor_kontainer_dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                             @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
                                 @foreach($stockKontainers as $stock)
-                                    <option value="{{ $stock->nomor_seri_gabungan }}" 
-                                            data-ukuran="{{ $stock->ukuran }}"
-                                            data-tipe="{{ $stock->tipe_kontainer }}"
-                                            data-source="{{ $stock->source ?? 'stock_kontainers' }}"
-                                            {{ old('nomor_kontainer') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
-                                        {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }} 
-                                        @if(isset($stock->source))
-                                            ({{ $stock->source == 'stock_kontainers' ? 'Stock' : 'Kontainer' }})
-                                        @endif
-                                    </option>
+                                    <div class="kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                                         data-value="{{ $stock->nomor_seri_gabungan }}"
+                                         data-text="{{ $stock->nomor_seri_gabungan }}"
+                                         data-ukuran="{{ $stock->ukuran }}"
+                                         data-tipe="{{ $stock->tipe_kontainer }}"
+                                         data-source="{{ $stock->source ?? 'stock_kontainers' }}">
+                                        <div class="flex justify-between items-center">
+                                            <div class="text-sm font-medium">{{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}</div>
+                                            <div class="text-xs text-gray-500">{{ isset($stock->source) ? ($stock->source == 'stock_kontainers' ? 'Stock' : 'Kontainer') : 'Stock' }}</div>
+                                        </div>
+                                    </div>
                                 @endforeach
+                            @else
+                                <div class="px-3 py-2 text-sm text-gray-500">Tidak ada data kontainer</div>
                             @endif
-                        </select>
+                        </div>
                     </div>
                     @error('nomor_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -633,31 +636,39 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeKontainerFiltering();
 });
 
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function(m) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]);
+    });
+}
+
 function initializeKontainerFiltering() {
     // Store original options for filtering
     window.allKontainerOptions = [];
-    const kontainerSelect = document.getElementById('nomor-kontainer-select');
-    
-    if (kontainerSelect) {
-        const options = kontainerSelect.querySelectorAll('option');
+    const kontainerDropdown = document.getElementById('nomor_kontainer_dropdown');
+
+    if (kontainerDropdown) {
+        const options = kontainerDropdown.querySelectorAll('.kontainer-option');
         options.forEach(function(option) {
-            if (option.value !== '') {
+            const value = option.getAttribute('data-value') || option.getAttribute('data-text');
+            if (value) {
                 window.allKontainerOptions.push({
-                    value: option.value,
-                    text: option.textContent,
+                    value: value,
+                    text: option.textContent.trim(),
                     ukuran: option.getAttribute('data-ukuran'),
                     tipe: option.getAttribute('data-tipe'),
                     source: option.getAttribute('data-source') || 'stock_kontainers'
                 });
             }
         });
-        
-        console.log('Kontainer filtering initialized');
-        console.log('Total kontainer options stored:', window.allKontainerOptions.length);
-        
-        // Filter kontainer on page load if size is already selected
+
+        // Clear dropdown (we'll repopulate via filter function)
+        // filterNomorKontainerBySize will populate the dropdown
         const sizeSelect = document.getElementById('size-select');
         if (sizeSelect && sizeSelect.value) {
+            filterNomorKontainerBySize();
+        } else {
+            // populate with all
             filterNomorKontainerBySize();
         }
     }
@@ -665,32 +676,25 @@ function initializeKontainerFiltering() {
 
 function filterNomorKontainerBySize() {
     const sizeSelect = document.getElementById('size-select');
-    const kontainerSelect = document.getElementById('nomor-kontainer-select');
+    const kontainerDropdown = document.getElementById('nomor_kontainer_dropdown');
     const selectedSize = sizeSelect ? sizeSelect.value : '';
-    
-    if (!kontainerSelect) return;
-    
-    // Clear current selection
-    kontainerSelect.selectedIndex = 0;
-    
-    // Remove all options except placeholder
-    const options = kontainerSelect.querySelectorAll('option');
-    options.forEach(function(option, index) {
-        if (index > 0) { // Keep first option (placeholder)
-            option.remove();
-        }
-    });
+    if (!kontainerDropdown) return;
+
+    // Clear current dropdown list
+    kontainerDropdown.innerHTML = '';
     
     if (!selectedSize) {
         // Show all options if no size selected
         window.allKontainerOptions.forEach(function(optionData) {
-            const newOption = document.createElement('option');
-            newOption.value = optionData.value;
-            newOption.textContent = optionData.text;
-            newOption.setAttribute('data-ukuran', optionData.ukuran);
-            newOption.setAttribute('data-tipe', optionData.tipe);
-            newOption.setAttribute('data-source', optionData.source);
-            kontainerSelect.appendChild(newOption);
+            const item = document.createElement('div');
+            item.className = 'kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100';
+            item.setAttribute('data-value', optionData.value);
+            item.setAttribute('data-text', optionData.value);
+            item.setAttribute('data-ukuran', optionData.ukuran);
+            item.setAttribute('data-tipe', optionData.tipe);
+            item.setAttribute('data-source', optionData.source);
+            item.innerHTML = `<div class="flex justify-between items-center"><div class="text-sm font-medium">${escapeHtml(optionData.text)}</div><div class="text-xs text-gray-500">${escapeHtml(optionData.source)}</div></div>`;
+            kontainerDropdown.appendChild(item);
         });
         console.log('No size selected - showing all kontainers:', window.allKontainerOptions.length);
     } else {
@@ -710,13 +714,15 @@ function filterNomorKontainerBySize() {
                 normalizedUkuran.startsWith(normalizedSize);
             
             if (sizeMatches) {
-                const newOption = document.createElement('option');
-                newOption.value = optionData.value;
-                newOption.textContent = optionData.text;
-                newOption.setAttribute('data-ukuran', optionData.ukuran);
-                newOption.setAttribute('data-tipe', optionData.tipe);
-                newOption.setAttribute('data-source', optionData.source);
-                kontainerSelect.appendChild(newOption);
+                const item = document.createElement('div');
+                item.className = 'kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100';
+                item.setAttribute('data-value', optionData.value);
+                item.setAttribute('data-text', optionData.value);
+                item.setAttribute('data-ukuran', optionData.ukuran);
+                item.setAttribute('data-tipe', optionData.tipe);
+                item.setAttribute('data-source', optionData.source);
+                item.innerHTML = `<div class="flex justify-between items-center"><div class="text-sm font-medium">${escapeHtml(optionData.text)}</div><div class="text-xs text-gray-500">${escapeHtml(optionData.source)}</div></div>`;
+                kontainerDropdown.appendChild(item);
                 filteredCount++;
             }
         });

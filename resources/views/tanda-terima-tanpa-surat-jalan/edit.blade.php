@@ -511,9 +511,24 @@
                             <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
                                 No. Kontainer
                             </label>
-                            <input type="text" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer', $tandaTerimaTanpaSuratJalan->no_kontainer) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror"
-                                   placeholder="Nomor kontainer">
+                            <div class="relative">
+                                <input type="text" id="noKontainerSearch" placeholder="Cari nomor kontainer..." autocomplete="off"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror">
+                                <div id="noKontainerDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto hidden">
+                                    @if(isset($containerOptions) && count($containerOptions))
+                                        @foreach($containerOptions as $opt)
+                                            <div class="no-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer" data-value="{{ $opt['value'] }}" data-text="{{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif" data-size="{{ $opt['size'] }}" data-source="{{ $opt['source'] }}">
+                                                {{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                    <div class="no-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600" data-value="__manual__" data-text="&raquo; Ketik manual / Lainnya">
+                                        &raquo; Ketik manual / Lainnya
+                                    </div>
+                                </div>
+                                <input type="hidden" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer', $tandaTerimaTanpaSuratJalan->no_kontainer) }}">
+                            </div>
+                            <input type="text" name="no_kontainer_manual" id="no_kontainer_manual" value="{{ old('no_kontainer_manual') }}" placeholder="Masukkan nomor kontainer jika memilih Lainnya" class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm hidden" />
                             @error('no_kontainer')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -738,6 +753,45 @@
         }
     }
 
+    // Initialize no kontainer dropdown
+    initializeNoKontainerDropdown();
+
+    function setSizeKontainerValue(size) {
+        const sizeSelect = document.getElementById('size_kontainer');
+        if (!sizeSelect) return;
+        let matched = false;
+        for (let i = 0; i < sizeSelect.options.length; i++) {
+            const opt = sizeSelect.options[i];
+            if (!size) { opt.selected = false; continue; }
+            if (opt.value === size || (opt.text && opt.text.toLowerCase().includes(String(size).toLowerCase())) || opt.value.replace(/\s|-/g, '').toLowerCase() === String(size).replace(/\s|-/g, '').toLowerCase()) {
+                opt.selected = true;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            sizeSelect.value = size;
+        }
+    }
+    // Ensure manual value is submitted if manual option chosen (edit)
+    const editForm = document.querySelector('form');
+    if (editForm) {
+        editForm.addEventListener('submit', function (e) {
+            const hiddenInput = document.getElementById('no_kontainer');
+            const manualField = document.getElementById('no_kontainer_manual');
+            if (hiddenInput && hiddenInput.value === '__manual__') {
+                if (!manualField || !manualField.value.trim()) {
+                    e.preventDefault();
+                    alert('Silakan isi nomor kontainer pada input manual.');
+                    (manualField || document.getElementById('noKontainerSearch')).focus();
+                    return false;
+                }
+                // Set hidden input to manual value
+                hiddenInput.value = manualField.value.trim();
+            }
+        });
+    }
+
     function calculateMeterKubik() {
         const panjang = parseFloat(document.getElementById('panjang').value) || 0;
         const lebar = parseFloat(document.getElementById('lebar').value) || 0;
@@ -950,6 +1004,98 @@
         const selectedOption = hiddenSelect.querySelector('option:checked');
         if (selectedOption && selectedOption.value) {
             searchInput.value = selectedOption.textContent;
+        }
+    }
+
+    function initializeNoKontainerDropdown() {
+        const searchInput = document.getElementById('noKontainerSearch');
+        const dropdown = document.getElementById('noKontainerDropdown');
+        const hiddenInput = document.getElementById('no_kontainer');
+        const manualField = document.getElementById('no_kontainer_manual');
+        const options = document.querySelectorAll('.no-kontainer-option');
+
+        if (!searchInput || !dropdown || !hiddenInput) {
+            console.error('Required elements not found for no kontainer dropdown');
+            return;
+        }
+
+        // Show dropdown when search input is focused
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            dropdown.classList.remove('hidden');
+        });
+
+        // Handle option selection
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+                const size = this.getAttribute('data-size');
+
+                // Set the hidden input value
+                hiddenInput.value = value;
+
+                // Update search input
+                searchInput.value = text;
+
+                // Auto-fill size_kontainer
+                setSizeKontainerValue(size);
+
+                // Handle manual field
+                if (value === '__manual__') {
+                    manualField.classList.remove('hidden');
+                    manualField.focus();
+                } else {
+                    manualField.classList.add('hidden');
+                }
+
+                // Hide dropdown
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#noKontainerSearch') && !e.target.closest('#noKontainerDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Set initial value if exists
+        if (hiddenInput.value) {
+            const selectedOption = document.querySelector(`.no-kontainer-option[data-value="${hiddenInput.value}"]`);
+            if (selectedOption) {
+                searchInput.value = selectedOption.getAttribute('data-text');
+                const size = selectedOption.getAttribute('data-size');
+                setSizeKontainerValue(size);
+            } else if (hiddenInput.value === '__manual__' && manualField.value) {
+                searchInput.value = manualField.value;
+                manualField.classList.remove('hidden');
+            }
         }
     }
 </script>

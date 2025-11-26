@@ -11,6 +11,8 @@ use App\Models\Karyawan;
 use App\Models\MasterTujuanKirim;
 use App\Models\MasterKapal;
 use App\Models\Prospek;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -136,7 +138,39 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         // Debug: pastikan data tujuan ada
         \Log::info('Tujuan Kirims Data:', ['count' => $tujuan_kirims->count(), 'data' => $tujuan_kirims->toArray()]);
 
-        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe'));
+        // Fetch container options from Kontainer and StockKontainer, prefer Kontainer when duplicated
+        // Include all non-inactive containers (many records use 'available'/'rented' etc.)
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
+        $stockKontainers = StockKontainer::active()->get();
+
+        $merged = [];
+        foreach ($kontainers as $k) {
+            $nomor = $k->nomor_kontainer;
+            $merged[$nomor] = [
+                'value' => $nomor,
+                'label' => $nomor . ' (Kontainer)',
+                'size' => $k->ukuran ?? null,
+                'source' => 'kontainer',
+                'status' => $k->status ?? null,
+            ];
+        }
+
+        foreach ($stockKontainers as $s) {
+            $nomor = $s->nomor_kontainer;
+            if (!isset($merged[$nomor])) {
+                $merged[$nomor] = [
+                    'value' => $nomor,
+                    'label' => $nomor . ' (Stock)',
+                    'size' => $s->ukuran ?? null,
+                    'source' => 'stock',
+                    'status' => $s->status ?? null,
+                ];
+            }
+        }
+
+        $containerOptions = array_values($merged);
+
+        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions'));
     }
 
     /**
@@ -158,6 +192,35 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             ->where('status', 'active')
             ->get();
 
+        // Container options for LCL
+        // Include all non-inactive containers (many records use 'available'/'rented' etc.)
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
+        $stockKontainers = StockKontainer::active()->get();
+        $merged = [];
+        foreach ($kontainers as $k) {
+            $nomor = $k->nomor_kontainer;
+            $merged[$nomor] = [
+                'value' => $nomor,
+                'label' => $nomor . ' (Kontainer)',
+                'size' => $k->ukuran ?? null,
+                'source' => 'kontainer',
+                'status' => $k->status ?? null,
+            ];
+        }
+        foreach ($stockKontainers as $s) {
+            $nomor = $s->nomor_kontainer;
+            if (!isset($merged[$nomor])) {
+                $merged[$nomor] = [
+                    'value' => $nomor,
+                    'label' => $nomor . ' (Stock)',
+                    'size' => $s->ukuran ?? null,
+                    'source' => 'stock',
+                    'status' => $s->status ?? null,
+                ];
+            }
+        }
+        $containerOptions = array_values($merged);
+
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
             'pengirims', 
@@ -165,7 +228,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'kranis', 
             'tujuanKegiatanUtamas', 
             'jenisBarangs'
-        ));
+        , 'containerOptions'));
     }
 
     /**
@@ -350,7 +413,35 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->get();
         $master_kapals = MasterKapal::where('status', 'aktif')->get();
 
-        return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals'));
+        // Include all non-inactive containers (many records use 'available'/'rented' etc.)
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
+        $stockKontainers = StockKontainer::active()->get();
+        $merged = [];
+        foreach ($kontainers as $k) {
+            $nomor = $k->nomor_kontainer;
+            $merged[$nomor] = [
+                'value' => $nomor,
+                'label' => $nomor . ' (Kontainer)',
+                'size' => $k->ukuran ?? null,
+                'source' => 'kontainer',
+                'status' => $k->status ?? null,
+            ];
+        }
+        foreach ($stockKontainers as $s) {
+            $nomor = $s->nomor_kontainer;
+            if (!isset($merged[$nomor])) {
+                $merged[$nomor] = [
+                    'value' => $nomor,
+                    'label' => $nomor . ' (Stock)',
+                    'size' => $s->ukuran ?? null,
+                    'source' => 'stock',
+                    'status' => $s->status ?? null,
+                ];
+            }
+        }
+        $containerOptions = array_values($merged);
+
+        return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'containerOptions'));
     }
 
     /**

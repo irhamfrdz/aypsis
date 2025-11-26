@@ -3562,6 +3562,33 @@ window.bulkAddInvoice = function() {
         return;
     }
 
+    // Validasi: Periksa apakah ada item yang status pranota sudah lunas/paid
+    let itemsAlreadyPaid = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            // Cek kolom Status Pranota (kolom ke-18)
+            const statusPranotaCell = row.querySelector('td:nth-child(18)');
+            if (statusPranotaCell) {
+                const statusText = statusPranotaCell.textContent.trim();
+                // Jika status mengandung "Lunas" atau status_pranota adalah 'paid'
+                if (statusText && (statusText.includes('Lunas') || statusText.includes('paid'))) {
+                    // Ambil nomor kontainer untuk pesan error
+                    const containerCell = row.querySelector('td:nth-child(5)');
+                    const containerNumber = containerCell ? containerCell.textContent.trim() : `Item ${index + 1}`;
+                    itemsAlreadyPaid.push(containerNumber);
+                }
+            }
+        }
+    });
+
+    // Jika ada item yang sudah lunas, tampilkan pesan error
+    if (itemsAlreadyPaid.length > 0) {
+        const itemList = itemsAlreadyPaid.join(', ');
+        alert(`❌ Tidak dapat membuat invoice!\n\nTagihan berikut sudah lunas:\n${itemList}\n\nTagihan yang sudah lunas tidak dapat dimasukkan ke dalam invoice.`);
+        return;
+    }
+
     // Collect data from selected rows
     const selectedData = {
         containers: [],
