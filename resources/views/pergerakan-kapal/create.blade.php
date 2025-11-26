@@ -92,9 +92,9 @@
                                 Voyage
                             </label>
                             <div class="flex gap-2">
-                                <input type="text" name="voyage" id="voyage" value="{{ old('voyage') }}" readonly
-                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('voyage') border-red-500 @enderror"
-                                       placeholder="Auto generate">
+                                <input type="text" name="voyage" id="voyage" value="{{ old('voyage') }}"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('voyage') border-red-500 @enderror"
+                                       placeholder="Masukkan nomor voyage atau klik Generate">
                                 <button type="button" onclick="generateVoyage()"
                                         class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     Generate
