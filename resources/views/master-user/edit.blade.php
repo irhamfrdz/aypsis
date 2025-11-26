@@ -556,6 +556,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Kelola BBM --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-indigo-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Kelola BBM</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kelola-bbm][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kelola-bbm']['view']) && $userMatrixPermissions['master-kelola-bbm']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kelola-bbm][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kelola-bbm']['create']) && $userMatrixPermissions['master-kelola-bbm']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kelola-bbm][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kelola-bbm']['update']) && $userMatrixPermissions['master-kelola-bbm']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kelola-bbm][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kelola-bbm']['delete']) && $userMatrixPermissions['master-kelola-bbm']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Term --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
