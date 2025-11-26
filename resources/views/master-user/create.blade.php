@@ -792,6 +792,23 @@
                                 <td><input type="checkbox" name="permissions[pranota-uang-jalan][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Tanda Terima Tanpa Surat Jalan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima (Tanpa Surat Jalan)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
                                 <td class="module-header">

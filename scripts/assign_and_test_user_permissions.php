@@ -15,16 +15,23 @@ if (!$user) {
     exit(1);
 }
 
-// Remove any existing kelola-bbm permissions
-$user->permissions()->detach(App\Models\Permission::where('name','like','master-kelola-bbm%')->pluck('id')->toArray());
+// Remove any existing kelola-bbm, pricelist, and tanda terima permissions
+$user->permissions()->detach(App\Models\Permission::where('name','like','master-kelola-bbm%')
+    ->orWhere('name','like','master-pricelist-uang-jalan-batam%')
+    ->orWhere('name','like','tanda-terima-tanpa-surat-jalan%')
+    ->pluck('id')->toArray());
 
 $matrix = ['master-kelola-bbm' => ['view' => 1],
-           'master-pricelist-uang-jalan-batam' => ['view' => 1]];
+           'master-pricelist-uang-jalan-batam' => ['view' => 1],
+           'tanda-terima-tanpa-surat-jalan' => ['view' => 1]];
 $permissionIds = $controller->testConvertMatrixPermissionsToIds($matrix);
 
 $user->permissions()->syncWithoutDetaching($permissionIds);
 
-$perms = $user->permissions()->where('name','like','master-kelola-bbm%')->orWhere('name','like','master-pricelist-uang-jalan-batam%')->pluck('name')->toArray();
+$perms = $user->permissions()->where('name','like','master-kelola-bbm%')
+    ->orWhere('name','like','master-pricelist-uang-jalan-batam%')
+    ->orWhere('name','like','tanda-terima-tanpa-surat-jalan%')
+    ->pluck('name')->toArray();
 print_r($perms);
 
 // Convert user permission names to matrix for verification

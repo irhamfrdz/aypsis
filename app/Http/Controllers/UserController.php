@@ -552,6 +552,33 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for tanda-terima-tanpa-surat-jalan permissions (dash notation)
+            if (strpos($permissionName, 'tanda-terima-tanpa-surat-jalan-') === 0) {
+                $module = 'tanda-terima-tanpa-surat-jalan';
+                $action = str_replace('tanda-terima-tanpa-surat-jalan-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'print' => 'print',
+                    'export' => 'export',
+                    'approve' => 'approve'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             $operationalModules = [
                 'order-management' => 'order', // Map order-management to order for permission names
