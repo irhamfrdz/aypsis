@@ -190,22 +190,20 @@ class SuratJalanBongkaranController extends Controller
     {
         // Validate that kapal and voyage are provided
         $request->validate([
-            'kapal_id' => 'required|integer',
+            'kapal_id' => 'required|exists:master_kapals,id',
             'no_voyage' => 'required|string',
         ]);
 
-        // Get unique kapal names from BLs table
-        $kapals = Bl::select('nama_kapal')
-                    ->whereNotNull('nama_kapal')
-                    ->distinct()
-                    ->orderBy('nama_kapal')
-                    ->get()
-                    ->map(function($bl, $index) {
-                        return (object)[
-                            'id' => $index + 1,
-                            'nama_kapal' => $bl->nama_kapal
-                        ];
-                    });
+        // Get unique kapal names from BLs table and match with master_kapals
+        $blKapals = Bl::select('nama_kapal')
+                      ->whereNotNull('nama_kapal')
+                      ->distinct()
+                      ->pluck('nama_kapal');
+        
+        // Get matching kapals from master_kapals table using actual IDs
+        $kapals = MasterKapal::whereIn('nama_kapal', $blKapals)
+                             ->orderBy('nama_kapal')
+                             ->get(['id', 'nama_kapal']);
         
         $users = User::orderBy('username')->get();
         
