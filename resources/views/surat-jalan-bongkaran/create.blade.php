@@ -250,16 +250,16 @@
                 <!-- Tujuan Pengiriman -->
                 <div>
                     <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                    <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman"
+                    <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman" readonly
                            value="{{ old('tujuan_pengiriman', isset($selectedContainer) ? $selectedContainer->pelabuhan_tujuan : '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_pengiriman') border-red-500 @enderror"
-                           placeholder="Masukkan tujuan pengiriman">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tujuan_pengiriman') border-red-500 @enderror"
+                           placeholder="Tujuan pengiriman akan terisi otomatis">
                     @error('tujuan_pengiriman')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                     @if(isset($selectedContainer) && $selectedContainer->pelabuhan_tujuan)
                         <p class="mt-1 text-xs text-green-600">
-                            Auto-fill dari BL: {{ $selectedContainer->pelabuhan_tujuan }} (dapat diedit)
+                            Otomatis dari BL: {{ $selectedContainer->pelabuhan_tujuan }}
                         </p>
                     @endif
                 </div>
@@ -277,9 +277,9 @@
                     <select name="jenis_pengiriman" id="jenis_pengiriman"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jenis_pengiriman') border-red-500 @enderror">
                         <option value="">Pilih jenis pengiriman</option>
-                        <option value="Import" {{ $selectedJenisPengiriman == 'Import' ? 'selected' : '' }}>Import</option>
-                        <option value="Export" {{ $selectedJenisPengiriman == 'Export' ? 'selected' : '' }}>Export</option>
-                        <option value="Domestik" {{ $selectedJenisPengiriman == 'Domestik' ? 'selected' : '' }}>Domestik</option>
+                        <option value="FCL" {{ $selectedJenisPengiriman == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="LCL" {{ $selectedJenisPengiriman == 'LCL' ? 'selected' : '' }}>LCL</option>
+                        <option value="Cargo" {{ $selectedJenisPengiriman == 'Cargo' ? 'selected' : '' }}>Cargo</option>
                     </select>
                     @error('jenis_pengiriman')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
