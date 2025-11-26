@@ -286,9 +286,12 @@ class SuratJalanBongkaranController extends Controller
      */
     public function store(Request $request)
     {
+        // Debug: log all request data
+        \Log::info('SJB Store Request Data:', $request->all());
+        
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|integer',
-            'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
+            'no_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',

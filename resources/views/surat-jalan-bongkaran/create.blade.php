@@ -136,14 +136,14 @@
 
                     <!-- Nomor Surat Jalan -->
                     <div>
-                        <label for="nomor_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="no_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
                             Nomor Surat Jalan <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="nomor_surat_jalan" id="nomor_surat_jalan" required
-                               value="{{ old('nomor_surat_jalan') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_surat_jalan') border-red-300 @enderror"
+                        <input type="text" name="no_surat_jalan" id="no_surat_jalan" required
+                               value="{{ old('no_surat_jalan') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_surat_jalan') border-red-300 @enderror"
                                placeholder="Masukkan nomor surat jalan">
-                        @error('nomor_surat_jalan')
+                        @error('no_surat_jalan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // Set default nomor if empty
-    const nomorInput = document.getElementById('nomor_surat_jalan');
+    const nomorInput = document.getElementById('no_surat_jalan');
     if (nomorInput && !nomorInput.value) {
         nomorInput.value = generateNomor();
     }
