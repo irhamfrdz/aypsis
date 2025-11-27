@@ -346,6 +346,17 @@ input[required]:focus {
     <!-- Search and Filter Section -->
     <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <form action="{{ route('daftar-tagihan-kontainer-sewa.index') }}" method="GET" class="space-y-4">
+            @php
+                // Precompute relatedGroups early so toggle buttons can reflect auto-detect state
+                if (request('q')) {
+                    $searchTerm = request('q');
+                    $matchingContainers = \App\Models\DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                        ->whereNotNull('group')
+                        ->where('group', '!=', '')
+                        ->get();
+                    $relatedGroups = $matchingContainers->pluck('group')->unique();
+                }
+            @endphp
             <!-- Search Input Row -->
             <div class="flex items-center gap-4">
                 <div class="flex-1 relative">
@@ -365,18 +376,47 @@ input[required]:focus {
                         </svg>
                     </div>
                 </div>
+                {{-- Search mode toggle buttons (normal / group) --}}
+                @php
+                    $explicitMode = request('search_mode');
+                    $autoGroupMode = (isset($relatedGroups) && $relatedGroups->isNotEmpty());
+                    if ($explicitMode === 'group') {
+                        $isGroupModeActive = true;
+                    } elseif ($explicitMode === 'normal') {
+                        $isGroupModeActive = false;
+                    } else {
+                        $isGroupModeActive = $autoGroupMode;
+                    }
+                @endphp
+
+                <input type="hidden" name="search_mode" id="search_mode" value="{{ $explicitMode ?? ($isGroupModeActive ? 'group' : 'normal') }}">
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnNormalMode" title="Mode Pencarian Biasa" class="px-3 py-1 text-sm rounded-lg border {{ $isGroupModeActive ? 'bg-white text-gray-700' : 'bg-blue-600 text-white' }}">Pencarian Biasa</button>
+                    <button type="button" id="btnGroupMode" title="Mode Pencarian Grup" class="px-3 py-1 text-sm rounded-lg border {{ $isGroupModeActive ? 'bg-blue-600 text-white' : 'bg-white text-gray-700' }}">Mode Pencarian Grup</button>
+                </div>
             </div>
 
             @if(request('q'))
                 @php
-                    // Check if we're in group search mode
-                    $searchTerm = request('q');
-                    $matchingContainers = \App\Models\DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                        ->whereNotNull('group')
-                        ->where('group', '!=', '')
-                        ->get();
-                    $relatedGroups = $matchingContainers->pluck('group')->unique();
-                    $isGroupSearch = $relatedGroups->isNotEmpty();
+                    // Check if we're in group search mode; precomputed $relatedGroups is used if available
+                    if (!isset($relatedGroups)) {
+                        $searchTerm = request('q');
+                        $matchingContainers = \App\Models\DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                            ->whereNotNull('group')
+                            ->where('group', '!=', '')
+                            ->get();
+                        $relatedGroups = $matchingContainers->pluck('group')->unique();
+                    }
+
+                    $explicitMode = request('search_mode');
+                    $autoGroupMode = $relatedGroups->isNotEmpty();
+                    if ($explicitMode === 'group') {
+                        $isGroupSearch = true;
+                    } elseif ($explicitMode === 'normal') {
+                        $isGroupSearch = false;
+                    } else {
+                        $isGroupSearch = $autoGroupMode;
+                    }
                 @endphp
 
                 @if($isGroupSearch)
@@ -1521,6 +1561,44 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // Search mode toggles: group/normal
+    const btnNormalMode = document.getElementById('btnNormalMode');
+    const btnGroupMode = document.getElementById('btnGroupMode');
+    const searchModeInput = document.getElementById('search_mode');
+    const searchForm = document.querySelector('form[method="GET"].space-y-4');
+
+    function setSearchMode(mode, autoSubmit = true) {
+        if (!searchModeInput) return;
+        searchModeInput.value = mode;
+        if (btnNormalMode && btnGroupMode) {
+            if (mode === 'group') {
+                btnGroupMode.classList.add('bg-blue-600', 'text-white');
+                btnGroupMode.classList.remove('bg-white', 'text-gray-700');
+                btnNormalMode.classList.remove('bg-blue-600', 'text-white');
+                btnNormalMode.classList.add('bg-white', 'text-gray-700');
+            } else {
+                btnNormalMode.classList.add('bg-blue-600', 'text-white');
+                btnNormalMode.classList.remove('bg-white', 'text-gray-700');
+                btnGroupMode.classList.remove('bg-blue-600', 'text-white');
+                btnGroupMode.classList.add('bg-white', 'text-gray-700');
+            }
+        }
+
+        if (autoSubmit && searchForm) {
+            // Submit the GET form to apply mode change
+            searchForm.submit();
+        }
+    }
+
+    // Attach event listeners if buttons exist
+    if (btnNormalMode) btnNormalMode.addEventListener('click', function() { setSearchMode('normal'); });
+    if (btnGroupMode) btnGroupMode.addEventListener('click', function() { setSearchMode('group'); });
+
+    // Initialize buttons styling to reflect current mode
+    if (searchModeInput && searchModeInput.value) {
+        setSearchMode(searchModeInput.value, false);
+    }
+
     // Restore checkbox state from localStorage on page load
     // Use setTimeout to ensure all elements are fully loaded
     setTimeout(() => {
@@ -1728,10 +1806,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle search form submission to preserve checkbox state
-    const searchForm = document.querySelector('form[method="GET"].space-y-4');
-    if (searchForm && searchForm !== null) {
+    const searchForm2 = document.querySelector('form[method="GET"].space-y-4');
+    if (searchForm2 && searchForm2 !== null) {
         // Save on form submit
-        searchForm.addEventListener('submit', function(e) {
+        searchForm2.addEventListener('submit', function(e) {
             // Force save before allowing form to submit
             saveCheckboxState();
             console.log('Search form submitted, checkbox state saved');
@@ -1740,7 +1818,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Also save when search button is clicked (before form submit)
-        const searchButtons = searchForm.querySelectorAll('button[type="submit"]');
+        const searchButtons = searchForm2.querySelectorAll('button[type="submit"]');
         searchButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 saveCheckboxState();

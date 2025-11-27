@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             
             // === PERMISSION SYSTEM ===
             PermissionSeeder::class, // Seeder komprehensif untuk semua 244 permissions
+            // Additional module permission seeders
+            UangJalanBongkaranPermissionSeeder::class,
             AdminUserSeeder::class, // User admin dengan semua permissions
             
             // === LEGACY PERMISSION SEEDERS (Optional - mungkin sudah tercakup di PermissionSeeder) ===
