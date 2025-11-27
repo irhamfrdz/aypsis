@@ -163,6 +163,10 @@
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
+            white-space: nowrap; /* keep content on a single line */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: normal;
         }
 
         .table th {
@@ -342,15 +346,15 @@
         <table class="table {{ $hasInvoices ? 'container-table' : '' }}">
             <thead>
                 <tr>
-                    <th style="width: 5%;">No</th>
-                    <th style="width: 12%;">No. Kontainer</th>
-                    <th style="width: 5%;">Size</th>
+                    <th style="width: 4%;">No</th>
+                    <th style="width: 18%;">No. Kontainer</th>
+                    <th style="width: 4%;">Size</th>
                     <th style="width: 15%;">Masa</th>
-                    <th style="width: 10%;">DPP</th>
-                    <th style="width: 10%;">Adjustment</th>
+                    <th style="width: 8%;">DPP</th>
+                    <th style="width: 8%;">Adjustment</th>
                     <th style="width: 8%;">PPN</th>
-                    <th style="width: 8%;">PPH</th>
-                    <th style="width: 12%;">Grand Total</th>
+                    <th style="width: 6%;">PPH</th>
+                    <th style="width: 14%;">Grand Total</th>
                     <th style="width: 15%;">Invoice Vendor</th>
                 </tr>
             </thead>
