@@ -1249,13 +1249,49 @@ class TandaTerimaController extends Controller
                 });
                 
                 if (!empty($nomorKontainers)) {
-                    $prospeksByKontainer = \App\Models\Prospek::whereIn('nomor_kontainer', $nomorKontainers)->get();
+                    // Match nomor_kontainer that equals or contains the given container values (CSV matching)
+                    $prospeksByKontainer = \App\Models\Prospek::where(function($q) use ($nomorKontainers) {
+                        foreach ($nomorKontainers as $containerValue) {
+                            $v = trim($containerValue);
+                            // match exact equal or CSV contains
+                            $q->orWhere('nomor_kontainer', $v)
+                              ->orWhere('nomor_kontainer', 'like', '%'. $v .'%');
+                        }
+                    })->get();
                     $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByKontainer);
+                    Log::info('Prospek search by nomor_kontainer used; results: ' . $prospeksByKontainer->count(), ['search_kontainers' => $nomorKontainers]);
                 }
             }
 
             // Remove duplicates based on ID
             $prospeksToUpdate = $prospeksToUpdate->unique('id');
+
+            // Determine nomor_kontainer and no_seal values to set on Prospek (prefer request values)
+            $noKontainerToSet = null;
+            $noSealToSet = null;
+            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
+                $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($nomorKontainers)) {
+                    $noKontainerToSet = implode(',', $nomorKontainers);
+                }
+            }
+            if (empty($noKontainerToSet) && !empty($tandaTerima->no_kontainer)) {
+                $noKontainerToSet = $tandaTerima->no_kontainer;
+            }
+
+            if ($request->has('no_seal') && is_array($request->no_seal)) {
+                $noSeals = array_filter($request->no_seal, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($noSeals)) {
+                    $noSealToSet = implode(',', $noSeals);
+                }
+            }
+            if (empty($noSealToSet) && !empty($tandaTerima->no_seal)) {
+                $noSealToSet = $tandaTerima->no_seal;
+            }
 
             // Update each related prospek
             $updatedCount = 0;
@@ -1276,6 +1312,14 @@ class TandaTerimaController extends Controller
                     $updateFields['kuantitas'] = $kuantitas;
                 }
 
+                // Update nomor_kontainer and no_seal if available
+                if (!empty($noKontainerToSet)) {
+                    $updateFields['nomor_kontainer'] = $noKontainerToSet;
+                }
+                if (!empty($noSealToSet)) {
+                    $updateFields['no_seal'] = $noSealToSet;
+                }
+
                 $prospek->update($updateFields);
                 $updatedCount++;
 
@@ -1283,6 +1327,7 @@ class TandaTerimaController extends Controller
                     'prospek_id' => $prospek->id,
                     'tanda_terima_id' => $tandaTerima->id,
                     'nomor_kontainer' => $prospek->nomor_kontainer,
+                    'nomor_kontainer_set' => $noKontainerToSet ?? null,
                     'surat_jalan_id' => $prospek->surat_jalan_id,
                     'no_surat_jalan' => $prospek->no_surat_jalan,
                     'total_volume' => $totalVolume,
@@ -1300,6 +1345,8 @@ class TandaTerimaController extends Controller
                 'total_volume' => $totalVolume,
                 'total_tonase' => $totalTonase,
                 'kuantitas' => $kuantitas,
+                'nomor_kontainer_set' => $noKontainerToSet ?? null,
+                'no_seal_set' => $noSealToSet ?? null,
                 'search_methods_used' => [
                     'surat_jalan_id' => $tandaTerima->surat_jalan_id ? true : false,
                     'no_surat_jalan' => $tandaTerima->no_surat_jalan ? true : false,

@@ -563,6 +563,7 @@
                                     <li><strong>Mengupdate volume total</strong> pada prospek terkait berdasarkan dimensi yang diinput</li>
                                     <li><strong>Mengupdate tonase total</strong> pada prospek terkait berdasarkan tonase yang diinput</li>
                                     <li><strong>Mengupdate kuantitas</strong> pada prospek terkait berdasarkan jumlah per kontainer</li>
+                                    <li><strong>Mengupdate nomor kontainer & seal</strong> pada prospek terkait jika ditemukan (nomor_kontainer / no_seal akan diset ke nilai terbaru dari tanda terima)</li>
                                     <li><strong>Menghubungkan prospek</strong> dengan tanda terima ini jika belum terhubung</li>
                                 </ul>
                                 <p class="mt-2 text-xs text-blue-600">
