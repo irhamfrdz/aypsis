@@ -224,9 +224,12 @@
 </head>
 <body>
     <!-- Paper Size Selector (hidden when printing) -->
-    <div class="no-print">
-        <strong>Current: {{ $paperSize }}</strong><br>
-        <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
+    <div class="no-print" style="min-width: 160px;">
+        @include('components.paper-selector', ['selectedSize' => $paperSize ?? 'Folio'])
+        <div style="margin-top: 6px; font-size: 12px; color: #444;">
+            <strong>Current: {{ $paperSize }}</strong><br>
+            <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
+        </div>
     </div>
 
     <div class="container">
