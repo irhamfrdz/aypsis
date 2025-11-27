@@ -233,8 +233,14 @@ class SuratJalanBongkaranController extends Controller
 
         // Find kapal object for backward compatibility with view
         $selectedKapal = null;
+        $kapalId = null;
         if ($selectedKapalName) {
             $selectedKapal = (object)['nama_kapal' => $selectedKapalName];
+            // Find kapal_id from master_kapals table
+            $masterKapal = MasterKapal::where('nama_kapal', $selectedKapalName)->first();
+            if ($masterKapal) {
+                $kapalId = $masterKapal->id;
+            }
         }
 
         // If no_bl (container) is selected, get the container details
@@ -272,7 +278,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'));
     }
 
     /**

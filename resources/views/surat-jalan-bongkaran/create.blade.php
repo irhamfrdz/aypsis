@@ -76,6 +76,7 @@
             <!-- Hidden inputs for selected kapal and voyage -->
             @if($selectedKapal && $noVoyage)
                 <input type="hidden" name="nama_kapal" value="{{ $selectedKapal->nama_kapal }}">
+                <input type="hidden" name="kapal_id" value="{{ $kapalId }}">
                 <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
                 @if(request('no_bl'))
                     <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">

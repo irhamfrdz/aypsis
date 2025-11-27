@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 use App\Traits\Auditable;
+use App\Models\MasterKapal;
 
 class SuratJalanBongkaran extends Model
 {
@@ -62,6 +63,7 @@ class SuratJalanBongkaran extends Model
         'jumlah_terbayar',
         'aktifitas',
         'nama_kapal',
+        'kapal_id',
         'no_voyage',
         'no_bl',
         'jenis_pengiriman',
@@ -98,7 +100,10 @@ class SuratJalanBongkaran extends Model
         return $this->belongsTo(Order::class, 'order_id');
     }
 
-    // Note: Removed kapal relationship - now storing nama_kapal directly
+    public function kapal()
+    {
+        return $this->belongsTo(MasterKapal::class, 'kapal_id');
+    }
 
     // Scopes
     public function scopeActive($query)
