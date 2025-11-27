@@ -11,6 +11,8 @@
     $statusOptions = $statusOptions ?? ['all' => 'Semua Status'];
     $status = $status ?? 'all';
     $suratJalans = $suratJalans ?? collect([]);
+    // The bongkaran variant uses 'nomor_surat_jalan' while normal uses 'no_surat_jalan'
+    $noField = $isBongkaran ? 'nomor_surat_jalan' : 'no_surat_jalan';
 @endphp
 
 @section('page_title', 'Tambah Data ' . $pageTitleText)
@@ -261,10 +263,10 @@
                         </thead>
                         <tbody id="suratJalanTableBody" class="bg-white divide-y divide-gray-100">
                             @forelse($suratJalans as $suratJalan)
-                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->no_surat_jalan) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ $suratJalan->order && $suratJalan->order->pengirim ? addslashes($suratJalan->order->pengirim->nama_pengirim) : '' }}')">
+                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ $suratJalan->order && $suratJalan->order->pengirim ? addslashes($suratJalan->order->pengirim->nama_pengirim) : '' }}')">
                                     <td class="px-1 py-1">
                                         <div class="text-xs font-medium text-blue-600 hover:text-blue-800 leading-tight">
-                                            {{ $suratJalan->no_surat_jalan }}
+                                            {{ $suratJalan->{$noField} }}
                                         </div>
                                         @if($suratJalan->order)
                                             <div style="font-size: 9px;" class="text-gray-500 leading-tight">{{ $suratJalan->order->nomor_order }}</div>
@@ -323,6 +325,17 @@
 <!-- JavaScript -->
 <script>
 let allSuratJalans = {!! json_encode($suratJalans->items()) !!};
+// Normalize property name to 'no_surat_jalan' for uniform JS usage regardless of model field
+allSuratJalans = allSuratJalans.map(item => {
+    if (!item.no_surat_jalan) {
+        if (item.nomor_surat_jalan) {
+            item.no_surat_jalan = item.nomor_surat_jalan;
+        } else if (item.nomor_surat) {
+            item.no_surat_jalan = item.nomor_surat;
+        }
+    }
+    return item;
+});
 let filteredSuratJalans = [...allSuratJalans];
 let currentSort = { column: '', direction: 'asc' };
 let currentPage = 1;

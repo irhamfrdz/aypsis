@@ -32,7 +32,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs text-blue-700">
                         <div>
                             <span class="font-medium">No. SJ:</span>
-                            <div>{{ $suratJalanBongkaran->no_surat_jalan }}</div>
+                            <div>{{ $suratJalanBongkaran->nomor_surat_jalan }}</div>
                         </div>
                         <div>
                             <span class="font-medium">Tanggal:</span>
