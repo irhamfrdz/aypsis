@@ -305,7 +305,7 @@
 </div>
 
 <script>
-function updateTotal() {
+window.updateTotal = function() {
     const checkboxes = document.querySelectorAll('.uang-jalan-checkbox:checked');
     let total = 0;
     let count = 0;
@@ -336,7 +336,7 @@ function updateTotal() {
     }
 }
 
-function updateTotalWithPenyesuaian() {
+window.updateTotalWithPenyesuaian = function() {
     const totalAmountText = document.getElementById('totalAmount').textContent;
     const totalAmount = parseFloat(totalAmountText.replace(/[^\d]/g, '')) || 0;
     
@@ -362,7 +362,7 @@ function updateTotalWithPenyesuaian() {
     }
 }
 
-function toggleSelectAll() {
+window.toggleSelectAll = function() {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const checkboxes = document.querySelectorAll('.uang-jalan-checkbox');
     
@@ -373,7 +373,7 @@ function toggleSelectAll() {
     updateTotal();
 }
 
-function selectAll() {
+window.selectAll = function() {
     const checkboxes = document.querySelectorAll('.uang-jalan-checkbox');
     checkboxes.forEach(function(checkbox) {
         checkbox.checked = true;
@@ -381,7 +381,7 @@ function selectAll() {
     updateTotal();
 }
 
-function deselectAll() {
+window.deselectAll = function() {
     const checkboxes = document.querySelectorAll('.uang-jalan-checkbox');
     checkboxes.forEach(function(checkbox) {
         checkbox.checked = false;
