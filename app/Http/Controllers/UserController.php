@@ -584,6 +584,7 @@ class UserController extends Controller
                 'order-management' => 'order', // Map order-management to order for permission names
                 'surat-jalan' => 'surat-jalan',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
+                'uang-jalan-bongkaran' => 'uang-jalan-bongkaran',
                 'tanda-terima' => 'tanda-terima',
                 'gate-in' => 'gate-in',
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
@@ -2937,6 +2938,27 @@ class UserController extends Controller
                             'delete' => 'surat-jalan-bongkaran-delete',
                             'print' => 'surat-jalan-bongkaran-print',
                             'export' => 'surat-jalan-bongkaran-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle uang-jalan-bongkaran permissions explicitly
+                    if ($module === 'uang-jalan-bongkaran' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'uang-jalan-bongkaran-view',
+                            'create' => 'uang-jalan-bongkaran-create',
+                            'update' => 'uang-jalan-bongkaran-update',
+                            'delete' => 'uang-jalan-bongkaran-delete',
+                            'print' => 'uang-jalan-bongkaran-print',
+                            'export' => 'uang-jalan-bongkaran-export'
                         ];
 
                         if (isset($actionMap[$action])) {
