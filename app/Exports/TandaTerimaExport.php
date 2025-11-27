@@ -129,9 +129,8 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
         foreach ($tandaTerimas as $nomorRo => $groupedTandaTerimas) {
             // Add RO header row
             $rows->push([
-                'RO NOMOR :',
-                ($nomorRo ?: 'N/A'),
-                '', '', '', '', '', '', ''
+                'RO NOMOR : ' . ($nomorRo ?: 'N/A'),
+                '', '', '', '', '', '', '', ''
             ]);
 
             // Add column headers
@@ -219,8 +218,9 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                 for ($row = 1; $row <= $highestRow; $row++) {
                     $firstCell = (string) $sheet->getCell('A' . $row)->getValue();
                     if ($firstCell !== null && str_starts_with(trim($firstCell), 'RO NOMOR :')) {
-                        // Style the label (A) and the RO value (B) cells separately
-                        $sheet->getStyle("A{$row}:B{$row}")->applyFromArray($roStyle);
+                        // Merge the row across A:I (removed BOX_OPR column)
+                        $sheet->mergeCells("A{$row}:I{$row}");
+                        $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
                     }
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
