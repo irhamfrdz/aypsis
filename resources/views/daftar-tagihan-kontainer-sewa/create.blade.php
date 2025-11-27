@@ -462,6 +462,9 @@ function fillContainerSize() {
         const size = selectedOption.getAttribute('data-size');
         if (size) {
             sizeSelect.value = size;
+            // Trigger change event to run fetchPricelistDpp via listener
+            const event = new Event('change', { bubbles: true });
+            sizeSelect.dispatchEvent(event);
         }
     }
 }
