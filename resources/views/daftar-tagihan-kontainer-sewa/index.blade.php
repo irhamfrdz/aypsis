@@ -356,6 +356,9 @@ input[required]:focus {
                         placeholder="Cari berdasarkan: nomor kontainer, vendor, group, atau invoice vendor..."
                         class="w-full border border-gray-300 rounded-lg px-2 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
+                    @if(request('q'))
+                        <div class="text-sm text-gray-500 mt-1">Hasil pencarian untuk: <strong>{{ request('q') }}</strong></div>
+                    @endif
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>

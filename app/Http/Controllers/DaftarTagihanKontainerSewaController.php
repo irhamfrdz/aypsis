@@ -44,15 +44,23 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         // Handle search functionality - show matching containers and all containers in the same group
         if ($request->filled('q')) {
-            $searchTerm = $request->input('q');
+            $searchTerm = trim($request->input('q'));
+
+            // create a sanitized search to match container numbers regardless of hyphens or spaces
+            $sanitizedSearch = preg_replace('/[^A-Za-z0-9]/', '', $searchTerm);
 
             // First, find all matching containers
-            $matchingContainers = DaftarTagihanKontainerSewa::where(function ($q) use ($searchTerm) {
-                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
-            })->get();
+                        $matchingContainers = DaftarTagihanKontainerSewa::where(function ($q) use ($searchTerm, $sanitizedSearch) {
+                                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
+                                    ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                                    ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
+                                    ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+
+                                // also allow numeric/alphanumeric searches that ignore hyphens/spaces
+                                if (!empty($sanitizedSearch)) {
+                                        $q->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') LIKE ?", ['%' . $sanitizedSearch . '%']);
+                                }
+                        })->get();
 
             // Collect all group names from matching containers
             $groupNames = $matchingContainers->where('group', '!=', null)
@@ -62,7 +70,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                                              ->values();
 
             // Now apply the filter: show direct matches OR containers in the same groups
-            $query->where(function ($q) use ($searchTerm, $groupNames) {
+            $query->where(function ($q) use ($searchTerm, $groupNames, $sanitizedSearch) {
                 // Show containers that directly match the search term
                 $q->where(function ($subQ) use ($searchTerm) {
                     $subQ->where('vendor', 'LIKE', '%' . $searchTerm . '%')
@@ -76,6 +84,13 @@ class DaftarTagihanKontainerSewaController extends Controller
                     $q->orWhereIn('group', $groupNames);
                 }
             });
+            
+            // If we have exact container matches, we prioritize them in ordering so they appear at the top
+            $exactMatches = DaftarTagihanKontainerSewa::where('nomor_kontainer', '=', $searchTerm)
+                ->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') = ?", [$sanitizedSearch])->pluck('id')->toArray();
+            if (!empty($exactMatches)) {
+                $query->orderByRaw(sprintf("FIELD(%s, %s)", 'id', implode(',', array_map('intval', $exactMatches))));
+            }
         }
 
         // Handle vendor filter
@@ -209,7 +224,12 @@ class DaftarTagihanKontainerSewaController extends Controller
             ]);
         }
 
-        return view('daftar-tagihan-kontainer-sewa.index', compact('tagihans', 'vendors', 'sizes', 'periodes', 'statusOptions'));
+        // Ensure exactMatches variable exists for highlighting search results in view
+        if (!isset($exactMatches) || !is_array($exactMatches)) {
+            $exactMatches = [];
+        }
+
+        return view('daftar-tagihan-kontainer-sewa.index', compact('tagihans', 'vendors', 'sizes', 'periodes', 'statusOptions', 'exactMatches'));
     }
 
     /**
