@@ -578,6 +578,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const grandTotalInput = document.getElementById('grand_total');
     const dppNilaiLainInput = document.getElementById('dpp_nilai_lain');
     const containerSelect = document.getElementById('nomor_kontainer');
+    const vendorSelect = document.getElementById('vendor');
+    const sizeSelect = document.getElementById('size');
+    const tarifSelect = document.getElementById('tarif');
+    const tanggalAwalInput = document.getElementById('tanggal_awal');
+    const tanggalAkhirInput = document.getElementById('tanggal_akhir');
+    const periodeInput = document.getElementById('periode');
     
     // Initialize container filtering on page load
     filterContainersByVendor();
