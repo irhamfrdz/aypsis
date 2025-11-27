@@ -291,6 +291,7 @@ class SuratJalanBongkaranController extends Controller
         
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|integer',
+            'nama_kapal' => 'nullable|string|max:255',
             'no_voyage' => 'nullable|string|max:255',
             'no_bl' => 'nullable|string|max:255',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
