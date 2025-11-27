@@ -224,11 +224,14 @@
 </head>
 <body>
     <!-- Paper Size Selector (hidden when printing) -->
-    <div class="no-print" style="min-width: 160px;">
+    <div class="no-print" style="min-width: 160px; display: flex; gap: 8px; align-items: flex-end;">
         @include('components.paper-selector', ['selectedSize' => $paperSize ?? 'Folio'])
         <div style="margin-top: 6px; font-size: 12px; color: #444;">
             <strong>Current: {{ $paperSize }}</strong><br>
             <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
+        </div>
+        <div style="margin-left: 6px;">
+            <button id="startPrint" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Print</button>
         </div>
     </div>
 
@@ -409,11 +412,17 @@
         </div>
     </div>
 
-    <!-- Auto Print Script -->
+    <!-- Print Action: allow user to select paper size before printing -->
     <script>
-        window.onload = function() {
-            window.print();
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const printBtn = document.getElementById('startPrint');
+            if (printBtn) {
+                printBtn.addEventListener('click', function() {
+                    // Trigger print; this allows the user to change the paper size selector before the dialog appears
+                    window.print();
+                });
+            }
+        });
     </script>
 </body>
 </html>
