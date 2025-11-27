@@ -198,6 +198,8 @@ class WebRoutePermissionSeeder extends Seeder
                 'pranota-uang-jalan-update', 'pranota-uang-jalan-delete', 
                 'pranota-uang-jalan-approve', 'pranota-uang-jalan-print', 
                 'pranota-uang-jalan-export',
+                // Pranota Uang Jalan Bongkaran permissions
+                'pranota-uang-jalan-bongkaran-view', 'pranota-uang-jalan-bongkaran-create', 'pranota-uang-jalan-bongkaran-update', 'pranota-uang-jalan-bongkaran-delete', 'pranota-uang-jalan-bongkaran-approve', 'pranota-uang-jalan-bongkaran-print', 'pranota-uang-jalan-bongkaran-export',
                 
                 // Pranota Uang Rit permissions
                 'pranota-uang-rit-view', 'pranota-uang-rit-create', 'pranota-uang-rit-update', 

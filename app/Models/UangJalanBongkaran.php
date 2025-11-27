@@ -55,6 +55,15 @@ class UangJalanBongkaran extends Model
     }
 
     /**
+     * Relationship dengan PranotaUangJalanBongkaran (many-to-many)
+     */
+    public function pranotaUangJalanBongkaran()
+    {
+        return $this->belongsToMany(PranotaUangJalanBongkaran::class, 'pranota_uang_jalan_bongkaran_items', 'uang_jalan_bongkaran_id', 'pranota_uang_jalan_bongkaran_id')
+                    ->withTimestamps();
+    }
+
+    /**
      * Relationship dengan User yang membuat
      */
     public function createdBy()

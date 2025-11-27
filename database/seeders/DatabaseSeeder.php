@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class, // Seeder komprehensif untuk semua 244 permissions
             // Additional module permission seeders
             UangJalanBongkaranPermissionSeeder::class,
+            PranotaUangJalanBongkaranPermissionSeeder::class,
             AdminUserSeeder::class, // User admin dengan semua permissions
             
             // === LEGACY PERMISSION SEEDERS (Optional - mungkin sudah tercakup di PermissionSeeder) ===
@@ -35,6 +36,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class, // Pastikan user dibuat sebelum relasi permission
             UserPermissionSeeder::class, // Seeder untuk user permissions
             UserAdminSeeder::class, // Seeder untuk user_admin dengan semua permission
+            AssignPranotaUangJalanBongkaranPermissionsToAdminSeeder::class,
             
             // === MASTER DATA ===
             KontainerSeeder::class,

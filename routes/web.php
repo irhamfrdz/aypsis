@@ -1588,11 +1588,26 @@ Route::middleware(['auth'])->group(function () {
          ]);
 
      // Pranota Uang Jalan Bongkaran - list & basic management
-     Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
-           ->name('pranota-uang-jalan-bongkaran.index')
-           ->middleware('can:pranota-uang-jalan-view');
+          Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
+               ->name('pranota-uang-jalan-bongkaran.index')
+               ->middleware('can:pranota-uang-jalan-bongkaran-view');
 
-    // Print Pranota Uang Jalan
+     // Pranota Uang Jalan Bongkaran Management with permissions
+      Route::resource('pranota-uang-jalan-bongkaran', \App\Http\Controllers\PranotaUangJalanBongkaranController::class)
+             ->middleware([
+                  'index' => 'can:pranota-uang-jalan-bongkaran-view',
+                  'create' => 'can:pranota-uang-jalan-bongkaran-create',
+                  'store' => 'can:pranota-uang-jalan-bongkaran-create',
+                  'show' => 'can:pranota-uang-jalan-bongkaran-view',
+                  'edit' => 'can:pranota-uang-jalan-bongkaran-update',
+                  'update' => 'can:pranota-uang-jalan-bongkaran-update',
+                  'destroy' => 'can:pranota-uang-jalan-bongkaran-delete'
+             ]);
+
+     // Print Pranota Uang Jalan Bongkaran
+          Route::get('pranota-uang-jalan-bongkaran/{pranotaUangJalanBongkaran}/print', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'print'])
+               ->name('pranota-uang-jalan-bongkaran.print')
+               ->middleware('can:pranota-uang-jalan-bongkaran-view');
     Route::get('pranota-uang-jalan/{pranotaUangJalan}/print', [\App\Http\Controllers\PranotaSuratJalanController::class, 'print'])
          ->name('pranota-uang-jalan.print')
          ->middleware('can:pranota-uang-jalan-view');

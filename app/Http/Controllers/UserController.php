@@ -3080,6 +3080,28 @@ class UserController extends Controller
                         }
                     }
 
+                    // Handle pranota-uang-jalan-bongkaran permissions explicitly
+                    if ($module === 'pranota-uang-jalan-bongkaran' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'pranota-uang-jalan-bongkaran-view',
+                            'create' => 'pranota-uang-jalan-bongkaran-create',
+                            'update' => 'pranota-uang-jalan-bongkaran-update',
+                            'delete' => 'pranota-uang-jalan-bongkaran-delete',
+                            'approve' => 'pranota-uang-jalan-bongkaran-approve',
+                            'print' => 'pranota-uang-jalan-bongkaran-print',
+                            'export' => 'pranota-uang-jalan-bongkaran-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Handle approval-surat-jalan permissions explicitly
                     if ($module === 'approval-surat-jalan' && in_array($action, ['view', 'approve', 'reject', 'print', 'export'])) {
                         $actionMap = [
