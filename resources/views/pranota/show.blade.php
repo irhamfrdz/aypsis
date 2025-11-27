@@ -14,7 +14,7 @@
                     </svg>
                     Kembali
                 </a>
-                <a href="{{ route('pranota-kontainer-sewa.print', $pranota->id) }}" target="_blank"
+                <a href="{{ route('pranota-kontainer-sewa.print', $pranota->id) }}?paper_size=Folio" target="_blank"
                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -1141,5 +1141,25 @@ function tambahKontainerTerpilih() {
         });
     }
 }
+
+// Ensure Pranota print links include paper_size=Folio
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a').forEach(a => {
+        try {
+            const href = a.getAttribute('href');
+            if (!href) return;
+            if (href.includes('/pranota-kontainer-sewa/') && href.includes('/print') && !href.includes('paper_size=')) {
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = new URL(a.href, window.location.origin);
+                    url.searchParams.set('paper_size', 'Folio');
+                    window.open(url.toString(), a.target || '_blank');
+                });
+            }
+        } catch (err) {
+            // ignore invalid href or URL parsing errors
+        }
+    });
+});
 </script>
 @endsection

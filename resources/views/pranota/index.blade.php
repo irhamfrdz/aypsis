@@ -373,6 +373,24 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Ensure Pranota print links include paper_size=Folio
+    document.querySelectorAll('a').forEach(a => {
+        try {
+            const href = a.getAttribute('href');
+            if (!href) return;
+            if (href.includes('/pranota-kontainer-sewa/') && href.includes('/print') && !href.includes('paper_size=')) {
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = new URL(a.href, window.location.origin);
+                    url.searchParams.set('paper_size', 'Folio');
+                    window.open(url.toString(), a.target || '_blank');
+                });
+            }
+        } catch (err) {
+            // ignore invalid href or URL parsing errors
+        }
+    });
 });
 </script>
 
