@@ -334,81 +334,8 @@ function adjustAlertPosition() {
 window.addEventListener('load', adjustAlertPosition);
 window.addEventListener('resize', adjustAlertPosition);
 </script>
-@endsection
 
 @include('components.resizable-table')
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    initResizableTable('pranotaUangJalanBongkaranTable');
-});
-</script>
-@endpush
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-xs font-medium text-gray-600">Belum Bayar</p>
-                    <p class="text-2xl font-bold text-yellow-600">{{ $stats['unpaid'] ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-            <div class="flex items-center">
-                <div class="p-2 bg-emerald-100 rounded-lg">
-                    <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-xs font-medium text-gray-600">Lunas</p>
-                    <p class="text-2xl font-bold text-emerald-600">{{ $stats['paid'] ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters & Table similar to pranota-uang-jalan -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-        <form method="GET" action="{{ route('pranota-uang-jalan-bongkaran.index') }}">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nomor uang jalan bongkaran atau no kontainer..." class="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
-                    <select name="status" class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Semua Status</option>
-                        <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Lunas</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
-                    </select>
-                </div>
-
-                <div class="flex items-end space-x-2">
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center transition-colors">
-                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                        </svg>
-                        Filter
-                    </button>
-                    <a href="{{ route('pranota-uang-jalan-bongkaran.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">Reset</a>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- (Duplicate block removed: this view uses $pranotaUangJalanBongkarans for the table) -->
 </div>
 
 @push('scripts')
