@@ -691,6 +691,22 @@
                                 <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-bongkaran']['print']) && $userMatrixPermissions['surat-jalan-bongkaran']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-bongkaran']['export']) && $userMatrixPermissions['surat-jalan-bongkaran']['export']) checked @endif></td>
                             </tr>
+                            {{-- Uang Jalan Bongkaran --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Uang Jalan Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['view']) && $userMatrixPermissions['uang-jalan-bongkaran']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['create']) && $userMatrixPermissions['uang-jalan-bongkaran']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['update']) && $userMatrixPermissions['uang-jalan-bongkaran']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['delete']) && $userMatrixPermissions['uang-jalan-bongkaran']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                             {{-- Tanda Terima --}}
                             <tr class="submodule-row" data-parent="operational">
