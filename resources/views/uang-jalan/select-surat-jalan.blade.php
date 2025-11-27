@@ -147,7 +147,7 @@
                                        id="search" 
                                        name="search" 
                                        value="{{ $search }}" 
-                                       placeholder="Cari no surat jalan, supir, plat..."
+                                       placeholder="Cari no surat jalan, supir, plat, kontainer, pengirim..."
                                        class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             </div>
 
@@ -213,7 +213,7 @@
                         <label for="modal-search" class="block text-xs font-medium text-gray-700 mb-1">Search:</label>
                         <input type="text" 
                                id="modal-search" 
-                               placeholder="Cari no surat jalan, supir, plat..."
+                               placeholder="Cari no surat jalan, supir, plat, kontainer, pengirim..."
                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                onkeyup="filterSuratJalan()">
                     </div>
@@ -244,6 +244,9 @@
                                 <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-16" onclick="sortTable('no_plat')">
                                     Plat ↕
                                 </th>
+                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-20" onclick="sortTable('no_kontainer')">
+                                    No Kontainer ↕
+                                </th>
                                 <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-24" onclick="sortTable('pengirim')">
                                     Pengirim ↕
                                 </th>
@@ -257,13 +260,13 @@
                                     T.Kirim ↕
                                 </th>
                                 <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-16" onclick="sortTable('nama_barang')">
-                                    Barang ↕
+                                    Jenis Barang ↕
                                 </th>
                             </tr>
                         </thead>
                         <tbody id="suratJalanTableBody" class="bg-white divide-y divide-gray-100">
                             @forelse($suratJalans as $suratJalan)
-                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ $suratJalan->order && $suratJalan->order->pengirim ? addslashes($suratJalan->order->pengirim->nama_pengirim) : '' }}')">
+                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ addslashes($isBongkaran ? ($suratJalan->pengirim ?? '') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) }}', '{{ addslashes($suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '') }}')">
                                     <td class="px-1 py-1">
                                         <div class="text-xs font-medium text-blue-600 hover:text-blue-800 leading-tight">
                                             {{ $suratJalan->{$noField} }}
@@ -278,8 +281,11 @@
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="{{ $suratJalan->no_plat }}">
                                         {{ $suratJalan->no_plat }}
                                     </td>
-                                    <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-' }}">
-                                        {{ $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-' }}
+                                    <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '-' }}">
+                                        {{ $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '-' }}
+                                    </td>
+                                    <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $isBongkaran ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}">
+                                        {{ $isBongkaran ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}
                                     </td>
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="{{ $suratJalan->tujuan_pengambilan ?? '-' }}">
                                         {{ $suratJalan->tujuan_pengambilan ?? '-' }}
@@ -296,7 +302,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-2 py-4 text-center text-gray-500">
+                                    <td colspan="9" class="px-2 py-4 text-center text-gray-500">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-6 h-6 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -333,6 +339,18 @@ allSuratJalans = allSuratJalans.map(item => {
         } else if (item.nomor_surat) {
             item.no_surat_jalan = item.nomor_surat;
         }
+    }
+    // normalize container field
+    if (!item.no_kontainer) {
+        if (item.nomor_kontainer) {
+            item.no_kontainer = item.nomor_kontainer;
+        } else if (item.nomor_seri_gabungan) {
+            item.no_kontainer = item.nomor_seri_gabungan;
+        }
+    }
+    // normalize pengirim field - for bongkaran models that have direct pengirim field
+    if (!item.pengirim && item.order && item.order.pengirim) {
+        item.pengirim = item.order.pengirim.nama_pengirim;
     }
     return item;
 });
@@ -419,7 +437,7 @@ function closeSuratJalanModal() {
     document.body.style.overflow = 'auto';
 }
 
-function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim) {
+function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim, noKontainer) {
     // Set hidden input value
     document.getElementById('selected_surat_jalan_id').value = id;
     
@@ -447,6 +465,8 @@ function filterSuratJalan() {
         return (item.no_surat_jalan && item.no_surat_jalan.toLowerCase().includes(searchTerm)) ||
                (item.supir && item.supir.toLowerCase().includes(searchTerm)) ||
                (item.no_plat && item.no_plat.toLowerCase().includes(searchTerm)) ||
+               (item.no_kontainer && item.no_kontainer.toLowerCase().includes(searchTerm)) ||
+               (item.pengirim && item.pengirim.toLowerCase().includes(searchTerm)) ||
                (item.order && item.order.pengirim && item.order.pengirim.nama_pengirim && item.order.pengirim.nama_pengirim.toLowerCase().includes(searchTerm));
     });
     
@@ -478,9 +498,13 @@ function sortTable(column) {
                 aVal = a.no_plat || '';
                 bVal = b.no_plat || '';
                 break;
+            case 'no_kontainer':
+                aVal = a.no_kontainer || '';
+                bVal = b.no_kontainer || '';
+                break;
             case 'pengirim':
-                aVal = (a.order && a.order.pengirim) ? a.order.pengirim.nama_pengirim || '' : '';
-                bVal = (b.order && b.order.pengirim) ? b.order.pengirim.nama_pengirim || '' : '';
+                aVal = a.pengirim || (a.order && a.order.pengirim ? a.order.pengirim.nama_pengirim || '' : '');
+                bVal = b.pengirim || (b.order && b.order.pengirim ? b.order.pengirim.nama_pengirim || '' : '');
                 break;
             case 'tujuan_ambil':
                 aVal = a.tujuan_pengambilan || '';
@@ -521,12 +545,12 @@ function updateTableDisplay() {
     
     paginatedData.forEach(item => {
         const tanggal = item.tanggal_surat_jalan ? new Date(item.tanggal_surat_jalan).toLocaleDateString('id-ID') : '';
-        const pengirim = (item.order && item.order.pengirim) ? item.order.pengirim.nama_pengirim : '-';
+        const pengirim = item.pengirim || (item.order && item.order.pengirim ? item.order.pengirim.nama_pengirim : '-');
         const orderNo = item.order ? item.order.nomor_order : '';
         
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 cursor-pointer transition-colors';
-        row.onclick = () => selectSuratJalan(item.id, item.no_surat_jalan, item.supir, item.no_plat, tanggal, pengirim);
+        row.onclick = () => selectSuratJalan(item.id, item.no_surat_jalan, item.supir, item.no_plat, tanggal, pengirim, item.no_kontainer);
         
         row.innerHTML = `
             <td class="px-1 py-1">
@@ -540,6 +564,9 @@ function updateTableDisplay() {
             </td>
             <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="${item.no_plat || '-'}">
                 ${item.no_plat || '-'}
+            </td>
+            <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="${item.no_kontainer || '-'}">
+                ${item.no_kontainer || '-'}
             </td>
             <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="${pengirim}">
                 ${pengirim}

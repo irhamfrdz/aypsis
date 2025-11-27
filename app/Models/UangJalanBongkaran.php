@@ -118,18 +118,32 @@ class UangJalanBongkaran extends Model
     }
 
     /**
-     * Get status label
+     * Generate nomor uang jalan bongkaran otomatis
+     * Format: UJB + 2 digit bulan + 2 digit tahun + 6 digit running number
+     * Running number tidak direset setiap bulan (kontinyu)
      */
-    public function getStatusLabel()
+    public static function generateNomorUangJalan()
     {
-        $statusLabels = [
-            'belum_dibayar' => 'Belum Bayar',
-            'belum_masuk_pranota' => 'Belum Pranota',
-            'sudah_masuk_pranota' => 'Sudah Pranota',
-            'lunas' => 'Lunas',
-            'dibatalkan' => 'Batal'
-        ];
-
-        return $statusLabels[$this->status] ?? ucfirst($this->status);
+        $now = now();
+        $month = $now->format('m'); // 2 digit bulan
+        $year = $now->format('y');  // 2 digit tahun
+        
+        // Ambil nomor urut terakhir dari semua record (tidak filter berdasarkan bulan/tahun)
+        // Urutkan berdasarkan nomor uang jalan untuk mendapatkan running number terbesar
+        $lastRecord = static::whereNotNull('nomor_uang_jalan')
+                           ->where('nomor_uang_jalan', 'LIKE', 'UJB%')
+                           ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
+                           ->first();
+        
+        $runningNumber = 1;
+        
+        if ($lastRecord && $lastRecord->nomor_uang_jalan) {
+            // Extract running number dari nomor terakhir (6 digit terakhir)
+            $lastNumber = substr($lastRecord->nomor_uang_jalan, -6);
+            $runningNumber = intval($lastNumber) + 1;
+        }
+        
+        // Format: UJB + 2 digit bulan + 2 digit tahun + 6 digit running number
+        return 'UJB' . $month . $year . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
     }
 }

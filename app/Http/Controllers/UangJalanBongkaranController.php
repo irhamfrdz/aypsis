@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBongkaran;
 use App\Models\UangJalanBongkaran;
+use App\Models\MasterPricelistUangJalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -70,9 +71,29 @@ class UangJalanBongkaranController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        return view('uang-jalan-bongkaran.create');
+        $suratJalanBongkaran = null;
+        $nomorUangJalan = null;
+
+        if ($request->has('surat_jalan_bongkaran_id')) {
+            $suratJalanBongkaran = SuratJalanBongkaran::find($request->surat_jalan_bongkaran_id);
+            
+            // Calculate uang jalan from pricelist if available, otherwise use existing value
+            if ($suratJalanBongkaran) {
+                $calculatedUangJalan = $this->calculateUangJalanFromPricelist($suratJalanBongkaran);
+                if ($calculatedUangJalan > 0) {
+                    $suratJalanBongkaran->uang_jalan = $calculatedUangJalan;
+                }
+            }
+        }
+
+        // Generate nomor uang jalan if surat jalan is selected
+        if ($suratJalanBongkaran) {
+            $nomorUangJalan = UangJalanBongkaran::generateNomorUangJalan();
+        }
+
+        return view('uang-jalan-bongkaran.create', compact('suratJalanBongkaran', 'nomorUangJalan'));
     }
 
     /**
@@ -227,18 +248,36 @@ class UangJalanBongkaranController extends Controller
     }
 
     /**
-     * Show form to create uang jalan for selected surat jalan bongkaran
+     * Calculate uang jalan from pricelist based on route
      */
-    public function createFromSuratJalan(SuratJalanBongkaran $suratJalanBongkaran)
+    private function calculateUangJalanFromPricelist(SuratJalanBongkaran $suratJalanBongkaran)
     {
-        // Check if uang jalan already exists for this surat jalan
-        $existingUangJalan = UangJalanBongkaran::where('surat_jalan_bongkaran_id', $suratJalanBongkaran->id)->first();
+        // Try to find pricelist based on dari (asal) and ke (tujuan)
+        $dari = $suratJalanBongkaran->tujuan_pengambilan ?? '';
+        $ke = $suratJalanBongkaran->tujuan_pengiriman ?? '';
+        $ukuran = $suratJalanBongkaran->size ?? '20';
 
-        if ($existingUangJalan) {
-            return redirect()->route('uang-jalan-bongkaran.edit', $existingUangJalan)
-                            ->with('warning', 'Uang jalan untuk surat jalan ini sudah ada.');
+        if (empty($dari) || empty($ke)) {
+            return 0;
         }
 
-        return view('uang-jalan-bongkaran.create', compact('suratJalanBongkaran'));
+        // Search for active pricelist
+        $pricelist = MasterPricelistUangJalan::active()
+            ->where(function ($query) use ($dari, $ke) {
+                $query->where(function ($q) use ($dari, $ke) {
+                    $q->where('dari', 'LIKE', "%{$dari}%")
+                      ->where('ke', 'LIKE', "%{$ke}%");
+                })->orWhere(function ($q) use ($dari, $ke) {
+                    $q->where('dari', 'LIKE', "%{$ke}%")
+                      ->where('ke', 'LIKE', "%{$dari}%");
+                });
+            })
+            ->first();
+
+        if ($pricelist) {
+            return $pricelist->getUangJalanBySize($ukuran);
+        }
+
+        return 0;
     }
 }

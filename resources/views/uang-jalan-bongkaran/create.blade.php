@@ -29,7 +29,7 @@
                 <div class="flex-1">
                     <h4 class="text-xs font-medium text-blue-800 mb-2">Surat Jalan Bongkaran Terpilih</h4>
                     @if(isset($suratJalanBongkaran))
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs text-blue-700">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs text-blue-700 min-w-0">
                         <div>
                             <span class="font-medium">No. SJ:</span>
                             <div>{{ $suratJalanBongkaran->nomor_surat_jalan }}</div>
@@ -50,8 +50,8 @@
                             <span class="font-medium">No. Plat:</span>
                             <div>{{ $suratJalanBongkaran->no_plat ?? '-' }}</div>
                         </div>
-                        @endif
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
 
             <div class="mb-6">
                 <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Informasi Pembayaran</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
                     <!-- Nomor Uang Jalan -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Uang Jalan <span class="text-red-600">*</span></label>
@@ -114,13 +114,31 @@
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status <span class="text-red-600">*</span></label>
+                        <select name="status"
+                                required
+                                class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
+                            <option value="">Pilih Status</option>
+                            @foreach(\App\Models\UangJalanBongkaran::getStatusOptions() as $key => $label)
+                                <option value="{{ $key }}" {{ old('status', 'belum_dibayar') == $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('status')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 
             <!-- Komponen Biaya -->
             <div class="mb-6">
                 <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Komponen Biaya</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-w-0">
 
                     <!-- Jumlah Uang Jalan -->
                     <div>
@@ -130,7 +148,7 @@
                             <input type="number"
                                    name="jumlah_uang_jalan"
                                    id="jumlah_uang_jalan"
-                                   value="{{ old('jumlah_uang_jalan', intval($suratJalanBongkaran->uang_jalan ?? 0)) }}"
+                                   value="{{ old('jumlah_uang_jalan', intval(($suratJalanBongkaran->uang_jalan_nominal ?? 0) ?: ($suratJalanBongkaran->uang_jalan ?? 0) ?: ($suratJalanBongkaran->total_tarif ?? 0))) }}"
                                    min="0"
                                    step="1"
                                    required
@@ -320,7 +338,7 @@
                     <div class="flex-1">
                         <h4 class="text-xs font-medium text-yellow-800 mb-1">Ringkasan</h4>
                         <div class="text-xs text-yellow-700">
-                            <div class="grid grid-cols-3 gap-3 mb-2">
+                            <div class="grid grid-cols-3 gap-3 mb-2 min-w-0">
                                 <div>
                                     <span class="font-medium">Supir:</span> {{ $suratJalanBongkaran->supir ?? '-' }}
                                 </div>
