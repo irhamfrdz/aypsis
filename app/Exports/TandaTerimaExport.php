@@ -15,7 +15,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class TandaTerimaExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
+class TandaTerimaExport implements FromCollection, WithStyles, ShouldAutoSize
 {
     protected $tandaTerimaIds;
 
@@ -151,22 +151,6 @@ class TandaTerimaExport implements FromCollection, WithHeadings, WithStyles, Sho
         }
 
         return $rows;
-    }
-
-    public function headings(): array
-    {
-        return [
-            'CONTAINER_NO',
-            'SIZE',
-            'TIPE',
-            'STATUS',
-            'BERAT',
-            'EXPIRED_DATE',
-            'CONSIGNEE',
-            'REMARK',
-            'POD',
-            'BOX_OPR'
-        ];
     }
 
     public function styles(Worksheet $sheet)
