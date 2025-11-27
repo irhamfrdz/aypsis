@@ -69,6 +69,18 @@ class DaftarTagihanKontainerSewaController extends Controller
                                              ->unique()
                                              ->values();
 
+            // Determine if we should expand to matching groups or not. Respect explicit request('search_mode')
+            $explicitMode = $request->input('search_mode');
+            $autoGroupMode = $groupNames->isNotEmpty();
+            // If explicit 'group' requested -> true, explicit 'normal' -> false, else fallback to auto detect
+            if ($explicitMode === 'group') {
+                $useGroupExpansion = true;
+            } elseif ($explicitMode === 'normal') {
+                $useGroupExpansion = false;
+            } else {
+                $useGroupExpansion = $autoGroupMode;
+            }
+
             // Now apply the filter: show direct matches OR containers in the same groups
             $query->where(function ($q) use ($searchTerm, $groupNames, $sanitizedSearch) {
                 // Show containers that directly match the search term
@@ -79,8 +91,8 @@ class DaftarTagihanKontainerSewaController extends Controller
                          ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
                 });
 
-                // OR show all containers that belong to the same groups as matching containers
-                if ($groupNames->isNotEmpty()) {
+                // OR show all containers that belong to the same groups as matching containers (only if we should expand groups)
+                if ($useGroupExpansion && $groupNames->isNotEmpty()) {
                     $q->orWhereIn('group', $groupNames);
                 }
             });
