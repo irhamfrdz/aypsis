@@ -154,7 +154,7 @@
         tfoot { display: table-footer-group; }
 
         /* When invoices exist, force container table to start on a new page */
-        .container-table { page-break-before: always; break-before: page; -webkit-break-before: page; }
+        .container-table { page-break-before: always; break-before: page; -webkit-break-before: page; table-layout: auto; }
 
         .table th,
         .table td {
