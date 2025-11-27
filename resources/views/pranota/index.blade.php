@@ -183,7 +183,7 @@
                                     </a>
 
                                     <!-- Print Button -->
-                                    <a href="{{ route('pranota-kontainer-sewa.print', $pranota->id) }}" target="_blank"
+                                                <a href="{{ route('pranota-kontainer-sewa.print', $pranota->id) }}?paper_size=Folio" target="_blank"
                                        class="text-blue-600 hover:text-blue-900"
                                        title="Print Pranota">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -2,7 +2,7 @@
 <html lang="id">
 @php
     // Get paper size from request or default to Half-A4
-    $paperSize = request('paper_size', 'Half-A4');
+    $paperSize = request('paper_size', 'Folio');
 
     // Define paper dimensions and styles
     $paperMap = [
