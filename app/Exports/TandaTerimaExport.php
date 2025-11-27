@@ -130,7 +130,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
             // Add RO header row
             $rows->push([
                 'RO NOMOR : ' . ($nomorRo ?: 'N/A'),
-                '', '', '', '', '', '', '', ''
+                '', '', '', '', '', '', '', '', ''
             ]);
 
             // Add column headers
@@ -143,7 +143,8 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                 'EXPIRED_DATE',
                 'CONSIGNEE',
                 'REMARK',
-                'POD'
+                'POD',
+                'BOX_OPR'
             ]);
 
             // Add data for this RO
@@ -153,16 +154,17 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                     $tandaTerima->size ?? '',                   // SIZE
                     $this->getContainerType($tandaTerima->no_kontainer), // TIPE
                     $this->getStatus($tandaTerima->kegiatan),   // STATUS (F/E)
-                    15000,                                       // BERAT fixed
+                    $tandaTerima->tonase ?? '',                 // BERAT
                     $this->formatExpiredDate($tandaTerima->expired_date), // EXPIRED_DATE
                     '02522267',                                 // CONSIGNEE (fixed value)
                     '',                                         // REMARK (kosong)
-                    $this->getPod($tandaTerima->tujuan_pengiriman) // POD (IDBTM/IDKID)
+                    $this->getPod($tandaTerima->tujuan_pengiriman), // POD (IDBTM/IDKID)
+                    ''                                          // BOX_OPR (kosong)
                 ]);
             }
 
             // Add empty row between RO groups
-            $rows->push(['', '', '', '', '', '', '', '', '']);
+            $rows->push(['', '', '', '', '', '', '', '', '', '']);
         }
 
         return $rows;
@@ -218,22 +220,22 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                 for ($row = 1; $row <= $highestRow; $row++) {
                     $firstCell = (string) $sheet->getCell('A' . $row)->getValue();
                     if ($firstCell !== null && str_starts_with(trim($firstCell), 'RO NOMOR :')) {
-                        // Merge the row across A:I (removed BOX_OPR column)
-                        $sheet->mergeCells("A{$row}:I{$row}");
+                        // Merge the row across A:J
+                        $sheet->mergeCells("A{$row}:J{$row}");
                         $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
                     }
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
                     if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {
-                        $sheet->getStyle("A{$row}:I{$row}")->applyFromArray($headerStyle);
+                        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray($headerStyle);
                         // Set wrap text and center alignment for header
-                        $sheet->getStyle("A{$row}:I{$row}")->getAlignment()->setWrapText(true);
+                        $sheet->getStyle("A{$row}:J{$row}")->getAlignment()->setWrapText(true);
                         $sheet->getRowDimension($row)->setRowHeight(22);
                     }
                 }
 
                 // Optionally set column widths minimum or rely on ShouldAutoSize
-                foreach (range('A', 'I') as $col) {
+                foreach (range('A', 'J') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },
