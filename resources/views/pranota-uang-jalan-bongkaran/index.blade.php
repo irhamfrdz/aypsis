@@ -265,44 +265,6 @@
     @if(session('error'))
         <div class="fixed top-4 right-4 z-50 max-w-sm bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg" id="error-alert">
             <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                </svg>
-            </div>
-            <div class="ml-3">
-                <p class="text-sm font-medium">{{ session('error') }}</p>
-            </div>
-            <div class="ml-auto pl-3">
-                <div class="-mx-1.5 -my-1.5">
-                    <button type="button" class="inline-flex bg-red-100 rounded-md p-1.5 text-red-500 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-100 focus:ring-red-600" onclick="document.getElementById('error-alert').remove()">
-                        <span class="sr-only">Dismiss</span>
-                        <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <!-- Validation Errors -->
-    @if($errors->any())
-        <div class="fixed top-4 right-4 z-50 max-w-sm bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg" id="validation-errors">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                </svg>
-            </div>
-            <div class="ml-3">
-                <h4 class="text-sm font-medium">Terdapat kesalahan:</h4>
-                <ul class="mt-1 text-sm list-disc list-inside space-y-1">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
             <div class="ml-auto pl-3">
                 <div class="-mx-1.5 -my-1.5">
                     <button type="button" class="inline-flex bg-red-100 rounded-md p-1.5 text-red-500 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-100 focus:ring-red-600" onclick="document.getElementById('validation-errors').remove()">
@@ -446,45 +408,7 @@ $(document).ready(function() {
         </form>
     </div>
 
-    <!-- Table of Uang Jalan Bongkaran entries -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pranotaUangJalanBongkaranTable">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-xs font-semibold">No</th>
-                        <th class="px-2 py-2 text-xs font-semibold">No Uang Jalan</th>
-                        <th class="px-2 py-2 text-xs font-semibold">Tanggal</th>
-                        <th class="px-2 py-2 text-xs font-semibold">Supir</th>
-                        <th class="px-2 py-2 text-xs font-semibold text-right">Total</th>
-                        <th class="px-2 py-2 text-xs font-semibold text-center">Status</th>
-                        <th class="px-2 py-2 text-xs font-semibold text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($rows as $i => $row)
-                        <tr>
-                            <td class="px-2 py-2 text-sm">{{ $rows->firstItem() + $i }}</td>
-                            <td class="px-2 py-2 text-sm">{{ $row->nomor_uang_jalan }}</td>
-                            <td class="px-2 py-2 text-sm">{{ $row->tanggal_uang_jalan?->format('d/m/Y') }}</td>
-                            <td class="px-2 py-2 text-sm">{{ $row->supir }}</td>
-                            <td class="px-2 py-2 text-sm text-right">Rp {{ number_format($row->jumlah_total ?? 0, 0, ',', '.') }}</td>
-                            <td class="px-2 py-2 text-sm text-center">{{ $row->status }}</td>
-                            <td class="px-2 py-2 text-sm text-center">-</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7" class="px-2 py-8 text-center">Belum ada data</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if($rows->hasPages())
-            <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
-                {{ $rows->links() }}
-            </div>
-        @endif
-    </div>
+    <!-- (Duplicate block removed: this view uses $pranotaUangJalanBongkarans for the table) -->
 </div>
 
 @push('scripts')
