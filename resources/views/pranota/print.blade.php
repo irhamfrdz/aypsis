@@ -200,7 +200,7 @@
 
         @media print {
             .no-print {
-                display: none;
+                display: none !important;
             }
             
             * {
@@ -418,6 +418,20 @@
             const printBtn = document.getElementById('startPrint');
             if (printBtn) {
                 printBtn.addEventListener('click', function() {
+                    // Hide the overlay just before printing so it doesn't appear on the printed output
+                    const overlay = document.querySelector('.no-print');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                    }
+
+                    // Use before/after print hooks where supported
+                    if (window.matchMedia) {
+                        // In some browsers, the print dialog still renders view, so also set styles directly
+                        window.onafterprint = function() {
+                            if (overlay) overlay.style.display = '';
+                        };
+                    }
+
                     // Trigger print; this allows the user to change the paper size selector before the dialog appears
                     window.print();
                 });
