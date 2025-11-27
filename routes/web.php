@@ -2351,6 +2351,11 @@ Route::get('/test-gate-in-ajax', function () {
                     ->name('daftar-tagihan-kontainer-sewa.group-info.update')
                     ->middleware('can:tagihan-kontainer-sewa-update');
 
+               // AJAX endpoint: compute DPP from pricelist (for create/edit forms)
+               Route::get('daftar-tagihan-kontainer-sewa/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'getPricelistForDpp'])
+                    ->name('daftar-tagihan-kontainer-sewa.get_pricelist')
+                    ->middleware('can:tagihan-kontainer-sewa-create');
+
                // Generate invoice number (must be before resource routes to avoid conflict)
                Route::get('daftar-tagihan-kontainer-sewa/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'generateInvoiceNumber'])
                     ->name('daftar-tagihan-kontainer-sewa.generate-invoice-number')

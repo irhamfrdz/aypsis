@@ -284,12 +284,13 @@
                                 DPP
                             </label>
                             <input type="number" 
-                                   name="dpp" 
-                                   id="dpp" 
-                                   value="{{ old('dpp', 0) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   step="0.01"
-                                   placeholder="0">
+                                name="dpp" 
+                                id="dpp" 
+                                value="{{ old('dpp', 0) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
+                                readonly
+                                step="0.01"
+                                placeholder="0">
                             @error('dpp')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -416,6 +417,12 @@
 function filterContainersByVendor() {
     const vendorSelect = document.getElementById('vendor');
     const containerSelect = document.getElementById('nomor_kontainer');
+    const vendorSelect = document.getElementById('vendor');
+    const sizeSelect = document.getElementById('size');
+    const tarifSelect = document.getElementById('tarif');
+    const tanggalAwalInput = document.getElementById('tanggal_awal');
+    const tanggalAkhirInput = document.getElementById('tanggal_akhir');
+    const periodeInput = document.getElementById('periode');
     const selectedVendor = vendorSelect.value;
     
     // Reset container selection
@@ -574,11 +581,55 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Listen to container selection changes
     containerSelect.addEventListener('change', fillContainerSize);
+    // Listen to vendor/size/tarif/date/period changes to fetch pricelist and auto-fill DPP
+    if (vendorSelect) vendorSelect.addEventListener('change', fetchPricelistDpp);
+    if (sizeSelect) sizeSelect.addEventListener('change', fetchPricelistDpp);
+    if (tarifSelect) tarifSelect.addEventListener('change', fetchPricelistDpp);
+    if (tanggalAwalInput) tanggalAwalInput.addEventListener('change', fetchPricelistDpp);
+    if (tanggalAkhirInput) tanggalAkhirInput.addEventListener('change', fetchPricelistDpp);
+    if (periodeInput) periodeInput.addEventListener('input', fetchPricelistDpp);
     
     // Setup date formatting for all date inputs
     setupDateFormatting('tanggal_awal');
     setupDateFormatting('tanggal_akhir');
     setupDateFormatting('tanggal_invoice_vendor');
+
+    // Fetch computed DPP & taxes from pricelist API
+    function fetchPricelistDpp() {
+        const vendor = (vendorSelect && vendorSelect.value) ? vendorSelect.value : '';
+        const size = (sizeSelect && sizeSelect.value) ? sizeSelect.value : '';
+        const tarif = (tarifSelect && tarifSelect.value) ? tarifSelect.value : '';
+        const tanggal_awal = (tanggalAwalInput && tanggalAwalInput.value) ? tanggalAwalInput.value : '';
+        const tanggal_akhir = (tanggalAkhirInput && tanggalAkhirInput.value) ? tanggalAkhirInput.value : '';
+        const periode = (periodeInput && periodeInput.value) ? periodeInput.value : '';
+
+        if (!vendor || !size) return; // vendor & size required to compute pricelist
+
+        const params = new URLSearchParams({ vendor, size, tarif, tanggal_awal, tanggal_akhir, periode });
+        const url = '{{ route('daftar-tagihan-kontainer-sewa.get_pricelist') }}' + '?' + params.toString();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(data => {
+                if (!data || !data.success) return;
+                dppInput.value = parseFloat(data.dpp || 0).toFixed(2);
+                dppNilaiLainInput.value = parseFloat(data.dpp_nilai_lain || 0).toFixed(2);
+                ppnInput.value = parseFloat(data.ppn || 0).toFixed(2);
+                pphInput.value = parseFloat(data.pph || 0).toFixed(2);
+                grandTotalInput.value = parseFloat(data.grand_total || 0).toFixed(2);
+                if (data.tarif) {
+                    for (let i = 0; i < tarifSelect.options.length; i++) {
+                        if (tarifSelect.options[i].text.toLowerCase() === data.tarif.toLowerCase()) {
+                            tarifSelect.value = tarifSelect.options[i].value; break;
+                        }
+                    }
+                }
+                // Recompute derived values and ensure events are triggered
+                calculateDppNilaiLain();
+                calculatePph();
+            })
+            .catch(err => { if (window.console) console.warn('fetchPricelistDpp failed', err); });
+    }
 
     function parseNumber(str) {
         if (!str) return 0;
@@ -665,6 +716,8 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateDppNilaiLain();
         calculatePph();
     }
+    // Attempt to fetch pricelist DPP on load if vendor/size available
+    fetchPricelistDpp();
 });
 </script>
 @endpush

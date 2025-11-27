@@ -234,6 +234,119 @@ class DaftarTagihanKontainerSewaController extends Controller
         return view('daftar-tagihan-kontainer-sewa.create', compact('containersData', 'vendors'));
     }
 
+    /**
+     * API: Get computed DPP and taxes based on selected vendor/size/tarif/date
+     */
+    public function getPricelistForDpp(Request $request)
+    {
+        $vendor = $request->input('vendor');
+        $size = $request->input('size') ?: $request->input('ukuran_kontainer');
+        $tarif = $request->input('tarif');
+        $tanggal_awal = $request->input('tanggal_awal');
+        $tanggal_akhir = $request->input('tanggal_akhir');
+        $periode = $request->input('periode');
+
+        // Convert dates
+        try {
+            $baseStart = $tanggal_awal ? Carbon::parse($tanggal_awal)->startOfDay() : Carbon::now()->startOfDay();
+        } catch (\Exception $e) {
+            $baseStart = Carbon::now()->startOfDay();
+        }
+
+        // If periode is provided, compute the start date for that periode
+        if ($periode && is_numeric($periode) && $periode > 0) {
+            $p = intval($periode);
+            $periodStart = $baseStart->copy()->addMonthsNoOverflow($p-1);
+        } else {
+            $periodStart = $baseStart;
+        }
+
+        // Determine days in the period
+        if ($periode && is_numeric($periode) && $periode > 0) {
+            // Compute days for the given periode (from scripts logic)
+            $periodStartLocal = $periodStart->copy();
+            $periodEndLocal = $periodStartLocal->copy()->addMonthsNoOverflow(1)->subDay();
+            if ($tanggal_akhir) {
+                try {
+                    $endCap = Carbon::parse($tanggal_akhir)->startOfDay();
+                    if ($periodEndLocal->gt($endCap)) $periodEndLocal = $endCap;
+                } catch (\Exception $e) {}
+            }
+            if ($periodEndLocal->lt($periodStartLocal)) $periodEndLocal = $periodStartLocal->copy();
+            $daysInPeriod = $periodStartLocal->diffInDays($periodEndLocal) + 1;
+        } else if ($tanggal_akhir) {
+            try {
+                $end = Carbon::parse($tanggal_akhir)->startOfDay();
+                $daysInPeriod = $baseStart->diffInDays($end) + 1;
+            } catch (\Exception $e) {
+                $daysInPeriod = 1;
+            }
+        } else {
+            $daysInPeriod = 1;
+        }
+
+        $fullMonthLen = $periodStart->copy()->endOfMonth()->day;
+
+        // Query pricelist with the same logic as the import scripts
+        $pr = null;
+        if ($size) {
+            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
+                ->where('vendor', $vendor)
+                ->where(function($q) use ($periodStart){
+                    $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
+                      ->where(function($q2) use ($periodStart){ $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir','>=',$periodStart->toDateString()); });
+                })->orderBy('tanggal_harga_awal','desc')->first();
+        }
+        if (!$pr && $size) {
+            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
+                ->where(function($q) use ($periodStart){
+                    $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
+                      ->where(function($q2) use ($periodStart){ $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir','>=',$periodStart->toDateString()); });
+                })->orderBy('tanggal_harga_awal','desc')->first();
+        }
+        if (!$pr && $size && $vendor) {
+            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)->where('vendor',$vendor)->orderBy('tanggal_harga_awal','desc')->first();
+        }
+        if (!$pr && $size) {
+            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)->orderBy('tanggal_harga_awal','desc')->first();
+        }
+
+        $dppComputed = 0.0;
+        $tarifLabel = '';
+        if ($pr) {
+            $harga = (float)$pr->harga;
+            $prTarif = strtolower((string)$pr->tarif);
+            if (strpos($prTarif,'harian')!==false) {
+                $dppComputed = round($harga * $daysInPeriod,2);
+                $tarifLabel = 'Harian';
+            } else {
+                if ($daysInPeriod >= $fullMonthLen) {
+                    $dppComputed = round($harga,2);
+                    $tarifLabel = 'Bulanan';
+                } else {
+                    $dppComputed = round($harga * ($daysInPeriod/$fullMonthLen),2);
+                    $tarifLabel = 'Harian';
+                }
+            }
+        }
+
+        $dpp_nilai_lain = round($dppComputed * 11/12,2);
+        $ppn = round($dpp_nilai_lain * 0.12,2);
+        $pph = round($dppComputed * 0.02,2);
+        $grand_total = round($dppComputed + $ppn - $pph,2);
+
+        return response()->json([
+            'success' => true,
+            'dpp' => $dppComputed,
+            'dpp_nilai_lain' => $dpp_nilai_lain,
+            'ppn' => $ppn,
+            'pph' => $pph,
+            'grand_total' => $grand_total,
+            'tarif' => $tarifLabel,
+            'pricelist' => $pr ? $pr->toArray() : null
+        ]);
+    }
+
 
 
     /**
