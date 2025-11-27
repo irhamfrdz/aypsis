@@ -99,6 +99,10 @@
                             <p class="text-gray-900">{{ $suratJalanBongkaran->pengirim ?: '-' }}</p>
                         </div>
                         <div>
+                            <label class="text-sm font-medium text-gray-500">Jenis Barang</label>
+                            <p class="text-gray-900">{{ $suratJalanBongkaran->jenis_barang ?: '-' }}</p>
+                        </div>
+                        <div>
                             <label class="text-sm font-medium text-gray-500">Tujuan Alamat</label>
                             <p class="text-gray-900">{{ $suratJalanBongkaran->tujuan_alamat ?: '-' }}</p>
                         </div>

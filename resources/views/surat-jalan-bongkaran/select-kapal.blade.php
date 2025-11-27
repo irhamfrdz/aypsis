@@ -65,6 +65,7 @@
                     <!-- Hidden fields for container details -->
                     <input type="hidden" name="container_seal" id="container_seal">
                     <input type="hidden" name="container_size" id="container_size">
+                    <input type="hidden" name="jenis_barang" id="jenis_barang">
                 </div>
 
                 <!-- Action Buttons -->
@@ -189,6 +190,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (container.size) {
                 option.setAttribute('data-size', container.size);
             }
+            if (container.nama_barang) {
+                option.setAttribute('data-nama-barang', container.nama_barang);
+            }
             // Maintain selected value if exists
             if (container.value === "{{ request('no_bl') }}") {
                 option.selected = true;
@@ -208,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const containerData = {
                 no_seal: selectedOption.getAttribute('data-no-seal') || '',
                 size: selectedOption.getAttribute('data-size') || '',
-                nomor_bl: selectedOption.getAttribute('data-nomor-bl') || ''
+                nomor_bl: selectedOption.getAttribute('data-nomor-bl') || '',
+                nama_barang: selectedOption.getAttribute('data-nama-barang') || ''
             };
             updateContainerFields(containerData);
         } else {
@@ -220,12 +225,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateContainerFields(containerData) {
         const sealField = document.getElementById('container_seal');
         const sizeField = document.getElementById('container_size');
+        const jenisBarangField = document.getElementById('jenis_barang');
         
         if (sealField) {
             sealField.value = containerData.no_seal || '';
         }
         if (sizeField) {
             sizeField.value = containerData.size || '';
+        }
+        if (jenisBarangField) {
+            jenisBarangField.value = containerData.nama_barang || '';
         }
     }
     
@@ -266,6 +275,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (selectedBl.getAttribute('data-size')) {
                 params.append('container_size', selectedBl.getAttribute('data-size'));
+            }
+            if (selectedBl.getAttribute('data-nama-barang')) {
+                params.append('jenis_barang', selectedBl.getAttribute('data-nama-barang'));
             }
         }
         

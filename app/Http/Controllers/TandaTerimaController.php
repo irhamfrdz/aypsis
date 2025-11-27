@@ -477,10 +477,25 @@ class TandaTerimaController extends Controller
                 $suratJalan->update($suratJalanUpdate);
             }
 
+            // Update related Prospek data for newly created TandaTerima
+            $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
+
+            Log::info('Tanda terima created', [
+                'tanda_terima_id' => $tandaTerima->id,
+                'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                'created_by' => Auth::user() ? Auth::user()->name : null,
+                'prospeks_updated' => $updatedProspekCount,
+            ]);
+
             DB::commit();
 
+            $successMessage = 'Tanda terima berhasil dibuat dan data telah disinkronkan ke surat jalan';
+            if ($updatedProspekCount > 0) {
+                $successMessage .= " Berhasil mengupdate {$updatedProspekCount} prospek terkait dengan data volume, tonase, dan kuantitas terbaru.";
+            }
+
             return redirect()->route('tanda-terima.show', $tandaTerima->id)
-                ->with('success', 'Tanda terima berhasil dibuat dan data telah disinkronkan ke surat jalan');
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1164,19 +1179,40 @@ class TandaTerimaController extends Controller
                 }
             }
 
-            // Priority 2: Use single meter_kubik and tonase values if dimensi_items not available
-            if ($totalVolume == 0 && $request->filled('meter_kubik')) {
-                // Round to 3 decimal places to avoid excessive precision
+            // Priority 2: Use arrays meter_kubik[] and tonase[] if provided
+            if ($totalVolume == 0 && $request->has('meter_kubik') && is_array($request->meter_kubik)) {
+                foreach ($request->meter_kubik as $mv) {
+                    if (is_numeric($mv)) {
+                        $totalVolume += round((float) $mv, 3);
+                    }
+                }
+            }
+            // Fallback to single meter_kubik scalar (if provided)
+            if ($totalVolume == 0 && $request->filled('meter_kubik') && !is_array($request->meter_kubik)) {
                 $totalVolume = round((float) $request->meter_kubik, 3);
             }
-            if ($totalTonase == 0 && $request->filled('tonase')) {
-                // Round to 3 decimal places to avoid excessive precision
+
+            if ($totalTonase == 0 && $request->has('tonase') && is_array($request->tonase)) {
+                foreach ($request->tonase as $t) {
+                    if (is_numeric($t)) {
+                        $totalTonase += round((float) $t, 3);
+                    }
+                }
+            }
+            // Fallback to single tonase scalar (if provided)
+            if ($totalTonase == 0 && $request->filled('tonase') && !is_array($request->tonase)) {
                 $totalTonase = round((float) $request->tonase, 3);
             }
 
-            // Calculate kuantitas from jumlah_kontainer array or single jumlah
+            // Calculate kuantitas from jumlah_kontainer or jumlah[] arrays, or single jumlah
             if ($request->has('jumlah_kontainer') && is_array($request->jumlah_kontainer)) {
                 foreach ($request->jumlah_kontainer as $jumlah) {
+                    if (is_numeric($jumlah)) {
+                        $kuantitas += (int) $jumlah;
+                    }
+                }
+            } elseif ($request->has('jumlah') && is_array($request->jumlah)) {
+                foreach ($request->jumlah as $jumlah) {
                     if (is_numeric($jumlah)) {
                         $kuantitas += (int) $jumlah;
                     }

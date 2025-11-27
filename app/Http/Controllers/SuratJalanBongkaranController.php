@@ -53,6 +53,7 @@ class SuratJalanBongkaranController extends Controller
                   ->orWhere('no_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_seal', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
                   ->orWhere('tujuan_alamat', 'like', "%{$search}%");
             });
         }
@@ -137,7 +138,7 @@ class SuratJalanBongkaranController extends Controller
         $bls = Bl::where('nama_kapal', $selectedKapalName)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
-              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal']);
+              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
 
         // Group by voyage and get unique voyages
         $voyages = $bls->pluck('no_voyage')->unique()->values();
@@ -162,7 +163,8 @@ class SuratJalanBongkaranController extends Controller
                     'nomor_bl' => $item->nomor_bl,
                     'nomor_kontainer' => $item->nomor_kontainer,
                     'no_seal' => $item->no_seal,
-                    'size' => $item->size_kontainer ?: $item->tipe_kontainer
+                    'size' => $item->size_kontainer ?: $item->tipe_kontainer,
+                    'nama_barang' => $item->nama_barang
                 ];
             })->values();
         });
@@ -248,7 +250,7 @@ class SuratJalanBongkaranController extends Controller
             $selectedContainer = Bl::where('nama_kapal', $selectedKapalName)
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $request->no_bl)
-                                   ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan']);
+                                   ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
                                    
             // Debug: log the container data
             if ($selectedContainer) {
@@ -261,6 +263,7 @@ class SuratJalanBongkaranController extends Controller
                     'penerima' => $selectedContainer->penerima,
                     'alamat_pengiriman' => $selectedContainer->alamat_pengiriman,
                     'pelabuhan_tujuan' => $selectedContainer->pelabuhan_tujuan,
+                    'nama_barang' => $selectedContainer->nama_barang,
                 ]);
             }
         }
@@ -274,7 +277,8 @@ class SuratJalanBongkaranController extends Controller
                 'tipe_kontainer' => $request->container_size ?? '',
                 'pengirim' => $request->pengirim ?? '',
                 'penerima' => $request->pengirim ?? '',
-                'alamat_pengiriman' => $request->alamat_pengiriman ?? ''
+                'alamat_pengiriman' => $request->alamat_pengiriman ?? '',
+                'nama_barang' => $request->jenis_barang ?? ''
             ];
         }
 
@@ -299,6 +303,7 @@ class SuratJalanBongkaranController extends Controller
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string|max:255',
+            'jenis_barang' => 'nullable|string|max:255',
             'tujuan_alamat' => 'nullable|string|max:255',
             'tujuan_pengambilan' => 'nullable|string|max:255',
             'tujuan_pengiriman' => 'nullable|string|max:255',
@@ -395,6 +400,7 @@ class SuratJalanBongkaranController extends Controller
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string|max:255',
+            'jenis_barang' => 'nullable|string|max:255',
             'tujuan_alamat' => 'nullable|string|max:255',
             'tujuan_pengambilan' => 'nullable|string|max:255',
             'tujuan_pengiriman' => 'nullable|string|max:255',

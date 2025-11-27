@@ -186,12 +186,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Estimasi Nama Kapal <span class="text-red-500">*</span>
+                                    Estimasi Nama Kapal
                                 </label>
                                 <select name="estimasi_nama_kapal"
                                         id="estimasi_nama_kapal"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-kapal @error('estimasi_nama_kapal') border-red-500 @enderror"
-                                        required>
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-kapal @error('estimasi_nama_kapal') border-red-500 @enderror">
                                     <option value="">-- Pilih Kapal --</option>
                                     @foreach($masterKapals as $kapal)
                                         <option value="{{ $kapal->nama_kapal }}"

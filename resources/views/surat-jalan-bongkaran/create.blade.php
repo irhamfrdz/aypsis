@@ -218,6 +218,23 @@
                     @endif
                 </div>
 
+                <!-- Jenis Barang -->
+                <div>
+                    <label for="jenis_barang" class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
+                    <input type="text" name="jenis_barang" id="jenis_barang" readonly
+                           value="{{ old('jenis_barang', isset($selectedContainer) ? $selectedContainer->nama_barang : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none {{ $errors->has('jenis_barang') ? 'border-red-500' : '' }}"
+                           placeholder="Otomatis terisi dari BL">
+                    @error('jenis_barang')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $selectedContainer->nama_barang)
+                        <p class="mt-1 text-xs text-blue-600">
+                            Otomatis dari BL terpilih: {{ $selectedContainer->nama_barang }}
+                        </p>
+                    @endif
+                </div>
+
                 <!-- Tujuan Alamat -->
                 <div>
                     <label for="tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>

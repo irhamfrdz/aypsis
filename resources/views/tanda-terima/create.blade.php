@@ -384,12 +384,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Estimasi Nama Kapal <span class="text-red-500">*</span>
+                                    Estimasi Nama Kapal
                                 </label>
                                 <select name="estimasi_nama_kapal"
                                         id="estimasi_nama_kapal"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-kapal @error('estimasi_nama_kapal') border-red-500 @enderror"
-                                        required>
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-kapal @error('estimasi_nama_kapal') border-red-500 @enderror">
                                     <option value="">-- Pilih Kapal --</option>
                                     @foreach($masterKapals as $kapal)
                                         <option value="{{ $kapal->nama_kapal }}"
@@ -496,135 +495,135 @@
                                 <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label for="nama_barang" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="nama_barang_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Nama Barang
                                     </label>
                                     <input type="text"
-                                           name="nama_barang"
-                                           id="nama_barang"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('nama_barang') border-red-500 @enderror"
+                                           name="nama_barang[]"
+                                           id="nama_barang_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('nama_barang.0') ? 'border-red-500' : '' }}"
                                            placeholder="Nama barang"
-                                           value="{{ old('nama_barang') }}">
-                                    @error('nama_barang')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                           value="{{ old('nama_barang.0') }}">
+                                    @if($errors->has('nama_barang.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('nama_barang.0') }}</p>
+                                    @endif
                                 </div>
                                 <div>
-                                    <label for="jumlah" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="jumlah_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Jumlah
                                     </label>
                                     <input type="number"
-                                           name="jumlah"
-                                           id="jumlah"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('jumlah') border-red-500 @enderror"
+                                           name="jumlah[]"
+                                           id="jumlah_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('jumlah.0') ? 'border-red-500' : '' }}"
                                            placeholder="0"
-                                           value="{{ old('jumlah') }}"
+                                           value="{{ old('jumlah.0') }}"
                                            min="0"
                                            step="1">
-                                    @error('jumlah')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    @if($errors->has('jumlah.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('jumlah.0') }}</p>
+                                    @endif
                                 </div>
                                 <div>
-                                    <label for="satuan" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="satuan_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Satuan
                                     </label>
                                     <input type="text"
-                                           name="satuan"
-                                           id="satuan"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('satuan') border-red-500 @enderror"
+                                           name="satuan[]"
+                                           id="satuan_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('satuan.0') ? 'border-red-500' : '' }}"
                                            placeholder="Pcs, Kg, Box"
-                                           value="{{ old('satuan') }}">
-                                    @error('satuan')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                           value="{{ old('satuan.0') }}">
+                                    @if($errors->has('satuan.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('satuan.0') }}</p>
+                                    @endif
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 <div>
-                                    <label for="panjang" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="panjang_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Panjang (m)
                                     </label>
                                     <input type="number"
-                                           name="panjang"
-                                           id="panjang"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('panjang') border-red-500 @enderror"
+                                           name="panjang[]"
+                                           id="panjang_0"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('panjang.0') ? 'border-red-500' : '' }}"
                                            placeholder="0.000"
-                                           value="{{ old('panjang') }}"
+                                           value="{{ old('panjang.0') }}"
                                            min="0"
                                            step="0.001"
-                                           onchange="calculateVolume()">
-                                    @error('panjang')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                    @if($errors->has('panjang.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('panjang.0') }}</p>
+                                    @endif
                                 </div>
                                 <div>
-                                    <label for="lebar" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="lebar_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Lebar (m)
                                     </label>
                                     <input type="number"
-                                           name="lebar"
-                                           id="lebar"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('lebar') border-red-500 @enderror"
+                                           name="lebar[]"
+                                           id="lebar_0"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('lebar.0') ? 'border-red-500' : '' }}"
                                            placeholder="0.000"
-                                           value="{{ old('lebar') }}"
+                                           value="{{ old('lebar.0') }}"
                                            min="0"
                                            step="0.001"
-                                           onchange="calculateVolume()">
-                                    @error('lebar')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                    @if($errors->has('lebar.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('lebar.0') }}</p>
+                                    @endif
                                 </div>
                                 <div>
-                                    <label for="tinggi" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="tinggi_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Tinggi (m)
                                     </label>
                                     <input type="number"
-                                           name="tinggi"
-                                           id="tinggi"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('tinggi') border-red-500 @enderror"
+                                           name="tinggi[]"
+                                           id="tinggi_0"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('tinggi.0') ? 'border-red-500' : '' }}"
                                            placeholder="0.000"
-                                           value="{{ old('tinggi') }}"
+                                           value="{{ old('tinggi.0') }}"
                                            min="0"
                                            step="0.001"
-                                           onchange="calculateVolume()">
-                                    @error('tinggi')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                    @if($errors->has('tinggi.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('tinggi.0') }}</p>
+                                    @endif
                                 </div>
                                 <div>
-                                    <label for="meter_kubik" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="meter_kubik_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Volume (m³)
                                     </label>
                                     <input type="number"
-                                           name="meter_kubik"
-                                           id="meter_kubik"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm @error('meter_kubik') border-red-500 @enderror"
+                                           name="meter_kubik[]"
+                                           id="meter_kubik_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm {{ $errors->has('meter_kubik.0') ? 'border-red-500' : '' }}"
                                            placeholder="0.000"
-                                           value="{{ old('meter_kubik') }}"
+                                           value="{{ old('meter_kubik.0') }}"
                                            min="0"
                                            step="0.001"
                                            readonly>
-                                    @error('meter_kubik')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    @if($errors->has('meter_kubik.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('meter_kubik.0') }}</p>
+                                    @endif
                                 </div>
                                 <div>
-                                    <label for="tonase" class="block text-xs font-medium text-gray-500 mb-2">
+                                    <label for="tonase_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Tonase (Ton)
                                     </label>
                                     <input type="number"
-                                           name="tonase"
-                                           id="tonase"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('tonase') border-red-500 @enderror"
+                                           name="tonase[]"
+                                           id="tonase_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('tonase.0') ? 'border-red-500' : '' }}"
                                            placeholder="0.000"
-                                           value="{{ old('tonase') }}"
+                                           value="{{ old('tonase.0') }}"
                                            min="0"
                                            step="0.001">
-                                    @error('tonase')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    @if($errors->has('tonase.0'))
+                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('tonase.0') }}</p>
+                                    @endif
                                 </div>
                             </div>
                             <p class="text-xs text-gray-500 mt-2">
@@ -964,10 +963,10 @@
     })();
 
     function calculateVolume(rowElement) {
-        const panjangInput = rowElement ? rowElement.querySelector('[name^="panjang"]') : document.getElementById('panjang');
-        const lebarInput = rowElement ? rowElement.querySelector('[name^="lebar"]') : document.getElementById('lebar');
-        const tinggiInput = rowElement ? rowElement.querySelector('[name^="tinggi"]') : document.getElementById('tinggi');
-        const volumeInput = rowElement ? rowElement.querySelector('[name^="meter_kubik"]') : document.getElementById('meter_kubik');
+        const panjangInput = rowElement ? rowElement.querySelector('[name^="panjang"]') : document.getElementById('panjang_0');
+        const lebarInput = rowElement ? rowElement.querySelector('[name^="lebar"]') : document.getElementById('lebar_0');
+        const tinggiInput = rowElement ? rowElement.querySelector('[name^="tinggi"]') : document.getElementById('tinggi_0');
+        const volumeInput = rowElement ? rowElement.querySelector('[name^="meter_kubik"]') : document.getElementById('meter_kubik_0');
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
@@ -982,7 +981,7 @@
     }
 
     // Counter untuk index dimensi baru
-    let dimensiCounter = 1;
+    let dimensiCounter = document.querySelectorAll('#dimensi-container .dimensi-row').length || 1;
 
     // Fungsi untuk menambah baris dimensi baru
     document.addEventListener('DOMContentLoaded', function() {
@@ -1053,8 +1052,22 @@
                         calculateVolume(newRow);
                     });
                 });
+                // Also trigger initial volume calculation for new row
+                const firstDimensiInput = newRow.querySelector('.dimensi-input');
+                if (firstDimensiInput) firstDimensiInput.dispatchEvent(new Event('input'));
             });
         }
+        // Attach event listeners to existing dimensi-input elements (initial row)
+        const existingDimensiInputs = document.querySelectorAll('.dimensi-input');
+        existingDimensiInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const row = input.closest('.dimensi-row');
+                calculateVolume(row);
+            });
+        });
+        // Run initial calculation for any prefilled dimensi rows
+        const existingDimensiRows = document.querySelectorAll('#dimensi-container .dimensi-row');
+        existingDimensiRows.forEach(row => calculateVolume(row));
     });
 </script>
 @endpush
