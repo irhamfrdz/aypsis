@@ -415,9 +415,8 @@
 <script>
 // Filter containers based on selected vendor
 function filterContainersByVendor() {
-    const vendorSelect = document.getElementById('vendor');
     const containerSelect = document.getElementById('nomor_kontainer');
-    const vendorSelect = document.getElementById('vendor');
+    // vendorSelect already declared above
     const sizeSelect = document.getElementById('size');
     const tarifSelect = document.getElementById('tarif');
     const tanggalAwalInput = document.getElementById('tanggal_awal');
