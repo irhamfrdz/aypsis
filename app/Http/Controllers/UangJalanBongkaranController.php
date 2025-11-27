@@ -114,7 +114,7 @@ class UangJalanBongkaranController extends Controller
             'alasan_penyesuaian' => 'nullable|string|max:255',
             'jumlah_penyesuaian' => 'nullable|numeric',
             'memo' => 'nullable|string',
-            'status' => 'nullable|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan'
+            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan'
         ]);
 
         // Hitung subtotal
@@ -130,11 +130,6 @@ class UangJalanBongkaranController extends Controller
         $validatedData['subtotal'] = $subtotal;
         $validatedData['jumlah_total'] = $total;
         $validatedData['created_by'] = Auth::id();
-
-        // Set default status if not provided
-        if (empty($validatedData['status'])) {
-            $validatedData['status'] = 'belum_dibayar';
-        }
 
         UangJalanBongkaran::create($validatedData);
 

@@ -115,7 +115,23 @@
                         @enderror
                     </div>
 
-                    <!-- Status removed: default set to 'belum_dibayar' in controller -->
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status <span class="text-red-600">*</span></label>
+                        <select name="status"
+                                required
+                                class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
+                            <option value="">Pilih Status</option>
+                            @foreach(\App\Models\UangJalanBongkaran::getStatusOptions() as $key => $label)
+                                <option value="{{ $key }}" {{ old('status', 'belum_dibayar') == $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('status')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 
