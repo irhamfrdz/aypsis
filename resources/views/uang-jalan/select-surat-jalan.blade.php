@@ -1,6 +1,19 @@
 @extends('layouts.app')
 
-@section('page_title', 'Tambah Data Uang Jalan')
+@php
+    $routePrefix = $routePrefix ?? 'uang-jalan';
+    $isBongkaran = $routePrefix === 'uang-jalan-bongkaran';
+    $pageTitleText = $isBongkaran ? 'Uang Jalan Bongkaran' : 'Uang Jalan';
+    $selectRouteName = $isBongkaran ? 'uang-jalan-bongkaran.select-surat-jalan-bongkaran' : 'uang-jalan.select-surat-jalan';
+    $indexRouteName = $routePrefix . '.index';
+    $createRouteName = $routePrefix . '.create';
+    $suratJalanQueryParam = $isBongkaran ? 'surat_jalan_bongkaran_id' : 'surat_jalan_id';
+    $statusOptions = $statusOptions ?? ['all' => 'Semua Status'];
+    $status = $status ?? 'all';
+    $suratJalans = $suratJalans ?? collect([]);
+@endphp
+
+@section('page_title', 'Tambah Data ' . $pageTitleText)
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-4">
@@ -21,7 +34,7 @@
                         <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
-                        <span class="text-sm font-medium text-gray-500">Uang Jalan</span>
+                        <span class="text-sm font-medium text-gray-500">{{ $pageTitleText }}</span>
                     </div>
                 </li>
             </ol>
@@ -31,7 +44,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <!-- Header with Blue Background -->
             <div class="bg-blue-500 px-4 py-3 rounded-t-lg">
-                <h1 class="text-base font-semibold text-white">Tambah Data Uang Jalan</h1>
+                <h1 class="text-base font-semibold text-white">Tambah Data {{ $pageTitleText }}</h1>
             </div>
 
             <!-- Form Content -->
@@ -100,7 +113,7 @@
                             </svg>
                             Lanjutkan
                         </button>
-                        <a href="{{ route('uang-jalan.index') }}" 
+                                <a href="{{ route($indexRouteName) }}" 
                            class="inline-flex items-center justify-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-colors">
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -123,7 +136,7 @@
                 </button>
                 
                 <div id="filterPanel" class="hidden border-t border-gray-200 bg-gray-50 p-3">
-                    <form method="GET" action="{{ route('uang-jalan.select-surat-jalan') }}" id="filterForm">
+                    <form method="GET" action="{{ route($selectRouteName) }}" id="filterForm">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <!-- Search Input -->
                             <div>
@@ -156,7 +169,7 @@
                                     class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors">
                                 Terapkan
                             </button>
-                            <a href="{{ route('uang-jalan.select-surat-jalan') }}" 
+                            <a href="{{ route($selectRouteName) }}" 
                                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors">
                                 Reset
                             </a>
@@ -334,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedId = document.getElementById('selected_surat_jalan_id').value;
         if (selectedId) {
             // Redirect to create page with selected surat jalan id
-            const createUrl = '{{ route("uang-jalan.create") }}?surat_jalan_id=' + selectedId;
+                const createUrl = '{{ route($createRouteName) }}?{{ $suratJalanQueryParam }}=' + selectedId;
             window.location.href = createUrl;
         }
     });

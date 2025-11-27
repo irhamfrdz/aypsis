@@ -117,10 +117,11 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" name="tanggal_kas" id="tanggal_kas"
-                                    value="{{ now()->format('d/M/Y') }}"
-                                    class="{{ $readonlyInputClasses }}" readonly required>
-                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                                <input type="date" name="tanggal_kas" id="tanggal_kas"
+                                    value="{{ old('tanggal_kas', now()->toDateString()) }}"
+                                    class="{{ $inputClasses }}" required>
+                                <!-- Hidden field used by backend; synced with tanggal_kas -->
+                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', now()->toDateString()) }}">
                             </div>
                         </div>
                         <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
@@ -787,8 +788,20 @@
         console.log('Script 2: Tanggal pembayaran');
         const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
         if (tanggalPembayaran) {
-            // Keep hidden field with today's date for validation
-            tanggalPembayaran.value = new Date().toISOString().split('T')[0];
+            // Keep hidden field in sync with tanggal_kas input (if present)
+            const tanggalKasInput = document.getElementById('tanggal_kas');
+            if (tanggalKasInput) {
+                // Set hidden value from input (on load)
+                tanggalPembayaran.value = tanggalKasInput.value || new Date().toISOString().split('T')[0];
+
+                // Keep hidden field updated whenever tanggal_kas changes
+                tanggalKasInput.addEventListener('change', function () {
+                    tanggalPembayaran.value = this.value || new Date().toISOString().split('T')[0];
+                });
+            } else {
+                // Default to today's date if input not found
+                tanggalPembayaran.value = new Date().toISOString().split('T')[0];
+            }
         }
     });
 
