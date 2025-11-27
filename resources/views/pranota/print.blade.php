@@ -66,6 +66,7 @@
     })->filter()->unique('id')->values();
     
     $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
+    $hasInvoices = $invoices->isNotEmpty();
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -147,6 +148,13 @@
             margin-bottom: 12mm; /* larger gap from table end to page bottom */
             table-layout: fixed;
         }
+
+        /* Ensure headers repeat on multi-page tables in print */
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+
+        /* When invoices exist, force container table to start on a new page */
+        .container-table { page-break-before: always; break-before: page; -webkit-break-before: page; }
 
         .table th,
         .table td {
@@ -297,7 +305,7 @@
         <!-- Invoice Table (if invoices exist) -->
         @if($invoices->isNotEmpty())
         <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
-        <table class="table" style="margin-bottom: 8px;">
+        <table class="table invoice-table" style="margin-bottom: 8px;">
             <thead>
                 <tr>
                     <th style="width: 8%;">No</th>
@@ -331,7 +339,7 @@
         @endif
 
         <!-- Pranota Table -->
-        <table class="table">
+        <table class="table {{ $hasInvoices ? 'container-table' : '' }}">
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
