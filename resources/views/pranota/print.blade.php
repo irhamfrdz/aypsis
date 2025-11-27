@@ -97,7 +97,8 @@
 
         .container {
             width: {{ $currentPaper['containerWidth'] }};
-            padding: 5mm;
+            /* Add extra bottom padding to avoid tight table at bottom */
+            padding: 5mm 5mm 18mm 5mm; /* top right bottom left */
             margin: 0 auto;
             box-sizing: border-box;
         }
@@ -141,7 +142,7 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            margin-bottom: 12mm; /* larger gap from table end to page bottom */
             table-layout: fixed;
         }
 
@@ -190,7 +191,15 @@
 
         .signature-section {
             margin-top: 15px;
+            margin-bottom: 12mm; /* ensure sign area doesn't touch bottom */
             page-break-inside: avoid;
+        }
+
+        /* A tiny footer spacer which also serves as a fallback for the bottom margin */
+        .print-footer-spacer {
+            width: 100%;
+            height: 12mm;
+            display: block;
         }
 
         .signature-table {
@@ -430,6 +439,8 @@
                 </tr>
             </table>
         </div>
+        <!-- Footer spacer: to ensure table/content doesn't touch bottom of printed page -->
+        <div class="print-footer-spacer no-print" aria-hidden="true"></div>
     </div>
 
     <!-- Print Action: allow user to select paper size before printing -->
