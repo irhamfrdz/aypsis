@@ -80,7 +80,7 @@
 
         @page {
             size: {{ $currentPaper['size'] }} portrait;
-            margin: 0;
+            margin: 10mm; /* provide a consistent printable margin */
         }
 
         html, body {
@@ -96,11 +96,13 @@
         }
 
         .container {
-            width: {{ $currentPaper['containerWidth'] }};
-            /* Add extra bottom padding to avoid tight table at bottom */
-            padding: 5mm 5mm 18mm 5mm; /* top right bottom left */
+            /* take page width minus left and right page margins (2 * 10mm) */
+            width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
+            /* Add consistent padding: top, right, bottom, left */
+            padding: 10mm 10mm 18mm 10mm;
             margin: 0 auto;
             box-sizing: border-box;
+            min-height: calc({{ $currentPaper['height'] }} - 20mm); /* ensure height accounts for page margins */
         }
 
         .header {
@@ -149,7 +151,7 @@
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 2px 4px;
+            padding: 2mm 3mm; /* consistent mm-based padding for print */
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
@@ -191,14 +193,14 @@
 
         .signature-section {
             margin-top: 15px;
-            margin-bottom: 12mm; /* ensure sign area doesn't touch bottom */
+            margin-bottom: 16mm; /* ensure sign area doesn't touch bottom */
             page-break-inside: avoid;
         }
 
         /* A tiny footer spacer which also serves as a fallback for the bottom margin */
         .print-footer-spacer {
             width: 100%;
-            height: 12mm;
+            height: 16mm; /* slightly larger spacer to create breathing room */
             display: block;
         }
 
@@ -440,7 +442,7 @@
             </table>
         </div>
         <!-- Footer spacer: to ensure table/content doesn't touch bottom of printed page -->
-        <div class="print-footer-spacer no-print" aria-hidden="true"></div>
+        <div class="print-footer-spacer" aria-hidden="true"></div>
     </div>
 
     <!-- Print Action: allow user to select paper size before printing -->
