@@ -26,6 +26,17 @@
             'tableFont' => '7px',
             'signatureBottom' => '5mm'
         ]
+        ,
+        'Folio' => [
+            'size' => '215.9mm 330.2mm', // 8.5in x 13in
+            'width' => '215.9mm',
+            'height' => '330.2mm',
+            'containerWidth' => '215.9mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+            'signatureBottom' => '12mm'
+        ]
     ];
 
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
@@ -215,8 +226,11 @@
 <body>
     <!-- Paper Size Selector (hidden when printing) -->
     <div class="no-print">
-        <strong>Current: {{ $paperSize }}</strong><br>
-        <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
+        <strong>Paper:</strong>
+        <a href="?paper_size=Half-A4" style="text-decoration: none; margin-right: 6px;">Half-A4</a>
+        | <a href="?paper_size=A4" style="text-decoration: none; margin: 0 6px;">A4</a>
+        | <a href="?paper_size=Folio" style="text-decoration: none; margin-left: 6px;">Folio</a>
+        <div style="margin-top: 6px; font-size: 12px;">Current: <strong>{{ $paperSize }}</strong>&nbsp; <small>({{ $currentPaper['width'] }} × {{ $currentPaper['height'] }})</small></div>
     </div>
 
     <div class="container">
