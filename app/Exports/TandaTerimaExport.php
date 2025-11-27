@@ -6,22 +6,111 @@ use App\Models\TandaTerima;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMultipleSheets;
-use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class TandaTerimaExport implements FromCollection, WithStyles, ShouldAutoSize
+class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
 {
     protected $tandaTerimaIds;
 
     public function __construct(array $tandaTerimaIds)
     {
         $this->tandaTerimaIds = $tandaTerimaIds;
+    }
+
+    /**
+     * Get container type from database
+     */
+    private function getContainerType(?string $noKontainer): string
+    {
+        if (empty($noKontainer) || strtoupper($noKontainer) === 'CARGO') {
+            return 'DRY';
+        }
+
+        // Try to find in kontainers table first
+        $kontainer = Kontainer::where('nomor_seri_gabungan', $noKontainer)
+            ->orWhere(function($q) use ($noKontainer) {
+                $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
+            })
+            ->first();
+
+        if ($kontainer && $kontainer->tipe_kontainer) {
+            $tipeKontainer = strtoupper($kontainer->tipe_kontainer);
+        } else {
+            // If not found, try stock_kontainers table
+            $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $noKontainer)
+                ->orWhere(function($q) use ($noKontainer) {
+                    $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
+                })
+                ->first();
+
+            $tipeKontainer = $stockKontainer ? strtoupper($stockKontainer->tipe_kontainer) : '';
+        }
+
+        // Normalize tipe kontainer
+        if (str_contains($tipeKontainer, 'DRY')) {
+            return 'DRY';
+        } elseif (str_contains($tipeKontainer, 'REEFER')) {
+            return 'REEFER';
+        } elseif (str_contains($tipeKontainer, 'HC')) {
+            return 'HC';
+        } elseif (str_contains($tipeKontainer, 'FLAT')) {
+            return 'FLAT RACK';
+        } elseif (str_contains($tipeKontainer, 'OPEN')) {
+            return 'OPEN TOP';
+        }
+
+        return 'DRY'; // Default fallback
+    }
+
+    /**
+     * Get status based on kegiatan (F for Full, E for Empty)
+     */
+    private function getStatus(?string $kegiatan): string
+    {
+        if (!$kegiatan) {
+            return '';
+        }
+
+        $kegiatan = strtolower($kegiatan);
+        if (str_contains($kegiatan, 'isi') || str_contains($kegiatan, 'full')) {
+            return 'F';
+        } elseif (str_contains($kegiatan, 'kosong') || str_contains($kegiatan, 'empty')) {
+            return 'E';
+        }
+
+        return '';
+    }
+
+    /**
+     * Get POD based on tujuan pengiriman
+     */
+    private function getPod(?string $tujuanPengiriman): string
+    {
+        if (!$tujuanPengiriman) {
+            return '';
+        }
+
+        $tujuan = strtolower($tujuanPengiriman);
+        if (str_contains($tujuan, 'batam')) {
+            return 'IDBTM';
+        } elseif (str_contains($tujuan, 'pinang')) {
+            return 'IDKID';
+        }
+
+        return '';
+    }
+
+    /**
+     * Format expired date to dd/mm/yy format
+     */
+    private function formatExpiredDate(?\Carbon\Carbon $expiredDate): string
+    {
+        return $expiredDate ? $expiredDate->format('d/m/y') : '';
     }
 
     public function collection()
@@ -60,89 +149,17 @@ class TandaTerimaExport implements FromCollection, WithStyles, ShouldAutoSize
 
             // Add data for this RO
             foreach ($groupedTandaTerimas as $tandaTerima) {
-                // Determine STATUS based on kegiatan
-                $status = '';
-                if ($tandaTerima->suratJalan) {
-                    $kegiatan = strtolower($tandaTerima->kegiatan ?? '');
-                    if (str_contains($kegiatan, 'isi') || str_contains($kegiatan, 'full')) {
-                        $status = 'F';
-                    } elseif (str_contains($kegiatan, 'kosong') || str_contains($kegiatan, 'empty')) {
-                        $status = 'E';
-                    }
-                }
-
-                // Determine POD based on tujuan_pengiriman
-                $tujuanKirim = strtolower($tandaTerima->tujuan_pengiriman ?? '');
-                $pod = '';
-                if (str_contains($tujuanKirim, 'batam')) {
-                    $pod = 'IDBTM';
-                } elseif (str_contains($tujuanKirim, 'pinang')) {
-                    $pod = 'IDKID';
-                }
-
-                // Get tipe kontainer from kontainers or stock_kontainers table
-                $tipeKontainer = '';
-                $noKontainer = $tandaTerima->no_kontainer;
-
-                if ($noKontainer && strtoupper($noKontainer) !== 'CARGO') {
-                    // Try to find in kontainers table first
-                    $kontainer = Kontainer::where('nomor_seri_gabungan', $noKontainer)
-                        ->orWhere(function($q) use ($noKontainer) {
-                            $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
-                        })
-                        ->first();
-
-                    if ($kontainer && $kontainer->tipe_kontainer) {
-                        $tipeKontainer = strtoupper($kontainer->tipe_kontainer);
-                    } else {
-                        // If not found, try stock_kontainers table
-                        $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $noKontainer)
-                            ->orWhere(function($q) use ($noKontainer) {
-                                $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
-                            })
-                            ->first();
-
-                        if ($stockKontainer && $stockKontainer->tipe_kontainer) {
-                            $tipeKontainer = strtoupper($stockKontainer->tipe_kontainer);
-                        }
-                    }
-
-                    // Normalize tipe kontainer
-                    if (str_contains($tipeKontainer, 'DRY')) {
-                        $tipeKontainer = 'DRY';
-                    } elseif (str_contains($tipeKontainer, 'REEFER')) {
-                        $tipeKontainer = 'REEFER';
-                    } elseif (str_contains($tipeKontainer, 'HC')) {
-                        $tipeKontainer = 'HC';
-                    } elseif (str_contains($tipeKontainer, 'FLAT')) {
-                        $tipeKontainer = 'FLAT RACK';
-                    } elseif (str_contains($tipeKontainer, 'OPEN')) {
-                        $tipeKontainer = 'OPEN TOP';
-                    }
-                }
-
-                // Default to DRY if not found or if CARGO
-                if (empty($tipeKontainer)) {
-                    $tipeKontainer = 'DRY';
-                }
-
-                // Format expired date (29/12/24 format)
-                $expiredDate = '';
-                if ($tandaTerima->expired_date) {
-                    $expiredDate = $tandaTerima->expired_date->format('d/m/y');
-                }
-
                 $rows->push([
-                    $tandaTerima->no_kontainer ?? '',    // CONTAINER_NO
-                    $tandaTerima->size ?? '',            // SIZE
-                    $tipeKontainer,                      // TIPE
-                    $status,                             // STATUS (F/E)
-                    $tandaTerima->tonase ?? '',          // BERAT
-                    $expiredDate,                        // EXPIRED_DATE
-                    '02522267',                          // CONSIGNEE (fixed value)
-                    '',                                  // REMARK (kosong)
-                    $pod,                                // POD (IDBTM/IDKID)
-                    ''                                   // BOX_OPR (kosong)
+                    $tandaTerima->no_kontainer ?? '',           // CONTAINER_NO
+                    $tandaTerima->size ?? '',                   // SIZE
+                    $this->getContainerType($tandaTerima->no_kontainer), // TIPE
+                    $this->getStatus($tandaTerima->kegiatan),   // STATUS (F/E)
+                    $tandaTerima->tonase ?? '',                 // BERAT
+                    $this->formatExpiredDate($tandaTerima->expired_date), // EXPIRED_DATE
+                    '02522267',                                 // CONSIGNEE (fixed value)
+                    '',                                         // REMARK (kosong)
+                    $this->getPod($tandaTerima->tujuan_pengiriman), // POD (IDBTM/IDKID)
+                    ''                                          // BOX_OPR (kosong)
                 ]);
             }
 
@@ -153,41 +170,75 @@ class TandaTerimaExport implements FromCollection, WithStyles, ShouldAutoSize
         return $rows;
     }
 
-    public function styles(Worksheet $sheet)
+    /**
+     * Register events to style the sheet after it's created
+     */
+    public function registerEvents(): array
     {
-        // Style for header rows (RO NOMOR and column headers)
-        $sheet->getStyle('A1:J1')->applyFromArray([
-            'font' => [
-                'bold' => true,
-                'size' => 12,
-            ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => 'E6E6FA'], // Light lavender background
-            ],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_LEFT,
-            ],
-        ]);
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $highestRow = $sheet->getHighestRow();
 
-        // Find and style all header rows
-        $highestRow = $sheet->getHighestRow();
-        for ($row = 1; $row <= $highestRow; $row++) {
-            $cellValue = $sheet->getCell('A' . $row)->getValue();
-            if (str_starts_with($cellValue, 'RO NOMOR :') ||
-                in_array($cellValue, ['CONTAINER_NO', 'SIZE', 'TIPE', 'STATUS', 'BERAT', 'EXPIRED_DATE', 'CONSIGNEE', 'REMARK', 'POD', 'BOX_OPR'])) {
-                $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray([
+                $headerStyle = [
                     'font' => [
                         'bold' => true,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => 'D3D3D3'], // Light gray background
+                        'startColor' => ['rgb' => 'FFFF00'], // Yellow header
                     ],
-                ]);
-            }
-        }
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => ['rgb' => '000000'],
+                        ],
+                    ],
+                ];
 
-        return [];
+                $roStyle = [
+                    'font' => [
+                        'bold' => true,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_LEFT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E6E6FA'], // Light lavender
+                    ],
+                ];
+
+                // Apply styles and merge RO rows, style header rows
+                for ($row = 1; $row <= $highestRow; $row++) {
+                    $firstCell = (string) $sheet->getCell('A' . $row)->getValue();
+                    if ($firstCell !== null && str_starts_with(trim($firstCell), 'RO NOMOR :')) {
+                        // Merge the row across A:J
+                        $sheet->mergeCells("A{$row}:J{$row}");
+                        $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
+                    }
+
+                    // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
+                    if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {
+                        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray($headerStyle);
+                        // Set wrap text and center alignment for header
+                        $sheet->getStyle("A{$row}:J{$row}")->getAlignment()->setWrapText(true);
+                        $sheet->getRowDimension($row)->setRowHeight(22);
+                    }
+                }
+
+                // Optionally set column widths minimum or rely on ShouldAutoSize
+                foreach (range('A', 'J') as $col) {
+                    $sheet->getColumnDimension($col)->setAutoSize(true);
+                }
+            },
+        ];
     }
 }
