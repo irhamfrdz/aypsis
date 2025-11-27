@@ -981,25 +981,17 @@
                         </svg>
                     </button>
                     <div id="surat-jalan-bongkaran-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isSuratJalanBongkaranRoute) style="display: block;" @endif>
-                        {{-- Daftar Surat Jalan Bongkaran --}}
+                        {{-- Surat Jalan Bongkaran --}}
                         @if($user && $user->can('surat-jalan-bongkaran-view'))
                             <a href="{{ route('surat-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.index') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                <span class="text-xs">Daftar Surat Jalan Bongkaran</span>
+                                <span class="text-xs">Surat Jalan Bongkaran</span>
                             </a>
                         @endif
 
-                        {{-- Tambah Surat Jalan Bongkaran --}}
-                        @if($user && $user->can('surat-jalan-bongkaran-create'))
-                            <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.create') || Request::routeIs('surat-jalan-bongkaran.select-kapal') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                <span class="text-xs">Tambah Surat Jalan Bongkaran</span>
-                            </a>
-                        @endif
+                        {{-- Removed 'Tambah Surat Jalan Bongkaran' from the dropdown as requested --}}
 
                         {{-- Uang Jalan Bongkaran --}}
                         @if($user && ($user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete')))
