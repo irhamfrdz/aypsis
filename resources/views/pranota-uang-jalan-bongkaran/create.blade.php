@@ -338,14 +338,14 @@ window.updateTotal = function() {
 
 window.updateTotalWithPenyesuaian = function() {
     const totalAmountText = document.getElementById('totalAmount').textContent;
-    const totalAmount = parseFloat(totalAmountText.replace(/[^
-\d]/g, '')) || 0;
+// fixed: removed stray fragment
+    const totalAmount = parseFloat(totalAmountText.replace(/[^\d]/g, '')) || 0;
     
     const penyesuaianType = document.getElementById('penyesuaianType').value;
     const penyesuaianAmount = parseFloat(document.getElementById('penyesuaian_amount').value) || 0;
     
     // Hitung penyesuaian berdasarkan tipe
-    let penyesuaian = 0;
+        let penyesuaian = 0;
     if (penyesuaianType === 'subtract') {
         penyesuaian = -Math.abs(penyesuaianAmount); // Selalu negatif untuk pengurangan
     } else if (penyesuaianType === 'add') {
