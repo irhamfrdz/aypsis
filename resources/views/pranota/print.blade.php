@@ -26,6 +26,26 @@
             'tableFont' => '9px',
             'signatureBottom' => '15mm'
         ],
+        'Custom-215' => [
+            'size' => '215mm 297mm',
+            'width' => '215mm',
+            'height' => '297mm',
+            'containerWidth' => '215mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+            'signatureBottom' => '15mm'
+        ],
+        'Half-Custom-215' => [
+            'size' => '215mm 148.5mm',
+            'width' => '215mm',
+            'height' => '148.5mm',
+            'containerWidth' => '215mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '7px',
+            'signatureBottom' => '5mm'
+        ],
         'Half-A4' => [
             'size' => '210mm 148.5mm',
             'width' => '210mm',
