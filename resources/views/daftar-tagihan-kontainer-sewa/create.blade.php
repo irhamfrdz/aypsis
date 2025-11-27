@@ -580,17 +580,40 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDateFormatting('tanggal_akhir');
     setupDateFormatting('tanggal_invoice_vendor');
 
+    function parseNumber(str) {
+        if (!str) return 0;
+        let s = String(str).trim();
+        // Normalize: handle both '1,234.56' and '1.234,56'
+        if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
+            if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                // comma likely decimal separator: remove dots and convert comma -> dot
+                s = s.replace(/\./g, '');
+                s = s.replace(',', '.');
+            } else {
+                // dot likely decimal separator: remove commas
+                s = s.replace(/,/g, '');
+            }
+        } else {
+            // Only commas or only dots or neither
+            s = s.replace(/,/g, '');
+        }
+        const n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+    }
+
     function calculateGrandTotal() {
-        const dpp = parseFloat(dppInput.value) || 0;
-        const ppn = parseFloat(ppnInput.value) || 0;
-        const pph = parseFloat(pphInput.value) || 0;
-        
+        const dpp = parseNumber(dppInput.value);
+        const ppn = parseNumber(ppnInput.value);
+        const pph = parseNumber(pphInput.value);
+
         const grandTotal = dpp + ppn - pph;
         grandTotalInput.value = grandTotal.toFixed(2);
+        // Debug log
+        if (window.console && window.console.debug) console.debug('calculateGrandTotal', { dpp, ppn, pph, grandTotal });
     }
 
     function calculateDppNilaiLain() {
-        const dpp = parseFloat(dppInput.value) || 0;
+        const dpp = parseNumber(dppInput.value) || 0;
         const dppNilaiLain = (dpp * 11 / 12).toFixed(2);
         dppNilaiLainInput.value = dppNilaiLain;
         
@@ -599,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculatePpn() {
-        const dppNilaiLain = parseFloat(dppNilaiLainInput.value) || 0;
+        const dppNilaiLain = parseNumber(dppNilaiLainInput.value) || 0;
         const ppn = (dppNilaiLain * 0.12).toFixed(2);
         ppnInput.value = ppn;
         
@@ -607,29 +630,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculatePph() {
-        const dpp = parseFloat(dppInput.value) || 0;
+        const dpp = parseNumber(dppInput.value) || 0;
         const pph = (dpp * 0.02).toFixed(2);
         pphInput.value = pph;
         
         calculateGrandTotal();
     }
 
-    // Listen to DPP changes
-    dppInput.addEventListener('input', function() {
-        calculateDppNilaiLain();
-        calculatePph();
+    // Listen to DPP changes (input/change/keyup)
+    ['input', 'change', 'keyup'].forEach(evt => {
+        dppInput.addEventListener(evt, function() {
+            if (this.value === '' || this.value === null) {
+                dppNilaiLainInput.value = '';
+                pphInput.value = '';
+                grandTotalInput.value = '';
+                return;
+            }
+            calculateDppNilaiLain();
+            calculatePph();
+        });
     });
 
     // Listen to manual DPP Nilai Lain changes
-    dppNilaiLainInput.addEventListener('input', function() {
-        calculatePpn();
-    });
+    ['input', 'change', 'keyup'].forEach(evt => dppNilaiLainInput.addEventListener(evt, calculatePpn));
 
     // Listen to manual PPN changes
-    ppnInput.addEventListener('input', calculateGrandTotal);
+    ['input', 'change', 'keyup'].forEach(evt => ppnInput.addEventListener(evt, calculateGrandTotal));
 
     // Listen to manual PPH changes
-    pphInput.addEventListener('input', calculateGrandTotal);
+    ['input', 'change', 'keyup'].forEach(evt => pphInput.addEventListener(evt, calculateGrandTotal));
 
     // Calculate on page load if values exist
     if (dppInput.value) {
