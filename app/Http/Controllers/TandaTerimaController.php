@@ -57,7 +57,21 @@ class TandaTerimaController extends Controller
         }
 
         // Order by newest and paginate
-        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(100);
+        $perPage = (int) $request->input('per_page', 100);
+        $suratJalans = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $suratJalans->items(),
+                'meta' => [
+                    'current_page' => $suratJalans->currentPage(),
+                    'last_page' => $suratJalans->lastPage(),
+                    'per_page' => $suratJalans->perPage(),
+                    'total' => $suratJalans->total(),
+                ],
+            ]);
+        }
 
         return view('tanda-terima.select-surat-jalan', compact('suratJalans', 'search', 'status', 'statusOptions'));
     }

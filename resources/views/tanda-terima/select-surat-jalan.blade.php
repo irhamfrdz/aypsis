@@ -296,10 +296,15 @@
                     </table>
                 </div>
 
-                <!-- Pagination Info -->
-                <div class="mt-2 flex justify-between items-center text-xs text-gray-500">
+                <!-- Pagination Info and Modal pagination controls -->
+                <div class="mt-2 flex items-center justify-between text-xs text-gray-500 gap-2">
                     <div id="tableInfo">
                         Showing <span id="showingFrom">1</span> to <span id="showingTo">{{ min(10, $suratJalans->count()) }}</span> of <span id="totalEntries">{{ $suratJalans->count() }}</span> entries
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" id="modalPrevPage" onclick="prevModalPage()" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs">Prev</button>
+                        <div id="modalPagination" class="text-xs text-gray-600">Page 1</div>
+                        <button type="button" id="modalNextPage" onclick="nextModalPage()" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs">Next</button>
                     </div>
                 </div>
             </div>
@@ -309,11 +314,13 @@
 
 <!-- JavaScript -->
 <script>
-let allSuratJalans = {!! json_encode($suratJalans->items()) !!};
-let filteredSuratJalans = [...allSuratJalans];
+let allSuratJalans = [];
+let filteredSuratJalans = [];
 let currentSort = { column: '', direction: 'asc' };
 let currentPage = 1;
 let itemsPerPage = 10;
+let modalLastPage = 1;
+let modalTotalEntries = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
@@ -367,6 +374,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Modal pagination and initial fetch
+    document.getElementById('modal-show').addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1;
+        loadModalPage(currentPage);
+    });
+
+    // Debounced modal-search
+    const modalSearchInput = document.getElementById('modal-search');
+    let searchTimeout = null;
+    if (modalSearchInput) {
+        modalSearchInput.addEventListener('keyup', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                currentPage = 1;
+                loadModalPage(currentPage);
+            }, 350);
+        });
+    }
 });
 
 // Modal functions
@@ -377,10 +403,9 @@ function openSuratJalanModal() {
     // Reset filter dan update display
     document.getElementById('modal-search').value = '';
     document.getElementById('modal-show').value = '10';
-    filteredSuratJalans = [...allSuratJalans];
+    itemsPerPage = parseInt(document.getElementById('modal-show').value) || 10;
     currentPage = 1;
-    itemsPerPage = 10;
-    updateTableDisplay();
+    loadModalPage(currentPage);
 }
 
 function closeSuratJalanModal() {
@@ -410,18 +435,66 @@ function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim) {
 }
 
 function filterSuratJalan() {
-    const searchTerm = document.getElementById('modal-search').value.toLowerCase();
-    
-    filteredSuratJalans = allSuratJalans.filter(item => {
-        return (item.no_surat_jalan && item.no_surat_jalan.toLowerCase().includes(searchTerm)) ||
-               (item.supir && item.supir.toLowerCase().includes(searchTerm)) ||
-               (item.no_plat && item.no_plat.toLowerCase().includes(searchTerm)) ||
-               (item.no_kontainer && item.no_kontainer.toLowerCase().includes(searchTerm)) ||
-               (item.order && item.order.pengirim && item.order.pengirim.nama_pengirim && item.order.pengirim.nama_pengirim.toLowerCase().includes(searchTerm));
-    });
-    
+    // We delegate search to server via loadModalPage
     currentPage = 1;
-    updateTableDisplay();
+    loadModalPage(currentPage);
+}
+
+function loadModalPage(page = 1) {
+    const perPage = parseInt(document.getElementById('modal-show').value) || 10;
+    const search = document.getElementById('modal-search').value || '';
+    const status = document.getElementById('status') ? document.getElementById('status').value : '';
+
+    const url = new URL('{{ route('tanda-terima.select-surat-jalan') }}', window.location.origin);
+    url.searchParams.set('page', page);
+    url.searchParams.set('per_page', perPage);
+    if (search) url.searchParams.set('search', search);
+    if (status) url.searchParams.set('status', status);
+
+    // Fetch JSON for page
+    fetch(url.toString(), {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (!res.success) {
+            console.error('Failed to load data');
+            return;
+        }
+        allSuratJalans = res.data || [];
+        filteredSuratJalans = [...allSuratJalans];
+        modalLastPage = res.meta.last_page || 1;
+        modalTotalEntries = res.meta.total || 0;
+        currentPage = res.meta.current_page || page;
+        updateTableDisplay();
+        updateModalPagination();
+    })
+    .catch(err => console.error(err));
+}
+
+function updateModalPagination() {
+    let paginationEl = document.getElementById('modalPagination');
+    if (!paginationEl) return;
+    paginationEl.innerHTML = `Page ${currentPage} of ${modalLastPage} - Total ${modalTotalEntries}`;
+    document.getElementById('modalPrevPage').disabled = currentPage <= 1;
+    document.getElementById('modalNextPage').disabled = currentPage >= modalLastPage;
+}
+
+function prevModalPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadModalPage(currentPage);
+    }
+}
+
+function nextModalPage() {
+    if (currentPage < modalLastPage) {
+        currentPage++;
+        loadModalPage(currentPage);
+    }
 }
 
 function sortTable(column) {
@@ -481,10 +554,8 @@ function sortTable(column) {
 }
 
 function updateTableDisplay() {
-    itemsPerPage = parseInt(document.getElementById('modal-show').value);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedData = filteredSuratJalans.slice(startIndex, endIndex);
+    // The server already returns paginated data; filteredSuratJalans contains current page
+    const paginatedData = filteredSuratJalans;
     
     const tbody = document.getElementById('suratJalanTableBody');
     tbody.innerHTML = '';
@@ -531,13 +602,13 @@ function updateTableDisplay() {
         tbody.appendChild(row);
     });
     
-    // Update pagination info
-    const showingFrom = Math.min(startIndex + 1, filteredSuratJalans.length);
-    const showingTo = Math.min(endIndex, filteredSuratJalans.length);
-    
+    // Update pagination info for server-side pagination
+    const showingFrom = modalTotalEntries ? ((currentPage - 1) * itemsPerPage + 1) : 0;
+    const showingTo = modalTotalEntries ? Math.min(currentPage * itemsPerPage, modalTotalEntries) : 0;
+
     document.getElementById('showingFrom').textContent = showingFrom;
     document.getElementById('showingTo').textContent = showingTo;
-    document.getElementById('totalEntries').textContent = filteredSuratJalans.length;
+    document.getElementById('totalEntries').textContent = modalTotalEntries;
 }
 
 // Close modal when clicking outside
