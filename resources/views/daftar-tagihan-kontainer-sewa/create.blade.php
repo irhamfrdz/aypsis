@@ -416,7 +416,7 @@
 // Filter containers based on selected vendor
 function filterContainersByVendor() {
     const containerSelect = document.getElementById('nomor_kontainer');
-    // vendorSelect already declared above
+    const vendorSelect = document.getElementById('vendor');
     const sizeSelect = document.getElementById('size');
     const tarifSelect = document.getElementById('tarif');
     const tanggalAwalInput = document.getElementById('tanggal_awal');
@@ -454,6 +454,7 @@ function filterContainersByVendor() {
 // Auto-fill size when container is selected
 function fillContainerSize() {
     const containerSelect = document.getElementById('nomor_kontainer');
+    const vendorSelect = document.getElementById('vendor');
     const sizeSelect = document.getElementById('size');
     const selectedOption = containerSelect.options[containerSelect.selectedIndex];
     
