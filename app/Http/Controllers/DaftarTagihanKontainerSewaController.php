@@ -82,7 +82,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             }
 
             // Now apply the filter: show direct matches OR containers in the same groups
-            $query->where(function ($q) use ($searchTerm, $groupNames, $sanitizedSearch) {
+            $query->where(function ($q) use ($searchTerm, $groupNames, $sanitizedSearch, $useGroupExpansion) {
                 // Show containers that directly match the search term
                 $q->where(function ($subQ) use ($searchTerm) {
                     $subQ->where('vendor', 'LIKE', '%' . $searchTerm . '%')
