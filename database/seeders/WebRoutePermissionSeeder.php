@@ -170,6 +170,8 @@ class WebRoutePermissionSeeder extends Seeder
                 'uang-jalan-delete', 'uang-jalan-approve', 'uang-jalan-print', 
                 'uang-jalan-export', 'uang-jalan-batam.view', 'uang-jalan-batam.create', 
                 'uang-jalan-batam.edit', 'uang-jalan-batam.delete',
+                // Uang Jalan Bongkaran permissions
+                'uang-jalan-bongkaran-view', 'uang-jalan-bongkaran-create', 'uang-jalan-bongkaran-update', 'uang-jalan-bongkaran-delete',
                 
                 // Order permissions
                 'order-view', 'order-create', 'order-update', 'order-delete', 
