@@ -1555,6 +1555,22 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:uang-jalan-delete'
          ]);
 
+     // Uang Jalan Bongkaran Management
+     Route::get('uang-jalan-bongkaran/select-surat-jalan-bongkaran', [\App\Http\Controllers\UangJalanBongkaranController::class, 'selectSuratJalanBongkaran'])
+           ->name('uang-jalan-bongkaran.select-surat-jalan-bongkaran')
+           ->middleware('can:uang-jalan-bongkaran-create');
+
+     Route::resource('uang-jalan-bongkaran', \App\Http\Controllers\UangJalanBongkaranController::class)
+           ->middleware([
+                'index' => 'can:uang-jalan-bongkaran-view',
+                'create' => 'can:uang-jalan-bongkaran-create',
+                'store' => 'can:uang-jalan-bongkaran-create',
+                'show' => 'can:uang-jalan-bongkaran-view',
+                'edit' => 'can:uang-jalan-bongkaran-update',
+                'update' => 'can:uang-jalan-bongkaran-update',
+                'destroy' => 'can:uang-jalan-bongkaran-delete'
+           ]);
+
     // ====================================
     // PRANOTA UANG JALAN MANAGEMENT ROUTES
     // ====================================
