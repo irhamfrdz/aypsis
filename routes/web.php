@@ -1587,6 +1587,11 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:pranota-uang-jalan-delete'
          ]);
 
+     // Pranota Uang Jalan Bongkaran - list & basic management
+     Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
+           ->name('pranota-uang-jalan-bongkaran.index')
+           ->middleware('can:pranota-uang-jalan-view');
+
     // Print Pranota Uang Jalan
     Route::get('pranota-uang-jalan/{pranotaUangJalan}/print', [\App\Http\Controllers\PranotaSuratJalanController::class, 'print'])
          ->name('pranota-uang-jalan.print')
