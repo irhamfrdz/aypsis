@@ -162,11 +162,20 @@
             padding: 2mm 3mm; /* consistent mm-based padding for print */
             text-align: left;
             vertical-align: middle;
-            word-wrap: break-word;
+            word-wrap: normal;
+            word-break: normal;
+        }
+
+        /* Headers may wrap to keep their text readable instead of breaking letters */
+        .table th {
+            white-space: normal;
+        }
+
+        /* Data cells should stay on a single line; use ellipsis when overflow occurs */
+        .table td {
             white-space: nowrap; /* keep content on a single line */
             overflow: hidden;
             text-overflow: ellipsis;
-            word-break: normal;
         }
 
         .table th {
@@ -346,16 +355,16 @@
         <table class="table {{ $hasInvoices ? 'container-table' : '' }}">
             <thead>
                 <tr>
-                    <th style="width: 4%;">No</th>
-                    <th style="width: 18%;">No. Kontainer</th>
-                    <th style="width: 4%;">Size</th>
-                    <th style="width: 15%;">Masa</th>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 20%;">No. Kontainer</th>
+                    <th style="width: 5%;">Size</th>
+                    <th style="width: 18%;">Masa</th>
                     <th style="width: 8%;">DPP</th>
                     <th style="width: 8%;">Adjustment</th>
                     <th style="width: 8%;">PPN</th>
                     <th style="width: 6%;">PPH</th>
-                    <th style="width: 14%;">Grand Total</th>
-                    <th style="width: 15%;">Invoice Vendor</th>
+                    <th style="width: 12%;">Grand Total</th>
+                    <th style="width: 13%;">Invoice Vendor</th>
                 </tr>
             </thead>
             <tbody>
