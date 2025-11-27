@@ -62,7 +62,7 @@
                                     id="vendor" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('vendor') border-red-500 @enderror"
                                     required
-                                    onchange="filterContainersByVendor()">
+                                    >
                                 <option value="">-- Pilih Vendor --</option>
                                 @if(isset($vendors) && $vendors->count() > 0)
                                     @foreach($vendors as $vendorItem)
@@ -581,7 +581,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen to container selection changes
     containerSelect.addEventListener('change', fillContainerSize);
     // Listen to vendor/size/tarif/date/period changes to fetch pricelist and auto-fill DPP
-    if (vendorSelect) vendorSelect.addEventListener('change', fetchPricelistDpp);
+    if (vendorSelect) {
+        vendorSelect.addEventListener('change', fetchPricelistDpp);
+        vendorSelect.addEventListener('change', filterContainersByVendor);
+    }
     if (sizeSelect) sizeSelect.addEventListener('change', fetchPricelistDpp);
     if (tarifSelect) tarifSelect.addEventListener('change', fetchPricelistDpp);
     if (tanggalAwalInput) tanggalAwalInput.addEventListener('change', fetchPricelistDpp);
