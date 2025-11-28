@@ -127,10 +127,11 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
 
         // Process each RO group
         foreach ($tandaTerimas as $nomorRo => $groupedTandaTerimas) {
-            // Add RO header row
+            // Add RO header row (two columns: first column literal 'RO NOMOR :', second column the number)
             $rows->push([
-                'RO NOMOR : ' . ($nomorRo ?: 'N/A'),
-                '', '', '', '', '', '', '', '', ''
+                'RO NOMOR :',
+                ($nomorRo ?: 'N/A'),
+                '', '', '', '', '', '', '', ''
             ]);
 
             // Add column headers
@@ -219,11 +220,11 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                 // Apply styles and merge RO rows, style header rows
                 for ($row = 1; $row <= $highestRow; $row++) {
                     $firstCell = (string) $sheet->getCell('A' . $row)->getValue();
-                    if ($firstCell !== null && str_starts_with(trim($firstCell), 'RO NOMOR :')) {
-                        // Merge the row across A:J
-                        $sheet->mergeCells("A{$row}:J{$row}");
-                        $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
-                    }
+                        if ($firstCell !== null && trim($firstCell) === 'RO NOMOR :') {
+                            // Apply RO style only to A and B columns (label and number) instead of merging the entire row
+                            $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
+                            $sheet->getStyle("B{$row}")->applyFromArray($roStyle);
+                        }
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
                     if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {
