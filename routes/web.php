@@ -2225,6 +2225,37 @@ Route::get('/test-gate-in-ajax', function () {
                 ->middleware('can:pembayaran-pranota-uang-jalan-delete');
         });
 
+     // 💰 PEMBAYARAN PRANOTA UANG JALAN BONGKARAN (Travel Allowance Payment Bongkaran)
+     Route::prefix('pembayaran-pranota-uang-jalan-bongkaran')
+          ->name('pembayaran-pranota-uang-jalan-bongkaran.')
+          ->middleware(['auth'])
+          ->group(function() {
+               Route::get('/', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'index'])
+                    ->name('index')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-view');
+               Route::get('/create', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'create'])
+                    ->name('create')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-create');
+               Route::get('/generate-nomor', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'generateNomor'])
+                    ->name('generate-nomor')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-create');
+               Route::post('/', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'store'])
+                    ->name('store')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-create');
+               Route::get('/{pembayaranPranotaUangJalanBongkaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'show'])
+                    ->name('show')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-view');
+               Route::get('/{pembayaranPranotaUangJalanBongkaran}/edit', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'edit'])
+                    ->name('edit')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-edit');
+               Route::put('/{pembayaranPranotaUangJalanBongkaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'update'])
+                    ->name('update')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-edit');
+               Route::delete('/{pembayaranPranotaUangJalanBongkaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'destroy'])
+                    ->name('destroy')
+                    ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-delete');
+          });
+
 /*
 |===========================================================================
 | 🚚 SUPIR (DRIVER) SPECIFIC ROUTES - Role-Based Access

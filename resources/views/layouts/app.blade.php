@@ -962,6 +962,14 @@
                                 <span class="text-xs">Bayar Pranota Uang Jalan</span>
                             </a>
                         @endif
+                        @if(Route::has('pembayaran-pranota-uang-jalan-bongkaran.index') && $user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-view'))
+                            <a href="{{ route('pembayaran-pranota-uang-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600' }}">
+                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                <span class="text-xs">Bayar Pranota Bongkaran</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif

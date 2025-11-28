@@ -91,7 +91,7 @@
                                 <label for="tujuan_kirim_id" class="text-sm font-medium text-gray-700">
                                     Tujuan Kirim <span class="text-red-500">*</span>
                                 </label>
-                                <a href="{{ route('tujuan-kirim.create') }}" target="_blank"
+                                <a href="{{ route('tujuan-kirim.create') }}" id="add_tujuan_kirim_link" target="_blank"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -101,8 +101,8 @@
                                 <div class="dropdown-container">
                                     <input type="text" id="search_tujuan_kirim" placeholder="Search..."
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
-                                    <select name="tujuan_kirim_id" id="tujuan_kirim_id" required
-                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_kirim_id') border-red-500 @enderror">
+                                        <select name="tujuan_kirim_id" id="tujuan_kirim_id" required
+                                            class="hidden w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500 {{ $errors->has('tujuan_kirim_id') ? 'border-red-500' : 'border-gray-300' }}">
                                         <option value="">Select an option</option>
                                         @foreach($tujuanKirims as $tujuanKirim)
                                             @php
@@ -135,7 +135,7 @@
                                 <label for="tujuan_ambil_id" class="text-sm font-medium text-gray-700">
                                     Tujuan Ambil <span class="text-red-500">*</span>
                                 </label>
-                                <a href="{{ route('master.tujuan-kegiatan-utama.create') }}" target="_blank"
+                                <a href="{{ route('master.tujuan-kegiatan-utama.create') }}" id="add_tujuan_ambil_link" target="_blank"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -186,7 +186,7 @@
                                 <label for="term_id" class="text-sm font-medium text-gray-700">
                                     Term
                                 </label>
-                                <a href="{{ route('term.create') }}" target="_blank"
+                                <a href="{{ route('term.create') }}" id="add_term_link" target="_blank"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -222,28 +222,49 @@
 
                         <!-- Pengirim -->
                         <div>
-                            <label for="pengirim_id" class="block text-sm font-medium text-gray-700 mb-2">Pengirim</label>
-                            <select name="pengirim_id" id="pengirim_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">Pilih Pengirim</option>
-                                @foreach($pengirims as $pengirim)
-                                    <option value="{{ $pengirim->id }}" {{ old('pengirim_id', $order->pengirim_id) == $pengirim->id ? 'selected' : '' }}>
-                                        {{ $pengirim->kode }} - {{ $pengirim->nama_pengirim }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="pengirim_id" class="text-sm font-medium text-gray-700">Pengirim</label>
+                                <a href="{{ route('order.pengirim.create') }}" id="add_pengirim_link" target="_blank"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah">Tambah</a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-pengirim">
+                                    <input type="text" id="search_pengirim" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="pengirim_id" id="pengirim_id" class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                                        <option value="">Pilih Pengirim</option>
+                                        @foreach($pengirims as $pengirim)
+                                            <option value="{{ $pengirim->id }}" {{ old('pengirim_id', $order->pengirim_id) == $pengirim->id ? 'selected' : '' }}>
+                                                {{ $pengirim->nama_pengirim }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_pengirim" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Jenis Barang -->
                         <div>
-                            <label for="jenis_barang_id" class="block text-sm font-medium text-gray-700 mb-2">Jenis Barang</label>
-                            <select name="jenis_barang_id" id="jenis_barang_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">Pilih Jenis Barang</option>
-                                @foreach($jenisBarangs as $jenisBarang)
-                                    <option value="{{ $jenisBarang->id }}" {{ old('jenis_barang_id', $order->jenis_barang_id) == $jenisBarang->id ? 'selected' : '' }}>
-                                        {{ $jenisBarang->kode }} - {{ $jenisBarang->nama_barang }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="jenis_barang_id" class="text-sm font-medium text-gray-700 mb-2">Jenis Barang</label>
+                                <a href="{{ route('order.jenis-barang.create') }}" id="add_jenis_barang_link" target="_blank" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah">Tambah</a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-jenis-barang">
+                                    <input type="text" id="search_jenis_barang" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="jenis_barang_id" id="jenis_barang_id" class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                                        <option value="">Pilih Jenis Barang</option>
+                                        @foreach($jenisBarangs as $jenisBarang)
+                                            <option value="{{ $jenisBarang->id }}" {{ old('jenis_barang_id', $order->jenis_barang_id) == $jenisBarang->id ? 'selected' : '' }}>
+                                                {{ $jenisBarang->nama_barang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_jenis_barang" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -254,8 +275,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Size Kontainer <span class="text-red-500">*</span></label>
-                            <select name="size_kontainer" id="size_kontainer" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('size_kontainer') border-red-500 @enderror">
+                                <select name="size_kontainer" id="size_kontainer" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500 {{ $errors->has('size_kontainer') ? 'border-red-500' : 'border-gray-300' }}">
                                 <option value="">Pilih Size Kontainer</option>
                                 @foreach($ukuranKontainers as $ukuran)
                                     <option value="{{ $ukuran }}" {{ old('size_kontainer', $order->size_kontainer) === $ukuran ? 'selected' : '' }}>
@@ -400,7 +421,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectElement = document.getElementById(config.selectId);
         const searchInput = document.getElementById(config.searchId);
         const dropdownOptions = document.getElementById(config.dropdownId);
-        const originalOptions = Array.from(selectElement.options);
+        let originalOptions = Array.from(selectElement.options);
+
+        // Allow dropdown options to be refreshed (used when a new item was added in a popup)
+        function refreshOriginalOptions() {
+            originalOptions = Array.from(selectElement.options);
+        }
+        // Expose a refresh function for this select so popup adds can refresh the in-memory option list
+        try {
+            window['refresh_' + config.selectId + '_options'] = refreshOriginalOptions;
+        } catch (err) {
+            // ignore errors if window is not defined
+        }
 
         // Get current selected value for editing
         const currentValue = selectElement.value;
@@ -508,12 +540,305 @@ document.addEventListener('DOMContentLoaded', function() {
         containerClass: 'dropdown-container-term'
     });
 
-    // Auto-refresh when new data is added
+    // Initialize Pengirim dropdown (was missing originally)
+    createSearchableDropdown({
+        selectId: 'pengirim_id',
+        searchId: 'search_pengirim',
+        dropdownId: 'dropdown_options_pengirim',
+        containerClass: 'dropdown-container-pengirim'
+    });
+
+    // Initialize Jenis Barang dropdown (was missing originally)
+    createSearchableDropdown({
+        selectId: 'jenis_barang_id',
+        searchId: 'search_jenis_barang',
+        dropdownId: 'dropdown_options_jenis_barang',
+        containerClass: 'dropdown-container-jenis-barang'
+    });
+
+    // Handle popup add events and update selects in-place (don't reload page)
     window.addEventListener('message', function(event) {
-        if (event.data.type === 'tujuan-kirim-added' || event.data.type === 'tujuan-ambil-added' || event.data.type === 'term-added') {
-            location.reload();
+        try {
+            if (!event.data || !event.data.type) return;
+
+            if (event.data.type === 'tujuan-kirim-added') {
+                const tujuanKirimSelect = document.getElementById('tujuan_kirim_id');
+                const searchTujuanKirimInput = document.getElementById('search_tujuan_kirim');
+                const dropdownOptionsTujuanKirim = document.getElementById('dropdown_options');
+
+                if (tujuanKirimSelect && event.data.data) {
+                    const newOption = document.createElement('option');
+                    newOption.value = event.data.data.id;
+                    newOption.textContent = event.data.data.nama_tujuan;
+                    tujuanKirimSelect.appendChild(newOption);
+                    tujuanKirimSelect.value = event.data.data.id;
+                    if (searchTujuanKirimInput) searchTujuanKirimInput.value = event.data.data.nama_tujuan;
+                    if (dropdownOptionsTujuanKirim) {
+                        const newOptionDiv = document.createElement('div');
+                        newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        newOptionDiv.textContent = event.data.data.nama_tujuan;
+                        newOptionDiv.setAttribute('data-value', event.data.data.id);
+                        newOptionDiv.addEventListener('click', function() {
+                            tujuanKirimSelect.value = this.getAttribute('data-value');
+                            searchTujuanKirimInput.value = this.textContent;
+                            dropdownOptionsTujuanKirim.classList.add('hidden');
+                            tujuanKirimSelect.dispatchEvent(new Event('change'));
+                        });
+                        if (dropdownOptionsTujuanKirim.children.length > 1) {
+                            dropdownOptionsTujuanKirim.insertBefore(newOptionDiv, dropdownOptionsTujuanKirim.children[1]);
+                        } else {
+                            dropdownOptionsTujuanKirim.appendChild(newOptionDiv);
+                        }
+                        dropdownOptionsTujuanKirim.classList.add('hidden');
+                    }
+                    // Refresh original options for the searchable dropdown
+                    if (window['refresh_tujuan_kirim_id_options']) {
+                        window['refresh_tujuan_kirim_id_options']();
+                    }
+                    tujuanKirimSelect.dispatchEvent(new Event('change'));
+                    showNotification('Tujuan Kirim "' + event.data.data.nama_tujuan + '" berhasil ditambahkan dan dipilih!', 'success');
+                }
+            } else if (event.data.type === 'pengirim-added') {
+                const pengirimSelect = document.getElementById('pengirim_id');
+                const searchPengirimInput = document.getElementById('search_pengirim');
+                const dropdownOptionsPengirim = document.getElementById('dropdown_options_pengirim');
+                if (pengirimSelect && event.data.data) {
+                    const newOption = document.createElement('option');
+                    newOption.value = event.data.data.id;
+                    newOption.textContent = event.data.data.nama_pengirim;
+                    pengirimSelect.appendChild(newOption);
+                    pengirimSelect.value = event.data.data.id;
+                    if (searchPengirimInput) searchPengirimInput.value = event.data.data.nama_pengirim;
+                    if (dropdownOptionsPengirim) {
+                        const newOptionDiv = document.createElement('div');
+                        newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        newOptionDiv.textContent = event.data.data.nama_pengirim;
+                        newOptionDiv.setAttribute('data-value', event.data.data.id);
+                        newOptionDiv.addEventListener('click', function() {
+                            pengirimSelect.value = this.getAttribute('data-value');
+                            searchPengirimInput.value = this.textContent;
+                            dropdownOptionsPengirim.classList.add('hidden');
+                            pengirimSelect.dispatchEvent(new Event('change'));
+                        });
+                        if (dropdownOptionsPengirim.children.length > 1) {
+                            dropdownOptionsPengirim.insertBefore(newOptionDiv, dropdownOptionsPengirim.children[1]);
+                        } else {
+                            dropdownOptionsPengirim.appendChild(newOptionDiv);
+                        }
+                    }
+                    if (dropdownOptionsPengirim) dropdownOptionsPengirim.classList.add('hidden');
+                    if (window['refresh_pengirim_id_options']) {
+                        window['refresh_pengirim_id_options']();
+                    }
+                    pengirimSelect.dispatchEvent(new Event('change'));
+                    showNotification('Pengirim "' + event.data.data.nama_pengirim + '" berhasil ditambahkan dan dipilih!', 'success');
+                }
+            } else if (event.data.type === 'jenis-barang-added') {
+                const jenisBarangSelect = document.getElementById('jenis_barang_id');
+                const searchJenisBarangInput = document.getElementById('search_jenis_barang');
+                const dropdownOptionsJenisBarang = document.getElementById('dropdown_options_jenis_barang');
+                if (jenisBarangSelect && event.data.data) {
+                    const newOption = document.createElement('option');
+                    newOption.value = event.data.data.id;
+                    newOption.textContent = event.data.data.nama_barang;
+                    jenisBarangSelect.appendChild(newOption);
+                    jenisBarangSelect.value = event.data.data.id;
+                    if (searchJenisBarangInput) searchJenisBarangInput.value = event.data.data.nama_barang;
+                    if (dropdownOptionsJenisBarang) {
+                        const newOptionDiv = document.createElement('div');
+                        newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        newOptionDiv.textContent = event.data.data.nama_barang;
+                        newOptionDiv.setAttribute('data-value', event.data.data.id);
+                        newOptionDiv.addEventListener('click', function() {
+                            jenisBarangSelect.value = this.getAttribute('data-value');
+                            searchJenisBarangInput.value = this.textContent;
+                            dropdownOptionsJenisBarang.classList.add('hidden');
+                            jenisBarangSelect.dispatchEvent(new Event('change'));
+                        });
+                        if (dropdownOptionsJenisBarang.children.length > 1) {
+                            dropdownOptionsJenisBarang.insertBefore(newOptionDiv, dropdownOptionsJenisBarang.children[1]);
+                        } else {
+                            dropdownOptionsJenisBarang.appendChild(newOptionDiv);
+                        }
+                    }
+                    if (dropdownOptionsJenisBarang) dropdownOptionsJenisBarang.classList.add('hidden');
+                    if (window['refresh_jenis_barang_id_options']) {
+                        window['refresh_jenis_barang_id_options']();
+                    }
+                    jenisBarangSelect.dispatchEvent(new Event('change'));
+                    showNotification('Jenis Barang "' + event.data.data.nama_barang + '" berhasil ditambahkan dan dipilih!', 'success');
+                }
+            } else if (event.data.type === 'tujuan-ambil-added') {
+                const tujuanAmbilSelect = document.getElementById('tujuan_ambil_id');
+                const searchTujuanAmbilInput = document.getElementById('search_tujuan_ambil');
+                const dropdownOptionsTujuanAmbil = document.getElementById('dropdown_options_ambil');
+                if (tujuanAmbilSelect && event.data.data) {
+                    const newOption = document.createElement('option');
+                    newOption.value = event.data.data.id;
+                    newOption.textContent = event.data.data.nama_tujuan;
+                    tujuanAmbilSelect.appendChild(newOption);
+                    tujuanAmbilSelect.value = event.data.data.id;
+                    if (searchTujuanAmbilInput) searchTujuanAmbilInput.value = event.data.data.nama_tujuan;
+                    if (dropdownOptionsTujuanAmbil) {
+                        const newOptionDiv = document.createElement('div');
+                        newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        newOptionDiv.textContent = event.data.data.nama_tujuan;
+                        newOptionDiv.setAttribute('data-value', event.data.data.id);
+                        newOptionDiv.addEventListener('click', function() {
+                            tujuanAmbilSelect.value = this.getAttribute('data-value');
+                            searchTujuanAmbilInput.value = this.textContent;
+                            dropdownOptionsTujuanAmbil.classList.add('hidden');
+                            tujuanAmbilSelect.dispatchEvent(new Event('change'));
+                        });
+                        if (dropdownOptionsTujuanAmbil.children.length > 1) {
+                            dropdownOptionsTujuanAmbil.insertBefore(newOptionDiv, dropdownOptionsTujuanAmbil.children[1]);
+                        } else {
+                            dropdownOptionsTujuanAmbil.appendChild(newOptionDiv);
+                        }
+                    }
+                    if (dropdownOptionsTujuanAmbil) dropdownOptionsTujuanAmbil.classList.add('hidden');
+                    if (window['refresh_tujuan_ambil_id_options']) {
+                        window['refresh_tujuan_ambil_id_options']();
+                    }
+                    tujuanAmbilSelect.dispatchEvent(new Event('change'));
+                    showNotification('Tujuan Ambil "' + event.data.data.nama_tujuan + '" berhasil ditambahkan dan dipilih!', 'success');
+                }
+            } else if (event.data.type === 'term-added') {
+                const termSelect = document.getElementById('term_id');
+                const searchTermInput = document.getElementById('search_term');
+                const dropdownOptionsElement = document.getElementById('dropdown_options_term');
+                if (termSelect && event.data.data) {
+                    const newOption = document.createElement('option');
+                    newOption.value = event.data.data.id;
+                    newOption.textContent = event.data.data.nama_status;
+                    termSelect.appendChild(newOption);
+                    termSelect.value = event.data.data.id;
+                    if (searchTermInput) searchTermInput.value = event.data.data.nama_status;
+                    if (dropdownOptionsElement) {
+                        const newOptionDiv = document.createElement('div');
+                        newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        newOptionDiv.textContent = event.data.data.nama_status;
+                        newOptionDiv.setAttribute('data-value', event.data.data.id);
+                        newOptionDiv.addEventListener('click', function() {
+                            termSelect.value = this.getAttribute('data-value');
+                            searchTermInput.value = this.textContent;
+                            dropdownOptionsElement.classList.add('hidden');
+                            termSelect.dispatchEvent(new Event('change'));
+                        });
+                        if (dropdownOptionsElement.children.length > 1) {
+                            dropdownOptionsElement.insertBefore(newOptionDiv, dropdownOptionsElement.children[1]);
+                        } else {
+                            dropdownOptionsElement.appendChild(newOptionDiv);
+                        }
+                    }
+                    // Refresh searchable dropdown original options for term
+                    if (window.refreshTermOptions) {
+                        window.refreshTermOptions();
+                    }
+                    if (window['refresh_term_id_options']) {
+                        window['refresh_term_id_options']();
+                    }
+                    if (dropdownOptionsElement) dropdownOptionsElement.classList.add('hidden');
+                    termSelect.dispatchEvent(new Event('change'));
+                    showNotification('Term "' + event.data.data.nama_status + '" berhasil ditambahkan dan dipilih!', 'success');
+                }
+            }
+        } catch (err) {
+            console.error('Error handling popup message', err);
         }
     });
+
+    // Add link popup handlers (open popup and pass search term)
+    const addTermLink = document.getElementById('add_term_link');
+    const searchTermInput = document.getElementById('search_term');
+    if (addTermLink && searchTermInput) {
+        addTermLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTermInput.value.trim();
+            let url = "{{ route('term.create') }}";
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+            if (searchValue) params.append('search', searchValue);
+            url += '?' + params.toString();
+            const popup = window.open(url, 'addTerm', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+            if (popup) popup.focus();
+        });
+    }
+
+    const addTujuanKirimLink = document.getElementById('add_tujuan_kirim_link');
+    const searchTujuanKirimInput = document.getElementById('search_tujuan_kirim');
+    if (addTujuanKirimLink && searchTujuanKirimInput) {
+        addTujuanKirimLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTujuanKirimInput.value.trim();
+            let url = "{{ route('tujuan-kirim.create') }}";
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+            if (searchValue) params.append('search', searchValue);
+            url += '?' + params.toString();
+            const popup = window.open(url, 'addTujuanKirim', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+            if (popup) popup.focus();
+        });
+    }
+
+    const addTujuanAmbilLink = document.getElementById('add_tujuan_ambil_link');
+    const searchTujuanAmbilInput = document.getElementById('search_tujuan_ambil');
+    if (addTujuanAmbilLink && searchTujuanAmbilInput) {
+        addTujuanAmbilLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTujuanAmbilInput.value.trim();
+            let url = "{{ route('master.tujuan-kegiatan-utama.create') }}";
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+            if (searchValue) params.append('search', searchValue);
+            url += '?' + params.toString();
+            const popup = window.open(url, 'addTujuanAmbil', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+            if (popup) popup.focus();
+        });
+    }
+
+    const addPengirimLink = document.getElementById('add_pengirim_link');
+    const searchPengirimInput = document.getElementById('search_pengirim');
+    if (addPengirimLink && searchPengirimInput) {
+        addPengirimLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchPengirimInput.value.trim();
+            let url = "{{ route('order.pengirim.create') }}";
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+            if (searchValue) params.append('search', searchValue);
+            url += '?' + params.toString();
+            const popup = window.open(url, 'addPengirim', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+            if (popup) popup.focus();
+        });
+    }
+
+    const addJenisBarangLink = document.getElementById('add_jenis_barang_link');
+    const searchJenisBarangInput = document.getElementById('search_jenis_barang');
+    if (addJenisBarangLink && searchJenisBarangInput) {
+        addJenisBarangLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchJenisBarangInput.value.trim();
+            let url = "{{ route('order.jenis-barang.create') }}";
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+            if (searchValue) params.append('search', searchValue);
+            url += '?' + params.toString();
+            const popup = window.open(url, 'addJenisBarang', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+            if (popup) popup.focus();
+        });
+    }
+
+    // Helper notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+            type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 3000);
+    }
 });
 </script>
 @endpush
