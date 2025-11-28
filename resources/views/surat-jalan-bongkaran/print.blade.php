@@ -101,6 +101,14 @@
             font-size: 14px;
             font-weight: bold;
         }
+        /* Tujuan Pengambilan: posisi absolute (atas 14.5cm, kiri 10.5cm) */
+        .tujuan-pengambilan-abs {
+            position: absolute;
+            top: 14.5cm; /* 14.5cm dari atas */
+            left: 10.5cm; /* 10.5cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
     
 </head>
@@ -147,6 +155,10 @@
         <!-- Pengirim (posisi top 11cm, left 10.5cm) -->
         <div class="pengirim-abs">
             {{ strtoupper($suratJalanBongkaran->pengirim ?? ($suratJalanBongkaran->order && $suratJalanBongkaran->order->pengirim ? optional($suratJalanBongkaran->order->pengirim)->nama_pengirim : '')) }}
+        </div>
+        <!-- Tujuan Pengambilan (posisi top 14.5cm, left 10.5cm) -->
+        <div class="tujuan-pengambilan-abs">
+            {{ strtoupper($suratJalanBongkaran->tujuan_pengambilan ?? ($suratJalanBongkaran->order && $suratJalanBongkaran->order->tujuanAmbil ? optional($suratJalanBongkaran->order->tujuanAmbil)->ke : '')) }}
         </div>
         <!-- Seal number (posisi top 11.5cm, left 1cm) -->
         <div class="seal-abs">
