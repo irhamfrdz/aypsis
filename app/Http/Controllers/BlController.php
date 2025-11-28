@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bl;
+use App\Models\Prospek;
+use Carbon\Carbon;
 use App\Models\MasterKapal;
 use App\Models\StockKontainer;
 use App\Models\Kontainer;
@@ -705,6 +707,7 @@ class BlController extends Controller
             $importedCount = 0;
             $errors = [];
             $rowNumber = 1;
+            $containerNumbersSeen = [];
             
             // Get next cargo number for auto-generated container numbers
             $lastCargoNumber = Bl::where('nomor_kontainer', 'LIKE', 'CARGO-%')
@@ -721,7 +724,7 @@ class BlController extends Controller
 
             \Log::info('Starting BL import', ['extension' => $extension, 'file' => $file->getClientOriginalName(), 'nextCargoNumber' => $nextCargoNumber]);
 
-            if ($extension === 'csv') {
+                if ($extension === 'csv') {
                 // Handle CSV import with semicolon delimiter
                 $handle = fopen($file->getRealPath(), 'r');
                 
@@ -729,8 +732,25 @@ class BlController extends Controller
                     throw new \Exception('Tidak dapat membuka file CSV');
                 }
                 
-                // Skip header row
+                // Skip header row and capture header for diagnostics
                 $header = fgetcsv($handle, 0, ';');
+                // Normalize header values for basic validation
+                $normalizedHeader = array_map(function($h) {
+                    return strtolower(trim(preg_replace('/\s+/', ' ', $h ?? '')));
+                }, (array)$header);
+                // Check if critical columns exist in header
+                $requiredHeaderKeywords = ['nama', 'kapal', 'voyage', 'kontainer'];
+                foreach (['kapal', 'voyage'] as $keyword) {
+                    $found = false;
+                    foreach ($normalizedHeader as $h) {
+                        if (strpos($h, $keyword) !== false) {
+                            $found = true; break;
+                        }
+                    }
+                    if (!$found) {
+                        $errors[] = "Header CSV tidak mengandung kolom yang mengindikasikan '{$keyword}' - periksa nama kolom: " . implode(', ', $header);
+                    }
+                }
                 $rowNumber++;
                 
                 \Log::info('CSV Header', ['header' => $header]);
@@ -751,7 +771,7 @@ class BlController extends Controller
                         
                         // Pastikan array memiliki minimal 15 kolom
                         if (count($row) < 15) {
-                            $errors[] = "Baris {$rowNumber}: Format CSV tidak lengkap (hanya " . count($row) . " kolom, minimal 15 kolom)";
+                            $errors[] = "Baris {$rowNumber}: Format CSV tidak lengkap (hanya " . count($row) . " kolom, minimal 15 kolom). Header: " . implode(', ', array_map('trim', (array)$header));
                             $rowNumber++;
                             continue;
                         }
@@ -792,32 +812,72 @@ class BlController extends Controller
                             $nomorKontainer = 'CARGO-' . $nextCargoNumber;
                             $nextCargoNumber++;
                         }
+
+                        // Check duplicate container numbers within the same uploaded file
+                        if (!empty($nomorKontainer)) {
+                            if (in_array($nomorKontainer, $containerNumbersSeen)) {
+                                $errors[] = "Baris {$rowNumber}: Duplikat nomor kontainer di file: {$nomorKontainer} ({$rowPreview})";
+                            } else {
+                                $containerNumbersSeen[] = $nomorKontainer;
+                            }
+                        }
                         
                         // Auto-fill size kontainer from database if not provided in file
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if ($autoFilledSize['warning']) {
-                            $errors[] = "Baris {$rowNumber}: " . $autoFilledSize['warning'];
+                            $errors[] = "Baris {$rowNumber}: " . $autoFilledSize['warning'] . " ({$rowPreview})";
                         }
                         
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
                         if (empty($namaKapal) || empty($noVoyage)) {
-                            $errors[] = "Baris {$rowNumber}: Nama Kapal dan No Voyage wajib diisi";
+                            $errors[] = "Baris {$rowNumber}: Nama Kapal dan No Voyage wajib diisi ({$rowPreview})";
                             $rowNumber++;
                             continue;
                         }
 
-                        // Parse tonnage dan volume
+                        // Parse tonnage dan volume (validate numeric)
                         $tonnage = null;
                         if (isset($row[14]) && !empty(trim($row[14]))) {
                             $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
-                            $tonnage = (float)$tonnageStr;
+                            if (!is_numeric($tonnageStr)) {
+                                $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$row[14]}') ({$rowPreview})";
+                                $tonnage = null;
+                            } else {
+                                $tonnage = (float)$tonnageStr;
+                            }
                         }
                         
                         $volume = null;
                         if (isset($row[15]) && !empty(trim($row[15]))) {
                             $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[15]));
-                            $volume = (float)$volumeStr;
+                            if (!is_numeric($volumeStr)) {
+                                $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$row[15]}') ({$rowPreview})";
+                                $volume = null;
+                            } else {
+                                $volume = (float)$volumeStr;
+                            }
                         }
+
+                        // Check tanggal_muat (if present) parsing
+                        if (isset($row[20]) && !empty(trim($row[20]))) {
+                            try {
+                                $tanggalMuatRaw = trim($row[20]);
+                                $tanggalMuat = Carbon::parse($tanggalMuatRaw);
+                            } catch (\Exception $e) {
+                                $errors[] = "Baris {$rowNumber}: Format tanggal muat tidak valid ('{$row[20]}') ({$rowPreview})";
+                            }
+                        }
+
+                        // Validate prospek_id if provided
+                        if (isset($row[22]) && !empty(trim($row[22]))) {
+                            $prospekId = trim($row[22]);
+                            if (!is_numeric($prospekId) || !Prospek::find($prospekId)) {
+                                $errors[] = "Baris {$rowNumber}: Prospek dengan ID '{$row[22]}' tidak ditemukan ({$rowPreview})";
+                            }
+                        }
+
+                        // For debugging convenience, prepare a short row preview for possible error messages
+                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-');
 
                         // Create BL record
                         Bl::create([
@@ -846,7 +906,7 @@ class BlController extends Controller
 
                         $importedCount++;
                     } catch (\Exception $e) {
-                        $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                        $errors[] = "Baris {$rowNumber}: " . $e->getMessage() . " ({$rowPreview})";
                     }
                     
                     $rowNumber++;
@@ -876,18 +936,66 @@ class BlController extends Controller
                             $nomorKontainer = 'CARGO-' . $nextCargoNumber;
                             $nextCargoNumber++;
                         }
+
+                        // Check duplicate container numbers within the same uploaded file
+                        if (!empty($nomorKontainer)) {
+                            if (in_array($nomorKontainer, $containerNumbersSeen)) {
+                                $errors[] = "Baris {$row}: Duplikat nomor kontainer di file: {$nomorKontainer} ({$rowPreview})";
+                            } else {
+                                $containerNumbersSeen[] = $nomorKontainer;
+                            }
+                        }
                         
                         // Auto-fill size kontainer from database if not provided in file
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if ($autoFilledSize['warning']) {
-                            $errors[] = "Baris {$row}: " . $autoFilledSize['warning'];
+                            $errors[] = "Baris {$row}: " . $autoFilledSize['warning'] . " ({$rowPreview})";
                         }
 
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
                         if (empty($namaKapal) || empty($noVoyage)) {
-                            $errors[] = "Baris {$row}: Nama Kapal dan No Voyage wajib diisi";
+                            $errors[] = "Baris {$row}: Nama Kapal dan No Voyage wajib diisi ({$rowPreview})";
                             continue;
                         }
+
+                        // Validate tonnage and volume
+                        $rawTonnage = $worksheet->getCell("O{$row}")->getValue();
+                        if (!empty($rawTonnage)) {
+                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($rawTonnage));
+                            if (!is_numeric($tonnageStr)) {
+                                $errors[] = "Baris {$row}: Nilai tonnage tidak valid ('{$rawTonnage}') ({$rowPreview})";
+                            }
+                        }
+
+                        $rawVolume = $worksheet->getCell("P{$row}")->getValue();
+                        if (!empty($rawVolume)) {
+                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($rawVolume));
+                            if (!is_numeric($volumeStr)) {
+                                $errors[] = "Baris {$row}: Nilai volume tidak valid ('{$rawVolume}') ({$rowPreview})";
+                            }
+                        }
+
+                        // Validate tanggal muat if present
+                        $tanggalMuatCell = $worksheet->getCell("U{$row}")->getValue();
+                        if (!empty($tanggalMuatCell)) {
+                            try {
+                                Carbon::parse($tanggalMuatCell);
+                            } catch (\Exception $e) {
+                                $errors[] = "Baris {$row}: Format tanggal muat tidak valid ('{$tanggalMuatCell}') ({$rowPreview})";
+                            }
+                        }
+
+                        // Validate prospek_id if provided
+                        $prospekCell = $worksheet->getCell("W{$row}")->getValue();
+                        if (!empty($prospekCell)) {
+                            $prospekId = trim($prospekCell);
+                            if (!is_numeric($prospekId) || !Prospek::find($prospekId)) {
+                                $errors[] = "Baris {$row}: Prospek dengan ID '{$prospekCell}' tidak ditemukan ({$rowPreview})";
+                            }
+                        }
+
+                        // For debugging convenience, prepare a short row preview for possible error messages
+                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-');
 
                         // Create BL record
                         Bl::create([
@@ -916,7 +1024,7 @@ class BlController extends Controller
 
                         $importedCount++;
                     } catch (\Exception $e) {
-                        $errors[] = "Baris {$row}: " . $e->getMessage();
+                        $errors[] = "Baris {$row}: " . $e->getMessage() . " ({$rowPreview})";
                     }
                 }
             }
@@ -935,14 +1043,20 @@ class BlController extends Controller
                 if ($importedCount > 0) {
                     // Partial success - some imported, some failed
                     \Log::warning("Partial import success: {$importedCount} imported, {$errorCount} failed");
+                    $firstErrors = array_slice($errors, 0, 3);
+                    $firstErrorsMsg = implode('; ', $firstErrors);
+                    $moreErrors = max(0, $errorCount - count($firstErrors));
+                    $detailsSummary = $firstErrorsMsg . ($moreErrors > 0 ? "; dan {$moreErrors} error lainnya" : '');
                     return redirect()->route('bl.index')
-                        ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$errorCount} data gagal.")
+                        ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$errorCount} data gagal. Contoh error: {$detailsSummary}")
                         ->with('import_errors', $errors);
                 } else {
                     // Complete failure - nothing imported
                     \Log::error("Import completely failed: {$errorCount} errors");
+                    $firstErrors = array_slice($errors, 0, 5);
+                    $firstErrorsMsg = implode('; ', $firstErrors);
                     return redirect()->route('bl.index')
-                        ->with('error', "Import gagal! Tidak ada data yang berhasil diimport. Total {$errorCount} error.")
+                        ->with('error', "Import gagal! Tidak ada data yang berhasil diimport. Total {$errorCount} error. Contoh: {$firstErrorsMsg}")
                         ->with('import_errors', $errors);
                 }
             }
