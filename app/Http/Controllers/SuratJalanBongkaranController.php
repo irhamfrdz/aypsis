@@ -14,6 +14,7 @@ use App\Models\MasterKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SuratJalanBongkaranController extends Controller
 {
@@ -428,7 +429,9 @@ class SuratJalanBongkaranController extends Controller
             $bl = Bl::find($request->bl_id);
             if ($bl && isset($bl->nomor_bl)) {
                 $validatedData['no_bl'] = $bl->nomor_bl;
-                $validatedData['bl_id'] = $request->bl_id;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
+                    $validatedData['bl_id'] = $request->bl_id;
+                }
             }
         } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
             // If only container number is provided and no_bl missing, try to look up BL number by container
@@ -438,7 +441,9 @@ class SuratJalanBongkaranController extends Controller
                 // If found by container, try to set bl_id as well
                 $blRecord = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
                 if ($blRecord) {
-                    $validatedData['bl_id'] = $blRecord->id;
+                    if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
+                        $validatedData['bl_id'] = $blRecord->id;
+                    }
                 }
             }
         }
@@ -544,13 +549,17 @@ class SuratJalanBongkaranController extends Controller
             $bl = Bl::find($request->bl_id);
             if ($bl && isset($bl->nomor_bl)) {
                 $validatedData['no_bl'] = $bl->nomor_bl;
-                $validatedData['bl_id'] = $bl->id;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
+                    $validatedData['bl_id'] = $bl->id;
+                }
             }
         } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
             $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
             if ($blByContainer && isset($blByContainer->nomor_bl)) {
                 $validatedData['no_bl'] = $blByContainer->nomor_bl;
-                $validatedData['bl_id'] = $blByContainer->id;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
+                    $validatedData['bl_id'] = $blByContainer->id;
+                }
             }
         }
 
