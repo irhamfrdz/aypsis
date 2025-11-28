@@ -69,6 +69,14 @@
             font-size: 17px;
             font-weight: bold;
         }
+        /* Seal number: posisi absolute sesuai permintaan */
+        .seal-abs {
+            position: absolute;
+            top: 11.5cm; /* 11.5cm dari atas */
+            left: 1cm; /* 1cm dari kiri */
+            font-size: 24px;
+            font-weight: bold;
+        }
     </style>
     
 </head>
@@ -107,6 +115,10 @@
         <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
         <div class="nama-barang-abs">
             {{ $suratJalanBongkaran->jenis_barang ? strtoupper($suratJalanBongkaran->jenis_barang) : ($suratJalanBongkaran->order && $suratJalanBongkaran->order->jenisBarang ? strtoupper($suratJalanBongkaran->order->jenisBarang->nama) : '') }}
+        </div>
+        <!-- Seal number (posisi top 11.5cm, left 1cm) -->
+        <div class="seal-abs">
+            {{ $suratJalanBongkaran->no_seal ? strtoupper($suratJalanBongkaran->no_seal) : '' }}
         </div>
         <!-- Add layout elements here while you remeasure the print layout -->
     </div>
