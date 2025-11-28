@@ -476,4 +476,15 @@ class SuratJalanBongkaranController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Print a surat jalan bongkaran (render a printable view)
+     */
+    public function print(SuratJalanBongkaran $suratJalanBongkaran)
+    {
+        // Eager load relations useful for the print view
+        $suratJalanBongkaran->load(['inputBy']);
+
+        return view('surat-jalan-bongkaran.print', compact('suratJalanBongkaran'));
+    }
 }
