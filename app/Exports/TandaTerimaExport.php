@@ -144,8 +144,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                 'EXPIRED_DATE',
                 'CONSIGNEE',
                 'REMARK',
-                'POD',
-                'BOX_OPR'
+                'POD'
             ]);
 
             // Add data for this RO
@@ -155,12 +154,11 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                     $tandaTerima->size ?? '',                   // SIZE
                     $this->getContainerType($tandaTerima->no_kontainer), // TIPE
                     $this->getStatus($tandaTerima->kegiatan),   // STATUS (F/E)
-                    $tandaTerima->tonase ?? '',                 // BERAT
+                    15000,                                      // BERAT set as fixed value 15000
                     $this->formatExpiredDate($tandaTerima->expired_date), // EXPIRED_DATE
                     '02522267',                                 // CONSIGNEE (fixed value)
                     '',                                         // REMARK (kosong)
-                    $this->getPod($tandaTerima->tujuan_pengiriman), // POD (IDBTM/IDKID)
-                    ''                                          // BOX_OPR (kosong)
+                    $this->getPod($tandaTerima->tujuan_pengiriman) // POD (IDBTM/IDKID)
                 ]);
             }
 
@@ -228,15 +226,15 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
                     if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {
-                        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray($headerStyle);
+                        $sheet->getStyle("A{$row}:I{$row}")->applyFromArray($headerStyle);
                         // Set wrap text and center alignment for header
-                        $sheet->getStyle("A{$row}:J{$row}")->getAlignment()->setWrapText(true);
+                        $sheet->getStyle("A{$row}:I{$row}")->getAlignment()->setWrapText(true);
                         $sheet->getRowDimension($row)->setRowHeight(22);
                     }
                 }
 
                 // Optionally set column widths minimum or rely on ShouldAutoSize
-                foreach (range('A', 'J') as $col) {
+                foreach (range('A', 'I') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },
