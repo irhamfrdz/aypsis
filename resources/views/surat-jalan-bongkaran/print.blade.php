@@ -117,6 +117,15 @@
             font-weight: bold;
         }
         
+        /* No. Voyage at top-left */
+        .no-voyage {
+            position: absolute;
+            top: 45mm; /* 4.5cm */
+            left: 35mm; /* 3.5cm */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
         /* Tujuan Kirim dengan posisi absolut */
         .tujuan-kirim {
             position: absolute;
@@ -265,6 +274,11 @@
         <!-- SESI 1: HEADER -->
         <div class="date-header">
             {{ \Carbon\Carbon::parse($suratJalanBongkaran->tanggal_surat_jalan ?? now())->format('d-M-Y') }}
+        </div>
+        
+        <!-- NO VOYAGE -->
+        <div class="no-voyage">
+            {{ $suratJalanBongkaran->no_voyage ?? '' }}
         </div>
         
         <!-- NOMOR SURAT JALAN -->
