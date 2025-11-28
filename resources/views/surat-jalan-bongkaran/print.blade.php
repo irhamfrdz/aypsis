@@ -61,6 +61,14 @@
             font-size: 16px;
             font-weight: bold;
         }
+        /* Nama Barang: posisi absolute sesuai permintaan */
+        .nama-barang-abs {
+            position: absolute;
+            top: 9cm; /* 9cm dari atas */
+            left: 10.5cm; /* 10.5cm dari kiri */
+            font-size: 17px;
+            font-weight: bold;
+        }
     </style>
     
 </head>
@@ -95,6 +103,10 @@
         <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
         <div class="no-kontainer">
             {{ strtoupper($suratJalanBongkaran->no_kontainer ?? '') }}
+        </div>
+        <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
+        <div class="nama-barang-abs">
+            {{ $suratJalanBongkaran->jenis_barang ? strtoupper($suratJalanBongkaran->jenis_barang) : ($suratJalanBongkaran->order && $suratJalanBongkaran->order->jenisBarang ? strtoupper($suratJalanBongkaran->order->jenisBarang->nama) : '') }}
         </div>
         <!-- Add layout elements here while you remeasure the print layout -->
     </div>
