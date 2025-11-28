@@ -61,6 +61,14 @@
             font-size: 16px;
             font-weight: bold;
         }
+        /* Jenis Pengiriman: posisi absolute */
+        .jenis-pengiriman-abs {
+            position: absolute;
+            top: 9cm; /* 9cm dari atas */
+            left: 6cm; /* 6cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
         /* Nama Barang: posisi absolute sesuai permintaan */
         .nama-barang-abs {
             position: absolute;
@@ -119,6 +127,10 @@
         <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
         <div class="no-kontainer">
             {{ strtoupper($suratJalanBongkaran->no_kontainer ?? '') }}
+        </div>
+        <!-- Jenis Pengiriman (posisi top 9cm, left 6cm) -->
+        <div class="jenis-pengiriman-abs">
+            {{ $suratJalanBongkaran->jenis_pengiriman ? strtoupper($suratJalanBongkaran->jenis_pengiriman) : '' }}
         </div>
         <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
         <div class="nama-barang-abs">
