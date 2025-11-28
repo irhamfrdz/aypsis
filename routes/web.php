@@ -2242,16 +2242,16 @@ Route::get('/test-gate-in-ajax', function () {
                Route::post('/', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'store'])
                     ->name('store')
                     ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-create');
-               Route::get('/{pembayaranPranotaUangJalanBongkaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'show'])
+               Route::get('/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'show'])
                     ->name('show')
                     ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-view');
-               Route::get('/{pembayaranPranotaUangJalanBongkaran}/edit', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'edit'])
+               Route::get('/{pembayaran}/edit', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'edit'])
                     ->name('edit')
                     ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-edit');
-               Route::put('/{pembayaranPranotaUangJalanBongkaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'update'])
+               Route::put('/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'update'])
                     ->name('update')
                     ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-edit');
-               Route::delete('/{pembayaranPranotaUangJalanBongkaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'destroy'])
+               Route::delete('/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBongkaranController::class, 'destroy'])
                     ->name('destroy')
                     ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-delete');
           });
