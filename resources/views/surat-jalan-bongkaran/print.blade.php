@@ -77,6 +77,14 @@
             font-size: 24px;
             font-weight: bold;
         }
+        /* Pelabuhan tujuan: posisi absolute sesuai permintaan */
+        .pelabuhan-abs {
+            position: absolute;
+            top: 15cm; /* 15cm dari atas */
+            left: 1cm; /* 1cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
     </style>
     
 </head>
@@ -119,6 +127,10 @@
         <!-- Seal number (posisi top 11.5cm, left 1cm) -->
         <div class="seal-abs">
             {{ $suratJalanBongkaran->no_seal ? strtoupper($suratJalanBongkaran->no_seal) : '' }}
+        </div>
+        <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) -->
+        <div class="pelabuhan-abs">
+            {{ $suratJalanBongkaran->pelabuhan_tujuan ? strtoupper($suratJalanBongkaran->pelabuhan_tujuan) : ($suratJalanBongkaran->tujuan_pengiriman ? strtoupper($suratJalanBongkaran->tujuan_pengiriman) : '') }}
         </div>
         <!-- Add layout elements here while you remeasure the print layout -->
     </div>
