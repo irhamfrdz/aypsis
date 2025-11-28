@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             // Additional module permission seeders
             UangJalanBongkaranPermissionSeeder::class,
             PranotaUangJalanBongkaranPermissionSeeder::class,
+            // Payment permissions for Pranota Uang Jalan Bongkaran
+            PembayaranPranotaUangJalanBongkaranPermissionSeeder::class,
             AdminUserSeeder::class, // User admin dengan semua permissions
             
             // === LEGACY PERMISSION SEEDERS (Optional - mungkin sudah tercakup di PermissionSeeder) ===
