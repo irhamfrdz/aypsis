@@ -106,6 +106,14 @@ class SuratJalanBongkaran extends Model
         return $this->belongsTo(MasterKapal::class, 'kapal_id');
     }
 
+    /**
+     * Relationship dengan Uang Jalan Bongkaran (bisa ada lebih dari satu)
+     */
+    public function uangJalanBongkarans()
+    {
+        return $this->hasMany(\App\Models\UangJalanBongkaran::class, 'surat_jalan_bongkaran_id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

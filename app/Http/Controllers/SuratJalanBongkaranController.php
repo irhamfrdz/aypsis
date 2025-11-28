@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBongkaran;
 use App\Models\Order;
+
+
 use App\Models\MasterKapal;
 use App\Models\Bl;
 use App\Models\User;
@@ -29,7 +31,7 @@ class SuratJalanBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanBongkaran::with(['inputBy']);
+        $query = SuratJalanBongkaran::with(['inputBy', 'uangJalanBongkarans']);
 
         // Filter berdasarkan tanggal
         if ($request->filled('start_date')) {
