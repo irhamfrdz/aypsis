@@ -3,6 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat Jalan - Placeholder</title>
+    <style>
+        /* This file is intentionally empty for re-measurement and layout experiments. */
+        html, body { margin: 0; padding: 0; background: white; }
+        .page-placeholder { display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; color: #444; }
+    </style>
+</head>
+<body>
+    <div class="page-placeholder">
+        <div>
+            <h1>PRINT TEMPLATE CLEARED</h1>
+            <p>This print template has been cleared so you can measure and design the new layout.</p>
+        </div>
+    </div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surat Jalan</title>
     <style>
         @page {
@@ -281,10 +302,7 @@
             {{ $suratJalan->no_voyage ?? '' }}
         </div>
         
-        <!-- NOMOR SURAT JALAN -->
-        <div class="no-surat-jalan">
-            {{ $suratJalan->no_surat_jalan ?? 'SJ-' . date('mdY') }}
-        </div>
+        <!-- NOMOR SURAT JALAN removed -->
         
         <!-- SESI 2: NO PLAT KENDARAAN -->
         <div class="no-plat">
