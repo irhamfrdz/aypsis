@@ -174,6 +174,21 @@
                             </div>
                         </details>
                     @endif
+                    @if(session('import_warnings'))
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-sm font-semibold hover:text-yellow-900">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Lihat detail peringatan ({{ count(session('import_warnings')) }} peringatan)
+                            </summary>
+                            <div class="mt-2 ml-4 text-xs space-y-1 max-h-60 overflow-y-auto">
+                                @foreach(session('import_warnings') as $warn)
+                                    <div class="flex items-start py-1">
+                                        <i class="fas fa-exclamation-circle text-xs mr-2 mt-1 text-yellow-600"></i>
+                                        <span>{{ $warn }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
                 </div>
                 <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-yellow-600 hover:text-yellow-800">
                     <i class="fas fa-times"></i>

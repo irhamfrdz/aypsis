@@ -706,6 +706,7 @@ class BlController extends Controller
             
             $importedCount = 0;
             $errors = [];
+            $warnings = []; // Non-blocking issues, e.g., container size not found in DB
             $rowNumber = 1;
             // Map nomorKontainer => array of pengirim seen for that nomor
             $containerNumbersSeen = [];
@@ -840,7 +841,8 @@ class BlController extends Controller
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if (empty($autoFilledSize['size'])) {
-                            $errors[] = "Baris {$rowNumber}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. ({$rowPreview})";
+                            // Do not block import even if size not found — treat as a warning and proceed with NULL size
+                            $warnings[] = "Baris {$rowNumber}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
                         }
                         
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
@@ -977,7 +979,8 @@ class BlController extends Controller
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if (empty($autoFilledSize['size'])) {
-                            $errors[] = "Baris {$row}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. ({$rowPreview})";
+                            // Do not block import even if size not found — treat as a warning and proceed with NULL size
+                            $warnings[] = "Baris {$row}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
                         }
 
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
@@ -1077,7 +1080,8 @@ class BlController extends Controller
                     $detailsSummary = $firstErrorsMsg . ($moreErrors > 0 ? "; dan {$moreErrors} error lainnya" : '');
                     return redirect()->route('bl.index')
                         ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$errorCount} data gagal. Contoh error: {$detailsSummary}")
-                        ->with('import_errors', $errors);
+                        ->with('import_errors', $errors)
+                        ->with('import_warnings', $warnings);
                 } else {
                     // Complete failure - nothing imported
                     \Log::error("Import completely failed: {$errorCount} errors");
@@ -1085,8 +1089,21 @@ class BlController extends Controller
                     $firstErrorsMsg = implode('; ', $firstErrors);
                     return redirect()->route('bl.index')
                         ->with('error', "Import gagal! Tidak ada data yang berhasil diimport. Total {$errorCount} error. Contoh: {$firstErrorsMsg}")
-                        ->with('import_errors', $errors);
+                        ->with('import_errors', $errors)
+                        ->with('import_warnings', $warnings);
                 }
+            }
+
+            if (empty($errors) && !empty($warnings)) {
+                // All rows imported but with non-blocking warnings (e.g., size not found). Show as a warning message.
+                $warningCount = count($warnings);
+                $firstWarnings = array_slice($warnings, 0, 3);
+                $firstWarningsMsg = implode('; ', $firstWarnings);
+                $moreWarnings = max(0, $warningCount - count($firstWarnings));
+                $detailsSummary = $firstWarningsMsg . ($moreWarnings > 0 ? "; dan {$moreWarnings} peringatan lainnya" : '');
+                return redirect()->route('bl.index')
+                    ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$warningCount} peringatan. Contoh peringatan: {$detailsSummary}")
+                    ->with('import_warnings', $warnings);
             }
 
             \Log::info("Import fully successful: {$importedCount} records");
