@@ -53,6 +53,14 @@
             font-size: 14px;
             font-weight: bold;
         }
+        /* Nomor Kontainer: posisi absolute sesuai permintaan */
+        .no-kontainer {
+            position: absolute;
+            top: 9cm; /* 9cm dari atas */
+            left: 1cm; /* 1cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
     </style>
     
 </head>
@@ -83,6 +91,10 @@
         <!-- Nomor BL (posisi top 4.25cm, left 13cm) -->
         <div class="no-bl">
             {{ strtoupper($suratJalanBongkaran->bl->nomor_bl ?? $suratJalanBongkaran->no_bl ?? $suratJalanBongkaran->noBillOfLading ?? '') }}
+        </div>
+        <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
+        <div class="no-kontainer">
+            {{ strtoupper($suratJalanBongkaran->no_kontainer ?? '') }}
         </div>
         <!-- Add layout elements here while you remeasure the print layout -->
     </div>
