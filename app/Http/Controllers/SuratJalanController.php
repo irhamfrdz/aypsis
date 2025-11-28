@@ -387,8 +387,7 @@ class SuratJalanController extends Controller
      */
     public function show($id)
     {
-                    'supir' => 'nullable|string|max:255', // Changed from required to nullable
-                    'is_supir_customer' => 'nullable|in:0,1',
+                    
         return view('surat-jalan.show', compact('suratJalan'));
     }
 
