@@ -1548,6 +1548,26 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['export']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Pembayaran Pranota Uang Jalan Bongkaran --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>Pembayaran Pranota Uang Jalan Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.view') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['view']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['view']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.create') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['create']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['create']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.update') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['update']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['update']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.delete') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['delete']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['delete']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-delete'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][approve]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.approve') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['approve']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['approve']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-approve'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][print]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.print') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['print']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['print']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.export') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['export']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['export']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
                                 <td class="module-header">
