@@ -72,7 +72,14 @@ class ProspekController extends Controller
                 });
             }
 
-            $prospeks = $query->paginate(15)->appends($request->query());
+            // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
+            $allowedPerPage = [10, 25, 50, 100];
+            $perPage = (int) $request->get('per_page', 10);
+            if (!in_array($perPage, $allowedPerPage)) {
+                $perPage = 10;
+            }
+
+            $prospeks = $query->paginate($perPage)->appends($request->query());
 
             // Statistik untuk summary cards
             $totalBelumMuat = Prospek::where(function ($q) {

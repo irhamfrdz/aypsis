@@ -31,6 +31,10 @@
     {{-- Filter Section --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <form method="GET" action="{{ route('prospek.index') }}">
+            {{-- Preserve current per_page selection if present so filter submissions don't reset rows-per-page --}} 
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {{-- Search --}}
                 <div>

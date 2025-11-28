@@ -3,6 +3,7 @@
     $routeName = $routeName ?? Route::currentRouteName() ?? 'master-kapal.index';
     $entityName = $entityName ?? 'data';
     $entityNamePlural = $entityNamePlural ?? 'data';
+    // Default to 10 so it matches the available select options
     $currentPerPage = request('per_page', 10);
 @endphp
 
