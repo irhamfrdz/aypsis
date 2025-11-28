@@ -93,6 +93,14 @@
             font-size: 16px;
             font-weight: bold;
         }
+        /* Pengirim: posisi absolute (atas 11cm, kiri 10.5cm) */
+        .pengirim-abs {
+            position: absolute;
+            top: 11cm; /* 11cm dari atas */
+            left: 10.5cm; /* 10.5cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
     
 </head>
@@ -135,6 +143,10 @@
         <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
         <div class="nama-barang-abs">
             {{ $suratJalanBongkaran->jenis_barang ? strtoupper($suratJalanBongkaran->jenis_barang) : ($suratJalanBongkaran->order && $suratJalanBongkaran->order->jenisBarang ? strtoupper($suratJalanBongkaran->order->jenisBarang->nama) : '') }}
+        </div>
+        <!-- Pengirim (posisi top 11cm, left 10.5cm) -->
+        <div class="pengirim-abs">
+            {{ strtoupper($suratJalanBongkaran->pengirim ?? ($suratJalanBongkaran->order && $suratJalanBongkaran->order->pengirim ? optional($suratJalanBongkaran->order->pengirim)->nama_pengirim : '')) }}
         </div>
         <!-- Seal number (posisi top 11.5cm, left 1cm) -->
         <div class="seal-abs">
