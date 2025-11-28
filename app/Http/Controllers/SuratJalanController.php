@@ -387,7 +387,8 @@ class SuratJalanController extends Controller
      */
     public function show($id)
     {
-        $suratJalan = SuratJalan::with('order')->findOrFail($id);
+                    'supir' => 'nullable|string|max:255', // Changed from required to nullable
+                    'is_supir_customer' => 'nullable|in:0,1',
         return view('surat-jalan.show', compact('suratJalan'));
     }
 
@@ -958,6 +959,14 @@ class SuratJalanController extends Controller
             $tujuanPengambilan = \App\Models\MasterTujuanKirim::findOrFail($request->tujuan_pengambilan_id);
             $tujuanPengiriman = \App\Models\MasterTujuanKirim::findOrFail($request->tujuan_pengiriman_id);
 
+            // Prepare data modifications if supir customer
+            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
+                // Ensure we do not store supir name and uang_jalan remains 0
+                $request->merge(['supir' => null]);
+                // uang_jalan is readonly in view for without-order form; override just in case
+                $request->merge(['uang_jalan' => 0]);
+            }
+
             // Create surat jalan without order
             $suratJalan = SuratJalan::create([
                 'order_id' => null, // No order associated
@@ -979,6 +988,49 @@ class SuratJalanController extends Controller
                 'status_pembayaran' => 'belum_masuk_pranota',
                 'created_by' => Auth::id(),
             ]);
+            // If Supir Customer, clear supir and uang_jalan already handled above via request handling.
+            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
+                try {
+                    $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
+                    $nomorKontainerArray = [];
+                    $noSealArray = [];
+
+                    if (!empty($suratJalan->nomor_kontainer)) {
+                        $nomorKontainerArray = array_filter(array_map('trim', explode(',', $suratJalan->nomor_kontainer)));
+                    }
+                    if (!empty($suratJalan->no_seal)) {
+                        $noSealArray = array_filter(array_map('trim', explode(',', $suratJalan->no_seal)));
+                    }
+
+                    for ($i = 0; $i < max(1, (int)$jumlahKontainer); $i++) {
+                        $nomorKontainerIni = isset($nomorKontainerArray[$i]) ? $nomorKontainerArray[$i] : null;
+                        $noSealIni = isset($noSealArray[$i]) ? $noSealArray[$i] : null;
+
+                        $prospekData = [
+                            'tanggal' => now(),
+                            'nama_supir' => null,
+                            'barang' => $suratJalan->jenis_barang ?? null,
+                            'pt_pengirim' => $suratJalan->pengirim ?? null,
+                            'ukuran' => $suratJalan->size ?? null,
+                            'tipe' => $suratJalan->tipe_kontainer ?? null,
+                            'no_surat_jalan' => $suratJalan->no_surat_jalan ?? null,
+                            'surat_jalan_id' => $suratJalan->id,
+                            'nomor_kontainer' => $nomorKontainerIni,
+                            'no_seal' => $noSealIni,
+                            'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
+                            'nama_kapal' => null,
+                            'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
+                            'status' => Prospek::STATUS_AKTIF,
+                            'created_by' => Auth::id(),
+                            'updated_by' => Auth::id()
+                        ];
+
+                        Prospek::create($prospekData);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error creating prospek from supir customer (without order) surat jalan: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+                }
+            }
 
             return redirect()->route('surat-jalan.show', $suratJalan->id)
                            ->with('success', 'Surat jalan berhasil dibuat tanpa order.');
