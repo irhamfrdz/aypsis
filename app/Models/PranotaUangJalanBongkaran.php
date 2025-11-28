@@ -56,11 +56,12 @@ class PranotaUangJalanBongkaran extends Model
      */
     public function pembayaranPranotaUangJalanBongkarans()
     {
+        // Use the correct Bongkaran payment model and pivot foreign key names
         return $this->belongsToMany(
-            PembayaranPranotaUangJalan::class,
+            PembayaranPranotaUangJalanBongkaran::class,
             'pembayaran_pranota_uang_jalan_bongkaran_items',
             'pranota_uang_jalan_bongkaran_id',
-            'pembayaran_pranota_uang_jalan_id'
+            'pembayaran_pranota_uang_jalan_bongkaran_id'
         )->withPivot('subtotal')->withTimestamps();
     }
 
