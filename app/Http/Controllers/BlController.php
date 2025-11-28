@@ -832,10 +832,12 @@ class BlController extends Controller
                                 }
                             }
                             if ($matchFound) {
-                                $errors[] = "Baris {$rowNumber}: Duplikat nomor kontainer di file dengan pengirim sama: {$nomorKontainer} ({$rowPreview})";
-                            } else {
-                                $containerNumbersSeen[$nomorKontainer][] = $pengirim;
+                                // Do not block import for duplicate container numbers even when pengirim is the same.
+                                // Add a non-blocking warning instead and continue to insert the row.
+                                $warnings[] = "Baris {$rowNumber}: Duplikat nomor kontainer di file dengan pengirim sama: {$nomorKontainer}. Baris ini akan diimport juga. ({$rowPreview})";
                             }
+                            // Record the pengirim occurrence regardless to keep track of duplicates
+                            $containerNumbersSeen[$nomorKontainer][] = $pengirim;
                         }
                         
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
@@ -970,10 +972,12 @@ class BlController extends Controller
                                 }
                             }
                             if ($matchFound) {
-                                $errors[] = "Baris {$row}: Duplikat nomor kontainer di file dengan pengirim sama: {$nomorKontainer} ({$rowPreview})";
-                            } else {
-                                $containerNumbersSeen[$nomorKontainer][] = $pengirim;
+                                // Do not block import for duplicate container numbers even when pengirim is the same.
+                                // Add a non-blocking warning instead and continue to import the row.
+                                $warnings[] = "Baris {$row}: Duplikat nomor kontainer di file dengan pengirim sama: {$nomorKontainer}. Baris ini akan diimport juga. ({$rowPreview})";
                             }
+                            // Record the pengirim occurrence regardless to keep track of duplicates
+                            $containerNumbersSeen[$nomorKontainer][] = $pengirim;
                         }
                         
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
