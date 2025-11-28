@@ -547,7 +547,7 @@
                                 <li>Download template terlebih dahulu</li>
                                 <li>Isi data sesuai dengan format yang ada</li>
                                 <li>Kolom yang wajib diisi: <strong>Nama Kapal</strong> dan <strong>No Voyage</strong></li>
-                                <li>Nomor kontainer: Jika kosong akan otomatis diisi CARGO-1, CARGO-2, dst</li>
+                                <li>Nomor kontainer: Jika kosong akan otomatis diisi kata 'cargo' (tanpa nomor). Jika Anda memerlukan nomor unik, mohon isikan nomor pada file.</li>
                                 <li>Jika terdapat nomor kontainer yang sama di file, import tetap akan dilakukan meskipun <strong>Pengirim</strong> sama pada beberapa baris — sistem akan menampilkan peringatan non-blocking.</li>
                                 <li>Size kontainer: Akan dicari otomatis dari database berdasarkan nomor kontainer. Jika tidak ditemukan di database, ukuran dari file akan digunakan. Jika juga kosong pada file, data tetap akan disimpan tanpa ukuran (kosong).</li>
                                 <li>Format file yang didukung: .xlsx, .xls, .csv</li>

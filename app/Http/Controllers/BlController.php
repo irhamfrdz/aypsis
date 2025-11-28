@@ -812,10 +812,9 @@ class BlController extends Controller
                         // Prepare short row preview for diagnostics
                         $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
                         
-                        // Auto-generate container number if empty
+                        // Auto-generate container number if empty - fill with literal 'cargo'
                         if (empty($nomorKontainer)) {
-                            $nomorKontainer = 'CARGO-' . $nextCargoNumber;
-                            $nextCargoNumber++;
+                            $nomorKontainer = 'cargo';
                         }
 
                         // Check duplicate container numbers within the same uploaded file
@@ -953,10 +952,9 @@ class BlController extends Controller
                             continue;
                         }
                         
-                        // Auto-generate container number if empty
+                        // Auto-generate container number if empty - fill with literal 'cargo'
                         if (empty($nomorKontainer)) {
-                            $nomorKontainer = 'CARGO-' . $nextCargoNumber;
-                            $nextCargoNumber++;
+                            $nomorKontainer = 'cargo';
                         }
 
                         // Check duplicate container numbers within the same uploaded file
@@ -1350,8 +1348,8 @@ class BlController extends Controller
             ];
         }
 
-        // Skip auto-fill for auto-generated CARGO containers
-        if (strpos($nomorKontainer, 'CARGO-') === 0) {
+        // Skip auto-fill for auto-generated cargo containers (case-insensitive)
+        if (stripos($nomorKontainer, 'cargo') === 0) {
             return [
                 'size' => null,
                 'warning' => null
