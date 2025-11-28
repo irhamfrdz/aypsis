@@ -435,25 +435,29 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                    <select name="supir"
-                            id="supir-select"
-                            onchange="updateNoPlat()"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
-                        <option value="">Pilih Supir</option>
-                        @if(isset($supirs))
-                            @foreach($supirs as $supir)
-                                <option value="{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}"
-                                        data-plat="{{ $supir->plat }}"
-                                        {{ old('supir') == ($supir->nama_panggilan ?? $supir->nama_lengkap) ? 'selected' : '' }}>
-                                    @if($supir->nama_panggilan && $supir->nama_lengkap && $supir->nama_panggilan != $supir->nama_lengkap)
-                                        {{ $supir->nama_panggilan }} ({{ $supir->nama_lengkap }})
-                                    @else
-                                        {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
-                                    @endif
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
+                        <select name="supir"
+                                id="supir-select"
+                                onchange="updateNoPlat(); handleSupirCustomerSelection();"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
+                            <option value="">Pilih Supir</option>
+                            @if(isset($supirs))
+                                @foreach($supirs as $supir)
+                                    <option value="{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}"
+                                            data-plat="{{ $supir->plat }}"
+                                            data-supir-customer="0"
+                                            {{ old('supir') == ($supir->nama_panggilan ?? $supir->nama_lengkap) ? 'selected' : '' }}>
+                                        @if($supir->nama_panggilan && $supir->nama_lengkap && $supir->nama_panggilan != $supir->nama_lengkap)
+                                            {{ $supir->nama_panggilan }} ({{ $supir->nama_lengkap }})
+                                        @else
+                                            {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                                        @endif
+                                    </option>
+                                @endforeach
+                            @endif
+                            {{-- Supir Customer option --}}
+                            <option value="__CUSTOMER__" data-plat="" data-supir-customer="1" {{ old('supir') == '__CUSTOMER__' ? 'selected' : '' }}>Supir Customer</option>
+                        </select>
+                        <input type="hidden" id="is_supir_customer" name="is_supir_customer" value="0">
                     @error('supir')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -1037,6 +1041,47 @@ document.addEventListener('DOMContentLoaded', function() {
         updateUangJalan();
         console.log('Auto-updating uang jalan for selected order');
     }, 500);
+});
+// Handle supir customer selection: show/hide nama_supir_customer and disable uang_jalan
+function handleSupirCustomerSelection() {
+    const supirSelect = document.getElementById('supir-select');
+    const isSupplierCustomerInput = document.getElementById('is_supir_customer');
+    const uangJalanInput = document.getElementById('uang-jalan-input');
+
+    if (!supirSelect || !isSupplierCustomerInput) return;
+
+    const selectedOption = supirSelect.options[supirSelect.selectedIndex];
+    const dataCustomer = selectedOption ? selectedOption.getAttribute('data-supir-customer') : '0';
+
+    if (dataCustomer === '1' || supirSelect.value === '__CUSTOMER__') {
+        // Mark as customer
+        isSupplierCustomerInput.value = '1';
+        // No customer name input needed; just set flag and disable uang_jalan
+        // Disable uang_jalan and set to 0
+        if (uangJalanInput) {
+            uangJalanInput.value = '0';
+            uangJalanInput.setAttribute('readonly', 'readonly');
+            uangJalanInput.disabled = true;
+        }
+        // Clear supir-select value so we use nama_supir_customer instead when submitting
+        // But keep the select value so UI remains consistent
+    } else {
+        // Unset customer
+        isSupplierCustomerInput.value = '0';
+        // No customer name input to hide
+        // Re-enable uang_jalan
+        if (uangJalanInput) {
+            uangJalanInput.removeAttribute('readonly');
+            uangJalanInput.disabled = false;
+            // Optionally recalc uang jalan
+            updateUangJalan();
+        }
+    }
+}
+
+// Initial run to update UI if old('supir') == '__CUSTOMER__'
+document.addEventListener('DOMContentLoaded', function() {
+    handleSupirCustomerSelection();
 });
 @else
 document.addEventListener('DOMContentLoaded', function() {
