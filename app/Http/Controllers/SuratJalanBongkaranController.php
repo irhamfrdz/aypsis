@@ -160,6 +160,7 @@ class SuratJalanBongkaranController extends Controller
                     $display .= ' (' . strtoupper($item->tipe_kontainer) . ')';
                 }
                 return [
+                    'id' => $item->id,
                     'value' => $item->nomor_kontainer,
                     'text' => $display,
                     'nomor_bl' => $item->nomor_bl,
@@ -234,6 +235,7 @@ class SuratJalanBongkaranController extends Controller
         $selectedKapalName = $request->nama_kapal;
         $noVoyage = $request->no_voyage;
         $selectedContainer = null;
+        $selectedBl = null;
 
         // Find kapal object for backward compatibility with view
         $selectedKapal = null;
@@ -247,14 +249,41 @@ class SuratJalanBongkaranController extends Controller
             }
         }
 
-        // If no_bl (container) is selected, get the container details
+        // If bl_id is passed, use it directly to fetch selectedBl and container data
+        if ($request->filled('bl_id') && $selectedKapalName) {
+            $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                              ->where('no_voyage', $noVoyage)
+                              ->where('id', $request->bl_id)
+                              ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
+            if ($selectedBl) {
+                $selectedContainer = (object) [
+                    'id' => $selectedBl->id,
+                    'nomor_kontainer' => $selectedBl->nomor_kontainer ?? null,
+                    'no_seal' => $selectedBl->no_seal ?? null,
+                    'tipe_kontainer' => $selectedBl->tipe_kontainer ?? null,
+                    'size_kontainer' => $selectedBl->size_kontainer ?? null,
+                    'pengirim' => $selectedBl->pengirim ?? null,
+                    'penerima' => $selectedBl->penerima ?? null,
+                    'alamat_pengiriman' => $selectedBl->alamat_pengiriman ?? null,
+                    'pelabuhan_tujuan' => $selectedBl->pelabuhan_tujuan ?? null,
+                    'nama_barang' => $selectedBl->nama_barang ?? null,
+                    'nomor_bl' => $selectedBl->nomor_bl ?? null,
+                ];
+            }
+        }
+
+        // If no_bl is passed, it might be either a container number (nomor_kontainer) or the BL number (nomor_bl) itself.
         if ($request->filled('no_bl') && $selectedKapalName) {
+            // If the form includes both no_bl (BL) and no_kontainer (container) in query params, prefer the container
+            // number for locating the container row; otherwise, use the provided no_bl value.
+            $rawNoBlInput = $request->filled('no_kontainer') ? $request->no_kontainer : $request->no_bl;
+
+            // 1) Try to find by container number first
             $selectedContainer = Bl::where('nama_kapal', $selectedKapalName)
                                    ->where('no_voyage', $noVoyage)
-                                   ->where('nomor_kontainer', $request->no_bl)
-                                   ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
-                                   
-            // Debug: log the container data
+                                   ->where('nomor_kontainer', $rawNoBlInput)
+                                   ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
+
             if ($selectedContainer) {
                 \Log::info('Selected Container Data:', [
                     'nomor_kontainer' => $selectedContainer->nomor_kontainer,
@@ -267,11 +296,46 @@ class SuratJalanBongkaranController extends Controller
                     'pelabuhan_tujuan' => $selectedContainer->pelabuhan_tujuan,
                     'nama_barang' => $selectedContainer->nama_barang,
                 ]);
+
+                // Fill selectedBl from the container row
+                $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                                 ->where('no_voyage', $noVoyage)
+                                 ->where('nomor_kontainer', $rawNoBlInput)
+                                 ->first(['id', 'nomor_bl']);
+            } else {
+                // 2) Fallback: try to find by BL number (nomor_bl)
+                $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                                 ->where('no_voyage', $noVoyage)
+                                 ->where('nomor_bl', $rawNoBlInput)
+                                 ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
+
+                if ($selectedBl) {
+                    // Create a container-like object to keep the rest of the view working
+                    $selectedContainer = (object) [
+                        'id' => $selectedBl->id,
+                        'nomor_kontainer' => $selectedBl->nomor_kontainer ?? null,
+                        'no_seal' => $selectedBl->no_seal ?? null,
+                        'tipe_kontainer' => $selectedBl->tipe_kontainer ?? null,
+                        'size_kontainer' => $selectedBl->size_kontainer ?? null,
+                        'pengirim' => $selectedBl->pengirim ?? null,
+                        'penerima' => $selectedBl->penerima ?? null,
+                        'alamat_pengiriman' => $selectedBl->alamat_pengiriman ?? null,
+                        'pelabuhan_tujuan' => $selectedBl->pelabuhan_tujuan ?? null,
+                        'nama_barang' => $selectedBl->nama_barang ?? null,
+                        'nomor_bl' => $selectedBl->nomor_bl ?? null,
+                    ];
+
+                    \Log::info('Selected BL Data (no_bl input used as nomor_bl):', [
+                        'id' => $selectedBl->id,
+                        'nomor_bl' => $selectedBl->nomor_bl,
+                        'nomor_kontainer' => $selectedBl->nomor_kontainer ?? null,
+                    ]);
+                }
             }
         }
         
         // Also check for container details passed via URL parameters
-        if (!$selectedContainer && ($request->filled('container_seal') || $request->filled('container_size'))) {
+        if (!$selectedContainer && ($request->filled('container_seal') || $request->filled('container_size') || $request->filled('no_bl'))) {
             $selectedContainer = (object) [
                 'nomor_kontainer' => $request->no_bl ?? '',
                 'no_seal' => $request->container_seal ?? '',
@@ -282,9 +346,18 @@ class SuratJalanBongkaranController extends Controller
                 'alamat_pengiriman' => $request->alamat_pengiriman ?? '',
                 'nama_barang' => $request->jenis_barang ?? ''
             ];
+            // If we only have URL params and a no_bl in the params, attempt to load BL record as selectedBl
+            if ($request->filled('no_bl') && $selectedKapalName) {
+                $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                                 ->where('no_voyage', $noVoyage)
+                                 ->where('nomor_kontainer', $request->no_bl)
+                                 ->first(['id', 'nomor_bl']);
+            }
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'));
+        return view('surat-jalan-bongkaran.create', compact(
+            'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'
+        ));
     }
 
     /**
@@ -316,6 +389,7 @@ class SuratJalanBongkaranController extends Controller
             'kenek' => 'nullable|string|max:255',
             'krani' => 'nullable|string|max:255',
             'no_kontainer' => 'nullable|string|max:100',
+            'bl_id' => 'nullable|integer|exists:bls,id',
             'no_seal' => 'nullable|string|max:100',
             'size' => 'nullable|string|max:50',
             'karton' => 'nullable|string|in:ya,tidak',
@@ -349,6 +423,25 @@ class SuratJalanBongkaranController extends Controller
             'uang_jalan_nominal' => 'nullable|numeric|min:0',
         ]);
 
+        // If bl_id is present, ensure we store the actual BL number (nomor_bl) instead of container number
+        if ($request->filled('bl_id')) {
+            $bl = Bl::find($request->bl_id);
+            if ($bl && isset($bl->nomor_bl)) {
+                $validatedData['no_bl'] = $bl->nomor_bl;
+                $validatedData['bl_id'] = $request->bl_id;
+            }
+        } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
+            // If only container number is provided and no_bl missing, try to look up BL number by container
+            $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['nomor_bl']);
+            if ($blByContainer && isset($blByContainer->nomor_bl)) {
+                $validatedData['no_bl'] = $blByContainer->nomor_bl;
+                // If found by container, try to set bl_id as well
+                $blRecord = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
+                if ($blRecord) {
+                    $validatedData['bl_id'] = $blRecord->id;
+                }
+            }
+        }
         $validatedData['input_by'] = Auth::id();
 
         try {
@@ -372,7 +465,7 @@ class SuratJalanBongkaranController extends Controller
      */
     public function show(SuratJalanBongkaran $suratJalanBongkaran)
     {
-        $suratJalanBongkaran->load(['inputBy']);
+        $suratJalanBongkaran->load(['inputBy', 'bl']);
         
         return view('surat-jalan-bongkaran.show', compact('suratJalanBongkaran'));
     }
@@ -413,6 +506,7 @@ class SuratJalanBongkaranController extends Controller
             'kenek' => 'nullable|string|max:255',
             'krani' => 'nullable|string|max:255',
             'no_kontainer' => 'nullable|string|max:100',
+            'bl_id' => 'nullable|integer|exists:bls,id',
             'no_seal' => 'nullable|string|max:100',
             'size' => 'nullable|string|max:50',
             'karton' => 'nullable|string|in:ya,tidak',
@@ -444,6 +538,21 @@ class SuratJalanBongkaranController extends Controller
             'catatan_khusus' => 'nullable|string',
             'dokumentasi' => 'nullable|string',
         ]);
+
+        // If bl_id is present, ensure we store the actual BL number (nomor_bl) and bl_id
+        if ($request->filled('bl_id')) {
+            $bl = Bl::find($request->bl_id);
+            if ($bl && isset($bl->nomor_bl)) {
+                $validatedData['no_bl'] = $bl->nomor_bl;
+                $validatedData['bl_id'] = $bl->id;
+            }
+        } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
+            $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
+            if ($blByContainer && isset($blByContainer->nomor_bl)) {
+                $validatedData['no_bl'] = $blByContainer->nomor_bl;
+                $validatedData['bl_id'] = $blByContainer->id;
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -483,7 +592,7 @@ class SuratJalanBongkaranController extends Controller
     public function print(SuratJalanBongkaran $suratJalanBongkaran)
     {
         // Eager load relations useful for the print view
-        $suratJalanBongkaran->load(['inputBy']);
+        $suratJalanBongkaran->load(['inputBy', 'bl']);
 
         return view('surat-jalan-bongkaran.print', compact('suratJalanBongkaran'));
     }

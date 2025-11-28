@@ -3,27 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Jalan - Placeholder</title>
-    <style>
-        /* This file is intentionally empty for re-measurement and layout experiments. */
-        html, body { margin: 0; padding: 0; background: white; }
-        .page-placeholder { display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; color: #444; }
-    </style>
-</head>
-<body>
-    <div class="page-placeholder">
-        <div>
-            <h1>PRINT TEMPLATE CLEARED</h1>
-            <p>This print template has been cleared so you can measure and design the new layout.</p>
-        </div>
-    </div>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surat Jalan</title>
     <style>
         @page {
@@ -294,7 +273,7 @@
     <div class="container">
         <!-- SESI 1: HEADER -->
         <div class="date-header">
-            {{ \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan ?? now())->format('d-M-Y') }}
+            {{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d-M-Y') : '' }}
         </div>
         
         <!-- NO VOYAGE -->
@@ -306,27 +285,27 @@
         
         <!-- SESI 2: NO PLAT KENDARAAN -->
         <div class="no-plat">
-            {{ strtoupper($suratJalan->no_plat ?? ($suratJalan->no_plat != '--Pilih No Plat' ? $suratJalan->no_plat : '')) }}
+            {{ $suratJalan->no_plat ? strtoupper($suratJalan->no_plat) : '' }}
         </div>
         
         <!-- TIPE KONTAINER dengan posisi absolut -->
         <div class="tipe-kontainer">
-            {{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }}
+            {{ $suratJalan->tipe_kontainer ? strtoupper($suratJalan->tipe_kontainer) : '' }}
         </div>
         
         <!-- NAMA PENGIRIM dengan posisi absolut -->
         <div class="nama-pengirim">
-            {{ strtoupper($suratJalan->pengirim ?? 'PT TIRTA INVESTAMA') }}
+            {{ $suratJalan->pengirim ? strtoupper($suratJalan->pengirim) : '' }}
         </div>
         
         <!-- NAMA BARANG dengan posisi absolut -->
         <div class="nama-barang">
-            {{ strtoupper($suratJalan->jenis_barang ?? ($suratJalan->order && $suratJalan->order->jenisBarang ? $suratJalan->order->jenisBarang->nama : 'AQUA')) }}
+            {{ $suratJalan->jenis_barang ? strtoupper($suratJalan->jenis_barang) : ($suratJalan->order && $suratJalan->order->jenisBarang ? strtoupper($suratJalan->order->jenisBarang->nama) : '') }}
         </div>
         
         <!-- TUJUAN AMBIL dengan posisi absolut -->
         <div class="tujuan-ambil">
-            {{ strtoupper($suratJalan->tujuan_pengambilan ?? 'BATAM') }}
+            {{ $suratJalan->tujuan_pengambilan ? strtoupper($suratJalan->tujuan_pengambilan) : '' }}
         </div>
         
         <!-- NOMOR SEAL dengan posisi absolut -->
@@ -336,7 +315,7 @@
         
         <!-- TUJUAN KIRIM dengan posisi absolut -->
         <div class="tujuan-kirim">
-            {{ strtoupper($suratJalan->tujuan_pengiriman ?? 'SUKABUMI') }}
+            {{ $suratJalan->tujuan_pengiriman ? strtoupper($suratJalan->tujuan_pengiriman) : '' }}
         </div>
         
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
@@ -397,7 +376,7 @@
         
         <!-- NAMA SUPIR dengan posisi absolut -->
         <div class="supir-name">
-            {{ strtoupper($suratJalan->supir ?? 'SUMANTA') }}
+            {{ $suratJalan->supir ? strtoupper($suratJalan->supir) : '' }}
         </div>
         
         <!-- SESI 4: TTD AREA -->

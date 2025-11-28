@@ -67,6 +67,7 @@ class SuratJalanBongkaran extends Model
         'kapal_id',
         'no_voyage',
         'no_bl',
+        'bl_id',
         'jenis_pengiriman',
         'tanggal_ambil_barang'
     ];
@@ -104,6 +105,11 @@ class SuratJalanBongkaran extends Model
     public function kapal()
     {
         return $this->belongsTo(MasterKapal::class, 'kapal_id');
+    }
+
+    public function bl()
+    {
+        return $this->belongsTo(\App\Models\Bl::class, 'bl_id');
     }
 
     /**

@@ -56,7 +56,7 @@
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500">No BL</label>
-                            <p class="text-gray-900">{{ $suratJalanBongkaran->no_bl ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $suratJalanBongkaran->bl->nomor_bl ?? $suratJalanBongkaran->no_bl ?? '-' }}</p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500">Term</label>

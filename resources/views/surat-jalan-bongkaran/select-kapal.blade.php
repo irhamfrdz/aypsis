@@ -181,6 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Display with format
             option.textContent = container.text;
             // Store container details as data attributes
+            if (container.id) {
+                option.setAttribute('data-bl-id', container.id);
+            }
             if (container.nomor_bl) {
                 option.setAttribute('data-nomor-bl', container.nomor_bl);
             }
@@ -194,7 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.setAttribute('data-nama-barang', container.nama_barang);
             }
             // Maintain selected value if exists
-            if (container.value === "{{ request('no_bl') }}") {
+            // If either the BL number or container number matches request('no_bl'), select it
+            if (container.value === "{{ request('no_bl') }}" || container.nomor_bl === "{{ request('no_bl') }}" || container.id == "{{ request('bl_id') }}") {
                 option.selected = true;
                 // Update hidden fields if this option is pre-selected
                 updateContainerFields(container);
@@ -278,6 +282,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (selectedBl.getAttribute('data-nama-barang')) {
                 params.append('jenis_barang', selectedBl.getAttribute('data-nama-barang'));
+            }
+
+            // Ensure both BL number and container number are sent.
+            // Use data-nomor-bl (BL number) as the 'no_bl' parameter if available, otherwise fallback to the container number.
+            const nomorBlValue = selectedBl.getAttribute('data-nomor-bl') || selectedBl.value;
+            params.set('no_bl', nomorBlValue);
+            // Also keep the container number as a separate param for clarity
+            params.set('no_kontainer', selectedBl.value);
+            // Also attach the BL id if available
+            if (selectedBl.getAttribute('data-bl-id')) {
+                params.set('bl_id', selectedBl.getAttribute('data-bl-id'));
             }
         }
         

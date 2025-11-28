@@ -20,7 +20,7 @@
             </a>
         </div>
 
-        @if($selectedKapal && $noVoyage)
+                @if($selectedKapal && $noVoyage)
         <!-- Selected Kapal & Voyage Info -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg mx-4 mt-4 p-4">
             <div class="flex items-start">
@@ -31,7 +31,9 @@
                     <h4 class="text-sm font-medium text-blue-800">Kapal & Voyage Terpilih</h4>
                     <div class="mt-1 text-sm text-blue-700">
                         <strong>{{ $selectedKapal->nama_kapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong>
-                        @if(request('no_bl'))
+                        @if(isset($selectedBl) && $selectedBl)
+                            | BL: <strong>{{ $selectedBl->nomor_bl }}</strong>
+                        @elseif(request('no_bl'))
                             | BL: <strong>{{ request('no_bl') }}</strong>
                         @endif
                     </div>
@@ -78,10 +80,10 @@
                 <input type="hidden" name="nama_kapal" value="{{ $selectedKapal->nama_kapal }}">
                 <input type="hidden" name="kapal_id" value="{{ $kapalId }}">
                 <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
-                @if(request('no_bl'))
-                    <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">
+                @if(isset($selectedBl) && $selectedBl)
+                    <input type="hidden" name="bl_id" value="{{ $selectedBl->id }}">
                 @endif
-            @endif
+                @endif
 
     <!-- Alert Messages -->
     @if(session('error'))
@@ -435,6 +437,25 @@
                         <p class="mt-1 text-xs text-green-600">
                             Seal terisi otomatis dari kontainer: {{ $selectedContainer->no_seal }}
                         </p>
+                    @endif
+                </div>
+
+                <!-- Nomor BL -->
+                <div>
+                    <label for="no_bl" class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
+                        <input type="text" name="no_bl" id="no_bl" readonly
+                                  value="{{ old('no_bl', isset($selectedBl) && $selectedBl->nomor_bl ? $selectedBl->nomor_bl : (request('no_bl') ?? (isset($selectedContainer) ? ($selectedContainer->nomor_bl ?? $selectedContainer->no_bl ?? $selectedContainer->noBillOfLading ?? '') : ''))) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_bl') border-red-500 @enderror"
+                           placeholder="Nomor BL akan terisi otomatis">
+                    @error('no_bl')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedBl) && $selectedBl)
+                        <p class="mt-1 text-xs text-blue-600">Otomasis dari tabel BL: {{ $selectedBl->nomor_bl }}</p>
+                    @elseif(request('no_bl'))
+                        <p class="mt-1 text-xs text-blue-600">Otomasis dari halaman pemilihan BL: {{ request('no_bl') }}</p>
+                    @elseif(isset($selectedContainer) && (isset($selectedContainer->no_bl) || isset($selectedContainer->noBillOfLading)))
+                        <p class="mt-1 text-xs text-green-600">Otomatis dari BL terpilih</p>
                     @endif
                 </div>
 
