@@ -707,6 +707,7 @@ class BlController extends Controller
             $importedCount = 0;
             $errors = [];
             $rowNumber = 1;
+            // Map nomorKontainer => array of pengirim seen for that nomor
             $containerNumbersSeen = [];
             
             // Get next cargo number for auto-generated container numbers
@@ -806,6 +807,9 @@ class BlController extends Controller
                         $namaKapal = isset($row[3]) ? trim($row[3]) : null;
                         $noVoyage = isset($row[4]) ? trim($row[4]) : null;
                         $sizeKontainerFromFile = isset($row[13]) ? trim($row[13]) : null;
+
+                        // Prepare short row preview for diagnostics
+                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
                         
                         // Auto-generate container number if empty
                         if (empty($nomorKontainer)) {
@@ -814,18 +818,29 @@ class BlController extends Controller
                         }
 
                         // Check duplicate container numbers within the same uploaded file
+                        // Allow same nomor_kontainer if pengirim is different
+                        $pengirim = isset($row[8]) ? trim($row[8]) : '';
                         if (!empty($nomorKontainer)) {
-                            if (in_array($nomorKontainer, $containerNumbersSeen)) {
-                                $errors[] = "Baris {$rowNumber}: Duplikat nomor kontainer di file: {$nomorKontainer} ({$rowPreview})";
+                            $existingPengirimList = $containerNumbersSeen[$nomorKontainer] ?? [];
+                            // Normalize pengirim for comparison
+                            $normalizedPengirim = mb_strtolower(trim($pengirim ?? ''));
+                            $matchFound = false;
+                            foreach ($existingPengirimList as $ep) {
+                                if (mb_strtolower(trim($ep)) === $normalizedPengirim) {
+                                    $matchFound = true; break;
+                                }
+                            }
+                            if ($matchFound) {
+                                $errors[] = "Baris {$rowNumber}: Duplikat nomor kontainer di file dengan pengirim sama: {$nomorKontainer} ({$rowPreview})";
                             } else {
-                                $containerNumbersSeen[] = $nomorKontainer;
+                                $containerNumbersSeen[$nomorKontainer][] = $pengirim;
                             }
                         }
                         
-                        // Auto-fill size kontainer from database if not provided in file
+                        // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
-                        if ($autoFilledSize['warning']) {
-                            $errors[] = "Baris {$rowNumber}: " . $autoFilledSize['warning'] . " ({$rowPreview})";
+                        if (empty($autoFilledSize['size'])) {
+                            $errors[] = "Baris {$rowNumber}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. ({$rowPreview})";
                         }
                         
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
@@ -926,6 +941,9 @@ class BlController extends Controller
                         $noVoyage = $worksheet->getCell("E{$row}")->getValue();
                         $sizeKontainerFromFile = $worksheet->getCell("N{$row}")->getValue();
 
+                        // Prepare short row preview for diagnostics
+                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
+
                         // Skip empty rows
                         if (empty($namaKapal) && empty($noVoyage)) {
                             continue;
@@ -938,18 +956,28 @@ class BlController extends Controller
                         }
 
                         // Check duplicate container numbers within the same uploaded file
+                        // Allow same nomor_kontainer if pengirim is different
+                        $pengirim = $worksheet->getCell("I{$row}")->getValue();
                         if (!empty($nomorKontainer)) {
-                            if (in_array($nomorKontainer, $containerNumbersSeen)) {
-                                $errors[] = "Baris {$row}: Duplikat nomor kontainer di file: {$nomorKontainer} ({$rowPreview})";
+                            $existingPengirimList = $containerNumbersSeen[$nomorKontainer] ?? [];
+                            $normalizedPengirim = mb_strtolower(trim($pengirim ?? ''));
+                            $matchFound = false;
+                            foreach ($existingPengirimList as $ep) {
+                                if (mb_strtolower(trim($ep)) === $normalizedPengirim) {
+                                    $matchFound = true; break;
+                                }
+                            }
+                            if ($matchFound) {
+                                $errors[] = "Baris {$row}: Duplikat nomor kontainer di file dengan pengirim sama: {$nomorKontainer} ({$rowPreview})";
                             } else {
-                                $containerNumbersSeen[] = $nomorKontainer;
+                                $containerNumbersSeen[$nomorKontainer][] = $pengirim;
                             }
                         }
                         
-                        // Auto-fill size kontainer from database if not provided in file
+                        // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
-                        if ($autoFilledSize['warning']) {
-                            $errors[] = "Baris {$row}: " . $autoFilledSize['warning'] . " ({$rowPreview})";
+                        if (empty($autoFilledSize['size'])) {
+                            $errors[] = "Baris {$row}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. ({$rowPreview})";
                         }
 
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
@@ -1394,10 +1422,10 @@ class BlController extends Controller
 
         \Log::warning("Container size not found for: {$nomorKontainer}");
 
-        // If container not found in either table, return warning
+        // If container not found in either table, do not stop import — return the size from file if provided, otherwise null
         return [
-            'size' => null,
-            'warning' => "Size kontainer untuk nomor '{$nomorKontainer}' tidak ditemukan di database. Silakan isi manual atau tambahkan ke master data kontainer."
+            'size' => $sizeFromFile ? trim($sizeFromFile) : null,
+            'warning' => null
         ];
     }
 }

@@ -419,7 +419,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}
-                                    </div>
+                                    </div>1
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
@@ -533,6 +533,7 @@
                                 <li>Isi data sesuai dengan format yang ada</li>
                                 <li>Kolom yang wajib diisi: <strong>Nama Kapal</strong> dan <strong>No Voyage</strong></li>
                                 <li>Nomor kontainer: Jika kosong akan otomatis diisi CARGO-1, CARGO-2, dst</li>
+                                <li>Jika terdapat nomor kontainer yang sama di file, import tetap akan dilakukan bila <strong>Pengirim</strong> berbeda pada masing-masing baris</li>
                                 <li>Size kontainer: Akan dicari otomatis dari database berdasarkan nomor kontainer</li>
                                 <li>Format file yang didukung: .xlsx, .xls, .csv</li>
                                 <li>Maksimal ukuran file: 10 MB</li>
