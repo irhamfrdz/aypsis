@@ -589,7 +589,8 @@ class UserController extends Controller
                 'gate-in' => 'gate-in',
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
                 'uang-jalan' => 'uang-jalan',
-                'pranota-uang-jalan' => 'pranota-uang-jalan'
+                'pranota-uang-jalan' => 'pranota-uang-jalan',
+                'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
