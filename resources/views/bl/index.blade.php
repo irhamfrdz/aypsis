@@ -549,7 +549,7 @@
                                 <li>Kolom yang wajib diisi: <strong>Nama Kapal</strong> dan <strong>No Voyage</strong></li>
                                 <li>Nomor kontainer: Jika kosong akan otomatis diisi CARGO-1, CARGO-2, dst</li>
                                 <li>Jika terdapat nomor kontainer yang sama di file, import tetap akan dilakukan bila <strong>Pengirim</strong> berbeda pada masing-masing baris</li>
-                                <li>Size kontainer: Akan dicari otomatis dari database berdasarkan nomor kontainer</li>
+                                <li>Size kontainer: Akan dicari otomatis dari database berdasarkan nomor kontainer. Jika tidak ditemukan di database, ukuran dari file akan digunakan. Jika juga kosong pada file, data tetap akan disimpan tanpa ukuran (kosong).</li>
                                 <li>Format file yang didukung: .xlsx, .xls, .csv</li>
                                 <li>Maksimal ukuran file: 10 MB</li>
                                 <li>Status bongkar otomatis diset "Belum Bongkar"</li>
