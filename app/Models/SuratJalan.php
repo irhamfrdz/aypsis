@@ -67,6 +67,7 @@ class SuratJalan extends Model
         'catatan_gate_in',
         'catatan_checkpoint',
         'tanggal_checkpoint'
+        , 'is_supir_customer'
     ];
 
     protected $casts = [
@@ -83,6 +84,7 @@ class SuratJalan extends Model
         'plastik' => 'integer',
         'terpal' => 'integer',
         'rit' => 'integer',
+        'is_supir_customer' => 'boolean',
     ];
 
     protected $dates = [

@@ -233,7 +233,7 @@ class SuratJalanController extends Controller
             'rit' => 'nullable|string|max:255',
             'uang_jalan' => 'nullable|numeric|min:0',
             'is_supir_customer' => 'nullable|in:0,1',
-            'is_supir_customer' => 'nullable|in:0,1',
+            'nama_supir_customer' => 'nullable|string|max:255',
             'no_pemesanan' => 'nullable|string|max:255',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -257,13 +257,15 @@ class SuratJalanController extends Controller
                 unset($data['nomor_kontainer']);
             }
 
-            // If the surat jalan was created with Supir Customer, clear supir value and disable uang jalan
-            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
-                // Clear supir text: user opted to use 'Supir Customer' but we don't store customer driver name
-                $data['supir'] = null;
-                // Ensure uang_jalan is 0 and status reflects no uang jalan to process
-                $data['uang_jalan'] = 0;
-                $data['status_pembayaran_uang_jalan'] = $data['status_pembayaran_uang_jalan'] ?? 'belum_ada';
+            // If submitted as supir customer, set supir as the nama_supir_customer value
+            if (isset($data['is_supir_customer']) && $data['is_supir_customer']) {
+                // Prefer explicit customer name if supplied
+                if (!empty($request->input('nama_supir_customer'))) {
+                    $data['supir'] = $request->input('nama_supir_customer');
+                } else {
+                    // Fallback to placeholder
+                    $data['supir'] = $data['supir'] ?? '__CUSTOMER__';
+                }
             }
 
             // Handle cargo type - set default values for size and jumlah_kontainer if empty
@@ -281,13 +283,6 @@ class SuratJalanController extends Controller
             }
 
             Log::info('Prepared data for saving:', $data);
-
-            // If the surat jalan is changed to Supir Customer, clear supir and disable uang jalan
-            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
-                $data['supir'] = null;
-                $data['uang_jalan'] = 0;
-                $data['status_pembayaran_uang_jalan'] = $data['status_pembayaran_uang_jalan'] ?? 'belum_ada';
-            }
 
             // Handle image upload
             if ($request->hasFile('gambar')) {
@@ -322,11 +317,9 @@ class SuratJalanController extends Controller
 
             // NOTE: Units will be processed when surat jalan is approved, not when created
             // This ensures completion percentage only increases after proper approval workflow
-
-            // If Supir Customer, create Prospek entries immediately without needing payment
-            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
+            // If created with supir customer flag, immediately create prospek entries
+            if (!empty($suratJalan->is_supir_customer)) {
                 try {
-                    // Create one Prospek per container
                     $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
                     $nomorKontainerArray = [];
                     $noSealArray = [];
@@ -343,8 +336,8 @@ class SuratJalanController extends Controller
                         $noSealIni = isset($noSealArray[$i]) ? $noSealArray[$i] : null;
 
                         $prospekData = [
-                            'tanggal' => now(),
-                            'nama_supir' => null, // Not storing customer supir name
+                            'tanggal' => $suratJalan->tanggal_surat_jalan ?? now(),
+                            'nama_supir' => $suratJalan->supir,
                             'barang' => $suratJalan->jenis_barang ?? null,
                             'pt_pengirim' => $suratJalan->pengirim ?? null,
                             'ukuran' => $suratJalan->size ?? null,
@@ -355,20 +348,19 @@ class SuratJalanController extends Controller
                             'no_seal' => $noSealIni,
                             'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
                             'nama_kapal' => null,
-                            'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
+                               'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
                             'status' => Prospek::STATUS_AKTIF,
                             'created_by' => Auth::id(),
                             'updated_by' => Auth::id()
                         ];
 
-                        Prospek::create($prospekData);
+                        $createdProspek = Prospek::create($prospekData);
+                        Log::info('Prospek created from Supir Customer Surat Jalan', ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
                     }
                 } catch (\Exception $e) {
                     Log::error('Error creating prospek from supir customer surat jalan: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
-                    // Don't interrupt the response
                 }
             }
-
             // Redirect to surat jalan index page
             return redirect()->route('surat-jalan.index')
                            ->with('success', 'Surat jalan berhasil dibuat dengan nomor: ' . $suratJalan->no_surat_jalan . '. Surat jalan telah otomatis masuk ke sistem approval.');
@@ -387,7 +379,7 @@ class SuratJalanController extends Controller
      */
     public function show($id)
     {
-                    
+        $suratJalan = SuratJalan::with('order')->findOrFail($id);
         return view('surat-jalan.show', compact('suratJalan'));
     }
 
@@ -958,14 +950,6 @@ class SuratJalanController extends Controller
             $tujuanPengambilan = \App\Models\MasterTujuanKirim::findOrFail($request->tujuan_pengambilan_id);
             $tujuanPengiriman = \App\Models\MasterTujuanKirim::findOrFail($request->tujuan_pengiriman_id);
 
-            // Prepare data modifications if supir customer
-            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
-                // Ensure we do not store supir name and uang_jalan remains 0
-                $request->merge(['supir' => null]);
-                // uang_jalan is readonly in view for without-order form; override just in case
-                $request->merge(['uang_jalan' => 0]);
-            }
-
             // Create surat jalan without order
             $suratJalan = SuratJalan::create([
                 'order_id' => null, // No order associated
@@ -987,47 +971,36 @@ class SuratJalanController extends Controller
                 'status_pembayaran' => 'belum_masuk_pranota',
                 'created_by' => Auth::id(),
             ]);
-            // If Supir Customer, clear supir and uang_jalan already handled above via request handling.
-            if ($request->filled('is_supir_customer') && $request->input('is_supir_customer') == '1') {
+
+            // If supir is a customer or explicit flag is set, create prospek for it
+            $isSupirCustomer = $request->input('is_supir_customer') == '1' ||
+                                (isset($request->supir) && stripos($request->supir, 'supir customer') !== false) ||
+                                (isset($request->supir) && $request->supir === '__CUSTOMER__');
+
+            if ($isSupirCustomer) {
                 try {
-                    $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
-                    $nomorKontainerArray = [];
-                    $noSealArray = [];
-
-                    if (!empty($suratJalan->nomor_kontainer)) {
-                        $nomorKontainerArray = array_filter(array_map('trim', explode(',', $suratJalan->nomor_kontainer)));
-                    }
-                    if (!empty($suratJalan->no_seal)) {
-                        $noSealArray = array_filter(array_map('trim', explode(',', $suratJalan->no_seal)));
-                    }
-
-                    for ($i = 0; $i < max(1, (int)$jumlahKontainer); $i++) {
-                        $nomorKontainerIni = isset($nomorKontainerArray[$i]) ? $nomorKontainerArray[$i] : null;
-                        $noSealIni = isset($noSealArray[$i]) ? $noSealArray[$i] : null;
-
-                        $prospekData = [
-                            'tanggal' => now(),
-                            'nama_supir' => null,
-                            'barang' => $suratJalan->jenis_barang ?? null,
-                            'pt_pengirim' => $suratJalan->pengirim ?? null,
-                            'ukuran' => $suratJalan->size ?? null,
-                            'tipe' => $suratJalan->tipe_kontainer ?? null,
-                            'no_surat_jalan' => $suratJalan->no_surat_jalan ?? null,
-                            'surat_jalan_id' => $suratJalan->id,
-                            'nomor_kontainer' => $nomorKontainerIni,
-                            'no_seal' => $noSealIni,
-                            'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
-                            'nama_kapal' => null,
-                            'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
-                            'status' => Prospek::STATUS_AKTIF,
-                            'created_by' => Auth::id(),
-                            'updated_by' => Auth::id()
-                        ];
-
-                        Prospek::create($prospekData);
-                    }
+                    $prospekData = [
+                           'tanggal' => $suratJalan->tanggal_surat_jalan ?? now(),
+                        'nama_supir' => $suratJalan->supir,
+                        'barang' => $suratJalan->jenis_barang ?? null,
+                        'pt_pengirim' => $suratJalan->pengirim ?? null,
+                        'ukuran' => null,
+                        'tipe' => $suratJalan->tipe_kontainer ?? null,
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                        'surat_jalan_id' => $suratJalan->id,
+                        'nomor_kontainer' => $suratJalan->nomor_kontainer ?? null,
+                        'no_seal' => $suratJalan->no_seal ?? null,
+                        'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
+                        'nama_kapal' => null,
+                        'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
+                        'status' => Prospek::STATUS_AKTIF,
+                        'created_by' => Auth::id(),
+                        'updated_by' => Auth::id()
+                    ];
+                    $createdProspek = Prospek::create($prospekData);
+                    Log::info('Prospek created from Supir Customer Surat Jalan (no order)', ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
                 } catch (\Exception $e) {
-                    Log::error('Error creating prospek from supir customer (without order) surat jalan: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+                    Log::error('Error creating prospek for supir customer (WithoutOrder): ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
                 }
             }
 

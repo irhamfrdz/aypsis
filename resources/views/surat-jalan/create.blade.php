@@ -458,6 +458,11 @@
                             <option value="__CUSTOMER__" data-plat="" data-supir-customer="1" {{ old('supir') == '__CUSTOMER__' ? 'selected' : '' }}>Supir Customer</option>
                         </select>
                         <input type="hidden" id="is_supir_customer" name="is_supir_customer" value="0">
+                        <div id="supir-customer-input" class="mt-2 hidden">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nama Supir (Customer)</label>
+                            <input type="text" id="nama-supir-customer" name="nama_supir_customer" value="{{ old('nama_supir_customer') }}" placeholder="Masukkan nama supir customer"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nama_supir_customer') border-red-500 @enderror">
+                        </div>
                     @error('supir')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -977,6 +982,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Ensure is_supir_customer updated on submit for edge-case where change event didn't fire
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Guarantee supir customer flag is set correctly just before submit
+            try {
+                handleSupirCustomerSelection();
+            } catch (err) {
+                console.warn('handleSupirCustomerSelection error', err);
+            }
+        });
+    }
+});
+
 // Fix for "not focusable" error on readonly fields (excluding uang_jalan)
 function preventReadonlyFocus() {
     // Get all readonly input fields except uang_jalan
@@ -1046,9 +1066,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function handleSupirCustomerSelection() {
     const supirSelect = document.getElementById('supir-select');
     const isSupplierCustomerInput = document.getElementById('is_supir_customer');
+    const supirCustomerDiv = document.getElementById('supir-customer-input');
+    const namaSupirCustomerInput = document.getElementById('nama-supir-customer');
     const uangJalanInput = document.getElementById('uang-jalan-input');
 
-    if (!supirSelect || !isSupplierCustomerInput) return;
+    if (!supirSelect || !isSupplierCustomerInput || !supirCustomerDiv) return;
 
     const selectedOption = supirSelect.options[supirSelect.selectedIndex];
     const dataCustomer = selectedOption ? selectedOption.getAttribute('data-supir-customer') : '0';
@@ -1056,7 +1078,10 @@ function handleSupirCustomerSelection() {
     if (dataCustomer === '1' || supirSelect.value === '__CUSTOMER__') {
         // Mark as customer
         isSupplierCustomerInput.value = '1';
-        // No customer name input needed; just set flag and disable uang_jalan
+        // Show input for nama_supir_customer
+        if (supirCustomerDiv.classList.contains('hidden')) {
+            supirCustomerDiv.classList.remove('hidden');
+        }
         // Disable uang_jalan and set to 0
         if (uangJalanInput) {
             uangJalanInput.value = '0';
@@ -1068,7 +1093,11 @@ function handleSupirCustomerSelection() {
     } else {
         // Unset customer
         isSupplierCustomerInput.value = '0';
-        // No customer name input to hide
+        // Hide input for nama_supir_customer
+        if (!supirCustomerDiv.classList.contains('hidden')) {
+            supirCustomerDiv.classList.add('hidden');
+            if (namaSupirCustomerInput) namaSupirCustomerInput.value = '';
+        }
         // Re-enable uang_jalan
         if (uangJalanInput) {
             uangJalanInput.removeAttribute('readonly');

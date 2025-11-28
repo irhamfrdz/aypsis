@@ -475,10 +475,10 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir <span class="text-red-600">*</span></label>
-                        <select name="supir"
+                    <select name="supir"
                             id="supir-select"
                             required
-                            onchange="updateNoPlat(); handleSupirCustomerSelection();"
+                            onchange="updateNoPlat()"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
                         <option value="">Pilih Supir</option>
                         @foreach($supirs as $supir)
@@ -488,9 +488,7 @@
                                 {{ $supir->nama_lengkap }}
                             </option>
                         @endforeach
-                        <option value="__CUSTOMER__" data-plat="" data-supir-customer="1" {{ old('supir') == '__CUSTOMER__' ? 'selected' : '' }}>Supir Customer</option>
                     </select>
-                    <input type="hidden" id="is_supir_customer" name="is_supir_customer" value="0">
                     @error('supir')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -1380,37 +1378,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize visibility and rules on page load
     handleTipeKontainerVisibility();
     updateKontainerRules();
-    // Initialize supir customer state
-    handleSupirCustomerSelection();
 });
-
-// Handle supir customer selection (create without order)
-function handleSupirCustomerSelection() {
-    const supirSelect = document.getElementById('supir-select');
-    const isSupplierCustomerInput = document.getElementById('is_supir_customer');
-    const uangJalanInput = document.getElementById('uang-jalan-input');
-
-    if (!supirSelect || !isSupplierCustomerInput) return;
-
-    const selectedOption = supirSelect.options[supirSelect.selectedIndex];
-    const dataCustomer = selectedOption ? selectedOption.getAttribute('data-supir-customer') : '0';
-
-    if (dataCustomer === '1' || supirSelect.value === '__CUSTOMER__') {
-        isSupplierCustomerInput.value = '1';
-        if (uangJalanInput) {
-            uangJalanInput.value = '0';
-            uangJalanInput.setAttribute('readonly', 'readonly');
-            uangJalanInput.disabled = true;
-        }
-    } else {
-        isSupplierCustomerInput.value = '0';
-        if (uangJalanInput) {
-            uangJalanInput.removeAttribute('readonly');
-            uangJalanInput.disabled = false;
-            updateUangJalan();
-        }
-    }
-}
 
 // Function to show notification
 function showNotification(message, type = 'info') {

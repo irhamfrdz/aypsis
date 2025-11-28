@@ -89,7 +89,13 @@ class UangJalanController extends Controller
         // Query surat jalan dengan filter
         $query = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
             ->whereNotNull('order_id') // Hanya surat jalan yang ada ordernya
-            ->where('status_pembayaran_uang_jalan', 'belum_ada'); // Hanya yang belum ada uang jalan
+            ->where('status_pembayaran_uang_jalan', 'belum_ada') // Hanya yang belum ada uang jalan
+            ->where(function($q) {
+                // Exclude surat jalan yang merupakan 'supir customer'
+                $q->whereNull('is_supir_customer')
+                  ->orWhere('is_supir_customer', false)
+                  ->orWhere('is_supir_customer', 0);
+            });
         
         // Filter berdasarkan status
         if ($status && $status !== 'all') {
@@ -145,6 +151,12 @@ class UangJalanController extends Controller
         $suratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
                                 ->findOrFail($suratJalanId);
         
+        // Cek apakah surat jalan ini adalah supir customer - jika ya, tidak boleh dibuat uang jalan
+        if (!empty($suratJalan->is_supir_customer) && $suratJalan->is_supir_customer) {
+            return redirect()->route('uang-jalan.select-surat-jalan')
+                           ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan dengan Supir Customer.');
+        }
+
         // Cek apakah sudah ada uang jalan untuk surat jalan ini
         $existingUangJalan = UangJalan::where('surat_jalan_id', $suratJalanId)->first();
         
@@ -194,6 +206,14 @@ class UangJalanController extends Controller
                            ->withInput();
         }
         
+        // Double-check: ensure surat jalan is not supir customer
+        $sj = SuratJalan::find($request->surat_jalan_id);
+        if ($sj && $sj->is_supir_customer) {
+            return redirect()->back()
+                           ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan yang menggunakan Supir Customer.')
+                           ->withInput();
+        }
+
         try {
             // Generate nomor uang jalan otomatis jika tidak diisi
             $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();

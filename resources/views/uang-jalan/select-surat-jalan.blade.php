@@ -354,6 +354,8 @@ allSuratJalans = allSuratJalans.map(item => {
     }
     return item;
 });
+// Defensive: remove items that were marked as supir customer (should not be selectable for uang jalan)
+allSuratJalans = allSuratJalans.filter(item => !item.is_supir_customer);
 let filteredSuratJalans = [...allSuratJalans];
 let currentSort = { column: '', direction: 'asc' };
 let currentPage = 1;
