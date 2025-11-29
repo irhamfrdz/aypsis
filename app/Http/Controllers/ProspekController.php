@@ -79,17 +79,20 @@ class ProspekController extends Controller
                 $perPage = 10;
             }
 
-            $prospeks = $query->paginate($perPage)->appends($request->query());
+                        // Keep a copy of the filtered query so totals use the same filters
+                        $filteredQuery = clone $query;
 
-            // Statistik untuk summary cards
-            $totalBelumMuat = Prospek::where(function ($q) {
-                $q->whereNull('status')
-                  ->orWhere('status', '')
-                  ->orWhere('status', 'aktif');
-            })->count();
-            
-            $totalSudahMuat = Prospek::where('status', 'sudah_muat')->count();
-            $totalBatal = Prospek::where('status', 'batal')->count();
+                        $prospeks = $query->paginate($perPage)->appends($request->query());
+
+                        // Statistik untuk summary cards - use the same filtered query
+                        $totalBelumMuat = (clone $filteredQuery)->where(function ($q) {
+                                $q->whereNull('status')
+                                    ->orWhere('status', '')
+                                    ->orWhere('status', 'aktif');
+                        })->count();
+
+                        $totalSudahMuat = (clone $filteredQuery)->where('status', 'sudah_muat')->count();
+                        $totalBatal = (clone $filteredQuery)->where('status', 'batal')->count();
 
             return view('prospek.index', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal'));
 

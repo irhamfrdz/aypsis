@@ -56,7 +56,13 @@
     <!-- Main Card -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="p-6 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900">Daftar Tanda Terima</h2>
+            <h2 class="text-lg font-semibold text-gray-900">
+                @if(request('mode') === 'missing')
+                    Surat Jalan (Belum Ada Tanda Terima)
+                @else
+                    Daftar Tanda Terima
+                @endif
+            </h2>
         </div>
 
         <div class="p-6">
@@ -79,6 +85,12 @@
                         </select>
                     </div>
                     <div class="md:col-span-2">
+                        <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="" {{ request('mode') == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
+                            <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan (Belum Ada Tanda Terima)</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
                             <i class="fas fa-search mr-2"></i> Cari
                         </button>
@@ -98,10 +110,11 @@
                         <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
                         <span class="ml-2 text-sm text-gray-700">Pilih Semua</span>
                     </label>
-                    <span id="selectedCount" class="text-sm text-gray-500">0 tanda terima dipilih</span>
+                    <span id="selectedCount" class="text-sm text-gray-500">@if(request('mode') === 'missing') 0 surat jalan dipilih @else 0 tanda terima dipilih @endif</span>
                 </div>
 
                 <!-- Bulk Delete Button -->
+                @if(request('mode') !== 'missing')
                 <div id="bulkActionsContainer" class="hidden">
                     <div class="flex items-center gap-2">
                     <button type="button"
@@ -122,6 +135,7 @@
                     </button>
                     </div>
                 </div>
+                @endif
             </div>
 
             <!-- Bulk Delete Form (Hidden) -->
@@ -139,8 +153,28 @@
 
             <!-- Table -->
             <div class="overflow-x-auto">
+                @if(request('mode') === 'missing')
+                <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="suratJalanTable">
+                @else
                 <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="tandaTerimaTable">
+                @endif
                     <thead class="bg-gray-50">
+                        @if(request('mode') === 'missing')
+                        <tr>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 48px;">
+                                <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
+                            </th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rit</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                        @else
                         <tr>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 48px;">
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
@@ -156,8 +190,60 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
+                        @endif
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
+                        @if(request('mode') === 'missing')
+                        @forelse($suratJalans as $suratJalan)
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <input type="checkbox"
+                                       class="surat-jalan-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                       value="{{ $suratJalan->id }}"
+                                       data-no-surat-jalan="{{ $suratJalan->no_surat_jalan }}"
+                                       onchange="updateSelection()">
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                                {{ ($suratJalans->currentPage() - 1) * $suratJalans->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs font-semibold text-gray-900">{{ $suratJalan->no_surat_jalan }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 text-xs text-gray-600">
+                                <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $suratJalan->no_kontainer ?: '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->supir ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->no_plat ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->rit ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ Str::limit($suratJalan->kegiatan ?: '-', 12) }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                <a href="{{ route('tanda-terima.create', ['surat_jalan_id' => $suratJalan->id]) }}"
+                                   class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150">
+                                    <i class="fas fa-plus mr-1"></i> Buat
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="11" class="px-3 py-8 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-truck-loading text-gray-300 text-4xl mb-3"></i>
+                                    <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan tanpa tanda terima</p>
+                                    <p class="text-gray-400 text-xs mt-1">Semua surat jalan saat ini memiliki tanda terima.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                        @else
                         @forelse($tandaTerimas as $tandaTerima)
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-3 py-2 whitespace-nowrap">
@@ -302,47 +388,92 @@
             </div>
 
             <!-- Pagination -->
-            @if($tandaTerimas->hasPages())
-            <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
-                <div class="flex flex-1 justify-between sm:hidden">
-                    @if($tandaTerimas->onFirstPage())
-                        <span class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
-                            Previous
-                        </span>
-                    @else
-                        <a href="{{ $tandaTerimas->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Previous
-                        </a>
-                    @endif
+            @if(request('mode') === 'missing')
+                @if(isset($suratJalans) && $suratJalans->hasPages())
+                <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                    <div class="flex flex-1 justify-between sm:hidden">
+                        @if($suratJalans->onFirstPage())
+                            <span class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
+                                Previous
+                            </span>
+                        @else
+                            <a href="{{ $suratJalans->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Previous
+                            </a>
+                        @endif
 
-                    @if($tandaTerimas->hasMorePages())
-                        <a href="{{ $tandaTerimas->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Next
-                        </a>
-                    @else
-                        <span class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
-                            Next
-                        </span>
-                    @endif
-                </div>
-                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Menampilkan
-                            <span class="font-medium">{{ $tandaTerimas->firstItem() ?? 0 }}</span>
-                            sampai
-                            <span class="font-medium">{{ $tandaTerimas->lastItem() ?? 0 }}</span>
-                            dari
-                            <span class="font-medium">{{ $tandaTerimas->total() }}</span>
-                            data
-                        </p>
+                        @if($suratJalans->hasMorePages())
+                            <a href="{{ $suratJalans->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Next
+                            </a>
+                        @else
+                            <span class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
+                                Next
+                            </span>
+                        @endif
                     </div>
-                    <div>
-                        @include('components.modern-pagination', ['paginator' => $tandaTerimas])
-                        @include('components.rows-per-page')
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan
+                                <span class="font-medium">{{ $suratJalans->firstItem() ?? 0 }}</span>
+                                sampai
+                                <span class="font-medium">{{ $suratJalans->lastItem() ?? 0 }}</span>
+                                dari
+                                <span class="font-medium">{{ $suratJalans->total() }}</span>
+                                data
+                            </p>
+                        </div>
+                        <div>
+                            @include('components.modern-pagination', ['paginator' => $suratJalans])
+                            @include('components.rows-per-page')
+                        </div>
                     </div>
                 </div>
-            </div>
+                @endif
+            @else
+                @if($tandaTerimas->hasPages())
+                <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                    <div class="flex flex-1 justify-between sm:hidden">
+                        @if($tandaTerimas->onFirstPage())
+                            <span class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
+                                Previous
+                            </span>
+                        @else
+                            <a href="{{ $tandaTerimas->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Previous
+                            </a>
+                        @endif
+
+                        @if($tandaTerimas->hasMorePages())
+                            <a href="{{ $tandaTerimas->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Next
+                            </a>
+                        @else
+                            <span class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
+                                Next
+                            </span>
+                        @endif
+                    </div>
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan
+                                <span class="font-medium">{{ $tandaTerimas->firstItem() ?? 0 }}</span>
+                                sampai
+                                <span class="font-medium">{{ $tandaTerimas->lastItem() ?? 0 }}</span>
+                                dari
+                                <span class="font-medium">{{ $tandaTerimas->total() }}</span>
+                                data
+                            </p>
+                        </div>
+                        <div>
+                            @include('components.modern-pagination', ['paginator' => $tandaTerimas])
+                            @include('components.rows-per-page')
+                        </div>
+                    </div>
+                </div>
+                @endif
             @endif
         </div>
     </div>
@@ -364,7 +495,7 @@
     function toggleAllCheckboxes() {
         const selectAll = document.getElementById('selectAll');
         const selectAllHeader = document.getElementById('selectAllHeader');
-        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox');
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox');
 
         // Sync both select all checkboxes
         if (selectAll.checked) {
@@ -386,14 +517,26 @@
     }
 
     function updateSelection() {
-        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked, .surat-jalan-checkbox:checked');
         const selectedCount = checkboxes.length;
 
         // Update count display
-        document.getElementById('selectedCount').textContent =
-            selectedCount > 0 ?
-            `${selectedCount} tanda terima dipilih` :
-            '0 tanda terima dipilih';
+        const mode = '{{ request('mode') }}';
+        let selectionText = `${selectedCount} dipilih`;
+        if (selectedCount > 0) {
+            if (mode === 'missing') {
+                selectionText = `${selectedCount} surat jalan dipilih`;
+            } else {
+                selectionText = `${selectedCount} tanda terima dipilih`;
+            }
+        } else {
+            if (mode === 'missing') {
+                selectionText = '0 surat jalan dipilih';
+            } else {
+                selectionText = '0 tanda terima dipilih';
+            }
+        }
+        document.getElementById('selectedCount').textContent = selectionText;
 
         // Show/hide bulk actions container
         const bulkActionsContainer = document.getElementById('bulkActionsContainer');
@@ -406,7 +549,7 @@
         }
 
         // Update select all checkboxes
-        const allCheckboxes = document.querySelectorAll('.tanda-terima-checkbox');
+        const allCheckboxes = document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox');
         const selectAll = document.getElementById('selectAll');
         const selectAllHeader = document.getElementById('selectAllHeader');
 
@@ -465,8 +608,8 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        // Add change listeners to existing checkboxes
-        document.querySelectorAll('.tanda-terima-checkbox').forEach(checkbox => {
+        // Add change listeners to existing checkboxes (both types)
+        document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', updateSelection);
         });
 
@@ -537,7 +680,11 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    initResizableTable('tandaTerimaTable');
+    if ('{{ request('mode') }}' === 'missing') {
+        initResizableTable('suratJalanTable');
+    } else {
+        initResizableTable('tandaTerimaTable');
+    }
 });
 </script>
 @endpush

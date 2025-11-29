@@ -1212,6 +1212,7 @@
                                 <td class="text-center text-gray-500 text-sm py-3">
                                     <input type="checkbox" class="aktivitas-header-checkbox permission-checkbox" data-permission="approve">
                                 </td>
+                                
                                 <td class="text-center text-gray-500 text-sm py-3">
                                     <input type="checkbox" class="aktivitas-header-checkbox permission-checkbox" data-permission="print">
                                 </td>
@@ -1236,6 +1237,32 @@
                                 <td><input type="checkbox" name="permissions[permohonan-memo][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['approve']) && $userMatrixPermissions['permohonan-memo']['approve']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[permohonan-memo][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['print']) && $userMatrixPermissions['permohonan-memo']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[permohonan-memo][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['export']) && $userMatrixPermissions['permohonan-memo']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Pranota Uang Rit --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <div>
+                                            <span>Pranota Uang Rit</span>
+                                            <div class="text-xs text-gray-500 mt-1">Hak khusus: 
+                                                <label class="inline-flex items-center ml-2">
+                                                    <input type="checkbox" name="permissions[pranota-uang-rit][mark-paid]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-rit']['mark-paid']) && $userMatrixPermissions['pranota-uang-rit']['mark-paid']) checked @endif>
+                                                    <span class="ml-2 text-xs text-gray-600">Mark Paid</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.view') || (isset($userMatrixPermissions['pranota-uang-rit']['view']) && $userMatrixPermissions['pranota-uang-rit']['view']) || ($user && $user->can('pranota-uang-rit-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.create') || (isset($userMatrixPermissions['pranota-uang-rit']['create']) && $userMatrixPermissions['pranota-uang-rit']['create']) || ($user && $user->can('pranota-uang-rit-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][update]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.update') || (isset($userMatrixPermissions['pranota-uang-rit']['update']) && $userMatrixPermissions['pranota-uang-rit']['update']) || ($user && $user->can('pranota-uang-rit-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.delete') || (isset($userMatrixPermissions['pranota-uang-rit']['delete']) && $userMatrixPermissions['pranota-uang-rit']['delete']) || ($user && $user->can('pranota-uang-rit-delete'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][approve]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.approve') || (isset($userMatrixPermissions['pranota-uang-rit']['approve']) && $userMatrixPermissions['pranota-uang-rit']['approve']) || ($user && $user->can('pranota-uang-rit-approve'))) checked @endif></td>
+                                
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][print]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.print') || (isset($userMatrixPermissions['pranota-uang-rit']['print']) && $userMatrixPermissions['pranota-uang-rit']['print']) || ($user && $user->can('pranota-uang-rit-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-rit][export]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-rit.export') || (isset($userMatrixPermissions['pranota-uang-rit']['export']) && $userMatrixPermissions['pranota-uang-rit']['export']) || ($user && $user->can('pranota-uang-rit-export'))) checked @endif></td>
                             </tr>
 
                             {{-- Pranota Supir --}}
@@ -2263,7 +2290,7 @@
             }
 
             function updateAktivaHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.aktiva-header-checkbox[data-permission="${permission}"]`);
@@ -2313,7 +2340,7 @@
             }
 
             function updateMasterHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.master-header-checkbox[data-permission="${permission}"]`);
@@ -2363,7 +2390,7 @@
             }
 
             function updateUserHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.user-header-checkbox[data-permission="${permission}"]`);
@@ -2414,7 +2441,7 @@
             }
 
             function updateAktivitasLainnyaHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.aktivitas-lainnya-header-checkbox[data-permission="${permission}"]`);
@@ -2464,7 +2491,7 @@
             }
 
             function updatePembayaranHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.pembayaran-header-checkbox[data-permission="${permission}"]`);
@@ -2514,7 +2541,7 @@
             }
 
             function updateAktivitasHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.aktivitas-header-checkbox[data-permission="${permission}"]`);
@@ -2564,7 +2591,7 @@
             }
 
             function updateApprovalHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.approval-header-checkbox[data-permission="${permission}"]`);
@@ -2614,7 +2641,7 @@
             }
 
             function updateOperationalHeaderCheckboxes() {
-                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.operational-header-checkbox[data-permission="${permission}"]`);

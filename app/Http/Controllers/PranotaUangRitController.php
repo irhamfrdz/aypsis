@@ -18,6 +18,11 @@ class PranotaUangRitController extends Controller
      */
     public function index(Request $request)
     {
+        // If no date range is provided, show a date selection page first
+        if (!($request->filled('start_date') && $request->filled('end_date'))) {
+            return view('pranota-uang-rit.select-date', ['start_date' => $request->start_date, 'end_date' => $request->end_date]);
+        }
+
         $query = PranotaUangRit::with(['suratJalan', 'creator', 'approver']);
 
         // Filter by search
@@ -57,7 +62,17 @@ class PranotaUangRitController extends Controller
     {
         // Get available surat jalans that haven't been processed for pranota uang rit
         // Only include surat jalans that use 'menggunakan_rit' and status pembayaran uang rit 'belum_dibayar'
-        $suratJalans = SuratJalan::where('status', 'approved')
+        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
+            // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
+            $q->where('status', 'approved')
+              ->orWhere('status', 'sudah_checkpoint')
+              ->orWhere('status', 'active')
+              ->orWhereNotNull('tanggal_checkpoint')
+              ->orWhereHas('tandaTerima')
+              ->orWhereHas('approvals', function($sub) {
+                  $sub->where('status', 'approved');
+              });
+        })
             ->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
             ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
             ->whereNotIn('id', function($query) {
@@ -66,8 +81,41 @@ class PranotaUangRitController extends Controller
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
-            ->orderBy('created_at', 'desc')
-            ->get();
+            // Only include surat jalan that already have a supir checkpoint OR have a Tanda Terima record
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            })
+            ->orderBy('created_at', 'desc');
+
+            $eligibleCount = (clone $baseQuery)->count();
+            $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function($subQuery) {
+                $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+            })->count();
+            $finalFilteredCount = (clone $baseQuery)->where('rit', 'menggunakan_rit')
+                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
+                ->whereNotIn('id', function($subQuery) {
+                    $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+                })
+                ->where(function($q) {
+                    $q->whereNotNull('tanggal_checkpoint')->orWhereHas('tandaTerima');
+                })->count();
+
+            $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
+            $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function($subQuery) {
+                $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+            })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
+            $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit']);
+
+            $suratJalans = (clone $baseQuery)
+                ->where('rit', 'menggunakan_rit')
+                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
+                ->whereNotIn('id', function($subQuery) {
+                    $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+                })
+                ->where(function($q) {
+                    $q->whereNotNull('tanggal_checkpoint')->orWhereHas('tandaTerima');
+                })->orderBy('created_at', 'desc')->get();
 
         Log::info('Final Surat Jalans for Pranota: ' . $suratJalans->count());
         
@@ -84,7 +132,15 @@ class PranotaUangRitController extends Controller
             ]);
         }
 
-        return view('pranota-uang-rit.create', compact('suratJalans'));
+        // Compute extra diagnostics: SJs that have Tanda Terima but are excluded from final list
+        $suratJalanIncludedIds = $suratJalans->pluck('id')->toArray();
+        $excludedByTandaTerimaExamples = (clone $baseQuery)
+            ->whereHas('tandaTerima')
+            ->whereNotIn('id', $suratJalanIncludedIds)
+            ->take(10)
+            ->get(['id', 'no_surat_jalan', 'supir', 'status', 'rit', 'status_pembayaran_uang_rit']);
+
+        return view('pranota-uang-rit.create', compact('suratJalans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples'));
     }
 
     /**
@@ -92,14 +148,31 @@ class PranotaUangRitController extends Controller
      */
     public function selectUangJalan(Request $request)
     {
-        $query = SuratJalan::where('status', 'approved')
-            ->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
+        // Build base eligibility query
+        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
+            $q->where('status', 'approved')
+              ->orWhere('status', 'sudah_checkpoint')
+              ->orWhere('status', 'active')
+              ->orWhereNotNull('tanggal_checkpoint')
+              ->orWhereHas('tandaTerima')
+              ->orWhereHas('approvals', function($sub) {
+                  $sub->where('status', 'approved');
+              });
+        });
+
+        // Clone base query for counting and further filtering
+        $query = (clone $baseQuery)->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
             ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
             ->whereNotIn('id', function($subQuery) {
                 $subQuery->select('surat_jalan_id')
                     ->from('pranota_uang_rits')
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
+            })
+            // Only include surat jalan that already have a supir checkpoint OR have a Tanda Terima record
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
             });
 
         // Filter by search
@@ -121,9 +194,30 @@ class PranotaUangRitController extends Controller
             $query->where('supir_nama', 'like', "%{$request->supir}%");
         }
 
+        // Compute counts for debugging/help messages
+        $eligibleCount = (clone $baseQuery)->count();
+        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function($subQuery) {
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+        })->count();
+        $finalFilteredCount = (clone $query)->count();
+
+        $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
+        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function($subQuery) {
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+        })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
+        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit']);
+
         $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return view('pranota-uang-rit.select-uang-jalan', compact('suratJalans'));
+        // Additional diagnostics: SJs that have a tanda terima but are excluded from the paginated results
+        $includedIds = $suratJalans->pluck('id')->toArray();
+        $excludedByTandaTerimaExamples = (clone $baseQuery)
+            ->whereHas('tandaTerima')
+            ->whereNotIn('id', $includedIds)
+            ->take(10)
+            ->get(['id', 'no_surat_jalan', 'supir', 'status', 'rit', 'status_pembayaran_uang_rit']);
+
+        return view('pranota-uang-rit.select-uang-jalan', compact('suratJalans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples'));
     }
 
     /**
@@ -137,12 +231,30 @@ class PranotaUangRitController extends Controller
         ]);
 
         $suratJalans = SuratJalan::whereIn('id', $request->surat_jalan_ids)
-            ->where('status', 'approved')
+            ->where(function($q) {
+                $q->where('status', 'approved')
+                  ->orWhere('status', 'sudah_checkpoint')
+                  ->orWhere('status', 'active')
+                  ->orWhereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima')
+                  ->orWhereHas('approvals', function($sub) {
+                      $sub->where('status', 'approved');
+                  });
+            })
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            })
             ->get();
 
         if ($suratJalans->isEmpty()) {
             return redirect()->route('pranota-uang-rit.select-uang-jalan')
                 ->with('error', 'Data surat jalan tidak ditemukan atau tidak valid.');
+        }
+
+        if ($suratJalans->count() < count($request->surat_jalan_ids)) {
+            return redirect()->route('pranota-uang-rit.select-uang-jalan')
+                ->with('error', 'Beberapa surat jalan tidak valid atau tidak memenuhi kriteria (checkpoint supir atau Tanda Terima).');
         }
 
         return view('pranota-uang-rit.create-from-selection', compact('suratJalans'));

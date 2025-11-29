@@ -103,6 +103,44 @@
 
         <!-- Table -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-3 text-xs text-gray-600">
+                <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, atau memiliki <strong>Tanda Terima</strong> yang dapat dipilih.</p>
+            </div>
+            @if(isset($eligibleCount))
+            <div class="px-6 py-2 text-xs text-gray-700 bg-yellow-50 border-t border-yellow-200">
+                <p class="mb-0">Keterangan: <strong>{{ $eligibleCount }}</strong> total memenuhi syarat umum; <strong>{{ $pranotaUsedCount }}</strong> sudah diproses (pranota); <strong>{{ $finalFilteredCount }}</strong> tersedia setelah filter tambahan.</p>
+            </div>
+            @endif
+            @if(isset($excludedByPranotaExamples) && $excludedByPranotaExamples->count() > 0)
+            <div class="px-6 py-3 text-xs text-gray-700 bg-white rounded-md border border-gray-200 my-2">
+                <p class="font-semibold mb-1">Contoh surat jalan yang <strong>sudah diproses (pranota)</strong> (sehingga tidak tampil):</p>
+                <ul class="list-disc list-inside text-xs text-gray-600">
+                    @foreach($excludedByPranotaExamples as $ex)
+                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - status: {{ $ex->status }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+            @if(isset($excludedByPaymentExamples) && $excludedByPaymentExamples->count() > 0)
+            <div class="px-6 py-3 text-xs text-gray-700 bg-white rounded-md border border-gray-200 my-2">
+                <p class="font-semibold mb-1">Contoh surat jalan yang <strong>terhalang karena status pembayaran</strong> (bukan 'belum_dibayar'):</p>
+                <ul class="list-disc list-inside text-xs text-gray-600">
+                    @foreach($excludedByPaymentExamples as $ex)
+                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+            @if(isset($excludedByTandaTerimaExamples) && $excludedByTandaTerimaExamples->count() > 0)
+            <div class="px-6 py-3 text-xs text-gray-700 bg-white rounded-md border border-gray-200 my-2">
+                <p class="font-semibold mb-1">Contoh surat jalan yang <strong>memiliki Tanda Terima</strong> tetapi <strong>tidak tampil</strong> setelah filter:</p>
+                <ul class="list-disc list-inside text-xs text-gray-600">
+                    @foreach($excludedByTandaTerimaExamples as $ex)
+                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - rit: {{ $ex->rit ?? '-' }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit ?? '-' }} - status: {{ $ex->status ?? '-' }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">Daftar Surat Jalan</h3>
                 <p class="text-sm text-gray-600 mt-1">Total: {{ $suratJalans->total() }} surat jalan tersedia</p>
@@ -124,6 +162,9 @@
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Supir
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Eligible
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 No. Plat
@@ -151,6 +192,17 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $suratJalan->supir_nama }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                @if($suratJalan->tanggal_checkpoint)
+                                    <span class="inline-flex px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Checkpoint</span>
+                                @endif
+                                @if($suratJalan->tandaTerima)
+                                    <span class="inline-flex px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 ml-1">Tanda Terima</span>
+                                @endif
+                                @if($suratJalan->approvals && $suratJalan->approvals->where('status', 'approved')->isNotEmpty())
+                                    <span class="inline-flex px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 ml-1">Approved</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $suratJalan->no_plat }}</div>

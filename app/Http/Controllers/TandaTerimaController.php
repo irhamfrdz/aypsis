@@ -84,12 +84,43 @@ class TandaTerimaController extends Controller
         // Get search and filter parameters
         $search = $request->input('search', '');
         $status = $request->input('status', '');
+        $mode = $request->input('mode', '');
         $perPage = $request->input('rows_per_page', 25);
 
+        // If mode is 'missing' then we should list Surat Jalan that don't have Tanda Terima
+        if ($mode === 'missing') {
+            $suratQuery = SuratJalan::with(['order.pengirim']);
+
+            // Apply search filter for surat jalan
+            if (!empty($search)) {
+                $suratQuery->where(function($q) use ($search) {
+                    $q->where('no_surat_jalan', 'like', "%{$search}%")
+                      ->orWhere('supir', 'like', "%{$search}%")
+                      ->orWhere('no_plat', 'like', "%{$search}%")
+                      ->orWhereHas('order', function($orderQuery) use ($search) {
+                          $orderQuery->whereHas('pengirim', function($pengirimQuery) use ($search) {
+                              $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                          });
+                      });
+                });
+            }
+
+            // Apply status filter to surat jalan if provided
+            if (!empty($status)) {
+                $suratQuery->where('status', $status);
+            }
+
+            // Only include surat jalan that do not yet have a tanda terima
+            $suratQuery->whereDoesntHave('tandaTerima');
+
+            $suratJalans = $suratQuery->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
+
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'mode'));
+        }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim']);
 
-        // Apply search filter
+        // Apply search filter for tanda terima
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
@@ -112,9 +143,9 @@ class TandaTerimaController extends Controller
         }
 
         // Order by newest and paginate
-        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
-        return view('tanda-terima.index', compact('tandaTerimas'));
+        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'mode'));
     }
 
     /**
