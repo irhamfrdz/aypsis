@@ -95,6 +95,10 @@
                         <i class="fas fa-search mr-2"></i>
                         Filter
                     </button>
+                    <a href="{{ route('prospek.export-excel', request()->query()) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </a>
                     <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-times mr-2"></i>
                         Reset

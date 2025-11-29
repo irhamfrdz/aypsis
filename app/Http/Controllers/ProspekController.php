@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProspekExport;
 
 class ProspekController extends Controller
 {
@@ -98,6 +100,23 @@ class ProspekController extends Controller
 
         } catch (\Exception $e) {
             return back()->with('error', 'Error loading data prospek: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export listing to Excel using current filters
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $filters = $request->query();
+            $fileName = 'prospek_export_' . date('Ymd_His') . '.xlsx';
+            $export = new ProspekExport($filters, []);
+
+            return Excel::download($export, $fileName);
+        } catch (\Exception $e) {
+            \Log::error('Error exporting prospek: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export prospek: ' . $e->getMessage());
         }
     }
 

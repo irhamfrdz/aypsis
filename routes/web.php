@@ -3243,6 +3243,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek/pilih-tujuan', [ProspekController::class, 'pilihTujuan'])->name('prospek.pilih-tujuan')
          ->middleware('can:prospek-edit');
 
+    // Export prospek filtered list to Excel
+    Route::get('prospek/export-excel', [ProspekController::class, 'exportExcel'])->name('prospek.export-excel')
+         ->middleware('can:prospek-view');
+
     Route::get('prospek/proses-naik-kapal', [ProspekController::class, 'prosesNaikKapal'])->name('prospek.proses-naik-kapal')
          ->middleware('can:prospek-edit');
 
