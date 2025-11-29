@@ -503,6 +503,11 @@ class TandaTerimaController extends Controller
                 $suratJalanUpdate['tujuan_pengiriman'] = $request->tujuan_pengiriman;
             }
             
+            // Tanggal checkpoint supir
+            if ($request->filled('tanggal_checkpoint_supir')) {
+                $suratJalanUpdate['tanggal_checkpoint'] = $request->tanggal_checkpoint_supir;
+            }
+            
             // Update surat jalan jika ada perubahan
             if (!empty($suratJalanUpdate)) {
                 $suratJalan->update($suratJalanUpdate);
@@ -651,6 +656,7 @@ class TandaTerimaController extends Controller
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
             'tanggal_garasi' => 'nullable|date',
+            'tanggal_checkpoint_supir' => 'nullable|date',
             'jumlah' => 'nullable|integer|min:0',
             'satuan' => 'nullable|string|max:50',
             'panjang' => 'nullable|numeric|min:0',
@@ -694,6 +700,7 @@ class TandaTerimaController extends Controller
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
                 'tanggal_garasi' => $request->tanggal_garasi,
+                'tanggal_checkpoint_supir' => $request->tanggal_checkpoint_supir,
                 'jumlah' => $request->jumlah,
                 'satuan' => $request->satuan,
                 // Format numeric fields to avoid excessive decimals
@@ -838,6 +845,11 @@ class TandaTerimaController extends Controller
                         $suratJalanUpdateData['no_seal'] = $updateData['no_seal'];
                     }
                     
+                    // Update tanggal checkpoint jika ada perubahan
+                    if (isset($updateData['tanggal_checkpoint_supir']) && $updateData['tanggal_checkpoint_supir'] != $suratJalan->tanggal_checkpoint) {
+                        $suratJalanUpdateData['tanggal_checkpoint'] = $updateData['tanggal_checkpoint_supir'];
+                    }
+                    
                     // Lakukan update jika ada perubahan
                     if (!empty($suratJalanUpdateData)) {
                         $suratJalan->update($suratJalanUpdateData);
@@ -848,6 +860,7 @@ class TandaTerimaController extends Controller
                             'updated_fields' => array_keys($suratJalanUpdateData),
                             'no_kontainer' => $suratJalanUpdateData['no_kontainer'] ?? null,
                             'no_seal' => $suratJalanUpdateData['no_seal'] ?? null,
+                            'tanggal_checkpoint' => $suratJalanUpdateData['tanggal_checkpoint'] ?? null,
                         ]);
                     }
                 }

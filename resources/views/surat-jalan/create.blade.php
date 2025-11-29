@@ -395,7 +395,7 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('karton') border-red-500 @enderror">
                         <option value="">Pilih Status Karton</option>
                         <option value="pakai" {{ old('karton') == 'pakai' ? 'selected' : '' }}>Pakai</option>
-                        <option value="tidak_pakai" {{ old('karton') == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
+                        <option value="tidak_pakai" {{ old('karton', 'tidak_pakai') == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
                     </select>
                     @error('karton')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -408,7 +408,7 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('plastik') border-red-500 @enderror">
                         <option value="">Pilih Status Plastik</option>
                         <option value="pakai" {{ old('plastik') == 'pakai' ? 'selected' : '' }}>Pakai</option>
-                        <option value="tidak_pakai" {{ old('plastik') == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
+                        <option value="tidak_pakai" {{ old('plastik', 'tidak_pakai') == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
                     </select>
                     @error('plastik')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -421,7 +421,7 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('terpal') border-red-500 @enderror">
                         <option value="">Pilih Status Terpal</option>
                         <option value="pakai" {{ old('terpal') == 'pakai' ? 'selected' : '' }}>Pakai</option>
-                        <option value="tidak_pakai" {{ old('terpal') == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
+                        <option value="tidak_pakai" {{ old('terpal', 'tidak_pakai') == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
                     </select>
                     @error('terpal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -561,7 +561,7 @@
                     <select name="rit"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('rit') border-red-500 @enderror">
                         <option value="">Pilih Status Rit</option>
-                        <option value="menggunakan_rit" {{ old('rit') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="menggunakan_rit" {{ old('rit', 'menggunakan_rit') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
                         <option value="tidak_menggunakan_rit" {{ old('rit') == 'tidak_menggunakan_rit' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
                     </select>
                     @error('rit')

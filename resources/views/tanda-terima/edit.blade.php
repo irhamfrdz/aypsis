@@ -256,6 +256,9 @@
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Tanggal Garasi
                                             </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tanggal Checkpoint Supir
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white">
@@ -287,6 +290,16 @@
                                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_garasi') border-red-500 @enderror"
                                                        value="{{ old('tanggal_garasi', $tandaTerima->tanggal_garasi?->format('Y-m-d')) }}">
                                                 @error('tanggal_garasi')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <input type="date"
+                                                       name="tanggal_checkpoint_supir"
+                                                       id="tanggal_checkpoint_supir"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_checkpoint_supir') border-red-500 @enderror"
+                                                       value="{{ old('tanggal_checkpoint_supir', $tandaTerima->tanggal_checkpoint_supir?->format('Y-m-d')) }}">
+                                                @error('tanggal_checkpoint_supir')
                                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                                 @enderror
                                             </td>

@@ -383,6 +383,7 @@
                             </td>
                         </tr>
                         @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
