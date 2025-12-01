@@ -580,13 +580,16 @@
                                 Tipe Kontainer
                             </label>
                             <select name="tipe_kontainer" id="tipe_kontainer"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_kontainer') border-red-500 @enderror"
-                                    onchange="handleTipeKontainerChange()">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 cursor-not-allowed @error('tipe_kontainer') border-red-500 @enderror"
+                                    onchange="handleTipeKontainerChange()" readonly disabled>
                                 <option value="">-- Pilih Tipe --</option>
                                 <option value="fcl" {{ (old('tipe_kontainer', $tipe ?? '') == 'fcl') ? 'selected' : '' }}>FCL</option>
                                 <option value="lcl" {{ (old('tipe_kontainer', $tipe ?? '') == 'lcl') ? 'selected' : '' }}>LCL</option>
                                 <option value="cargo" {{ (old('tipe_kontainer', $tipe ?? '') == 'cargo') ? 'selected' : '' }}>Cargo</option>
                             </select>
+                            @if(isset($tipe))
+                                <input type="hidden" name="tipe_kontainer" value="{{ $tipe }}">
+                            @endif
                             @error('tipe_kontainer')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
