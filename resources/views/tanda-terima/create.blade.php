@@ -49,6 +49,35 @@
 
         <form action="{{ route('tanda-terima.store') }}" method="POST" class="p-6">
                     @csrf
+
+                    {{-- General error alert for server-side issues or exception messages --}}
+                    @if(session('error'))
+                        <div class="server-error mb-4 p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-800">
+                            <div class="font-semibold">Gagal membuat Tanda Terima</div>
+                            <p class="mt-1">{{ session('error') }}</p>
+                            <p class="mt-2 text-xs text-gray-500">Saran perbaikan:
+                                <ul class="list-disc ml-5 mt-1">
+                                    <li>Periksa kembali field yang wajib diisi (ditandai bintang merah).</li>
+                                    <li>Pastikan format tanggal dan nomor kontainer benar.</li>
+                                    <li>Jika server mengembalikan error teknis (SQL, constraint), buka file log: <code>storage/logs/laravel.log</code> untuk detail.</li>
+                                    <li>Jika masih gagal, hubungi admin dengan melampirkan pesan error di bawah.</li>
+                                </ul>
+                            </p>
+                        </div>
+                    @endif
+
+                    {{-- Validation summary for multiple field errors --}}
+                    @if ($errors->any())
+                        <div class="validation-errors mb-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-sm text-yellow-800">
+                            <div class="font-semibold">Validasi gagal. Silakan periksa field berikut:</div>
+                            <ul class="mt-2 list-disc ml-5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <p class="mt-2 text-xs text-gray-500">Tips: Periksa format tanggal, panjang karakter, dan field yang wajib diisi.</p>
+                        </div>
+                    @endif
                     <input type="hidden" name="surat_jalan_id" value="{{ $suratJalan->id }}">
 
                     <div class="space-y-6">
@@ -962,6 +991,17 @@
             }
         });
     })();
+
+    // Scroll to alert block if present
+    jQuery(document).ready(function($) {
+        var $alert = $('.server-error, .validation-errors').first();
+        if ($alert && $alert.length) {
+            // Smooth scroll to the alert and highlight
+            $('html, body').animate({ scrollTop: $alert.offset().top - 80 }, 300);
+            $alert.addClass('ring-2 ring-red-200');
+            setTimeout(function() { $alert.removeClass('ring-2 ring-red-200'); }, 3000);
+        }
+    });
 
     function calculateVolume(rowElement) {
         const panjangInput = rowElement ? rowElement.querySelector('[name^="panjang"]') : document.getElementById('panjang_0');
