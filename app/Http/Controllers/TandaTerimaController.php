@@ -324,6 +324,14 @@ class TandaTerimaController extends Controller
             // Database column only accepts enum('fcl','lcl','cargo') for tanda_terimas.
             // We'll try to map common verbose values to allowed enum values.
             $rawTipe = $suratJalan->tipe_kontainer ?? ($request->input('tipe_kontainer') ?? null);
+            // If tipe_kontainer provided as array (tipe_kontainer[]), pick the first non-empty value
+            if (is_array($rawTipe)) {
+                $first = null;
+                foreach ($rawTipe as $r) {
+                    if (!empty(trim($r))) { $first = $r; break; }
+                }
+                $rawTipe = $first;
+            }
             if ($rawTipe) {
                 $mapped = $this->mapTipeKontainerValue($rawTipe);
                 if ($mapped === null) {
