@@ -281,7 +281,7 @@
                         Informasi Barang
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <!-- Nama Barang -->
                         <div>
                             <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">
@@ -292,25 +292,6 @@
                                    value="{{ old('nama_barang') }}" required
                                    placeholder="Contoh: Spare Part Mesin">
                             @error('nama_barang')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Jenis Barang -->
-                        <div>
-                            <label for="jenis_barang" class="block text-sm font-medium text-gray-700 mb-1">
-                                Jenis Barang <span class="text-red-500">*</span>
-                            </label>
-                            <select name="jenis_barang" id="jenis_barang"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required>
-                                <option value="">Pilih Jenis Barang</option>
-                                @foreach($jenisBarangs as $jenis)
-                                    <option value="{{ $jenis->id }}" {{ old('jenis_barang') == $jenis->id ? 'selected' : '' }}>
-                                        {{ $jenis->nama_barang }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('jenis_barang')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

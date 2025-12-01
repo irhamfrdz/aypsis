@@ -11,7 +11,6 @@ use App\Models\TandaTerimaLclItem;
 use App\Models\Term;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
-use App\Models\JenisBarang;
 use App\Models\MasterTujuanKirim;
 use App\Models\Karyawan;
 use App\Models\Prospek;
@@ -33,7 +32,6 @@ class TandaTerimaLclController extends Controller
     public function create()
     {
         $terms = Term::all();
-        $jenisBarangs = JenisBarang::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
@@ -70,10 +68,10 @@ class TandaTerimaLclController extends Controller
 
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
-            'jenisBarangs', 
             'masterTujuanKirims', 
-            'supirs'
-        , 'containerOptions'));
+            'supirs',
+            'containerOptions'
+        ));
     }
 
     /**
@@ -90,7 +88,6 @@ class TandaTerimaLclController extends Controller
             'nama_pengirim' => 'required|string|max:255', 
             'alamat_pengirim' => 'required|string',
             'nama_barang' => 'required|string|max:255',
-            'jenis_barang' => 'required|exists:jenis_barangs,id',
             'kuantitas' => 'required|integer|min:1',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
@@ -130,7 +127,6 @@ class TandaTerimaLclController extends Controller
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
                 'nama_barang' => $request->nama_barang,
-                'jenis_barang_id' => $request->jenis_barang,
                 'kuantitas' => $request->kuantitas,
                 'keterangan_barang' => $request->keterangan_barang,
                 'supir' => $request->supir,
@@ -219,7 +215,6 @@ class TandaTerimaLclController extends Controller
     {
         $tandaTerima = TandaTerimaLcl::with([
             'term',
-            'jenisBarang',
             'tujuanPengiriman', 
             'items',
             'createdBy',
@@ -236,7 +231,6 @@ class TandaTerimaLclController extends Controller
     {
         $tandaTerima = TandaTerimaLcl::with('items')->findOrFail($id);
         $terms = Term::all();
-        $jenisBarangs = JenisBarang::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
@@ -313,7 +307,6 @@ class TandaTerimaLclController extends Controller
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
                 'nama_barang' => $request->nama_barang,
-                'jenis_barang_id' => $request->jenis_barang_id,
                 'kuantitas' => $request->kuantitas,
                 'keterangan_barang' => $request->keterangan_barang,
                 'tipe_kontainer' => $request->tipe_kontainer,
@@ -410,7 +403,6 @@ class TandaTerimaLclController extends Controller
 
         $tandaTerimas = TandaTerimaLcl::with([
             'term',
-            'jenisBarang', 
             'tujuanPengiriman',
             'items'
         ])->whereIn('id', $ids)->get();
@@ -440,7 +432,6 @@ class TandaTerimaLclController extends Controller
                 'Nama Pengirim',
                 'Alamat Pengirim',
                 'Nama Barang',
-                'Jenis Barang',
                 'Kuantitas',
                 'Supir',
                 'No. Plat',
@@ -466,7 +457,6 @@ class TandaTerimaLclController extends Controller
                     $tandaTerima->nama_pengirim,
                     $tandaTerima->alamat_pengirim,
                     $tandaTerima->nama_barang,
-                    $tandaTerima->jenisBarang->nama_barang ?? '',
                     $tandaTerima->kuantitas,
                     $tandaTerima->supir,
                     $tandaTerima->no_plat,
@@ -691,7 +681,6 @@ class TandaTerimaLclController extends Controller
                     'telepon_pengirim' => $originalTandaTerima->telepon_pengirim,
                     'alamat_pengirim' => $originalTandaTerima->alamat_pengirim,
                     'nama_barang' => $originalTandaTerima->nama_barang . ' (Pecahan)',
-                    'jenis_barang_id' => $originalTandaTerima->jenis_barang_id,
                     'kuantitas' => $splitKuantitas > 0 ? $splitKuantitas : $originalTandaTerima->kuantitas,
                     'keterangan_barang' => $request->keterangan,
                     'supir' => $originalTandaTerima->supir,
@@ -842,7 +831,7 @@ class TandaTerimaLclController extends Controller
     {
         try {
             // Get the LCL data
-            $tandaTerimas = TandaTerimaLcl::with(['jenisBarang', 'tujuanPengiriman'])->whereIn('id', $ids)->get();
+            $tandaTerimas = TandaTerimaLcl::with(['tujuanPengiriman'])->whereIn('id', $ids)->get();
             
             if ($tandaTerimas->isEmpty()) {
                 $prospekMessage = "Tidak ada data LCL yang ditemukan.";

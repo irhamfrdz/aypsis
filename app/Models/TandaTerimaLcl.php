@@ -29,7 +29,6 @@ class TandaTerimaLcl extends Model
         'telepon_pengirim',
         'alamat_pengirim',
         'nama_barang',
-        'jenis_barang_id',
         'kuantitas',
         'keterangan_barang',
         'supir',
@@ -55,11 +54,6 @@ class TandaTerimaLcl extends Model
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
-    }
-    
-    public function jenisBarang(): BelongsTo
-    {
-        return $this->belongsTo(JenisBarang::class, 'jenis_barang_id');
     }
     
     public function tujuanPengiriman(): BelongsTo
