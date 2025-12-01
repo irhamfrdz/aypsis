@@ -9,7 +9,7 @@
             <h1 class="text-xl font-semibold text-gray-900 mb-2">Pilih Rentang Tanggal</h1>
             <p class="text-sm text-gray-600 mb-4">Silakan pilih rentang tanggal untuk menampilkan daftar Pranota Uang Rit.</p>
 
-            <form method="GET" action="{{ route('pranota-uang-rit.index') }}" class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+            <form method="GET" action="{{ route('pranota-uang-rit.select-uang-jalan') }}" class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                 <div>
                     <label for="start_date" class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
                     <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $start_date ?? now()->startOfMonth()->format('Y-m-d')) }}"
