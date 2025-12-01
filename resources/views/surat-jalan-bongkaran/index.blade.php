@@ -51,7 +51,7 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-900">Daftar Bill of Lading (BL)</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">Surat Jalan Bongkaran</h2>
                     <div class="flex items-center gap-4 mt-2">
                         <span class="text-sm text-gray-600">
                             <span class="font-medium">Kapal:</span> {{ $selectedKapal }}
@@ -521,12 +521,12 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
                             <div class="flex space-x-4">
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="rit" value="penuh" class="form-radio text-blue-600" checked>
-                                    <span class="ml-2 text-sm">Penuh</span>
+                                    <input type="radio" name="rit" value="menggunakan_rit" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Menggunakan RIT</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="rit" value="setengah" class="form-radio text-blue-600">
-                                    <span class="ml-2 text-sm">Setengah</span>
+                                    <input type="radio" name="rit" value="tidak_menggunakan_rit" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Tidak Menggunakan RIT</span>
                                 </label>
                             </div>
                         </div>
@@ -537,8 +537,8 @@
                             <div class="flex space-x-2">
                                 <div class="flex space-x-4">
                                     <label class="inline-flex items-center">
-                                        <input type="radio" name="uang_jalan_type" value="penuh" class="form-radio text-blue-600" checked>
-                                        <span class="ml-2 text-sm">Penuh</span>
+                                        <input type="radio" name="uang_jalan_type" value="full" class="form-radio text-blue-600" checked>
+                                        <span class="ml-2 text-sm">Full</span>
                                     </label>
                                     <label class="inline-flex items-center">
                                         <input type="radio" name="uang_jalan_type" value="setengah" class="form-radio text-blue-600">
@@ -747,12 +747,14 @@ function handleFormSubmit(event) {
     const tanggalSuratJalan = document.getElementById('modal_tanggal_surat_jalan').value.trim();
     
     if (!nomorSuratJalan) {
-        showModalAlert('Nomor Surat Jalan harus diisi!', 'error');
+        showModalAlert('Field Wajib Diisi!', 'Nomor Surat Jalan harus diisi sebelum menyimpan.', 'error');
+        document.getElementById('modal_nomor_surat_jalan').focus();
         return false;
     }
     
     if (!tanggalSuratJalan) {
-        showModalAlert('Tanggal Surat Jalan harus diisi!', 'error');
+        showModalAlert('Field Wajib Diisi!', 'Tanggal Surat Jalan harus diisi sebelum menyimpan.', 'error');
+        document.getElementById('modal_tanggal_surat_jalan').focus();
         return false;
     }
     
@@ -798,24 +800,73 @@ function handleFormSubmit(event) {
         submitLoading.classList.add('hidden');
         
         // Show error message
-        let errorMessage = 'Terjadi kesalahan saat menyimpan surat jalan.';
+        let errorMessage = '';
+        let errorTitle = 'Validasi Gagal!';
         
-        if (error.message) {
+        if (error.errors && Object.keys(error.errors).length > 0) {
+            // Laravel validation errors - format as list
+            errorTitle = 'Validasi Gagal! Silakan periksa kembali data yang diinput:';
+            const errorItems = [];
+            
+            for (const [field, messages] of Object.entries(error.errors)) {
+                const fieldLabel = getFieldLabel(field);
+                messages.forEach(msg => {
+                    errorItems.push(`<li class="ml-4"><strong>${fieldLabel}:</strong> ${msg}</li>`);
+                });
+            }
+            
+            errorMessage = `<ul class="list-disc mt-2 text-sm">${errorItems.join('')}</ul>`;
+        } else if (error.message) {
             errorMessage = error.message;
-        } else if (error.errors) {
-            // Laravel validation errors
-            const errorList = Object.values(error.errors).flat();
-            errorMessage = errorList.join('<br>');
+        } else {
+            errorTitle = 'Terjadi Kesalahan!';
+            errorMessage = 'Gagal menyimpan surat jalan. Silakan coba lagi atau hubungi administrator.';
         }
         
-        showModalAlert(errorMessage, 'error');
+        showModalAlert(errorTitle, errorMessage, 'error');
     });
     
     return false;
 }
 
+// Get field label in Indonesian
+function getFieldLabel(fieldName) {
+    const labels = {
+        'nomor_surat_jalan': 'Nomor Surat Jalan',
+        'tanggal_surat_jalan': 'Tanggal Surat Jalan',
+        'term': 'Term',
+        'aktifitas': 'Aktifitas',
+        'pengirim': 'Pengirim',
+        'jenis_barang': 'Jenis Barang',
+        'tujuan_alamat': 'Tujuan Alamat',
+        'tujuan_pengambilan': 'Tujuan Pengambilan',
+        'tujuan_pengiriman': 'Tujuan Pengiriman',
+        'jenis_pengiriman': 'Jenis Pengiriman',
+        'tanggal_ambil_barang': 'Tanggal Ambil Barang',
+        'supir': 'Supir',
+        'no_plat': 'No Plat',
+        'kenek': 'Kenek',
+        'krani': 'Krani',
+        'no_kontainer': 'No Kontainer',
+        'no_seal': 'No Seal',
+        'no_bl': 'Nomor BL',
+        'size': 'Size Kontainer',
+        'karton': 'Karton',
+        'plastik': 'Plastik',
+        'terpal': 'Terpal',
+        'rit': 'RIT',
+        'uang_jalan_type': 'Tipe Uang Jalan',
+        'uang_jalan_nominal': 'Nominal Uang Jalan',
+        'nama_kapal': 'Nama Kapal',
+        'no_voyage': 'No Voyage',
+        'bl_id': 'BL ID'
+    };
+    
+    return labels[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
 // Show alert inside modal
-function showModalAlert(message, type = 'error') {
+function showModalAlert(title, message, type = 'error') {
     // Remove existing alert if any
     const existingAlert = document.querySelector('.modal-alert');
     if (existingAlert) {
@@ -823,25 +874,30 @@ function showModalAlert(message, type = 'error') {
     }
     
     const alertDiv = document.createElement('div');
-    alertDiv.className = `modal-alert mb-4 px-4 py-3 rounded-lg flex items-center ${
+    alertDiv.className = `modal-alert mb-4 px-4 py-3 rounded-lg ${
         type === 'error' 
             ? 'bg-red-50 border border-red-200 text-red-800' 
             : 'bg-green-50 border border-green-200 text-green-800'
     }`;
     
     alertDiv.innerHTML = `
-        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            ${type === 'error' 
-                ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>'
-                : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
-            }
-        </svg>
-        <span>${message}</span>
-        <button type="button" class="ml-auto ${type === 'error' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}" onclick="this.parentElement.remove()">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        <div class="flex items-start w-full">
+            <svg class="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                ${type === 'error' 
+                    ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>'
+                    : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
+                }
             </svg>
-        </button>
+            <div class="flex-1">
+                <div class="font-semibold mb-1">${title}</div>
+                <div class="text-sm">${message}</div>
+            </div>
+            <button type="button" class="ml-3 flex-shrink-0 ${type === 'error' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}" onclick="this.parentElement.parentElement.remove()">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+        </div>
     `;
     
     const modalBody = document.querySelector('#formBuatSuratJalan');
@@ -883,13 +939,10 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Print SJ function
+// Print SJ function - Print directly from BL data
 function printSJ(blId) {
-    // TODO: Implement print SJ functionality
-    // For now, just show an alert
-    alert('Print SJ untuk BL ID: ' + blId);
-    // You can redirect to print route like:
-    // window.open('/surat-jalan-bongkaran/print-sj/' + blId, '_blank');
+    // Open print page in new window/tab
+    window.open('/surat-jalan-bongkaran/print-from-bl/' + blId, '_blank');
 }
 
 // Print BA function

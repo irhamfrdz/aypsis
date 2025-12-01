@@ -672,6 +672,39 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Print SJ directly from BL data (without creating surat jalan first)
+     */
+    public function printFromBl(Bl $bl)
+    {
+        // Create a temporary object with BL data to pass to print view
+        // This allows printing even if surat jalan hasn't been created yet
+        $printData = new \stdClass();
+        
+        // Get current date for tanggal_surat_jalan
+        $printData->tanggal_surat_jalan = now()->format('Y-m-d');
+        
+        // BL data
+        $printData->no_voyage = $bl->no_voyage;
+        $printData->nama_kapal = $bl->nama_kapal;
+        $printData->no_plat = ''; // Will be empty until filled
+        $printData->no_bl = $bl->nomor_bl;
+        $printData->no_kontainer = $bl->nomor_kontainer;
+        $printData->jenis_pengiriman = $bl->jenis_pengiriman ?? '';
+        $printData->jenis_barang = $bl->nama_barang;
+        $printData->pengirim = $bl->pengirim ?? '';
+        $printData->tujuan_pengambilan = ''; // Will be empty until filled
+        $printData->no_seal = $bl->no_seal;
+        $printData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
+        $printData->tujuan_pengiriman = $bl->pelabuhan_tujuan ?? '';
+        
+        // Create fake bl relation for compatibility with existing print view
+        $printData->bl = $bl;
+        $printData->kapal = null;
+
+        return view('surat-jalan-bongkaran.print-from-bl', compact('printData'));
+    }
+
+    /**
      * Get BL data by ID (API endpoint for modal)
      */
     public function getBlById($id)

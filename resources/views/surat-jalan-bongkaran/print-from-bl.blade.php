@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat Jalan Bongkaran - Print Preview</title>
+    <style>
+        html, body { margin: 0; padding: 0; }
+        .container { width: 100%; height: 100%; position: relative; }
+
+        /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
+        .date-header {
+            position: absolute;
+            top: 1.25cm; /* 1.25cm dari atas */
+            left: 10cm;  /* 10cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Nomor Voyage: posisi absolute sesuai permintaan */
+        .no-voyage {
+            position: absolute;
+            top: 5cm;    /* 5cm dari atas */
+            left: 3.5cm;  /* 3.5cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Nama Kapal: posisi absolute sesuai permintaan */
+        .nama-kapal {
+            position: absolute;
+            top: 6cm;    /* 6cm dari atas */
+            left: 3.5cm;  /* 3.5cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Nomor Plat: posisi absolute sesuai permintaan */
+        .no-plat {
+            position: absolute;
+            top: 4.5cm; /* 4.5cm dari atas */
+            left: 8cm;   /* 8cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Nomor BL: posisi absolute sesuai permintaan */
+        .no-bl {
+            position: absolute;
+            top: 4.25cm; /* 4.25cm dari atas */
+            left: 13cm;   /* 13cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        /* Nomor Kontainer: posisi absolute sesuai permintaan */
+        .no-kontainer {
+            position: absolute;
+            top: 9cm; /* 9cm dari atas */
+            left: 1cm; /* 1cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
+        /* Jenis Pengiriman: posisi absolute */
+        .jenis-pengiriman-abs {
+            position: absolute;
+            top: 9cm; /* 9cm dari atas */
+            left: 6cm; /* 6cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
+        /* Nama Barang: posisi absolute sesuai permintaan */
+        .nama-barang-abs {
+            position: absolute;
+            top: 9cm; /* 9cm dari atas */
+            left: 10.5cm; /* 10.5cm dari kiri */
+            font-size: 17px;
+            font-weight: bold;
+        }
+        /* Seal number: posisi absolute sesuai permintaan */
+        .seal-abs {
+            position: absolute;
+            top: 11.5cm; /* 11.5cm dari atas */
+            left: 1cm; /* 1cm dari kiri */
+            font-size: 24px;
+            font-weight: bold;
+        }
+        /* Pelabuhan tujuan: posisi absolute sesuai permintaan */
+        .pelabuhan-abs {
+            position: absolute;
+            top: 15cm; /* 15cm dari atas */
+            left: 1cm; /* 1cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+        }
+        /* Pengirim: posisi absolute (atas 11cm, kiri 10.5cm) */
+        .pengirim-abs {
+            position: absolute;
+            top: 11cm; /* 11cm dari atas */
+            left: 10.5cm; /* 10.5cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        /* Tujuan Pengambilan: posisi absolute (atas 14.5cm, kiri 10.5cm) */
+        .tujuan-pengambilan-abs {
+            position: absolute;
+            top: 14.5cm; /* 14.5cm dari atas */
+            left: 10.5cm; /* 10.5cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <!-- Tanggal Surat Jalan (posisi top 1.25cm, left 10cm) -->
+        <div class="date-header">
+            {{ $printData->tanggal_surat_jalan ? \Carbon\Carbon::parse($printData->tanggal_surat_jalan)->format('d-M-Y') : '' }}
+        </div>
+
+        <!-- Nomor Voyage (posisi top 5cm, left 3.5cm) -->
+        <div class="no-voyage">
+            {{ strtoupper($printData->no_voyage ?? '') }}
+        </div>
+
+        <!-- Nama Kapal (posisi top 6cm, left 3.5cm) -->
+        <div class="nama-kapal">
+            {{ strtoupper($printData->nama_kapal ?? '') }}
+        </div>
+        
+        <!-- Nomor Plat (posisi top 4.5cm, left 8cm) -->
+        <div class="no-plat">
+            {{ strtoupper($printData->no_plat ?? '') }}
+        </div>
+        
+        <!-- Nomor BL (posisi top 4.25cm, left 13cm) -->
+        <div class="no-bl">
+            {{ strtoupper($printData->no_bl ?? '') }}
+        </div>
+        
+        <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
+        <div class="no-kontainer">
+            {{ strtoupper($printData->no_kontainer ?? '') }}
+        </div>
+        
+        <!-- Jenis Pengiriman (posisi top 9cm, left 6cm) -->
+        <div class="jenis-pengiriman-abs">
+            {{ $printData->jenis_pengiriman ? strtoupper($printData->jenis_pengiriman) : '' }}
+        </div>
+        
+        <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
+        <div class="nama-barang-abs">
+            {{ strtoupper($printData->jenis_barang ?? '') }}
+        </div>
+        
+        <!-- Pengirim (posisi top 11cm, left 10.5cm) -->
+        <div class="pengirim-abs">
+            {{ strtoupper($printData->pengirim ?? '') }}
+        </div>
+        
+        <!-- Tujuan Pengambilan (posisi top 14.5cm, left 10.5cm) -->
+        <div class="tujuan-pengambilan-abs">
+            {{ strtoupper($printData->tujuan_pengambilan ?? '') }}
+        </div>
+        
+        <!-- Seal number (posisi top 11.5cm, left 1cm) -->
+        <div class="seal-abs">
+            {{ $printData->no_seal ? strtoupper($printData->no_seal) : '' }}
+        </div>
+        
+        <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) -->
+        <div class="pelabuhan-abs">
+            {{ $printData->pelabuhan_tujuan ? strtoupper($printData->pelabuhan_tujuan) : ($printData->tujuan_pengiriman ? strtoupper($printData->tujuan_pengiriman) : '') }}
+        </div>
+    </div>
+    
+</body>
+</html>
