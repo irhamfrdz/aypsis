@@ -94,8 +94,6 @@ class RealisasiUangMukaController extends Controller
 
         // Enrich Uang Muka data dengan nama supir
         foreach ($uangMukaBelumRealisasiList as $uangMuka) {
-            $uangMuka->supir_names = $uangMuka->supirList()->pluck('nama_lengkap')->toArray();
-            
             // Ensure supir_ids is an array (handle double-encoded JSON from old data)
             $supirIds = $uangMuka->getAttributes()['supir_ids'] ?? null;
             if (is_string($supirIds)) {
@@ -106,9 +104,12 @@ class RealisasiUangMukaController extends Controller
                     $decoded = json_decode($decoded, true);
                 }
                 $uangMuka->supir_ids = is_array($decoded) ? $decoded : [];
-            } elseif (!is_array($uangMuka->supir_ids)) {
+            } elseif (is_null($supirIds) || !is_array($uangMuka->supir_ids)) {
                 $uangMuka->supir_ids = [];
             }
+            
+            // Get supir names AFTER ensuring supir_ids is array
+            $uangMuka->supir_names = $uangMuka->supirList()->pluck('nama_lengkap')->toArray();
             
             // Ensure jumlah_per_supir is an array (handle double-encoded JSON)
             $jumlahPerSupir = $uangMuka->getAttributes()['jumlah_per_supir'] ?? null;
@@ -120,7 +121,7 @@ class RealisasiUangMukaController extends Controller
                     $decoded = json_decode($decoded, true);
                 }
                 $uangMuka->jumlah_per_supir = is_array($decoded) ? $decoded : [];
-            } elseif (!is_array($uangMuka->jumlah_per_supir)) {
+            } elseif (is_null($jumlahPerSupir) || !is_array($uangMuka->jumlah_per_supir)) {
                 $uangMuka->jumlah_per_supir = [];
             }
         }

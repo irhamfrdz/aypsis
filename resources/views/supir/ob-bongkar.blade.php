@@ -103,31 +103,53 @@
                 <form action="{{ route('supir.ob-bongkar.store') }}" method="POST" id="obBongkarForm">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Dropdown Kapal -->
+                        <!-- Dropdown Kapal dengan Search -->
                         <div>
                             <label for="kapal" class="block text-sm font-medium text-gray-700 mb-1">
                                 Kapal <span class="text-red-500">*</span>
                             </label>
-                            <select id="kapal" name="kapal" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                                    onchange="updateVoyageOptions()">
-                                <option value="">--Pilih Kapal--</option>
-                                @foreach($masterKapals as $kapal)
-                                    <option value="{{ $kapal->nama_kapal }}">{{ $kapal->nama_kapal }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative">
+                                <input type="text" 
+                                       id="kapal-search" 
+                                       placeholder="Cari kapal..."
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                                       autocomplete="off"
+                                       oninput="filterKapal()"
+                                       onfocus="showKapalDropdown()"
+                                       onblur="hideKapalDropdown()">
+                                <input type="hidden" id="kapal" name="kapal" required>
+                                <div id="kapal-dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden">
+                                    @foreach($masterKapals as $kapal)
+                                        <div class="kapal-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm" 
+                                             data-value="{{ $kapal->nama_kapal }}"
+                                             onmousedown="selectKapal('{{ $kapal->nama_kapal }}')">
+                                            {{ $kapal->nama_kapal }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Dropdown Voyage -->
+                        <!-- Dropdown Voyage dengan Search -->
                         <div>
                             <label for="voyage" class="block text-sm font-medium text-gray-700 mb-1">
                                 No Voyage <span class="text-red-500">*</span>
                             </label>
-                            <select id="voyage" name="voyage" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                                    disabled>
-                                <option value="">-PILIH KAPAL DAHULU-</option>
-                            </select>
+                            <div class="relative">
+                                <input type="text" 
+                                       id="voyage-search" 
+                                       placeholder="Pilih kapal terlebih dahulu"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                                       autocomplete="off"
+                                       oninput="filterVoyage()"
+                                       onfocus="showVoyageDropdown()"
+                                       onblur="hideVoyageDropdown()"
+                                       disabled>
+                                <input type="hidden" id="voyage" name="voyage" required>
+                                <div id="voyage-dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden">
+                                    <!-- Options will be populated dynamically -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -194,25 +216,114 @@
         console.log('Voyage Data (from BL):', voyageData);
         console.log('Total Kapal in voyageData:', Object.keys(voyageData).length);
 
+        // Kapal Search Functions
+        function filterKapal() {
+            const searchInput = document.getElementById('kapal-search');
+            const searchTerm = searchInput.value.toLowerCase();
+            const options = document.querySelectorAll('.kapal-option');
+            
+            let hasVisibleOptions = false;
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+            
+            // Show dropdown if there are visible options
+            if (hasVisibleOptions) {
+                document.getElementById('kapal-dropdown').classList.remove('hidden');
+            }
+        }
+
+        function showKapalDropdown() {
+            document.getElementById('kapal-dropdown').classList.remove('hidden');
+            filterKapal(); // Apply current filter
+        }
+
+        function hideKapalDropdown() {
+            setTimeout(() => {
+                document.getElementById('kapal-dropdown').classList.add('hidden');
+            }, 200);
+        }
+
+        function selectKapal(kapalName) {
+            document.getElementById('kapal').value = kapalName;
+            document.getElementById('kapal-search').value = kapalName;
+            document.getElementById('kapal-dropdown').classList.add('hidden');
+            
+            // Update voyage options
+            updateVoyageOptions();
+        }
+
+        // Voyage Search Functions
+        function filterVoyage() {
+            const searchInput = document.getElementById('voyage-search');
+            const searchTerm = searchInput.value.toLowerCase();
+            const options = document.querySelectorAll('.voyage-option');
+            
+            let hasVisibleOptions = false;
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+            
+            // Show dropdown if there are visible options
+            if (hasVisibleOptions) {
+                document.getElementById('voyage-dropdown').classList.remove('hidden');
+            }
+        }
+
+        function showVoyageDropdown() {
+            const voyageSearch = document.getElementById('voyage-search');
+            if (!voyageSearch.disabled) {
+                document.getElementById('voyage-dropdown').classList.remove('hidden');
+                filterVoyage(); // Apply current filter
+            }
+        }
+
+        function hideVoyageDropdown() {
+            setTimeout(() => {
+                document.getElementById('voyage-dropdown').classList.add('hidden');
+            }, 200);
+        }
+
+        function selectVoyage(voyageNumber) {
+            document.getElementById('voyage').value = voyageNumber;
+            document.getElementById('voyage-search').value = voyageNumber;
+            document.getElementById('voyage-dropdown').classList.add('hidden');
+            
+            // Update button state
+            updateKapalDetails();
+        }
+
         function updateVoyageOptions() {
-            const kapalSelect = document.getElementById('kapal');
-            const voyageSelect = document.getElementById('voyage');
+            const selectedKapal = document.getElementById('kapal').value;
+            const voyageDropdown = document.getElementById('voyage-dropdown');
+            const voyageSearch = document.getElementById('voyage-search');
             const proceedBtn = document.getElementById('proceedBtn');
             
-            const selectedKapal = kapalSelect.value;
             console.log('Selected Kapal:', selectedKapal);
             
-            // Reset voyage dropdown
-            voyageSelect.innerHTML = '<option value="">-PILIH VOYAGE-</option>';
-            voyageSelect.disabled = !selectedKapal;
-            
-            // Disable button
+            // Reset voyage
+            voyageDropdown.innerHTML = '';
+            document.getElementById('voyage').value = '';
+            voyageSearch.value = '';
+            voyageSearch.disabled = !selectedKapal;
             proceedBtn.disabled = true;
             
             if (selectedKapal && voyageData[selectedKapal]) {
                 console.log('Voyages for', selectedKapal, ':', voyageData[selectedKapal]);
                 
-                // Populate voyage options - hapus duplikat dan format dengan baik
+                // Populate voyage options - hapus duplikat
                 const uniqueVoyages = {};
                 voyageData[selectedKapal].forEach(item => {
                     if (!uniqueVoyages[item.voyage]) {
@@ -221,35 +332,34 @@
                 });
                 
                 Object.values(uniqueVoyages).forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.voyage;
-                    option.textContent = item.voyage;
-                    voyageSelect.appendChild(option);
+                    const div = document.createElement('div');
+                    div.className = 'voyage-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm';
+                    div.textContent = item.voyage;
+                    div.onmousedown = function() { selectVoyage(item.voyage); };
+                    voyageDropdown.appendChild(div);
                 });
                 
-                // Enable voyage dropdown
-                voyageSelect.disabled = false;
+                // Enable voyage search
+                voyageSearch.disabled = false;
+                voyageSearch.placeholder = 'Cari voyage...';
                 console.log('Voyage dropdown enabled with', Object.keys(uniqueVoyages).length, 'unique options');
             } else if (selectedKapal) {
                 console.log('No voyages found for kapal:', selectedKapal);
-                console.log('Available kapals in voyageData:', Object.keys(voyageData));
+                voyageSearch.placeholder = 'Tidak ada voyage';
                 
-                // Add message for no voyages
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = '-TIDAK ADA VOYAGE-';
-                option.disabled = true;
-                voyageSelect.appendChild(option);
+                const div = document.createElement('div');
+                div.className = 'px-3 py-2 text-sm text-gray-500 italic';
+                div.textContent = 'Tidak ada voyage tersedia';
+                voyageDropdown.appendChild(div);
+            } else {
+                voyageSearch.placeholder = 'Pilih kapal terlebih dahulu';
             }
         }
 
         function updateKapalDetails() {
-            const kapalSelect = document.getElementById('kapal');
-            const voyageSelect = document.getElementById('voyage');
+            const selectedKapal = document.getElementById('kapal').value;
+            const selectedVoyage = document.getElementById('voyage').value;
             const proceedBtn = document.getElementById('proceedBtn');
-            
-            const selectedKapal = kapalSelect.value;
-            const selectedVoyage = voyageSelect.value;
             
             console.log('Updating for:', selectedKapal, selectedVoyage);
             
@@ -258,8 +368,6 @@
                 
                 if (voyageInfo) {
                     console.log('Found voyage info:', voyageInfo);
-                    
-                    // Enable button
                     proceedBtn.disabled = false;
                 } else {
                     console.log('Voyage info not found');
@@ -279,9 +387,6 @@
                 window.location.href = `/supir/ob-bongkar/index?kapal=${encodeURIComponent(kapal)}&voyage=${encodeURIComponent(voyage)}`;
             }
         }
-
-        // Event listener untuk voyage selection
-        document.getElementById('voyage').addEventListener('change', updateKapalDetails);
 
         // Debug: Log initial state
         document.addEventListener('DOMContentLoaded', function() {

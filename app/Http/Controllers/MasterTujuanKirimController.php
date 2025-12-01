@@ -52,7 +52,13 @@ class MasterTujuanKirimController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Auto-generate kode if not provided
+        $data = $request->all();
+        if (empty($data['kode'])) {
+            $data['kode'] = $this->generateTujuanKirimCode();
+        }
+
+        $validator = Validator::make($data, [
             'kode' => 'required|string|max:10|unique:master_tujuan_kirim,kode',
             'nama_tujuan' => 'required|string|max:100',
             'catatan' => 'nullable|string|max:500',
@@ -60,24 +66,73 @@ class MasterTujuanKirimController extends Controller
         ]);
 
         if ($validator->fails()) {
+            // Check if this is a popup/AJAX request
+            if ($request->has('popup') || $request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        $tujuanKirim = MasterTujuanKirim::create($request->all());
+        try {
+            $tujuanKirim = MasterTujuanKirim::create($data);
 
-        // Check if this is a popup request
-        // Either has search parameter OR referer contains orders/create OR has popup parameter
-        if ($request->query('search') ||
-            $request->has('popup') ||
-            ($request->header('referer') && strpos($request->header('referer'), 'orders/create') !== false) ||
-            ($request->header('referer') && strpos($request->header('referer'), 'search') !== false)) {
-            return view('master-tujuan-kirim.success', compact('tujuanKirim'));
+            // Check if this is a popup/AJAX request
+            if ($request->has('popup') || $request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tujuan kirim berhasil ditambahkan',
+                    'data' => [
+                        'id' => $tujuanKirim->id,
+                        'kode' => $tujuanKirim->kode,
+                        'nama_tujuan' => $tujuanKirim->nama_tujuan,
+                        'catatan' => $tujuanKirim->catatan,
+                        'status' => $tujuanKirim->status
+                    ]
+                ]);
+            }
+
+            return redirect()->route('tujuan-kirim.index')
+                ->with('success', 'Tujuan kirim berhasil ditambahkan.');
+
+        } catch (\Exception $e) {
+            // Check if this is a popup/AJAX request
+            if ($request->has('popup') || $request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal menyimpan data: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Generate unique code for Tujuan Kirim
+     */
+    private function generateTujuanKirimCode()
+    {
+        $lastCode = MasterTujuanKirim::where('kode', 'like', 'TK%')
+            ->orderBy('kode', 'desc')
+            ->first();
+
+        if ($lastCode) {
+            $lastNumber = (int) substr($lastCode->kode, 2);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
         }
 
-        return redirect()->route('tujuan-kirim.index')
-            ->with('success', 'Tujuan kirim berhasil ditambahkan.');
+        return 'TK' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -408,21 +463,5 @@ class MasterTujuanKirimController extends Controller
         $tujuanKirim = MasterTujuanKirim::create($request->all());
 
         return view('master.tujuan-kirim.success-for-order', compact('tujuanKirim'));
-    }
-
-    private function generateTujuanKirimCode()
-    {
-        $lastCode = MasterTujuanKirim::where('kode', 'like', 'TK%')
-            ->orderBy('kode', 'desc')
-            ->first();
-
-        if ($lastCode) {
-            $lastNumber = (int) substr($lastCode->kode, 2);
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
-
-        return 'TK' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 }

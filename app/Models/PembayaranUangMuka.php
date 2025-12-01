@@ -18,7 +18,6 @@ class PembayaranUangMuka extends Model
         'tanggal_pembayaran',
         'kas_bank_id',
         'jenis_transaksi',
-        'kegiatan',
         'mobil_id',
         'penerima_id',
         'supir_ids',
@@ -39,6 +38,26 @@ class PembayaranUangMuka extends Model
         'total_pembayaran' => 'decimal:2',
     ];
 
+    // Accessor untuk memastikan supir_ids selalu array
+    public function getSupirIdsAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        return is_array($value) ? $value : [];
+    }
+
+    // Accessor untuk memastikan jumlah_per_supir selalu array
+    public function getJumlahPerSupirAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        return is_array($value) ? $value : [];
+    }
+
     // Relationships
     public function kasBankAkun()
     {
@@ -53,11 +72,6 @@ class PembayaranUangMuka extends Model
     public function penyetujuPembayaran()
     {
         return $this->belongsTo(\App\Models\User::class, 'disetujui_oleh');
-    }
-
-    public function masterKegiatan()
-    {
-        return $this->belongsTo(MasterKegiatan::class, 'kegiatan');
     }
 
     public function mobil()

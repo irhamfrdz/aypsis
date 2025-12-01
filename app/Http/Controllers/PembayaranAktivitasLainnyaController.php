@@ -59,7 +59,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->get();
 
         // Fetch COA biaya
-        $coaBiaya = Coa::where('tipe_akun', 'BIAYA')
+        $coaBiaya = Coa::where('tipe_akun', 'aktiva lainnya')
             ->orderBy('nomor_akun')
             ->get();
 
@@ -186,6 +186,8 @@ class PembayaranAktivitasLainnyaController extends Controller
             ]);
 
             // Simpan detail uang muka supir jika ada
+            $supirIds = [];
+            $jumlahPerSupir = [];
             if ($request->has('supir_id') && is_array($request->supir_id)) {
                 foreach ($request->supir_id as $index => $supirId) {
                     if (!empty($supirId)) {
@@ -211,8 +213,37 @@ class PembayaranAktivitasLainnyaController extends Controller
                             'jumlah_uang_muka' => $jumlahUangMuka,
                             'keterangan' => $request->keterangan_supir[$index] ?? null,
                         ]);
+
+                        // Collect for PembayaranUangMuka
+                        $supirIds[] = $supirId;
+                        $jumlahPerSupir[$supirId] = $jumlahUangMuka;
                     }
                 }
+            }
+
+            // Jika ini pembayaran DP (is_dp = 1), simpan juga ke tabel pembayaran_uang_muka
+            // agar bisa muncul di dropdown Realisasi Uang Muka
+            if ($request->has('is_dp') && !empty($supirIds)) {
+                \App\Models\PembayaranUangMuka::create([
+                    'nomor_pembayaran' => $nomorPembayaran,
+                    'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                    'kas_bank_id' => $request->pilih_bank,
+                    'jenis_transaksi' => $request->jenis_transaksi,
+                    'supir_ids' => json_encode($supirIds), // Array of supir IDs
+                    'jumlah_per_supir' => json_encode($jumlahPerSupir), // Map of supir_id => amount
+                    'total_pembayaran' => $totalPembayaran,
+                    'keterangan' => $request->aktivitas_pembayaran, // Simpan deskripsi aktivitas di keterangan
+                    'status' => 'uang_muka_belum_terpakai', // Status awal belum terpakai
+                    'dibuat_oleh' => Auth::id(),
+                ]);
+
+                Log::info('DP disimpan ke pembayaran_uang_muka', [
+                    'nomor_pembayaran' => $nomorPembayaran,
+                    'supir_ids' => $supirIds,
+                    'jumlah_per_supir' => $jumlahPerSupir,
+                    'total' => $totalPembayaran,
+                    'keterangan' => $request->aktivitas_pembayaran
+                ]);
             }
 
             // Update saldo bank (kurangi saldo karena pengeluaran)
@@ -264,7 +295,7 @@ class PembayaranAktivitasLainnyaController extends Controller
         $bankAccounts = Coa::where('tipe_akun', 'Bank/Kas')->get();
 
         // Fetch COA biaya
-        $coaBiaya = Coa::where('tipe_akun', 'BIAYA')
+        $coaBiaya = Coa::where('tipe_akun', 'aktiva lainnya')
             ->orderBy('nomor_akun')
             ->get();
 

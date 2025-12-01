@@ -101,8 +101,26 @@
             <!-- Daftar Kontainer -->
             <div class="bg-white rounded-lg shadow-sm">
                 <div class="px-4 py-3 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Daftar Nomor Kontainer</h3>
-                    <p class="text-sm text-gray-600">Pilih kontainer untuk melakukan OB Bongkar</p>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Daftar Nomor Kontainer</h3>
+                            <p class="text-sm text-gray-600">Pilih kontainer untuk melakukan OB Bongkar</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" 
+                                       id="searchInput" 
+                                       placeholder="Cari nomor kontainer, seal, barang..." 
+                                       class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                                       oninput="searchTable()">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 @if($bls->count() > 0)
@@ -127,9 +145,12 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
                                 @foreach($bls as $bl)
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="hover:bg-gray-50 table-row" 
+                                        data-kontainer="{{ strtolower($bl->nomor_kontainer ?? '') }}"
+                                        data-seal="{{ strtolower($bl->no_seal ?? '') }}"
+                                        data-barang="{{ strtolower($bl->nama_barang ?? '') }}">
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-8 w-8">
@@ -202,6 +223,19 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- No Results Message -->
+                    <div id="noResults" class="hidden p-8 text-center border-t border-gray-200">
+                        <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak Ditemukan</h3>
+                        <p class="text-gray-500">
+                            Tidak ada kontainer yang sesuai dengan pencarian Anda.
+                        </p>
+                    </div>
                 @else
                     <div class="p-8 text-center">
                         <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -228,10 +262,65 @@
     </main>
 
     <script>
+        // Search Function
+        function searchTable() {
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const tableRows = document.querySelectorAll('.table-row');
+            const noResults = document.getElementById('noResults');
+            let visibleCount = 0;
+
+            tableRows.forEach(row => {
+                const kontainer = row.getAttribute('data-kontainer') || '';
+                const seal = row.getAttribute('data-seal') || '';
+                const barang = row.getAttribute('data-barang') || '';
+
+                // Check if any field matches the search term
+                const isVisible = kontainer.includes(searchTerm) || 
+                                seal.includes(searchTerm) || 
+                                barang.includes(searchTerm);
+
+                if (isVisible) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show/hide no results message
+            if (visibleCount === 0 && searchTerm !== '') {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+
+            // Update visible count in console
+            console.log('Search term:', searchTerm);
+            console.log('Visible rows:', visibleCount, 'of', tableRows.length);
+        }
+
+        // Clear search on Escape key
+        document.getElementById('searchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                searchTable();
+            }
+        });
+
         // Auto refresh setiap 30 detik untuk update data terbaru
-        setTimeout(function() {
+        let autoRefreshTimer = setTimeout(function() {
             window.location.reload();
         }, 30000);
+
+        // Pause auto-refresh when user is searching
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(autoRefreshTimer);
+            // Restart timer setelah 30 detik dari input terakhir
+            autoRefreshTimer = setTimeout(function() {
+                window.location.reload();
+            }, 30000);
+        });
 
         // Debug info
         console.log('OB Bongkar Index loaded');
