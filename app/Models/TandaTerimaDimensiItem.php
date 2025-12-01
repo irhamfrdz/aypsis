@@ -13,6 +13,9 @@ class TandaTerimaDimensiItem extends Model
 
     protected $fillable = [
         'tanda_terima_tanpa_surat_jalan_id',
+        'nama_barang',
+        'jumlah',
+        'satuan',
         'panjang',
         'lebar',
         'tinggi',
@@ -22,6 +25,7 @@ class TandaTerimaDimensiItem extends Model
     ];
 
     protected $casts = [
+        'jumlah' => 'integer',
         'panjang' => 'decimal:2',
         'lebar' => 'decimal:2',
         'tinggi' => 'decimal:2',

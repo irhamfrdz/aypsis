@@ -272,29 +272,32 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'estimasi_naik_kapal' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
             'tanggal_seal' => 'nullable|date',
-            // Barang
-            'nama_barang' => 'nullable|string|max:255',
-            'kuantitas' => 'nullable|integer|min:1',
-            'jenis_barang' => 'required|string|max:255',
-            'jumlah_barang' => 'required|integer|min:1',
-            'satuan_barang' => 'required|string|max:50',
+            // Barang - Array format dari form
+            'nama_barang' => 'nullable|array',
+            'nama_barang.*' => 'nullable|string|max:255',
+            'jumlah' => 'nullable|array',
+            'jumlah.*' => 'nullable|integer|min:1',
+            'satuan' => 'nullable|array',
+            'satuan.*' => 'nullable|string|max:50',
+            'panjang' => 'nullable|array',
+            'panjang.*' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|array',
+            'lebar.*' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|array',
+            'tinggi.*' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|array',
+            'meter_kubik.*' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|array',
+            'tonase.*' => 'nullable|numeric|min:0',
+            // Hidden fields for backward compatibility (scalar values)
+            'jenis_barang' => 'nullable|string|max:255',
+            'aktifitas' => 'nullable|string|max:255',
+            'jumlah_barang' => 'nullable|integer|min:1',
+            'satuan_barang' => 'nullable|string|max:50',
             'keterangan_barang' => 'nullable|string',
             'berat' => 'nullable|numeric|min:0',
             'satuan_berat' => 'nullable|string|max:10',
-            // Hidden fields for backward compatibility
-            'panjang' => 'nullable|numeric|min:0',
-            'lebar' => 'nullable|numeric|min:0',
-            'tinggi' => 'nullable|numeric|min:0',
-            'meter_kubik' => 'nullable|numeric|min:0',
-            'tonase' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
-            // Dimensi items array
-            'dimensi_items' => 'nullable|array',
-            'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
-            'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
-            'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
-            'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
-            'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
             // Auto-save to prospek
             'simpan_ke_prospek' => 'nullable|string|max:1',
         ]);
@@ -306,26 +309,67 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
             $validated['created_by'] = Auth::user()->name;
 
-            // Remove dimensi_items from main validation data
-            $dimensiItems = $validated['dimensi_items'] ?? [];
-            unset($validated['dimensi_items']);
+            // Extract array data for dimensi items
+            $namaBarangArray = $validated['nama_barang'] ?? [];
+            $jumlahArray = $validated['jumlah'] ?? [];
+            $satuanArray = $validated['satuan'] ?? [];
+            $panjangArray = $validated['panjang'] ?? [];
+            $lebarArray = $validated['lebar'] ?? [];
+            $tinggiArray = $validated['tinggi'] ?? [];
+            $meterKubikArray = $validated['meter_kubik'] ?? [];
+            $tonaseArray = $validated['tonase'] ?? [];
+
+            // Remove array fields from main validation data
+            unset($validated['nama_barang'], $validated['jumlah'], $validated['satuan']);
+            unset($validated['panjang'], $validated['lebar'], $validated['tinggi']);
+            unset($validated['meter_kubik'], $validated['tonase']);
+
+            // Set backward compatibility fields from first item or defaults
+            if (!empty($namaBarangArray)) {
+                $validated['nama_barang'] = $namaBarangArray[0] ?? null;
+            }
+            if (!empty($jumlahArray)) {
+                $validated['jumlah_barang'] = $jumlahArray[0] ?? 1;
+            }
+            if (!empty($satuanArray)) {
+                $validated['satuan_barang'] = $satuanArray[0] ?? 'unit';
+            }
 
             // Create main record
             $tandaTerima = TandaTerimaTanpaSuratJalan::create($validated);
 
-            // Create dimensi items if provided
-            if (!empty($dimensiItems)) {
-                foreach ($dimensiItems as $index => $item) {
-                    if (!empty($item['panjang']) || !empty($item['lebar']) || !empty($item['tinggi']) || !empty($item['tonase'])) {
-                        $tandaTerima->dimensiItems()->create([
-                            'panjang' => $item['panjang'] ?? null,
-                            'lebar' => $item['lebar'] ?? null,
-                            'tinggi' => $item['tinggi'] ?? null,
-                            'meter_kubik' => $item['meter_kubik'] ?? null,
-                            'tonase' => $item['tonase'] ?? null,
-                            'item_order' => $index
-                        ]);
-                    }
+            // Create dimensi items from array data
+            $itemCount = max(
+                count($namaBarangArray),
+                count($panjangArray),
+                count($lebarArray),
+                count($tinggiArray),
+                count($tonaseArray)
+            );
+
+            for ($i = 0; $i < $itemCount; $i++) {
+                $namaBarang = $namaBarangArray[$i] ?? null;
+                $jumlah = $jumlahArray[$i] ?? null;
+                $satuan = $satuanArray[$i] ?? null;
+                $panjang = $panjangArray[$i] ?? null;
+                $lebar = $lebarArray[$i] ?? null;
+                $tinggi = $tinggiArray[$i] ?? null;
+                $meterKubik = $meterKubikArray[$i] ?? null;
+                $tonase = $tonaseArray[$i] ?? null;
+
+                // Only create if at least one field has value
+                if ($namaBarang || $panjang || $lebar || $tinggi || $tonase) {
+                    $tandaTerima->dimensiItems()->create([
+                        'nama_barang' => $namaBarang,
+                        'jumlah' => $jumlah,
+                        'satuan' => $satuan,
+                        'panjang' => $panjang,
+                        'lebar' => $lebar,
+                        'tinggi' => $tinggi,
+                        'meter_kubik' => $meterKubik,
+                        'tonase' => $tonase,
+                        'item_order' => $i
+                    ]);
                 }
             }
 
