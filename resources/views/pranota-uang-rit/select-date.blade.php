@@ -25,6 +25,12 @@
                     <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Batal</a>
                 </div>
             </form>
+            @if(app()->isLocal())
+            <div class="mt-4 text-xs text-gray-600">
+                <p><strong>Debug:</strong> route('pranota-uang-rit.select-uang-jalan') =&gt; <code>{{ route('pranota-uang-rit.select-uang-jalan') }}</code></p>
+                <p>Try opening the above link directly to verify the route exists.</p>
+            </div>
+            @endif
         </div>
     </div>
 </div>
