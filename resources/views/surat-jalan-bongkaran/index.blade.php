@@ -50,16 +50,7 @@
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Daftar Surat Jalan Bongkaran</h2>
-                @can('surat-jalan-bongkaran-create')
-                    <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Tambah Surat Jalan Bongkaran
-                    </a>
-                @endcan
+                <h2 class="text-lg font-semibold text-gray-900">Daftar Bill of Lading (BL)</h2>
             </div>
         </div>
 
@@ -67,23 +58,7 @@
         <div class="p-6">
             <!-- Filter Form -->
             <form method="GET" action="{{ route('surat-jalan-bongkaran.index') }}" class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                        <input type="date" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                               id="start_date" 
-                               name="start_date" 
-                               value="{{ request('start_date') }}">
-                    </div>
-                    <div>
-                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
-                        <input type="date" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                               id="end_date" 
-                               name="end_date" 
-                               value="{{ request('end_date') }}">
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
                         <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
@@ -97,6 +72,19 @@
                             @endforeach
                         </select>
                     </div>
+                    <div>
+                        <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-1">Voyage</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                id="no_voyage" 
+                                name="no_voyage">
+                            <option value="">Semua Voyage</option>
+                            @foreach($voyages as $voyage)
+                                <option value="{{ $voyage }}" {{ request('no_voyage') == $voyage ? 'selected' : '' }}>
+                                    {{ $voyage }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="flex flex-col md:flex-row gap-4">
@@ -106,7 +94,7 @@
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                                id="search" 
                                name="search" 
-                               placeholder="Cari nomor surat jalan, container, seal, pengirim, penerima..." 
+                               placeholder="Cari nomor BL, container, seal, kapal, voyage, barang..." 
                                value="{{ request('search') }}">
                     </div>
                     <div class="flex items-end gap-2">
@@ -130,159 +118,65 @@
 
             <!-- Table -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 resizable-table" id="suratJalanBongkaranTable">
+                <table class="min-w-full divide-y divide-gray-200" id="blTable">
                     <thead class="bg-gray-50">
-                        <tr><th class="resizable-th px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Actions<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Surat Jalan<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Container<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Pengirim<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Jenis Barang<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Penerima<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Uang Jalan<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Container</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tonnage</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Bongkar</th>
+                        </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($suratJalanBongkarans as $index => $sjb)
+                        @forelse($bls as $index => $bl)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-center">
-                                    <div class="relative inline-block text-left">
-                                        <button type="button" onclick="toggleDropdown('dropdown-{{ $sjb->id }}')"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 transition-colors duration-200">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </button>
-
-                                        <div id="dropdown-{{ $sjb->id }}" class="hidden absolute left-0 z-50 mt-1 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
-                                            <div class="py-1">
-                                                @can('surat-jalan-bongkaran-update')
-                                                <a href="{{ route('surat-jalan-bongkaran.edit', $sjb) }}" 
-                                                   class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                                    <svg class="mr-2 h-3 w-3 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                    </svg>
-                                                    Edit
-                                                </a>
-                                                @endcan
-                                                <a href="{{ route('surat-jalan-bongkaran.print', $sjb) }}" 
-                                                   target="_blank"
-                                                   class="group flex items-center px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
-                                                    <svg class="mr-2 h-3 w-3 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                    </svg>
-                                                    Print SJ
-                                                </a>
-                                                @can('surat-jalan-bongkaran-delete')
-                                                <form action="{{ route('surat-jalan-bongkaran.destroy', $sjb) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus surat jalan bongkaran ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900">
-                                                        <svg class="mr-2 h-3 w-3 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                        </svg>
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                                @endcan
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $suratJalanBongkarans->firstItem() + $index }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bls->firstItem() + $index }}</td>
                                 <td class="px-4 py-3 text-sm">
-                                    <span class="font-semibold text-gray-900">{{ $sjb->nomor_surat_jalan }}</span>
+                                    <span class="font-semibold text-gray-900">{{ $bl->nomor_bl ?: '-' }}</span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->nama_kapal ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">
-                                    @if($sjb->no_kontainer)
-                                        <div>{{ $sjb->no_kontainer }}</div>
-                                        @if($sjb->size)
-                                            <div class="text-xs text-gray-500">{{ $sjb->size }}</div>
-                                        @endif
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->pengirim ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->jenis_barang ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->tujuan_alamat ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nama_kapal ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_voyage ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_seal ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->tonnage ? number_format($bl->tonnage, 2) . ' Ton' : '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}</td>
                                 <td class="px-4 py-3 text-sm">
-                                    @if($sjb->uangJalanBongkarans && $sjb->uangJalanBongkarans->isNotEmpty())
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Sudah Masuk Uang Jalan</span>
-                                    @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Belum Masuk Uang Jalan</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-sm">
-                                    @if($sjb->status_pembayaran)
+                                    @if($bl->status_bongkar)
                                         @php
-                                            $badgeClass = match($sjb->status_pembayaran) {
-                                                'lunas' => 'bg-green-100 text-green-800',
-                                                'belum_lunas' => 'bg-yellow-100 text-yellow-800',
-                                                'pending' => 'bg-gray-100 text-gray-800',
+                                            $badgeClass = match($bl->status_bongkar) {
+                                                'Sudah Bongkar' => 'bg-green-100 text-green-800',
+                                                'Belum Bongkar' => 'bg-yellow-100 text-yellow-800',
                                                 default => 'bg-gray-100 text-gray-800'
                                             };
                                         @endphp
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $badgeClass }}">
-                                            {{ ucfirst(str_replace('_', ' ', $sjb->status_pembayaran)) }}
+                                            {{ $bl->status_bongkar }}
                                         </span>
                                     @else
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">-</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-sm">
-                                    <div class="flex items-center space-x-2">
-                                        @can('surat-jalan-bongkaran-view')
-                                            <a href="{{ route('surat-jalan-bongkaran.show', $sjb) }}" 
-                                               class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50" 
-                                               title="Lihat">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                </svg>
-                                            </a>
-                                        @endcan
-                                        
-                                        @can('surat-jalan-bongkaran-update')
-                                            <a href="{{ route('surat-jalan-bongkaran.edit', $sjb) }}" 
-                                               class="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50" 
-                                               title="Edit">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </a>
-                                        @endcan
-                                        
-                                        @can('surat-jalan-bongkaran-delete')
-                                            <form action="{{ route('surat-jalan-bongkaran.destroy', $sjb) }}" 
-                                                  method="POST" 
-                                                  class="inline" 
-                                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus surat jalan bongkaran ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50" 
-                                                        title="Hapus">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        @endcan
-                                    </div>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-4 py-12 text-center">
+                                <td colspan="12" class="px-4 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
-                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada surat jalan bongkaran</h3>
-                                        <p class="text-gray-500 mb-4">Belum ada data surat jalan bongkaran yang tersedia.</p>
-                                        @can('surat-jalan-bongkaran-create')
-                                            <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" 
-                                               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                                </svg>
-                                                Tambah Surat Jalan Bongkaran Pertama
-                                            </a>
-                                        @endcan
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data BL</h3>
+                                        <p class="text-gray-500">Belum ada data Bill of Lading yang tersedia.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -292,14 +186,14 @@
             </div>
 
             <!-- Pagination -->
-            @if($suratJalanBongkarans->hasPages())
+            @if($bls->hasPages())
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 pt-4 border-t border-gray-200">
                     <div class="text-sm text-gray-700 mb-4 sm:mb-0">
-                        Menampilkan {{ $suratJalanBongkarans->firstItem() }} sampai {{ $suratJalanBongkarans->lastItem() }} 
-                        dari {{ $suratJalanBongkarans->total() }} data
+                        Menampilkan {{ $bls->firstItem() }} sampai {{ $bls->lastItem() }} 
+                        dari {{ $bls->total() }} data
                     </div>
                     <div>
-                        {{ $suratJalanBongkarans->appends(request()->query())->links() }}
+                        {{ $bls->appends(request()->query())->links() }}
                     </div>
                 </div>
             @endif
@@ -312,36 +206,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Auto submit form when filters change
-    const filterElements = document.querySelectorAll('#start_date, #end_date, #nama_kapal');
+    const filterElements = document.querySelectorAll('#nama_kapal, #no_voyage');
     filterElements.forEach(element => {
         element.addEventListener('change', function() {
             this.closest('form').submit();
         });
     });
-});
-
-// Toggle dropdown menu for action buttons
-function toggleDropdown(dropdownId) {
-    // Close all other dropdowns first
-    document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
-        if (dropdown.id !== dropdownId) {
-            dropdown.classList.add('hidden');
-        }
-    });
-    // Toggle the clicked dropdown
-    const dropdown = document.getElementById(dropdownId);
-    if (dropdown) {
-        dropdown.classList.toggle('hidden');
-    }
-}
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('[onclick*="toggleDropdown"]') && !event.target.closest('[id^="dropdown-"]')) {
-        document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
-            dropdown.classList.add('hidden');
-        });
-    }
 });
 </script>
 @endpush

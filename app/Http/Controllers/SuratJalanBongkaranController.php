@@ -32,38 +32,34 @@ class SuratJalanBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanBongkaran::with(['inputBy', 'uangJalanBongkarans']);
-
-        // Filter berdasarkan tanggal
-        if ($request->filled('start_date')) {
-            $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
-        }
+        $query = Bl::query();
 
         // Filter berdasarkan kapal
         if ($request->filled('nama_kapal')) {
             $query->where('nama_kapal', $request->nama_kapal);
         }
 
+        // Filter berdasarkan voyage
+        if ($request->filled('no_voyage')) {
+            $query->where('no_voyage', $request->no_voyage);
+        }
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                $q->where('nomor_bl', 'like', "%{$search}%")
+                  ->orWhere('nomor_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('tujuan_alamat', 'like', "%{$search}%");
+                  ->orWhere('nama_kapal', 'like', "%{$search}%")
+                  ->orWhere('no_voyage', 'like', "%{$search}%")
+                  ->orWhere('nama_barang', 'like', "%{$search}%");
             });
         }
 
-        $suratJalanBongkarans = $query->orderBy('created_at', 'desc')->paginate(25);
+        $bls = $query->orderBy('created_at', 'desc')->paginate(25);
 
-        // Data untuk filter dropdown
+        // Data untuk filter dropdown kapal
         $kapals = Bl::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
                     ->distinct()
@@ -76,7 +72,15 @@ class SuratJalanBongkaranController extends Controller
                         ];
                     });
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'kapals'));
+        // Data untuk filter dropdown voyage
+        $voyages = Bl::select('no_voyage')
+                    ->whereNotNull('no_voyage')
+                    ->distinct()
+                    ->orderBy('no_voyage')
+                    ->get()
+                    ->pluck('no_voyage');
+
+        return view('surat-jalan-bongkaran.index', compact('bls', 'kapals', 'voyages'));
     }
 
     /**
