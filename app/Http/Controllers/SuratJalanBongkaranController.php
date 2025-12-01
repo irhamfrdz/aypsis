@@ -404,7 +404,8 @@ class SuratJalanBongkaranController extends Controller
         // Debug: log all request data
         \Log::info('SJB Store Request Data:', $request->all());
         
-        $validatedData = $request->validate([
+        try {
+            $validatedData = $request->validate([
             'kapal_id' => 'nullable|integer',
             'nama_kapal' => 'nullable|string|max:255',
             'no_voyage' => 'nullable|string|max:255',
@@ -458,6 +459,17 @@ class SuratJalanBongkaranController extends Controller
             'dokumentasi' => 'nullable|string',
             'uang_jalan_nominal' => 'nullable|numeric|min:0',
         ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Check if request is AJAX (from modal)
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal. Silakan periksa kembali data yang diinput.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         // If bl_id is present, ensure we store the actual BL number (nomor_bl) instead of container number
         if ($request->filled('bl_id')) {
@@ -491,11 +503,29 @@ class SuratJalanBongkaranController extends Controller
 
             DB::commit();
 
+            // Check if request is AJAX (from modal)
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Surat Jalan Bongkaran berhasil dibuat.',
+                    'redirect' => route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
+                ]);
+            }
+
             return redirect()->route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
                            ->with('success', 'Surat Jalan Bongkaran berhasil dibuat.');
 
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Check if request is AJAX (from modal)
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
