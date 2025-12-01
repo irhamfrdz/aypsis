@@ -141,10 +141,6 @@
                                 <label class="block text-sm font-medium text-gray-500 mb-2">Nama Barang</label>
                                 <p class="text-base font-semibold text-gray-900">{{ $tandaTerima->nama_barang }}</p>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500 mb-2">Jenis Barang</label>
-                                <p class="text-base text-gray-900">{{ $tandaTerima->jenisBarang->nama_barang ?? 'Tidak ada' }}</p>
-                            </div>
                             @if($tandaTerima->keterangan_barang)
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-500 mb-2">Keterangan Barang</label>

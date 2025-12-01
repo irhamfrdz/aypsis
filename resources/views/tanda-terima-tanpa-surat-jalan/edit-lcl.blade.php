@@ -245,23 +245,6 @@
                                 @enderror
                             </div>
 
-                            <div>
-                                <label for="jenis_barang_id" class="block text-sm font-medium text-gray-700 mb-2">Jenis Barang</label>
-                                <select id="jenis_barang_id" 
-                                        name="jenis_barang_id" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('jenis_barang_id') border-red-500 @enderror">
-                                    <option value="">Pilih Jenis Barang</option>
-                                    @foreach(App\Models\JenisBarang::all() as $jenisBarang)
-                                        <option value="{{ $jenisBarang->id }}" {{ old('jenis_barang_id', $tandaTerima->jenis_barang_id) == $jenisBarang->id ? 'selected' : '' }}>
-                                            {{ $jenisBarang->nama_barang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('jenis_barang_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
                             <div class="md:col-span-2">
                                 <label for="keterangan_barang" class="block text-sm font-medium text-gray-700 mb-2">Keterangan Barang</label>
                                 <textarea id="keterangan_barang" 

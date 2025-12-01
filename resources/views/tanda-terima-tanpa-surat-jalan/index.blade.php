@@ -215,7 +215,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm text-gray-900">{{ $tandaTerima->jenisBarang->nama_barang ?? $tandaTerima->nama_barang }}</div>
+                                            <div class="text-sm text-gray-900">{{ $tandaTerima->nama_barang }}</div>
                                         @else
                                             <div class="text-sm text-gray-900">{{ $tandaTerima->jenis_barang }}</div>
                                         @endif

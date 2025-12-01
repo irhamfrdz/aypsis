@@ -56,7 +56,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $query->whereBetween('tanggal_tanda_terima', [$request->start_date, $request->end_date]);
             }
 
-            $tandaTerimas = $query->with(['term', 'jenisBarang', 'tujuanPengiriman', 'createdBy'])
+            $tandaTerimas = $query->with(['term', 'tujuanPengiriman', 'createdBy'])
                                   ->orderBy('created_at', 'desc')
                                   ->paginate(15);
 

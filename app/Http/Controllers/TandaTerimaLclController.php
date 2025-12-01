@@ -87,8 +87,6 @@ class TandaTerimaLclController extends Controller
             'alamat_penerima' => 'required|string',
             'nama_pengirim' => 'required|string|max:255', 
             'alamat_pengirim' => 'required|string',
-            'nama_barang' => 'required|string|max:255',
-            'kuantitas' => 'required|integer|min:1',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
             'tujuan_pengiriman' => 'required|exists:master_tujuan_kirim,id',
