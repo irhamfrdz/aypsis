@@ -89,7 +89,29 @@ class SuratJalanBongkaranController extends Controller
         $selectedKapal = $request->nama_kapal;
         $selectedVoyage = $request->no_voyage;
 
-        return view('surat-jalan-bongkaran.index', compact('bls', 'selectedKapal', 'selectedVoyage'));
+        // Get data for modal form
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
+                                                ->whereNull('tanggal_berhenti')
+                                                ->orderBy('nama_panggilan')
+                                                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
+        
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
+                                              ->whereNull('tanggal_berhenti')
+                                              ->orderBy('nama_panggilan')
+                                              ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+        
+        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
+                                                               ->orderBy('ke')
+                                                               ->get();
+        
+        $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                         ->where('status', 'aktif')
+                                         ->orderBy('nama_kegiatan')
+                                         ->get();
+
+        $terms = \App\Models\Term::orderBy('kode')->get();
+
+        return view('surat-jalan-bongkaran.index', compact('bls', 'selectedKapal', 'selectedVoyage', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
     }
 
     /**

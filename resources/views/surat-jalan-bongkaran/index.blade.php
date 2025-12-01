@@ -280,17 +280,22 @@
                             <select name="term" id="modal_term"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih term</option>
-                                <option value="Cash">Cash</option>
-                                <option value="Credit">Credit</option>
+                                @foreach($terms as $term)
+                                    <option value="{{ $term->kode }}">{{ $term->kode }} - {{ $term->nama_term }}</option>
+                                @endforeach
                             </select>
                         </div>
 
                         <!-- Aktifitas -->
                         <div>
                             <label for="modal_aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                            <input type="text" name="aktifitas" id="modal_aktifitas"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Masukkan aktifitas">
+                            <select name="aktifitas" id="modal_aktifitas"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih aktifitas</option>
+                                @foreach($masterKegiatans as $kegiatan)
+                                    <option value="{{ $kegiatan->nama_kegiatan }}">{{ $kegiatan->nama_kegiatan }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <!-- Informasi Pengiriman -->
@@ -318,6 +323,22 @@
                             <input type="text" name="tujuan_alamat" id="modal_tujuan_alamat"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Masukkan tujuan alamat">
+                        </div>
+
+                        <!-- Tujuan Pengambilan -->
+                        <div>
+                            <label for="modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
+                            <select name="tujuan_pengambilan" id="modal_tujuan_pengambilan"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih tujuan pengambilan</option>
+                                @foreach($tujuanKegiatanUtamas as $tujuan)
+                                    <option value="{{ $tujuan->ke }}" 
+                                            data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
+                                            data-uang-jalan-40="{{ $tujuan->uang_jalan_40ft ?? 0 }}">
+                                        {{ $tujuan->ke }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <!-- Tujuan Pengiriman -->
@@ -354,9 +375,16 @@
                         <!-- Supir -->
                         <div>
                             <label for="modal_supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                            <input type="text" name="supir" id="modal_supir"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Masukkan nama supir">
+                            <select name="supir" id="modal_supir"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih supir</option>
+                                @foreach($karyawanSupirs as $supir)
+                                    <option value="{{ $supir->nama_panggilan }}" data-plat="{{ $supir->plat }}">
+                                        {{ $supir->nama_panggilan }} ({{ $supir->nama_lengkap }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-blue-600">Nomor plat akan terisi otomatis saat memilih supir</p>
                         </div>
 
                         <!-- No Plat -->
@@ -370,17 +398,31 @@
                         <!-- Kenek -->
                         <div>
                             <label for="modal_kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                            <input type="text" name="kenek" id="modal_kenek"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Masukkan nama kenek">
+                            <select name="kenek" id="modal_kenek"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih kenek</option>
+                                @foreach($karyawanKranis as $krani)
+                                    <option value="{{ $krani->nama_panggilan }}">
+                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-blue-600">Pilih kenek dari daftar karyawan krani</p>
                         </div>
 
                         <!-- Krani -->
                         <div>
                             <label for="modal_krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
-                            <input type="text" name="krani" id="modal_krani"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Masukkan nama krani">
+                            <select name="krani" id="modal_krani"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih krani</option>
+                                @foreach($karyawanKranis as $krani)
+                                    <option value="{{ $krani->nama_panggilan }}">
+                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-blue-600">Pilih krani dari daftar karyawan</p>
                         </div>
 
                         <!-- Informasi Container -->
@@ -595,11 +637,93 @@ function buatSuratJalan(blId) {
             if (data.jenis_pengiriman) {
                 document.getElementById('modal_jenis_pengiriman').value = data.jenis_pengiriman;
             }
+            
+            // Set alamat pengiriman if available
+            if (data.alamat_pengiriman) {
+                document.getElementById('modal_tujuan_alamat').value = data.alamat_pengiriman;
+            }
+            
+            // Setup auto-fill plat when supir is selected
+            setupModalSupirAutoFill();
+            
+            // Setup auto-calculate uang jalan
+            setupModalUangJalanCalculation(data.size_kontainer);
         })
         .catch(error => {
             console.error('Error fetching BL data:', error);
             alert('Gagal mengambil data BL. Silakan coba lagi.');
         });
+}
+
+// Setup auto-fill plat nomor when supir is selected in modal
+function setupModalSupirAutoFill() {
+    const supirSelect = document.getElementById('modal_supir');
+    const noPlatInput = document.getElementById('modal_no_plat');
+    
+    if (supirSelect && noPlatInput) {
+        // Remove existing listener if any
+        supirSelect.removeEventListener('change', handleModalSupirChange);
+        // Add new listener
+        supirSelect.addEventListener('change', handleModalSupirChange);
+    }
+}
+
+function handleModalSupirChange(e) {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const platNumber = selectedOption.getAttribute('data-plat');
+    const noPlatInput = document.getElementById('modal_no_plat');
+    
+    if (platNumber && platNumber.trim() !== '') {
+        noPlatInput.value = platNumber;
+    }
+}
+
+// Setup auto-calculate uang jalan based on tujuan pengambilan in modal
+function setupModalUangJalanCalculation(containerSize) {
+    const tujuanPengambilanSelect = document.getElementById('modal_tujuan_pengambilan');
+    const uangJalanNominalInput = document.getElementById('modal_uang_jalan_nominal');
+    const uangJalanTypeRadios = document.querySelectorAll('input[name="uang_jalan_type"]');
+    
+    function calculateModalUangJalan() {
+        const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
+        const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
+        const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
+        const uangJalanType = document.querySelector('input[name="uang_jalan_type"]:checked');
+        
+        let uangJalan = 0;
+        
+        // Determine uang jalan based on container size
+        if (containerSize === '20' || containerSize === '20ft') {
+            uangJalan = uangJalan20;
+        } else if (containerSize === '40' || containerSize === '40ft' || containerSize === '40hc' || containerSize === '40 hc') {
+            uangJalan = uangJalan40;
+        } else {
+            // Default to 20ft if size is not clear
+            uangJalan = uangJalan20;
+        }
+        
+        // Apply half calculation if "setengah" is selected
+        if (uangJalanType && uangJalanType.value === 'setengah') {
+            uangJalan = uangJalan / 2;
+        }
+        
+        if (uangJalan > 0) {
+            uangJalanNominalInput.value = Math.round(uangJalan);
+        }
+    }
+    
+    if (tujuanPengambilanSelect && uangJalanNominalInput) {
+        // Remove existing listeners
+        tujuanPengambilanSelect.removeEventListener('change', calculateModalUangJalan);
+        
+        // Add new listeners
+        tujuanPengambilanSelect.addEventListener('change', calculateModalUangJalan);
+        
+        uangJalanTypeRadios.forEach(radio => {
+            radio.removeEventListener('change', calculateModalUangJalan);
+            radio.addEventListener('change', calculateModalUangJalan);
+        });
+    }
 }
 
 // Close modal function
