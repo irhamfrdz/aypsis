@@ -12,7 +12,7 @@
                 <p class="text-gray-600 mt-1">Kelola daftar pranota uang rit untuk supir</p>
             </div>
             @can('pranota-uang-rit-create')
-            <a href="{{ route('pranota-uang-rit.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+            <a href="{{ route('pranota-uang-rit.select-uang-jalan', ['start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                 <i class="fas fa-plus mr-2"></i> Tambah Pranota Uang Rit
             </a>
             @endcan
@@ -205,7 +205,7 @@
                     <h3 class="text-lg font-medium text-gray-500 mb-2">Tidak ada data pranota uang rit</h3>
                     <p class="text-gray-400 mb-6">Data akan muncul di sini setelah Anda menambahkan pranota uang rit.</p>
                     @can('pranota-uang-rit-create')
-                    <a href="{{ route('pranota-uang-rit.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <a href="{{ route('pranota-uang-rit.select-uang-jalan', ['start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                         <i class="fas fa-plus mr-2"></i> Tambah Pranota Uang Rit Pertama
                     </a>
                     @endcan
