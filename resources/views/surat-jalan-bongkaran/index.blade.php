@@ -115,16 +115,11 @@
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Container</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tonnage</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Bongkar</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -170,34 +165,14 @@
                                 <td class="px-4 py-3 text-sm">
                                     <span class="font-semibold text-gray-900">{{ $bl->nomor_bl ?: '-' }}</span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nama_kapal ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_voyage ?: '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_seal ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->tonnage ? number_format($bl->tonnage, 2) . ' Ton' : '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}</td>
-                                <td class="px-4 py-3 text-sm">
-                                    @if($bl->status_bongkar)
-                                        @php
-                                            $badgeClass = match($bl->status_bongkar) {
-                                                'Sudah Bongkar' => 'bg-green-100 text-green-800',
-                                                'Belum Bongkar' => 'bg-yellow-100 text-yellow-800',
-                                                default => 'bg-gray-100 text-gray-800'
-                                            };
-                                        @endphp
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $badgeClass }}">
-                                            {{ $bl->status_bongkar }}
-                                        </span>
-                                    @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">-</span>
-                                    @endif
-                                </td>
-                            </tr>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->penerima, 30) ?: '-' }}</td>
                         @empty
                             <tr>
+                                <td colspan="8" class="px-4 py-12 text-center">
                                 <td colspan="13" class="px-4 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -945,13 +920,10 @@ function printSJ(blId) {
     window.open('/surat-jalan-bongkaran/print-from-bl/' + blId, '_blank');
 }
 
-// Print BA function
+// Print BA function - Print Berita Acara directly from BL data
 function printBA(blId) {
-    // TODO: Implement print BA functionality
-    // For now, just show an alert
-    alert('Print BA untuk BL ID: ' + blId);
-    // You can redirect to print route like:
-    // window.open('/surat-jalan-bongkaran/print-ba/' + blId, '_blank');
+    // Open print BA page in new window/tab
+    window.open('/surat-jalan-bongkaran/print-ba/' + blId, '_blank');
 }
 </script>
 @endpush

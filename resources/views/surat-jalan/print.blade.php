@@ -273,7 +273,7 @@
     <div class="container">
         <!-- SESI 1: HEADER -->
         <div class="date-header">
-            {{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d-M-Y') : '' }}
+            {{ $suratJalan->tanggal_muat ? \Carbon\Carbon::parse($suratJalan->tanggal_muat)->format('d-M-Y') : '' }}
         </div>
         
         <!-- NO VOYAGE -->

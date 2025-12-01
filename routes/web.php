@@ -1676,6 +1676,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-bongkaran.print-from-bl')
          ->middleware('can:surat-jalan-bongkaran-view');
 
+    // Print BA (Berita Acara) directly from BL
+    Route::get('/surat-jalan-bongkaran/print-ba/{bl}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'printBa'])
+         ->name('surat-jalan-bongkaran.print-ba')
+         ->middleware('can:surat-jalan-bongkaran-view');
+
     // Download PDF surat jalan bongkaran
     Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/download', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'downloadPdf'])
          ->name('surat-jalan-bongkaran.download')

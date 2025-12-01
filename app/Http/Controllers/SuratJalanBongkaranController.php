@@ -705,6 +705,52 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Print Berita Acara (BA) directly from BL data
+     */
+    public function printBa(Bl $bl)
+    {
+        // This allows printing BA even if surat jalan hasn't been created yet
+        $baData = new \stdClass();
+        
+        // Generate BA number if not exists
+        $baData->id = $bl->id;
+        $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($bl->id, 4, '0', STR_PAD_LEFT);
+        $baData->tanggal_ba = now()->format('Y-m-d');
+        
+        // Ship data
+        $baData->nama_kapal = $bl->nama_kapal;
+        $baData->no_voyage = $bl->no_voyage;
+        $baData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
+        $baData->tujuan_pengiriman = $bl->pelabuhan_tujuan ?? '';
+        
+        // Container data
+        $baData->no_bl = $bl->nomor_bl;
+        $baData->no_kontainer = $bl->nomor_kontainer;
+        $baData->no_seal = $bl->no_seal;
+        $baData->size = $bl->size_kontainer;
+        
+        // Cargo data
+        $baData->jenis_barang = $bl->nama_barang;
+        $baData->pengirim = $bl->pengirim ?? '';
+        $baData->penerima = $bl->penerima ?? '';
+        
+        // Transportation data (will be empty until surat jalan is created)
+        $baData->no_plat = '';
+        $baData->supir = '';
+        $baData->kenek = '';
+        $baData->krani = '';
+        $baData->tujuan_pengambilan = '';
+        
+        // Condition notes (default values)
+        $baData->kondisi_seal = 'Seal dalam keadaan baik dan tidak rusak';
+        $baData->kondisi_kontainer = 'Kontainer dalam keadaan baik dan tidak rusak';
+        $baData->kondisi_barang = 'Barang dalam keadaan baik sesuai manifest';
+        $baData->catatan = '-';
+
+        return view('surat-jalan-bongkaran.print-ba', compact('baData'));
+    }
+
+    /**
      * Get BL data by ID (API endpoint for modal)
      */
     public function getBlById($id)
