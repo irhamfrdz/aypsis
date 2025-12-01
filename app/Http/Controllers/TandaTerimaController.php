@@ -16,6 +16,48 @@ use Illuminate\Support\Facades\Storage;
 class TandaTerimaController extends Controller
 {
     /**
+     * Map an input tipe_kontainer string to the database enum values for tanda_terimas
+     * Allowed enum values: fcl, lcl, cargo
+     * Return mapped value string or null if not mappable
+     */
+    private function mapTipeKontainerValue(?string $value): ?string
+    {
+        if (!$value) return null;
+        $v = strtolower(trim($value));
+
+        $map = [
+            // Keywords mapping to FCL
+            'dry' => 'fcl',
+            'dry container' => 'fcl',
+            'high cube' => 'fcl',
+            'hc' => 'fcl',
+            'reefer' => 'fcl',
+            'fcl' => 'fcl',
+
+            // LCL
+            'lcl' => 'lcl',
+            'less than container load' => 'lcl',
+
+            // Cargo / CARGO
+            'cargo' => 'cargo',
+            'cargo container' => 'cargo',
+        ];
+
+        // Try direct mapping
+        if (isset($map[$v])) {
+            return $map[$v];
+        }
+
+        // Try fuzzy matching with keywords
+        foreach ($map as $k => $m) {
+            if (strpos($v, $k) !== false) {
+                return $m;
+            }
+        }
+
+        return null;
+    }
+    /**
      * Show surat jalan selection page
      */
     public function selectSuratJalan(Request $request)
@@ -276,6 +318,24 @@ class TandaTerimaController extends Controller
         DB::beginTransaction();
         try {
             $suratJalan = SuratJalan::with(['order.pengirim'])->findOrFail($request->surat_jalan_id);
+
+            // Map tipe_kontainer values to DB enum values to avoid SQL truncation
+            // The application stores verbose tipe_kontainer in UI like "Dry Container" or "High Cube".
+            // Database column only accepts enum('fcl','lcl','cargo') for tanda_terimas.
+            // We'll try to map common verbose values to allowed enum values.
+            $rawTipe = $suratJalan->tipe_kontainer ?? ($request->input('tipe_kontainer') ?? null);
+            if ($rawTipe) {
+                $mapped = $this->mapTipeKontainerValue($rawTipe);
+                if ($mapped === null) {
+                    // Return a clear validation error instead of letting DB throw
+                    DB::rollBack();
+                    $message = "Tipe kontainer '{$rawTipe}' tidak valid untuk Tanda Terima. Pilih salah satu: FCL, LCL, atau CARGO.";
+                    Log::warning('Invalid tipe_kontainer for Tanda Terima', ['raw' => $rawTipe, 'surat_jalan_id' => $suratJalan->id]);
+                    return redirect()->back()->withInput()->with('error', $message);
+                }
+                // normalize on $suratJalan for insertion and consistency
+                $suratJalan->tipe_kontainer = $mapped;
+            }
 
             // Create new tanda terima with data from surat jalan and form
             $tandaTerima = new TandaTerima();
