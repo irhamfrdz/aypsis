@@ -272,169 +272,142 @@
                     </div>
                 </div>
 
-                <!-- 3. Informasi Barang -->
-                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                        </svg>
-                        Informasi Barang
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <!-- Nama Barang -->
-                        <div>
-                            <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Barang <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="nama_barang" id="nama_barang"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                   value="{{ old('nama_barang') }}" required
-                                   placeholder="Contoh: Spare Part Mesin">
-                            @error('nama_barang')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Kuantitas -->
-                        <div>
-                            <label for="kuantitas" class="block text-sm font-medium text-gray-700 mb-1">
-                                Kuantitas <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" name="kuantitas" id="kuantitas"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                   value="{{ old('kuantitas', 1) }}" required min="1"
-                                   placeholder="1">
-                            @error('kuantitas')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Keterangan Barang -->
-                    <div>
-                        <label for="keterangan_barang" class="block text-sm font-medium text-gray-700 mb-1">
-                            Keterangan Barang
-                        </label>
-                        <textarea name="keterangan_barang" id="keterangan_barang" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                  placeholder="Keterangan tambahan tentang barang...">{{ old('keterangan_barang') }}</textarea>
-                        @error('keterangan_barang')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- 4. Dimensi dan Volume -->
+                <!-- 3. Dimensi dan Volume -->
                 <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4a1 1 0 011-1h4m10 0h4a1 1 0 011 1v4M4 16v4a1 1 0 001 1h4m10 0h4a1 1 0 01-1 1v-4"></path>
-                        </svg>
-                        Dimensi dan Volume
-                    </h3>
-
-                    <!-- Dimensi Table -->
-                    <div class="overflow-x-auto border border-gray-200 rounded-lg mb-4">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-purple-100">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Item</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Panjang (m)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Lebar (m)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Tinggi (m)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Volume (m³)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Berat (Ton)</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-purple-800 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dimensiTableBody" class="bg-white divide-y divide-gray-200">
-                                <tr class="dimensi-item hover:bg-gray-50" data-index="0">
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <span class="item-number text-sm font-medium text-gray-900">1</span>
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="number"
-                                               name="dimensi_items[0][panjang]"
-                                               class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0.000"
-                                               min="0"
-                                               step="0.001"
-                                               onchange="calculateItemVolume(this)">
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="number"
-                                               name="dimensi_items[0][lebar]"
-                                               class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0.000"
-                                               min="0"
-                                               step="0.001"
-                                               onchange="calculateItemVolume(this)">
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="number"
-                                               name="dimensi_items[0][tinggi]"
-                                               class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0.000"
-                                               min="0"
-                                               step="0.001"
-                                               onchange="calculateItemVolume(this)">
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="number"
-                                               name="dimensi_items[0][meter_kubik]"
-                                               class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
-                                               placeholder="0.000"
-                                               readonly
-                                               step="0.001">
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="number"
-                                               name="dimensi_items[0][tonase]"
-                                               class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0.000"
-                                               min="0"
-                                               step="0.001"
-                                               onchange="calculateTotals()">
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-center">
-                                        <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1" style="display: none;">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Add Dimensi Button & Summary -->
-                    <div class="flex justify-between items-center">
-                        <button type="button" id="addDimensiItem"
-                                class="inline-flex items-center px-4 py-2 border border-purple-300 rounded-md text-sm font-medium text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            Dimensi dan Volume
+                        </h3>
+                        <button type="button"
+                                id="add-dimensi-btn"
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition duration-200 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            Tambah Item
+                            Tambah Dimensi
                         </button>
-
-                        <div class="text-right">
-                            <div class="text-sm text-gray-600">
-                                Total Volume: <span id="totalVolume" class="font-medium text-purple-600">0.000 m³</span>
-                            </div>
-                            <div class="text-sm text-gray-600">
-                                Total Berat: <span id="totalTonase" class="font-medium text-purple-600">0.000 Ton</span>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Hidden fields for backward compatibility -->
-                    <input type="hidden" name="panjang" id="hiddenPanjang">
-                    <input type="hidden" name="lebar" id="hiddenLebar">
-                    <input type="hidden" name="tinggi" id="hiddenTinggi">
-                    <input type="hidden" name="meter_kubik" id="hiddenMeterKubik">
-                    <input type="hidden" name="tonase" id="hiddenTonase">
+                    <div id="dimensi-container">
+                        <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label for="nama_barang_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Nama Barang
+                                    </label>
+                                    <input type="text"
+                                           name="nama_barang[]" 
+                                           id="nama_barang_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="Nama barang"
+                                           value="{{ old('nama_barang.0') }}">
+                                </div>
+                                <div>
+                                    <label for="jumlah_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Jumlah
+                                    </label>
+                                    <input type="number"
+                                           name="jumlah[]"
+                                           id="jumlah_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="0"
+                                           value="{{ old('jumlah.0') }}"
+                                           min="0"
+                                           step="1">
+                                </div>
+                                <div>
+                                    <label for="satuan_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Satuan
+                                    </label>
+                                    <input type="text"
+                                           name="satuan[]"
+                                           id="satuan_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="Pcs, Kg, Box"
+                                           value="{{ old('satuan.0') }}">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div>
+                                    <label for="panjang_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Panjang (m)
+                                    </label>
+                                    <input type="number"
+                                           name="panjang[]"
+                                           id="panjang_0"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="0.000"
+                                           value="{{ old('panjang.0') }}"
+                                           min="0"
+                                           step="0.001"
+                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                </div>
+                                <div>
+                                    <label for="lebar_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Lebar (m)
+                                    </label>
+                                    <input type="number"
+                                           name="lebar[]"
+                                           id="lebar_0"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="0.000"
+                                           value="{{ old('lebar.0') }}"
+                                           min="0"
+                                           step="0.001"
+                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                </div>
+                                <div>
+                                    <label for="tinggi_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Tinggi (m)
+                                    </label>
+                                    <input type="number"
+                                           name="tinggi[]"
+                                           id="tinggi_0"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="0.000"
+                                           value="{{ old('tinggi.0') }}"
+                                           min="0"
+                                           step="0.001"
+                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                </div>
+                                <div>
+                                    <label for="meter_kubik_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Volume (m³)
+                                    </label>
+                                    <input type="number"
+                                           name="meter_kubik[]"
+                                           id="meter_kubik_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                                           placeholder="0.000"
+                                           value="{{ old('meter_kubik.0') }}"
+                                           min="0"
+                                           step="0.001"
+                                           readonly>
+                                </div>
+                                <div>
+                                    <label for="tonase_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Tonase (Ton)
+                                    </label>
+                                    <input type="number"
+                                           name="tonase[]"
+                                           id="tonase_0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           placeholder="0.000"
+                                           value="{{ old('tonase.0') }}"
+                                           min="0"
+                                           step="0.001">
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Volume akan dihitung otomatis dari panjang × lebar × tinggi
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 5. Informasi Supir -->
@@ -618,301 +591,119 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Calculate initial volumes and totals
-        calculateAllVolumesAndTotals();
-
         // Initialize dropdowns
         initializeTermDropdown();
         initializeTujuanPengirimanDropdown();
         initializeSupirDropdown();
-
-        // Add new dimensi item
-        document.getElementById('addDimensiItem').addEventListener('click', function() {
-            addNewDimensiItem();
-        });
-
-        // Remove dimensi item
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.remove-dimensi-item')) {
-                e.target.closest('.dimensi-item').remove();
-                updateItemNumbers();
-                calculateAllVolumesAndTotals();
-                updateRemoveButtons();
-            }
-        });
-
-        // Format input values on blur with smart decimal handling
-        document.addEventListener('blur', function(e) {
-            if (e.target.matches('.dimensi-panjang, .dimensi-lebar, .dimensi-tinggi, .dimensi-tonase')) {
-                const value = parseFloat(e.target.value);
-                if (!isNaN(value) && value > 0) {
-                    if (e.target.matches('.dimensi-tonase')) {
-                        e.target.value = formatWeight(value);
-                    } else {
-                        e.target.value = formatVolume(value);
-                    }
-                }
-            }
-        }, true);
     });
 
-    let dimensiItemIndex = 1;
+    // Counter untuk index dimensi baru
+    let dimensiCounter = document.querySelectorAll('#dimensi-container .dimensi-row').length || 1;
 
-    // Formatting functions for input fields (clean whole numbers, smart decimal display)
-    function formatVolume(value) {
-        if (!value || value === 0) return '';
-        
-        // Round to 3 decimal places
-        const rounded = Math.round(value * 1000) / 1000;
-        
-        // Check if it's a whole number
-        if (Number.isInteger(rounded)) {
-            return rounded.toString(); // Show as "1000" not "1000.000"
-        }
-        
-        return rounded.toFixed(3); // Show decimals when needed
-    }
+    function calculateVolume(rowElement) {
+        const panjangInput = rowElement ? rowElement.querySelector('[name^="panjang"]') : document.getElementById('panjang_0');
+        const lebarInput = rowElement ? rowElement.querySelector('[name^="lebar"]') : document.getElementById('lebar_0');
+        const tinggiInput = rowElement ? rowElement.querySelector('[name^="tinggi"]') : document.getElementById('tinggi_0');
+        const volumeInput = rowElement ? rowElement.querySelector('[name^="meter_kubik"]') : document.getElementById('meter_kubik_0');
 
-    function formatWeight(value) {
-        if (!value || value === 0) return '';
-        
-        // Round to 3 decimal places
-        const rounded = Math.round(value * 1000) / 1000;
-        
-        // Check if it's a whole number
-        if (Number.isInteger(rounded)) {
-            return rounded.toString(); // Show as "5" not "5.000"
-        }
-        
-        return rounded.toFixed(3); // Show decimals when needed
-    }
+        const panjang = parseFloat(panjangInput.value) || 0;
+        const lebar = parseFloat(lebarInput.value) || 0;
+        const tinggi = parseFloat(tinggiInput.value) || 0;
 
-    // Formatting functions for display totals (with thousand separator)
-    function formatVolumeDisplay(value) {
-        if (!value || value === 0) return '0';
-        
-        // Round to 3 decimal places
-        const rounded = Math.round(value * 1000) / 1000;
-        
-        // Check if it's a whole number
-        if (Number.isInteger(rounded)) {
-            return rounded.toLocaleString('id-ID'); // Show as "1,000" not "1,000.000"
-        }
-        
-        return rounded.toLocaleString('id-ID', {
-            minimumFractionDigits: 3,
-            maximumFractionDigits: 3
-        }); // Show decimals with thousand separator
-    }
-
-    function formatWeightDisplay(value) {
-        if (!value || value === 0) return '0';
-        
-        // Round to 3 decimal places
-        const rounded = Math.round(value * 1000) / 1000;
-        
-        // Check if it's a whole number
-        if (Number.isInteger(rounded)) {
-            return rounded.toLocaleString('id-ID'); // Show as "5" not "5.000"
-        }
-        
-        return rounded.toLocaleString('id-ID', {
-            minimumFractionDigits: 3,
-            maximumFractionDigits: 3
-        }); // Show decimals with thousand separator
-    }
-
-    // Formatting functions for database (clean values, no excessive decimals)
-    function formatVolumeForDatabase(value) {
-        if (!value || value === 0) return '';
-        
-        // Round to 3 decimal places
-        const rounded = Math.round(value * 1000) / 1000;
-        
-        // Check if it's a whole number
-        if (Number.isInteger(rounded)) {
-            return rounded.toString(); // Send as "1000" not "1000.000"
-        }
-        
-        // Remove trailing zeros from decimals
-        return parseFloat(rounded.toFixed(3)).toString();
-    }
-
-    function formatWeightForDatabase(value) {
-        if (!value || value === 0) return '';
-        
-        // Round to 3 decimal places
-        const rounded = Math.round(value * 1000) / 1000;
-        
-        // Check if it's a whole number
-        if (Number.isInteger(rounded)) {
-            return rounded.toString(); // Send as "5" not "5.000"
-        }
-        
-        // Remove trailing zeros from decimals
-        return parseFloat(rounded.toFixed(3)).toString();
-    }
-
-    function addNewDimensiItem() {
-        const newRow = document.createElement('tr');
-        newRow.className = 'dimensi-item hover:bg-gray-50';
-        newRow.setAttribute('data-index', dimensiItemIndex);
-        newRow.innerHTML = `
-            <td class="px-4 py-3 whitespace-nowrap">
-                <span class="item-number text-sm font-medium text-gray-900">${dimensiItemIndex + 1}</span>
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap">
-                <input type="number"
-                       name="dimensi_items[${dimensiItemIndex}][panjang]"
-                       class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0.000"
-                       min="0"
-                       step="0.001"
-                       onchange="calculateItemVolume(this)">
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap">
-                <input type="number"
-                       name="dimensi_items[${dimensiItemIndex}][lebar]"
-                       class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0.000"
-                       min="0"
-                       step="0.001"
-                       onchange="calculateItemVolume(this)">
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap">
-                <input type="number"
-                       name="dimensi_items[${dimensiItemIndex}][tinggi]"
-                       class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0.000"
-                       min="0"
-                       step="0.001"
-                       onchange="calculateItemVolume(this)">
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap">
-                <input type="number"
-                       name="dimensi_items[${dimensiItemIndex}][meter_kubik]"
-                       class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
-                       placeholder="0.000"
-                       readonly
-                       step="0.001">
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap">
-                <input type="number"
-                       name="dimensi_items[${dimensiItemIndex}][tonase]"
-                       class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0.000"
-                       min="0"
-                       step="0.001"
-                       onchange="calculateTotals()">
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center">
-                <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                </button>
-            </td>
-        `;
-
-        document.getElementById('dimensiTableBody').appendChild(newRow);
-        dimensiItemIndex++;
-        updateItemNumbers();
-        updateRemoveButtons();
-    }
-
-    function updateItemNumbers() {
-        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        rows.forEach((row, index) => {
-            row.querySelector('.item-number').textContent = index + 1;
-            row.setAttribute('data-index', index);
-        });
-    }
-
-    function updateRemoveButtons() {
-        const removeButtons = document.querySelectorAll('.remove-dimensi-item');
-        if (removeButtons.length === 1) {
-            removeButtons[0].style.display = 'none';
-        } else {
-            removeButtons.forEach(btn => btn.style.display = 'block');
-        }
-    }
-
-    function calculateItemVolume(element) {
-        const row = element.closest('.dimensi-item');
-        const panjang = parseFloat(row.querySelector('.dimensi-panjang').value) || 0;
-        const lebar = parseFloat(row.querySelector('.dimensi-lebar').value) || 0;
-        const tinggi = parseFloat(row.querySelector('.dimensi-tinggi').value) || 0;
-
-        let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
-            volume = panjang * lebar * tinggi;
-        }
-
-        const volumeInput = row.querySelector('.item-meter-kubik');
-        if (volume > 0) {
-            volumeInput.value = formatVolumeForDatabase(volume);
+            const volume = panjang * lebar * tinggi;
+            volumeInput.value = volume.toFixed(3);
         } else {
             volumeInput.value = '';
         }
-        calculateTotals();
     }
 
-    function calculateAllVolumesAndTotals() {
-        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        rows.forEach(row => {
-            const panjang = parseFloat(row.querySelector('.dimensi-panjang').value) || 0;
-            const lebar = parseFloat(row.querySelector('.dimensi-lebar').value) || 0;
-            const tinggi = parseFloat(row.querySelector('.dimensi-tinggi').value) || 0;
+    // Fungsi untuk menambah baris dimensi baru
+    document.addEventListener('DOMContentLoaded', function() {
+        const addButton = document.getElementById('add-dimensi-btn');
+        const container = document.getElementById('dimensi-container');
 
-            let volume = 0;
-            if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
-                volume = panjang * lebar * tinggi;
-            }
+        if (addButton && container) {
+            addButton.addEventListener('click', function() {
+                const newRow = document.createElement('div');
+                newRow.className = 'dimensi-row mb-4 pb-4 border-b border-purple-200 relative';
+                newRow.innerHTML = `
+                    <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
+                            <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
+                            <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="0" step="1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Satuan</label>
+                            <input type="text" name="satuan[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Pcs, Kg, Box">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label>
+                            <input type="number" name="panjang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm dimensi-input" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label>
+                            <input type="number" name="lebar[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm dimensi-input" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label>
+                            <input type="number" name="tinggi[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm dimensi-input" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label>
+                            <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="0.000" min="0" step="0.001" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Tonase (Ton)</label>
+                            <input type="number" name="tonase[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                    </div>
+                `;
 
-            const volumeInput = row.querySelector('.item-meter-kubik');
-            if (volume > 0) {
-                volumeInput.value = formatVolumeForDatabase(volume);
-            } else {
-                volumeInput.value = '';
-            }
-        });
-        calculateTotals();
-        updateRemoveButtons();
-    }
+                container.appendChild(newRow);
+                dimensiCounter++;
 
-    function calculateTotals() {
-        let totalVolume = 0;
-        let totalTonase = 0;
+                // Tambahkan event listener untuk tombol hapus
+                const removeBtn = newRow.querySelector('.remove-dimensi-btn');
+                removeBtn.addEventListener('click', function() {
+                    newRow.remove();
+                });
 
-        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        rows.forEach(row => {
-            const volume = parseFloat(row.querySelector('.item-meter-kubik').value) || 0;
-            const tonase = parseFloat(row.querySelector('.dimensi-tonase').value) || 0;
-
-            totalVolume += volume;
-            totalTonase += tonase;
-        });
-
-        // Update summary display - with thousand separator
-        document.getElementById('totalVolume').textContent = formatVolumeDisplay(totalVolume) + ' m³';
-        document.getElementById('totalTonase').textContent = formatWeightDisplay(totalTonase) + ' Ton';
-
-        // Update hidden fields for backward compatibility - use smart formatting
-        const firstRow = document.querySelector('#dimensiTableBody .dimensi-item');
-        if (firstRow) {
-            const panjang = parseFloat(firstRow.querySelector('.dimensi-panjang').value) || 0;
-            const lebar = parseFloat(firstRow.querySelector('.dimensi-lebar').value) || 0;
-            const tinggi = parseFloat(firstRow.querySelector('.dimensi-tinggi').value) || 0;
-            
-            document.getElementById('hiddenPanjang').value = panjang > 0 ? formatVolumeForDatabase(panjang) : '';
-            document.getElementById('hiddenLebar').value = lebar > 0 ? formatVolumeForDatabase(lebar) : '';
-            document.getElementById('hiddenTinggi').value = tinggi > 0 ? formatVolumeForDatabase(tinggi) : '';
+                // Tambahkan event listener untuk kalkulasi volume
+                const dimensiInputs = newRow.querySelectorAll('.dimensi-input');
+                dimensiInputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        calculateVolume(newRow);
+                    });
+                });
+                // Also trigger initial volume calculation for new row
+                const firstDimensiInput = newRow.querySelector('.dimensi-input');
+                if (firstDimensiInput) firstDimensiInput.dispatchEvent(new Event('input'));
+            });
         }
-        document.getElementById('hiddenMeterKubik').value = totalVolume > 0 ? formatVolumeForDatabase(totalVolume) : '';
-        document.getElementById('hiddenTonase').value = totalTonase > 0 ? formatWeightForDatabase(totalTonase) : '';
-    }
+        // Attach event listeners to existing dimensi-input elements (initial row)
+        const existingDimensiInputs = document.querySelectorAll('.dimensi-input');
+        existingDimensiInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const row = input.closest('.dimensi-row');
+                calculateVolume(row);
+            });
+        });
+        // Run initial calculation for any prefilled dimensi rows
+        const existingDimensiRows = document.querySelectorAll('#dimensi-container .dimensi-row');
+        existingDimensiRows.forEach(row => calculateVolume(row));
+    });
 
     function initializeTermDropdown() {
         const searchInput = document.getElementById('termSearch');

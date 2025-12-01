@@ -94,24 +94,25 @@ class TandaTerimaLclController extends Controller
             'tujuan_pengiriman' => 'required|exists:master_tujuan_kirim,id',
             'nomor_kontainer' => 'nullable|string|max:255',
             'size_kontainer' => 'nullable|in:20ft,40ft,40hc,45ft',
-            'dimensi_items' => 'required|array|min:1',
-            'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
-            'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
-            'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
-            'dimensi_items.*.tonase' => 'nullable|numeric|min:0'
+            'nama_barang' => 'nullable|array',
+            'nama_barang.*' => 'nullable|string|max:255',
+            'jumlah' => 'nullable|array',
+            'jumlah.*' => 'nullable|integer|min:0',
+            'satuan' => 'nullable|array',
+            'satuan.*' => 'nullable|string|max:50',
+            'panjang' => 'nullable|array',
+            'panjang.*' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|array',
+            'lebar.*' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|array',
+            'tinggi.*' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|array',
+            'meter_kubik.*' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|array',
+            'tonase.*' => 'nullable|numeric|min:0'
         ]);
 
         DB::transaction(function () use ($request) {
-            // Debug: Log request data
-            \Log::info("LCL Store Request Data", [
-                'dimensi_items' => $request->dimensi_items ?? 'not provided',
-                'panjang' => $request->panjang ?? 'not provided',
-                'lebar' => $request->lebar ?? 'not provided', 
-                'tinggi' => $request->tinggi ?? 'not provided',
-                'meter_kubik' => $request->meter_kubik ?? 'not provided',
-                'tonase' => $request->tonase ?? 'not provided'
-            ]);
-
             // Create main LCL record
             $tandaTerima = TandaTerimaLcl::create([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
@@ -126,8 +127,8 @@ class TandaTerimaLclController extends Controller
                 'pic_pengirim' => $request->pic_pengirim,
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
-                'nama_barang' => $request->nama_barang,
-                'kuantitas' => $request->kuantitas,
+                'nama_barang' => is_array($request->nama_barang) ? implode(', ', array_filter($request->nama_barang)) : '',
+                'kuantitas' => is_array($request->jumlah) ? array_sum(array_filter($request->jumlah)) : 0,
                 'keterangan_barang' => $request->keterangan_barang,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
@@ -139,68 +140,51 @@ class TandaTerimaLclController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
-            // Create dimension items
-            foreach ($request->dimensi_items as $index => $item) {
-                if (!empty($item['panjang']) || !empty($item['lebar']) || !empty($item['tinggi']) || !empty($item['tonase'])) {
+            // Create dimension items from array fields
+            if ($request->has('panjang') && is_array($request->panjang)) {
+                $namaBarangArray = $request->nama_barang ?? [];
+                $jumlahArray = $request->jumlah ?? [];
+                $satuanArray = $request->satuan ?? [];
+                $panjangArray = $request->panjang ?? [];
+                $lebarArray = $request->lebar ?? [];
+                $tinggiArray = $request->tinggi ?? [];
+                $tonaseArray = $request->tonase ?? [];
+
+                $count = max(
+                    count($panjangArray),
+                    count($lebarArray),
+                    count($tinggiArray),
+                    count($tonaseArray)
+                );
+
+                for ($i = 0; $i < $count; $i++) {
+                    $panjang = isset($panjangArray[$i]) ? floatval($panjangArray[$i]) : null;
+                    $lebar = isset($lebarArray[$i]) ? floatval($lebarArray[$i]) : null;
+                    $tinggi = isset($tinggiArray[$i]) ? floatval($tinggiArray[$i]) : null;
+                    $tonase = isset($tonaseArray[$i]) ? floatval($tonaseArray[$i]) : null;
+
                     // Calculate volume if dimensions are provided
                     $volume = null;
-                    if (!empty($item['panjang']) && !empty($item['lebar']) && !empty($item['tinggi'])) {
-                        $panjang = floatval($item['panjang']);
-                        $lebar = floatval($item['lebar']); 
-                        $tinggi = floatval($item['tinggi']);
+                    if ($panjang > 0 && $lebar > 0 && $tinggi > 0) {
                         $volume = $panjang * $lebar * $tinggi;
-                        
-                        // Debug log
-                        \Log::info("LCL Volume Calculation", [
+                    }
+
+                    // Only create item if at least one value is provided
+                    if ($panjang || $lebar || $tinggi || $volume || $tonase) {
+                        TandaTerimaLclItem::create([
+                            'tanda_terima_lcl_id' => $tandaTerima->id,
+                            'item_number' => $i + 1,
+                            'nama_barang' => isset($namaBarangArray[$i]) ? $namaBarangArray[$i] : null,
+                            'jumlah' => isset($jumlahArray[$i]) ? intval($jumlahArray[$i]) : null,
+                            'satuan' => isset($satuanArray[$i]) ? $satuanArray[$i] : null,
                             'panjang' => $panjang,
                             'lebar' => $lebar,
                             'tinggi' => $tinggi,
-                            'calculated_volume' => $volume
+                            'meter_kubik' => $volume,
+                            'tonase' => $tonase,
                         ]);
                     }
-
-                    TandaTerimaLclItem::create([
-                        'tanda_terima_lcl_id' => $tandaTerima->id,
-                        'item_number' => $index + 1,
-                        'panjang' => $item['panjang'] ?? null,
-                        'lebar' => $item['lebar'] ?? null,
-                        'tinggi' => $item['tinggi'] ?? null,
-                        'meter_kubik' => $volume,
-                        'tonase' => $item['tonase'] ?? null,
-                    ]);
                 }
-            }
-
-            // Backward compatibility: Handle old single dimension fields
-            if ((!$request->has('dimensi_items') || empty($request->dimensi_items)) && 
-                ($request->has('panjang') || $request->has('lebar') || $request->has('tinggi'))) {
-                
-                $panjang = floatval($request->panjang ?? 0);
-                $lebar = floatval($request->lebar ?? 0);
-                $tinggi = floatval($request->tinggi ?? 0);
-                $volume = null;
-
-                if ($panjang > 0 && $lebar > 0 && $tinggi > 0) {
-                    $volume = $panjang * $lebar * $tinggi;
-                }
-
-                \Log::info("LCL Backward Compatibility", [
-                    'panjang' => $panjang,
-                    'lebar' => $lebar,
-                    'tinggi' => $tinggi,
-                    'calculated_volume' => $volume,
-                    'request_tonase' => $request->tonase
-                ]);
-
-                TandaTerimaLclItem::create([
-                    'tanda_terima_lcl_id' => $tandaTerima->id,
-                    'item_number' => 1,
-                    'panjang' => $panjang > 0 ? $panjang : null,
-                    'lebar' => $lebar > 0 ? $lebar : null,
-                    'tinggi' => $tinggi > 0 ? $tinggi : null,
-                    'meter_kubik' => $volume,
-                    'tonase' => $request->tonase ? floatval($request->tonase) : null,
-                ]);
             }
         });
 

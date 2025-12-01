@@ -15,6 +15,9 @@ class TandaTerimaLclItem extends Model
     protected $fillable = [
         'tanda_terima_lcl_id',
         'item_number',
+        'nama_barang',
+        'jumlah',
+        'satuan',
         'panjang',
         'lebar',
         'tinggi',
@@ -24,6 +27,7 @@ class TandaTerimaLclItem extends Model
     
     protected $casts = [
         'item_number' => 'integer',
+        'jumlah' => 'integer',
         'panjang' => 'decimal:2',
         'lebar' => 'decimal:2',
         'tinggi' => 'decimal:2',
