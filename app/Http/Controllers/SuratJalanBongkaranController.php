@@ -618,4 +618,36 @@ class SuratJalanBongkaranController extends Controller
 
         return view('surat-jalan-bongkaran.print', compact('suratJalanBongkaran'));
     }
+
+    /**
+     * Get BL data by ID (API endpoint for modal)
+     */
+    public function getBlById($id)
+    {
+        $bl = Bl::find($id);
+        
+        if (!$bl) {
+            return response()->json(['error' => 'BL not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $bl->id,
+            'nomor_bl' => $bl->nomor_bl,
+            'nama_kapal' => $bl->nama_kapal,
+            'no_voyage' => $bl->no_voyage,
+            'nomor_kontainer' => $bl->nomor_kontainer,
+            'no_seal' => $bl->no_seal,
+            'tipe_kontainer' => $bl->tipe_kontainer,
+            'size_kontainer' => $bl->size_kontainer,
+            'nama_barang' => $bl->nama_barang,
+            'tonnage' => $bl->tonnage,
+            'volume' => $bl->volume,
+            'status_bongkar' => $bl->status_bongkar,
+            'pengirim' => $bl->pengirim ?? '',
+            'penerima' => $bl->penerima ?? '',
+            'alamat_pengiriman' => $bl->alamat_pengiriman ?? '',
+            'pelabuhan_tujuan' => $bl->pelabuhan_tujuan ?? '',
+            'jenis_pengiriman' => $bl->jenis_pengiriman ?? '',
+        ]);
+    }
 }

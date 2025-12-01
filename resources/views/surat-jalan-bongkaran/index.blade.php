@@ -227,6 +227,309 @@
             @endif
         </div>
     </div>
+
+    <!-- Modal Buat Surat Jalan -->
+    <div id="modalBuatSuratJalan" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-xl font-semibold text-gray-900">Buat Surat Jalan Bongkaran</h3>
+                <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="formBuatSuratJalan" action="{{ route('surat-jalan-bongkaran.store') }}" method="POST" class="mt-4">
+                @csrf
+                <input type="hidden" name="bl_id" id="modal_bl_id">
+                <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
+                
+                <div class="max-h-[70vh] overflow-y-auto px-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Informasi Dasar -->
+                        <div class="md:col-span-2">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Dasar</h4>
+                        </div>
+
+                        <!-- Nomor Surat Jalan -->
+                        <div>
+                            <label for="modal_nomor_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nomor Surat Jalan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nomor_surat_jalan" id="modal_nomor_surat_jalan" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nomor surat jalan">
+                        </div>
+
+                        <!-- Tanggal Surat Jalan -->
+                        <div>
+                            <label for="modal_tanggal_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal Surat Jalan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="tanggal_surat_jalan" id="modal_tanggal_surat_jalan" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Term -->
+                        <div>
+                            <label for="modal_term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                            <select name="term" id="modal_term"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih term</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Credit">Credit</option>
+                            </select>
+                        </div>
+
+                        <!-- Aktifitas -->
+                        <div>
+                            <label for="modal_aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
+                            <input type="text" name="aktifitas" id="modal_aktifitas"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan aktifitas">
+                        </div>
+
+                        <!-- Informasi Pengiriman -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Pengiriman</h4>
+                        </div>
+
+                        <!-- Pengirim -->
+                        <div>
+                            <label for="modal_pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
+                            <input type="text" name="pengirim" id="modal_pengirim" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- Jenis Barang -->
+                        <div>
+                            <label for="modal_jenis_barang" class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
+                            <input type="text" name="jenis_barang" id="modal_jenis_barang" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- Tujuan Alamat -->
+                        <div>
+                            <label for="modal_tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>
+                            <input type="text" name="tujuan_alamat" id="modal_tujuan_alamat"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan tujuan alamat">
+                        </div>
+
+                        <!-- Tujuan Pengiriman -->
+                        <div>
+                            <label for="modal_tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                            <input type="text" name="tujuan_pengiriman" id="modal_tujuan_pengiriman" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- Jenis Pengiriman -->
+                        <div>
+                            <label for="modal_jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
+                            <select name="jenis_pengiriman" id="modal_jenis_pengiriman"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih jenis pengiriman</option>
+                                <option value="FCL">FCL</option>
+                                <option value="LCL">LCL</option>
+                                <option value="Cargo">Cargo</option>
+                            </select>
+                        </div>
+
+                        <!-- Tanggal Ambil Barang -->
+                        <div>
+                            <label for="modal_tanggal_ambil_barang" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Ambil Barang</label>
+                            <input type="date" name="tanggal_ambil_barang" id="modal_tanggal_ambil_barang"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Informasi Personal -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Personal</h4>
+                        </div>
+
+                        <!-- Supir -->
+                        <div>
+                            <label for="modal_supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
+                            <input type="text" name="supir" id="modal_supir"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama supir">
+                        </div>
+
+                        <!-- No Plat -->
+                        <div>
+                            <label for="modal_no_plat" class="block text-sm font-medium text-gray-700 mb-1">No Plat</label>
+                            <input type="text" name="no_plat" id="modal_no_plat"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nomor plat">
+                        </div>
+
+                        <!-- Kenek -->
+                        <div>
+                            <label for="modal_kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
+                            <input type="text" name="kenek" id="modal_kenek"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama kenek">
+                        </div>
+
+                        <!-- Krani -->
+                        <div>
+                            <label for="modal_krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
+                            <input type="text" name="krani" id="modal_krani"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama krani">
+                        </div>
+
+                        <!-- Informasi Container -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Container</h4>
+                        </div>
+
+                        <!-- No Kontainer -->
+                        <div>
+                            <label for="modal_no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">No Kontainer</label>
+                            <input type="text" name="no_kontainer" id="modal_no_kontainer" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- No Seal -->
+                        <div>
+                            <label for="modal_no_seal" class="block text-sm font-medium text-gray-700 mb-1">No Seal</label>
+                            <input type="text" name="no_seal" id="modal_no_seal" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- Nomor BL -->
+                        <div>
+                            <label for="modal_no_bl" class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
+                            <input type="text" name="no_bl" id="modal_no_bl" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- Size Kontainer -->
+                        <div>
+                            <label for="modal_size" class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
+                            <input type="text" name="size" id="modal_size" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                        </div>
+
+                        <!-- Informasi Packaging -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Packaging</h4>
+                        </div>
+
+                        <!-- Karton -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="karton" value="ya" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Ya</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="karton" value="tidak" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Tidak</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Plastik -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="plastik" value="ya" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Ya</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="plastik" value="tidak" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Tidak</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Terpal -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="terpal" value="ya" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Ya</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="terpal" value="tidak" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Tidak</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Empty space for alignment -->
+                        <div></div>
+
+                        <!-- Informasi Keuangan -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Keuangan</h4>
+                        </div>
+
+                        <!-- RIT -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="rit" value="penuh" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Penuh</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="rit" value="setengah" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Setengah</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Uang Jalan -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                            <div class="flex space-x-2">
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="uang_jalan_type" value="penuh" class="form-radio text-blue-600" checked>
+                                        <span class="ml-2 text-sm">Penuh</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="uang_jalan_type" value="setengah" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm">Setengah</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Uang Jalan Nominal -->
+                        <div class="md:col-span-2">
+                            <label for="modal_uang_jalan_nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
+                            <input type="number" name="uang_jalan_nominal" id="modal_uang_jalan_nominal"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nominal uang jalan" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 mt-4 pt-3 border-t">
+                    <button type="button" onclick="closeModal()"
+                            class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        Simpan Surat Jalan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -256,14 +559,62 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Buat Surat Jalan function
+// Buat Surat Jalan function - Open modal and populate with BL data
 function buatSuratJalan(blId) {
-    // TODO: Implement buat surat jalan functionality
-    // For now, just show an alert
-    alert('Buat Surat Jalan untuk BL ID: ' + blId);
-    // You can redirect to create route like:
-    // window.location.href = '/surat-jalan-bongkaran/create-from-bl/' + blId;
+    // Show modal
+    document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
+    
+    // Fetch BL data
+    fetch(`/api/bl/${blId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate hidden BL ID
+            document.getElementById('modal_bl_id').value = blId;
+            
+            // Auto-generate nomor surat jalan
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const date = String(today.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            document.getElementById('modal_nomor_surat_jalan').value = `SJB/${year}${month}${date}/${random}`;
+            
+            // Set default tanggal to today
+            document.getElementById('modal_tanggal_surat_jalan').value = new Date().toISOString().split('T')[0];
+            
+            // Populate BL data fields (readonly)
+            document.getElementById('modal_no_bl').value = data.nomor_bl || '';
+            document.getElementById('modal_no_kontainer').value = data.nomor_kontainer || '';
+            document.getElementById('modal_no_seal').value = data.no_seal || '';
+            document.getElementById('modal_size').value = data.size_kontainer || '';
+            document.getElementById('modal_jenis_barang').value = data.nama_barang || '';
+            document.getElementById('modal_pengirim').value = data.pengirim || '';
+            document.getElementById('modal_tujuan_pengiriman').value = data.pelabuhan_tujuan || '';
+            
+            // Set jenis pengiriman if available
+            if (data.jenis_pengiriman) {
+                document.getElementById('modal_jenis_pengiriman').value = data.jenis_pengiriman;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching BL data:', error);
+            alert('Gagal mengambil data BL. Silakan coba lagi.');
+        });
 }
+
+// Close modal function
+function closeModal() {
+    document.getElementById('modalBuatSuratJalan').classList.add('hidden');
+    document.getElementById('formBuatSuratJalan').reset();
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('modalBuatSuratJalan');
+    if (event.target === modal) {
+        closeModal();
+    }
+});
 
 // Print SJ function
 function printSJ(blId) {

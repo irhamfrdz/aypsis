@@ -1625,6 +1625,11 @@ Route::middleware(['auth'])->group(function () {
          ->middleware('can:surat-jalan-bongkaran-create');
     
     // Surat Jalan Bongkaran Management with permissions - Separate routes to avoid middleware conflicts
+    // API endpoint to fetch BL data
+    Route::get('api/bl/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlById'])
+         ->name('api.bl.show')
+         ->middleware('can:surat-jalan-bongkaran-view');
+    
     Route::get('surat-jalan-bongkaran/select-ship', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
          ->name('surat-jalan-bongkaran.select-ship')
          ->middleware('can:surat-jalan-bongkaran-view');
