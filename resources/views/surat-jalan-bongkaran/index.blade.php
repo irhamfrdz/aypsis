@@ -50,42 +50,33 @@
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Daftar Bill of Lading (BL)</h2>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Daftar Bill of Lading (BL)</h2>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-sm text-gray-600">
+                            <span class="font-medium">Kapal:</span> {{ $selectedKapal }}
+                        </span>
+                        <span class="text-sm text-gray-600">
+                            <span class="font-medium">Voyage:</span> {{ $selectedVoyage }}
+                        </span>
+                    </div>
+                </div>
+                <a href="{{ route('surat-jalan-bongkaran.select-ship') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Ganti Kapal/Voyage
+                </a>
             </div>
         </div>
 
         <!-- Card Body -->
         <div class="p-6">
-            <!-- Filter Form -->
+            <!-- Search Form -->
             <form method="GET" action="{{ route('surat-jalan-bongkaran.index') }}" class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                id="nama_kapal" 
-                                name="nama_kapal">
-                            <option value="">Semua Kapal</option>
-                            @foreach($kapals as $kapal)
-                                <option value="{{ $kapal->nama_kapal }}" {{ request('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
-                                    {{ $kapal->nama_kapal }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-1">Voyage</label>
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                id="no_voyage" 
-                                name="no_voyage">
-                            <option value="">Semua Voyage</option>
-                            @foreach($voyages as $voyage)
-                                <option value="{{ $voyage }}" {{ request('no_voyage') == $voyage ? 'selected' : '' }}>
-                                    {{ $voyage }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+                <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
                 
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="flex-1">
@@ -204,14 +195,6 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto submit form when filters change
-    const filterElements = document.querySelectorAll('#nama_kapal, #no_voyage');
-    filterElements.forEach(element => {
-        element.addEventListener('change', function() {
-            this.closest('form').submit();
-        });
-    });
-});
+// No additional scripts needed
 </script>
 @endpush

@@ -1625,6 +1625,10 @@ Route::middleware(['auth'])->group(function () {
          ->middleware('can:surat-jalan-bongkaran-create');
     
     // Surat Jalan Bongkaran Management with permissions - Separate routes to avoid middleware conflicts
+    Route::get('surat-jalan-bongkaran/select-ship', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
+         ->name('surat-jalan-bongkaran.select-ship')
+         ->middleware('can:surat-jalan-bongkaran-view');
+    
     Route::get('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'index'])
          ->name('surat-jalan-bongkaran.index')
          ->middleware('can:surat-jalan-bongkaran-view');

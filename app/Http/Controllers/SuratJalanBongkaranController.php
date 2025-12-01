@@ -28,21 +28,50 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Show the form for selecting kapal and voyage.
+     */
+    public function selectShip(Request $request)
+    {
+        // Get unique kapal names from BL table
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->pluck('nama_kapal');
+
+        // Get voyages for selected kapal
+        $voyages = collect();
+        if ($request->filled('nama_kapal')) {
+            $voyages = Bl::where('nama_kapal', $request->nama_kapal)
+                        ->select('no_voyage')
+                        ->whereNotNull('no_voyage')
+                        ->distinct()
+                        ->orderBy('no_voyage')
+                        ->get()
+                        ->pluck('no_voyage');
+        }
+
+        return view('surat-jalan-bongkaran.select-ship', compact('kapals', 'voyages'));
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        // Redirect to select ship if no kapal and voyage selected
+        if (!$request->filled('nama_kapal') || !$request->filled('no_voyage')) {
+            return redirect()->route('surat-jalan-bongkaran.select-ship');
+        }
+
         $query = Bl::query();
 
-        // Filter berdasarkan kapal
-        if ($request->filled('nama_kapal')) {
-            $query->where('nama_kapal', $request->nama_kapal);
-        }
+        // Filter berdasarkan kapal (required)
+        $query->where('nama_kapal', $request->nama_kapal);
 
-        // Filter berdasarkan voyage
-        if ($request->filled('no_voyage')) {
-            $query->where('no_voyage', $request->no_voyage);
-        }
+        // Filter berdasarkan voyage (required)
+        $query->where('no_voyage', $request->no_voyage);
 
         // Search
         if ($request->filled('search')) {
@@ -51,36 +80,16 @@ class SuratJalanBongkaranController extends Controller
                 $q->where('nomor_bl', 'like', "%{$search}%")
                   ->orWhere('nomor_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('no_voyage', 'like', "%{$search}%")
                   ->orWhere('nama_barang', 'like', "%{$search}%");
             });
         }
 
         $bls = $query->orderBy('created_at', 'desc')->paginate(25);
 
-        // Data untuk filter dropdown kapal
-        $kapals = Bl::select('nama_kapal')
-                    ->whereNotNull('nama_kapal')
-                    ->distinct()
-                    ->orderBy('nama_kapal')
-                    ->get()
-                    ->map(function($bl, $index) {
-                        return (object)[
-                            'id' => $index + 1,
-                            'nama_kapal' => $bl->nama_kapal
-                        ];
-                    });
+        $selectedKapal = $request->nama_kapal;
+        $selectedVoyage = $request->no_voyage;
 
-        // Data untuk filter dropdown voyage
-        $voyages = Bl::select('no_voyage')
-                    ->whereNotNull('no_voyage')
-                    ->distinct()
-                    ->orderBy('no_voyage')
-                    ->get()
-                    ->pluck('no_voyage');
-
-        return view('surat-jalan-bongkaran.index', compact('bls', 'kapals', 'voyages'));
+        return view('surat-jalan-bongkaran.index', compact('bls', 'selectedKapal', 'selectedVoyage'));
     }
 
     /**
