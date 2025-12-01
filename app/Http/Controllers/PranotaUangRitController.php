@@ -60,6 +60,10 @@ class PranotaUangRitController extends Controller
      */
     public function create()
     {
+        // Redirect to the select uang jalan page if no date range is provided
+        if (!request()->filled('start_date') || !request()->filled('end_date')) {
+            return redirect()->route('pranota-uang-rit.select-uang-jalan');
+        }
         // Get available surat jalans that haven't been processed for pranota uang rit
         // Only include surat jalans that use 'menggunakan_rit' and status pembayaran uang rit 'belum_dibayar'
         $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
