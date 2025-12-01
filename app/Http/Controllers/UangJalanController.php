@@ -68,7 +68,6 @@ class UangJalanController extends Controller
 
         $statusOptions = [
             'all' => 'Semua Status',
-            'belum_dibayar' => 'Belum Dibayar',
             'belum_masuk_pranota' => 'Belum Masuk Pranota',
             'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
             'lunas' => 'Lunas',
