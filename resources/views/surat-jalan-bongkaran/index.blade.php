@@ -139,8 +139,15 @@
                                             </svg>
                                         </button>
 
-                                        <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                        <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                             <div class="py-1">
+                                                <a href="#" onclick="buatSuratJalan({{ $bl->id }}); return false;" 
+                                                   class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
+                                                    <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                    Buat Surat Jalan
+                                                </a>
                                                 <a href="#" onclick="printSJ({{ $bl->id }}); return false;" 
                                                    class="group flex items-center px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
                                                     <svg class="mr-2 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,6 +255,15 @@ document.addEventListener('click', function(event) {
         });
     }
 });
+
+// Buat Surat Jalan function
+function buatSuratJalan(blId) {
+    // TODO: Implement buat surat jalan functionality
+    // For now, just show an alert
+    alert('Buat Surat Jalan untuk BL ID: ' + blId);
+    // You can redirect to create route like:
+    // window.location.href = '/surat-jalan-bongkaran/create-from-bl/' + blId;
+}
 
 // Print SJ function
 function printSJ(blId) {
