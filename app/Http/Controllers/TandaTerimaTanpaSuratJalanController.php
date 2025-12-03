@@ -334,6 +334,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if (!empty($satuanArray)) {
                 $validated['satuan_barang'] = $satuanArray[0] ?? 'unit';
             }
+            
+            // Set total volume and weight from arrays
+            if (!empty($meterKubikArray)) {
+                $validated['meter_kubik'] = array_sum(array_filter($meterKubikArray, 'is_numeric'));
+            }
+            if (!empty($tonaseArray)) {
+                $validated['tonase'] = array_sum(array_filter($tonaseArray, 'is_numeric'));
+            }
 
             // Create main record
             $tandaTerima = TandaTerimaTanpaSuratJalan::create($validated);
@@ -390,34 +398,38 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     }
                 }
 
-                // Determine tipe based on tipe_kontainer
-                $tipeProspek = 'FCL'; // Default
-                if ($validated['tipe_kontainer'] === 'lcl') {
-                    $tipeProspek = 'LCL';
-                } elseif ($validated['tipe_kontainer'] === 'cargo') {
-                    $tipeProspek = 'CARGO';
-                }
-
-                // Use correct field names based on validation rules
+            // Determine tipe based on tipe_kontainer
+            $tipeKontainer = $validated['tipe_kontainer_selected'] ?? $validated['tipe_kontainer'] ?? 'fcl';
+            $tipeProspek = 'FCL'; // Default
+            if ($tipeKontainer === 'lcl') {
+                $tipeProspek = 'LCL';
+            } elseif ($tipeKontainer === 'cargo') {
+                $tipeProspek = 'CARGO';
+            }
+            
+            // Use the selected tipe for the record
+            if (isset($validated['tipe_kontainer_selected'])) {
+                $validated['tipe_kontainer'] = $validated['tipe_kontainer_selected'];
+            }                // Use correct field names based on validation rules
                 $penerima = $validated['penerima'] ?? $validated['nama_penerima'] ?? 'Tidak diketahui';
                 $pengirim = $validated['pengirim'] ?? $validated['nama_pengirim'] ?? 'Tidak diketahui';
 
                 Prospek::create([
                     'tanggal' => $validated['tanggal_tanda_terima'],
                     'nama_supir' => $validated['supir'] ?: 'Supir Customer',
-                    'barang' => $validated['nama_barang'] ?: $validated['jenis_barang'] ?: 'Barang',
+                    'barang' => $validated['nama_barang'] ?? $validated['jenis_barang'] ?? 'Barang',
                     'pt_pengirim' => $pengirim,
                     'ukuran' => $ukuran,
                     'tipe' => $tipeProspek,
-                    'nomor_kontainer' => $validated['no_kontainer'] ?: ($tipeProspek === 'CARGO' ? 'CARGO' : null),
-                    'no_seal' => $validated['no_seal'] ?: null,
+                    'nomor_kontainer' => $validated['no_kontainer'] ?? ($tipeProspek === 'CARGO' ? 'CARGO' : null),
+                    'no_seal' => $validated['no_seal'] ?? null,
                     'tujuan_pengiriman' => $validated['tujuan_pengiriman'],
-                    'nama_kapal' => $validated['estimasi_naik_kapal'] ?: null,
-                    'total_ton' => $validated['tonase'] ?: null,
-                    'total_volume' => $validated['meter_kubik'] ?: null,
-                    'kuantitas' => $validated['jumlah_barang'] ?: 1,
+                    'nama_kapal' => $validated['estimasi_naik_kapal'] ?? null,
+                    'total_ton' => $validated['tonase'] ?? null,
+                    'total_volume' => $validated['meter_kubik'] ?? null,
+                    'kuantitas' => $validated['jumlah_barang'] ?? 1,
                     'keterangan' => 'Auto-generated from Tanda Terima Tanpa Surat Jalan: ' . $tandaTerima->no_tanda_terima . 
-                                  ($validated['catatan'] ? ' | Catatan: ' . $validated['catatan'] : '') .
+                                  (isset($validated['catatan']) && $validated['catatan'] ? ' | Catatan: ' . $validated['catatan'] : '') .
                                   ($penerima !== 'Tidak diketahui' ? ' | Penerima: ' . $penerima : ''),
                     'status' => 'aktif',
                     'created_by' => Auth::id()

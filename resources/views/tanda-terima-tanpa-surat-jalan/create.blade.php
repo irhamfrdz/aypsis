@@ -401,6 +401,12 @@
                     <input type="hidden" name="berat" id="berat" value="">
                     <input type="hidden" name="satuan_berat" id="satuan_berat" value="kg">
                     <input type="hidden" name="keterangan_barang" id="keterangan_barang" value="">
+                    <!-- Backward-compatible hidden inputs for single-row legacy fields -->
+                    <input type="hidden" name="panjang" id="hiddenPanjang" value="">
+                    <input type="hidden" name="lebar" id="hiddenLebar" value="">
+                    <input type="hidden" name="tinggi" id="hiddenTinggi" value="">
+                    <input type="hidden" name="meter_kubik" id="hiddenMeterKubik" value="">
+                    <input type="hidden" name="tonase" id="hiddenTonase" value="">
                 </div>
 
                 <!-- Informasi Supir dan Kenek -->
@@ -735,10 +741,13 @@
         // Initialize kenek dropdown
         initializeKenekDropdown();
 
-        // Add new dimensi item
-        document.getElementById('addDimensiItem').addEventListener('click', function() {
-            addNewDimensiItem();
-        });
+        // Add new dimensi item (only if legacy table exists)
+        const addDimensiBtnLegacy = document.getElementById('addDimensiItem');
+        if (addDimensiBtnLegacy) {
+            addDimensiBtnLegacy.addEventListener('click', function() {
+                addNewDimensiItem();
+            });
+        }
 
         // Remove dimensi item
         document.addEventListener('click', function(e) {
@@ -814,7 +823,10 @@
             </td>
         `;
 
-        document.getElementById('dimensiTableBody').appendChild(newRow);
+        const dimensiTableBodyEl = document.getElementById('dimensiTableBody');
+        if (dimensiTableBodyEl) {
+            dimensiTableBodyEl.appendChild(newRow);
+        }
         dimensiItemIndex++;
         updateItemNumbers();
         updateRemoveButtons();
@@ -839,9 +851,15 @@
 
     function calculateItemVolume(element) {
         const row = element.closest('.dimensi-item');
-        const panjang = parseFloat(row.querySelector('.dimensi-panjang').value) || 0;
-        const lebar = parseFloat(row.querySelector('.dimensi-lebar').value) || 0;
-        const tinggi = parseFloat(row.querySelector('.dimensi-tinggi').value) || 0;
+        if (!row) return;
+        
+        const panjangEl = row.querySelector('.dimensi-panjang');
+        const lebarEl = row.querySelector('.dimensi-lebar');
+        const tinggiEl = row.querySelector('.dimensi-tinggi');
+        
+        const panjang = panjangEl ? parseFloat(panjangEl.value) || 0 : 0;
+        const lebar = lebarEl ? parseFloat(lebarEl.value) || 0 : 0;
+        const tinggi = tinggiEl ? parseFloat(tinggiEl.value) || 0 : 0;
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
@@ -850,34 +868,44 @@
         }
 
         const volumeInput = row.querySelector('.item-meter-kubik');
-        if (volume > 0) {
-            volumeInput.value = formatVolumeForDatabase(volume);
-        } else {
-            volumeInput.value = '';
+        if (volumeInput) {
+            if (volume > 0) {
+                volumeInput.value = formatVolumeForDatabase(volume);
+            } else {
+                volumeInput.value = '';
+            }
         }
         calculateTotals();
     }
 
     function calculateAllVolumesAndTotals() {
         const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        rows.forEach(row => {
-            const panjang = parseFloat(row.querySelector('.dimensi-panjang').value) || 0;
-            const lebar = parseFloat(row.querySelector('.dimensi-lebar').value) || 0;
-            const tinggi = parseFloat(row.querySelector('.dimensi-tinggi').value) || 0;
+        if (rows.length > 0) {
+            rows.forEach(row => {
+                const panjangEl = row.querySelector('.dimensi-panjang');
+                const lebarEl = row.querySelector('.dimensi-lebar');
+                const tinggiEl = row.querySelector('.dimensi-tinggi');
+                
+                const panjang = panjangEl ? parseFloat(panjangEl.value) || 0 : 0;
+                const lebar = lebarEl ? parseFloat(lebarEl.value) || 0 : 0;
+                const tinggi = tinggiEl ? parseFloat(tinggiEl.value) || 0 : 0;
 
-            let volume = 0;
-            if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
-                volume = panjang * lebar * tinggi;
-            }
+                let volume = 0;
+                if (panjang > 0 && lebar > 0 && tinggi > 0) {
+                    // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+                    volume = panjang * lebar * tinggi;
+                }
 
-            const volumeInput = row.querySelector('.item-meter-kubik');
-            if (volume > 0) {
-                volumeInput.value = formatVolumeForDatabase(volume);
-            } else {
-                volumeInput.value = '';
-            }
-        });
+                const volumeInput = row.querySelector('.item-meter-kubik');
+                if (volumeInput) {
+                    if (volume > 0) {
+                        volumeInput.value = formatVolumeForDatabase(volume);
+                    } else {
+                        volumeInput.value = '';
+                    }
+                }
+            });
+        }
         calculateTotals();
         updateRemoveButtons();
     }
@@ -887,28 +915,54 @@
         let totalTonase = 0;
 
         const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        rows.forEach(row => {
-            const volume = parseFloat(row.querySelector('.item-meter-kubik').value) || 0;
-            const tonase = parseFloat(row.querySelector('.dimensi-tonase').value) || 0;
+        if (rows.length > 0) {
+            rows.forEach(row => {
+                const volumeEl = row.querySelector('.item-meter-kubik');
+                const tonaseEl = row.querySelector('.dimensi-tonase');
+                
+                const volume = volumeEl ? parseFloat(volumeEl.value) || 0 : 0;
+                const tonase = tonaseEl ? parseFloat(tonaseEl.value) || 0 : 0;
 
-            totalVolume += volume;
-            totalTonase += tonase;
-        });
+                totalVolume += volume;
+                totalTonase += tonase;
+            });
+        }
 
-        // Update summary display
-        document.getElementById('totalVolume').textContent = formatVolumeDisplay(totalVolume) + ' m³';
-        document.getElementById('totalTonase').textContent = formatWeightDisplay(totalTonase) + ' Ton';
+        // Update summary display (only if elements exist)
+        const totalVolumeElement = document.getElementById('totalVolume');
+        const totalTonaseElement = document.getElementById('totalTonase');
+        
+        if (totalVolumeElement) {
+            totalVolumeElement.textContent = formatVolumeDisplay(totalVolume) + ' m³';
+        }
+        if (totalTonaseElement) {
+            totalTonaseElement.textContent = formatWeightDisplay(totalTonase) + ' Ton';
+        }
 
-        // Update hidden fields for backward compatibility
+        // Update hidden fields for backward compatibility if they exist
         // Use first item's values or totals
         const firstRow = document.querySelector('#dimensiTableBody .dimensi-item');
+        const hiddenPanjangEl = document.getElementById('hiddenPanjang');
+        const hiddenLebarEl = document.getElementById('hiddenLebar');
+        const hiddenTinggiEl = document.getElementById('hiddenTinggi');
+        const hiddenMeterKubikEl = document.getElementById('hiddenMeterKubik');
+        const hiddenTonaseEl = document.getElementById('hiddenTonase');
+
         if (firstRow) {
-            document.getElementById('hiddenPanjang').value = firstRow.querySelector('.dimensi-panjang').value || '';
-            document.getElementById('hiddenLebar').value = firstRow.querySelector('.dimensi-lebar').value || '';
-            document.getElementById('hiddenTinggi').value = firstRow.querySelector('.dimensi-tinggi').value || '';
+            const fp = firstRow.querySelector('.dimensi-panjang')?.value || '';
+            const fl = firstRow.querySelector('.dimensi-lebar')?.value || '';
+            const ft = firstRow.querySelector('.dimensi-tinggi')?.value || '';
+            if (hiddenPanjangEl) hiddenPanjangEl.value = fp;
+            if (hiddenLebarEl) hiddenLebarEl.value = fl;
+            if (hiddenTinggiEl) hiddenTinggiEl.value = ft;
+        } else {
+            if (hiddenPanjangEl) hiddenPanjangEl.value = '';
+            if (hiddenLebarEl) hiddenLebarEl.value = '';
+            if (hiddenTinggiEl) hiddenTinggiEl.value = '';
         }
-        document.getElementById('hiddenMeterKubik').value = formatVolumeForDatabase(totalVolume);
-        document.getElementById('hiddenTonase').value = formatWeightForDatabase(totalTonase);
+
+        if (hiddenMeterKubikEl) hiddenMeterKubikEl.value = formatVolumeForDatabase(totalVolume);
+        if (hiddenTonaseEl) hiddenTonaseEl.value = formatWeightForDatabase(totalTonase);
     }
 
     // Formatting functions for input fields (clean whole numbers, smart decimal display)
@@ -1012,7 +1066,9 @@
     }
 
     function handleTipeKontainerChange() {
-        const tipeKontainer = document.getElementById('tipe_kontainer').value;
+        const tipeKontainerEl = document.getElementById('tipe_kontainer');
+        if (!tipeKontainerEl) return; // nothing to do if element doesn't exist
+        const tipeKontainer = tipeKontainerEl.value;
         const sizeKontainerField = document.getElementById('size_kontainer_field');
         const noKontainerField = document.getElementById('no_kontainer_field');
         const noSealField = document.getElementById('no_seal_field');
@@ -1027,12 +1083,14 @@
             noSealField.style.display = 'none';
             tanggalSealField.style.display = 'none';
             // Clear kontainer fields when cargo is selected and remove required attribute
-            document.getElementById('no_kontainer').value = '';
-            document.getElementById('size_kontainer').value = '';
-            document.getElementById('no_seal').value = '';
-            document.getElementById('tanggal_seal').value = '';
-            noKontainerInput.removeAttribute('required');
-            noSealInput.removeAttribute('required');
+            if (noKontainerInput) noKontainerInput.value = '';
+            const sizeKontainerInput = document.getElementById('size_kontainer');
+            if (sizeKontainerInput) sizeKontainerInput.value = '';
+            if (noSealInput) noSealInput.value = '';
+            const tanggalSealInput = document.getElementById('tanggal_seal');
+            if (tanggalSealInput) tanggalSealInput.value = '';
+            if (noKontainerInput) noKontainerInput.removeAttribute('required');
+            if (noSealInput) noSealInput.removeAttribute('required');
         } else {
             // Show kontainer fields for FCL and LCL
             sizeKontainerField.style.display = 'block';
@@ -1040,8 +1098,8 @@
             noSealField.style.display = 'block';
             tanggalSealField.style.display = 'block';
             // Add required attribute back for FCL and LCL
-            noKontainerInput.setAttribute('required', 'required');
-            noSealInput.setAttribute('required', 'required');
+            if (noKontainerInput) noKontainerInput.setAttribute('required', 'required');
+            if (noSealInput) noSealInput.setAttribute('required', 'required');
         }
     }
 
@@ -1074,6 +1132,8 @@
     const tandaTerimaForm = document.querySelector('form');
     if (tandaTerimaForm) {
         tandaTerimaForm.addEventListener('submit', function (e) {
+            // Update hidden legacy fields from new LCL inputs before submit
+            updateHiddenBarangFields();
             const hiddenInput = document.getElementById('no_kontainer');
             const manualField = document.getElementById('no_kontainer_manual');
             if (hiddenInput && hiddenInput.value === '__manual__') {
@@ -1087,6 +1147,48 @@
                 hiddenInput.value = manualField.value.trim();
             }
         });
+    }
+
+    // Update hidden legacy fields based on LCL inputs
+    function updateHiddenBarangFields() {
+        try {
+            const jenisEl = document.getElementById('jenis_barang');
+            const jumlahEl = document.getElementById('jumlah_barang');
+            const satuanEl = document.getElementById('satuan_barang');
+            const keteranganEl = document.getElementById('keterangan_barang');
+            const beratEl = document.getElementById('berat');
+            const satuanBeratEl = document.getElementById('satuan_berat');
+
+            const namaInputs = Array.from(document.querySelectorAll('input[name="nama_barang[]"]'));
+            const jumlahInputs = Array.from(document.querySelectorAll('input[name="jumlah[]"]'));
+            const satuanInputs = Array.from(document.querySelectorAll('input[name="satuan[]"]'));
+
+            const namaVals = namaInputs.map(i => i.value.trim()).filter(v => v !== '');
+            const jumlahVals = jumlahInputs.map(i => parseInt(i.value, 10) || 0).filter(v => v >= 0);
+            const satuanVals = satuanInputs.map(i => i.value.trim()).filter(v => v !== '');
+
+            if (jenisEl) jenisEl.value = namaVals.length ? namaVals.join(', ') : (jenisEl.value || '');
+            if (jumlahEl) {
+                // Sum jumlah[] to a single integer for legacy field
+                const totalJumlah = jumlahVals.length ? jumlahVals.reduce((a, b) => a + b, 0) : parseInt(jumlahEl.value, 10) || 1;
+                jumlahEl.value = totalJumlah;
+            }
+            if (satuanEl) satuanEl.value = satuanVals.length ? satuanVals.join(',') : (satuanEl.value || 'unit');
+
+            // For description and weight fields we can leave as-is or attempt to copy from available inputs
+            if (keteranganEl && !keteranganEl.value && namaVals.length) {
+                // Put a short note listing first item as fallback
+                keteranganEl.value = keteranganEl.value || '';
+            }
+            if (beratEl && !beratEl.value) {
+                beratEl.value = beratEl.value || '';
+            }
+            if (satuanBeratEl && !satuanBeratEl.value) {
+                satuanBeratEl.value = satuanBeratEl.value || 'kg';
+            }
+        } catch (err) {
+            // silent
+        }
     }
 
     // Call on page load to handle old values
@@ -1167,20 +1269,14 @@
         const hiddenSelect = document.getElementById('tujuan_pengiriman');
         const options = document.querySelectorAll('.tujuan-pengiriman-option');
 
-        console.log('Initializing Tujuan Pengiriman Dropdown');
-        console.log('Search Input:', searchInput);
-        console.log('Dropdown:', dropdown);
-        console.log('Hidden Select:', hiddenSelect);
-        console.log('Options found:', options.length);
+        // Initialization for Tujuan Pengiriman Dropdown
 
         if (!searchInput || !dropdown || !hiddenSelect) {
-            console.error('Required elements not found for tujuan pengiriman dropdown');
             return;
         }
 
         // Show dropdown when search input is focused
         searchInput.addEventListener('focus', function() {
-            console.log('Search input focused, showing dropdown');
             dropdown.classList.remove('hidden');
         });
 
@@ -1204,12 +1300,11 @@
 
         // Handle option selection
         options.forEach((option, index) => {
-            console.log(`Setting up click handler for tujuan option ${index}:`, option.textContent || option.innerHTML);
+            // Setup click handler for tujuan option
             option.addEventListener('click', function() {
                 const value = this.getAttribute('data-value');
                 const text = this.getAttribute('data-text');
 
-                console.log('Tujuan option clicked:', { value, text });
 
                 // Set the hidden select value
                 hiddenSelect.value = value;
@@ -1220,7 +1315,6 @@
                 // Hide dropdown
                 dropdown.classList.add('hidden');
 
-                console.log('Tujuan values set:', { hiddenValue: hiddenSelect.value, searchValue: searchInput.value });
             });
         });
 
@@ -1386,7 +1480,6 @@
         const options = document.querySelectorAll('.no-kontainer-option');
 
         if (!searchInput || !dropdown || !hiddenInput) {
-            console.error('Required elements not found for no kontainer dropdown');
             return;
         }
 
@@ -1572,9 +1665,18 @@
             });
         });
 
+        // Attach event listener for nama, jumlah, satuan to keep hidden legacy fields in sync
+        document.addEventListener('input', function(e) {
+            if (e.target.matches('input[name="nama_barang[]"], input[name="jumlah[]"], input[name="satuan[]"]')) {
+                updateHiddenBarangFields();
+            }
+        });
+
         // Run initial calculation for any prefilled dimensi rows
         const existingDimensiRows = document.querySelectorAll('#dimensi-container-new .dimensi-row-new');
         existingDimensiRows.forEach(row => calculateVolumeNew(row));
+        // Run initial update of hidden legacy fields
+        updateHiddenBarangFields();
     });
 </script>
 @endpush

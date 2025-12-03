@@ -1323,22 +1323,33 @@
         });
 
         // Update summary display - with thousand separator
-        document.getElementById('totalVolume').textContent = formatVolumeDisplay(totalVolume) + ' m³';
-        document.getElementById('totalTonase').textContent = formatWeightDisplay(totalTonase) + ' Ton';
+        const totalVolumeEl = document.getElementById('totalVolume');
+        const totalTonaseEl = document.getElementById('totalTonase');
+        if (totalVolumeEl) totalVolumeEl.textContent = formatVolumeDisplay(totalVolume) + ' m³';
+        if (totalTonaseEl) totalTonaseEl.textContent = formatWeightDisplay(totalTonase) + ' Ton';
 
-        // Update hidden fields for backward compatibility - use smart formatting
+        // Update hidden fields for backward compatibility - use smart formatting if present
         const firstRow = document.querySelector('#dimensiTableBody .dimensi-item');
+        const hiddenPanjangEl = document.getElementById('hiddenPanjang');
+        const hiddenLebarEl = document.getElementById('hiddenLebar');
+        const hiddenTinggiEl = document.getElementById('hiddenTinggi');
+        const hiddenMeterKubikEl = document.getElementById('hiddenMeterKubik');
+        const hiddenTonaseEl = document.getElementById('hiddenTonase');
+
         if (firstRow) {
             const panjang = parseFloat(firstRow.querySelector('.dimensi-panjang').value) || 0;
             const lebar = parseFloat(firstRow.querySelector('.dimensi-lebar').value) || 0;
             const tinggi = parseFloat(firstRow.querySelector('.dimensi-tinggi').value) || 0;
-            
-            document.getElementById('hiddenPanjang').value = panjang > 0 ? formatVolumeForDatabase(panjang) : '';
-            document.getElementById('hiddenLebar').value = lebar > 0 ? formatVolumeForDatabase(lebar) : '';
-            document.getElementById('hiddenTinggi').value = tinggi > 0 ? formatVolumeForDatabase(tinggi) : '';
+            if (hiddenPanjangEl) hiddenPanjangEl.value = panjang > 0 ? formatVolumeForDatabase(panjang) : '';
+            if (hiddenLebarEl) hiddenLebarEl.value = lebar > 0 ? formatVolumeForDatabase(lebar) : '';
+            if (hiddenTinggiEl) hiddenTinggiEl.value = tinggi > 0 ? formatVolumeForDatabase(tinggi) : '';
+        } else {
+            if (hiddenPanjangEl) hiddenPanjangEl.value = '';
+            if (hiddenLebarEl) hiddenLebarEl.value = '';
+            if (hiddenTinggiEl) hiddenTinggiEl.value = '';
         }
-        document.getElementById('hiddenMeterKubik').value = totalVolume > 0 ? formatVolumeForDatabase(totalVolume) : '';
-        document.getElementById('hiddenTonase').value = totalTonase > 0 ? formatWeightForDatabase(totalTonase) : '';
+        if (hiddenMeterKubikEl) hiddenMeterKubikEl.value = totalVolume > 0 ? formatVolumeForDatabase(totalVolume) : '';
+        if (hiddenTonaseEl) hiddenTonaseEl.value = totalTonase > 0 ? formatWeightForDatabase(totalTonase) : '';
     }
 
     // Update hidden quantity fields
