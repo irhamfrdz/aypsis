@@ -299,6 +299,8 @@ class TandaTerimaController extends Controller
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
             'tanggal_garasi' => 'nullable|date',
+            'nama_barang' => 'nullable|array',
+            'nama_barang.*' => 'nullable|string|max:255',
             'jumlah' => 'nullable|array',
             'jumlah.*' => 'nullable|integer|min:0',
             'satuan' => 'nullable|array',
@@ -383,6 +385,7 @@ class TandaTerimaController extends Controller
             // Handle dimensi details (multiple dimensi entries)
             $dimensiDetails = [];
             if ($request->has('jumlah') && is_array($request->jumlah)) {
+                $namaBarangArray = $request->nama_barang ?? [];
                 $jumlahArray = $request->jumlah;
                 $satuanArray = $request->satuan ?? [];
                 $panjangArray = $request->panjang ?? [];
@@ -393,13 +396,14 @@ class TandaTerimaController extends Controller
                 
                 foreach ($jumlahArray as $index => $jumlah) {
                     // Skip jika semua field kosong
-                    if (empty($jumlah) && empty($satuanArray[$index] ?? '') && 
+                    if (empty($namaBarangArray[$index] ?? '') && empty($jumlah) && empty($satuanArray[$index] ?? '') && 
                         empty($panjangArray[$index] ?? '') && empty($lebarArray[$index] ?? '') && 
                         empty($tinggiArray[$index] ?? '') && empty($tonaseArray[$index] ?? '')) {
                         continue;
                     }
                     
                     $dimensiDetails[] = [
+                        'nama_barang' => $namaBarangArray[$index] ?? null,
                         'jumlah' => $jumlah ? (int) $jumlah : null,
                         'satuan' => $satuanArray[$index] ?? null,
                         'panjang' => isset($panjangArray[$index]) && $panjangArray[$index] !== '' ? round((float) $panjangArray[$index], 3) : null,
@@ -746,8 +750,15 @@ class TandaTerimaController extends Controller
 
         // Get all master tujuan kirims for dropdown
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+        $tujuanKirims = $masterTujuanKirims; // Alias for view compatibility
 
-        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims', 'sudahMasukBl'));
+        // Get all jenis barangs for dropdown
+        $jenisBarangs = \App\Models\JenisBarang::where('status', 'active')->orderBy('nama_barang')->get();
+
+        // Get kranes for dropdown (krani divisi) - alias for kenek pengganti
+        $kranes = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
+
+        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims', 'tujuanKirims', 'jenisBarangs', 'kranes', 'sudahMasukBl'));
     }
 
     /**
@@ -832,18 +843,61 @@ class TandaTerimaController extends Controller
             'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
             'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
             'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
+            // Support untuk array fields dari edit form
+            'nama_barang' => 'nullable|array',
+            'nama_barang.*' => 'nullable|string|max:255',
+            'jumlah' => 'nullable',
+            'satuan' => 'nullable',
+            'panjang' => 'nullable',
+            'lebar' => 'nullable',
+            'tinggi' => 'nullable',
+            'meter_kubik' => 'nullable',
+            'tonase' => 'nullable',
         ]);
 
         DB::beginTransaction();
         try {
+            // Handle dimensi details from arrays (nama_barang[], jumlah[], etc.)
+            $dimensiDetails = [];
+            if ($request->has('jumlah') && is_array($request->jumlah)) {
+                $namaBarangArray = $request->nama_barang ?? [];
+                $jumlahArray = $request->jumlah;
+                $satuanArray = $request->satuan ?? [];
+                $panjangArray = $request->panjang ?? [];
+                $lebarArray = $request->lebar ?? [];
+                $tinggiArray = $request->tinggi ?? [];
+                $meterKubikArray = $request->meter_kubik ?? [];
+                $tonaseArray = $request->tonase ?? [];
+                
+                foreach ($jumlahArray as $index => $jumlah) {
+                    // Skip jika semua field kosong
+                    if (empty($namaBarangArray[$index] ?? '') && empty($jumlah) && empty($satuanArray[$index] ?? '') && 
+                        empty($panjangArray[$index] ?? '') && empty($lebarArray[$index] ?? '') && 
+                        empty($tinggiArray[$index] ?? '') && empty($tonaseArray[$index] ?? '')) {
+                        continue;
+                    }
+                    
+                    $dimensiDetails[] = [
+                        'nama_barang' => $namaBarangArray[$index] ?? null,
+                        'jumlah' => $jumlah ? (int) $jumlah : null,
+                        'satuan' => $satuanArray[$index] ?? null,
+                        'panjang' => isset($panjangArray[$index]) && $panjangArray[$index] !== '' ? round((float) $panjangArray[$index], 3) : null,
+                        'lebar' => isset($lebarArray[$index]) && $lebarArray[$index] !== '' ? round((float) $lebarArray[$index], 3) : null,
+                        'tinggi' => isset($tinggiArray[$index]) && $tinggiArray[$index] !== '' ? round((float) $tinggiArray[$index], 3) : null,
+                        'meter_kubik' => isset($meterKubikArray[$index]) && $meterKubikArray[$index] !== '' ? round((float) $meterKubikArray[$index], 3) : null,
+                        'tonase' => isset($tonaseArray[$index]) && $tonaseArray[$index] !== '' ? round((float) $tonaseArray[$index], 3) : null,
+                    ];
+                }
+            }
+            
             $updateData = [
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
                 'tanggal_garasi' => $request->tanggal_garasi,
                 'tanggal_checkpoint_supir' => $request->tanggal_checkpoint_supir,
-                'jumlah' => $request->jumlah,
-                'satuan' => $request->satuan,
+                'jumlah' => is_array($request->jumlah) ? null : $request->jumlah,
+                'satuan' => is_array($request->satuan) ? null : $request->satuan,
                 // Format numeric fields to avoid excessive decimals
                 'panjang' => $request->panjang ? round((float) $request->panjang, 3) : null,
                 'lebar' => $request->lebar ? round((float) $request->lebar, 3) : null,
@@ -952,6 +1006,21 @@ class TandaTerimaController extends Controller
                 $updateData['status'] = $request->status;
             }
 
+            // Save dimensi_details if we have them from arrays
+            if (!empty($dimensiDetails)) {
+                $updateData['dimensi_details'] = $dimensiDetails;
+                
+                // Also save first dimensi to single fields for backward compatibility
+                $firstDimensi = $dimensiDetails[0];
+                $updateData['jumlah'] = $firstDimensi['jumlah'];
+                $updateData['satuan'] = $firstDimensi['satuan'];
+                $updateData['panjang'] = $firstDimensi['panjang'];
+                $updateData['lebar'] = $firstDimensi['lebar'];
+                $updateData['tinggi'] = $firstDimensi['tinggi'];
+                $updateData['meter_kubik'] = $firstDimensi['meter_kubik'];
+                $updateData['tonase'] = $firstDimensi['tonase'];
+            }
+            
             // If dimensi_items is present, format numeric values and store as JSON
             if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {
                 $formattedDimensiItems = [];

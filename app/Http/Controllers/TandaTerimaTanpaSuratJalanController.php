@@ -642,6 +642,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
         $containerOptions = array_values($merged);
 
+        // Eager load dimensiItems for edit view
+        $tandaTerimaTanpaSuratJalan->load('dimensiItems');
         return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'containerOptions'));
     }
 
@@ -670,7 +672,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'tanggal_seal' => 'nullable|date',
             'PIC' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
-            'nama_barang' => 'nullable|string|max:255',
+            // Accept either scalar or array inputs for LCL rows during edit
+            'nama_barang' => 'nullable',
+            'nama_barang.*' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
             'alamat_penerima' => 'nullable|string',
             'jenis_barang' => 'required|string|max:255',
@@ -679,11 +683,16 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'keterangan_barang' => 'nullable|string',
             'berat' => 'nullable|numeric|min:0',
             'satuan_berat' => 'nullable|string|max:10',
-            'panjang' => 'nullable|numeric|min:0',
-            'lebar' => 'nullable|numeric|min:0',
-            'tinggi' => 'nullable|numeric|min:0',
-            'meter_kubik' => 'nullable|numeric|min:0',
-            'tonase' => 'nullable|numeric|min:0',
+            'panjang' => 'nullable',
+            'panjang.*' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable',
+            'lebar.*' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable',
+            'tinggi.*' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable',
+            'meter_kubik.*' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable',
+            'tonase.*' => 'nullable|numeric|min:0',
             'tujuan_pengambilan' => 'required|string|max:255',
             'no_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string',
@@ -741,6 +750,99 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $validated['gambar_tanda_terima'] = json_encode($mergedImages);
             } else {
                 $validated['gambar_tanda_terima'] = null;
+            }
+
+            // Handle LCL-style dimensi arrays when present in the request
+            // Convert scalar inputs to arrays if necessary (fallback)
+            $namaArray = $request->input('nama_barang');
+            $jumlahArray = $request->input('jumlah');
+            $satuanArray = $request->input('satuan');
+            $panjangArray = $request->input('panjang');
+            $lebarArray = $request->input('lebar');
+            $tinggiArray = $request->input('tinggi');
+            $meterArray = $request->input('meter_kubik');
+            $tonaseArray = $request->input('tonase');
+
+            // If arrays are provided, sanitize and persist dimensi items
+            if (is_array($namaArray) || is_array($panjangArray) || is_array($meterArray)) {
+                $maxCount = max(
+                    count(is_array($namaArray) ? $namaArray : []),
+                    count(is_array($jumlahArray) ? $jumlahArray : []),
+                    count(is_array($panjangArray) ? $panjangArray : []),
+                    count(is_array($lebarArray) ? $lebarArray : []),
+                    count(is_array($tinggiArray) ? $tinggiArray : []),
+                    count(is_array($meterArray) ? $meterArray : []),
+                    count(is_array($tonaseArray) ? $tonaseArray : [])
+                );
+
+                $namaBarangArray = [];
+                $jumlahClean = [];
+                $satuanClean = [];
+                $panjangClean = [];
+                $lebarClean = [];
+                $tinggiClean = [];
+                $meterClean = [];
+                $tonaseClean = [];
+
+                for ($i = 0; $i < $maxCount; $i++) {
+                    $namaBarangArray[$i] = isset($namaArray[$i]) ? trim((string)$namaArray[$i]) : null;
+                    $jumlahClean[$i] = isset($jumlahArray[$i]) && is_numeric($jumlahArray[$i]) ? (int)$jumlahArray[$i] : null;
+                    $satuanClean[$i] = isset($satuanArray[$i]) ? trim((string)$satuanArray[$i]) : null;
+                    $panjangClean[$i] = isset($panjangArray[$i]) && is_numeric($panjangArray[$i]) ? (float)$panjangArray[$i] : null;
+                    $lebarClean[$i] = isset($lebarArray[$i]) && is_numeric($lebarArray[$i]) ? (float)$lebarArray[$i] : null;
+                    $tinggiClean[$i] = isset($tinggiArray[$i]) && is_numeric($tinggiArray[$i]) ? (float)$tinggiArray[$i] : null;
+                    $meterClean[$i] = isset($meterArray[$i]) && is_numeric($meterArray[$i]) ? (float)$meterArray[$i] : null;
+                    $tonaseClean[$i] = isset($tonaseArray[$i]) && is_numeric($tonaseArray[$i]) ? (float)$tonaseArray[$i] : null;
+                }
+
+                // Delete existing items and recreate from arrays
+                try {
+                    $tandaTerimaTanpaSuratJalan->dimensiItems()->delete();
+                } catch (\Exception $e) {
+                    // ignore delete errors
+                }
+
+                for ($i = 0; $i < $maxCount; $i++) {
+                    $n = $namaBarangArray[$i] ?? null;
+                    $j = $jumlahClean[$i] ?? null;
+                    $s = $satuanClean[$i] ?? null;
+                    $p = $panjangClean[$i] ?? null;
+                    $l = $lebarClean[$i] ?? null;
+                    $t = $tinggiClean[$i] ?? null;
+                    $m = $meterClean[$i] ?? null;
+                    $o = $tonaseClean[$i] ?? null;
+
+                    if (!is_null($n) || !is_null($p) || !is_null($l) || !is_null($t) || !is_null($m) || !is_null($o)) {
+                        $tandaTerimaTanpaSuratJalan->dimensiItems()->create([
+                            'nama_barang' => $n,
+                            'jumlah' => $j,
+                            'satuan' => $s,
+                            'panjang' => $p,
+                            'lebar' => $l,
+                            'tinggi' => $t,
+                            'meter_kubik' => $m,
+                            'tonase' => $o,
+                            'item_order' => $i,
+                        ]);
+                    }
+                }
+
+                // Update scalar fallback values
+                if (!empty($namaBarangArray)) {
+                    $validated['nama_barang'] = $namaBarangArray[0] ?? $validated['nama_barang'] ?? null;
+                }
+                if (!empty($jumlahClean)) {
+                    $validated['jumlah_barang'] = array_sum(array_filter($jumlahClean, 'is_numeric')) ?: ($validated['jumlah_barang'] ?? 1);
+                }
+                if (!empty($satuanClean)) {
+                    $validated['satuan_barang'] = $satuanClean[0] ?? ($validated['satuan_barang'] ?? 'unit');
+                }
+                if (!empty($meterClean)) {
+                    $validated['meter_kubik'] = array_sum(array_filter($meterClean, 'is_numeric'));
+                }
+                if (!empty($tonaseClean)) {
+                    $validated['tonase'] = array_sum(array_filter($tonaseClean, 'is_numeric'));
+                }
             }
 
             $tandaTerimaTanpaSuratJalan->update($validated);

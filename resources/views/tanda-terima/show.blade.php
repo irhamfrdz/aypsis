@@ -169,102 +169,126 @@
                         </div>
 
                         <!-- Dimensi Items Information -->
-                        @if($tandaTerima->dimensi_items)
-                            @php
-                                $dimensiItems = is_string($tandaTerima->dimensi_items) ? json_decode($tandaTerima->dimensi_items, true) : $tandaTerima->dimensi_items;
-                                $totalVolume = 0;
-                                $totalTonase = 0;
-                            @endphp
+                        @php
+                            // Try to get dimensi data from either dimensi_items or dimensi_details
+                            $dimensiItems = [];
                             
-                            @if(is_array($dimensiItems) && count($dimensiItems) > 0)
-                                <div class="col-span-2">
-                                    <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi & Volume</dt>
-                                    <dd class="text-sm text-gray-900">
-                                        <div class="space-y-2">
-                                            @foreach($dimensiItems as $index => $item)
-                                                @if(isset($item['panjang']) || isset($item['lebar']) || isset($item['tinggi']) || isset($item['meter_kubik']) || isset($item['tonase']))
-                                                    @php
-                                                        $totalVolume += $item['meter_kubik'] ?? 0;
-                                                        $totalTonase += $item['tonase'] ?? 0;
-                                                    @endphp
-                                                    <div class="bg-gray-50 p-3 rounded-lg">
-                                                        <div class="font-medium text-gray-600 mb-1">Item {{ $index + 1 }}</div>
-                                                        @if(isset($item['panjang']) || isset($item['lebar']) || isset($item['tinggi']))
-                                                            <div class="text-xs text-gray-600">
-                                                                Dimensi:
-                                                                @if(isset($item['panjang']))
-                                                                    {{ rtrim(rtrim(number_format($item['panjang'], 3, '.', ''), '0'), '.') }} m
-                                                                @endif
-                                                                @if(isset($item['lebar']))
-                                                                    × {{ rtrim(rtrim(number_format($item['lebar'], 3, '.', ''), '0'), '.') }} m
-                                                                @endif
-                                                                @if(isset($item['tinggi']))
-                                                                    × {{ rtrim(rtrim(number_format($item['tinggi'], 3, '.', ''), '0'), '.') }} m
+                            if ($tandaTerima->dimensi_items) {
+                                $dimensiItems = is_string($tandaTerima->dimensi_items) ? json_decode($tandaTerima->dimensi_items, true) : $tandaTerima->dimensi_items;
+                            } elseif ($tandaTerima->dimensi_details) {
+                                $dimensiItems = is_string($tandaTerima->dimensi_details) ? json_decode($tandaTerima->dimensi_details, true) : $tandaTerima->dimensi_details;
+                            }
+                            
+                            $totalVolume = 0;
+                            $totalTonase = 0;
+                            $totalJumlah = 0;
+                        @endphp
+                        
+                        @if(is_array($dimensiItems) && count($dimensiItems) > 0)
+                            <div class="col-span-2">
+                                <dt class="text-xs font-medium text-gray-500 uppercase mb-3">Detail Barang & Dimensi</dt>
+                                <dd class="text-sm text-gray-900">
+                                    <div class="space-y-3">
+                                        @foreach($dimensiItems as $index => $item)
+                                            @php
+                                                $totalVolume += $item['meter_kubik'] ?? 0;
+                                                $totalTonase += $item['tonase'] ?? 0;
+                                                $totalJumlah += $item['jumlah'] ?? 0;
+                                            @endphp
+                                            <div class="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                                                <div class="flex items-start justify-between mb-3">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                                            {{ $index + 1 }}
+                                                        </div>
+                                                        <div>
+                                                            <div class="font-semibold text-gray-900">
+                                                                {{ $item['nama_barang'] ?? 'Barang ' . ($index + 1) }}
+                                                            </div>
+                                                            @if(isset($item['jumlah']) || isset($item['satuan']))
+                                                            <div class="text-xs text-gray-600 mt-1">
+                                                                @if(isset($item['jumlah']))
+                                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-medium">
+                                                                        {{ number_format($item['jumlah'], 0, ',', '.') }} {{ $item['satuan'] ?? 'Unit' }}
+                                                                    </span>
                                                                 @endif
                                                             </div>
-                                                        @endif
-                                                        <div class="grid grid-cols-2 gap-2 mt-1">
-                                                            @if(isset($item['meter_kubik']) && $item['meter_kubik'] > 0)
-                                                                <div class="text-xs">Volume: {{ rtrim(rtrim(number_format($item['meter_kubik'], 3, '.', ''), '0'), '.') }} m³</div>
-                                                            @endif
-                                                            @if(isset($item['tonase']) && $item['tonase'] > 0)
-                                                                <div class="text-xs">Tonase: {{ rtrim(rtrim(number_format($item['tonase'], 3, '.', ''), '0'), '.') }} Ton</div>
                                                             @endif
                                                         </div>
                                                     </div>
-                                                @endif
-                                            @endforeach
-
-                                            @if($totalVolume > 0 || $totalTonase > 0)
-                                                <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
-                                                    <div class="font-medium text-blue-800 mb-1">Total Keseluruhan</div>
-                                                    <div class="grid grid-cols-2 gap-2">
-                                                        <div class="text-sm text-blue-700">Volume: {{ rtrim(rtrim(number_format($totalVolume, 3, '.', ''), '0'), '.') }} m³</div>
-                                                        <div class="text-sm text-blue-700">Tonase: {{ rtrim(rtrim(number_format($totalTonase, 3, '.', ''), '0'), '.') }} Ton</div>
-                                                    </div>
                                                 </div>
-                                            @endif
-                                        </div>
-                                    </dd>
-                                </div>
-                            @else
-                                <!-- Fallback to legacy single dimension display when dimensi_items exists but empty -->
-                                @if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi)
-                                    <div>
-                                        <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi</dt>
-                                        <dd class="text-sm text-gray-900">
-                                            @if($tandaTerima->panjang)
-                                                {{ rtrim(rtrim(number_format($tandaTerima->panjang, 3, '.', ''), '0'), '.') }} m
-                                            @endif
-                                            @if($tandaTerima->lebar)
-                                                × {{ rtrim(rtrim(number_format($tandaTerima->lebar, 3, '.', ''), '0'), '.') }} m
-                                            @endif
-                                            @if($tandaTerima->tinggi)
-                                                × {{ rtrim(rtrim(number_format($tandaTerima->tinggi, 3, '.', ''), '0'), '.') }} m
-                                            @endif
-                                            @if(!$tandaTerima->panjang && !$tandaTerima->lebar && !$tandaTerima->tinggi)
-                                                -
-                                            @endif
-                                        </dd>
-                                    </div>
-                                @endif
+                                                
+                                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                    @if(isset($item['panjang']) && $item['panjang'] > 0)
+                                                        <div class="bg-white p-2 rounded">
+                                                            <div class="text-xs text-gray-500">Panjang</div>
+                                                            <div class="text-sm font-semibold text-gray-900">{{ rtrim(rtrim(number_format($item['panjang'], 3, '.', ''), '0'), '.') }} m</div>
+                                                        </div>
+                                                    @endif
+                                                    @if(isset($item['lebar']) && $item['lebar'] > 0)
+                                                        <div class="bg-white p-2 rounded">
+                                                            <div class="text-xs text-gray-500">Lebar</div>
+                                                            <div class="text-sm font-semibold text-gray-900">{{ rtrim(rtrim(number_format($item['lebar'], 3, '.', ''), '0'), '.') }} m</div>
+                                                        </div>
+                                                    @endif
+                                                    @if(isset($item['tinggi']) && $item['tinggi'] > 0)
+                                                        <div class="bg-white p-2 rounded">
+                                                            <div class="text-xs text-gray-500">Tinggi</div>
+                                                            <div class="text-sm font-semibold text-gray-900">{{ rtrim(rtrim(number_format($item['tinggi'], 3, '.', ''), '0'), '.') }} m</div>
+                                                        </div>
+                                                    @endif
+                                                    @if(isset($item['meter_kubik']) && $item['meter_kubik'] > 0)
+                                                        <div class="bg-white p-2 rounded border-l-2 border-blue-500">
+                                                            <div class="text-xs text-gray-500">Volume (m³)</div>
+                                                            <div class="text-sm font-bold text-blue-700">{{ rtrim(rtrim(number_format($item['meter_kubik'], 3, '.', ''), '0'), '.') }} m³</div>
+                                                        </div>
+                                                    @endif
+                                                    @if(isset($item['tonase']) && $item['tonase'] > 0)
+                                                        <div class="bg-white p-2 rounded border-l-2 border-green-500">
+                                                            <div class="text-xs text-gray-500">Tonase</div>
+                                                            <div class="text-sm font-bold text-green-700">{{ rtrim(rtrim(number_format($item['tonase'], 3, '.', ''), '0'), '.') }} Ton</div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
 
-                                @if($tandaTerima->meter_kubik)
-                                    <div>
-                                        <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Volume</dt>
-                                        <dd class="text-sm text-gray-900">{{ rtrim(rtrim(number_format($tandaTerima->meter_kubik, 3, '.', ''), '0'), '.') }} m³</dd>
+                                        @if(count($dimensiItems) > 1 && ($totalVolume > 0 || $totalTonase > 0))
+                                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 p-4 rounded-lg">
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    <div class="font-bold text-blue-900 text-base">Total Keseluruhan</div>
+                                                    <span class="ml-auto text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full font-medium">{{ count($dimensiItems) }} Items</span>
+                                                </div>
+                                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                    @if($totalJumlah > 0)
+                                                        <div class="bg-white p-3 rounded-lg shadow-sm">
+                                                            <div class="text-xs text-gray-500 mb-1">Total Jumlah</div>
+                                                            <div class="text-lg font-bold text-gray-900">{{ number_format($totalJumlah, 0, ',', '.') }}</div>
+                                                        </div>
+                                                    @endif
+                                                    @if($totalVolume > 0)
+                                                        <div class="bg-white p-3 rounded-lg shadow-sm">
+                                                            <div class="text-xs text-gray-500 mb-1">Total Volume</div>
+                                                            <div class="text-lg font-bold text-blue-700">{{ rtrim(rtrim(number_format($totalVolume, 3, '.', ''), '0'), '.') }} m³</div>
+                                                        </div>
+                                                    @endif
+                                                    @if($totalTonase > 0)
+                                                        <div class="bg-white p-3 rounded-lg shadow-sm">
+                                                            <div class="text-xs text-gray-500 mb-1">Total Tonase</div>
+                                                            <div class="text-lg font-bold text-green-700">{{ rtrim(rtrim(number_format($totalTonase, 3, '.', ''), '0'), '.') }} Ton</div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
-                                @endif
-
-                                @if($tandaTerima->tonase)
-                                    <div>
-                                        <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tonase</dt>
-                                        <dd class="text-sm text-gray-900">{{ rtrim(rtrim(number_format($tandaTerima->tonase, 3, '.', ''), '0'), '.') }} Ton</dd>
-                                    </div>
-                                @endif
-                            @endif
+                                </dd>
+                            </div>
                         @else
-                            <!-- Fallback when no dimensi_items at all -->
+                            <!-- Fallback to legacy single dimension display -->
                             @if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi)
                                 <div>
                                     <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi</dt>
