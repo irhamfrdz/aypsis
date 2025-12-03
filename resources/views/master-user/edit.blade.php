@@ -1755,15 +1755,15 @@
                             <tr class="submodule-row" data-parent="aktivitas-lainnya">
                                 <td class="submodule">
                                     <span class="module-icon">💰</span>
-                                    Pembayaran Aktivitas Lain-lain
+                                    Pembayaran Aktivitas Lain
                                 </td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['view']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['create']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['update']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['delete']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['approve']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['print']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['export']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['export']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lain][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lain']['view']) && $userMatrixPermissions['pembayaran-aktivitas-lain']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lain][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lain']['create']) && $userMatrixPermissions['pembayaran-aktivitas-lain']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lain][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lain']['update']) && $userMatrixPermissions['pembayaran-aktivitas-lain']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lain][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lain']['delete']) && $userMatrixPermissions['pembayaran-aktivitas-lain']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lain][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lain']['approve']) && $userMatrixPermissions['pembayaran-aktivitas-lain']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             {{-- Pembayaran --}}
