@@ -46,7 +46,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('tanda-terima-tanpa-surat-jalan.update', $tandaTerimaTanpaSuratJalan) }}" method="POST" class="space-y-6">
+            <form action="{{ route('tanda-terima-tanpa-surat-jalan.update', $tandaTerimaTanpaSuratJalan) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -592,6 +592,75 @@
                     </div>
                 </div>
 
+                <!-- Upload Gambar -->
+                @php
+                    $__gambarArray = $tandaTerimaTanpaSuratJalan->gambar_tanda_terima;
+                    if (is_string($__gambarArray)) {
+                        $__decoded = json_decode($__gambarArray, true);
+                        $__gambarArray = is_array($__decoded) ? $__decoded : [];
+                    }
+                    if (!is_array($__gambarArray)) {
+                        $__gambarArray = [];
+                    }
+                @endphp
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Gambar Tanda Terima</h3>
+
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors upload-dropzone">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="gambar_tanda_terima" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                    <span>Upload gambar</span>
+                                    <input id="gambar_tanda_terima" 
+                                           name="gambar_tanda_terima[]" 
+                                           type="file" 
+                                           class="sr-only" 
+                                           multiple
+                                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                           onchange="previewImages(this)">
+                                </label>
+                                <p class="pl-1">atau drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                            </p>
+                        </div>
+                    </div>
+                    @error('gambar_tanda_terima.*')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+
+                    <!-- Preview Area for Images -->
+                    <div id="image-preview-container" class="mt-4 @if(empty($__gambarArray)) hidden @endif">
+                        <label class="block text-xs font-medium text-gray-500 mb-2">
+                            <i class="fas fa-eye mr-1 text-green-600"></i>
+                            Preview Gambar
+                        </label>
+                        <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {{-- Existing images previewed here --}}
+                            @foreach($__gambarArray as $index => $imagePath)
+                                @php $imgUrl = asset('storage/' . ltrim($imagePath, '/')); @endphp
+                                <div class="relative bg-gray-50 rounded-lg border border-gray-200 p-2 image-preview-item" data-is-existing="1" data-path="{{ $imagePath }}">
+                                    <img src="{{ $imgUrl }}" alt="Gambar {{ $index + 1 }}" class="object-cover w-full h-28 rounded"/>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <div class="text-xs text-gray-600 truncate">Gambar {{ $index + 1 }}</div>
+                                        <div class="flex gap-2 items-center">
+                                            <a href="{{ $imgUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 text-xs bg-white border rounded text-gray-700 hover:bg-gray-50" download>
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l4-4m-4 4l-4-4M21 12v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8"></path></svg>
+                                                Unduh
+                                            </a>
+                                            <button type="button" onclick="removeExistingImage(this, '{{ $imagePath }}')" class="inline-flex items-center px-2 py-1 text-xs bg-red-50 border rounded text-red-700 hover:bg-red-100">Hapus</button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="existing_images[]" value="{{ $imagePath }}">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
                 <!-- Submit Buttons -->
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
                     <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerimaTanpaSuratJalan) }}"
@@ -988,7 +1057,89 @@
             }
         }
     }
-</script>
+
+        // Image Upload Functions (for Edit)
+        function previewImages(input) {
+            const previewContainer = document.getElementById('image-preview-container');
+            const previewGrid = document.getElementById('image-preview-grid');
+        
+            if (input.files && input.files.length > 0) {
+                previewContainer.classList.remove('hidden');
+                const existingCount = previewGrid.querySelectorAll('[data-is-existing="1"]').length;
+                const maxAllowed = 5 - existingCount;
+                if (maxAllowed <= 0) {
+                    alert('Anda sudah memiliki gambar yang tersimpan. Maksimal 5 gambar. Hapus beberapa gambar terlebih dahulu jika ingin menambahkan.');
+                    input.value = '';
+                    return;
+                }
+                const prevNew = previewGrid.querySelectorAll('[data-is-existing!="1"]');
+                prevNew.forEach(el => el.remove());
+
+                const filesToProcess = Math.min(input.files.length, maxAllowed);
+                for (let i = 0; i < filesToProcess; i++) {
+                    const file = input.files[i];
+                    if (!file.type.startsWith('image/')) { continue; }
+                    if (file.size > 10 * 1024 * 1024) { alert('Salah satu file terlalu besar. Maksimal 10MB per file.'); continue; }
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 image-preview-item';
+                        previewDiv.dataset.isExisting = 0;
+                        previewDiv.dataset.fileIndex = i;
+                        previewDiv.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview ${i+1}" class="object-cover w-full h-28 rounded"/>
+                            <div class="flex justify-between items-center mt-2">
+                                <div class="text-xs text-gray-600">Upload Baru ${i+1}</div>
+                                <div class="flex gap-2 items-center">
+                                    <button type="button" onclick="removePreview(this, ${i})" class="inline-flex items-center px-2 py-1 text-xs bg-red-50 border rounded text-red-700 hover:bg-red-100">Hapus</button>
+                                </div>
+                            </div>
+                        `;
+                        previewGrid.appendChild(previewDiv);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                const previewGrid = document.getElementById('image-preview-grid');
+                if (!previewGrid || previewGrid.children.length === 0) {
+                    document.getElementById('image-preview-container').classList.add('hidden');
+                }
+            }
+        }
+
+        function removePreview(button, index) {
+            const input = document.getElementById('gambar_tanda_terima');
+            const previewContainer = document.getElementById('image-preview-container');
+            const previewGrid = document.getElementById('image-preview-grid');
+            const node = button.closest('.image-preview-item');
+            if (node) node.remove();
+            if (previewGrid.children.length === 0) { previewContainer.classList.add('hidden'); }
+            try {
+                const files = Array.from(input.files || []);
+                const newFiles = files.filter((_, idx) => idx !== index);
+                const dataTransfer = new DataTransfer();
+                newFiles.forEach(f => dataTransfer.items.add(f));
+                input.files = dataTransfer.files;
+            } catch (err) {
+                // ignore
+            }
+        }
+
+        function removeExistingImage(button, path) {
+            const previewDiv = button.closest('.image-preview-item');
+            if (previewDiv) previewDiv.remove();
+            const existingInputs = document.querySelectorAll('input[name="existing_images[]"]');
+            existingInputs.forEach(inp => { if (inp.value === path) inp.remove(); });
+            const form = document.querySelector('form');
+            if (form) {
+                const rem = document.createElement('input');
+                rem.type = 'hidden'; rem.name = 'hapus_gambar[]'; rem.value = path; form.appendChild(rem);
+            }
+            const previewGrid = document.getElementById('image-preview-grid');
+            if (previewGrid.children.length === 0) document.getElementById('image-preview-container').classList.add('hidden');
+        }
+
+    </script>
 @endpush
 
 @endsection
