@@ -855,14 +855,24 @@
         $('.select2-penerima').select2({
             placeholder: '-- Pilih Penerima --',
             allowClear: true,
-            width: '100%'
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "Tidak ada data yang ditemukan";
+                }
+            }
         });
 
         // Initialize Select2 for pengirim dropdown
         $('.select2-pengirim').select2({
             placeholder: '-- Pilih Pengirim --',
             allowClear: true,
-            width: '100%'
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "Tidak ada data yang ditemukan";
+                }
+            }
         });
 
         // Auto-fill alamat penerima when penerima is selected
@@ -870,14 +880,21 @@
             var selectedOption = e.params.data.element;
             var alamat = $(selectedOption).data('alamat');
             
+            console.log('Penerima selected:', e.params.data.id);
+            console.log('Alamat:', alamat);
+            
             if (alamat) {
                 $('#alamat_penerima').val(alamat);
+                console.log('✓ Alamat penerima auto-filled');
+            } else {
+                console.log('⚠ No alamat data for selected penerima');
             }
         });
 
         // Clear alamat when penerima is cleared
         $('#penerima').on('select2:clear', function(e) {
             $('#alamat_penerima').val('');
+            console.log('✓ Alamat penerima cleared');
         });
 
         // Auto-fill alamat pengirim when pengirim is selected
@@ -885,14 +902,21 @@
             var selectedOption = e.params.data.element;
             var alamat = $(selectedOption).data('alamat');
             
+            console.log('Pengirim selected:', e.params.data.id);
+            console.log('Alamat:', alamat);
+            
             if (alamat) {
                 $('#alamat_pengirim').val(alamat);
+                console.log('✓ Alamat pengirim auto-filled');
+            } else {
+                console.log('⚠ No alamat data for selected pengirim');
             }
         });
 
         // Clear alamat when pengirim is cleared
         $('#pengirim').on('select2:clear', function(e) {
             $('#alamat_pengirim').val('');
+            console.log('✓ Alamat pengirim cleared');
         });
 
         // Calculate initial volumes and totals
