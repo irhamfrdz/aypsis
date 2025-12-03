@@ -63,8 +63,9 @@ class SuratJalanController extends Controller
 
         $suratJalans = $query->with('order')
                     ->withCount('pranotaUangRit')
-                            ->orderBy('tanggal_surat_jalan', 'desc')
                             ->orderBy('created_at', 'desc')
+                            ->orderBy('tanggal_surat_jalan', 'desc')
+                            ->orderBy('id', 'desc')
                             ->paginate(15);
 
         return view('surat-jalan.index', compact('suratJalans'));
