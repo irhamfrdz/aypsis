@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TandaTerima;
 use App\Models\Prospek;
 use App\Models\MasterKapal;
+use App\Models\MasterPengirimPenerima;
 use App\Models\SuratJalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

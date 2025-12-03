@@ -1124,6 +1124,12 @@ Route::middleware([
          ->name('master-pengirim-penerima.import')
          ->middleware('can:master-pengirim-penerima-create');
     
+    // Popup routes for adding penerima from tanda terima
+    Route::get('tanda-terima/penerima/create', [MasterPengirimPenerimaController::class, 'createForTandaTerima'])
+         ->name('tanda-terima.penerima.create');
+    Route::post('tanda-terima/penerima/store', [MasterPengirimPenerimaController::class, 'storeForTandaTerima'])
+         ->name('tanda-terima.penerima.store');
+    
     // 📦 Master Pengirim/Penerima Management with permissions
     Route::resource('master-pengirim-penerima', MasterPengirimPenerimaController::class)
          ->middleware([

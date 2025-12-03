@@ -244,9 +244,17 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="penerima" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Penerima <span class="text-red-500">*</span>
-                                    </label>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label for="penerima" class="block text-xs font-medium text-gray-500">
+                                            Penerima <span class="text-red-500">*</span>
+                                        </label>
+                                        <button type="button"
+                                                onclick="openPenerimaPopup()"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
+                                            <i class="fas fa-plus mr-1"></i>
+                                            Tambah Penerima Baru
+                                        </button>
+                                    </div>
                                     <select name="penerima"
                                             id="penerima"
                                             class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror"
@@ -1302,6 +1310,48 @@
             $('html, body').animate({ scrollTop: $alert.offset().top - 80 }, 300);
             $alert.addClass('ring-2 ring-red-200');
             setTimeout(function() { $alert.removeClass('ring-2 ring-red-200'); }, 3000);
+        }
+    });
+
+    // Function to open penerima popup window
+    function openPenerimaPopup() {
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create") }}',
+            'TambahPenerima',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
+    // Listen for message from popup when new penerima is added
+    window.addEventListener('message', function(event) {
+        // Verify origin for security
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data.type === 'penerimaAdded') {
+            const newPenerima = event.data.penerima;
+            
+            // Add new option to select
+            const select = $('#penerima');
+            const newOption = new Option(newPenerima.nama, newPenerima.nama, true, true);
+            $(newOption).attr('data-alamat', newPenerima.alamat || '');
+            select.append(newOption);
+            
+            // Trigger select2 change and auto-fill alamat
+            select.trigger('change');
+            $('#alamat_penerima').val(newPenerima.alamat || '');
+            
+            console.log('✓ New penerima added:', newPenerima.nama);
         }
     });
 

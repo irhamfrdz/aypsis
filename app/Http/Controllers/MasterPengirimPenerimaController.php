@@ -50,6 +50,54 @@ class MasterPengirimPenerimaController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource from tanda terima popup
+     */
+    public function createForTandaTerima()
+    {
+        $kodeOtomatis = MasterPengirimPenerima::generateKode();
+        return view('master-pengirim-penerima.create-for-tanda-terima', compact('kodeOtomatis'));
+    }
+
+    /**
+     * Store a newly created resource from tanda terima popup
+     */
+    public function storeForTandaTerima(Request $request)
+    {
+        $validated = $request->validate([
+            'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode',
+            'nama' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string|max:20',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $validated['created_by'] = Auth::id();
+            $validated['updated_by'] = Auth::id();
+
+            $penerima = MasterPengirimPenerima::create($validated);
+
+            DB::commit();
+            
+            // Store penerima data in session for popup to send to parent
+            session([
+                'penerima_nama' => $penerima->nama,
+                'penerima_alamat' => $penerima->alamat,
+                'penerima_npwp' => $penerima->npwp,
+            ]);
+
+            return redirect()->back()
+                           ->with('success', 'Penerima berhasil ditambahkan')
+                           ->with('popup', true);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()
+                           ->with('error', 'Gagal menambahkan penerima: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
