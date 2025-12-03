@@ -687,10 +687,61 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'tujuan_pengambilan' => 'required|string|max:255',
             'no_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string',
+            // Image handling for update
+            'gambar_tanda_terima' => 'nullable|array|max:5',
+            'gambar_tanda_terima.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
+            'hapus_gambar' => 'nullable|array',
+            'hapus_gambar.*' => 'nullable|string',
         ]);
 
         try {
             $validated['updated_by'] = Auth::user()->name;
+
+            // Handle image deletions (existing images removed by user)
+            $existingImages = $tandaTerimaTanpaSuratJalan->gambar_tanda_terima ?: [];
+            if (is_string($existingImages)) {
+                $decoded = json_decode($existingImages, true);
+                $existingImages = is_array($decoded) ? $decoded : [];
+            }
+
+            $hapusGambar = $request->input('hapus_gambar', []);
+            if (is_array($hapusGambar) && count($hapusGambar)) {
+                foreach ($hapusGambar as $pathToDelete) {
+                    // Normalize storage path (strip possible asset prefix)
+                    $normalizedPath = ltrim(preg_replace('#^https?://[^/]+/storage/#', '', $pathToDelete), '/');
+                    // Remove from existingImages
+                    $existingImages = array_values(array_filter($existingImages, function($v) use ($normalizedPath) {
+                        return $v !== $normalizedPath && ltrim($v, '/') !== ltrim($normalizedPath, '/');
+                    }));
+                    // Remove from storage if present
+                    if (Storage::disk('public')->exists($normalizedPath)) {
+                        Storage::disk('public')->delete($normalizedPath);
+                    }
+                }
+            }
+
+            // Handle gambar uploads
+            $newUploads = [];
+            if ($request->hasFile('gambar_tanda_terima')) {
+                $newUploads = $this->handleImageUpload($request->file('gambar_tanda_terima'));
+                if (!empty($newUploads)) {
+                    
+                    
+                    Log::info('New image uploads during update', ['count' => count($newUploads), 'uploaded_by' => Auth::user() ? Auth::user()->name : null]);
+                }
+            }
+
+            // Merge existing and new uploads
+            $mergedImages = array_values(array_filter(array_merge($existingImages, $newUploads)));
+            // Enforce max 5 images
+            if (count($mergedImages) > 5) {
+                $mergedImages = array_slice($mergedImages, 0, 5);
+            }
+            if (!empty($mergedImages)) {
+                $validated['gambar_tanda_terima'] = json_encode($mergedImages);
+            } else {
+                $validated['gambar_tanda_terima'] = null;
+            }
 
             $tandaTerimaTanpaSuratJalan->update($validated);
 
