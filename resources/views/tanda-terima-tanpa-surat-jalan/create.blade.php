@@ -873,68 +873,76 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // Wrap everything in jQuery ready to ensure DOM and libraries are loaded
+    jQuery(document).ready(function($) {
+        console.log('jQuery version:', $.fn.jquery);
+        console.log('Select2 available:', typeof $.fn.select2);
+        
         // Initialize Select2 for penerima dropdown
-        $('.select2-penerima').select2({
-            placeholder: '-- Pilih Penerima --',
-            allowClear: true,
-            width: '100%',
-            dropdownAutoWidth: false,
-            language: {
-                noResults: function() {
-                    return "Tidak ada hasil ditemukan";
-                },
-                searching: function() {
-                    return "Mencari...";
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.select2-penerima').select2({
+                placeholder: '-- Pilih Penerima --',
+                allowClear: true,
+                width: '100%',
+                dropdownAutoWidth: false,
+                language: {
+                    noResults: function() {
+                        return "Tidak ada hasil ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
                 }
-            }
-        });
+            });
 
-        // Initialize Select2 for pengirim dropdown
-        $('.select2-pengirim').select2({
-            placeholder: '-- Pilih Pengirim --',
-            allowClear: true,
-            width: '100%',
-            dropdownAutoWidth: false,
-            language: {
-                noResults: function() {
-                    return "Tidak ada hasil ditemukan";
-                },
-                searching: function() {
-                    return "Mencari...";
+            // Initialize Select2 for pengirim dropdown
+            $('.select2-pengirim').select2({
+                placeholder: '-- Pilih Pengirim --',
+                allowClear: true,
+                width: '100%',
+                dropdownAutoWidth: false,
+                language: {
+                    noResults: function() {
+                        return "Tidak ada hasil ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
                 }
-            }
-        });
+            });
 
-        // Auto-fill alamat penerima when penerima is selected
-        $('#penerima').on('select2:select', function(e) {
-            var selectedOption = e.params.data.element;
-            var alamat = $(selectedOption).data('alamat');
-            
-            if (alamat) {
-                $('#alamat_penerima').val(alamat);
-            }
-        });
+            // Auto-fill alamat penerima when penerima is selected
+            $('#penerima').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    $('#alamat_penerima').val(alamat);
+                }
+            });
 
-        // Clear alamat when penerima is cleared
-        $('#penerima').on('select2:clear', function(e) {
-            $('#alamat_penerima').val('');
-        });
+            // Clear alamat when penerima is cleared
+            $('#penerima').on('select2:clear', function(e) {
+                $('#alamat_penerima').val('');
+            });
 
-        // Auto-fill alamat pengirim when pengirim is selected
-        $('#pengirim').on('select2:select', function(e) {
-            var selectedOption = e.params.data.element;
-            var alamat = $(selectedOption).data('alamat');
-            
-            if (alamat) {
-                $('#alamat_pengirim').val(alamat);
-            }
-        });
+            // Auto-fill alamat pengirim when pengirim is selected
+            $('#pengirim').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    $('#alamat_pengirim').val(alamat);
+                }
+            });
 
-        // Clear alamat when pengirim is cleared
-        $('#pengirim').on('select2:clear', function(e) {
-            $('#alamat_pengirim').val('');
-        });
+            // Clear alamat when pengirim is cleared
+            $('#pengirim').on('select2:clear', function(e) {
+                $('#alamat_pengirim').val('');
+            });
+        } else {
+            console.error('Select2 is not loaded!');
+        }
 
         // Calculate initial volumes and totals
         calculateAllVolumesAndTotals();
@@ -968,7 +976,7 @@
                 updateRemoveButtons();
             }
         });
-    });
+    }); // End of jQuery ready
 
     let dimensiItemIndex = 1;
 
