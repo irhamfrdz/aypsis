@@ -268,8 +268,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
                 // Merge flattened arrays into request (always set arrays from nested dimensi_items)
                 foreach ($flattened as $k => $vals) {
-                    // Force merging as array even if empty values present
-                    $request->merge([$k => $vals]);
+                    $existing = (array) $request->input($k, []);
+                    // Merge existing and flattened values while preserving non-empty entries
+                    $merged = array_values(array_filter(array_merge($existing, (array) $vals), function ($v) {
+                        return $v !== null && $v !== '';
+                    }));
+                    if (!empty($merged)) {
+                        $request->merge([$k => $merged]);
+                    }
                 }
                 \Log::info('Request after flattening nested dimensi_items', [
                     'panjang' => $request->input('panjang'),
@@ -360,17 +366,17 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // (Legacy flattened dimensi items merged before validation)
 
-            // Extract array data for dimensi items
-            $namaBarangArray = $validated['nama_barang'] ?? [];
-            $jumlahArray = $validated['jumlah'] ?? [];
-            $satuanArray = $validated['satuan'] ?? [];
-            $panjangArray = $validated['panjang'] ?? [];
-            $lebarArray = $validated['lebar'] ?? [];
-            $tinggiArray = $validated['tinggi'] ?? [];
-            $meterKubikArray = $validated['meter_kubik'] ?? [];
-            $tonaseArray = $validated['tonase'] ?? [];
+            // Extract array data for dimensi items and sanitize values
+            $namaBarangArray = array_values(array_filter(array_map(function($v){ return is_null($v) ? null : trim((string)$v); }, $validated['nama_barang'] ?? []), function($v){ return $v !== null && $v !== ''; }));
+            $jumlahArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (int)$v : null; }, $validated['jumlah'] ?? []), function($v){ return $v !== null; }));
+            $satuanArray = array_values(array_filter(array_map(function($v){ return is_null($v) ? null : trim((string)$v); }, $validated['satuan'] ?? []), function($v){ return $v !== null && $v !== ''; }));
+            $panjangArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['panjang'] ?? []), function($v){ return $v !== null; }));
+            $lebarArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['lebar'] ?? []), function($v){ return $v !== null; }));
+            $tinggiArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['tinggi'] ?? []), function($v){ return $v !== null; }));
+            $meterKubikArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['meter_kubik'] ?? []), function($v){ return $v !== null; }));
+            $tonaseArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['tonase'] ?? []), function($v){ return $v !== null; }));
 
-            // Debug: Log extracted arrays
+            // Debug: Log extracted arrays (sanitized)
             \Log::info('Extracted Arrays Debug:', [
                 'namaBarangArray' => $namaBarangArray,
                 'panjangArray' => $panjangArray,
@@ -378,6 +384,16 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 'tinggiArray' => $tinggiArray,
                 'meterKubikArray' => $meterKubikArray,
                 'tonaseArray' => $tonaseArray,
+            ]);
+
+            // Debug: lengths
+            \Log::info('Dimensi arrays count', [
+                'nama_count' => count($namaBarangArray),
+                'panjang_count' => count($panjangArray),
+                'lebar_count' => count($lebarArray),
+                'tinggi_count' => count($tinggiArray),
+                'meter_kubik_count' => count($meterKubikArray),
+                'tonase_count' => count($tonaseArray),
             ]);
 
             // Remove array fields from main validation data
@@ -427,8 +443,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $meterKubik = $meterKubikArray[$i] ?? null;
                 $tonase = $tonaseArray[$i] ?? null;
 
-                // Only create if at least one field has value
-                if ($namaBarang || $panjang || $lebar || $tinggi || $tonase) {
+                // Only create if at least one field has non-null value
+                if (!is_null($namaBarang) || $panjang !== null || $lebar !== null || $tinggi !== null || $tonase !== null) {
                     \Log::info('Creating dimensi item', [
                         'index' => $i,
                         'namaBarang' => $namaBarang,
