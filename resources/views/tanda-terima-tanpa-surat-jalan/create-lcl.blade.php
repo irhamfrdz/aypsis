@@ -3,6 +3,79 @@
 @section('title', 'Buat Tanda Terima LCL')
 @section('page_title', 'Buat Tanda Terima LCL')
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom Select2 styling to match Tailwind */
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 26px;
+        color: #111827;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+        right: 8px;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+        outline: none;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        max-height: 300px !important;
+    }
+
+    .select2-results__options {
+        max-height: 250px !important;
+        overflow-y: auto;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #10b981;
+    }
+
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .select2-results__message {
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #6b7280;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-4">
     <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
@@ -159,10 +232,19 @@
                                 <label for="nama_penerima" class="block text-sm font-medium text-gray-700 mb-1">
                                     Nama Penerima <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text" name="nama_penerima" id="nama_penerima"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       value="{{ old('nama_penerima') }}" required
-                                       placeholder="PT. Nama Perusahaan Penerima">
+                                <select name="nama_penerima" id="nama_penerima" required
+                                        class="select2-penerima w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nama_penerima') border-red-500 @enderror">
+                                    <option value="">-- Pilih Penerima --</option>
+                                    @if(isset($masterPengirimPenerima))
+                                        @foreach($masterPengirimPenerima as $item)
+                                            <option value="{{ $item->nama }}" 
+                                                    data-alamat="{{ $item->alamat }}"
+                                                    {{ old('nama_penerima') == $item->nama ? 'selected' : '' }}>
+                                                {{ $item->nama }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
                                 @error('nama_penerima')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -219,10 +301,19 @@
                                 <label for="nama_pengirim" class="block text-sm font-medium text-gray-700 mb-1">
                                     Nama Pengirim <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text" name="nama_pengirim" id="nama_pengirim"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       value="{{ old('nama_pengirim') }}" required
-                                       placeholder="PT. Nama Perusahaan Pengirim">
+                                <select name="nama_pengirim" id="nama_pengirim" required
+                                        class="select2-pengirim w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nama_pengirim') border-red-500 @enderror">
+                                    <option value="">-- Pilih Pengirim --</option>
+                                    @if(isset($masterPengirimPenerima))
+                                        @foreach($masterPengirimPenerima as $item)
+                                            <option value="{{ $item->nama }}"
+                                                    data-alamat="{{ $item->alamat }}"
+                                                    {{ old('nama_pengirim') == $item->nama ? 'selected' : '' }}>
+                                                {{ $item->nama }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
                                 @error('nama_pengirim')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -672,13 +763,88 @@
 @endsection
 
 @push('scripts')
+<!-- Select2 JS - jQuery already loaded in layout -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize dropdowns
+    // Wrap everything in jQuery ready to ensure DOM and libraries are loaded
+    jQuery(document).ready(function($) {
+        console.log('jQuery version:', $.fn.jquery);
+        console.log('Select2 available:', typeof $.fn.select2);
+        
+        // Initialize Select2 for penerima dropdown
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.select2-penerima').select2({
+                placeholder: '-- Pilih Penerima --',
+                allowClear: true,
+                width: '100%',
+                dropdownAutoWidth: false,
+                language: {
+                    noResults: function() {
+                        return "Tidak ada hasil ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for pengirim dropdown
+            $('.select2-pengirim').select2({
+                placeholder: '-- Pilih Pengirim --',
+                allowClear: true,
+                width: '100%',
+                dropdownAutoWidth: false,
+                language: {
+                    noResults: function() {
+                        return "Tidak ada hasil ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Auto-fill alamat penerima when penerima is selected
+            $('#nama_penerima').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    $('#alamat_penerima').val(alamat);
+                }
+            });
+
+            // Clear alamat when penerima is cleared
+            $('#nama_penerima').on('select2:clear', function(e) {
+                $('#alamat_penerima').val('');
+            });
+
+            // Auto-fill alamat pengirim when pengirim is selected
+            $('#nama_pengirim').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    $('#alamat_pengirim').val(alamat);
+                }
+            });
+
+            // Clear alamat when pengirim is cleared
+            $('#nama_pengirim').on('select2:clear', function(e) {
+                $('#alamat_pengirim').val('');
+            });
+        } else {
+            console.error('Select2 is not loaded!');
+        }
+
+        // Initialize other dropdowns
         initializeTermDropdown();
         initializeTujuanPengirimanDropdown();
         initializeSupirDropdown();
-    });
+    }); // End of jQuery ready
+    
+    document.addEventListener('DOMContentLoaded', function() {
 
     // Counter untuk index dimensi baru
     let dimensiCounter = document.querySelectorAll('#dimensi-container .dimensi-row').length || 1;
