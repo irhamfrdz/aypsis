@@ -388,6 +388,17 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
                 // Only create if at least one field has value
                 if ($namaBarang || $panjang || $lebar || $tinggi || $tonase) {
+                    \Log::info('Creating dimensi item', [
+                        'index' => $i,
+                        'namaBarang' => $namaBarang,
+                        'jumlah' => $jumlah,
+                        'satuan' => $satuan,
+                        'panjang' => $panjang,
+                        'lebar' => $lebar,
+                        'tinggi' => $tinggi,
+                        'meterKubik' => $meterKubik,
+                        'tonase' => $tonase,
+                    ]);
                     $tandaTerima->dimensiItems()->create([
                         'nama_barang' => $namaBarang,
                         'jumlah' => $jumlah,
