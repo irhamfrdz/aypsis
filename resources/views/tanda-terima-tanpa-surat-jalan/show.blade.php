@@ -449,6 +449,58 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Gambar Tanda Terima -->
+                @php
+                    $__gambarArray = $tandaTerimaTanpaSuratJalan->gambar_tanda_terima;
+                    if (is_string($__gambarArray)) {
+                        // Try to decode JSON string
+                        $__decoded = json_decode($__gambarArray, true);
+                        $__gambarArray = is_array($__decoded) ? $__decoded : [];
+                    }
+                    if (!is_array($__gambarArray)) {
+                        $__gambarArray = [];
+                    }
+                @endphp
+                @if(!empty($__gambarArray) && count($__gambarArray))
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="border-b border-gray-200 p-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Gambar Tanda Terima</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-sm text-gray-600">Terdapat {{ count($__gambarArray) }} gambar</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                @foreach($__gambarArray as $index => $imagePath)
+                                    @php
+                                        // If stored path is a full URL, use it directly; otherwise prefix with storage asset path.
+                                        if (is_string($imagePath) && preg_match('/^https?:\/\//', $imagePath)) {
+                                            $imgUrl = $imagePath;
+                                        } else {
+                                            $imgUrl = asset('storage/' . ltrim($imagePath, '/'));
+                                        }
+                                    @endphp
+                                    <div class="rounded-md overflow-hidden bg-gray-50 border border-gray-100 group">
+                                            <button type="button" onclick="openImageModal(@json($imgUrl))" class="w-full h-32 sm:h-40 lg:h-36 flex items-center justify-center bg-gray-100">
+                                            <img src="{{ $imgUrl }}" alt="Gambar Tanda Terima {{ $index + 1 }}" class="object-cover w-full h-full" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/image-placeholder.png') }}';"/>
+                                        </button>
+                                        <div class="p-2 flex items-center justify-between">
+                                            <div class="text-xs text-gray-600">Gambar {{ $index + 1 }}</div>
+                                            <div class="flex gap-2 items-center">
+                                                <a href="{{ $imgUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 text-xs bg-white border rounded text-gray-700 hover:bg-gray-50" download>
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l4-4m-4 4l-4-4M21 12v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8"></path></svg>
+                                                    Unduh
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Sidebar -->
@@ -507,5 +559,55 @@
             </div>
         </div>
     </div>
+    <!-- Image Modal (hidden by default) -->
+    <div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-75 p-4">
+        <button id="imageModalClose" aria-label="Tutup" onclick="closeImageModal()" class="absolute top-6 right-6 text-white bg-black bg-opacity-40 hover:bg-opacity-60 rounded-full p-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div id="imageModalContent" class="max-w-5xl max-h-full overflow-hidden rounded-md">
+            <img id="imageModalImg" src="" alt="Gambar Tanda Terima" class="w-full h-auto max-h-[80vh] object-contain rounded-md" />
+        </div>
+    </div>
+
+    <script>
+        function openImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('imageModalImg');
+            img.src = src;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('imageModalImg');
+            img.src = '';
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Close modal when clicking outside the image
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('imageModal');
+            const content = document.getElementById('imageModalContent');
+            if (!modal.classList.contains('hidden')) {
+                if (e.target === modal) {
+                    closeImageModal();
+                }
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('imageModal');
+                if (!modal.classList.contains('hidden')) {
+                    closeImageModal();
+                }
+            }
+        });
+    </script>
 </div>
 @endsection
