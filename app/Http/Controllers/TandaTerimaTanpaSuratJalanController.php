@@ -287,6 +287,17 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 ]);
         }
 
+        // If legacy scalar values exist (hidden single values) convert them into arrays
+        foreach (['panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase', 'nama_barang', 'jumlah', 'satuan'] as $k) {
+            $val = $request->input($k);
+            if (!is_null($val) && !is_array($val)) {
+                // Only convert scalar to array when arrays not present already
+                if (empty($request->input($k)) || !is_array($request->input($k))) {
+                    $request->merge([$k => [$val]]);
+                }
+            }
+        }
+
         $validated = $request->validate([
             'tanggal_tanda_terima' => 'required|date',
             'nomor_surat_jalan_customer' => 'nullable|string|max:255',
