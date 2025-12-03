@@ -88,6 +88,20 @@
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium text-gray-500">Akun Biaya</label>
+                        @php
+                            $akunCoa = $pembayaranAktivitasLain->akun_coa_id ? DB::table('akun_coa')->find($pembayaranAktivitasLain->akun_coa_id) : null;
+                        @endphp
+                        <p class="mt-1 text-base text-gray-900">
+                            @if($akunCoa)
+                                {{ $akunCoa->kode_nomor }} - {{ $akunCoa->nama_akun }}
+                            @else
+                                -
+                            @endif
+                        </p>
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium text-gray-500">Dibuat Oleh</label>
                         <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->creator->name ?? '-' }}</p>
                         <p class="text-sm text-gray-500">{{ $pembayaranAktivitasLain->created_at->format('d/m/Y H:i') }}</p>

@@ -45,7 +45,14 @@ class PembayaranAktivitasLainController extends Controller
     public function create()
     {
         $nomor = PembayaranAktivitasLain::generateNomor();
-        return view('pembayaran-aktivitas-lain.create', compact('nomor'));
+        $akunBiaya = DB::table('akun_coa')
+            ->where(function($q) {
+                $q->where('tipe_akun', 'like', '%biaya%')
+                  ->orWhere('tipe_akun', 'like', '%beban%');
+            })
+            ->orderBy('kode_nomor')
+            ->get();
+        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya'));
     }
 
     public function store(Request $request)
@@ -55,7 +62,11 @@ class PembayaranAktivitasLainController extends Controller
             'jenis_aktivitas' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'jumlah' => 'required|numeric|min:0',
-            'metode_pembayaran' => 'required|string',
+            'metode_pembayaran' => 'required|string|in:cash,transfer,cek,giro',
+            'debit_kredit' => 'required|in:debit,kredit',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
+        ]); 'debit_kredit' => 'required|in:debit,kredit',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
         ]);
 
         try {
@@ -87,10 +98,18 @@ class PembayaranAktivitasLainController extends Controller
     {
         if ($pembayaranAktivitasLain->status !== 'pending') {
             return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
-                ->with('error', 'Hanya data dengan status pending yang dapat diedit');
+                ->with('error', 'Hanya pembayaran dengan status pending yang dapat diedit.');
         }
 
-        return view('pembayaran-aktivitas-lain.edit', compact('pembayaranAktivitasLain'));
+        $akunBiaya = DB::table('akun_coa')
+            ->where(function($q) {
+                $q->where('tipe_akun', 'like', '%biaya%')
+                  ->orWhere('tipe_akun', 'like', '%beban%');
+            })
+            ->orderBy('kode_nomor')
+            ->get();
+
+        return view('pembayaran-aktivitas-lain.edit', compact('pembayaranAktivitasLain', 'akunBiaya'));
     }
 
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)

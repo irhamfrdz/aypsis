@@ -17,6 +17,7 @@ class PembayaranAktivitasLain extends Model
         'jumlah',
         'metode_pembayaran',
         'debit_kredit',
+        'akun_coa_id',
         'status',
         'approved_by',
         'approved_at',
@@ -37,6 +38,11 @@ class PembayaranAktivitasLain extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(\stdClass::class, 'akun_coa_id');
     }
 
     public static function generateNomor()

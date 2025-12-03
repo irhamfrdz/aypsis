@@ -59,6 +59,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Aktivitas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akun Biaya</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit/Kredit</th>
@@ -73,6 +74,12 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nomor }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $item->jenis_aktivitas }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                @php
+                                    $akunCoa = $item->akun_coa_id ? DB::table('akun_coa')->find($item->akun_coa_id) : null;
+                                @endphp
+                                {{ $akunCoa ? $akunCoa->kode_nomor . ' - ' . $akunCoa->nama_akun : '-' }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ucfirst($item->metode_pembayaran) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -124,7 +131,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="10" class="px-6 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
