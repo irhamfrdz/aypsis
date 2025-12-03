@@ -35,7 +35,13 @@
                 <!-- Jenis Aktivitas -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Aktivitas <span class="text-red-500">*</span></label>
-                    <input type="text" name="jenis_aktivitas" value="{{ old('jenis_aktivitas') }}" required placeholder="Contoh: Biaya Konsumsi, Biaya Transportasi, dll" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_aktivitas') border-red-500 @enderror">
+                    <select name="jenis_aktivitas" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_aktivitas') border-red-500 @enderror">
+                        <option value="">Pilih Jenis Aktivitas</option>
+                        <option value="Pembayaran KIR" {{ old('jenis_aktivitas') == 'Pembayaran KIR' ? 'selected' : '' }}>Pembayaran KIR</option>
+                        <option value="Pembayaran Pajak dan STNK" {{ old('jenis_aktivitas') == 'Pembayaran Pajak dan STNK' ? 'selected' : '' }}>Pembayaran Pajak dan STNK</option>
+                        <option value="Pembayaran Asuransi" {{ old('jenis_aktivitas') == 'Pembayaran Asuransi' ? 'selected' : '' }}>Pembayaran Asuransi</option>
+                        <option value="Pembayaran Lain Lain" {{ old('jenis_aktivitas') == 'Pembayaran Lain Lain' ? 'selected' : '' }}>Pembayaran Lain Lain</option>
+                    </select>
                     @error('jenis_aktivitas')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
