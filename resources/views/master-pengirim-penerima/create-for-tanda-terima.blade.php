@@ -174,23 +174,27 @@
             });
 
             // If form submission was successful and this is a popup
-            @if(session('success') && request('popup'))
+            @if(session('success') && session('popup'))
                 // Send message to parent window
                 if (window.opener) {
                     const penerimaData = {
                         type: 'penerimaAdded',
                         penerima: {
                             nama: '{{ session("penerima_nama") }}',
-                            alamat: '{{ session("penerima_alamat") }}',
-                            npwp: '{{ session("penerima_npwp") }}'
+                            alamat: '{{ session("penerima_alamat") ?? "" }}',
+                            npwp: '{{ session("penerima_npwp") ?? "" }}'
                         }
                     };
+                    
+                    console.log('Sending penerima data to parent:', penerimaData);
                     window.opener.postMessage(penerimaData, window.location.origin);
                     
                     // Close popup after short delay
                     setTimeout(function() {
                         window.close();
                     }, 1000);
+                } else {
+                    console.error('window.opener not available');
                 }
             @endif
         });
