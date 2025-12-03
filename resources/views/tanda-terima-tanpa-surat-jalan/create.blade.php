@@ -328,7 +328,7 @@
                                            value="{{ old('panjang.0') }}"
                                            min="0"
                                            step="0.001"
-                                           onchange="calculateVolumeNew(this.closest('.dimensi-row-new'))">
+                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">>
                                 </div>
                                 <div>
                                     <label for="lebar_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -342,7 +342,7 @@
                                            value="{{ old('lebar.0') }}"
                                            min="0"
                                            step="0.001"
-                                           onchange="calculateVolumeNew(this.closest('.dimensi-row-new'))">
+                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">>
                                 </div>
                                 <div>
                                     <label for="tinggi_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -356,7 +356,7 @@
                                            value="{{ old('tinggi.0') }}"
                                            min="0"
                                            step="0.001"
-                                           onchange="calculateVolumeNew(this.closest('.dimensi-row-new'))">
+                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">>
                                 </div>
                                 <div>
                                     <label for="meter_kubik_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -1567,10 +1567,12 @@
     let dimensiCounterNew = 1;
 
     function calculateVolumeNew(rowElement) {
-        const panjangInput = rowElement.querySelector('[name^="panjang"]');
-        const lebarInput = rowElement.querySelector('[name^="lebar"]');
-        const tinggiInput = rowElement.querySelector('[name^="tinggi"]');
-        const volumeInput = rowElement.querySelector('[name^="meter_kubik"]');
+        const panjangInput = rowElement.querySelector('input[name="panjang[]"]');
+        const lebarInput = rowElement.querySelector('input[name="lebar[]"]');
+        const tinggiInput = rowElement.querySelector('input[name="tinggi[]"]');
+        const volumeInput = rowElement.querySelector('input[name="meter_kubik[]"]');
+
+        if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) return;
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
@@ -1616,15 +1618,15 @@
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label>
-                            <input type="number" name="panjang[]" class="dimensi-input-new w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001">
+                            <input type="number" name="panjang[]" class="dimensi-input-new w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label>
-                            <input type="number" name="lebar[]" class="dimensi-input-new w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001">
+                            <input type="number" name="lebar[]" class="dimensi-input-new w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label>
-                            <input type="number" name="tinggi[]" class="dimensi-input-new w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001">
+                            <input type="number" name="tinggi[]" class="dimensi-input-new w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label>
@@ -1653,6 +1655,27 @@
                         calculateVolumeNew(newRow);
                     });
                 });
+
+                // Specifically add event listeners for panjang, lebar, tinggi
+                const panjangInput = newRow.querySelector('input[name="panjang[]"]');
+                const lebarInput = newRow.querySelector('input[name="lebar[]"]');
+                const tinggiInput = newRow.querySelector('input[name="tinggi[]"]');
+                
+                if (panjangInput) {
+                    panjangInput.addEventListener('input', function() {
+                        calculateVolumeNew(newRow);
+                    });
+                }
+                if (lebarInput) {
+                    lebarInput.addEventListener('input', function() {
+                        calculateVolumeNew(newRow);
+                    });
+                }
+                if (tinggiInput) {
+                    tinggiInput.addEventListener('input', function() {
+                        calculateVolumeNew(newRow);
+                    });
+                }
             });
         }
 
@@ -1661,9 +1684,35 @@
         existingDimensiInputs.forEach(input => {
             input.addEventListener('input', function() {
                 const row = input.closest('.dimensi-row-new');
-                calculateVolumeNew(row);
+                if (row) {
+                    calculateVolumeNew(row);
+                }
             });
         });
+
+        // Also add event listeners specifically for the initial row inputs
+        const initialRow = document.querySelector('.dimensi-row-new');
+        if (initialRow) {
+            const panjangInput = initialRow.querySelector('input[name="panjang[]"]');
+            const lebarInput = initialRow.querySelector('input[name="lebar[]"]');
+            const tinggiInput = initialRow.querySelector('input[name="tinggi[]"]');
+            
+            if (panjangInput) {
+                panjangInput.addEventListener('input', function() {
+                    calculateVolumeNew(initialRow);
+                });
+            }
+            if (lebarInput) {
+                lebarInput.addEventListener('input', function() {
+                    calculateVolumeNew(initialRow);
+                });
+            }
+            if (tinggiInput) {
+                tinggiInput.addEventListener('input', function() {
+                    calculateVolumeNew(initialRow);
+                });
+            }
+        }
 
         // Attach event listener for nama, jumlah, satuan to keep hidden legacy fields in sync
         document.addEventListener('input', function(e) {
