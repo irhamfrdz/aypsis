@@ -38,7 +38,6 @@ use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
 use App\Http\Controllers\PembayaranPranotaUangJalanController;
 use App\Http\Controllers\AktivitasLainnyaController;
-use App\Http\Controllers\PembayaranAktivitasLainnyaController;
 use App\Http\Controllers\PembayaranUangMukaController;
 use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\RealisasiUangMukaController;
@@ -2982,43 +2981,6 @@ Route::prefix('aktivitas-lainnya')->name('aktivitas-lainnya.')->middleware(['aut
          ->middleware('can:aktivitas-lainnya-approve');
     Route::post('/{aktivitasLainnya}/reject', [AktivitasLainnyaController::class, 'reject'])->name('reject')
          ->middleware('can:aktivitas-lainnya-approve');
-});
-
-// Pembayaran Aktivitas Lain-lain routes
-Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainnya.')->middleware(['auth'])->group(function () {
-    Route::get('/', [PembayaranAktivitasLainnyaController::class, 'index'])->name('index')
-         ->middleware('can:pembayaran-aktivitas-lainnya-view');
-    Route::get('/create', [PembayaranAktivitasLainnyaController::class, 'create'])->name('create')
-         ->middleware('can:pembayaran-aktivitas-lainnya-create');
-    Route::get('/export', [PembayaranAktivitasLainnyaController::class, 'export'])->name('export')
-         ->middleware('can:pembayaran-aktivitas-lainnya-export');
-    Route::post('/payment-form', [PembayaranAktivitasLainnyaController::class, 'showPaymentForm'])->name('payment-form')
-         ->middleware('can:pembayaran-aktivitas-lainnya-view');
-    Route::get('/generate-nomor-preview', [PembayaranAktivitasLainnyaController::class, 'generateNomorPreview'])->name('generate-nomor-preview')
-         ->middleware('can:pembayaran-aktivitas-lainnya-create');
-    Route::post('/', [PembayaranAktivitasLainnyaController::class, 'store'])->name('store')
-         ->middleware('can:pembayaran-aktivitas-lainnya-create');
-    Route::get('/{pembayaranAktivitasLainnya}', [PembayaranAktivitasLainnyaController::class, 'show'])->name('show')
-         ->middleware('can:pembayaran-aktivitas-lainnya-view');
-    Route::get('/{pembayaranAktivitasLainnya}/print', [PembayaranAktivitasLainnyaController::class, 'print'])->name('print')
-         ->middleware('can:pembayaran-aktivitas-lainnya-print');
-    Route::get('/{pembayaranAktivitasLainnya}/edit', [PembayaranAktivitasLainnyaController::class, 'edit'])->name('edit')
-         ->middleware('can:pembayaran-aktivitas-lainnya-update');
-    Route::put('/{pembayaranAktivitasLainnya}', [PembayaranAktivitasLainnyaController::class, 'update'])->name('update')
-         ->middleware('can:pembayaran-aktivitas-lainnya-update');
-    Route::delete('/{pembayaranAktivitasLainnya}', [PembayaranAktivitasLainnyaController::class, 'destroy'])->name('destroy')
-         ->middleware('can:pembayaran-aktivitas-lainnya-delete');
-    Route::post('/{pembayaranAktivitasLainnya}/approve', [PembayaranAktivitasLainnyaController::class, 'approve'])->name('approve')
-         ->middleware('can:pembayaran-aktivitas-lainnya-approve');
-    Route::post('/{pembayaranAktivitasLainnya}/reject', [PembayaranAktivitasLainnyaController::class, 'reject'])->name('reject')
-         ->middleware('can:pembayaran-aktivitas-lainnya-approve');
-});
-
-// API Routes for Pembayaran Aktivitas Lainnya
-Route::middleware(['auth'])->group(function () {
-    Route::get('/api/get-kapal-list', [PembayaranAktivitasLainnyaController::class, 'getKapalList']);
-    Route::get('/api/get-voyage-list', [PembayaranAktivitasLainnyaController::class, 'getVoyageList']);
-    Route::get('/api/get-supir-by-voyage', [PembayaranAktivitasLainnyaController::class, 'getSupirByVoyage']);
 });
 
 // Pembayaran Uang Muka routes
