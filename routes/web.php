@@ -38,6 +38,7 @@ use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
 use App\Http\Controllers\PembayaranPranotaUangJalanController;
 use App\Http\Controllers\AktivitasLainnyaController;
+use App\Http\Controllers\PembayaranAktivitasLainController;
 use App\Http\Controllers\PembayaranUangMukaController;
 use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\RealisasiUangMukaController;
@@ -2981,6 +2982,28 @@ Route::prefix('aktivitas-lainnya')->name('aktivitas-lainnya.')->middleware(['aut
          ->middleware('can:aktivitas-lainnya-approve');
     Route::post('/{aktivitasLainnya}/reject', [AktivitasLainnyaController::class, 'reject'])->name('reject')
          ->middleware('can:aktivitas-lainnya-approve');
+});
+
+// Pembayaran Aktivitas Lain routes
+Route::prefix('pembayaran-aktivitas-lain')->name('pembayaran-aktivitas-lain.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PembayaranAktivitasLainController::class, 'index'])->name('index')
+         ->middleware('can:pembayaran-aktivitas-lain-view');
+    Route::get('/create', [PembayaranAktivitasLainController::class, 'create'])->name('create')
+         ->middleware('can:pembayaran-aktivitas-lain-create');
+    Route::post('/', [PembayaranAktivitasLainController::class, 'store'])->name('store')
+         ->middleware('can:pembayaran-aktivitas-lain-create');
+    Route::get('/{pembayaranAktivitasLain}', [PembayaranAktivitasLainController::class, 'show'])->name('show')
+         ->middleware('can:pembayaran-aktivitas-lain-view');
+    Route::get('/{pembayaranAktivitasLain}/edit', [PembayaranAktivitasLainController::class, 'edit'])->name('edit')
+         ->middleware('can:pembayaran-aktivitas-lain-update');
+    Route::put('/{pembayaranAktivitasLain}', [PembayaranAktivitasLainController::class, 'update'])->name('update')
+         ->middleware('can:pembayaran-aktivitas-lain-update');
+    Route::delete('/{pembayaranAktivitasLain}', [PembayaranAktivitasLainController::class, 'destroy'])->name('destroy')
+         ->middleware('can:pembayaran-aktivitas-lain-delete');
+    Route::post('/{pembayaranAktivitasLain}/approve', [PembayaranAktivitasLainController::class, 'approve'])->name('approve')
+         ->middleware('can:pembayaran-aktivitas-lain-approve');
+    Route::post('/{pembayaranAktivitasLain}/mark-as-paid', [PembayaranAktivitasLainController::class, 'markAsPaid'])->name('mark-as-paid')
+         ->middleware('can:pembayaran-aktivitas-lain-approve');
 });
 
 // Pembayaran Uang Muka routes

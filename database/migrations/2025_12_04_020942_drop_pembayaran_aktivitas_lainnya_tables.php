@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('pembayaran_aktivitas_lainnya_supirs');
         Schema::dropIfExists('pembayaran_aktivitas_lainnya_items');
         Schema::dropIfExists('pembayaran_aktivitas_lainnya');
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

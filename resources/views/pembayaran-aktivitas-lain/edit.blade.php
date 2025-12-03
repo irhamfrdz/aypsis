@@ -1,0 +1,94 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container-fluid px-4 py-6">
+    <div class="bg-white rounded-lg shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h1 class="text-xl font-semibold text-gray-800">Edit Pembayaran Aktivitas Lain</h1>
+            <a href="{{ route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain) }}" class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium text-xs rounded-md transition duration-150 ease-in-out">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Kembali
+            </a>
+        </div>
+
+        <form action="{{ route('pembayaran-aktivitas-lain.update', $pembayaranAktivitasLain) }}" method="POST" class="p-6">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nomor -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor</label>
+                    <input type="text" value="{{ $pembayaranAktivitasLain->nomor }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm">
+                </div>
+
+                <!-- Tanggal -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" name="tanggal" value="{{ old('tanggal', $pembayaranAktivitasLain->tanggal->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('tanggal') border-red-500 @enderror">
+                    @error('tanggal')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Jenis Aktivitas -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Aktivitas <span class="text-red-500">*</span></label>
+                    <input type="text" name="jenis_aktivitas" value="{{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) }}" required placeholder="Contoh: Biaya Konsumsi, Biaya Transportasi, dll" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_aktivitas') border-red-500 @enderror">
+                    @error('jenis_aktivitas')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Jumlah -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah (Rp) <span class="text-red-500">*</span></label>
+                    <input type="number" name="jumlah" value="{{ old('jumlah', $pembayaranAktivitasLain->jumlah) }}" required min="0" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jumlah') border-red-500 @enderror">
+                    @error('jumlah')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Metode Pembayaran -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran <span class="text-red-500">*</span></label>
+                    <select name="metode_pembayaran" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('metode_pembayaran') border-red-500 @enderror">
+                        <option value="">Pilih Metode</option>
+                        <option value="cash" {{ old('metode_pembayaran', $pembayaranAktivitasLain->metode_pembayaran) == 'cash' ? 'selected' : '' }}>Cash</option>
+                        <option value="transfer" {{ old('metode_pembayaran', $pembayaranAktivitasLain->metode_pembayaran) == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                        <option value="cek" {{ old('metode_pembayaran', $pembayaranAktivitasLain->metode_pembayaran) == 'cek' ? 'selected' : '' }}>Cek</option>
+                        <option value="giro" {{ old('metode_pembayaran', $pembayaranAktivitasLain->metode_pembayaran) == 'giro' ? 'selected' : '' }}>Giro</option>
+                    </select>
+                    @error('metode_pembayaran')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Keterangan -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                    <textarea name="keterangan" rows="4" placeholder="Keterangan tambahan..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('keterangan') border-red-500 @enderror">{{ old('keterangan', $pembayaranAktivitasLain->keterangan) }}</textarea>
+                    @error('keterangan')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex justify-end gap-3">
+                <a href="{{ route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain) }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium text-sm rounded-md transition">
+                    Batal
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
