@@ -608,119 +608,9 @@
                 </div>
             </form>
         </div>
-    </div>
-</div>
-@endsection
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 focus:outline-none"
-                                   placeholder="Otomatis terhitung">
-                            <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-calculator mr-1"></i>Dihitung otomatis: Panjang × Lebar × Tinggi ÷ 1,000,000
-                            </p>
-                        </div>
-
-                        <!-- Tonase -->
-                        <div>
-                            <label for="tonase" class="block text-sm font-medium text-gray-700 mb-1">
-                                Tonase (Ton)
-                            </label>
-                            <input type="number" name="tonase" id="tonase"
-                                   value="{{ old('tonase', $tandaTerimaTanpaSuratJalan->tonase) }}"
-                                   step="0.01" min="0"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Masukkan tonase">
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label for="keterangan_barang" class="block text-sm font-medium text-gray-700 mb-1">
-                                Keterangan Barang
-                            </label>
-                            <textarea name="keterangan_barang" id="keterangan_barang" rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                      placeholder="Deskripsi detail barang (opsional)">{{ old('keterangan_barang', $tandaTerimaTanpaSuratJalan->keterangan_barang) }}</textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Informasi Tujuan -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Tujuan</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">
-                                Tujuan Pengambilan <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="tujuan_pengambilan" id="tujuan_pengambilan" value="{{ old('tujuan_pengambilan', $tandaTerimaTanpaSuratJalan->tujuan_pengambilan) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Lokasi pengambilan barang">
-                        </div>
-                        <div>
-                            <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">
-                                Tujuan Pengiriman <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $tandaTerimaTanpaSuratJalan->tujuan_pengiriman) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Lokasi tujuan pengiriman">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Informasi Transportasi -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Transportasi (Opsional)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="supir" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Supir
-                            </label>
-                            <input type="text" name="supir" id="supir" value="{{ old('supir', $tandaTerimaTanpaSuratJalan->supir) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Nama supir">
-                        </div>
-                        <div>
-                            <label for="no_plat" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nomor Plat
-                            </label>
-                            <input type="text" name="no_plat" id="no_plat" value="{{ old('no_plat', $tandaTerimaTanpaSuratJalan->no_plat) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Nomor plat kendaraan">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Catatan -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Catatan</h3>
-                    <div>
-                        <label for="catatan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Catatan Tambahan
-                        </label>
-                        <textarea name="catatan" id="catatan" rows="4"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                  placeholder="Catatan atau informasi tambahan (opsional)">{{ old('catatan', $tandaTerimaTanpaSuratJalan->catatan) }}</textarea>
-                    </div>
-                </div>
-
-                <!-- Submit Buttons -->
-                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerimaTanpaSuratJalan) }}"
-                       class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Batal
-                    </a>
-                    <button type="submit"
-                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Update Tanda Terima
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
-@endsection
-
-@push('scripts')
+        @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Calculate meter kubik on page load if values exist
@@ -1100,3 +990,5 @@
     }
 </script>
 @endpush
+
+@endsection
