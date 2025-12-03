@@ -221,7 +221,7 @@
                         <!-- Data Pengirim & Order Section -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-4">
-                                Data Pengirim & Order
+                                Data Pengirim & Penerima
                             </label>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -242,6 +242,47 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div>
+                                    <label for="penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Penerima <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="penerima"
+                                            id="penerima"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror"
+                                            required>
+                                        <option value="">-- Pilih Penerima --</option>
+                                        @foreach($masterPenerimaList as $penerima)
+                                            <option value="{{ $penerima->nama }}"
+                                                    data-alamat="{{ $penerima->alamat }}"
+                                                    {{ old('penerima') == $penerima->nama ? 'selected' : '' }}>
+                                                {{ $penerima->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('penerima')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari penerima
+                                    </p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="alamat_penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Alamat Penerima <span class="text-red-500">*</span>
+                                    </label>
+                                    <textarea name="alamat_penerima"
+                                              id="alamat_penerima"
+                                              rows="3"
+                                              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_penerima') border-red-500 @enderror"
+                                              placeholder="Alamat lengkap penerima"
+                                              required>{{ old('alamat_penerima') }}</textarea>
+                                    @error('alamat_penerima')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                        <i class="fas fa-info-circle mr-1"></i>Alamat akan terisi otomatis saat memilih penerima, namun dapat diubah sesuai kebutuhan
+                                    </p>
                                 </div>
                                 @if($suratJalan->gambar_checkpoint)
                                 <div class="md:col-span-2">
@@ -1009,6 +1050,43 @@
                         return "Mencari...";
                     }
                 }
+            });
+
+            // Initialize Select2 for penerima dropdown
+            $('.select2-penerima').select2({
+                placeholder: '-- Pilih Penerima --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Penerima tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Auto-fill alamat penerima when penerima is selected
+            $('#penerima').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                console.log('Penerima selected:', e.params.data.id);
+                console.log('Alamat:', alamat);
+                
+                if (alamat) {
+                    $('#alamat_penerima').val(alamat);
+                    console.log('✓ Alamat penerima auto-filled');
+                } else {
+                    $('#alamat_penerima').val('');
+                }
+            });
+
+            // Clear alamat when penerima is cleared
+            $('#penerima').on('select2:clear', function(e) {
+                $('#alamat_penerima').val('');
+                console.log('✓ Alamat penerima cleared');
             });
 
             // Initialize Select2 for nomor kontainer with tags (allow free input)

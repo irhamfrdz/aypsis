@@ -27,6 +27,8 @@ class TandaTerima extends Model
         'no_seal',
         'tujuan_pengiriman',
         'pengirim',
+        'penerima',
+        'alamat_penerima',
         'gambar_checkpoint',
         'estimasi_nama_kapal',
         'nomor_ro',

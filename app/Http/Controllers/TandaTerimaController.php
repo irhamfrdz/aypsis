@@ -256,7 +256,10 @@ class TandaTerimaController extends Controller
         // Get all master tujuan kirims for dropdown
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'karyawanSupirs', 'stockKontainers', 'masterTujuanKirims'));
+        // Get all master pengirim/penerima for dropdown
+        $masterPenerimaList = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'karyawanSupirs', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList'));
     }
 
     /**
@@ -316,6 +319,8 @@ class TandaTerimaController extends Controller
             'tonase' => 'nullable|array',
             'tonase.*' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
+            'penerima' => 'required|string|max:255',
+            'alamat_penerima' => 'required|string',
             'catatan' => 'nullable|string',
             'nomor_kontainer' => 'nullable|array',
             'nomor_kontainer.*' => 'nullable|string|max:255',
@@ -380,6 +385,8 @@ class TandaTerimaController extends Controller
             $tandaTerima->tanggal_terima_pelabuhan = $request->tanggal_terima_pelabuhan;
             $tandaTerima->tanggal_garasi = $request->tanggal_garasi;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
+            $tandaTerima->penerima = $request->penerima;
+            $tandaTerima->alamat_penerima = $request->alamat_penerima;
             $tandaTerima->catatan = $request->catatan;
             
             // Handle dimensi details (multiple dimensi entries)
