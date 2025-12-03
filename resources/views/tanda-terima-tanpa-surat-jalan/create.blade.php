@@ -34,12 +34,24 @@
         border: 1px solid #d1d5db;
         border-radius: 0.375rem;
         padding: 0.5rem;
+        outline: none;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     .select2-dropdown {
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        max-height: 300px !important;
+    }
+
+    .select2-results__options {
+        max-height: 250px !important;
+        overflow-y: auto;
     }
 
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
@@ -49,6 +61,17 @@
     .select2-container--default .select2-results__option[aria-selected=true] {
         background-color: #dbeafe;
         color: #1e40af;
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .select2-results__message {
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #6b7280;
     }
 </style>
 @endpush
@@ -856,9 +879,13 @@
             placeholder: '-- Pilih Penerima --',
             allowClear: true,
             width: '100%',
+            dropdownAutoWidth: false,
             language: {
                 noResults: function() {
-                    return "Tidak ada data yang ditemukan";
+                    return "Tidak ada hasil ditemukan";
+                },
+                searching: function() {
+                    return "Mencari...";
                 }
             }
         });
@@ -868,9 +895,13 @@
             placeholder: '-- Pilih Pengirim --',
             allowClear: true,
             width: '100%',
+            dropdownAutoWidth: false,
             language: {
                 noResults: function() {
-                    return "Tidak ada data yang ditemukan";
+                    return "Tidak ada hasil ditemukan";
+                },
+                searching: function() {
+                    return "Mencari...";
                 }
             }
         });
@@ -880,21 +911,14 @@
             var selectedOption = e.params.data.element;
             var alamat = $(selectedOption).data('alamat');
             
-            console.log('Penerima selected:', e.params.data.id);
-            console.log('Alamat:', alamat);
-            
             if (alamat) {
                 $('#alamat_penerima').val(alamat);
-                console.log('✓ Alamat penerima auto-filled');
-            } else {
-                console.log('⚠ No alamat data for selected penerima');
             }
         });
 
         // Clear alamat when penerima is cleared
         $('#penerima').on('select2:clear', function(e) {
             $('#alamat_penerima').val('');
-            console.log('✓ Alamat penerima cleared');
         });
 
         // Auto-fill alamat pengirim when pengirim is selected
@@ -902,21 +926,14 @@
             var selectedOption = e.params.data.element;
             var alamat = $(selectedOption).data('alamat');
             
-            console.log('Pengirim selected:', e.params.data.id);
-            console.log('Alamat:', alamat);
-            
             if (alamat) {
                 $('#alamat_pengirim').val(alamat);
-                console.log('✓ Alamat pengirim auto-filled');
-            } else {
-                console.log('⚠ No alamat data for selected pengirim');
             }
         });
 
         // Clear alamat when pengirim is cleared
         $('#pengirim').on('select2:clear', function(e) {
             $('#alamat_pengirim').val('');
-            console.log('✓ Alamat pengirim cleared');
         });
 
         // Calculate initial volumes and totals
