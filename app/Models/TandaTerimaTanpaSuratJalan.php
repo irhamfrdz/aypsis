@@ -48,6 +48,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'meter_kubik',
         'tonase',
         'catatan',
+        'gambar_tanda_terima',
         'created_by',
         'updated_by',
     ];
@@ -62,6 +63,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'meter_kubik' => 'decimal:6',
         'tonase' => 'decimal:2',
         'jumlah_barang' => 'integer',
+        'gambar_tanda_terima' => 'array',
     ];
 
     /**
