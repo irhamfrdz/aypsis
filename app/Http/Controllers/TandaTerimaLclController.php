@@ -12,6 +12,7 @@ use App\Models\Term;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use App\Models\MasterTujuanKirim;
+use App\Models\MasterPengirimPenerima;
 use App\Models\Karyawan;
 use App\Models\Prospek;
 
@@ -33,6 +34,7 @@ class TandaTerimaLclController extends Controller
     {
         $terms = Term::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
+        $masterPengirimPenerima = MasterPengirimPenerima::active()->get();
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
@@ -68,7 +70,8 @@ class TandaTerimaLclController extends Controller
 
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
-            'masterTujuanKirims', 
+            'masterTujuanKirims',
+            'masterPengirimPenerima',
             'supirs',
             'containerOptions'
         ));

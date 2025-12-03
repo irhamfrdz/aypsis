@@ -133,7 +133,7 @@
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                                     </svg>
-                                    Pecah Kontainer
+                                    Pecah Kontainer\4
                                 </button>
                                 @can('tanda-terima-tanpa-surat-jalan-delete')
                                     <button type="button" onclick="bulkAction('delete')" 
@@ -908,17 +908,14 @@
             closeSplitModal();
         }
     });
+
+    // Initialize resizable table
+    $(document).ready(function() {
+        initResizableTable('tandaTerimaTanpaSJTable');
+    });
 </script>
 @endpush
 
 @endsection
 
 @include('components.resizable-table')
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    initResizableTable('tandaTerimaTanpaSJTable');
-});
-</script>
-@endpush
