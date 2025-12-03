@@ -140,9 +140,36 @@
                             <label for="penerima" class="block text-sm font-medium text-gray-700 mb-1">
                                 Penerima <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="penerima" id="penerima" value="{{ old('penerima', $tandaTerimaTanpaSuratJalan->penerima) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('penerima') border-red-500 @enderror"
-                                   placeholder="Nama penerima">
+                            <div class="relative">
+                                <!-- Hidden select for form submission -->
+                                <select name="penerima" id="penerima" class="hidden @error('penerima') border-red-500 @enderror" required>
+                                    <option value="">Pilih Penerima</option>
+                                    @foreach($penerimas as $penerimaNama)
+                                        <option value="{{ $penerimaNama }}" {{ old('penerima', $tandaTerimaTanpaSuratJalan->penerima) == $penerimaNama ? 'selected' : '' }}>
+                                            {{ $penerimaNama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <!-- Search input -->
+                                <input type="text" id="penerimaSearch"
+                                       placeholder="Cari atau pilih penerima..."
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('penerima') border-red-500 @enderror">
+
+                                <!-- Dropdown options -->
+                                <div id="penerimaDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                                    <div class="p-2 border-b border-gray-200">
+                                        <input type="text" id="penerimaFilterInput" placeholder="Filter penerima..." class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
+                                    </div>
+                                    @foreach($penerimas as $penerimaNama)
+                                        <div class="penerima-option px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm"
+                                             data-value="{{ $penerimaNama }}"
+                                             data-text="{{ $penerimaNama }}">
+                                            {{ $penerimaNama }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                             @error('penerima')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -151,9 +178,36 @@
                             <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">
                                 Pengirim <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="pengirim" id="pengirim" value="{{ old('pengirim', $tandaTerimaTanpaSuratJalan->pengirim) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim') border-red-500 @enderror"
-                                   placeholder="Nama pengirim">
+                            <div class="relative">
+                                <!-- Hidden select for form submission -->
+                                <select name="pengirim" id="pengirim" class="hidden @error('pengirim') border-red-500 @enderror" required>
+                                    <option value="">Pilih Pengirim</option>
+                                    @foreach($pengirims as $pengirimNama)
+                                        <option value="{{ $pengirimNama }}" {{ old('pengirim', $tandaTerimaTanpaSuratJalan->pengirim) == $pengirimNama ? 'selected' : '' }}>
+                                            {{ $pengirimNama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <!-- Search input -->
+                                <input type="text" id="pengirimSearch"
+                                       placeholder="Cari atau pilih pengirim..."
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim') border-red-500 @enderror">
+
+                                <!-- Dropdown options -->
+                                <div id="pengirimDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                                    <div class="p-2 border-b border-gray-200">
+                                        <input type="text" id="pengirimFilterInput" placeholder="Filter pengirim..." class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
+                                    </div>
+                                    @foreach($pengirims as $pengirimNama)
+                                        <div class="pengirim-option px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm"
+                                             data-value="{{ $pengirimNama }}"
+                                             data-text="{{ $pengirimNama }}">
+                                            {{ $pengirimNama }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                             @error('pengirim')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -728,6 +782,12 @@
         // Initialize kenek dropdown
         initializeKenekDropdown();
 
+        // Initialize penerima dropdown
+        initializePenerimaDropdown();
+
+        // Initialize pengirim dropdown
+        initializePengirimDropdown();
+
         // Handle tipe kontainer on page load
         handleTipeKontainerChange();
         // Initialize per-row volume calculation for existing dimensi rows
@@ -1025,6 +1085,196 @@
             if (!existingOption) {
                 // This is a custom value, display it in the search input
                 searchInput.value = customKenek;
+            }
+        }
+    }
+
+    function initializePenerimaDropdown() {
+        const searchInput = document.getElementById('penerimaSearch');
+        const dropdown = document.getElementById('penerimaDropdown');
+        const hiddenSelect = document.getElementById('penerima');
+        const filterInput = document.getElementById('penerimaFilterInput');
+        const options = document.querySelectorAll('.penerima-option');
+
+        // Show dropdown when search input is focused
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            // Update hidden select with current input value for custom entries
+            hiddenSelect.value = this.value;
+
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter from the filter input inside dropdown
+        if (filterInput) {
+            filterInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                options.forEach(option => {
+                    const text = option.getAttribute('data-text').toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Handle option selection
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+
+                // Set the hidden select value
+                hiddenSelect.value = value;
+
+                // Update search input
+                searchInput.value = text;
+
+                // Hide dropdown
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#penerimaSearch') && !e.target.closest('#penerimaDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Set initial value if exists
+        const selectedOption = hiddenSelect.querySelector('option:checked');
+        if (selectedOption && selectedOption.value) {
+            searchInput.value = selectedOption.textContent;
+        } else if (hiddenSelect.value) {
+            // Handle custom penerima value that might not be in the dropdown options
+            const customPenerima = hiddenSelect.value;
+            // Check if this value exists in any option
+            const existingOption = Array.from(hiddenSelect.options).find(opt => opt.value === customPenerima);
+            if (!existingOption) {
+                // This is a custom value, display it in the search input
+                searchInput.value = customPenerima;
+            }
+        }
+    }
+
+    function initializePengirimDropdown() {
+        const searchInput = document.getElementById('pengirimSearch');
+        const dropdown = document.getElementById('pengirimDropdown');
+        const hiddenSelect = document.getElementById('pengirim');
+        const filterInput = document.getElementById('pengirimFilterInput');
+        const options = document.querySelectorAll('.pengirim-option');
+
+        // Show dropdown when search input is focused
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            // Update hidden select with current input value for custom entries
+            hiddenSelect.value = this.value;
+
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter from the filter input inside dropdown
+        if (filterInput) {
+            filterInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                options.forEach(option => {
+                    const text = option.getAttribute('data-text').toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Handle option selection
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+
+                // Set the hidden select value
+                hiddenSelect.value = value;
+
+                // Update search input
+                searchInput.value = text;
+
+                // Hide dropdown
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#pengirimSearch') && !e.target.closest('#pengirimDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Set initial value if exists
+        const selectedOption = hiddenSelect.querySelector('option:checked');
+        if (selectedOption && selectedOption.value) {
+            searchInput.value = selectedOption.textContent;
+        } else if (hiddenSelect.value) {
+            // Handle custom pengirim value that might not be in the dropdown options
+            const customPengirim = hiddenSelect.value;
+            // Check if this value exists in any option
+            const existingOption = Array.from(hiddenSelect.options).find(opt => opt.value === customPengirim);
+            if (!existingOption) {
+                // This is a custom value, display it in the search input
+                searchInput.value = customPengirim;
             }
         }
     }

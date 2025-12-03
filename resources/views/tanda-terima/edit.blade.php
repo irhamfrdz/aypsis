@@ -239,6 +239,112 @@
                 </div>
                 @endif
 
+                <!-- Data Pengirim & Penerima Section -->
+                @if($tandaTerima->suratJalan)
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Data Pengirim & Penerima
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                Pengirim
+                            </label>
+                            <div class="relative">
+                                <!-- Hidden select for form submission -->
+                                <select name="pengirim" id="pengirim" class="hidden @error('pengirim') border-red-500 @enderror" disabled>
+                                    <option value="">Pilih Pengirim</option>
+                                    @if(isset($pengirims))
+                                        @foreach($pengirims as $pengirimItem)
+                                            <option value="{{ $pengirimItem->nama_pengirim ?? $pengirimItem }}" 
+                                                {{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) == ($pengirimItem->nama_pengirim ?? $pengirimItem) ? 'selected' : '' }}>
+                                                {{ $pengirimItem->nama_pengirim ?? $pengirimItem }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+
+                                <!-- Search input (disabled) -->
+                                <input type="text" id="pengirimSearch"
+                                       placeholder="Pengirim dari order"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 cursor-not-allowed @error('pengirim') border-red-500 @enderror"
+                                       disabled>
+                            </div>
+                            @error('pengirim')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                Penerima <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <!-- Hidden select for form submission -->
+                                <select name="penerima" id="penerima" class="hidden @error('penerima') border-red-500 @enderror" required>
+                                    <option value="">Pilih Penerima</option>
+                                    @if(isset($masterPenerimaList))
+                                        @foreach($masterPenerimaList as $penerimaItem)
+                                            <option value="{{ $penerimaItem->nama }}" 
+                                                data-alamat="{{ $penerimaItem->alamat ?? '' }}"
+                                                {{ old('penerima', $tandaTerima->penerima) == $penerimaItem->nama ? 'selected' : '' }}>
+                                                {{ $penerimaItem->nama }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+
+                                <!-- Search input -->
+                                <input type="text" id="penerimaSearch"
+                                       placeholder="Cari atau pilih penerima..."
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('penerima') border-red-500 @enderror">
+
+                                <!-- Dropdown options -->
+                                <div id="penerimaDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                                    <div class="p-2 border-b border-gray-200">
+                                        <input type="text" id="penerimaFilterInput" placeholder="Filter penerima..." class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
+                                    </div>
+                                    @if(isset($masterPenerimaList))
+                                        @foreach($masterPenerimaList as $penerimaItem)
+                                            <div class="penerima-option px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                                 data-value="{{ $penerimaItem->nama }}"
+                                                 data-text="{{ $penerimaItem->nama }}"
+                                                 data-alamat="{{ $penerimaItem->alamat ?? '' }}">
+                                                {{ $penerimaItem->nama }}
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+                            </div>
+                            @error('penerima')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-search mr-1"></i>Ketik untuk mencari penerima
+                            </p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="alamat_penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                Alamat Penerima <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="alamat_penerima" id="alamat_penerima" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('alamat_penerima') border-red-500 @enderror"
+                                      placeholder="Alamat lengkap penerima"
+                                      required>{{ old('alamat_penerima', $tandaTerima->alamat_penerima) }}</textarea>
+                            @error('alamat_penerima')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                <i class="fas fa-info-circle mr-1"></i>Alamat akan terisi otomatis saat memilih penerima, namun dapat diubah sesuai kebutuhan
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Separator -->
                 <div class="relative py-6">
                     <div class="absolute inset-0 flex items-center">
@@ -601,7 +707,150 @@
         }
     }
 
+    function initializePenerimaDropdown() {
+        const searchInput = document.getElementById('penerimaSearch');
+        const dropdown = document.getElementById('penerimaDropdown');
+        const hiddenSelect = document.getElementById('penerima');
+        const filterInput = document.getElementById('penerimaFilterInput');
+        const options = document.querySelectorAll('.penerima-option');
+        const alamatTextarea = document.getElementById('alamat_penerima');
+
+        if (!searchInput || !dropdown || !hiddenSelect) return;
+
+        // Show dropdown when search input is focused
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            // Update hidden select with current input value for custom entries
+            hiddenSelect.value = this.value;
+
+            dropdown.classList.remove('hidden');
+        });
+
+        // Filter from the filter input inside dropdown
+        if (filterInput) {
+            filterInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                options.forEach(option => {
+                    const text = option.getAttribute('data-text').toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Handle option selection
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+                const alamat = this.getAttribute('data-alamat');
+
+                // Set the hidden select value
+                hiddenSelect.value = value;
+
+                // Update search input
+                searchInput.value = text;
+
+                // Auto-fill alamat if available
+                if (alamat && alamatTextarea) {
+                    alamatTextarea.value = alamat;
+                }
+
+                // Hide dropdown
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#penerimaSearch') && !e.target.closest('#penerimaDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Set initial value if exists
+        const selectedOption = hiddenSelect.querySelector('option:checked');
+        if (selectedOption && selectedOption.value) {
+            searchInput.value = selectedOption.textContent.trim();
+        } else if (hiddenSelect.value) {
+            // Handle custom penerima value that might not be in the dropdown options
+            const customPenerima = hiddenSelect.value;
+            // Check if this value exists in any option
+            const existingOption = Array.from(hiddenSelect.options).find(opt => opt.value === customPenerima);
+            if (!existingOption) {
+                // This is a custom value, display it in the search input
+                searchInput.value = customPenerima;
+            }
+        }
+    }
+
+    function initializePengirimDropdown() {
+        const searchInput = document.getElementById('pengirimSearch');
+        const hiddenSelect = document.getElementById('pengirim');
+
+        if (!searchInput || !hiddenSelect) return;
+
+        // Set initial value if exists
+        const selectedOption = hiddenSelect.querySelector('option:checked');
+        if (selectedOption && selectedOption.value) {
+            searchInput.value = selectedOption.textContent.trim();
+        } else if (hiddenSelect.value) {
+            searchInput.value = hiddenSelect.value;
+        }
+    }
+
+    function calculateVolume(rowElement) {
+        const panjangInput = rowElement.querySelector('[name^="panjang"]');
+        const lebarInput = rowElement.querySelector('[name^="lebar"]');
+        const tinggiInput = rowElement.querySelector('[name^="tinggi"]');
+        const volumeInput = rowElement.querySelector('[name^="meter_kubik"]');
+
+        const panjang = parseFloat(panjangInput.value) || 0;
+        const lebar = parseFloat(lebarInput.value) || 0;
+        const tinggi = parseFloat(tinggiInput.value) || 0;
+
+        if (panjang > 0 && lebar > 0 && tinggi > 0) {
+            const volume = panjang * lebar * tinggi;
+            volumeInput.value = volume.toFixed(3);
+        } else {
+            volumeInput.value = '';
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize penerima dropdown
+        initializePenerimaDropdown();
+        
+        // Initialize pengirim dropdown (disabled)
+        initializePengirimDropdown();
+
         const addButton = document.getElementById('add-dimensi-btn');
         const container = document.getElementById('dimensi-container');
 
