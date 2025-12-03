@@ -366,6 +366,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // Create main record
             $tandaTerima = TandaTerimaTanpaSuratJalan::create($validated);
+            \Log::info('Tanda Terima created', ['id' => $tandaTerima->id, 'no_tanda_terima' => $tandaTerima->no_tanda_terima]);
 
             // Create dimensi items from array data
             $itemCount = max(
@@ -412,6 +413,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     ]);
                 }
             }
+
+            \Log::info('Dimensi items count after creation', ['count' => $tandaTerima->dimensiItems()->count()]);
 
             // Auto-create prospek for all tanda terima (sesuai permintaan user)
             if ($request->filled('simpan_ke_prospek') || true) { // Always create prospek
