@@ -1608,6 +1608,27 @@ class UserController extends Controller
                                 }
                             }
 
+                            // DIRECT FIX: Handle master-pengirim-penerima permissions explicitly
+                            if ($module === 'master-pengirim-penerima' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-pengirim-penerima-view',
+                                    'create' => 'master-pengirim-penerima-create',
+                                    'update' => 'master-pengirim-penerima-update',
+                                    'delete' => 'master-pengirim-penerima-delete'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
                             // DIRECT FIX: Handle master-permission permissions explicitly
                             if ($module === 'master-permission' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                                 // Map action to correct permission name

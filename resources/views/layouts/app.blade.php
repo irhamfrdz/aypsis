@@ -404,8 +404,8 @@
 
                             {{-- Master Penjualan Sub-Dropdown --}}
                             @php
-                                $isPenjualanRoute = Request::routeIs('pengirim.*') || Request::routeIs('penerima.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan-kegiatan-utama.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.tujuan.*');
-                                $hasPenjualanPermissions = $user && ($user->can('master-pengirim-view') || $user->can('master-penerima-view') || $user->can('master-jenis-barang-view') || $user->can('master-term-view') || $user->can('master-tujuan-kirim-view') || $user->can('master-tujuan-kirim-view'));
+                                $isPenjualanRoute = Request::routeIs('pengirim.*') || Request::routeIs('penerima.*') || Request::routeIs('master-pengirim-penerima.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan-kegiatan-utama.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.tujuan.*');
+                                $hasPenjualanPermissions = $user && ($user->can('master-pengirim-view') || $user->can('master-penerima-view') || $user->can('master-pengirim-penerima-view') || $user->can('master-jenis-barang-view') || $user->can('master-term-view') || $user->can('master-tujuan-kirim-view'));
                             @endphp
 
                         @if($hasPenjualanPermissions)
@@ -425,6 +425,11 @@
                                 @if($user && $user->can('master-penerima-view'))
                                     <a href="{{ route('penerima.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('penerima.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Penerima</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('master-pengirim-penerima-view'))
+                                    <a href="{{ route('master-pengirim-penerima.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('master-pengirim-penerima.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Master Pengirim/Penerima</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-jenis-barang-view'))

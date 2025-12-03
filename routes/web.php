@@ -45,6 +45,7 @@ use App\Http\Controllers\RealisasiUangMukaController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\TipeAkunController;
 use App\Http\Controllers\PengirimController;
+use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
@@ -1114,6 +1115,26 @@ Route::middleware([
     Route::post('master/pengirim-import', [PengirimController::class, 'import'])
          ->name('pengirim.import.process')
          ->middleware('can:master-pengirim-create');
+
+    // Master Pengirim/Penerima - Download Template & Import (HARUS SEBELUM RESOURCE!)
+    Route::get('master-pengirim-penerima/download-template', [MasterPengirimPenerimaController::class, 'downloadTemplate'])
+         ->name('master-pengirim-penerima.download-template')
+         ->middleware('can:master-pengirim-penerima-create');
+    Route::post('master-pengirim-penerima/import', [MasterPengirimPenerimaController::class, 'import'])
+         ->name('master-pengirim-penerima.import')
+         ->middleware('can:master-pengirim-penerima-create');
+    
+    // 📦 Master Pengirim/Penerima Management with permissions
+    Route::resource('master-pengirim-penerima', MasterPengirimPenerimaController::class)
+         ->middleware([
+             'index' => 'can:master-pengirim-penerima-view',
+             'create' => 'can:master-pengirim-penerima-create',
+             'store' => 'can:master-pengirim-penerima-create',
+             'show' => 'can:master-pengirim-penerima-view',
+             'edit' => 'can:master-pengirim-penerima-update',
+             'update' => 'can:master-pengirim-penerima-update',
+             'destroy' => 'can:master-pengirim-penerima-delete'
+         ]);
 
     // 📦 Pengirim - Special routes for Order form (no permission required)
     Route::get('order/pengirim/create', [PengirimController::class, 'createForOrder'])
