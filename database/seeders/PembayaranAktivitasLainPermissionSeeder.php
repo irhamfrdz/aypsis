@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Permission;
+use App\Models\Role;
 
 class PembayaranAktivitasLainPermissionSeeder extends Seeder
 {
@@ -14,28 +14,32 @@ class PembayaranAktivitasLainPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-
         // Create permissions
         $permissions = [
-            'pembayaran-aktivitas-lain-view',
-            'pembayaran-aktivitas-lain-create',
-            'pembayaran-aktivitas-lain-update',
-            'pembayaran-aktivitas-lain-delete',
-            'pembayaran-aktivitas-lain-approve',
+            ['name' => 'pembayaran-aktivitas-lain-view', 'description' => 'Lihat Pembayaran Aktivitas Lain'],
+            ['name' => 'pembayaran-aktivitas-lain-create', 'description' => 'Tambah Pembayaran Aktivitas Lain'],
+            ['name' => 'pembayaran-aktivitas-lain-update', 'description' => 'Edit Pembayaran Aktivitas Lain'],
+            ['name' => 'pembayaran-aktivitas-lain-delete', 'description' => 'Hapus Pembayaran Aktivitas Lain'],
+            ['name' => 'pembayaran-aktivitas-lain-approve', 'description' => 'Approve Pembayaran Aktivitas Lain'],
         ];
 
+        $createdPermissions = [];
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            $perm = Permission::firstOrCreate(
+                ['name' => $permission['name']],
+                ['description' => $permission['description']]
+            );
+            $createdPermissions[] = $perm->id;
         }
 
         // Assign all permissions to admin role
         $adminRole = Role::where('name', 'admin')->first();
         if ($adminRole) {
-            $adminRole->givePermissionTo($permissions);
+            // Sync permissions to role (using permission_role pivot table)
+            $adminRole->permissions()->syncWithoutDetaching($createdPermissions);
+            $this->command->info('Permissions assigned to admin role!');
         }
 
-        $this->command->info('Pembayaran Aktivitas Lain permissions created and assigned to admin!');
+        $this->command->info('Pembayaran Aktivitas Lain permissions created successfully!');
     }
 }
