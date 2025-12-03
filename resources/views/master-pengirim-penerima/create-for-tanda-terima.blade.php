@@ -176,25 +176,25 @@
             // If form submission was successful and this is a popup
             @if(session('success') && session('popup'))
                 // Send message to parent window
-                if (window.opener) {
+                if (window.opener && !window.opener.closed) {
                     const penerimaData = {
                         type: 'penerimaAdded',
                         penerima: {
                             nama: '{{ session("penerima_nama") }}',
-                            alamat: '{{ session("penerima_alamat") ?? "" }}',
-                            npwp: '{{ session("penerima_npwp") ?? "" }}'
+                            alamat: '{{ session("penerima_alamat") ?? "" }}'
                         }
                     };
                     
                     console.log('Sending penerima data to parent:', penerimaData);
                     window.opener.postMessage(penerimaData, window.location.origin);
                     
-                    // Close popup after short delay
+                    // Close popup immediately
                     setTimeout(function() {
                         window.close();
-                    }, 1000);
+                    }, 500);
                 } else {
-                    console.error('window.opener not available');
+                    console.error('window.opener not available or closed');
+                    alert('Data berhasil disimpan! Silakan tutup jendela ini secara manual.');
                 }
             @endif
         });
