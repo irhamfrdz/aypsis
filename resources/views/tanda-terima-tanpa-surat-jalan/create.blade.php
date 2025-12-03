@@ -328,7 +328,7 @@
                                            value="{{ old('panjang.0') }}"
                                            min="0"
                                            step="0.001"
-                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">>
+                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">
                                 </div>
                                 <div>
                                     <label for="lebar_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -342,7 +342,7 @@
                                            value="{{ old('lebar.0') }}"
                                            min="0"
                                            step="0.001"
-                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">>
+                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">
                                 </div>
                                 <div>
                                     <label for="tinggi_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -356,7 +356,7 @@
                                            value="{{ old('tinggi.0') }}"
                                            min="0"
                                            step="0.001"
-                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">>
+                                           oninput="calculateVolumeNew(this.closest('.dimensi-row-new'))">
                                 </div>
                                 <div>
                                     <label for="meter_kubik_0" class="block text-xs font-medium text-gray-500 mb-2">
