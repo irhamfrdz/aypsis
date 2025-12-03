@@ -72,6 +72,19 @@
                     @enderror
                 </div>
 
+                <!-- Debit/Kredit -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Debit/Kredit <span class="text-red-500">*</span></label>
+                    <select name="debit_kredit" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('debit_kredit') border-red-500 @enderror">
+                        <option value="">Pilih Debit/Kredit</option>
+                        <option value="debit" {{ old('debit_kredit', $pembayaranAktivitasLain->debit_kredit) == 'debit' ? 'selected' : '' }}>Debit</option>
+                        <option value="kredit" {{ old('debit_kredit', $pembayaranAktivitasLain->debit_kredit) == 'kredit' ? 'selected' : '' }}>Kredit</option>
+                    </select>
+                    @error('debit_kredit')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Keterangan -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>

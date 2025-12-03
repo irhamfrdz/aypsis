@@ -16,6 +16,7 @@ class PembayaranAktivitasLain extends Model
         'keterangan',
         'jumlah',
         'metode_pembayaran',
+        'debit_kredit',
         'status',
         'approved_by',
         'approved_at',
