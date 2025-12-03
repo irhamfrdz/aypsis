@@ -10,6 +10,7 @@ use App\Models\Pengirim;
 use App\Models\Karyawan;
 use App\Models\MasterTujuanKirim;
 use App\Models\MasterKapal;
+use App\Models\MasterPengirimPenerima;
 use App\Models\Prospek;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
@@ -131,6 +132,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
+        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);
@@ -180,7 +182,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         $containerOptions = array_values($merged);
 
-        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions', 'kegiatanSuratJalan'));
+        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'masterPengirimPenerima', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions', 'kegiatanSuratJalan'));
     }
 
     /**
@@ -190,6 +192,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
+        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);
@@ -233,7 +236,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
-            'pengirims', 
+            'pengirims',
+            'masterPengirimPenerima',
             'supirs', 
             'kranis', 
             'tujuanKegiatanUtamas', 

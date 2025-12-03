@@ -3,6 +3,56 @@
 @section('title', 'Buat Tanda Terima Tanpa Surat Jalan')
 @section('page_title', 'Buat Tanda Terima Tanpa Surat Jalan')
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom Select2 styling to match Tailwind */
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 26px;
+        color: #111827;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+        right: 8px;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #3b82f6;
+    }
+
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-4">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
@@ -177,23 +227,55 @@
                     <!-- Baris 1: Nama Penerima dan Pengirim -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="penerima" class="block text-sm font-medium text-gray-700 mb-1">
-                                Penerima <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="penerima" id="penerima" value="{{ old('penerima') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('penerima') border-red-500 @enderror"
-                                   placeholder="Nama penerima">
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="penerima" class="block text-sm font-medium text-gray-700">
+                                    Penerima <span class="text-red-500">*</span>
+                                </label>
+                                <button type="button" 
+                                        onclick="openPenerimaPopup()"
+                                        class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Tambah Penerima Baru
+                                </button>
+                            </div>
+                            <select name="penerima" id="penerima" required
+                                    class="select2-penerima w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('penerima') border-red-500 @enderror">
+                                <option value="">-- Pilih Penerima --</option>
+                                @foreach($masterPengirimPenerima as $item)
+                                    <option value="{{ $item->nama }}" 
+                                            data-alamat="{{ $item->alamat }}"
+                                            {{ old('penerima') == $item->nama ? 'selected' : '' }}>
+                                        {{ $item->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('penerima')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">
-                                Pengirim <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="pengirim" id="pengirim" value="{{ old('pengirim') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim') border-red-500 @enderror"
-                                   placeholder="Nama pengirim">
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="pengirim" class="block text-sm font-medium text-gray-700">
+                                    Pengirim <span class="text-red-500">*</span>
+                                </label>
+                                <button type="button" 
+                                        onclick="openPengirimPopup()"
+                                        class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Tambah Pengirim Baru
+                                </button>
+                            </div>
+                            <select name="pengirim" id="pengirim" required
+                                    class="select2-pengirim w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim') border-red-500 @enderror">
+                                <option value="">-- Pilih Pengirim --</option>
+                                @foreach($masterPengirimPenerima as $item)
+                                    <option value="{{ $item->nama }}"
+                                            data-alamat="{{ $item->alamat }}"
+                                            {{ old('pengirim') == $item->nama ? 'selected' : '' }}>
+                                        {{ $item->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('pengirim')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -764,8 +846,55 @@
 @endsection
 
 @push('scripts')
+<!-- Select2 JS - jQuery already loaded in layout -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Select2 for penerima dropdown
+        $('.select2-penerima').select2({
+            placeholder: '-- Pilih Penerima --',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Initialize Select2 for pengirim dropdown
+        $('.select2-pengirim').select2({
+            placeholder: '-- Pilih Pengirim --',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Auto-fill alamat penerima when penerima is selected
+        $('#penerima').on('select2:select', function(e) {
+            var selectedOption = e.params.data.element;
+            var alamat = $(selectedOption).data('alamat');
+            
+            if (alamat) {
+                $('#alamat_penerima').val(alamat);
+            }
+        });
+
+        // Clear alamat when penerima is cleared
+        $('#penerima').on('select2:clear', function(e) {
+            $('#alamat_penerima').val('');
+        });
+
+        // Auto-fill alamat pengirim when pengirim is selected
+        $('#pengirim').on('select2:select', function(e) {
+            var selectedOption = e.params.data.element;
+            var alamat = $(selectedOption).data('alamat');
+            
+            if (alamat) {
+                $('#alamat_pengirim').val(alamat);
+            }
+        });
+
+        // Clear alamat when pengirim is cleared
+        $('#pengirim').on('select2:clear', function(e) {
+            $('#alamat_pengirim').val('');
+        });
+
         // Calculate initial volumes and totals
         calculateAllVolumesAndTotals();
 
@@ -2220,6 +2349,76 @@
                     alert('Tidak ada file yang valid untuk diupload.');
                 }
             }
+        }
+    });
+    
+    // Function to open penerima popup window
+    function openPenerimaPopup() {
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create") }}',
+            'TambahPenerima',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
+    // Function to open pengirim popup window
+    function openPengirimPopup() {
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create") }}',
+            'TambahPengirim',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
+    // Listen for message from popup when new penerima/pengirim is added
+    window.addEventListener('message', function(event) {
+        // Verify origin for security
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data.type === 'penerimaAdded') {
+            const newData = event.data.penerima;
+            
+            // Add to both penerima and pengirim select (same data source)
+            const penerimaSelect = $('#penerima');
+            const pengirimSelect = $('#pengirim');
+            
+            // Add new option to penerima
+            const penerimaOption = new Option(newData.nama, newData.nama, true, true);
+            $(penerimaOption).attr('data-alamat', newData.alamat || '');
+            penerimaSelect.append(penerimaOption);
+            
+            // Add new option to pengirim  
+            const pengirimOption = new Option(newData.nama, newData.nama, false, false);
+            $(pengirimOption).attr('data-alamat', newData.alamat || '');
+            pengirimSelect.append(pengirimOption);
+            
+            // Trigger select2 change and auto-fill alamat for penerima
+            penerimaSelect.trigger('change');
+            $('#alamat_penerima').val(newData.alamat || '');
+            
+            console.log('✓ New penerima/pengirim added:', newData.nama);
         }
     });
 </script>
