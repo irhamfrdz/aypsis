@@ -305,6 +305,17 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         try {
             DB::beginTransaction();
 
+            // Debug: Log request data untuk troubleshooting
+            \Log::info('Request Data Debug:', [
+                'all_data' => $request->all(),
+                'panjang_raw' => $request->input('panjang'),
+                'lebar_raw' => $request->input('lebar'),
+                'tinggi_raw' => $request->input('tinggi'),
+                'meter_kubik_raw' => $request->input('meter_kubik'),
+                'tonase_raw' => $request->input('tonase'),
+                'nama_barang_raw' => $request->input('nama_barang'),
+            ]);
+
             // Generate tanda terima number
             $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
             $validated['created_by'] = Auth::user()->name;
@@ -318,6 +329,16 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $tinggiArray = $validated['tinggi'] ?? [];
             $meterKubikArray = $validated['meter_kubik'] ?? [];
             $tonaseArray = $validated['tonase'] ?? [];
+
+            // Debug: Log extracted arrays
+            \Log::info('Extracted Arrays Debug:', [
+                'namaBarangArray' => $namaBarangArray,
+                'panjangArray' => $panjangArray,
+                'lebarArray' => $lebarArray,
+                'tinggiArray' => $tinggiArray,
+                'meterKubikArray' => $meterKubikArray,
+                'tonaseArray' => $tonaseArray,
+            ]);
 
             // Remove array fields from main validation data
             unset($validated['nama_barang'], $validated['jumlah'], $validated['satuan']);

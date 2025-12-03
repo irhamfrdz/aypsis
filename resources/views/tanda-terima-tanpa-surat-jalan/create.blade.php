@@ -1567,22 +1567,39 @@
     let dimensiCounterNew = 1;
 
     function calculateVolumeNew(rowElement) {
+        if (!rowElement) {
+            console.log('calculateVolumeNew: rowElement is null');
+            return;
+        }
+
         const panjangInput = rowElement.querySelector('input[name="panjang[]"]');
         const lebarInput = rowElement.querySelector('input[name="lebar[]"]');
         const tinggiInput = rowElement.querySelector('input[name="tinggi[]"]');
         const volumeInput = rowElement.querySelector('input[name="meter_kubik[]"]');
 
-        if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) return;
+        if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) {
+            console.log('calculateVolumeNew: Missing inputs:', {
+                panjang: !!panjangInput,
+                lebar: !!lebarInput,
+                tinggi: !!tinggiInput,
+                volume: !!volumeInput
+            });
+            return;
+        }
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
 
+        console.log('calculateVolumeNew values:', { panjang, lebar, tinggi });
+
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
             const volume = panjang * lebar * tinggi;
             volumeInput.value = volume.toFixed(3);
+            console.log('Volume calculated:', volume.toFixed(3));
         } else {
             volumeInput.value = '';
+            console.log('Volume cleared (insufficient values)');
         }
     }
 
@@ -1726,6 +1743,37 @@
         existingDimensiRows.forEach(row => calculateVolumeNew(row));
         // Run initial update of hidden legacy fields
         updateHiddenBarangFields();
+
+        // Add form submission debugging
+        const formElement = document.querySelector('form');
+        if (formElement) {
+            formElement.addEventListener('submit', function(e) {
+                console.log('Form submission debug:');
+                
+                // Check each dimensi row
+                const dimensiRows = document.querySelectorAll('#dimensi-container-new .dimensi-row-new');
+                dimensiRows.forEach((row, index) => {
+                    const panjang = row.querySelector('input[name="panjang[]"]')?.value || '';
+                    const lebar = row.querySelector('input[name="lebar[]"]')?.value || '';
+                    const tinggi = row.querySelector('input[name="tinggi[]"]')?.value || '';
+                    const volume = row.querySelector('input[name="meter_kubik[]"]')?.value || '';
+                    const tonase = row.querySelector('input[name="tonase[]"]')?.value || '';
+                    const nama = row.querySelector('input[name="nama_barang[]"]')?.value || '';
+                    
+                    console.log(`Row ${index + 1}:`, {
+                        nama_barang: nama,
+                        panjang: panjang,
+                        lebar: lebar, 
+                        tinggi: tinggi,
+                        meter_kubik: volume,
+                        tonase: tonase
+                    });
+                });
+
+                // Let form submit normally for now
+                // e.preventDefault(); // Remove this to allow submission
+            });
+        }
     });
 </script>
 @endpush
