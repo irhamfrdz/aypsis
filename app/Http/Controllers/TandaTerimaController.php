@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TandaTerimaController extends Controller
 {
@@ -233,6 +234,9 @@ class TandaTerimaController extends Controller
         // Get all karyawans for dropdown (kenek/krani) - only from divisi krani
         $kranisKenek = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
 
+        // Get supir data for supir pengganti dropdown
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->orderBy('nama_lengkap')->get();
+
         // Get all stock kontainers for dropdown - combine from stock_kontainers and kontainers (tersedia)
         $stockKontainersFromStock = \App\Models\StockKontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
             ->orderBy('nomor_seri_gabungan')
@@ -252,7 +256,7 @@ class TandaTerimaController extends Controller
         // Get all master tujuan kirims for dropdown
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers', 'masterTujuanKirims'));
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'karyawanSupirs', 'stockKontainers', 'masterTujuanKirims'));
     }
 
     /**
@@ -275,6 +279,8 @@ class TandaTerimaController extends Controller
             'jumlah_retur' => 'nullable|integer|min:0',
             'supir' => 'nullable|string|max:255',
             'supir_pengganti' => 'nullable|string|max:255',
+            'kenek' => 'nullable|string|max:255',
+            'kenek_pengganti' => 'nullable|string|max:255',
             'no_plat' => 'nullable|string|max:50',
             'kenek' => 'nullable|string|max:255',
             'krani' => 'nullable|string|max:255',
@@ -313,6 +319,9 @@ class TandaTerimaController extends Controller
             'nomor_kontainer.*' => 'nullable|string|max:255',
             'no_seal' => 'nullable|array',
             'no_seal.*' => 'nullable|string|max:255',
+            // Validation for uploaded images
+            'gambar_checkpoint' => 'nullable|array|max:5',
+            'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
         ]);
 
         DB::beginTransaction();
@@ -525,12 +534,29 @@ class TandaTerimaController extends Controller
             }
             if ($request->filled('supir_pengganti')) {
                 $suratJalanUpdate['supir_pengganti'] = $request->supir_pengganti;
+                
+                // Update the supir field in surat jalan when supir pengganti is selected
+                $karyawanSupir = \App\Models\Karyawan::where('nama_lengkap', $request->supir_pengganti)->first();
+                if ($karyawanSupir) {
+                    $suratJalanUpdate['supir'] = $karyawanSupir->nama_lengkap;
+                }
             }
             if ($request->filled('no_plat')) {
                 $suratJalanUpdate['no_plat'] = $request->no_plat;
             }
             if ($request->filled('kenek')) {
                 $suratJalanUpdate['kenek'] = $request->kenek;
+            }
+            if ($request->filled('kenek_pengganti')) {
+                $suratJalanUpdate['kenek_pengganti'] = $request->kenek_pengganti;
+                
+                // Update the kenek field in surat jalan when kenek pengganti is selected
+                if (!empty($request->kenek_pengganti)) {
+                    $karyawanKenek = \App\Models\Karyawan::where('nama_lengkap', $request->kenek_pengganti)->first();
+                    if ($karyawanKenek) {
+                        $suratJalanUpdate['kenek'] = $karyawanKenek->nama_lengkap;
+                    }
+                }
             }
             if ($request->filled('krani')) {
                 $suratJalanUpdate['krani'] = $request->krani;
@@ -576,6 +602,45 @@ class TandaTerimaController extends Controller
                 $suratJalanUpdate['tanggal_checkpoint'] = $request->tanggal_checkpoint_supir;
             }
             
+            // Handle gambar checkpoint upload
+            $uploadedImages = [];
+            if ($request->hasFile('gambar_checkpoint')) {
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'));
+                if (!empty($uploadedImages)) {
+                    // Get existing images from surat jalan
+                    $existingImages = [];
+                    if (!empty($suratJalan->gambar_checkpoint)) {
+                        if (is_string($suratJalan->gambar_checkpoint)) {
+                            $decoded = json_decode($suratJalan->gambar_checkpoint, true);
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                $existingImages = array_filter($decoded);
+                            } else {
+                                $existingImages = [$suratJalan->gambar_checkpoint];
+                            }
+                        } elseif (is_array($suratJalan->gambar_checkpoint)) {
+                            $existingImages = array_filter($suratJalan->gambar_checkpoint);
+                        }
+                    }
+                    
+                    // Merge existing and new images
+                    $allImages = array_merge($existingImages, $uploadedImages);
+                    
+                    // Limit to 10 total images
+                    if (count($allImages) > 10) {
+                        $allImages = array_slice($allImages, 0, 10);
+                    }
+                    
+                    $suratJalanUpdate['gambar_checkpoint'] = json_encode($allImages);
+                    
+                    Log::info('Gambar checkpoint uploaded', [
+                        'surat_jalan_id' => $suratJalan->id,
+                        'new_images_count' => count($uploadedImages),
+                        'total_images_count' => count($allImages),
+                        'uploaded_by' => Auth::user() ? Auth::user()->name : null,
+                    ]);
+                }
+            }
+            
             // Update surat jalan jika ada perubahan
             if (!empty($suratJalanUpdate)) {
                 $suratJalan->update($suratJalanUpdate);
@@ -596,6 +661,12 @@ class TandaTerimaController extends Controller
             $successMessage = 'Tanda terima berhasil dibuat dan data telah disinkronkan ke surat jalan';
             if ($updatedProspekCount > 0) {
                 $successMessage .= " Berhasil mengupdate {$updatedProspekCount} prospek terkait dengan data volume, tonase, dan kuantitas terbaru.";
+            }
+            
+            // Add message about uploaded images
+            if (!empty($uploadedImages)) {
+                $imageCount = count($uploadedImages);
+                $successMessage .= " Berhasil mengupload {$imageCount} gambar checkpoint baru.";
             }
 
             return redirect()->route('tanda-terima.show', $tandaTerima->id)
@@ -735,6 +806,8 @@ class TandaTerimaController extends Controller
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'nullable|in:draft,submitted,approved,completed,cancelled',
+            'supir_pengganti' => 'nullable|string|max:255',
+            'kenek_pengganti' => 'nullable|string|max:255',
             'nomor_kontainer' => 'nullable|array',
             'nomor_kontainer.*' => 'nullable|string|max:255',
             'no_seal' => 'nullable|array',
@@ -779,6 +852,8 @@ class TandaTerimaController extends Controller
                 'tonase' => $request->tonase ? round((float) $request->tonase, 3) : null,
                 'tujuan_pengiriman' => $request->tujuan_pengiriman,
                 'catatan' => $request->catatan,
+                'supir_pengganti' => $request->supir_pengganti,
+                'kenek_pengganti' => $request->kenek_pengganti,
                 'updated_by' => Auth::id(),
             ];
 
@@ -916,6 +991,32 @@ class TandaTerimaController extends Controller
                     // Update tanggal checkpoint jika ada perubahan
                     if (isset($updateData['tanggal_checkpoint_supir']) && $updateData['tanggal_checkpoint_supir'] != $suratJalan->tanggal_checkpoint) {
                         $suratJalanUpdateData['tanggal_checkpoint'] = $updateData['tanggal_checkpoint_supir'];
+                    }
+                    
+                    // Update supir pengganti jika ada perubahan
+                    if (isset($updateData['supir_pengganti']) && $updateData['supir_pengganti'] != $suratJalan->supir_pengganti) {
+                        $suratJalanUpdateData['supir_pengganti'] = $updateData['supir_pengganti'];
+                        
+                        // Update the supir field in surat jalan when supir pengganti is changed
+                        if (!empty($updateData['supir_pengganti'])) {
+                            $karyawanSupir = \App\Models\Karyawan::where('nama_lengkap', $updateData['supir_pengganti'])->first();
+                            if ($karyawanSupir) {
+                                $suratJalanUpdateData['supir'] = $karyawanSupir->nama_lengkap;
+                            }
+                        }
+                    }
+                    
+                    // Update kenek pengganti jika ada perubahan
+                    if (isset($updateData['kenek_pengganti']) && $updateData['kenek_pengganti'] != $suratJalan->kenek_pengganti) {
+                        $suratJalanUpdateData['kenek_pengganti'] = $updateData['kenek_pengganti'];
+                        
+                        // Update the kenek field in surat jalan when kenek pengganti is changed
+                        if (!empty($updateData['kenek_pengganti'])) {
+                            $karyawanKenek = \App\Models\Karyawan::where('nama_lengkap', $updateData['kenek_pengganti'])->first();
+                            if ($karyawanKenek) {
+                                $suratJalanUpdateData['kenek'] = $karyawanKenek->nama_lengkap;
+                            }
+                        }
                     }
                     
                     // Lakukan update jika ada perubahan
@@ -1335,6 +1436,59 @@ class TandaTerimaController extends Controller
             // Don't throw exception to avoid breaking the main update process
             return 0;
         }
+    }
+
+    /**
+     * Handle image upload for checkpoint images
+     * 
+     * @param array $uploadedFiles
+     * @return array Array of uploaded image paths
+     */
+    private function handleImageUpload($uploadedFiles)
+    {
+        $imagePaths = [];
+        
+        try {
+            // Ensure checkpoint directory exists
+            if (!Storage::disk('public')->exists('checkpoint')) {
+                Storage::disk('public')->makeDirectory('checkpoint');
+            }
+            
+            foreach ($uploadedFiles as $file) {
+                if ($file->isValid()) {
+                    // Generate unique filename with timestamp
+                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $extension = $file->getClientOriginalExtension();
+                    $filename = 'checkpoint_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                    
+                    // Store in public disk under checkpoint directory
+                    $path = $file->storeAs('checkpoint', $filename, 'public');
+                    
+                    if ($path) {
+                        $imagePaths[] = $path;
+                        
+                        Log::info('Image uploaded successfully', [
+                            'original_name' => $file->getClientOriginalName(),
+                            'stored_path' => $path,
+                            'file_size' => $file->getSize(),
+                            'uploaded_by' => Auth::user() ? Auth::user()->name : null,
+                        ]);
+                    }
+                } else {
+                    Log::warning('Invalid file uploaded', [
+                        'file_name' => $file->getClientOriginalName(),
+                        'error' => $file->getErrorMessage(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Error uploading images: ' . $e->getMessage(), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+        
+        return $imagePaths;
     }
 }
 

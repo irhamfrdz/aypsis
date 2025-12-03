@@ -243,7 +243,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
      */
     public function store(Request $request)
     {
-        // If legacy nested dimensi_items is used, flatten into expected arrays BEFORE validation
+        // DISABLED: dimensi_items[][] is no longer sent from form
+        // Form now sends panjang[], lebar[], tinggi[], meter_kubik[], tonase[] arrays directly
+        // This code is kept for backward compatibility with old forms only
+        /*
         if ($request->has('dimensi_items') && is_array($request->input('dimensi_items'))) {
             $nested = $request->input('dimensi_items');
             $flattened = [
@@ -266,28 +269,22 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $flattened['meter_kubik'][] = $n['meter_kubik'] ?? null;
                 $flattened['tonase'][] = $n['tonase'] ?? null;
             }
-                // Merge flattened arrays into request (always set arrays from nested dimensi_items)
-                foreach ($flattened as $k => $vals) {
-                    $existing = (array) $request->input($k, []);
-                    // Merge existing and flattened values while preserving non-empty entries
-                    $merged = array_values(array_filter(array_merge($existing, (array) $vals), function ($v) {
-                        return $v !== null && $v !== '';
-                    }));
-                    if (!empty($merged)) {
-                        $request->merge([$k => $merged]);
-                    }
+            foreach ($flattened as $k => $vals) {
+                $existing = (array) $request->input($k, []);
+                $merged = array_values(array_filter(array_merge($existing, (array) $vals), function ($v) {
+                    return $v !== null && $v !== '';
+                }));
+                if (!empty($merged)) {
+                    $request->merge([$k => $merged]);
                 }
-                \Log::info('Request after flattening nested dimensi_items', [
-                    'panjang' => $request->input('panjang'),
-                    'lebar' => $request->input('lebar'),
-                    'tinggi' => $request->input('tinggi'),
-                    'meter_kubik' => $request->input('meter_kubik'),
-                    'tonase' => $request->input('tonase'),
-                    'nama_barang' => $request->input('nama_barang')
-                ]);
+            }
         }
+        */
 
         // If legacy scalar values exist (hidden single values) convert them into arrays
+        // REMOVED - This logic is incorrect and causes issues
+        // The form always sends arrays (panjang[], lebar[], etc.) so no conversion needed
+        /*
         foreach (['panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase', 'nama_barang', 'jumlah', 'satuan'] as $k) {
             $val = $request->input($k);
             if (!is_null($val) && !is_array($val)) {
@@ -297,6 +294,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 }
             }
         }
+        */
 
         $validated = $request->validate([
             'tanggal_tanda_terima' => 'required|date',
@@ -361,15 +359,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             DB::beginTransaction();
 
             // Debug: Log request data untuk troubleshooting
-            \Log::info('Request Data Debug:', [
-                'all_data' => $request->all(),
-                'panjang_raw' => $request->input('panjang'),
-                'lebar_raw' => $request->input('lebar'),
-                'tinggi_raw' => $request->input('tinggi'),
-                'meter_kubik_raw' => $request->input('meter_kubik'),
-                'tonase_raw' => $request->input('tonase'),
-                'nama_barang_raw' => $request->input('nama_barang'),
-            ]);
+            \Log::info('=== TANDA TERIMA STORE - RAW REQUEST ===');
+            \Log::info('panjang[]:', ['data' => $request->input('panjang'), 'count' => count($request->input('panjang', []))]);
+            \Log::info('lebar[]:', ['data' => $request->input('lebar'), 'count' => count($request->input('lebar', []))]);
+            \Log::info('tinggi[]:', ['data' => $request->input('tinggi'), 'count' => count($request->input('tinggi', []))]);
+            \Log::info('meter_kubik[]:', ['data' => $request->input('meter_kubik'), 'count' => count($request->input('meter_kubik', []))]);
+            \Log::info('tonase[]:', ['data' => $request->input('tonase'), 'count' => count($request->input('tonase', []))]);
+            \Log::info('nama_barang[]:', ['data' => $request->input('nama_barang'), 'count' => count($request->input('nama_barang', []))]);
+            \Log::info('dimensi_items (should be empty):', ['data' => $request->input('dimensi_items')]);
 
             // Generate tanda terima number
             $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
@@ -378,14 +375,36 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // (Legacy flattened dimensi items merged before validation)
 
             // Extract array data for dimensi items and sanitize values
-            $namaBarangArray = array_values(array_filter(array_map(function($v){ return is_null($v) ? null : trim((string)$v); }, $validated['nama_barang'] ?? []), function($v){ return $v !== null && $v !== ''; }));
-            $jumlahArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (int)$v : null; }, $validated['jumlah'] ?? []), function($v){ return $v !== null; }));
-            $satuanArray = array_values(array_filter(array_map(function($v){ return is_null($v) ? null : trim((string)$v); }, $validated['satuan'] ?? []), function($v){ return $v !== null && $v !== ''; }));
-            $panjangArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['panjang'] ?? []), function($v){ return $v !== null; }));
-            $lebarArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['lebar'] ?? []), function($v){ return $v !== null; }));
-            $tinggiArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['tinggi'] ?? []), function($v){ return $v !== null; }));
-            $meterKubikArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['meter_kubik'] ?? []), function($v){ return $v !== null; }));
-            $tonaseArray = array_values(array_filter(array_map(function($v){ return is_numeric($v) ? (float)$v : null; }, $validated['tonase'] ?? []), function($v){ return $v !== null; }));
+            // Keep indices aligned - don't filter out items, just convert types
+            $maxCount = max(
+                count($validated['nama_barang'] ?? []),
+                count($validated['jumlah'] ?? []),
+                count($validated['panjang'] ?? []),
+                count($validated['lebar'] ?? []),
+                count($validated['tinggi'] ?? []),
+                count($validated['meter_kubik'] ?? []),
+                count($validated['tonase'] ?? [])
+            );
+            
+            $namaBarangArray = [];
+            $jumlahArray = [];
+            $satuanArray = [];
+            $panjangArray = [];
+            $lebarArray = [];
+            $tinggiArray = [];
+            $meterKubikArray = [];
+            $tonaseArray = [];
+            
+            for ($idx = 0; $idx < $maxCount; $idx++) {
+                $namaBarangArray[$idx] = isset($validated['nama_barang'][$idx]) ? trim((string)$validated['nama_barang'][$idx]) : null;
+                $jumlahArray[$idx] = isset($validated['jumlah'][$idx]) && is_numeric($validated['jumlah'][$idx]) ? (int)$validated['jumlah'][$idx] : null;
+                $satuanArray[$idx] = isset($validated['satuan'][$idx]) ? trim((string)$validated['satuan'][$idx]) : null;
+                $panjangArray[$idx] = isset($validated['panjang'][$idx]) && is_numeric($validated['panjang'][$idx]) ? (float)$validated['panjang'][$idx] : null;
+                $lebarArray[$idx] = isset($validated['lebar'][$idx]) && is_numeric($validated['lebar'][$idx]) ? (float)$validated['lebar'][$idx] : null;
+                $tinggiArray[$idx] = isset($validated['tinggi'][$idx]) && is_numeric($validated['tinggi'][$idx]) ? (float)$validated['tinggi'][$idx] : null;
+                $meterKubikArray[$idx] = isset($validated['meter_kubik'][$idx]) && is_numeric($validated['meter_kubik'][$idx]) ? (float)$validated['meter_kubik'][$idx] : null;
+                $tonaseArray[$idx] = isset($validated['tonase'][$idx]) && is_numeric($validated['tonase'][$idx]) ? (float)$validated['tonase'][$idx] : null;
+            }
 
             // Debug: Log extracted arrays (sanitized)
             \Log::info('Extracted Arrays Debug:', [
@@ -436,13 +455,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             \Log::info('Tanda Terima created', ['id' => $tandaTerima->id, 'no_tanda_terima' => $tandaTerima->no_tanda_terima]);
 
             // Create dimensi items from array data
-            $itemCount = max(
-                count($namaBarangArray),
-                count($panjangArray),
-                count($lebarArray),
-                count($tinggiArray),
-                count($tonaseArray)
-            );
+            $itemCount = $maxCount;
 
             for ($i = 0; $i < $itemCount; $i++) {
                 $namaBarang = $namaBarangArray[$i] ?? null;
@@ -454,8 +467,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $meterKubik = $meterKubikArray[$i] ?? null;
                 $tonase = $tonaseArray[$i] ?? null;
 
-                // Only create if at least one field has non-null value
-                if (!is_null($namaBarang) || $panjang !== null || $lebar !== null || $tinggi !== null || $tonase !== null) {
+                // Only create if at least one field has meaningful data (not all nulls)
+                if (!is_null($namaBarang) || !is_null($panjang) || !is_null($lebar) || !is_null($tinggi) || !is_null($meterKubik) || !is_null($tonase)) {
                     \Log::info('Creating dimensi item', [
                         'index' => $i,
                         'namaBarang' => $namaBarang,

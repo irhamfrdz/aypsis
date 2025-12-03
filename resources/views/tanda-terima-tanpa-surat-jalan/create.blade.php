@@ -401,12 +401,9 @@
                     <input type="hidden" name="berat" id="berat" value="">
                     <input type="hidden" name="satuan_berat" id="satuan_berat" value="kg">
                     <input type="hidden" name="keterangan_barang" id="keterangan_barang" value="">
-                    <!-- Backward-compatible hidden inputs for single-row legacy fields -->
-                    <input type="hidden" name="panjang" id="hiddenPanjang" value="">
-                    <input type="hidden" name="lebar" id="hiddenLebar" value="">
-                    <input type="hidden" name="tinggi" id="hiddenTinggi" value="">
-                    <input type="hidden" name="meter_kubik" id="hiddenMeterKubik" value="">
-                    <input type="hidden" name="tonase" id="hiddenTonase" value="">
+                    <!-- REMOVED: Backward-compatible hidden scalar fields for panjang/lebar/tinggi/meter_kubik/tonase -->
+                    <!-- These conflict with array inputs panjang[], lebar[], tinggi[], meter_kubik[], tonase[] -->
+                    <!-- The controller now only expects arrays, not scalar values -->
                 </div>
 
                 <!-- Informasi Supir dan Kenek -->
@@ -870,7 +867,7 @@
         const volumeInput = row.querySelector('.item-meter-kubik');
         if (volumeInput) {
             if (volume > 0) {
-                volumeInput.value = formatVolumeForDatabase(volume);
+                volumeInput.value = volume.toFixed(3);
             } else {
                 volumeInput.value = '';
             }
@@ -879,9 +876,10 @@
     }
 
     function calculateAllVolumesAndTotals() {
-        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        if (rows.length > 0) {
-            rows.forEach(row => {
+        // Legacy dimensi table
+        const legacyRows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
+        if (legacyRows.length > 0) {
+            legacyRows.forEach(row => {
                 const panjangEl = row.querySelector('.dimensi-panjang');
                 const lebarEl = row.querySelector('.dimensi-lebar');
                 const tinggiEl = row.querySelector('.dimensi-tinggi');
@@ -892,20 +890,28 @@
 
                 let volume = 0;
                 if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                    // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
                     volume = panjang * lebar * tinggi;
                 }
 
                 const volumeInput = row.querySelector('.item-meter-kubik');
                 if (volumeInput) {
                     if (volume > 0) {
-                        volumeInput.value = formatVolumeForDatabase(volume);
+                        volumeInput.value = volume.toFixed(3);
                     } else {
                         volumeInput.value = '';
                     }
                 }
             });
         }
+
+        // New LCL dimensi rows
+        const newRows = document.querySelectorAll('#dimensi-container-new .dimensi-row-new');
+        if (newRows.length > 0) {
+            newRows.forEach(row => {
+                calculateVolumeNew(row);
+            });
+        }
+
         calculateTotals();
         updateRemoveButtons();
     }
@@ -914,11 +920,27 @@
         let totalVolume = 0;
         let totalTonase = 0;
 
-        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
-        if (rows.length > 0) {
-            rows.forEach(row => {
+        // Sum from legacy rows
+        const legacyRows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
+        if (legacyRows.length > 0) {
+            legacyRows.forEach(row => {
                 const volumeEl = row.querySelector('.item-meter-kubik');
                 const tonaseEl = row.querySelector('.dimensi-tonase');
+                
+                const volume = volumeEl ? parseFloat(volumeEl.value) || 0 : 0;
+                const tonase = tonaseEl ? parseFloat(tonaseEl.value) || 0 : 0;
+
+                totalVolume += volume;
+                totalTonase += tonase;
+            });
+        }
+
+        // Sum from new LCL rows
+        const newRows = document.querySelectorAll('#dimensi-container-new .dimensi-row-new');
+        if (newRows.length > 0) {
+            newRows.forEach(row => {
+                const volumeEl = row.querySelector('input[name="meter_kubik[]"]');
+                const tonaseEl = row.querySelector('input[name="tonase[]"]');
                 
                 const volume = volumeEl ? parseFloat(volumeEl.value) || 0 : 0;
                 const tonase = tonaseEl ? parseFloat(tonaseEl.value) || 0 : 0;
@@ -939,30 +961,8 @@
             totalTonaseElement.textContent = formatWeightDisplay(totalTonase) + ' Ton';
         }
 
-        // Update hidden fields for backward compatibility if they exist
-        // Use first item's values or totals
-        const firstRow = document.querySelector('#dimensiTableBody .dimensi-item');
-        const hiddenPanjangEl = document.getElementById('hiddenPanjang');
-        const hiddenLebarEl = document.getElementById('hiddenLebar');
-        const hiddenTinggiEl = document.getElementById('hiddenTinggi');
-        const hiddenMeterKubikEl = document.getElementById('hiddenMeterKubik');
-        const hiddenTonaseEl = document.getElementById('hiddenTonase');
-
-        if (firstRow) {
-            const fp = firstRow.querySelector('.dimensi-panjang')?.value || '';
-            const fl = firstRow.querySelector('.dimensi-lebar')?.value || '';
-            const ft = firstRow.querySelector('.dimensi-tinggi')?.value || '';
-            if (hiddenPanjangEl) hiddenPanjangEl.value = fp;
-            if (hiddenLebarEl) hiddenLebarEl.value = fl;
-            if (hiddenTinggiEl) hiddenTinggiEl.value = ft;
-        } else {
-            if (hiddenPanjangEl) hiddenPanjangEl.value = '';
-            if (hiddenLebarEl) hiddenLebarEl.value = '';
-            if (hiddenTinggiEl) hiddenTinggiEl.value = '';
-        }
-
-        if (hiddenMeterKubikEl) hiddenMeterKubikEl.value = formatVolumeForDatabase(totalVolume);
-        if (hiddenTonaseEl) hiddenTonaseEl.value = formatWeightForDatabase(totalTonase);
+        // REMOVED: Hidden scalar field updates (hiddenPanjang, hiddenLebar, etc.)
+        // These fields no longer exist - form only sends arrays now
     }
 
     // Formatting functions for input fields (clean whole numbers, smart decimal display)
@@ -1132,8 +1132,12 @@
     const tandaTerimaForm = document.querySelector('form');
     if (tandaTerimaForm) {
         tandaTerimaForm.addEventListener('submit', function (e) {
+            // Ensure latest volume/totals/calculations are up-to-date
+            calculateAllVolumesAndTotals();
             // Update hidden legacy fields from new LCL inputs before submit
             updateHiddenBarangFields();
+            // DON'T call serializeLclRowsToDimensiItems() - form already sends panjang[], lebar[], etc arrays correctly!
+            // serializeLclRowsToDimensiItems(); // DISABLED - causes data corruption
             const hiddenInput = document.getElementById('no_kontainer');
             const manualField = document.getElementById('no_kontainer_manual');
             if (hiddenInput && hiddenInput.value === '__manual__') {
@@ -1186,8 +1190,96 @@
             if (satuanBeratEl && !satuanBeratEl.value) {
                 satuanBeratEl.value = satuanBeratEl.value || 'kg';
             }
+            // REMOVED: Hidden scalar dimension field updates
+            // Form now only uses arrays: panjang[], lebar[], tinggi[], meter_kubik[], tonase[]
         } catch (err) {
             // silent
+        }
+    }
+
+    // NOTE: This function is DISABLED and should NOT be used!
+    // The form already sends panjang[], lebar[], tinggi[] arrays correctly.
+    // Calling this function creates dimensi_items[][] which conflicts with the direct arrays.
+    // Convert LCL input rows (panjang[], lebar[], tinggi[], meter_kubik[], tonase[]) into
+    // equivalent legacy dimensi_items format so backend that expects dimensi_items[] receives the data.
+    function serializeLclRowsToDimensiItems_DISABLED() {
+        try {
+            const formElement = document.querySelector('form');
+            if (!formElement) return;
+
+            // remove previous serialized inputs if any
+            const oldGenerated = formElement.querySelectorAll('.generated-dimensi-item');
+            oldGenerated.forEach(el => el.remove());
+
+            const newRows = Array.from(document.querySelectorAll('#dimensi-container-new .dimensi-row-new'));
+            newRows.forEach((row, idx) => {
+                const panjangRaw = row.querySelector('input[name="panjang[]"]')?.value || '';
+                const lebarRaw = row.querySelector('input[name="lebar[]"]')?.value || '';
+                const tinggiRaw = row.querySelector('input[name="tinggi[]"]')?.value || '';
+                const meterRaw = row.querySelector('input[name="meter_kubik[]"]')?.value || '';
+                const tonaseRaw = row.querySelector('input[name="tonase[]"]')?.value || '';
+                const nama = row.querySelector('input[name="nama_barang[]"]')?.value || '';
+                const jumlahRaw = row.querySelector('input[name="jumlah[]"]')?.value || '';
+                const satuanRaw = row.querySelector('input[name="satuan[]"]')?.value || '';
+
+                // Clean numeric inputs: replace comma with dot, strip thousands separators, parse
+                const cleanNumber = (val) => {
+                    if (!val && val !== 0) return null;
+                    if (typeof val !== 'string') val = String(val);
+                    // Remove thousand sep like '1.234,56' -> '1234.56' if needed, but simpler: replace commas with dot
+                    let cleaned = val.replace(/\s/g, '').replace(/,/g, '.');
+                    // Remove non-numeric characters except dot and minus
+                    cleaned = cleaned.replace(/[^0-9.\-]/g, '');
+                    const parsed = parseFloat(cleaned);
+                    return isNaN(parsed) ? null : parsed;
+                };
+
+                const panjang = cleanNumber(panjangRaw);
+                const lebar = cleanNumber(lebarRaw);
+                const tinggi = cleanNumber(tinggiRaw);
+                const meter = cleanNumber(meterRaw);
+                const tonase = cleanNumber(tonaseRaw);
+                const jumlah = parseInt(String(jumlahRaw || '0').replace(/[^0-9-]/g, ''), 10) || 0;
+                const satuan = satuanRaw || '';
+
+                // Debug log for each row before creating fields
+                console.log(`Row ${idx} - Raw values:`, {
+                    panjangRaw, lebarRaw, tinggiRaw, meterRaw, tonaseRaw, nama
+                });
+                console.log(`Row ${idx} - Parsed values:`, {
+                    panjang, lebar, tinggi, meter, tonase
+                });
+
+                // Use direct numeric values to avoid formatting issues
+                const fields = {
+                    'panjang': (panjang !== null ? panjang.toFixed(3) : '0'),
+                    'lebar': (lebar !== null ? lebar.toFixed(3) : '0'),
+                    'tinggi': (tinggi !== null ? tinggi.toFixed(3) : '0'),
+                    'meter_kubik': (meter !== null ? meter.toFixed(3) : '0'),
+                    'tonase': (tonase !== null ? tonase.toFixed(3) : '0'),
+                    'nama_barang': nama || '',
+                    'jumlah': jumlah || 0,
+                    'satuan': satuan || ''
+                };
+                
+                console.log(`Row ${idx} - Fields to submit:`, fields);
+
+                Object.keys(fields).forEach(k => {
+                    const v = fields[k];
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.className = 'generated-dimensi-item';
+                    // name like dimensi_items[0][panjang]
+                    input.name = `dimensi_items[${idx}][${k}]`;
+                    input.value = v;
+                    formElement.appendChild(input);
+                });
+            });
+            // Debug log created hidden fields for developer
+            const created = Array.from(formElement.querySelectorAll('.generated-dimensi-item')).map(i => ({name: i.name, value: i.value}));
+            console.log('Serialized dimensi_items from LCL rows:', created);
+        } catch (err) {
+            // ignore
         }
     }
 
@@ -1568,7 +1660,7 @@
 
     function calculateVolumeNew(rowElement) {
         if (!rowElement) {
-            console.log('calculateVolumeNew: rowElement is null');
+            console.warn('⚠️ calculateVolumeNew: rowElement is null');
             return;
         }
 
@@ -1578,7 +1670,7 @@
         const volumeInput = rowElement.querySelector('input[name="meter_kubik[]"]');
 
         if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) {
-            console.log('calculateVolumeNew: Missing inputs:', {
+            console.warn('⚠️ calculateVolumeNew: Missing inputs:', {
                 panjang: !!panjangInput,
                 lebar: !!lebarInput,
                 tinggi: !!tinggiInput,
@@ -1591,15 +1683,38 @@
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
 
-        console.log('calculateVolumeNew values:', { panjang, lebar, tinggi });
+        console.log('📐 calculateVolumeNew input values:', { 
+            panjang: panjang, 
+            lebar: lebar, 
+            tinggi: tinggi,
+            panjangRaw: panjangInput.value,
+            lebarRaw: lebarInput.value,
+            tinggiRaw: tinggiInput.value
+        });
 
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
+            // Calculate volume in cubic meters (m³)
             const volume = panjang * lebar * tinggi;
-            volumeInput.value = volume.toFixed(3);
-            console.log('Volume calculated:', volume.toFixed(3));
+            const volumeFormatted = volume.toFixed(3);
+            
+            console.log('✅ Volume calculation:', {
+                formula: `${panjang} × ${lebar} × ${tinggi}`,
+                result: volume,
+                formatted: volumeFormatted,
+                previousValue: volumeInput.value
+            });
+            
+            // Store the calculated volume directly without extra formatting
+            volumeInput.value = volumeFormatted;
+            
+            // Verify it was set correctly
+            console.log('✅ Volume set to:', volumeInput.value);
+            
+            // update totals after a single row value change
+            calculateTotals();
         } else {
+            console.log('⚪ Volume cleared (insufficient values - need all 3 dimensions > 0)');
             volumeInput.value = '';
-            console.log('Volume cleared (insufficient values)');
         }
     }
 
@@ -1673,6 +1788,25 @@
                     });
                 });
 
+                // Also attach listeners for tonase, jumlah, satuan to update totals and hidden fields
+                const tonaseInput = newRow.querySelector('input[name="tonase[]"]');
+                const jumlahInput = newRow.querySelector('input[name="jumlah[]"]');
+                const satuanInput = newRow.querySelector('input[name="satuan[]"]');
+                const namaInput = newRow.querySelector('input[name="nama_barang[]"]');
+                if (tonaseInput) {
+                    tonaseInput.addEventListener('input', function() {
+                        calculateTotals();
+                        updateHiddenBarangFields();
+                    });
+                }
+                if (jumlahInput || satuanInput || namaInput) {
+                    [jumlahInput, satuanInput, namaInput].forEach(el => {
+                        if (el) el.addEventListener('input', function() {
+                            updateHiddenBarangFields();
+                        });
+                    });
+                }
+
                 // Specifically add event listeners for panjang, lebar, tinggi
                 const panjangInput = newRow.querySelector('input[name="panjang[]"]');
                 const lebarInput = newRow.querySelector('input[name="lebar[]"]');
@@ -1705,6 +1839,27 @@
                     calculateVolumeNew(row);
                 }
             });
+        });
+
+        // Attach event listeners to existing tonase/jumlah/nama/satuan fields (initial row if present)
+        const existingTonases = document.querySelectorAll('input[name="tonase[]"]');
+        existingTonases.forEach(input => {
+            input.addEventListener('input', function() {
+                calculateTotals();
+                updateHiddenBarangFields();
+            });
+        });
+        const existingJumlahs = document.querySelectorAll('input[name="jumlah[]"]');
+        existingJumlahs.forEach(input => {
+            input.addEventListener('input', updateHiddenBarangFields);
+        });
+        const existingSatuans = document.querySelectorAll('input[name="satuan[]"]');
+        existingSatuans.forEach(input => {
+            input.addEventListener('input', updateHiddenBarangFields);
+        });
+        const existingNamas = document.querySelectorAll('input[name="nama_barang[]"]');
+        existingNamas.forEach(input => {
+            input.addEventListener('input', updateHiddenBarangFields);
         });
 
         // Also add event listeners specifically for the initial row inputs
@@ -1748,17 +1903,30 @@
         const formElement = document.querySelector('form');
         if (formElement) {
             formElement.addEventListener('submit', function(e) {
-                console.log('Form submission debug:');
+                // First, ensure all calculations are up to date
+                calculateAllVolumesAndTotals();
+                updateHiddenBarangFields();
                 
-                // Check each dimensi row
+                console.log('=== FORM SUBMISSION DEBUG ===');
+                
+                // Check each dimensi row AFTER calculations
                 const dimensiRows = document.querySelectorAll('#dimensi-container-new .dimensi-row-new');
+                console.log(`Total rows: ${dimensiRows.length}`);
+                
                 dimensiRows.forEach((row, index) => {
-                    const panjang = row.querySelector('input[name="panjang[]"]')?.value || '';
-                    const lebar = row.querySelector('input[name="lebar[]"]')?.value || '';
-                    const tinggi = row.querySelector('input[name="tinggi[]"]')?.value || '';
-                    const volume = row.querySelector('input[name="meter_kubik[]"]')?.value || '';
-                    const tonase = row.querySelector('input[name="tonase[]"]')?.value || '';
-                    const nama = row.querySelector('input[name="nama_barang[]"]')?.value || '';
+                    const panjangInput = row.querySelector('input[name="panjang[]"]');
+                    const lebarInput = row.querySelector('input[name="lebar[]"]');
+                    const tinggiInput = row.querySelector('input[name="tinggi[]"]');
+                    const volumeInput = row.querySelector('input[name="meter_kubik[]"]');
+                    const tonaseInput = row.querySelector('input[name="tonase[]"]');
+                    const namaInput = row.querySelector('input[name="nama_barang[]"]');
+                    
+                    const panjang = panjangInput?.value || '';
+                    const lebar = lebarInput?.value || '';
+                    const tinggi = tinggiInput?.value || '';
+                    const volume = volumeInput?.value || '';
+                    const tonase = tonaseInput?.value || '';
+                    const nama = namaInput?.value || '';
                     
                     console.log(`Row ${index + 1}:`, {
                         nama_barang: nama,
@@ -1768,8 +1936,56 @@
                         meter_kubik: volume,
                         tonase: tonase
                     });
+                    
+                    // Check if inputs exist
+                    console.log(`Row ${index + 1} inputs exist:`, {
+                        panjangExists: !!panjangInput,
+                        lebarExists: !!lebarInput,
+                        tinggiExists: !!tinggiInput,
+                        volumeExists: !!volumeInput,
+                        tonaseExists: !!tonaseInput,
+                        namaExists: !!namaInput
+                    });
                 });
-
+                
+                // Show FormData that will be sent
+                const formData = new FormData(formElement);
+                console.log('=== FORMDATA ARRAYS ===');
+                const panjangVals = formData.getAll('panjang[]');
+                const lebarVals = formData.getAll('lebar[]');
+                const tinggiVals = formData.getAll('tinggi[]');
+                const volumeVals = formData.getAll('meter_kubik[]');
+                const tonaseVals = formData.getAll('tonase[]');
+                const namaVals = formData.getAll('nama_barang[]');
+                
+                console.log('panjang[]:', panjangVals);
+                console.log('lebar[]:', lebarVals);
+                console.log('tinggi[]:', tinggiVals);
+                console.log('meter_kubik[]:', volumeVals);
+                console.log('tonase[]:', tonaseVals);
+                console.log('nama_barang[]:', namaVals);
+                
+                // Manual calculation verification
+                console.log('=== MANUAL CALCULATION VERIFICATION ===');
+                for (let i = 0; i < panjangVals.length; i++) {
+                    const p = parseFloat(panjangVals[i]);
+                    const l = parseFloat(lebarVals[i]);
+                    const t = parseFloat(tinggiVals[i]);
+                    const v = parseFloat(volumeVals[i]);
+                    const expectedVolume = p * l * t;
+                    
+                    console.log(`Item ${i + 1}:`, {
+                        panjang: p,
+                        lebar: l,
+                        tinggi: t,
+                        volumeFromForm: v,
+                        volumeCalculated: expectedVolume,
+                        match: Math.abs(v - expectedVolume) < 0.001 ? '✅ MATCH' : '❌ MISMATCH'
+                    });
+                }
+                
+                // DISABLED: serializeLclRowsToDimensiItems() - form already sends arrays correctly
+                // serializeLclRowsToDimensiItems();
                 // Let form submit normally for now
                 // e.preventDefault(); // Remove this to allow submission
             });

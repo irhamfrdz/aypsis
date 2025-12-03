@@ -47,7 +47,7 @@
             <p class="text-sm text-gray-600 mt-1">Lengkapi informasi untuk tanda terima baru</p>
         </div>
 
-        <form action="{{ route('tanda-terima.store') }}" method="POST" class="p-6">
+        <form action="{{ route('tanda-terima.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
                     @csrf
 
                     {{-- General error alert for server-side issues or exception messages --}}
@@ -246,7 +246,7 @@
                                 @if($suratJalan->gambar_checkpoint)
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-2">
-                                        Gambar Checkpoint
+                                        Gambar Checkpoint Saat Ini
                                     </label>
                                     @php
                                         // Check if it's a JSON array (multiple images) or single image path
@@ -342,6 +342,55 @@
                                     @endif
                                 </div>
                                 @endif
+
+                                <!-- Upload Gambar Checkpoint Baru -->
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-500 mb-2">
+                                        <i class="fas fa-upload mr-1 text-blue-600"></i>
+                                        Upload Gambar Checkpoint Baru
+                                    </label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors upload-dropzone">
+                                        <div class="space-y-1 text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="gambar_checkpoint" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                                    <span>Upload gambar</span>
+                                                    <input id="gambar_checkpoint" 
+                                                           name="gambar_checkpoint[]" 
+                                                           type="file" 
+                                                           class="sr-only" 
+                                                           multiple
+                                                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                                           onchange="previewImages(this)">
+                                                </label>
+                                                <p class="pl-1">atau drag and drop</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">
+                                                PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                                            </p>
+                                        </div>
+                                    </div>
+                                    @error('gambar_checkpoint.*')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <strong>Catatan:</strong> Gambar yang diupload akan menggantikan/menambah gambar checkpoint yang sudah ada pada surat jalan ini.
+                                    </p>
+                                    
+                                    <!-- Preview Area for New Images -->
+                                    <div id="image-preview-container" class="mt-4 hidden">
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">
+                                            <i class="fas fa-eye mr-1 text-green-600"></i>
+                                            Preview Gambar yang Akan Diupload
+                                        </label>
+                                        <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                            <!-- Preview images will be inserted here by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -372,12 +421,24 @@
                                     <label for="supir_pengganti" class="block text-xs font-medium text-gray-500 mb-2">
                                         Supir Pengganti
                                     </label>
-                                    <input type="text"
-                                           name="supir_pengganti"
-                                           id="supir_pengganti"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                                           value="{{ old('supir_pengganti') }}"
-                                           placeholder="Nama supir pengganti">
+                                    <select name="supir_pengganti"
+                                            id="supir_pengganti"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-supir-pengganti @error('supir_pengganti') border-red-500 @enderror">
+                                        <option value="">-- Pilih Supir Pengganti --</option>
+                                        @foreach($karyawanSupirs as $supir)
+                                            <option value="{{ $supir->nama_lengkap }}"
+                                                    data-plat="{{ $supir->plat ?? '' }}"
+                                                    {{ old('supir_pengganti') == $supir->nama_lengkap ? 'selected' : '' }}>
+                                                {{ $supir->nama_lengkap }}{{ $supir->plat ? ' (' . $supir->plat . ')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('supir_pengganti')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari supir pengganti
+                                    </p>
                                 </div>
                                 <div>
                                     <label for="no_plat" class="block text-xs font-medium text-gray-500 mb-2">
@@ -389,6 +450,42 @@
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-mono"
                                            value="{{ old('no_plat') }}"
                                            placeholder="Nomor plat kendaraan">
+                                </div>
+                                <div>
+                                    <label for="kenek" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Nama Kenek
+                                    </label>
+                                    <input type="text"
+                                           name="kenek"
+                                           id="kenek"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
+                                           value="{{ old('kenek', $suratJalan->kenek) }}"
+                                           placeholder="Nama kenek"
+                                           readonly
+                                           disabled>
+                                </div>
+                                <div>
+                                    <label for="kenek_pengganti" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Kenek Pengganti
+                                    </label>
+                                    <select name="kenek_pengganti"
+                                            id="kenek_pengganti"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-kenek-pengganti @error('kenek_pengganti') border-red-500 @enderror">
+                                        <option value="">-- Pilih Kenek Pengganti --</option>
+                                        @foreach($kranisKenek as $kenek)
+                                            <option value="{{ $kenek->nama_lengkap }}"
+                                                    data-plat="{{ $kenek->plat }}"
+                                                    {{ old('kenek_pengganti') == $kenek->nama_lengkap ? 'selected' : '' }}>
+                                                {{ $kenek->nama_lengkap }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('kenek_pengganti')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari kenek pengganti
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -774,6 +871,55 @@
         background-color: #dbeafe;
         color: #1e40af;
     }
+
+    /* Upload Area Styling */
+    .upload-dropzone {
+        transition: all 0.3s ease;
+    }
+    
+    .upload-dropzone.dragover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        transform: scale(1.02);
+    }
+    
+    .upload-dropzone:hover {
+        border-color: #60a5fa;
+        background-color: #f8fafc;
+    }
+    
+    .image-preview-item {
+        transition: all 0.2s ease;
+    }
+    
+    .image-preview-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .remove-preview-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .remove-preview-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Loading spinner for image preview */
+    .image-loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 @endpush
 
@@ -892,6 +1038,36 @@
                 }
             });
 
+            // Initialize Select2 for supir pengganti dropdown
+            $('.select2-supir-pengganti').select2({
+                placeholder: '-- Pilih Supir Pengganti --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Supir tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for kenek pengganti dropdown
+            $('.select2-kenek-pengganti').select2({
+                placeholder: '-- Pilih Kenek Pengganti --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Kenek tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
             console.log('Select2 initialized for all dropdowns');
 
             // Auto-fill nomor kontainer and tipe kontainer when selected from dropdown
@@ -985,6 +1161,54 @@
                 });
                 
                 console.log('✓ Kontainer options filtered by size:', selectedSize);
+            });
+
+            // Auto-fill plat nomor when supir pengganti selected and update original supir field
+            $('#supir_pengganti').on('select2:select', function(e) {
+                var selectedSupir = e.params.data.id;
+                var platNomor = $(e.params.data.element).data('plat');
+                
+                console.log('Supir pengganti selected:', selectedSupir);
+                console.log('Plat nomor:', platNomor);
+                
+                // Auto-fill plat nomor if available
+                if (platNomor) {
+                    $('#no_plat').val(platNomor);
+                    console.log('✓ Plat nomor auto-filled:', platNomor);
+                }
+                
+                // Update original supir field with selected supir pengganti
+                // This will be sent to controller to update surat jalan
+                $('#supir').val(selectedSupir);
+                console.log('✓ Original supir field updated with supir pengganti:', selectedSupir);
+            });
+
+            // Clear supir field when supir pengganti is cleared
+            $('#supir_pengganti').on('select2:clear', function(e) {
+                // Reset supir field to original value from surat jalan
+                var originalSupir = '{{ old("supir", $suratJalan->supir) }}';
+                $('#supir').val(originalSupir);
+                console.log('✓ Supir field reset to original:', originalSupir);
+            });
+
+            // Auto-fill when kenek pengganti selected and update original kenek field
+            $('#kenek_pengganti').on('select2:select', function(e) {
+                var selectedKenek = e.params.data.id;
+                
+                console.log('Kenek pengganti selected:', selectedKenek);
+                
+                // Update original kenek field with selected kenek pengganti
+                // This will be sent to controller to update surat jalan
+                $('#kenek').val(selectedKenek);
+                console.log('✓ Original kenek field updated with kenek pengganti:', selectedKenek);
+            });
+
+            // Clear kenek field when kenek pengganti is cleared
+            $('#kenek_pengganti').on('select2:clear', function(e) {
+                // Reset kenek field to original value from surat jalan
+                var originalKenek = '{{ old("kenek", $suratJalan->kenek) }}';
+                $('#kenek').val(originalKenek);
+                console.log('✓ Kenek field reset to original:', originalKenek);
             });
             } else {
                 console.error('✗ Select2 plugin not loaded!');
@@ -1109,6 +1333,197 @@
         // Run initial calculation for any prefilled dimensi rows
         const existingDimensiRows = document.querySelectorAll('#dimensi-container .dimensi-row');
         existingDimensiRows.forEach(row => calculateVolume(row));
+    });
+</script>
+
+<!-- JavaScript untuk Image Upload dan Preview -->
+<script>
+    // Preview uploaded images
+    function previewImages(input) {
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewGrid = document.getElementById('image-preview-grid');
+        
+        if (input.files && input.files.length > 0) {
+            // Show preview container
+            previewContainer.classList.remove('hidden');
+            
+            // Clear previous previews
+            previewGrid.innerHTML = '';
+            
+            // Limit to 5 files maximum
+            const filesToProcess = Math.min(input.files.length, 5);
+            let validFileCount = 0;
+            
+            for (let i = 0; i < filesToProcess; i++) {
+                const file = input.files[i];
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    console.warn(`File ${file.name} is not an image`);
+                    continue;
+                }
+                
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`File ${file.name} terlalu besar. Maksimal 10MB per file.`);
+                    continue;
+                }
+                
+                validFileCount++;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 hover:shadow-md transition-shadow image-preview-item';
+                    previewDiv.dataset.fileIndex = i;
+                    
+                    previewDiv.innerHTML = `
+                        <div class="relative">
+                            <img src="${e.target.result}" 
+                                 alt="Preview ${validFileCount}" 
+                                 class="w-full h-20 object-cover rounded hover:opacity-90 transition-opacity">
+                            <button type="button" 
+                                    onclick="removePreview(this, ${i})"
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm remove-preview-btn"
+                                    title="Hapus gambar">
+                                ×
+                            </button>
+                            <div class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded">
+                                ${validFileCount}
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1 truncate" title="${file.name}">${file.name}</p>
+                        <p class="text-xs text-gray-400">${formatFileSize(file.size)}</p>
+                    `;
+                    
+                    previewGrid.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Show warning if more than 5 files selected
+            if (input.files.length > 5) {
+                alert('Maksimal 5 gambar yang dapat diupload. Hanya 5 gambar pertama yang akan diproses.');
+            }
+            
+            // Show summary
+            if (validFileCount > 0) {
+                const summaryText = document.createElement('p');
+                summaryText.className = 'text-xs text-green-600 mt-2 font-medium';
+                summaryText.innerHTML = `<i class="fas fa-check-circle mr-1"></i>${validFileCount} gambar siap diupload`;
+                previewContainer.appendChild(summaryText);
+            }
+        } else {
+            // Hide preview container if no files
+            previewContainer.classList.add('hidden');
+        }
+    }
+    
+    // Remove preview image
+    function removePreview(button, index) {
+        const input = document.getElementById('gambar_checkpoint');
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewGrid = document.getElementById('image-preview-grid');
+        
+        // Remove the preview div
+        button.closest('.relative').parentNode.remove();
+        
+        // Hide preview container if no more images
+        if (previewGrid.children.length === 0) {
+            previewContainer.classList.add('hidden');
+            input.value = ''; // Clear file input
+        }
+    }
+    
+    // Format file size for display
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Drag and drop functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.querySelector('.border-dashed');
+        const fileInput = document.getElementById('gambar_checkpoint');
+        
+        if (dropZone && fileInput) {
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Highlight drop zone when dragging over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // Handle dropped files
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight(e) {
+                dropZone.classList.add('dragover');
+            }
+            
+            function unhighlight(e) {
+                dropZone.classList.remove('dragover');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                // Validate files before setting to input
+                const validFiles = [];
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                
+                for (let i = 0; i < Math.min(files.length, 5); i++) {
+                    const file = files[i];
+                    
+                    if (!allowedTypes.includes(file.type)) {
+                        alert(`File ${file.name} bukan format gambar yang diizinkan. Gunakan: JPG, PNG, GIF, atau WEBP.`);
+                        continue;
+                    }
+                    
+                    if (file.size > maxSize) {
+                        alert(`File ${file.name} terlalu besar (${formatFileSize(file.size)}). Maksimal 10MB per file.`);
+                        continue;
+                    }
+                    
+                    validFiles.push(file);
+                }
+                
+                if (validFiles.length > 0) {
+                    // Create a new FileList-like object with valid files
+                    const dataTransfer = new DataTransfer();
+                    validFiles.forEach(file => dataTransfer.items.add(file));
+                    
+                    // Set files to input
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Trigger preview
+                    previewImages(fileInput);
+                    
+                    if (validFiles.length < files.length) {
+                        alert(`${validFiles.length} dari ${files.length} file berhasil dipilih. File lainnya tidak memenuhi kriteria.`);
+                    }
+                } else {
+                    alert('Tidak ada file yang valid untuk diupload.');
+                }
+            }
+        }
     });
 </script>
 @endpush

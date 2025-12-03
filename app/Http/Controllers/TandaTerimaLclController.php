@@ -92,6 +92,8 @@ class TandaTerimaLclController extends Controller
             'tujuan_pengiriman' => 'required|exists:master_tujuan_kirim,id',
             'nomor_kontainer' => 'nullable|string|max:255',
             'size_kontainer' => 'nullable|in:20ft,40ft,40hc,45ft',
+            'nomor_seal' => 'nullable|string|max:255',
+            'tipe_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
             'nama_barang' => 'nullable|array',
             'nama_barang.*' => 'nullable|string|max:255',
             'jumlah' => 'nullable|array',
@@ -134,6 +136,8 @@ class TandaTerimaLclController extends Controller
                 'tipe_kontainer' => 'lcl',
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'size_kontainer' => $request->size_kontainer,
+                'nomor_seal' => $request->nomor_seal,
+                'jenis_kontainer' => $request->tipe_kontainer,
                 'status' => 'draft',
                 'created_by' => Auth::id(),
             ]);
@@ -184,10 +188,20 @@ class TandaTerimaLclController extends Controller
                     }
                 }
             }
+
+            // Auto-create prospek if nomor_seal is provided
+            if (!empty($request->nomor_seal)) {
+                $this->createProspekFromNewLcl($tandaTerima);
+            }
         });
 
+        $successMessage = 'Tanda Terima LCL berhasil dibuat.';
+        if (!empty($request->nomor_seal)) {
+            $successMessage .= ' Data otomatis ditambahkan ke prospek karena nomor seal telah diisi.';
+        }
+
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', 'Tanda Terima LCL berhasil dibuat.');
+                        ->with('success', $successMessage);
     }
 
     /**
@@ -265,6 +279,8 @@ class TandaTerimaLclController extends Controller
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
             'tipe_kontainer' => 'required|in:cargo,lcl',
+            'nomor_seal' => 'nullable|string|max:255',
+            'jenis_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
             'items' => 'array',
             'items.*.panjang' => 'nullable|numeric|min:0',
             'items.*.lebar' => 'nullable|numeric|min:0',
@@ -294,6 +310,8 @@ class TandaTerimaLclController extends Controller
                 'tipe_kontainer' => $request->tipe_kontainer,
                 'nomor_kontainer' => $request->tipe_kontainer === 'lcl' ? $request->nomor_kontainer : null,
                 'size_kontainer' => $request->tipe_kontainer === 'lcl' ? $request->size_kontainer : null,
+                'nomor_seal' => $request->nomor_seal,
+                'jenis_kontainer' => $request->jenis_kontainer,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
                 'tujuan_pengiriman_id' => $request->master_tujuan_kirim_id,
@@ -804,6 +822,49 @@ class TandaTerimaLclController extends Controller
         
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
                         ->with('success', "Berhasil memecah {$processedCount} tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.");
+    }
+
+    /**
+     * Create prospek entry from new LCL data
+     */
+    private function createProspekFromNewLcl($tandaTerima)
+    {
+        try {
+            // Load related data
+            $tandaTerima->load(['tujuanPengiriman']);
+            
+            // Prepare data for prospek
+            $prospekData = [
+                'tanggal' => $tandaTerima->tanggal_tanda_terima->format('Y-m-d'),
+                'nama_supir' => $tandaTerima->supir ?? '',
+                'barang' => $tandaTerima->nama_barang ?? '',
+                'pt_pengirim' => $tandaTerima->nama_pengirim ?? '',
+                'ukuran' => $tandaTerima->size_kontainer ? str_replace('ft', '', $tandaTerima->size_kontainer) : '20',
+                'tipe' => 'LCL',
+                'nomor_kontainer' => $tandaTerima->nomor_kontainer ?? '',
+                'no_seal' => $tandaTerima->nomor_seal ?? '',
+                'tujuan_pengiriman' => $tandaTerima->tujuanPengiriman->nama_tujuan ?? $tandaTerima->alamat_penerima ?? '',
+                'nama_kapal' => '', // Will be filled later in prospek
+                'keterangan' => 'Auto-created from Tanda Terima LCL: ' . $tandaTerima->nomor_tanda_terima,
+                'status' => 'aktif',
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id()
+            ];
+
+            // Create prospek entry
+            $prospek = Prospek::create($prospekData);
+            
+            \Log::info('Auto-created prospek from LCL', [
+                'lcl_id' => $tandaTerima->id,
+                'prospek_id' => $prospek->id,
+                'nomor_seal' => $tandaTerima->nomor_seal
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error auto-creating prospek from new LCL: ' . $e->getMessage(), [
+                'lcl_id' => $tandaTerima->id
+            ]);
+        }
     }
 
     /**
