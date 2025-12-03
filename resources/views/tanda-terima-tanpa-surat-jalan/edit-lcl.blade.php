@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <form action="{{ route('tanda-terima-lcl.update', $tandaTerima) }}" method="POST">
+        <form action="{{ route('tanda-terima-lcl.update', $tandaTerima) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -474,6 +474,88 @@
                     </div>
                 @endif
 
+                <!-- Upload Gambar Surat Jalan -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="border-b border-gray-200 p-4">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Upload Gambar Surat Jalan
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-orange-400 transition-colors upload-dropzone">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="gambar_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                                        <span>Upload gambar</span>
+                                        <input id="gambar_surat_jalan" name="gambar_surat_jalan[]" type="file" class="sr-only" accept="image/*" multiple onchange="previewImages(this)">
+                                    </label>
+                                    <p class="pl-1">atau drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">
+                                    PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                                </p>
+                            </div>
+                        </div>
+                        @error('gambar_surat_jalan.*')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+
+                        <!-- Preview Area for New Images -->
+                        <div id="image-preview-container" class="mt-4 hidden">
+                            <label class="block text-xs font-medium text-gray-500 mb-2">
+                                <i class="fas fa-eye mr-1 text-orange-600"></i>
+                                Preview Gambar Baru
+                            </label>
+                            <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                {{-- Preview images will be inserted here by JavaScript --}}
+                            </div>
+                        </div>
+
+                        <!-- Existing Images -->
+                        @php
+                            $existingImages = $tandaTerima->gambar_surat_jalan;
+                            if (is_string($existingImages)) {
+                                $existingImages = json_decode($existingImages, true) ?? [];
+                            }
+                            if (!is_array($existingImages)) {
+                                $existingImages = [];
+                            }
+                        @endphp
+
+                        @if(!empty($existingImages))
+                            <div class="mt-4">
+                                <label class="block text-xs font-medium text-gray-500 mb-2">
+                                    <i class="fas fa-images mr-1 text-green-600"></i>
+                                    Gambar Yang Sudah Ada
+                                </label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    @foreach($existingImages as $index => $imagePath)
+                                        @php $imgUrl = asset('storage/' . ltrim($imagePath, '/')); @endphp
+                                        <div class="relative bg-gray-50 rounded-lg border border-gray-200 p-2 existing-image-item" data-path="{{ $imagePath }}">
+                                            <img src="{{ $imgUrl }}" alt="Gambar {{ $index + 1 }}" class="object-cover w-full h-28 rounded" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%27 height=%27100%27%3E%3Crect fill=%27%23ddd%27 width=%27100%27 height=%27100%27/%3E%3Ctext fill=%27%23999%27 x=%2750%25%27 y=%2750%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27%3EGambar tidak ditemukan%3C/text%3E%3C/svg%3E';"/>
+                                            <div class="flex justify-between items-center mt-2">
+                                                <div class="text-xs text-gray-600 truncate">Gambar {{ $index + 1 }}</div>
+                                                <button type="button" onclick="removeExistingImage(this, '{{ $imagePath }}')" class="text-red-500 hover:text-red-700 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" name="existing_images[]" value="{{ $imagePath }}">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
                     <div class="p-6">
@@ -832,6 +914,170 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }, true);
+
+    // Drag and drop support
+    const dropZone = document.querySelector('.upload-dropzone');
+    const fileInput = document.getElementById('gambar_surat_jalan');
+    
+    if (dropZone && fileInput) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('border-orange-500', 'bg-orange-50');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('border-orange-500', 'bg-orange-50');
+            }, false);
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            fileInput.files = files;
+            previewImages(fileInput);
+        }, false);
+    }
 });
+
+// Image Upload Functions
+function previewImages(input) {
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewGrid = document.getElementById('image-preview-grid');
+    
+    if (input.files && input.files.length > 0) {
+        previewContainer.classList.remove('hidden');
+        
+        // Clear previous previews
+        previewGrid.innerHTML = '';
+        
+        const maxFiles = 5;
+        const existingCount = document.querySelectorAll('.existing-image-item').length;
+        const availableSlots = maxFiles - existingCount;
+        
+        if (availableSlots <= 0) {
+            alert('Maksimal 5 gambar. Hapus beberapa gambar yang sudah ada terlebih dahulu.');
+            input.value = '';
+            previewContainer.classList.add('hidden');
+            return;
+        }
+        
+        const filesToProcess = Math.min(input.files.length, availableSlots);
+        
+        for (let i = 0; i < filesToProcess; i++) {
+            const file = input.files[i];
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                continue;
+            }
+            
+            // Validate file size (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Salah satu file terlalu besar. Maksimal 10MB per file.');
+                continue;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 image-preview-item';
+                previewDiv.dataset.fileIndex = i;
+                
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview ${i + 1}" class="object-cover w-full h-28 rounded"/>
+                    <div class="flex justify-between items-center mt-2">
+                        <div class="text-xs text-gray-600 truncate">${file.name}</div>
+                        <button type="button" onclick="removePreview(this, ${i})" class="text-red-500 hover:text-red-700 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                previewGrid.appendChild(previewDiv);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        if (input.files.length > availableSlots) {
+            alert(`Maksimal ${maxFiles} gambar total. Tersisa ${availableSlots} slot. Hanya ${availableSlots} file pertama yang akan diupload.`);
+        }
+    } else {
+        if (previewGrid.children.length === 0) {
+            previewContainer.classList.add('hidden');
+        }
+    }
+}
+
+function removePreview(button, index) {
+    const input = document.getElementById('gambar_surat_jalan');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewGrid = document.getElementById('image-preview-grid');
+    
+    // Remove preview element
+    const previewItem = button.closest('.image-preview-item');
+    if (previewItem) {
+        previewItem.remove();
+    }
+    
+    // Hide container if no more previews
+    if (previewGrid.children.length === 0) {
+        previewContainer.classList.add('hidden');
+    }
+    
+    // Remove file from input (create new FileList without the removed file)
+    try {
+        const files = Array.from(input.files || []);
+        const newFiles = files.filter((_, idx) => idx !== index);
+        
+        const dataTransfer = new DataTransfer();
+        newFiles.forEach(f => dataTransfer.items.add(f));
+        input.files = dataTransfer.files;
+    } catch (err) {
+        // If browser doesn't support DataTransfer, just clear the input
+        console.warn('Could not remove specific file, browser limitation');
+    }
+}
+
+function removeExistingImage(button, path) {
+    const imageItem = button.closest('.existing-image-item');
+    if (imageItem) {
+        imageItem.remove();
+    }
+    
+    // Remove from existing_images array by removing the hidden input
+    const hiddenInputs = document.querySelectorAll('input[name="existing_images[]"]');
+    hiddenInputs.forEach(input => {
+        if (input.value === path) {
+            input.remove();
+        }
+    });
+    
+    // Add to removal list
+    const form = document.querySelector('form');
+    if (form) {
+        const removeInput = document.createElement('input');
+        removeInput.type = 'hidden';
+        removeInput.name = 'hapus_gambar[]';
+        removeInput.value = path;
+        form.appendChild(removeInput);
+    }
+}
+
 </script>
 @endsection
