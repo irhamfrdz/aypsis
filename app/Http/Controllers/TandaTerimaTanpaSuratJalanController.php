@@ -16,6 +16,9 @@ use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TandaTerimaTanpaSuratJalanController extends Controller
 {
@@ -353,6 +356,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'catatan' => 'nullable|string',
             // Auto-save to prospek
             'simpan_ke_prospek' => 'nullable|string|max:1',
+            // Validation for uploaded images
+            'gambar_tanda_terima' => 'nullable|array|max:5',
+            'gambar_tanda_terima.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
         ]);
 
         try {
@@ -448,6 +454,20 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
             if (!empty($tonaseArray)) {
                 $validated['tonase'] = array_sum(array_filter($tonaseArray, 'is_numeric'));
+            }
+
+            // Handle gambar upload
+            $uploadedImages = [];
+            if ($request->hasFile('gambar_tanda_terima')) {
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_tanda_terima'));
+                if (!empty($uploadedImages)) {
+                    $validated['gambar_tanda_terima'] = json_encode($uploadedImages);
+                    
+                    \Log::info('Images uploaded for tanda terima tanpa surat jalan', [
+                        'images_count' => count($uploadedImages),
+                        'uploaded_by' => Auth::user() ? Auth::user()->name : null,
+                    ]);
+                }
             }
 
             // Create main record
@@ -695,5 +715,53 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Handle image upload for tanda terima images
+     * 
+     * @param array $uploadedFiles
+     * @return array Array of uploaded image paths
+     */
+    private function handleImageUpload($uploadedFiles)
+    {
+        $imagePaths = [];
+        
+        try {
+            foreach ($uploadedFiles as $file) {
+                if ($file->isValid()) {
+                    // Generate unique filename with timestamp
+                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $extension = $file->getClientOriginalExtension();
+                    $filename = 'tanda_terima_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                    
+                    // Store in public disk under tanda-terima directory
+                    $path = $file->storeAs('tanda-terima', $filename, 'public');
+                    
+                    if ($path) {
+                        $imagePaths[] = $path;
+                        
+                        Log::info('Tanda terima image uploaded successfully', [
+                            'original_name' => $file->getClientOriginalName(),
+                            'stored_path' => $path,
+                            'file_size' => $file->getSize(),
+                            'uploaded_by' => Auth::user() ? Auth::user()->name : null,
+                        ]);
+                    }
+                } else {
+                    Log::warning('Invalid file uploaded for tanda terima', [
+                        'file_name' => $file->getClientOriginalName(),
+                        'error' => $file->getErrorMessage(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Error uploading tanda terima images: ' . $e->getMessage(), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+        
+        return $imagePaths;
     }
 }
