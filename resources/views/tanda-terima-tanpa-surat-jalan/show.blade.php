@@ -127,79 +127,199 @@
                         <h2 class="text-lg font-semibold text-gray-800">Informasi Barang</h2>
                     </div>
                     <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500 mb-2">Jenis Barang</label>
-                                <p class="text-base font-semibold text-gray-900">{{ $tandaTerimaTanpaSuratJalan->jenis_barang }}</p>
-                            </div>
-                            @if($tandaTerimaTanpaSuratJalan->nama_barang)
+                        <!-- Legacy single item info (for backward compatibility) -->
+                        @if($tandaTerimaTanpaSuratJalan->jenis_barang && $tandaTerimaTanpaSuratJalan->dimensiItems->isEmpty())
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Nama Barang</label>
-                                    <p class="text-base font-semibold text-gray-900">{{ $tandaTerimaTanpaSuratJalan->nama_barang }}</p>
+                                    <label class="block text-sm font-medium text-gray-500 mb-2">Jenis Barang</label>
+                                    <p class="text-base font-semibold text-gray-900">{{ $tandaTerimaTanpaSuratJalan->jenis_barang }}</p>
                                 </div>
-                            @endif
-                            @if($tandaTerimaTanpaSuratJalan->aktifitas)
+                                @if($tandaTerimaTanpaSuratJalan->nama_barang)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Nama Barang</label>
+                                        <p class="text-base font-semibold text-gray-900">{{ $tandaTerimaTanpaSuratJalan->nama_barang }}</p>
+                                    </div>
+                                @endif
+                                @if($tandaTerimaTanpaSuratJalan->aktifitas)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Aktifitas</label>
+                                        <p class="text-base text-gray-900 capitalize">{{ $tandaTerimaTanpaSuratJalan->aktifitas }}</p>
+                                    </div>
+                                @endif
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Aktifitas</label>
-                                    <p class="text-base text-gray-900 capitalize">{{ $tandaTerimaTanpaSuratJalan->aktifitas }}</p>
-                                </div>
-                            @endif
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500 mb-2">Jumlah</label>
-                                <p class="text-base text-gray-900">
-                                    {{ number_format($tandaTerimaTanpaSuratJalan->jumlah_barang) }} 
-                                    {{ $tandaTerimaTanpaSuratJalan->satuan_barang }}
-                                </p>
-                            </div>
-                            
-                            @if($tandaTerimaTanpaSuratJalan->berat)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Berat</label>
+                                    <label class="block text-sm font-medium text-gray-500 mb-2">Jumlah</label>
                                     <p class="text-base text-gray-900">
-                                        {{ number_format($tandaTerimaTanpaSuratJalan->berat, 2) }} 
-                                        {{ $tandaTerimaTanpaSuratJalan->satuan_berat }}
+                                        {{ number_format($tandaTerimaTanpaSuratJalan->jumlah_barang) }} 
+                                        {{ $tandaTerimaTanpaSuratJalan->satuan_barang }}
                                     </p>
                                 </div>
-                            @endif
+                                
+                                @if($tandaTerimaTanpaSuratJalan->berat)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Berat</label>
+                                        <p class="text-base text-gray-900">
+                                            {{ number_format($tandaTerimaTanpaSuratJalan->berat, 2) }} 
+                                            {{ $tandaTerimaTanpaSuratJalan->satuan_berat }}
+                                        </p>
+                                    </div>
+                                @endif
 
-                            @if($tandaTerimaTanpaSuratJalan->meter_kubik)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Volume</label>
-                                    <p class="text-base text-gray-900">{{ number_format($tandaTerimaTanpaSuratJalan->meter_kubik, 6) }} m³</p>
-                                </div>
-                            @endif
+                                @if($tandaTerimaTanpaSuratJalan->meter_kubik)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Volume</label>
+                                        <p class="text-base text-gray-900">{{ number_format($tandaTerimaTanpaSuratJalan->meter_kubik, 3) }} m³</p>
+                                    </div>
+                                @endif
 
-                            @if($tandaTerimaTanpaSuratJalan->tonase)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Tonase</label>
-                                    <p class="text-base text-gray-900">{{ number_format($tandaTerimaTanpaSuratJalan->tonase, 2) }} Ton</p>
-                                </div>
-                            @endif
+                                @if($tandaTerimaTanpaSuratJalan->tonase)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Tonase</label>
+                                        <p class="text-base text-gray-900">{{ number_format($tandaTerimaTanpaSuratJalan->tonase, 2) }} Ton</p>
+                                    </div>
+                                @endif
 
-                            @if($tandaTerimaTanpaSuratJalan->panjang || $tandaTerimaTanpaSuratJalan->lebar || $tandaTerimaTanpaSuratJalan->tinggi)
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Dimensi</label>
-                                    <p class="text-base text-gray-900">
-                                        @if($tandaTerimaTanpaSuratJalan->panjang)
-                                            {{ number_format($tandaTerimaTanpaSuratJalan->panjang, 2) }} cm
-                                        @endif
-                                        @if($tandaTerimaTanpaSuratJalan->lebar)
-                                            × {{ number_format($tandaTerimaTanpaSuratJalan->lebar, 2) }} cm
-                                        @endif
-                                        @if($tandaTerimaTanpaSuratJalan->tinggi)
-                                            × {{ number_format($tandaTerimaTanpaSuratJalan->tinggi, 2) }} cm
-                                        @endif
-                                    </p>
-                                </div>
-                            @endif
+                                @if($tandaTerimaTanpaSuratJalan->panjang || $tandaTerimaTanpaSuratJalan->lebar || $tandaTerimaTanpaSuratJalan->tinggi)
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Dimensi</label>
+                                        <p class="text-base text-gray-900">
+                                            @if($tandaTerimaTanpaSuratJalan->panjang)
+                                                {{ number_format($tandaTerimaTanpaSuratJalan->panjang, 2) }} m
+                                            @endif
+                                            @if($tandaTerimaTanpaSuratJalan->lebar)
+                                                × {{ number_format($tandaTerimaTanpaSuratJalan->lebar, 2) }} m
+                                            @endif
+                                            @if($tandaTerimaTanpaSuratJalan->tinggi)
+                                                × {{ number_format($tandaTerimaTanpaSuratJalan->tinggi, 2) }} m
+                                            @endif
+                                        </p>
+                                    </div>
+                                @endif
 
-                            @if($tandaTerimaTanpaSuratJalan->keterangan_barang)
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-500 mb-2">Keterangan Barang</label>
-                                    <p class="text-base text-gray-900 bg-gray-50 p-3 rounded-md">{{ $tandaTerimaTanpaSuratJalan->keterangan_barang }}</p>
+                                @if($tandaTerimaTanpaSuratJalan->keterangan_barang)
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Keterangan Barang</label>
+                                        <p class="text-base text-gray-900 bg-gray-50 p-3 rounded-md">{{ $tandaTerimaTanpaSuratJalan->keterangan_barang }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                        <!-- Detailed items information -->
+                        @if($tandaTerimaTanpaSuratJalan->dimensiItems->isNotEmpty())
+                            <div class="mb-6">
+                                <h3 class="text-base font-medium text-gray-800 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    Detail Barang dan Dimensi
+                                </h3>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Panjang (m)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Lebar (m)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tinggi (m)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (m³)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tonase (Ton)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @foreach($tandaTerimaTanpaSuratJalan->dimensiItems as $index => $item)
+                                                <tr class="hover:bg-gray-50">
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
+                                                    <td class="px-4 py-3 whitespace-nowrap">
+                                                        <div class="text-sm font-medium text-gray-900">{{ $item->nama_barang ?: '-' }}</div>
+                                                        @if($item->satuan)
+                                                            <div class="text-xs text-gray-500">{{ $item->satuan }}</div>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                                        {{ $item->jumlah ? number_format($item->jumlah) : '-' }}
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                                        {{ $item->panjang ? number_format($item->panjang, 3) : '-' }}
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                                        {{ $item->lebar ? number_format($item->lebar, 3) : '-' }}
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                                        {{ $item->tinggi ? number_format($item->tinggi, 3) : '-' }}
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                        @if($item->meter_kubik)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {{ number_format($item->meter_kubik, 3) }} m³
+                                                            </span>
+                                                        @else
+                                                            <span class="text-sm text-gray-400">-</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                        @if($item->tonase)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                {{ number_format($item->tonase, 2) }} Ton
+                                                            </span>
+                                                        @else
+                                                            <span class="text-sm text-gray-400">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="bg-gray-50">
+                                            <tr>
+                                                <td colspan="6" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-200 text-blue-900">
+                                                        {{ number_format($tandaTerimaTanpaSuratJalan->dimensiItems->sum('meter_kubik'), 3) }} m³
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-200 text-green-900">
+                                                        {{ number_format($tandaTerimaTanpaSuratJalan->dimensiItems->sum('tonase'), 2) }} Ton
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
+
+                        <!-- Summary Information -->
+                        @if($tandaTerimaTanpaSuratJalan->dimensiItems->isNotEmpty() || $tandaTerimaTanpaSuratJalan->jenis_barang)
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-blue-600">
+                                        {{ $tandaTerimaTanpaSuratJalan->dimensiItems->isNotEmpty() ? 
+                                           $tandaTerimaTanpaSuratJalan->dimensiItems->count() : 
+                                           ($tandaTerimaTanpaSuratJalan->jumlah_barang ?: 1) }}
+                                    </div>
+                                    <div class="text-sm text-gray-600">Total Item</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-purple-600">
+                                        {{ number_format($tandaTerimaTanpaSuratJalan->dimensiItems->isNotEmpty() ? 
+                                           $tandaTerimaTanpaSuratJalan->dimensiItems->sum('meter_kubik') : 
+                                           ($tandaTerimaTanpaSuratJalan->meter_kubik ?: 0), 3) }}
+                                    </div>
+                                    <div class="text-sm text-gray-600">Total Volume (m³)</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-green-600">
+                                        {{ number_format($tandaTerimaTanpaSuratJalan->dimensiItems->isNotEmpty() ? 
+                                           $tandaTerimaTanpaSuratJalan->dimensiItems->sum('tonase') : 
+                                           ($tandaTerimaTanpaSuratJalan->tonase ?: 0), 2) }}
+                                    </div>
+                                    <div class="text-sm text-gray-600">Total Tonase (Ton)</div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

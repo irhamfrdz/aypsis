@@ -459,6 +459,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
      */
     public function show(TandaTerimaTanpaSuratJalan $tandaTerimaTanpaSuratJalan)
     {
+        // Load dimensi items relationship
+        $tandaTerimaTanpaSuratJalan->load(['dimensiItems', 'term', 'creator', 'updater']);
+        
         return view('tanda-terima-tanpa-surat-jalan.show', compact('tandaTerimaTanpaSuratJalan'));
     }
 
