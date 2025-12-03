@@ -320,6 +320,37 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
             $validated['created_by'] = Auth::user()->name;
 
+            // If legacy nested dimensi_items is used, flatten into expected arrays
+            if ($request->has('dimensi_items') && is_array($request->input('dimensi_items'))) {
+                $nested = $request->input('dimensi_items');
+                $flattened = [
+                    'nama_barang' => [],
+                    'jumlah' => [],
+                    'satuan' => [],
+                    'panjang' => [],
+                    'lebar' => [],
+                    'tinggi' => [],
+                    'meter_kubik' => [],
+                    'tonase' => []
+                ];
+                foreach ($nested as $idx => $n) {
+                    $flattened['nama_barang'][] = $n['nama_barang'] ?? null;
+                    $flattened['jumlah'][] = $n['jumlah'] ?? null;
+                    $flattened['satuan'][] = $n['satuan'] ?? null;
+                    $flattened['panjang'][] = $n['panjang'] ?? null;
+                    $flattened['lebar'][] = $n['lebar'] ?? null;
+                    $flattened['tinggi'][] = $n['tinggi'] ?? null;
+                    $flattened['meter_kubik'][] = $n['meter_kubik'] ?? null;
+                    $flattened['tonase'][] = $n['tonase'] ?? null;
+                }
+                // Merge flattened arrays into request (but do not overwrite existing if present)
+                foreach ($flattened as $k => $vals) {
+                    if (empty($request->input($k))) {
+                        $request->merge([$k => $vals]);
+                    }
+                }
+            }
+
             // Extract array data for dimensi items
             $namaBarangArray = $validated['nama_barang'] ?? [];
             $jumlahArray = $validated['jumlah'] ?? [];
