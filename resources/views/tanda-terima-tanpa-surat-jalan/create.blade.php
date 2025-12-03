@@ -60,7 +60,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('tanda-terima-tanpa-surat-jalan.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('tanda-terima-tanpa-surat-jalan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 
                 {{-- Hidden input untuk tipe kontainer --}}
@@ -696,6 +696,49 @@
                             <p class="text-xs text-blue-800">
                                 <strong>Info:</strong> Data ini akan otomatis tersimpan juga ke tabel prospek untuk keperluan follow-up bisnis.
                             </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Gambar -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Gambar</h3>
+                    
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors upload-dropzone">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="gambar_tanda_terima" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                    <span>Upload gambar</span>
+                                    <input id="gambar_tanda_terima" 
+                                           name="gambar_tanda_terima[]" 
+                                           type="file" 
+                                           class="sr-only" 
+                                           multiple
+                                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                           onchange="previewImages(this)">
+                                </label>
+                                <p class="pl-1">atau drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                            </p>
+                        </div>
+                    </div>
+                    @error('gambar_tanda_terima.*')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Preview Area for Images -->
+                    <div id="image-preview-container" class="mt-4 hidden">
+                        <label class="block text-xs font-medium text-gray-500 mb-2">
+                            <i class="fas fa-eye mr-1 text-green-600"></i>
+                            Preview Gambar yang Akan Diupload
+                        </label>
+                        <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <!-- Preview images will be inserted here by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -1991,5 +2034,245 @@
             });
         }
     });
+
+    // Image Upload Functions
+    function previewImages(input) {
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewGrid = document.getElementById('image-preview-grid');
+        
+        if (input.files && input.files.length > 0) {
+            // Show preview container
+            previewContainer.classList.remove('hidden');
+            
+            // Clear previous previews
+            previewGrid.innerHTML = '';
+            
+            // Limit to 5 files maximum
+            const filesToProcess = Math.min(input.files.length, 5);
+            let validFileCount = 0;
+            
+            for (let i = 0; i < filesToProcess; i++) {
+                const file = input.files[i];
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    console.warn(`File ${file.name} is not an image`);
+                    continue;
+                }
+                
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`File ${file.name} terlalu besar. Maksimal 10MB per file.`);
+                    continue;
+                }
+                
+                validFileCount++;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 hover:shadow-md transition-shadow image-preview-item';
+                    previewDiv.dataset.fileIndex = i;
+                    
+                    previewDiv.innerHTML = `
+                        <div class="relative">
+                            <img src="${e.target.result}" 
+                                 alt="Preview ${validFileCount}" 
+                                 class="w-full h-20 object-cover rounded hover:opacity-90 transition-opacity">
+                            <button type="button" 
+                                    onclick="removePreview(this, ${i})"
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm remove-preview-btn"
+                                    title="Hapus gambar">
+                                ×
+                            </button>
+                            <div class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded">
+                                ${validFileCount}
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1 truncate" title="${file.name}">${file.name}</p>
+                        <p class="text-xs text-gray-400">${formatFileSize(file.size)}</p>
+                    `;
+                    
+                    previewGrid.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Show warning if more than 5 files selected
+            if (input.files.length > 5) {
+                alert('Maksimal 5 gambar yang dapat diupload. Hanya 5 gambar pertama yang akan diproses.');
+            }
+            
+            // Show summary
+            if (validFileCount > 0) {
+                const summaryText = document.createElement('p');
+                summaryText.className = 'text-xs text-green-600 mt-2 font-medium';
+                summaryText.innerHTML = `<i class="fas fa-check-circle mr-1"></i>${validFileCount} gambar siap diupload`;
+                previewContainer.appendChild(summaryText);
+            }
+        } else {
+            // Hide preview container if no files
+            previewContainer.classList.add('hidden');
+        }
+    }
+
+    // Remove preview image
+    function removePreview(button, index) {
+        const input = document.getElementById('gambar_tanda_terima');
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewGrid = document.getElementById('image-preview-grid');
+        
+        // Remove the preview div
+        button.closest('.image-preview-item').remove();
+        
+        // Hide preview container if no more images
+        if (previewGrid.children.length === 0) {
+            previewContainer.classList.add('hidden');
+            input.value = ''; // Clear file input
+        }
+    }
+
+    // Format file size for display
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Drag and drop functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.querySelector('.upload-dropzone');
+        const fileInput = document.getElementById('gambar_tanda_terima');
+        
+        if (dropZone && fileInput) {
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Highlight drop zone when dragging over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // Handle dropped files
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight(e) {
+                dropZone.classList.add('dragover');
+            }
+            
+            function unhighlight(e) {
+                dropZone.classList.remove('dragover');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                // Validate files before setting to input
+                const validFiles = [];
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                
+                for (let i = 0; i < Math.min(files.length, 5); i++) {
+                    const file = files[i];
+                    
+                    if (!allowedTypes.includes(file.type)) {
+                        alert(`File ${file.name} bukan format gambar yang diizinkan. Gunakan: JPG, PNG, GIF, atau WEBP.`);
+                        continue;
+                    }
+                    
+                    if (file.size > maxSize) {
+                        alert(`File ${file.name} terlalu besar (${formatFileSize(file.size)}). Maksimal 10MB per file.`);
+                        continue;
+                    }
+                    
+                    validFiles.push(file);
+                }
+                
+                if (validFiles.length > 0) {
+                    // Create a new FileList-like object with valid files
+                    const dataTransfer = new DataTransfer();
+                    validFiles.forEach(file => dataTransfer.items.add(file));
+                    
+                    // Set files to input
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Trigger preview
+                    previewImages(fileInput);
+                    
+                    if (validFiles.length < files.length) {
+                        alert(`${validFiles.length} dari ${files.length} file berhasil dipilih. File lainnya tidak memenuhi kriteria.`);
+                    }
+                } else {
+                    alert('Tidak ada file yang valid untuk diupload.');
+                }
+            }
+        }
+    });
 </script>
+
+<!-- CSS untuk Image Upload -->
+<style>
+    /* Upload Area Styling */
+    .upload-dropzone {
+        transition: all 0.3s ease;
+    }
+    
+    .upload-dropzone.dragover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        transform: scale(1.02);
+    }
+    
+    .upload-dropzone:hover {
+        border-color: #60a5fa;
+        background-color: #f8fafc;
+    }
+    
+    .image-preview-item {
+        transition: all 0.2s ease;
+    }
+    
+    .image-preview-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .remove-preview-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .remove-preview-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Loading spinner for image preview */
+    .image-loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
 @endpush
