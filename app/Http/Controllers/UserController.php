@@ -1034,10 +1034,10 @@ class UserController extends Controller
                         $action = str_replace('aktivitas-lainnya-', '', $permissionName);
                     }
 
-                    // Special handling for pembayaran-aktivitas-lainnya-* permissions
-                    if (strpos($permissionName, 'pembayaran-aktivitas-lainnya-') === 0) {
-                        $module = 'pembayaran-aktivitas-lainnya';
-                        $action = str_replace('pembayaran-aktivitas-lainnya-', '', $permissionName);
+                    // Special handling for pembayaran-aktivitas-lain-* permissions
+                    if (strpos($permissionName, 'pembayaran-aktivitas-lain-') === 0) {
+                        $module = 'pembayaran-aktivitas-lain';
+                        $action = str_replace('pembayaran-aktivitas-lain-', '', $permissionName);
                     }
 
                     // Special handling for pembayaran-uang-muka-* permissions
@@ -2733,17 +2733,15 @@ class UserController extends Controller
                         }
                     }
 
-                    // Special handling for pembayaran-aktivitas-lainnya module
-                    if ($module === 'pembayaran-aktivitas-lainnya') {
+                    // Special handling for pembayaran-aktivitas-lain module
+                    if ($module === 'pembayaran-aktivitas-lain') {
                         // Map matrix actions directly to permission names
                         $actionMap = [
-                            'view' => 'pembayaran-aktivitas-lainnya-view',
-                            'create' => 'pembayaran-aktivitas-lainnya-create',
-                            'update' => 'pembayaran-aktivitas-lainnya-update',
-                            'delete' => 'pembayaran-aktivitas-lainnya-delete',
-                            'approve' => 'pembayaran-aktivitas-lainnya-approve',
-                            'print' => 'pembayaran-aktivitas-lainnya-print',
-                            'export' => 'pembayaran-aktivitas-lainnya-export'
+                            'view' => 'pembayaran-aktivitas-lain-view',
+                            'create' => 'pembayaran-aktivitas-lain-create',
+                            'update' => 'pembayaran-aktivitas-lain-update',
+                            'delete' => 'pembayaran-aktivitas-lain-delete',
+                            'approve' => 'pembayaran-aktivitas-lain-approve'
                         ];
 
                         if (isset($actionMap[$action])) {
