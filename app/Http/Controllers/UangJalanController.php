@@ -34,7 +34,8 @@ class UangJalanController extends Controller
         // Filter berdasarkan pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('keterangan', 'like', "%{$search}%")
+                $q->where('nomor_uang_jalan', 'like', "%{$search}%")
+                  ->orWhere('memo', 'like', "%{$search}%")
                   ->orWhereHas('suratJalan', function ($suratJalanQuery) use ($search) {
                       $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
                                       ->orWhere('supir', 'like', "%{$search}%")
