@@ -235,8 +235,7 @@
                                     </div>
                                     <select name="penerima"
                                             id="penerima"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror"
-                                            required>
+                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror">
                                         <option value="">-- Pilih Penerima --</option>
                                         @foreach($masterPenerimaList as $penerima)
                                             <option value="{{ $penerima->nama }}"
