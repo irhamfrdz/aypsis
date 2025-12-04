@@ -18,6 +18,12 @@ class NaikKapalController extends Controller
     {
         $query = NaikKapal::with(['prospek', 'createdBy']);
         
+        // Exclude records with 'Tidak Naik Kapal' status
+        $query->where(function($q) {
+            $q->where('status', '!=', 'Tidak Naik Kapal')
+              ->orWhereNull('status');
+        });
+        
         // Filter by kapal and voyage if provided
         if ($request->filled('kapal_id') && $request->filled('no_voyage')) {
             $kapal = \App\Models\MasterKapal::find($request->kapal_id);
