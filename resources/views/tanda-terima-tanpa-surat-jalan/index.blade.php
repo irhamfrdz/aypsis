@@ -336,7 +336,7 @@
                                                     </a>
                                                 @endcan
                                                 @can('tanda-terima-tanpa-surat-jalan-delete')
-                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.destroy', $tandaTerima) }}" method="POST" class="inline"
+                                                    <form action="{{ route('tanda-terima-lcl.destroy', $tandaTerima) }}" method="POST" class="inline"
                                                           onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima LCL ini?')">
                                                         @csrf
                                                         @method('DELETE')
