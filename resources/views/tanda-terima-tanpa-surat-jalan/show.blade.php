@@ -489,7 +489,7 @@
                                         <div class="p-2 flex items-center justify-between">
                                             <div class="text-xs text-gray-600">Gambar {{ $index + 1 }}</div>
                                             <div class="flex gap-2 items-center">
-                                                <a href="{{ $imgUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 text-xs bg-white border rounded text-gray-700 hover:bg-gray-50" download>
+                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.download-image', [$tandaTerimaTanpaSuratJalan, $index]) }}" class="inline-flex items-center px-2 py-1 text-xs bg-white border rounded text-gray-700 hover:bg-gray-50">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l4-4m-4 4l-4-4M21 12v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8"></path></svg>
                                                     Unduh
                                                 </a>

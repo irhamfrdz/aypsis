@@ -463,7 +463,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Handle gambar upload
             $uploadedImages = [];
             if ($request->hasFile('gambar_tanda_terima')) {
-                $uploadedImages = $this->handleImageUpload($request->file('gambar_tanda_terima'));
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_tanda_terima'), $validated['nomor_tanda_terima'] ?? null);
                 if (!empty($uploadedImages)) {
                     $validated['gambar_tanda_terima'] = json_encode($uploadedImages);
                     
@@ -736,7 +736,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Handle gambar uploads
             $newUploads = [];
             if ($request->hasFile('gambar_tanda_terima')) {
-                $newUploads = $this->handleImageUpload($request->file('gambar_tanda_terima'));
+                $newUploads = $this->handleImageUpload($request->file('gambar_tanda_terima'), $validated['nomor_tanda_terima'] ?? $tandaTerima->nomor_tanda_terima);
                 if (!empty($newUploads)) {
                     
                     
@@ -878,19 +878,28 @@ class TandaTerimaTanpaSuratJalanController extends Controller
      * Handle image upload for tanda terima images
      * 
      * @param array $uploadedFiles
+     * @param string $nomorTandaTerima
      * @return array Array of uploaded image paths
      */
-    private function handleImageUpload($uploadedFiles)
+    private function handleImageUpload($uploadedFiles, $nomorTandaTerima = null)
     {
         $imagePaths = [];
         
         try {
-            foreach ($uploadedFiles as $file) {
+            foreach ($uploadedFiles as $index => $file) {
                 if ($file->isValid()) {
-                    // Generate unique filename with timestamp
-                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    // Generate filename based on nomor tanda terima
                     $extension = $file->getClientOriginalExtension();
-                    $filename = 'tanda_terima_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                    
+                    if ($nomorTandaTerima) {
+                        // Clean nomor tanda terima for filename (remove special characters)
+                        $cleanNomor = preg_replace('/[^A-Za-z0-9\-]/', '_', $nomorTandaTerima);
+                        $filename = $cleanNomor . '_gambar_' . ($index + 1) . '.' . $extension;
+                    } else {
+                        // Fallback to timestamp if nomor tanda terima not available
+                        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                        $filename = 'tanda_terima_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                    }
                     
                     // Store in public disk under tanda-terima directory
                     $path = $file->storeAs('tanda-terima', $filename, 'public');
@@ -901,6 +910,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         Log::info('Tanda terima image uploaded successfully', [
                             'original_name' => $file->getClientOriginalName(),
                             'stored_path' => $path,
+                            'filename' => $filename,
+                            'nomor_tanda_terima' => $nomorTandaTerima,
                             'file_size' => $file->getSize(),
                             'uploaded_by' => Auth::user() ? Auth::user()->name : null,
                         ]);
@@ -920,5 +931,55 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
         
         return $imagePaths;
+    }
+
+    /**
+     * Download image with proper filename based on nomor tanda terima
+     */
+    public function downloadImage(TandaTerimaTanpaSuratJalan $tandaTerimaTanpaSuratJalan, $imageIndex)
+    {
+        try {
+            $gambarArray = $tandaTerimaTanpaSuratJalan->gambar_tanda_terima;
+            
+            // Ensure we have an array
+            if (is_string($gambarArray)) {
+                $gambarArray = json_decode($gambarArray, true);
+            }
+            if (!is_array($gambarArray)) {
+                $gambarArray = [];
+            }
+
+            // Check if index exists
+            if (!isset($gambarArray[$imageIndex])) {
+                abort(404, 'Gambar tidak ditemukan');
+            }
+
+            $imagePath = $gambarArray[$imageIndex];
+            $fullPath = storage_path('app/public/' . ltrim($imagePath, '/'));
+
+            // Check if file exists
+            if (!file_exists($fullPath)) {
+                abort(404, 'File gambar tidak ditemukan');
+            }
+
+            // Get file extension
+            $extension = pathinfo($fullPath, PATHINFO_EXTENSION);
+            
+            // Create download filename with nomor tanda terima
+            $downloadName = 'tanda_terima_' . 
+                           Str::slug($tandaTerimaTanpaSuratJalan->no_tanda_terima) . 
+                           '_gambar_' . ($imageIndex + 1) . 
+                           '.' . $extension;
+
+            return response()->download($fullPath, $downloadName);
+
+        } catch (\Exception $e) {
+            Log::error('Error downloading tanda terima image: ' . $e->getMessage(), [
+                'tanda_terima_id' => $tandaTerimaTanpaSuratJalan->id,
+                'image_index' => $imageIndex,
+                'error' => $e->getMessage()
+            ]);
+            abort(500, 'Terjadi kesalahan saat mendownload gambar');
+        }
     }
 }

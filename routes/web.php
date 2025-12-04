@@ -1940,6 +1940,12 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-tanpa-surat-jalan.create-lcl')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
 
+    // Download image route (must be before resource route)
+    Route::get('tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}', 
+               [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'downloadImage'])
+         ->name('tanda-terima-tanpa-surat-jalan.download-image')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
     Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
          ->middleware([
              'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
