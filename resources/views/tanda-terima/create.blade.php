@@ -453,7 +453,7 @@
                                         <option value="">-- Pilih Supir Pengganti --</option>
                                         @foreach($karyawanSupirs as $supir)
                                             <option value="{{ $supir->nama_lengkap }}"
-                                                    data-plat="{{ $supir->plat ?? '' }}"
+                                                    data-plat="{{ $supir->plat ?? 'N/A' }}"
                                                     {{ old('supir_pengganti') == $supir->nama_lengkap ? 'selected' : '' }}>
                                                 {{ $supir->nama_lengkap }}{{ $supir->plat ? ' (' . $supir->plat . ')' : '' }}
                                             </option>
@@ -983,7 +983,7 @@
     // Create a mapping of supir names to plat numbers
     var supirPlatMap = {
         @foreach($karyawans as $karyawan)
-            "{{ $karyawan->nama_lengkap }}": "{{ $karyawan->plat ?? '' }}",
+            "{{ $karyawan->nama_lengkap }}": "{{ $karyawan->plat ?? 'N/A' }}",
         @endforeach
     };
 
@@ -1154,6 +1154,31 @@
 
             console.log('Select2 initialized for all dropdowns');
 
+            // Auto-fill plat nomor berdasarkan supir default dari surat jalan
+            function autoFillPlatFromSupir() {
+                var currentSupir = $('#supir').val();
+                console.log('=== Auto-filling plat for current supir ===');
+                console.log('Current supir:', currentSupir);
+                console.log('Available supir-plat mapping:', supirPlatMap);
+                
+                if (currentSupir && supirPlatMap[currentSupir]) {
+                    var platNomor = supirPlatMap[currentSupir];
+                    console.log('Found plat in mapping:', platNomor);
+                    
+                    if (platNomor && platNomor !== '' && platNomor !== 'N/A') {
+                        $('#no_plat').val(platNomor);
+                        console.log('✓ Default plat auto-filled for supir:', currentSupir, '->', platNomor);
+                    } else {
+                        console.log('⚠ Plat is empty or N/A for supir:', currentSupir);
+                    }
+                } else {
+                    console.log('⚠ Supir not found in mapping:', currentSupir);
+                }
+            }
+
+            // Auto-fill plat on page load
+            autoFillPlatFromSupir();
+
             // Auto-fill nomor kontainer when selected from dropdown
             $('#nomor_kontainer').on('select2:select', function(e) {
                 var selectedValue = e.params.data.id;
@@ -1249,12 +1274,20 @@
                 var platNomor = $(e.params.data.element).data('plat');
                 
                 console.log('Supir pengganti selected:', selectedSupir);
-                console.log('Plat nomor:', platNomor);
+                console.log('Plat nomor from element:', platNomor);
+                
+                // Try to get plat from mapping if not found in element
+                if (!platNomor || platNomor === '' || platNomor === 'N/A') {
+                    platNomor = supirPlatMap[selectedSupir];
+                    console.log('Plat nomor from mapping:', platNomor);
+                }
                 
                 // Auto-fill plat nomor if available
-                if (platNomor) {
+                if (platNomor && platNomor !== '' && platNomor !== 'N/A') {
                     $('#no_plat').val(platNomor);
                     console.log('✓ Plat nomor auto-filled:', platNomor);
+                } else {
+                    console.log('⚠ Plat nomor not available for:', selectedSupir);
                 }
                 
                 // Update original supir field with selected supir pengganti
@@ -1269,6 +1302,9 @@
                 var originalSupir = '{{ old("supir", $suratJalan->supir) }}';
                 $('#supir').val(originalSupir);
                 console.log('✓ Supir field reset to original:', originalSupir);
+                
+                // Auto-fill plat for original supir
+                autoFillPlatFromSupir();
             });
 
             // Auto-fill when kenek pengganti selected and update original kenek field
