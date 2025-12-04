@@ -480,4 +480,128 @@ class NaikKapalController extends Controller
             }
         }
     }
+
+    /**
+     * Export naik kapal data to Excel
+     */
+    public function export(Request $request)
+    {
+        $request->validate([
+            'kapal_id' => 'required|exists:master_kapals,id',
+            'no_voyage' => 'required|string'
+        ]);
+
+        $kapal = \App\Models\MasterKapal::find($request->kapal_id);
+        $noVoyage = $request->no_voyage;
+
+        // Get naik kapal data
+        $naikKapals = NaikKapal::with(['prospek.tandaTerima'])
+            ->where('nama_kapal', $kapal->nama_kapal)
+            ->where('no_voyage', $noVoyage)
+            ->get();
+
+        if ($naikKapals->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada data untuk diekspor'
+            ], 404);
+        }
+
+        // Generate filename
+        $filename = 'Naik_Kapal_' . str_replace(' ', '_', $kapal->nama_kapal) . '_' . str_replace('/', '-', $noVoyage) . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        // Create Excel export
+        return $this->generateExcel($naikKapals, $kapal, $noVoyage, $filename);
+    }
+
+    private function generateExcel($naikKapals, $kapal, $noVoyage, $filename)
+    {
+        $headers = [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        $callback = function() use ($naikKapals, $kapal, $noVoyage) {
+            $file = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for proper encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write header
+            fputcsv($file, [
+                'LAPORAN DATA NAIK KAPAL'
+            ]);
+            
+            fputcsv($file, [
+                'Kapal: ' . $kapal->nama_kapal . ($kapal->nickname ? ' (' . $kapal->nickname . ')' : ''),
+                'Voyage: ' . $noVoyage,
+                'Tanggal Export: ' . date('d/m/Y H:i:s')
+            ]);
+            
+            fputcsv($file, []); // Empty row
+            
+            // Column headers
+            fputcsv($file, [
+                'No',
+                'Nomor Kontainer',
+                'Ukuran Kontainer', 
+                'No Seal',
+                'Jenis Barang',
+                'Tipe Kontainer',
+                'Volume (m³)',
+                'Tonase (Ton)',
+                'Kuantitas',
+                'Tanggal Muat',
+                'Jam Muat',
+                'Pelabuhan Asal',
+                'Pelabuhan Tujuan',
+                'Prospek ID',
+                'Nama Supir',
+                'Pengirim',
+                'Penerima',
+                'Status'
+            ]);
+            
+            // Data rows
+            foreach ($naikKapals as $index => $naikKapal) {
+                $prospek = $naikKapal->prospek;
+                $tandaTerima = $prospek ? $prospek->tandaTerima : null;
+                
+                fputcsv($file, [
+                    $index + 1,
+                    $naikKapal->nomor_kontainer ?: '-',
+                    $naikKapal->ukuran_kontainer ?: '-',
+                    $naikKapal->no_seal ?: '-',
+                    $naikKapal->jenis_barang ?: '-',
+                    $naikKapal->tipe_kontainer ?: '-',
+                    $naikKapal->total_volume ?: '0',
+                    $naikKapal->total_tonase ?: '0',
+                    $naikKapal->kuantitas ?: '0',
+                    $naikKapal->tanggal_muat ? date('d/m/Y', strtotime($naikKapal->tanggal_muat)) : '-',
+                    $naikKapal->jam_muat ? date('H:i', strtotime($naikKapal->jam_muat)) : '-',
+                    $naikKapal->pelabuhan_asal ?: '-',
+                    $naikKapal->pelabuhan_tujuan ?: '-',
+                    $prospek ? $prospek->id : '-',
+                    $prospek ? $prospek->nama_supir : '-',
+                    $prospek ? $prospek->pt_pengirim : ($tandaTerima ? $tandaTerima->pengirim : '-'),
+                    $tandaTerima ? $tandaTerima->penerima : '-',
+                    $naikKapal->status ?: 'Active'
+                ]);
+            }
+            
+            // Summary
+            fputcsv($file, []); // Empty row
+            fputcsv($file, [
+                'RINGKASAN:',
+                'Total Data: ' . $naikKapals->count(),
+                'Total Volume: ' . number_format($naikKapals->sum('total_volume'), 3) . ' m³',
+                'Total Tonase: ' . number_format($naikKapals->sum('total_tonase'), 3) . ' Ton'
+            ]);
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

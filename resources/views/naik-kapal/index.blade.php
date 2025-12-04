@@ -56,10 +56,16 @@
             </div>
 
             <div class="mt-6">
-                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition duration-200">
-                    <i class="fas fa-search mr-2"></i>
-                    Lihat Data Naik Kapal
-                </button>
+                <div class="flex gap-3">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition duration-200">
+                        <i class="fas fa-search mr-2"></i>
+                        Lihat Data Naik Kapal
+                    </button>
+                    <button type="button" id="btnExportExcel" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition duration-200 hidden">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -240,7 +246,16 @@ document.addEventListener('DOMContentLoaded', function() {
     kapalSelect.addEventListener('change', function() {
         const kapalId = this.value;
         loadVoyages(kapalId);
+        updateExportButtonVisibility();
     });
+
+    // Update export button when voyage changes
+    voyageSelect.addEventListener('change', function() {
+        updateExportButtonVisibility();
+    });
+
+    // Initial export button visibility check
+    updateExportButtonVisibility();
 
     // Checkbox functionality
     const selectAllCheckbox = document.getElementById('selectAll');
@@ -290,6 +305,53 @@ document.addEventListener('DOMContentLoaded', function() {
             bulkActionsPanel.classList.add('hidden');
         }
     }
+
+    // Show/hide export button based on data availability
+    function updateExportButtonVisibility() {
+        const exportBtn = document.getElementById('btnExportExcel');
+        const kapalSelect = document.getElementById('kapal_id');
+        const voyageSelect = document.getElementById('no_voyage');
+        const hasData = document.querySelectorAll('.item-checkbox').length > 0;
+        
+        if (kapalSelect.value && voyageSelect.value && hasData) {
+            exportBtn.classList.remove('hidden');
+        } else {
+            exportBtn.classList.add('hidden');
+        }
+    }
+
+    // Export Excel functionality
+    document.getElementById('btnExportExcel').addEventListener('click', function() {
+        const kapalId = document.getElementById('kapal_id').value;
+        const noVoyage = document.getElementById('no_voyage').value;
+        
+        if (!kapalId || !noVoyage) {
+            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            return;
+        }
+        
+        // Show loading state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengunduh...';
+        this.disabled = true;
+        
+        // Create download URL with parameters
+        const downloadUrl = `{{ route('naik-kapal.export') }}?kapal_id=${kapalId}&no_voyage=${encodeURIComponent(noVoyage)}`;
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Reset button state after delay
+        setTimeout(() => {
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }, 2000);
+    });
 
     // Bulk action button events
     document.getElementById('btnMasukkanKeBls').addEventListener('click', function() {
@@ -401,6 +463,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 voyageSelect.innerHTML = '<option value="">Belum ada voyage untuk kapal ini</option>';
             }
             voyageSelect.disabled = false;
+            
+            // Update export button visibility after voyage loaded
+            setTimeout(updateExportButtonVisibility, 100);
         })
         .catch(err => {
             voyageSelect.innerHTML = '<option value="">Error loading voyage</option>';

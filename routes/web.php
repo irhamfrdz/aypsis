@@ -3313,6 +3313,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('naik-kapal.bulk-action')
                ->middleware('can:prospek-edit');
                
+          Route::get('naik-kapal/export', [NaikKapalController::class, 'export'])
+               ->name('naik-kapal.export')
+               ->middleware('can:prospek-view');
+               
           Route::resource('naik-kapal', NaikKapalController::class)
                      ->middleware('can:prospek-edit');
 

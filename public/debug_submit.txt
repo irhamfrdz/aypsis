@@ -16,3 +16,9 @@ Validation passed
 Submit attempt at: 2025-12-04 13:41:27
 Request data: {"_token":"gHq8gUsvRNOaCL6y6BXFBhs9v9ELTVTeTeS3eEu7","tujuan_id":"batam","tanggal":"2025-12-04","kapal_id":"89","no_voyage":"SR01JB25","prospek_ids":["71","75","76","98"],"pelabuhan_asal":"JAKARTA","tujuan":"Batam"}
 Validation passed
+Submit attempt at: 2025-12-04 14:20:10
+Request data: {"_token":"gHq8gUsvRNOaCL6y6BXFBhs9v9ELTVTeTeS3eEu7","tujuan_id":"pinang","tanggal":"2025-12-04","kapal_id":"89","no_voyage":"SR01JB25","prospek_ids":["102"],"pelabuhan_asal":"JAKARTA","tujuan":"Pinang"}
+Validation passed
+Submit attempt at: 2025-12-04 14:44:23
+Request data: {"_token":"gHq8gUsvRNOaCL6y6BXFBhs9v9ELTVTeTeS3eEu7","tujuan_id":"pinang","tanggal":"2025-12-04","kapal_id":"89","no_voyage":"SR01JB25","prospek_ids":["104"],"pelabuhan_asal":"JAKARTA","tujuan":"Pinang"}
+Validation passed

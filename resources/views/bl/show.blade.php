@@ -49,6 +49,11 @@
                     <span class="font-medium text-gray-600">Tipe Kontainer:</span>
                     <span class="text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</span>
                 </div>
+
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Size Kontainer:</span>
+                    <span class="text-gray-900">{{ $bl->size_kontainer ?: '-' }}</span>
+                </div>
             </div>
         </div>
 
@@ -62,12 +67,22 @@
             <div class="space-y-4">
                 <div class="flex justify-between py-2 border-b border-gray-100">
                     <span class="font-medium text-gray-600">Nama Kapal:</span>
-                    <span class="text-gray-900">{{ $bl->nama_kapal }}</span>
+                    <span class="text-gray-900">{{ $bl->nama_kapal ?: '-' }}</span>
                 </div>
                 
                 <div class="flex justify-between py-2 border-b border-gray-100">
                     <span class="font-medium text-gray-600">No Voyage:</span>
-                    <span class="text-gray-900">{{ $bl->no_voyage }}</span>
+                    <span class="text-gray-900">{{ $bl->no_voyage ?: '-' }}</span>
+                </div>
+
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Pelabuhan Asal:</span>
+                    <span class="text-gray-900">{{ $bl->pelabuhan_asal ?: '-' }}</span>
+                </div>
+
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Pelabuhan Tujuan:</span>
+                    <span class="text-gray-900">{{ $bl->pelabuhan_tujuan ?: '-' }}</span>
                 </div>
             </div>
         </div>
@@ -103,6 +118,72 @@
                 <div class="flex justify-between py-2 border-b border-gray-100">
                     <span class="font-medium text-gray-600">Kuantitas:</span>
                     <span class="text-gray-900">{{ $bl->kuantitas ?: '-' }}</span>
+                </div>
+
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Satuan:</span>
+                    <span class="text-gray-900">{{ $bl->satuan ?: '-' }}</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Informasi Pengirim/Penerima --}}
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-users mr-2 text-purple-600"></i>
+                Informasi Pengirim/Penerima
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600 block mb-1">Pengirim:</span>
+                    <span class="text-gray-900">{{ $bl->pengirim ?: '-' }}</span>
+                </div>
+                
+                <div class="py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600 block mb-1">Penerima:</span>
+                    <span class="text-gray-900">{{ $bl->penerima ?: '-' }}</span>
+                </div>
+
+                <div class="py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600 block mb-1">Alamat Pengiriman:</span>
+                    <span class="text-gray-900">{{ $bl->alamat_pengiriman ?: '-' }}</span>
+                </div>
+
+                <div class="py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600 block mb-1">Contact Person:</span>
+                    <span class="text-gray-900">{{ $bl->contact_person ?: '-' }}</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Status dan Operasional --}}
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-tasks mr-2 text-red-600"></i>
+                Status dan Operasional
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Status Bongkar:</span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                        {{ $bl->status_bongkar === 'Sudah Bongkar' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $bl->status_bongkar ?: 'Belum Bongkar' }}
+                    </span>
+                </div>
+                
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Status OB:</span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                        {{ $bl->sudah_ob ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                        {{ $bl->sudah_ob ? 'Sudah OB' : 'Belum OB' }}
+                    </span>
+                </div>
+
+                <div class="py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600 block mb-1">Supir OB:</span>
+                    <span class="text-gray-900">{{ $bl->supir_ob ?: '-' }}</span>
                 </div>
             </div>
         </div>
@@ -156,7 +237,7 @@
         @endif
 
         {{-- Informasi Timestamp --}}
-        <div class="bg-white rounded-lg shadow-sm p-6 {{ $bl->prospek ? '' : 'lg:col-span-1' }}">
+        <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                 <i class="fas fa-clock mr-2 text-gray-600"></i>
                 Informasi Waktu
