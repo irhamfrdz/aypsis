@@ -32,6 +32,18 @@ class NaikKapalController extends Controller
             $query->where('status', $request->status);
         }
         
+        // Filter by status BL
+        if ($request->filled('status_filter')) {
+            if ($request->status_filter === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($request->status_filter === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+        
         if ($request->filled('tanggal_muat')) {
             $query->whereDate('tanggal_muat', $request->tanggal_muat);
         }

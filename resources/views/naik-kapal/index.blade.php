@@ -27,7 +27,7 @@
     {{-- Select Form --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <form method="GET" action="{{ route('naik-kapal.index') }}" id="naikKapalSelectForm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-2">
                         Kapal <span class="text-red-500">*</span>
@@ -51,6 +51,17 @@
                     </label>
                     <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500" required>
                         <option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="status_filter" class="block text-sm font-medium text-gray-700 mb-2">
+                        Status BL
+                    </label>
+                    <select id="status_filter" name="status_filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500">
+                        <option value="">--Semua Status--</option>
+                        <option value="sudah_bl" {{ request('status_filter') === 'sudah_bl' ? 'selected' : '' }}>Sudah BL</option>
+                        <option value="belum_bl" {{ request('status_filter') === 'belum_bl' ? 'selected' : '' }}>Belum BL</option>
                     </select>
                 </div>
             </div>
@@ -123,13 +134,14 @@
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal & Voyage<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Volume & Tonase<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Muat<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Prospek<div class="resize-handle"></div></th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $naikKapal)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 {{ $naikKapal->status === 'Moved to BLS' ? 'bg-green-50' : '' }}">
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <input type="checkbox" name="selected_items[]" value="{{ $naikKapal->id }}" class="item-checkbox rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                             </td>
@@ -184,6 +196,19 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                @if($naikKapal->status === 'Moved to BLS')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check mr-1"></i>
+                                        Sudah BL
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Belum BL
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($naikKapal->prospek)
                                     <div class="text-sm text-gray-900">{{ $naikKapal->prospek->nama_supir }}</div>
                                     <div class="text-xs text-gray-500">ID: {{ $naikKapal->prospek->id }}</div>
@@ -211,7 +236,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="10" class="px-6 py-4 text-center text-gray-500">
                                 <i class="fas fa-ship text-4xl mb-4 text-gray-300"></i>
                                 <p class="text-lg">Belum ada data naik kapal</p>
                                 <p class="text-sm">Data naik kapal akan muncul ketika tersedia</p>
