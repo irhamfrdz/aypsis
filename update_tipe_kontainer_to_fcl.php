@@ -2,7 +2,7 @@
 
 /**
  * Script untuk mengubah tipe kontainer dari "Dry Container" menjadi "FCL"
- * pada tabel surat_jalan
+ * pada tabel surat_jalans
  * 
  * Jalankan script ini dengan perintah: php update_tipe_kontainer_to_fcl.php
  */
@@ -18,10 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 try {
     echo "=== Script Update Tipe Kontainer ===\n";
-    echo "Mengubah 'Dry Container' menjadi 'FCL' pada tabel surat_jalan\n\n";
+    echo "Mengubah 'Dry Container' menjadi 'FCL' pada tabel surat_jalans\n\n";
     
     // Cek jumlah data yang akan diubah
-    $count = DB::table('surat_jalan')
+    $count = DB::table('surat_jalans')
         ->where('tipe_kontainer', 'Dry Container')
         ->count();
     
@@ -36,18 +36,18 @@ try {
         
         if (strtolower($confirmation) === 'y' || strtolower($confirmation) === 'yes') {
             // Lakukan update
-            $updated = DB::table('surat_jalan')
+            $updated = DB::table('surat_jalans')
                 ->where('tipe_kontainer', 'Dry Container')
                 ->update(['tipe_kontainer' => 'FCL']);
             
             echo "\n✅ Berhasil mengubah {$updated} record dari 'Dry Container' ke 'FCL'\n";
             
             // Verifikasi hasil update
-            $remainingCount = DB::table('surat_jalan')
+            $remainingCount = DB::table('surat_jalans')
                 ->where('tipe_kontainer', 'Dry Container')
                 ->count();
             
-            $fclCount = DB::table('surat_jalan')
+            $fclCount = DB::table('surat_jalans')
                 ->where('tipe_kontainer', 'FCL')
                 ->count();
             
