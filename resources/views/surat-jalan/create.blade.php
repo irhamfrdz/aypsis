@@ -643,7 +643,68 @@
 // Initialize kontainer filtering on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeKontainerFiltering();
+    // setupKontainerDropdownEvents() is now called inside initializeKontainerFiltering()
 });
+
+function setupKontainerDropdownEvents() {
+    const searchInput = document.getElementById('nomor_kontainer_search');
+    const dropdown = document.getElementById('nomor_kontainer_dropdown');
+    const hiddenInput = document.getElementById('nomor_kontainer');
+
+    if (!searchInput || !dropdown || !hiddenInput) return;
+
+    // Show dropdown on focus/click
+    searchInput.addEventListener('focus', function() {
+        dropdown.classList.remove('hidden');
+    });
+
+    searchInput.addEventListener('click', function() {
+        dropdown.classList.remove('hidden');
+    });
+
+    // Filter dropdown on typing
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        filterDropdownOptions(searchTerm);
+        dropdown.classList.remove('hidden');
+    });
+
+    // Handle clicking on dropdown options
+    dropdown.addEventListener('click', function(e) {
+        const option = e.target.closest('.kontainer-option');
+        if (option) {
+            const value = option.getAttribute('data-value');
+            const text = option.getAttribute('data-text');
+            
+            // Set values
+            hiddenInput.value = value;
+            searchInput.value = text;
+            
+            // Hide dropdown
+            dropdown.classList.add('hidden');
+            
+            console.log('Selected kontainer:', value);
+        }
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+}
+
+function filterDropdownOptions(searchTerm) {
+    const dropdown = document.getElementById('nomor_kontainer_dropdown');
+    const options = dropdown.querySelectorAll('.kontainer-option');
+
+    options.forEach(function(option) {
+        const text = option.getAttribute('data-text') || '';
+        const visible = text.toLowerCase().includes(searchTerm);
+        option.style.display = visible ? 'block' : 'none';
+    });
+}
 
 function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, function(m) {
@@ -680,6 +741,9 @@ function initializeKontainerFiltering() {
             // populate with all
             filterNomorKontainerBySize();
         }
+        
+        // Setup dropdown events after initial population
+        setupKontainerDropdownEvents();
     }
 }
 

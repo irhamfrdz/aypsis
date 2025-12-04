@@ -36,6 +36,7 @@ class SuratJalanController extends Controller
                   ->orWhere('pengirim', 'like', "%{$search}%")
                   ->orWhere('alamat', 'like', "%{$search}%")
                   ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('tipe_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%");
@@ -50,6 +51,11 @@ class SuratJalanController extends Controller
         // Filter by status pembayaran
         if ($request->filled('status_pembayaran') && $request->status_pembayaran !== 'all') {
             $query->where('status_pembayaran', $request->status_pembayaran);
+        }
+
+        // Filter by tipe kontainer
+        if ($request->filled('tipe_kontainer')) {
+            $query->where('tipe_kontainer', $request->tipe_kontainer);
         }
 
         // Filter by date range

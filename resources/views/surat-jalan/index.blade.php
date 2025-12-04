@@ -52,7 +52,7 @@ use Illuminate\Support\Str;
                         Pencarian
                     </label>
                     <input type="text" name="search" id="search" value="{{ request('search') }}"
-                           placeholder="No. Surat Jalan, Pengirim, No. Kontainer, Tujuan..."
+                           placeholder="No. Surat Jalan, Pengirim, No. Kontainer, Tipe Kontainer, Tujuan..."
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div class="sm:w-48">
@@ -74,6 +74,23 @@ use Illuminate\Support\Str;
                         <option value="sudah_dibayar" {{ request('status_pembayaran') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
                     </select>
                 </div>
+                <div class="sm:w-48">
+                    <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
+                    <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="" {{ request('tipe_kontainer') == '' ? 'selected' : '' }}>Semua Tipe</option>
+                        <option value="Dry Container" {{ request('tipe_kontainer') == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
+                        <option value="High Cube" {{ request('tipe_kontainer') == 'High Cube' ? 'selected' : '' }}>High Cube</option>
+                        <option value="Reefer" {{ request('tipe_kontainer') == 'Reefer' ? 'selected' : '' }}>Reefer</option>
+                        <option value="Open Top" {{ request('tipe_kontainer') == 'Open Top' ? 'selected' : '' }}>Open Top</option>
+                        <option value="Flat Rack" {{ request('tipe_kontainer') == 'Flat Rack' ? 'selected' : '' }}>Flat Rack</option>
+                        <option value="HC" {{ request('tipe_kontainer') == 'HC' ? 'selected' : '' }}>HC</option>
+                        <option value="STD" {{ request('tipe_kontainer') == 'STD' ? 'selected' : '' }}>STD</option>
+                        <option value="RF" {{ request('tipe_kontainer') == 'RF' ? 'selected' : '' }}>RF</option>
+                        <option value="OT" {{ request('tipe_kontainer') == 'OT' ? 'selected' : '' }}>OT</option>
+                        <option value="FR" {{ request('tipe_kontainer') == 'FR' ? 'selected' : '' }}>FR</option>
+                        <option value="cargo" {{ request('tipe_kontainer') == 'cargo' ? 'selected' : '' }}>Cargo</option>
+                    </select>
+                </div>
                 <div class="sm:w-40">
                     <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
                     <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}"
@@ -91,7 +108,7 @@ use Illuminate\Support\Str;
                         </svg>
                         Filter
                     </button>
-                    @if(request()->hasAny(['search', 'status', 'status_pembayaran', 'start_date', 'end_date']))
+                    @if(request()->hasAny(['search', 'status', 'status_pembayaran', 'tipe_kontainer', 'start_date', 'end_date']))
                         <a href="{{ route('surat-jalan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                             Reset
                         </a>
@@ -149,6 +166,7 @@ use Illuminate\Support\Str;
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Tujuan Ambil<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Tujuan Kirim<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Barang<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Tipe<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Kontainer<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12" style="position: relative;">Jumlah Rit<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Supir<div class="resize-handle"></div></th>
@@ -252,6 +270,13 @@ use Illuminate\Support\Str;
                                     {{ $suratJalan->jenis_barang ?? '-' }}
                                 </div>
                             </td>
+                            <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tipe_kontainer ?? '-' }}">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ $suratJalan->tipe_kontainer ?? '-' }}
+                                    </span>
+                                </div>
+                            </td>
                             <td class="px-2 py-2 text-xs font-mono text-gray-900">
                                 <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->no_kontainer ?? '-' }}">
                                     {{ $suratJalan->no_kontainer ?? '-' }}
@@ -337,7 +362,7 @@ use Illuminate\Support\Str;
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="14" class="px-6 py-8 text-center text-sm text-gray-500">
+                            <td colspan="15" class="px-6 py-8 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

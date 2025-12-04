@@ -165,29 +165,7 @@
                                         <option value="40" {{ old('size.0', $suratJalan->size) == '40' ? 'selected' : '' }}>40</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label for="tipe_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tipe Kontainer
-                                    </label>
-                                    <select name="tipe_kontainer[]"
-                                            id="tipe_kontainer"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tipe_kontainer.0') border-red-500 @enderror">
-                                        <option value="">Pilih Tipe</option>
-                                        <option value="HC" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'HC' ? 'selected' : '' }}>HC (High Cube)</option>
-                                        <option value="STD" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'STD' ? 'selected' : '' }}>STD (Standard)</option>
-                                        <option value="RF" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'RF' ? 'selected' : '' }}>RF (Reefer)</option>
-                                        <option value="OT" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'OT' ? 'selected' : '' }}>OT (Open Top)</option>
-                                        <option value="FR" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'FR' ? 'selected' : '' }}>FR (Flat Rack)</option>
-                                        <option value="Dry Container" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
-                                        <option value="High Cube" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'High Cube' ? 'selected' : '' }}>High Cube</option>
-                                        <option value="Reefer" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'Reefer' ? 'selected' : '' }}>Reefer</option>
-                                        <option value="Open Top" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'Open Top' ? 'selected' : '' }}>Open Top</option>
-                                        <option value="Flat Rack" {{ old('tipe_kontainer.0', $suratJalan->tipe_kontainer) == 'Flat Rack' ? 'selected' : '' }}>Flat Rack</option>
-                                    </select>
-                                    @error('tipe_kontainer.0')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
+
                                 <div>
                                     <label for="jumlah_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
                                         Jumlah Kontainer
@@ -1012,12 +990,11 @@
 
     console.log('Supir-Plat mapping loaded:', supirPlatMap);
 
-    // Create a mapping of kontainer number to its details (size and tipe)
+    // Create a mapping of kontainer number to its details (size)
     var kontainerDetailsMap = {
         @foreach($stockKontainers as $stock)
             "{{ $stock->nomor_seri_gabungan }}": {
-                size: "{{ $stock->ukuran }}",
-                tipe: "{{ $stock->tipe_kontainer }}"
+                size: "{{ $stock->ukuran }}"
             },
         @endforeach
     };
@@ -1178,7 +1155,7 @@
 
             console.log('Select2 initialized for all dropdowns');
 
-            // Auto-fill nomor kontainer and tipe kontainer when selected from dropdown
+            // Auto-fill nomor kontainer when selected from dropdown
             $('#nomor_kontainer').on('select2:select', function(e) {
                 var selectedValue = e.params.data.id;
                 console.log('Nomor kontainer selected:', selectedValue);
@@ -1187,7 +1164,7 @@
                 var containerNumber = selectedValue.split(' (')[0].trim();
                 console.log('Extracted container number:', containerNumber);
                 
-                // Auto-fill size and tipe kontainer based on selected kontainer
+                // Auto-fill size based on selected kontainer
                 if (kontainerDetailsMap[containerNumber]) {
                     var details = kontainerDetailsMap[containerNumber];
                     console.log('Found kontainer details:', details);
@@ -1198,11 +1175,7 @@
                         console.log('✓ Size auto-filled:', details.size);
                     }
                     
-                    // Set tipe kontainer dropdown
-                    if (details.tipe) {
-                        $('#tipe_kontainer').val(details.tipe);
-                        console.log('✓ Tipe kontainer auto-filled:', details.tipe);
-                    }
+
                 } else {
                     console.log('No details found for kontainer:', containerNumber);
                 }

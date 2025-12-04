@@ -289,8 +289,6 @@ class TandaTerimaController extends Controller
             'no_plat' => 'nullable|string|max:50',
             'kenek' => 'nullable|string|max:255',
             'krani' => 'nullable|string|max:255',
-            'tipe_kontainer' => 'nullable|array',
-            'tipe_kontainer.*' => 'nullable|string|max:50',
             'size' => 'nullable|array',
             'size.*' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:0',
@@ -337,25 +335,14 @@ class TandaTerimaController extends Controller
         try {
             $suratJalan = SuratJalan::with(['order.pengirim'])->findOrFail($request->surat_jalan_id);
 
-            // Map tipe_kontainer values to DB enum values to avoid SQL truncation
-            // The application stores verbose tipe_kontainer in UI like "Dry Container" or "High Cube".
-            // Database column only accepts enum('fcl','lcl','cargo') for tanda_terimas.
-            // We'll try to map common verbose values to allowed enum values.
-            $rawTipe = $suratJalan->tipe_kontainer ?? ($request->input('tipe_kontainer') ?? null);
-            // If tipe_kontainer provided as array (tipe_kontainer[]), pick the first non-empty value
-            if (is_array($rawTipe)) {
-                $first = null;
-                foreach ($rawTipe as $r) {
-                    if (!empty(trim($r))) { $first = $r; break; }
-                }
-                $rawTipe = $first;
-            }
+            // Use tipe_kontainer from existing surat jalan data only - no sync from form
+            $rawTipe = $suratJalan->tipe_kontainer;
             if ($rawTipe) {
                 $mapped = $this->mapTipeKontainerValue($rawTipe);
                 if ($mapped === null) {
                     // Return a clear validation error instead of letting DB throw
                     DB::rollBack();
-                    $message = "Tipe kontainer '{$rawTipe}' tidak valid untuk Tanda Terima. Pilih salah satu: FCL, LCL, atau CARGO.";
+                    $message = "Tipe kontainer '{$rawTipe}' pada surat jalan tidak valid untuk Tanda Terima. Hubungi admin untuk perbaikan data surat jalan.";
                     Log::warning('Invalid tipe_kontainer for Tanda Terima', ['raw' => $rawTipe, 'surat_jalan_id' => $suratJalan->id]);
                     return redirect()->back()->withInput()->with('error', $message);
                 }
@@ -459,26 +446,19 @@ class TandaTerimaController extends Controller
                 if (!empty($nomorKontainers)) {
                     $tandaTerima->no_kontainer = implode(',', $nomorKontainers);
                     
-                    // Build kontainer details
+                    // Build kontainer details - without tipe (keep separate from surat jalan)
                     $sizeArray = $request->size ?? [];
-                    $tipeKontainerArray = $request->tipe_kontainer ?? [];
                     $noSealArray = $request->no_seal ?? [];
                     
                     foreach ($nomorKontainers as $index => $nomorKontainer) {
                         $kontainerDetails[] = [
                             'nomor_kontainer' => $nomorKontainer,
                             'size' => $sizeArray[$index] ?? null,
-                            'tipe' => $tipeKontainerArray[$index] ?? null,
                             'no_seal' => $noSealArray[$index] ?? null,
                         ];
                     }
                     
                     $tandaTerima->kontainer_details = $kontainerDetails;
-                    
-                    // Save tipe kontainer details separately
-                    if (!empty($tipeKontainerArray)) {
-                        $tandaTerima->tipe_kontainer_details = array_filter($tipeKontainerArray);
-                    }
                 } else {
                     $tandaTerima->no_kontainer = $suratJalan->no_kontainer;
                 }
@@ -576,14 +556,7 @@ class TandaTerimaController extends Controller
                 $suratJalanUpdate['krani'] = $request->krani;
             }
             
-            // Data kontainer
-            if ($request->filled('tipe_kontainer')) {
-                // Ambil tipe kontainer pertama jika ada (karena array)
-                $tipeKontainer = is_array($request->tipe_kontainer) ? $request->tipe_kontainer[0] : $request->tipe_kontainer;
-                if (!empty($tipeKontainer)) {
-                    $suratJalanUpdate['tipe_kontainer'] = $tipeKontainer;
-                }
-            }
+            // Data kontainer - size and jumlah only, tipe_kontainer stays separate
             if ($request->filled('size')) {
                 // Ambil size pertama jika ada (karena array)
                 $size = is_array($request->size) ? $request->size[0] : $request->size;
