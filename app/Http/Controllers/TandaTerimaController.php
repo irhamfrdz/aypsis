@@ -157,8 +157,8 @@ class TandaTerimaController extends Controller
             // Only include surat jalan that do not yet have a tanda terima
             $suratQuery->whereDoesntHave('tandaTerima');
 
-            // Exclude surat jalan that have completed pranota uang jalan payment
-            $suratQuery->whereDoesntHave('uangJalans', function($uangJalanQuery) {
+            // Only include surat jalan that have completed pranota uang jalan payment
+            $suratQuery->whereHas('uangJalans', function($uangJalanQuery) {
                 $uangJalanQuery->whereHas('pranotaUangJalan', function($pranotaQuery) {
                     $pranotaQuery->whereHas('pembayaranPranotaUangJalans', function($pembayaranQuery) {
                         $pembayaranQuery->where('status_pembayaran', 'paid');
