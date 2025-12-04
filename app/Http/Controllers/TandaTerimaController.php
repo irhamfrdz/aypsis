@@ -176,7 +176,6 @@ class TandaTerimaController extends Controller
                     'sj.kegiatan',
                     'tt.id as tanda_terima_id',
                     'tt.nomor_tanda_terima',
-                    'tt.status',
                     'tt.created_at'
                 );
 
@@ -188,11 +187,6 @@ class TandaTerimaController extends Controller
                       ->orWhere('sj.no_kontainer', 'like', "%{$search}%")
                       ->orWhere('tt.nomor_tanda_terima', 'like', "%{$search}%");
                 });
-            }
-
-            // Apply status filter to tanda terima if provided
-            if (!empty($status)) {
-                $query->where('tt.status', $status);
             }
 
             $suratJalansWithTandaTerima = $query->orderBy('tt.created_at', 'desc')

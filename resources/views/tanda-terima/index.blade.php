@@ -71,22 +71,14 @@
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('tanda-terima.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-4">
                         <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                placeholder="Cari no. surat jalan, kontainer, kapal, tujuan ambil, tujuan kirim..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-2">
-                        <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Semua Status</option>
-                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                            <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
-                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-4">
                         <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="" {{ request('mode') == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
                             <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima</option>
@@ -190,7 +182,6 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status TT</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -292,24 +283,6 @@
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">{{ $item->nomor_tanda_terima ?: '-' }}</code>
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-center">
-                                @if($item->status == 'completed')
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check w-2 h-2 mr-1"></i>
-                                        Done
-                                    </span>
-                                @elseif($item->status == 'submitted')
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        <i class="fas fa-paper-plane w-2 h-2 mr-1"></i>
-                                        Submit
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-edit w-2 h-2 mr-1"></i>
-                                        Draft
-                                    </span>
-                                @endif
-                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                     {{ Str::limit($item->kegiatan ?: '-', 12) }}
@@ -332,7 +305,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-3 py-8 text-center">
+                            <td colspan="9" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan dengan tanda terima</p>
