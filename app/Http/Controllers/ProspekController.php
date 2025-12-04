@@ -286,8 +286,9 @@ class ProspekController extends Controller
     public function executeNaikKapal(Request $request)
     {
         // Debug - buat file debug sederhana
-        file_put_contents('debug_submit.txt', 'Submit attempt at: ' . now() . "\n", FILE_APPEND);
-        file_put_contents('debug_submit.txt', 'Request data: ' . json_encode($request->all()) . "\n", FILE_APPEND);
+        $debugFile = storage_path('logs/debug_submit.txt');
+        file_put_contents($debugFile, 'Submit attempt at: ' . now() . "\n", FILE_APPEND);
+        file_put_contents($debugFile, 'Request data: ' . json_encode($request->all()) . "\n", FILE_APPEND);
         
         try {
             $user = Auth::user();
@@ -310,7 +311,8 @@ class ProspekController extends Controller
                 'pelabuhan_asal' => 'required|string|max:100'
             ]);
             
-            file_put_contents('debug_submit.txt', 'Validation passed' . "\n", FILE_APPEND);
+            $debugFile = storage_path('logs/debug_submit.txt');
+            file_put_contents($debugFile, 'Validation passed' . "\n", FILE_APPEND);
             \Log::info('Validation passed successfully');
 
             $tujuanId = $request->tujuan_id;
@@ -419,8 +421,9 @@ class ProspekController extends Controller
                 ->with('success', "Berhasil memproses {$updatedCount} prospek ({$kontainerList}) untuk naik kapal {$masterKapal->nama_kapal} ke {$tujuanData['nama']}. Data telah disimpan ke tabel naik kapal dan BL.");
         
         } catch (\Exception $e) {
-            file_put_contents('debug_submit.txt', 'ERROR: ' . $e->getMessage() . "\n", FILE_APPEND);
-            file_put_contents('debug_submit.txt', 'Stack trace: ' . $e->getTraceAsString() . "\n", FILE_APPEND);
+            $debugFile = storage_path('logs/debug_submit.txt');
+            file_put_contents($debugFile, 'ERROR: ' . $e->getMessage() . "\n", FILE_APPEND);
+            file_put_contents($debugFile, 'Stack trace: ' . $e->getTraceAsString() . "\n", FILE_APPEND);
             \Log::error('Error in executeNaikKapal: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
