@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\PembayaranAktivitasLain;
+use App\Models\Coa;
+use App\Models\CoaTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -53,13 +55,71 @@ class PembayaranAktivitasLainController extends Controller
     {
         $nomor = PembayaranAktivitasLain::generateNomor();
         $akunBiaya = DB::table('akun_coa')
+            ->orderBy('kode_nomor')
+            ->get();
+        $mobils = DB::table('mobils')
+            ->select('id', 'nomor_polisi', 'merek', 'jenis')
+            ->orderBy('nomor_polisi')
+            ->get();
+        
+        // Get voyages from both bls and pergerakan_kapal tables
+        $voyagesBl = DB::table('bls')
+            ->select('no_voyage as voyage', 'nama_kapal')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->orderBy('no_voyage')
+            ->get();
+            
+        $voyagesPergerakan = DB::table('pergerakan_kapal')
+            ->select('voyage', 'nama_kapal')
+            ->whereNotNull('voyage')
+            ->where('voyage', '!=', '')
+            ->distinct()
+            ->orderBy('voyage')
+            ->get();
+            
+        // Combine and deduplicate voyages
+        $allVoyages = collect();
+        
+        foreach ($voyagesBl as $voyage) {
+            $allVoyages->push((object)[
+                'voyage' => $voyage->voyage,
+                'nama_kapal' => $voyage->nama_kapal,
+                'source' => 'BL'
+            ]);
+        }
+        
+        foreach ($voyagesPergerakan as $voyage) {
+            // Only add if not already exists
+            $exists = $allVoyages->where('voyage', $voyage->voyage)
+                                ->where('nama_kapal', $voyage->nama_kapal)
+                                ->first();
+            if (!$exists) {
+                $allVoyages->push((object)[
+                    'voyage' => $voyage->voyage,
+                    'nama_kapal' => $voyage->nama_kapal,
+                    'source' => 'Pergerakan Kapal'
+                ]);
+            }
+        }
+        
+        $voyages = $allVoyages->sortBy('voyage')->values();
+        
+        $akunBank = DB::table('akun_coa')
             ->where(function($q) {
-                $q->where('tipe_akun', 'like', '%biaya%')
-                  ->orWhere('tipe_akun', 'like', '%beban%');
+                $q->where('tipe_akun', 'like', '%kas%')
+                  ->orWhere('tipe_akun', 'like', '%bank%');
             })
             ->orderBy('kode_nomor')
             ->get();
-        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya'));
+            
+        $karyawans = DB::table('karyawans')
+            ->select('id', 'nama_lengkap', 'pekerjaan')
+            ->orderBy('nama_lengkap')
+            ->get();
+        
+        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans'));
     }
 
     public function store(Request $request)
@@ -67,30 +127,133 @@ class PembayaranAktivitasLainController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
-            'keterangan' => 'nullable|string',
+            'sub_jenis_kendaraan' => 'nullable|string|max:255',
+            'nomor_polisi' => 'nullable|string|max:255',
+            'nomor_voyage' => 'nullable|string|max:255',
+            'penerima' => 'required|string|max:255',
+            'keterangan' => 'required|string',
             'jumlah' => 'required|numeric|min:0',
-            'metode_pembayaran' => 'required|string|in:cash,transfer,cek,giro',
             'debit_kredit' => 'required|in:debit,kredit',
             'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_bank_id' => 'required|exists:akun_coa,id',
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Generate nomor pembayaran
             $validated['nomor'] = PembayaranAktivitasLain::generateNomor();
             $validated['created_by'] = Auth::id();
             $validated['status'] = 'pending';
 
-            PembayaranAktivitasLain::create($validated);
+            // Create main payment record
+            $pembayaran = PembayaranAktivitasLain::create($validated);
+
+            // Implement Double Book Accounting
+            $this->createDoubleBookJournal($pembayaran, $validated);
 
             DB::commit();
 
             return redirect()->route('pembayaran-aktivitas-lain.index')
-                ->with('success', 'Data pembayaran berhasil disimpan');
+                ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Create Double Book Accounting Journal Entries
+     */
+    private function createDoubleBookJournal($pembayaran, $validated)
+    {
+        // Get account information
+        $akunCoa = Coa::find($validated['akun_coa_id']);
+        $akunBank = Coa::find($validated['akun_bank_id']);
+        
+        $tanggal = $validated['tanggal'];
+        $jumlah = $validated['jumlah'];
+        $jenisTransaksi = $validated['debit_kredit'];
+        $nomorReferensi = $pembayaran->nomor;
+        $keterangan = "Pembayaran Aktivitas Lain - {$validated['jenis_aktivitas']}";
+        $jenisTransaksiDesc = 'Pembayaran Aktivitas Lain';
+
+        // Create journal entries based on debit/credit selection
+        if ($jenisTransaksi === 'debit') {
+            // DEBIT: Increase expense/cost account, decrease bank account
+            // Dr. Expense Account (+)
+            $this->createCoaTransaction([
+                'coa_id' => $akunCoa->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'debit' => $jumlah,
+                'kredit' => 0,
+                'saldo' => $akunCoa->saldo + $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunCoa->update(['saldo' => $akunCoa->saldo + $jumlah]);
+
+            // Cr. Bank Account (-)
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'debit' => 0,
+                'kredit' => $jumlah,
+                'saldo' => $akunBank->saldo - $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunBank->update(['saldo' => $akunBank->saldo - $jumlah]);
+        } else {
+            // KREDIT: Increase bank account, decrease expense/cost account
+            // Dr. Bank Account (+)
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'debit' => $jumlah,
+                'kredit' => 0,
+                'saldo' => $akunBank->saldo + $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunBank->update(['saldo' => $akunBank->saldo + $jumlah]);
+
+            // Cr. Expense Account (-)
+            $this->createCoaTransaction([
+                'coa_id' => $akunCoa->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'debit' => 0,
+                'kredit' => $jumlah,
+                'saldo' => $akunCoa->saldo - $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunCoa->update(['saldo' => $akunCoa->saldo - $jumlah]);
+        }
+    }
+
+    /**
+     * Create individual COA transaction entry
+     */
+    private function createCoaTransaction($data)
+    {
+        return CoaTransaction::create($data);
     }
 
     public function show(PembayaranAktivitasLain $pembayaranAktivitasLain)

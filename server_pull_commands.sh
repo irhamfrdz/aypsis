@@ -23,6 +23,7 @@ echo "📥 4. Pulling latest changes from git..."
 git fetch origin
 git pull origin main
 
+
 # 5. Fix composer dependencies dengan SSL handling
 echo "📦 5. Fixing composer dependencies..."
 composer config disable-tls true

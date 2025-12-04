@@ -13,11 +13,16 @@ class PembayaranAktivitasLain extends Model
         'nomor',
         'tanggal',
         'jenis_aktivitas',
+        'sub_jenis_kendaraan',
+        'nomor_polisi',
+        'nomor_voyage',
+        'penerima',
         'keterangan',
         'jumlah',
         'metode_pembayaran',
         'debit_kredit',
         'akun_coa_id',
+        'akun_bank_id',
         'status',
         'approved_by',
         'approved_at',
@@ -42,7 +47,17 @@ class PembayaranAktivitasLain extends Model
 
     public function akunCoa()
     {
-        return $this->belongsTo(\stdClass::class, 'akun_coa_id');
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
+    }
+
+    public function akunBank()
+    {
+        return $this->belongsTo(Coa::class, 'akun_bank_id');
+    }
+
+    public function coaTransactions()
+    {
+        return $this->hasMany(CoaTransaction::class, 'nomor_referensi', 'nomor');
     }
 
     public static function generateNomor()
