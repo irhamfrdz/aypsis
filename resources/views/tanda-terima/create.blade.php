@@ -474,7 +474,7 @@
                                            name="no_plat"
                                            id="no_plat"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-mono"
-                                           value="{{ old('no_plat') }}"
+                                           value="{{ old('no_plat', $suratJalan->no_plat) }}"
                                            placeholder="Nomor plat kendaraan">
                                 </div>
                                 <div>
@@ -1173,6 +1173,12 @@
                     }
                 } else {
                     console.log('⚠ Supir not found in mapping:', currentSupir);
+                    // Check if there's an existing plat value from surat jalan
+                    var existingPlat = '{{ old("no_plat", $suratJalan->no_plat ?? "") }}';
+                    if (existingPlat && existingPlat !== '') {
+                        $('#no_plat').val(existingPlat);
+                        console.log('✓ Used existing plat from surat jalan:', existingPlat);
+                    }
                 }
             }
 
