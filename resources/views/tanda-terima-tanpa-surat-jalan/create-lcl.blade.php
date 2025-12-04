@@ -186,13 +186,13 @@
 
                         <!-- Term -->
                         <div>
-                            <label for="term_id" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="termSearch" class="block text-sm font-medium text-gray-700 mb-1">
                                 Term <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
                                 <input type="text" id="termSearch" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                       placeholder="Cari term..." autocomplete="off">
+                                       placeholder="Cari term..." autocomplete="off" required>
                                 <div id="termDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                                     @foreach($terms as $term)
                                         <div class="term-option px-3 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-gray-100"
@@ -201,7 +201,7 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <select name="term_id" id="term_id" class="hidden" required>
+                                <select name="term_id" id="term_id" class="hidden">
                                     <option value="">Pilih Term</option>
                                     @foreach($terms as $term)
                                         <option value="{{ $term->id }}" {{ old('term_id') == $term->id ? 'selected' : '' }}>
@@ -706,7 +706,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <select name="tujuan_pengiriman" id="tujuan_pengiriman" class="hidden" required>
+                            <select name="tujuan_pengiriman" id="tujuan_pengiriman" class="hidden">
                                 <option value="">Pilih Tujuan Pengiriman</option>
                                 @foreach($masterTujuanKirims as $tujuan)
                                     <option value="{{ $tujuan->id }}" {{ old('tujuan_pengiriman') == $tujuan->id ? 'selected' : '' }}>
@@ -866,6 +866,38 @@
         initializeTermDropdown();
         initializeTujuanPengirimanDropdown();
         initializeSupirDropdown();
+
+        // Add form validation for custom dropdowns
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Validate term selection
+                const termSearch = document.getElementById('termSearch');
+                const termHidden = document.getElementById('term_id');
+                
+                if (termSearch && termHidden) {
+                    if (!termHidden.value) {
+                        e.preventDefault();
+                        termSearch.setCustomValidity('Silakan pilih salah satu term dari daftar.');
+                        termSearch.reportValidity();
+                        return false;
+                    }
+                }
+
+                // Validate tujuan pengiriman
+                const tujuanSearch = document.getElementById('tujuanPengirimanSearch');
+                const tujuanHidden = document.getElementById('tujuan_pengiriman');
+                
+                if (tujuanSearch && tujuanHidden) {
+                    if (!tujuanHidden.value) {
+                        e.preventDefault();
+                        tujuanSearch.setCustomValidity('Silakan pilih salah satu tujuan pengiriman dari daftar.');
+                        tujuanSearch.reportValidity();
+                        return false;
+                    }
+                }
+            });
+        }
     }); // End of jQuery ready
     
     // Function to open popup for adding new penerima
@@ -1073,6 +1105,17 @@
         const hiddenSelect = document.getElementById('term_id');
         const options = document.querySelectorAll('.term-option');
 
+        // Remove required attribute from hidden select to prevent focus issues
+        if (hiddenSelect) {
+            hiddenSelect.removeAttribute('required');
+        }
+
+        // Add custom validation to search input instead
+        if (searchInput) {
+            searchInput.setAttribute('required', 'required');
+            searchInput.setAttribute('data-term-validation', 'true');
+        }
+
         searchInput.addEventListener('focus', function() {
             dropdown.classList.remove('hidden');
         });
@@ -1081,6 +1124,9 @@
             const searchTerm = this.value.toLowerCase();
             let hasVisibleOptions = false;
 
+            // Clear validation state when user types
+            this.setCustomValidity('');
+            
             options.forEach(option => {
                 const text = option.getAttribute('data-text').toLowerCase();
                 if (text.includes(searchTerm)) {
@@ -1101,6 +1147,7 @@
 
                 hiddenSelect.value = value;
                 searchInput.value = text;
+                searchInput.setCustomValidity(''); // Clear any validation errors
                 dropdown.classList.add('hidden');
             });
         });
@@ -1108,6 +1155,22 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('#termSearch') && !e.target.closest('#termDropdown')) {
                 dropdown.classList.add('hidden');
+            }
+        });
+
+        // Custom validation for form submission
+        searchInput.addEventListener('invalid', function() {
+            if (!hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu term dari daftar.');
+            }
+        });
+
+        // Validate on blur
+        searchInput.addEventListener('blur', function() {
+            if (this.value && !hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu term dari daftar yang tersedia.');
+            } else if (!this.value) {
+                this.setCustomValidity('Term wajib dipilih.');
             }
         });
     }
@@ -1118,6 +1181,14 @@
         const hiddenSelect = document.getElementById('tujuan_pengiriman');
         const options = document.querySelectorAll('.tujuan-pengiriman-option');
 
+        // Remove required from hidden select and add to search input
+        if (hiddenSelect) {
+            hiddenSelect.removeAttribute('required');
+        }
+        if (searchInput) {
+            searchInput.setAttribute('required', 'required');
+        }
+
         searchInput.addEventListener('focus', function() {
             dropdown.classList.remove('hidden');
         });
@@ -1125,6 +1196,9 @@
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             let hasVisibleOptions = false;
+
+            // Clear validation state when user types
+            this.setCustomValidity('');
 
             options.forEach(option => {
                 const text = option.getAttribute('data-text').toLowerCase();
@@ -1146,6 +1220,7 @@
 
                 hiddenSelect.value = value;
                 searchInput.value = text;
+                searchInput.setCustomValidity(''); // Clear any validation errors
                 dropdown.classList.add('hidden');
             });
         });
@@ -1153,6 +1228,21 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('#tujuanPengirimanSearch') && !e.target.closest('#tujuanPengirimanDropdown')) {
                 dropdown.classList.add('hidden');
+            }
+        });
+
+        // Custom validation
+        searchInput.addEventListener('invalid', function() {
+            if (!hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu tujuan pengiriman dari daftar.');
+            }
+        });
+
+        searchInput.addEventListener('blur', function() {
+            if (this.value && !hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu tujuan pengiriman dari daftar yang tersedia.');
+            } else if (!this.value) {
+                this.setCustomValidity('Tujuan pengiriman wajib dipilih.');
             }
         });
     }
