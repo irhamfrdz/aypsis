@@ -151,6 +151,60 @@
                     </div>
                 </div>
 
+                <!-- Gambar Surat Jalan -->
+                @if($tandaTerima->gambar_surat_jalan && is_array(json_decode($tandaTerima->gambar_surat_jalan, true)))
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="border-b border-gray-200 p-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Gambar Surat Jalan</h2>
+                        </div>
+                        <div class="p-6">
+                            @php
+                                $gambarArray = json_decode($tandaTerima->gambar_surat_jalan, true);
+                            @endphp
+                            
+                            @if(is_array($gambarArray) && count($gambarArray) > 0)
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    @foreach($gambarArray as $index => $gambar)
+                                        <div class="relative group bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                                            <div class="aspect-w-4 aspect-h-3">
+                                                <img src="{{ asset('storage/' . $gambar) }}" 
+                                                     alt="Surat Jalan {{ $index + 1 }}"
+                                                     class="w-full h-48 object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                                                     onclick="openImageModal('{{ asset('storage/' . $gambar) }}', 'Surat Jalan {{ $index + 1 }}')">
+                                            </div>
+                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-200 flex items-center justify-center">
+                                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                    <button onclick="openImageModal('{{ asset('storage/' . $gambar) }}', 'Surat Jalan {{ $index + 1 }}')"
+                                                            class="bg-white bg-opacity-90 text-gray-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-opacity-100 transition-all">
+                                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                        </svg>
+                                                        Lihat
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="p-2">
+                                                <p class="text-xs text-gray-600 text-center">Gambar {{ $index + 1 }}</p>
+                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.download-image', ['tandaTerimaTanpaSuratJalan' => $tandaTerima, 'imageIndex' => $index]) }}"
+                                                   class="mt-1 text-xs text-blue-600 hover:text-blue-800 block text-center" download>
+                                                    Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-8 text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-sm">Tidak ada gambar surat jalan yang diupload</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Dimensi dan Volume -->
                 @if($tandaTerima->items && $tandaTerima->items->count() > 0)
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -298,4 +352,61 @@
         </div>
     </div>
 </div>
+
+<!-- Modal untuk melihat gambar -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-full">
+        <img id="modalImage" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg">
+        <div class="absolute top-4 right-4">
+            <button onclick="closeImageModal()" class="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full p-2 transition-all">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="absolute bottom-4 left-4 bg-black bg-opacity-60 text-white px-4 py-2 rounded-lg">
+            <p id="modalImageTitle" class="text-sm font-medium"></p>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function openImageModal(imageSrc, title) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalImageTitle');
+        
+        modalImage.src = imageSrc;
+        modalImage.alt = title;
+        modalTitle.textContent = title;
+        modal.classList.remove('hidden');
+        
+        // Prevent body scrolling when modal is open
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+        
+        // Restore body scrolling
+        document.body.style.overflow = '';
+    }
+    
+    // Close modal when clicking outside the image
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeImageModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('imageModal').classList.contains('hidden')) {
+            closeImageModal();
+        }
+    });
+</script>
+@endpush
 @endsection
