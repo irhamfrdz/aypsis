@@ -78,125 +78,230 @@
                 <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
                 <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
                 
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
-                        <input type="text" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                               id="search" 
-                               name="search" 
-                               placeholder="Cari nomor BL, container, seal, kapal, voyage, barang..." 
-                               value="{{ request('search') }}">
+                <div class="flex flex-col gap-4">
+                    <!-- Mode Filter -->
+                    <div class="flex items-center gap-4">
+                        <label for="mode" class="text-sm font-medium text-gray-700 whitespace-nowrap">Tampilan:</label>
+                        <select name="mode" id="mode" 
+                                class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onchange="this.form.submit()">
+                            <option value="bl" {{ request('mode', 'bl') == 'bl' ? 'selected' : '' }}>Bill of Lading (BL)</option>
+                            <option value="surat_jalan" {{ request('mode') == 'surat_jalan' ? 'selected' : '' }}>Surat Jalan Bongkaran</option>
+                        </select>
                     </div>
-                    <div class="flex items-end gap-2">
-                        <button type="submit" 
-                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                            Cari
-                        </button>
-                        <a href="{{ route('surat-jalan-bongkaran.index') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            Reset
-                        </a>
+                    
+                    <!-- Search and Filter Row -->
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
+                            <input type="text" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   id="search" 
+                                   name="search" 
+                                   placeholder="{{ request('mode') == 'surat_jalan' ? 'Cari nomor surat jalan, container, seal, supir, plat...' : 'Cari nomor BL, container, seal, kapal, voyage, barang...' }}" 
+                                   value="{{ request('search') }}">
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <button type="submit" 
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                Cari
+                            </button>
+                            <a href="{{ route('surat-jalan-bongkaran.index', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'bl')]) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Reset
+                            </a>
+                        </div>
                     </div>
                 </div>
             </form>
 
             <!-- Table -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200" id="blTable">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($bls as $index => $bl)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-center">
-                                    <div class="relative inline-block text-left">
-                                        <button type="button" onclick="toggleDropdown('dropdown-{{ $bl->id }}')"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </button>
+                @if(request('mode') == 'surat_jalan')
+                    <!-- Surat Jalan Bongkaran Table -->
+                    <table class="min-w-full divide-y divide-gray-200" id="suratJalanTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($suratJalans as $index => $sj)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="relative inline-block text-left">
+                                            <button type="button" onclick="toggleDropdown('dropdown-sj-{{ $sj->id }}')"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                </svg>
+                                            </button>
 
-                                        <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
-                                            <div class="py-1">
-                                                <a href="#" onclick="buatSuratJalan({{ $bl->id }}); return false;" 
-                                                   class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
-                                                    <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                    </svg>
-                                                    Buat Surat Jalan
-                                                </a>
-                                                <a href="#" onclick="printSJ({{ $bl->id }}); return false;" 
-                                                   class="group flex items-center px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
-                                                    <svg class="mr-2 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                                                    </svg>
-                                                    Print SJ
-                                                </a>
-                                                <a href="#" onclick="printBA({{ $bl->id }}); return false;" 
-                                                   class="group flex items-center px-3 py-2 text-xs text-green-700 hover:bg-green-50 hover:text-green-900">
-                                                    <svg class="mr-2 h-4 w-4 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                    </svg>
-                                                    Print BA
-                                                </a>
+                                            <div id="dropdown-sj-{{ $sj->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                                <div class="py-1">
+                                                    <a href="#" onclick="editSuratJalan({{ $sj->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
+                                                        <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                        Edit
+                                                    </a>
+                                                    <a href="#" onclick="printSJBongkaran({{ $sj->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
+                                                        <svg class="mr-2 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                                        </svg>
+                                                        Print
+                                                    </a>
+                                                    <a href="#" onclick="deleteSuratJalan({{ $sj->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-red-700 hover:bg-red-50 hover:text-red-900">
+                                                        <svg class="mr-2 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                        Hapus
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bls->firstItem() + $index }}</td>
-                                <td class="px-4 py-3 text-sm">
-                                    <span class="font-semibold text-gray-900">{{ $bl->nomor_bl ?: '-' }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_seal ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->penerima, 30) ?: '-' }}</td>
-                        @empty
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $suratJalans->firstItem() + $index }}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <span class="font-semibold text-gray-900">{{ $sj->nomor_surat_jalan ?: '-' }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->supir ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_plat ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($sj->jenis_barang, 30) ?: '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="px-4 py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data Surat Jalan</h3>
+                                            <p class="text-gray-500">Belum ada surat jalan bongkaran yang tersedia untuk kapal dan voyage ini.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                @else
+                    <!-- BL Table -->
+                    <table class="min-w-full divide-y divide-gray-200" id="blTable">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <td colspan="8" class="px-4 py-12 text-center">
-                                <td colspan="13" class="px-4 py-12 text-center">
-                                    <div class="flex flex-col items-center">
-                                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data BL</h3>
-                                        <p class="text-gray-500">Belum ada data Bill of Lading yang tersedia.</p>
-                                    </div>
-                                </td>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($bls as $index => $bl)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="relative inline-block text-left">
+                                            <button type="button" onclick="toggleDropdown('dropdown-{{ $bl->id }}')"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                </svg>
+                                            </button>
+
+                                            <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                                <div class="py-1">
+                                                    <a href="#" onclick="buatSuratJalan({{ $bl->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
+                                                        <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        Buat Surat Jalan
+                                                    </a>
+                                                    <a href="#" onclick="printSJ({{ $bl->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
+                                                        <svg class="mr-2 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                                        </svg>
+                                                        Print SJ
+                                                    </a>
+                                                    <a href="#" onclick="printBA({{ $bl->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-green-700 hover:bg-green-50 hover:text-green-900">
+                                                        <svg class="mr-2 h-4 w-4 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        Print BA
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bls->firstItem() + $index }}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <span class="font-semibold text-gray-900">{{ $bl->nomor_bl ?: '-' }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_seal ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->penerima, 30) ?: '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="px-4 py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data BL</h3>
+                                            <p class="text-gray-500">Belum ada data Bill of Lading yang tersedia.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                @endif
             </div>
 
             <!-- Pagination -->
-            @if($bls->hasPages())
+            @if((request('mode') == 'surat_jalan' && isset($suratJalans) && $suratJalans->hasPages()) || (request('mode') != 'surat_jalan' && isset($bls) && $bls->hasPages()))
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 pt-4 border-t border-gray-200">
                     <div class="text-sm text-gray-700 mb-4 sm:mb-0">
-                        Menampilkan {{ $bls->firstItem() }} sampai {{ $bls->lastItem() }} 
-                        dari {{ $bls->total() }} data
+                        @if(request('mode') == 'surat_jalan')
+                            Menampilkan {{ $suratJalans->firstItem() }} sampai {{ $suratJalans->lastItem() }} 
+                            dari {{ $suratJalans->total() }} data
+                        @else
+                            Menampilkan {{ $bls->firstItem() }} sampai {{ $bls->lastItem() }} 
+                            dari {{ $bls->total() }} data
+                        @endif
                     </div>
                     <div>
-                        {{ $bls->appends(request()->query())->links() }}
+                        @if(request('mode') == 'surat_jalan')
+                            {{ $suratJalans->appends(request()->query())->links() }}
+                        @else
+                            {{ $bls->appends(request()->query())->links() }}
+                        @endif
                     </div>
                 </div>
             @endif
@@ -924,6 +1029,44 @@ function printSJ(blId) {
 function printBA(blId) {
     // Open print BA page in new window/tab
     window.open('/surat-jalan-bongkaran/print-ba/' + blId, '_blank');
+}
+
+// Functions for Surat Jalan Bongkaran mode
+function editSuratJalan(suratJalanId) {
+    // Redirect to edit page or open edit modal
+    window.location.href = '/surat-jalan-bongkaran/' + suratJalanId + '/edit';
+}
+
+function printSJBongkaran(suratJalanId) {
+    // Print existing surat jalan bongkaran
+    window.open('/surat-jalan-bongkaran/print/' + suratJalanId, '_blank');
+}
+
+function deleteSuratJalan(suratJalanId) {
+    if (confirm('Apakah Anda yakin ingin menghapus surat jalan ini?')) {
+        // Create a form to submit delete request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/surat-jalan-bongkaran/' + suratJalanId;
+        form.style.display = 'none';
+
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        form.appendChild(csrfInput);
+
+        // Add DELETE method
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        form.appendChild(methodInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 </script>
 @endpush
