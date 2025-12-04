@@ -58,13 +58,21 @@
         <div class="p-6 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-gray-900">
                 @if(request('mode') === 'missing')
-                    Surat Jalan (Belum Ada Tanda Terima)
+                    Surat Jalan (Belum Ada Tanda Terima - Exclude Sudah Bayar Uang Jalan)
                 @elseif(request('mode') === 'with_tanda_terima')
                     Surat Jalan (Sudah Ada Tanda Terima)
                 @else
                     Daftar Tanda Terima
                 @endif
             </h2>
+            @if(request('mode') === 'missing')
+            <div class="mt-2">
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Menampilkan surat jalan yang belum ada tanda terima dan belum melakukan pembayaran pranota uang jalan.
+                </p>
+            </div>
+            @endif
         </div>
 
         <div class="p-6">
@@ -81,7 +89,7 @@
                     <div class="md:col-span-4">
                         <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="" {{ request('mode') == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
-                            <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima</option>
+                            <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima (Exclude yang sudah bayar uang jalan)</option>
                             <option value="with_tanda_terima" {{ request('mode') == 'with_tanda_terima' ? 'selected' : '' }}>Surat Jalan Sudah Ada Tanda Terima</option>
                         </select>
                     </div>

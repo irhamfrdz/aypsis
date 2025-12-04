@@ -428,4 +428,12 @@ class SuratJalan extends Model
     {
         return $this->hasOne(TandaTerima::class);
     }
+
+    /**
+     * Relationship dengan UangJalan
+     */
+    public function uangJalans()
+    {
+        return $this->hasMany(UangJalan::class);
+    }
 }
