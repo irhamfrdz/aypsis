@@ -59,6 +59,8 @@
             <h2 class="text-lg font-semibold text-gray-900">
                 @if(request('mode') === 'missing')
                     Surat Jalan (Belum Ada Tanda Terima)
+                @elseif(request('mode') === 'with_tanda_terima')
+                    Surat Jalan (Sudah Ada Tanda Terima)
                 @else
                     Daftar Tanda Terima
                 @endif
@@ -69,14 +71,14 @@
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('tanda-terima.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                placeholder="Cari no. surat jalan, kontainer, kapal, tujuan ambil, tujuan kirim..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Semua Status</option>
                             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
@@ -84,10 +86,11 @@
                             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-3">
                         <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="" {{ request('mode') == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
-                            <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan (Belum Ada Tanda Terima)</option>
+                            <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima</option>
+                            <option value="with_tanda_terima" {{ request('mode') == 'with_tanda_terima' ? 'selected' : '' }}>Surat Jalan Sudah Ada Tanda Terima</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
@@ -95,7 +98,7 @@
                             <i class="fas fa-search mr-2"></i> Cari
                         </button>
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <a href="{{ route('tanda-terima.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
                             <i class="fas fa-redo mr-2"></i> Reset
                         </a>
@@ -155,6 +158,8 @@
             <div class="overflow-x-auto">
                 @if(request('mode') === 'missing')
                 <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="suratJalanTable">
+                @elseif(request('mode') === 'with_tanda_terima')
+                <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="suratJalanWithTandaTerimaTable">
                 @else
                 <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="tandaTerimaTable">
                 @endif
@@ -171,6 +176,21 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rit</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                        @elseif(request('mode') === 'with_tanda_terima')
+                        <tr>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 48px;">
+                                <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
+                            </th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status TT</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -240,6 +260,83 @@
                                     <i class="fas fa-truck-loading text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan tanpa tanda terima</p>
                                     <p class="text-gray-400 text-xs mt-1">Semua surat jalan saat ini memiliki tanda terima.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                        @elseif(request('mode') === 'with_tanda_terima')
+                        @forelse($suratJalansWithTandaTerima as $item)
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <input type="checkbox"
+                                       class="surat-jalan-with-tt-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                       value="{{ $item->surat_jalan_id }}"
+                                       data-no-surat-jalan="{{ $item->no_surat_jalan }}"
+                                       onchange="updateSelection()">
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                                {{ ($suratJalansWithTandaTerima->currentPage() - 1) * $suratJalansWithTandaTerima->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs font-semibold text-gray-900">{{ $item->no_surat_jalan }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $item->tanggal_surat_jalan ? \Carbon\Carbon::parse($item->tanggal_surat_jalan)->format('d/m/y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 text-xs text-gray-600">
+                                <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $item->no_kontainer ?: '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">{{ $item->nomor_tanda_terima ?: '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                @if($item->status == 'completed')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check w-2 h-2 mr-1"></i>
+                                        Done
+                                    </span>
+                                @elseif($item->status == 'submitted')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <i class="fas fa-paper-plane w-2 h-2 mr-1"></i>
+                                        Submit
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-edit w-2 h-2 mr-1"></i>
+                                        Draft
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ Str::limit($item->kegiatan ?: '-', 12) }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <a href="{{ route('tanda-terima.show', $item->tanda_terima_id) }}"
+                                       class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150"
+                                       title="Lihat Tanda Terima">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('tanda-terima.edit', $item->tanda_terima_id) }}"
+                                       class="inline-flex items-center px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded transition duration-150"
+                                       title="Edit Tanda Terima">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="11" class="px-3 py-8 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
+                                    <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan dengan tanda terima</p>
+                                    <p class="text-gray-400 text-xs mt-1">Belum ada surat jalan yang memiliki tanda terima.</p>
                                 </div>
                             </td>
                         </tr>
@@ -438,6 +535,49 @@
                     </div>
                 </div>
                 @endif
+            @elseif(request('mode') === 'with_tanda_terima')
+                @if(isset($suratJalansWithTandaTerima) && $suratJalansWithTandaTerima->hasPages())
+                <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                    <div class="flex flex-1 justify-between sm:hidden">
+                        @if($suratJalansWithTandaTerima->onFirstPage())
+                            <span class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
+                                Previous
+                            </span>
+                        @else
+                            <a href="{{ $suratJalansWithTandaTerima->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Previous
+                            </a>
+                        @endif
+
+                        @if($suratJalansWithTandaTerima->hasMorePages())
+                            <a href="{{ $suratJalansWithTandaTerima->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Next
+                            </a>
+                        @else
+                            <span class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
+                                Next
+                            </span>
+                        @endif
+                    </div>
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan
+                                <span class="font-medium">{{ $suratJalansWithTandaTerima->firstItem() ?? 0 }}</span>
+                                sampai
+                                <span class="font-medium">{{ $suratJalansWithTandaTerima->lastItem() ?? 0 }}</span>
+                                dari
+                                <span class="font-medium">{{ $suratJalansWithTandaTerima->total() }}</span>
+                                data
+                            </p>
+                        </div>
+                        <div>
+                            @include('components.modern-pagination', ['paginator' => $suratJalansWithTandaTerima])
+                            @include('components.rows-per-page')
+                        </div>
+                    </div>
+                </div>
+                @endif
             @else
                 @if($tandaTerimas->hasPages())
                 <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
@@ -502,7 +642,7 @@
     function toggleAllCheckboxes() {
         const selectAll = document.getElementById('selectAll');
         const selectAllHeader = document.getElementById('selectAllHeader');
-        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox');
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox, .surat-jalan-with-tt-checkbox');
 
         // Sync both select all checkboxes
         if (selectAll.checked) {
@@ -524,7 +664,7 @@
     }
 
     function updateSelection() {
-        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked, .surat-jalan-checkbox:checked');
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked, .surat-jalan-checkbox:checked, .surat-jalan-with-tt-checkbox:checked');
         const selectedCount = checkboxes.length;
 
         // Update count display
@@ -533,11 +673,15 @@
         if (selectedCount > 0) {
             if (mode === 'missing') {
                 selectionText = `${selectedCount} surat jalan dipilih`;
+            } else if (mode === 'with_tanda_terima') {
+                selectionText = `${selectedCount} surat jalan dipilih`;
             } else {
                 selectionText = `${selectedCount} tanda terima dipilih`;
             }
         } else {
             if (mode === 'missing') {
+                selectionText = '0 surat jalan dipilih';
+            } else if (mode === 'with_tanda_terima') {
                 selectionText = '0 surat jalan dipilih';
             } else {
                 selectionText = '0 tanda terima dipilih';
@@ -556,7 +700,7 @@
         }
 
         // Update select all checkboxes
-        const allCheckboxes = document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox');
+        const allCheckboxes = document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox, .surat-jalan-with-tt-checkbox');
         const selectAll = document.getElementById('selectAll');
         const selectAllHeader = document.getElementById('selectAllHeader');
 
@@ -615,8 +759,8 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        // Add change listeners to existing checkboxes (both types)
-        document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox').forEach(checkbox => {
+        // Add change listeners to existing checkboxes (all types)
+        document.querySelectorAll('.tanda-terima-checkbox, .surat-jalan-checkbox, .surat-jalan-with-tt-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', updateSelection);
         });
 
@@ -689,6 +833,8 @@
 $(document).ready(function() {
     if ('{{ request('mode') }}' === 'missing') {
         initResizableTable('suratJalanTable');
+    } else if ('{{ request('mode') }}' === 'with_tanda_terima') {
+        initResizableTable('suratJalanWithTandaTerimaTable');
     } else {
         initResizableTable('tandaTerimaTable');
     }

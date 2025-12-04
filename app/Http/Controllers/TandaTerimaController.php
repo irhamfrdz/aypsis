@@ -161,6 +161,46 @@ class TandaTerimaController extends Controller
 
             return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'mode'));
         }
+        
+        // If mode is 'with_tanda_terima' then we should list Surat Jalan that have Tanda Terima
+        if ($mode === 'with_tanda_terima') {
+            $query = DB::table('surat_jalans as sj')
+                ->join('tanda_terimas as tt', 'sj.id', '=', 'tt.surat_jalan_id')
+                ->select(
+                    'sj.id as surat_jalan_id',
+                    'sj.no_surat_jalan',
+                    'sj.tanggal_surat_jalan',
+                    'sj.no_kontainer',
+                    'sj.supir',
+                    'sj.no_plat',
+                    'sj.kegiatan',
+                    'tt.id as tanda_terima_id',
+                    'tt.nomor_tanda_terima',
+                    'tt.status',
+                    'tt.created_at'
+                );
+
+            // Apply search filter
+            if (!empty($search)) {
+                $query->where(function($q) use ($search) {
+                    $q->where('sj.no_surat_jalan', 'like', "%{$search}%")
+                      ->orWhere('sj.supir', 'like', "%{$search}%")
+                      ->orWhere('sj.no_kontainer', 'like', "%{$search}%")
+                      ->orWhere('tt.nomor_tanda_terima', 'like', "%{$search}%");
+                });
+            }
+
+            // Apply status filter to tanda terima if provided
+            if (!empty($status)) {
+                $query->where('tt.status', $status);
+            }
+
+            $suratJalansWithTandaTerima = $query->orderBy('tt.created_at', 'desc')
+                ->paginate($perPage)
+                ->appends($request->except('page'));
+
+            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'mode'));
+        }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim']);
 
