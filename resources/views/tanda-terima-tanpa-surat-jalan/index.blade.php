@@ -730,37 +730,70 @@
                 break;
                 
             case 'delete':
-                if (confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} tanda terima LCL yang dipilih?`)) {
-                    // Create form for bulk delete
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route("tanda-terima-lcl.bulk-delete") }}';
-                    
-                    // Add CSRF token
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfInput);
-                    
-                    // Add method spoofing for DELETE
-                    const methodInput = document.createElement('input');
-                    methodInput.type = 'hidden';
-                    methodInput.name = '_method';
-                    methodInput.value = 'DELETE';
-                    form.appendChild(methodInput);
-                    
-                    // Add selected IDs
-                    selectedIds.forEach(id => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'ids[]';
-                        input.value = id;
-                        form.appendChild(input);
-                    });
-                    
-                    document.body.appendChild(form);
-                    form.submit();
+                if (confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} tanda terima yang dipilih?`)) {
+                    // Check if we're viewing LCL data to use the correct route
+                    @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
+                        // Create form for LCL bulk delete
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '{{ route("tanda-terima-lcl.bulk-delete") }}';
+                        
+                        // Add CSRF token
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfInput);
+                        
+                        // Add method spoofing for DELETE
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+                        
+                        // Add selected IDs
+                        selectedIds.forEach(id => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'ids[]';
+                            input.value = id;
+                            form.appendChild(input);
+                        });
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    @else
+                        // For regular tanda terima, delete one by one since there's no bulk delete
+                        let deletePromises = [];
+                        selectedIds.forEach(id => {
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `{{ route('tanda-terima-tanpa-surat-jalan.index') }}/${id}`;
+                            
+                            // Add CSRF token
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = '_token';
+                            csrfInput.value = '{{ csrf_token() }}';
+                            form.appendChild(csrfInput);
+                            
+                            // Add method spoofing for DELETE
+                            const methodInput = document.createElement('input');
+                            methodInput.type = 'hidden';
+                            methodInput.name = '_method';
+                            methodInput.value = 'DELETE';
+                            form.appendChild(methodInput);
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        });
+                        
+                        // Refresh page after a delay to show results
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    @endif
                 }
                 break;
         }
