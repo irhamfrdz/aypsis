@@ -1923,6 +1923,12 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-lcl.bulk-split')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
 
+    // Download image route for LCL (must be before resource route)
+    Route::get('tanda-terima-lcl/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}', 
+               [\App\Http\Controllers\TandaTerimaLclController::class, 'downloadImage'])
+         ->name('tanda-terima-lcl.download-image')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
     // Routes untuk LCL khusus menggunakan controller terpisah (setelah route spesifik)
     Route::resource('tanda-terima-lcl', \App\Http\Controllers\TandaTerimaLclController::class)
          ->middleware([

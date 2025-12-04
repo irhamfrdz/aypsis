@@ -185,7 +185,7 @@
                                             </div>
                                             <div class="p-2">
                                                 <p class="text-xs text-gray-600 text-center">Gambar {{ $index + 1 }}</p>
-                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.download-image', ['tandaTerimaTanpaSuratJalan' => $tandaTerima, 'imageIndex' => $index]) }}"
+                                                <a href="{{ route('tanda-terima-lcl.download-image', ['tandaTerimaTanpaSuratJalan' => $tandaTerima, 'imageIndex' => $index]) }}"
                                                    class="mt-1 text-xs text-blue-600 hover:text-blue-800 block text-center" download>
                                                     Download
                                                 </a>

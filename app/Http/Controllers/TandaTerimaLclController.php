@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
 use App\Models\Term;
@@ -97,6 +98,7 @@ class TandaTerimaLclController extends Controller
             'size_kontainer' => 'nullable|in:20ft,40ft,40hc,45ft',
             'nomor_seal' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
+            'gambar_surat_jalan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'nama_barang' => 'nullable|array',
             'nama_barang.*' => 'nullable|string|max:255',
             'jumlah' => 'nullable|array',
@@ -116,6 +118,18 @@ class TandaTerimaLclController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            // Handle image uploads
+            $gambarPaths = [];
+            if ($request->hasFile('gambar_surat_jalan')) {
+                foreach ($request->file('gambar_surat_jalan') as $file) {
+                    if ($file && $file->isValid()) {
+                        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('tanda-terima-lcl/gambar-surat-jalan', $fileName, 'public');
+                        $gambarPaths[] = $path;
+                    }
+                }
+            }
+
             // Create main LCL record
             $tandaTerima = TandaTerimaLcl::create([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
@@ -133,6 +147,7 @@ class TandaTerimaLclController extends Controller
                 'nama_barang' => is_array($request->nama_barang) ? implode(', ', array_filter($request->nama_barang)) : '',
                 'kuantitas' => is_array($request->jumlah) ? array_sum(array_filter($request->jumlah)) : 0,
                 'keterangan_barang' => $request->keterangan_barang,
+                'gambar_surat_jalan' => !empty($gambarPaths) ? $gambarPaths : null,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
                 'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
@@ -825,6 +840,27 @@ class TandaTerimaLclController extends Controller
         
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
                         ->with('success', "Berhasil memecah {$processedCount} tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.");
+    }
+
+    /**
+     * Download specific image from a tanda terima LCL record
+     */
+    public function downloadImage(TandaTerimaLcl $tandaTerimaTanpaSuratJalan, $imageIndex)
+    {
+        $gambarArray = $tandaTerimaTanpaSuratJalan->gambar_surat_jalan;
+        
+        if (!is_array($gambarArray) || !isset($gambarArray[$imageIndex])) {
+            return abort(404, 'Gambar tidak ditemukan');
+        }
+        
+        $imagePath = $gambarArray[$imageIndex];
+        
+        if (!Storage::disk('public')->exists($imagePath)) {
+            return abort(404, 'File gambar tidak ditemukan');
+        }
+        
+        $fileName = basename($imagePath);
+        return Storage::disk('public')->download($imagePath, $fileName);
     }
 
     /**

@@ -31,6 +31,7 @@ class TandaTerimaLcl extends Model
         'nama_barang',
         'kuantitas',
         'keterangan_barang',
+        'gambar_surat_jalan',
         'supir',
         'no_plat',
         'tujuan_pengiriman_id',
@@ -39,6 +40,7 @@ class TandaTerimaLcl extends Model
         'size_kontainer',
         'nomor_seal',
         'tanggal_seal',
+        'jenis_kontainer',
         'status',
         'created_by',
         'updated_by'
@@ -48,6 +50,7 @@ class TandaTerimaLcl extends Model
         'tanggal_tanda_terima' => 'date',
         'tanggal_seal' => 'date',
         'kuantitas' => 'integer',
+        'gambar_surat_jalan' => 'array',
     ];
     
     // Relationships
