@@ -75,10 +75,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $item->jenis_aktivitas }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">
-                                @php
-                                    $akunCoa = $item->akun_coa_id ? DB::table('akun_coa')->find($item->akun_coa_id) : null;
-                                @endphp
-                                {{ $akunCoa ? $akunCoa->kode_nomor . ' - ' . $akunCoa->nama_akun : '-' }}
+                                @if($item->akun_coa_id && isset($akunCoas[$item->akun_coa_id]))
+                                    {{ $akunCoas[$item->akun_coa_id]->kode_nomor }} - {{ $akunCoas[$item->akun_coa_id]->nama_akun }}
+                                @else
+                                    -
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ucfirst($item->metode_pembayaran) }}</td>

@@ -39,7 +39,14 @@ class PembayaranAktivitasLainController extends Controller
 
         $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return view('pembayaran-aktivitas-lain.index', compact('pembayarans'));
+        // Get all unique akun_coa_ids from the results
+        $akunCoaIds = $pembayarans->pluck('akun_coa_id')->filter()->unique();
+        $akunCoas = DB::table('akun_coa')
+            ->whereIn('id', $akunCoaIds)
+            ->get()
+            ->keyBy('id');
+
+        return view('pembayaran-aktivitas-lain.index', compact('pembayarans', 'akunCoas'));
     }
 
     public function create()
