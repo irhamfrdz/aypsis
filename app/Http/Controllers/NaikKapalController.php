@@ -293,7 +293,7 @@ class NaikKapalController extends Controller
                 ]);
             }
 
-            $naikKapals = NaikKapal::whereIn('id', $selectedIds)->get();
+            $naikKapals = NaikKapal::with(['prospek.tandaTerima'])->whereIn('id', $selectedIds)->get();
             
             if ($naikKapals->isEmpty()) {
                 return response()->json([
@@ -336,34 +336,126 @@ class NaikKapalController extends Controller
     private function processToBlsAction($naikKapals)
     {
         foreach ($naikKapals as $naikKapal) {
-            // Create BL record
-            \App\Models\Bl::create([
+            // Load related prospek and tanda terima data with eager loading
+            $naikKapal->load(['prospek.tandaTerima']);
+            $prospek = $naikKapal->prospek;
+            $tandaTerima = $prospek ? $prospek->tandaTerima : null;
+            
+            // Prepare BL data with complete information from prospek and tanda terima
+            $blData = [
                 'prospek_id' => $naikKapal->prospek_id,
                 'nomor_kontainer' => $naikKapal->nomor_kontainer,
                 'no_seal' => $naikKapal->no_seal,
                 'tipe_kontainer' => $naikKapal->tipe_kontainer,
+                'size_kontainer' => $naikKapal->size_kontainer ?: $naikKapal->ukuran_kontainer,
                 'no_voyage' => $naikKapal->no_voyage,
                 'nama_kapal' => $naikKapal->nama_kapal,
-                'nama_barang' => $naikKapal->jenis_barang,
-                'tonnage' => $naikKapal->tonase,
-                'volume' => $naikKapal->total_volume,
-                'kuantitas' => $naikKapal->kuantitas,
+                'pelabuhan_asal' => $naikKapal->pelabuhan_asal,
                 'pelabuhan_tujuan' => $naikKapal->pelabuhan_tujuan,
-                'tanggal_muat' => $naikKapal->tanggal_muat,
-                'jam_muat' => $naikKapal->jam_muat,
+                'nama_barang' => $naikKapal->jenis_barang,
+                'tonnage' => $naikKapal->total_tonase ?: ($prospek ? $prospek->total_ton : null),
+                'volume' => $naikKapal->total_volume ?: ($prospek ? $prospek->total_volume : null),
+                'kuantitas' => $naikKapal->kuantitas ?: ($prospek ? $prospek->kuantitas : null),
+                'term' => null, // Will be set from tanda terima if available
+                'status_bongkar' => 'Belum Bongkar',
+                'sudah_ob' => false,
+                'supir_ob' => $prospek ? $prospek->supir_ob : null,
                 'created_by' => Auth::id()
-            ]);
+            ];
+
+            // Get comprehensive data from prospek if available
+            if ($prospek) {
+                $blData['pengirim'] = $prospek->pt_pengirim;
+                
+                // Use prospek data as fallback if naik kapal data is empty
+                if (!$blData['nama_barang'] && $prospek->barang) {
+                    $blData['nama_barang'] = $prospek->barang;
+                }
+                if (!$blData['pelabuhan_asal'] && $prospek->pelabuhan_asal) {
+                    $blData['pelabuhan_asal'] = $prospek->pelabuhan_asal;
+                }
+                if (!$blData['size_kontainer'] && $prospek->ukuran) {
+                    $blData['size_kontainer'] = $prospek->ukuran;
+                }
+                if (!$blData['tipe_kontainer'] && $prospek->tipe) {
+                    $blData['tipe_kontainer'] = $prospek->tipe;
+                }
+            }
+
+            // Get comprehensive data from tanda terima if available
+            if ($tandaTerima) {
+                $blData['penerima'] = $tandaTerima->penerima;
+                $blData['alamat_pengiriman'] = $tandaTerima->alamat_penerima ?: $tandaTerima->tujuan_pengiriman;
+                $blData['contact_person'] = $tandaTerima->pic ?? null;
+                
+                // Get term from tanda terima
+                $blData['term'] = $tandaTerima->term;
+                
+                // Override with more accurate data from tanda terima if available
+                if (!$blData['nama_barang'] && $tandaTerima->jenis_barang) {
+                    $blData['nama_barang'] = $tandaTerima->jenis_barang;
+                }
+                
+                // Handle nama_barang as array if needed
+                if (!$blData['nama_barang'] && $tandaTerima->nama_barang) {
+                    if (is_array($tandaTerima->nama_barang)) {
+                        $blData['nama_barang'] = implode(', ', $tandaTerima->nama_barang);
+                    } else {
+                        $blData['nama_barang'] = $tandaTerima->nama_barang;
+                    }
+                }
+                
+                // Use tanda terima measurements with proper fallbacks
+                if (!$blData['tonnage'] && $tandaTerima->tonase) {
+                    $blData['tonnage'] = $tandaTerima->tonase;
+                }
+                if (!$blData['volume'] && $tandaTerima->meter_kubik) {
+                    $blData['volume'] = $tandaTerima->meter_kubik;
+                }
+                if (!$blData['kuantitas'] && $tandaTerima->jumlah) {
+                    $blData['kuantitas'] = $tandaTerima->jumlah;
+                }
+                
+                // Additional fields from tanda terima
+                if ($tandaTerima->satuan) {
+                    $blData['satuan'] = $tandaTerima->satuan;
+                }
+                if ($tandaTerima->no_kontainer && !$blData['nomor_kontainer']) {
+                    $blData['nomor_kontainer'] = $tandaTerima->no_kontainer;
+                }
+                if ($tandaTerima->no_seal && !$blData['no_seal']) {
+                    $blData['no_seal'] = $tandaTerima->no_seal;
+                }
+                if ($tandaTerima->size && !$blData['size_kontainer']) {
+                    $blData['size_kontainer'] = $tandaTerima->size;
+                }
+                if ($tandaTerima->tipe_kontainer && !$blData['tipe_kontainer']) {
+                    $blData['tipe_kontainer'] = $tandaTerima->tipe_kontainer;
+                }
+                if ($tandaTerima->pengirim && !$blData['pengirim']) {
+                    $blData['pengirim'] = $tandaTerima->pengirim;
+                }
+                if ($tandaTerima->estimasi_nama_kapal && !$blData['nama_kapal']) {
+                    $blData['nama_kapal'] = $tandaTerima->estimasi_nama_kapal;
+                }
+            }
+
+            // Ensure we have fallback values for critical fields
+            $blData['nama_barang'] = $blData['nama_barang'] ?: 'Tidak diketahui';
+            $blData['pengirim'] = $blData['pengirim'] ?: 'Tidak diketahui';
+            $blData['penerima'] = $blData['penerima'] ?: 'Tidak diketahui';
+
+            // Create BL record with complete data
+            \App\Models\Bl::create($blData);
 
             // Update prospek status if needed
-            if ($naikKapal->prospek) {
-                $naikKapal->prospek->update([
+            if ($prospek) {
+                $prospek->update([
                     'status' => 'sudah_muat'
                 ]);
             }
 
-            // Optionally remove from naik_kapal table or mark as processed
-            // $naikKapal->delete();
-            // OR mark as processed:
+            // Mark naik kapal as processed
             $naikKapal->update(['status' => 'Moved to BLS']);
         }
     }
