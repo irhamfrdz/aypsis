@@ -18,12 +18,6 @@ class NaikKapalController extends Controller
     {
         $query = NaikKapal::with(['prospek', 'createdBy']);
         
-        // Exclude records with 'Tidak Naik Kapal' status
-        $query->where(function($q) {
-            $q->where('status', '!=', 'Tidak Naik Kapal')
-              ->orWhereNull('status');
-        });
-        
         // Filter by kapal and voyage if provided
         if ($request->filled('kapal_id') && $request->filled('no_voyage')) {
             $kapal = \App\Models\MasterKapal::find($request->kapal_id);
@@ -467,23 +461,20 @@ class NaikKapalController extends Controller
     }
 
     /**
-     * Process marking naik kapal records as tidak naik kapal
+     * Process tidak naik kapal action - delete records and update prospek status
      */
     private function processTidakNaikKapalAction($naikKapals)
     {
         foreach ($naikKapals as $naikKapal) {
-            // Update naik kapal status
-            $naikKapal->update([
-                'status' => 'Tidak Naik Kapal',
-                'keterangan' => 'Ditandai sebagai tidak naik kapal pada ' . now()->format('d/m/Y H:i')
-            ]);
-
-            // Update prospek status to 'batal'
+            // Update prospek status to 'batal' before deleting naik kapal record
             if ($naikKapal->prospek) {
                 $naikKapal->prospek->update([
                     'status' => 'batal'
                 ]);
             }
+            
+            // Delete the naik kapal record completely
+            $naikKapal->delete();
         }
     }
 
