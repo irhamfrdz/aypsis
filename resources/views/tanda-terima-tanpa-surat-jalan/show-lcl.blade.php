@@ -152,14 +152,14 @@
                 </div>
 
                 <!-- Gambar Surat Jalan -->
-                @if($tandaTerima->gambar_surat_jalan && is_array(json_decode($tandaTerima->gambar_surat_jalan, true)))
+                @if($tandaTerima->gambar_surat_jalan && is_array($tandaTerima->gambar_surat_jalan))
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
                         <div class="border-b border-gray-200 p-4">
                             <h2 class="text-lg font-semibold text-gray-800">Gambar Surat Jalan</h2>
                         </div>
                         <div class="p-6">
                             @php
-                                $gambarArray = json_decode($tandaTerima->gambar_surat_jalan, true);
+                                $gambarArray = $tandaTerima->gambar_surat_jalan;
                             @endphp
                             
                             @if(is_array($gambarArray) && count($gambarArray) > 0)
