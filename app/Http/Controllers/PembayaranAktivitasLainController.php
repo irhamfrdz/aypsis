@@ -72,8 +72,6 @@ class PembayaranAktivitasLainController extends Controller
             'metode_pembayaran' => 'required|string|in:cash,transfer,cek,giro',
             'debit_kredit' => 'required|in:debit,kredit',
             'akun_coa_id' => 'required|exists:akun_coa,id',
-        ]); 'debit_kredit' => 'required|in:debit,kredit',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
         ]);
 
         try {

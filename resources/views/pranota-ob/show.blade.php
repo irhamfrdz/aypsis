@@ -111,8 +111,8 @@
                             @forelse ($groupedBySupir as $supirName => $items)
                                 @php
                                     $firstTagihan = $items->first()->tagihanOb;
-                                    $totalBiaya = $items->sum(fn($item) => $item->tagihanOb->biaya ?? 0);
-                                    $totalDp = $items->sum(fn($item) => $item->tagihanOb->dp ?? 0);
+                                    $totalBiaya = $items->sum(function($item) { return $item->tagihanOb->biaya ?? 0; });
+                                    $totalDp = $items->sum(function($item) { return $item->tagihanOb->dp ?? 0; });
                                     $totalSisa = $totalBiaya - $totalDp;
                                     $kontainers = $items->pluck('tagihanOb.nomor_kontainer')->join(', ');
                                 @endphp

@@ -270,6 +270,7 @@ class TandaTerimaController extends Controller
     {
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
+            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terimas,nomor_tanda_terima',
             // Field yang akan disinkronkan ke surat jalan
             'tanggal_surat_jalan' => 'nullable|date',
             'nomor_surat_jalan' => 'nullable|string|max:255',
@@ -366,6 +367,7 @@ class TandaTerimaController extends Controller
             $tandaTerima = new TandaTerima();
             $tandaTerima->surat_jalan_id = $suratJalan->id;
             $tandaTerima->no_surat_jalan = $suratJalan->no_surat_jalan;
+            $tandaTerima->nomor_tanda_terima = $request->nomor_tanda_terima;
             $tandaTerima->tanggal_surat_jalan = $suratJalan->tanggal_surat_jalan;
             $tandaTerima->supir = $suratJalan->supir;
             $tandaTerima->kegiatan = $suratJalan->kegiatan;
@@ -617,8 +619,11 @@ class TandaTerimaController extends Controller
             // Handle gambar checkpoint upload
             $uploadedImages = [];
             if ($request->hasFile('gambar_checkpoint')) {
-                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'));
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'), $request->nomor_tanda_terima);
                 if (!empty($uploadedImages)) {
+                    // Save images to tanda_terima as well
+                    $tandaTerima->update(['gambar_checkpoint' => json_encode($uploadedImages)]);
+                    
                     // Get existing images from surat jalan
                     $existingImages = [];
                     if (!empty($suratJalan->gambar_checkpoint)) {
@@ -645,6 +650,7 @@ class TandaTerimaController extends Controller
                     $suratJalanUpdate['gambar_checkpoint'] = json_encode($allImages);
                     
                     Log::info('Gambar checkpoint uploaded', [
+                        'tanda_terima_id' => $tandaTerima->id,
                         'surat_jalan_id' => $suratJalan->id,
                         'new_images_count' => count($uploadedImages),
                         'total_images_count' => count($allImages),
@@ -810,6 +816,7 @@ class TandaTerimaController extends Controller
         }
 
         $request->validate([
+            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terimas,nomor_tanda_terima,' . $tandaTerima->id,
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
@@ -861,6 +868,8 @@ class TandaTerimaController extends Controller
             'tinggi' => 'nullable',
             'meter_kubik' => 'nullable',
             'tonase' => 'nullable',
+            'gambar_checkpoint' => 'nullable|array|max:5',
+            'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
         ]);
 
         DB::beginTransaction();
@@ -899,6 +908,7 @@ class TandaTerimaController extends Controller
             }
             
             $updateData = [
+                'nomor_tanda_terima' => $request->nomor_tanda_terima,
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
@@ -1045,6 +1055,43 @@ class TandaTerimaController extends Controller
                     $formattedDimensiItems[] = $formattedItem;
                 }
                 $updateData['dimensi_items'] = json_encode($formattedDimensiItems);
+            }
+
+            // Handle image upload if present
+            if ($request->hasFile('gambar_checkpoint')) {
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'), $request->nomor_tanda_terima);
+                
+                // Update related Surat Jalan with checkpoint images if tanda terima is linked
+                if ($tandaTerima->surat_jalan_id) {
+                    $suratJalan = \App\Models\SuratJalan::find($tandaTerima->surat_jalan_id);
+                    if ($suratJalan) {
+                        // Merge existing images with new ones
+                        $existingImages = [];
+                        if (!empty($suratJalan->gambar_checkpoint)) {
+                            if (is_string($suratJalan->gambar_checkpoint)) {
+                                $decoded = json_decode($suratJalan->gambar_checkpoint, true);
+                                if (is_array($decoded)) {
+                                    $existingImages = array_filter($decoded);
+                                } else {
+                                    $existingImages = [$suratJalan->gambar_checkpoint];
+                                }
+                            } elseif (is_array($suratJalan->gambar_checkpoint)) {
+                                $existingImages = array_filter($suratJalan->gambar_checkpoint);
+                            }
+                        }
+                        
+                        // Combine existing and new images
+                        $allImages = array_merge($existingImages, $uploadedImages);
+                        
+                        // Limit to 5 images total
+                        if (count($allImages) > 5) {
+                            $allImages = array_slice($allImages, -5); // Keep the latest 5 images
+                        }
+                        
+                        $suratJalanUpdate['gambar_checkpoint'] = json_encode($allImages);
+                        $suratJalan->update($suratJalanUpdate);
+                    }
+                }
             }
 
             $tandaTerima->update($updateData);
@@ -1519,9 +1566,10 @@ class TandaTerimaController extends Controller
      * Handle image upload for checkpoint images
      * 
      * @param array $uploadedFiles
+     * @param string|null $nomorTandaTerima
      * @return array Array of uploaded image paths
      */
-    private function handleImageUpload($uploadedFiles)
+    private function handleImageUpload($uploadedFiles, $nomorTandaTerima = null)
     {
         $imagePaths = [];
         
@@ -1531,12 +1579,20 @@ class TandaTerimaController extends Controller
                 Storage::disk('public')->makeDirectory('checkpoint');
             }
             
-            foreach ($uploadedFiles as $file) {
+            foreach ($uploadedFiles as $index => $file) {
                 if ($file->isValid()) {
-                    // Generate unique filename with timestamp
-                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    // Generate filename based on nomor_tanda_terima if available
                     $extension = $file->getClientOriginalExtension();
-                    $filename = 'checkpoint_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                    
+                    if ($nomorTandaTerima) {
+                        // Clean nomor_tanda_terima for filename (remove special characters)
+                        $cleanNomorTT = Str::slug($nomorTandaTerima, '_');
+                        $filename = $cleanNomorTT . '_' . ($index + 1) . '.' . $extension;
+                    } else {
+                        // Fallback to original naming if no nomor_tanda_terima
+                        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                        $filename = 'checkpoint_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                    }
                     
                     // Store in public disk under checkpoint directory
                     $path = $file->storeAs('checkpoint', $filename, 'public');

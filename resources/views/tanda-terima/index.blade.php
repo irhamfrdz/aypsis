@@ -180,6 +180,7 @@
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
                             </th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -255,6 +256,11 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                                 {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <div class="flex items-center gap-1">
+                                    <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">{{ $tandaTerima->nomor_tanda_terima ?: '-' }}</code>
+                                </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <div class="flex items-center gap-1">

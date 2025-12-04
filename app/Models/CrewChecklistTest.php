@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CrewEquipment extends Model
+class CrewChecklistTest extends Model
 {
     protected $table = 'crew_checklists';
 

@@ -26,6 +26,23 @@
                             <i class="fas fa-hand-paper text-xs mr-1"></i> Input Manual
                         </span>
                     @endif
+                    @php
+                        $sudahMasukBl = false;
+                        try {
+                            $sudahMasukBl = method_exists($tandaTerima, 'sudahMasukBl') ? $tandaTerima->sudahMasukBl() : false;
+                        } catch (Exception $e) {
+                            // Handle error gracefully
+                        }
+                    @endphp
+                    @if($sudahMasukBl)
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-ship text-xs mr-1"></i> Sudah Masuk BL
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-hourglass-half text-xs mr-1"></i> Belum Masuk BL
+                        </span>
+                    @endif
                 </div>
                 <p class="text-gray-600 mt-1">No. Surat Jalan: <span class="font-semibold">{{ $tandaTerima->no_surat_jalan }}</span></p>
             </div>
@@ -62,6 +79,12 @@
                 <div class="p-6">
                     <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Nomor Tanda Terima</dt>
+                            <dd class="text-sm text-gray-900 font-semibold">
+                                <code class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded">{{ $tandaTerima->nomor_tanda_terima ?: '-' }}</code>
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">No. Surat Jalan</dt>
                             <dd class="text-sm text-gray-900 font-semibold">{{ $tandaTerima->no_surat_jalan }}</dd>
                         </div>
@@ -72,6 +95,38 @@
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Supir</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->supir ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Kenek</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->kenek ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Krani</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->krani ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Supir Pengganti</dt>
+                            <dd class="text-sm text-gray-900">
+                                @if($tandaTerima->supir_pengganti)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        {{ $tandaTerima->supir_pengganti }}
+                                    </span>
+                                @else
+                                    -
+                                @endif
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Kenek Pengganti</dt>
+                            <dd class="text-sm text-gray-900">
+                                @if($tandaTerima->kenek_pengganti)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        {{ $tandaTerima->kenek_pengganti }}
+                                    </span>
+                                @else
+                                    -
+                                @endif
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Jenis Barang</dt>
@@ -101,6 +156,97 @@
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Pengirim</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->pengirim ?: '-' }}</dd>
                         </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Data Kendaraan & Crew -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Data Kendaraan & Crew</h2>
+                </div>
+                <div class="p-6">
+                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">No. Polisi</dt>
+                            <dd class="text-sm text-gray-900">
+                                <code class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded font-mono">{{ $tandaTerima->no_polisi ?: '-' }}</code>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Jenis Kendaraan</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->jenis_kendaraan ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Supir</dt>
+                            <dd class="text-sm text-gray-900">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-user text-blue-600 text-xs"></i>
+                                    <span class="font-semibold">{{ $tandaTerima->supir ?: '-' }}</span>
+                                </div>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Kenek</dt>
+                            <dd class="text-sm text-gray-900">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-user-friends text-green-600 text-xs"></i>
+                                    <span class="font-semibold">{{ $tandaTerima->kenek ?: '-' }}</span>
+                                </div>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Krani</dt>
+                            <dd class="text-sm text-gray-900">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-hard-hat text-orange-600 text-xs"></i>
+                                    <span class="font-semibold">{{ $tandaTerima->krani ?: '-' }}</span>
+                                </div>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Krane</dt>
+                            <dd class="text-sm text-gray-900">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-tools text-purple-600 text-xs"></i>
+                                    <span class="font-semibold">{{ $tandaTerima->krane ?: '-' }}</span>
+                                </div>
+                            </dd>
+                        </div>
+                        
+                        @if($tandaTerima->supir_pengganti || $tandaTerima->kenek_pengganti)
+                        <div class="col-span-2 mt-4 pt-4 border-t border-gray-200">
+                            <dt class="text-xs font-medium text-orange-600 uppercase mb-3">
+                                <i class="fas fa-exchange-alt mr-1"></i> Crew Pengganti
+                            </dt>
+                            <dd class="text-sm text-gray-900">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @if($tandaTerima->supir_pengganti)
+                                    <div class="bg-orange-50 border border-orange-200 p-3 rounded-lg">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-user text-orange-600 text-sm"></i>
+                                            <div>
+                                                <div class="text-xs text-orange-600 font-medium">Supir Pengganti</div>
+                                                <div class="font-semibold text-gray-900">{{ $tandaTerima->supir_pengganti }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    @if($tandaTerima->kenek_pengganti)
+                                    <div class="bg-orange-50 border border-orange-200 p-3 rounded-lg">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-user-friends text-orange-600 text-sm"></i>
+                                            <div>
+                                                <div class="text-xs text-orange-600 font-medium">Kenek Pengganti</div>
+                                                <div class="font-semibold text-gray-900">{{ $tandaTerima->kenek_pengganti }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </dd>
+                        </div>
+                        @endif
                     </dl>
                 </div>
             </div>
@@ -158,6 +304,19 @@
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tanggal Garasi</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->tanggal_garasi?->format('d F Y') ?? '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tanggal Checkpoint Supir</dt>
+                            <dd class="text-sm text-gray-900">
+                                @if($tandaTerima->tanggal_checkpoint_supir)
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-clock text-green-600 text-xs"></i>
+                                        <span class="font-semibold text-green-800">{{ $tandaTerima->tanggal_checkpoint_supir->format('d F Y') }}</span>
+                                    </div>
+                                @else
+                                    -
+                                @endif
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Jumlah</dt>
@@ -335,15 +494,46 @@
             </div>
 
             <!-- Gambar Checkpoint -->
-            @if($tandaTerima->gambar_checkpoint)
+            @php
+                // Debug info
+                $debug = [];
+                $debug['tanda_terima_gambar'] = $tandaTerima->gambar_checkpoint ? 'Ada' : 'Tidak ada';
+                $debug['surat_jalan_gambar'] = ($tandaTerima->suratJalan && $tandaTerima->suratJalan->gambar_checkpoint) ? 'Ada' : 'Tidak ada';
+                
+                // Try to get images from tanda terima first, then from related surat jalan
+                $gambarCheckpoint = null;
+                if ($tandaTerima->gambar_checkpoint) {
+                    $gambarCheckpoint = $tandaTerima->gambar_checkpoint;
+                    $debug['source'] = 'tanda_terima';
+                } elseif ($tandaTerima->suratJalan && $tandaTerima->suratJalan->gambar_checkpoint) {
+                    $gambarCheckpoint = $tandaTerima->suratJalan->gambar_checkpoint;
+                    $debug['source'] = 'surat_jalan';
+                } else {
+                    $debug['source'] = 'tidak_ada';
+                }
+            @endphp
+            
+            @if($gambarCheckpoint)
             <div class="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Gambar Checkpoint</h2>
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">Gambar Checkpoint</h2>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                Sumber: {{ ucfirst(str_replace('_', ' ', $debug['source'])) }}
+                            </span>
+                            @if($tandaTerima->tanggal_checkpoint_supir)
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-camera text-xs mr-1"></i>
+                                    {{ $tandaTerima->tanggal_checkpoint_supir->format('d M Y') }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
                 <div class="p-6">
                     @php
                         // Check if it's a JSON array (multiple images) or single image path
-                        $gambarCheckpoint = $tandaTerima->gambar_checkpoint;
                         $isJson = is_string($gambarCheckpoint) && (str_starts_with($gambarCheckpoint, '[') || str_starts_with($gambarCheckpoint, '{'));
                         $imagePaths = $isJson ? json_decode($gambarCheckpoint, true) : [$gambarCheckpoint];
                         $imagePaths = is_array($imagePaths) ? array_filter($imagePaths) : [$gambarCheckpoint];
@@ -376,7 +566,8 @@
                                     <img src="{{ $fileUrl }}"
                                          alt="Checkpoint Image {{ $index + 1 }}"
                                          class="w-full h-64 object-cover cursor-pointer"
-                                         onclick="window.open('{{ $fileUrl }}', '_blank')">
+                                         onclick="window.open('{{ $fileUrl }}', '_blank')"
+                                         onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-64 bg-gray-100\'><div class=\'text-center text-gray-500\'><i class=\'fas fa-image-slash text-2xl mb-2\'></i><p class=\'text-sm\'>Gambar tidak ditemukan</p><p class=\'text-xs\'>{{ basename($imagePath) }}</p></div></div>'">
                                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
                                         <svg class="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
@@ -394,6 +585,30 @@
                             @endif
                         </div>
                         @endforeach
+                    </div>
+                    
+                    @if(count($imagePaths) === 0)
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-images text-3xl mb-3"></i>
+                            <p class="text-sm">Tidak ada gambar checkpoint yang tersedia</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @else
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Gambar Checkpoint</h2>
+                </div>
+                <div class="p-6">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-images text-3xl mb-3"></i>
+                        <p class="text-sm">Belum ada gambar checkpoint yang diupload</p>
+                        <div class="mt-4 text-xs text-gray-400">
+                            <p>Debug Info:</p>
+                            <p>Tanda Terima: {{ $debug['tanda_terima_gambar'] }}</p>
+                            <p>Surat Jalan: {{ $debug['surat_jalan_gambar'] }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -417,28 +632,169 @@
                 </div>
             </div>
 
+            <!-- Timeline Aktivitas -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-md font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-clock text-blue-600 mr-2"></i>Timeline Aktivitas
+                </h3>
+                <div class="space-y-4">
+                    @if($tandaTerima->tanggal_ambil_kontainer)
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-box text-blue-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-gray-900">Ambil Kontainer</div>
+                            <div class="text-xs text-gray-600">{{ $tandaTerima->tanggal_ambil_kontainer->format('d F Y') }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($tandaTerima->tanggal_terima_pelabuhan)
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-ship text-green-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-gray-900">Terima di Pelabuhan</div>
+                            <div class="text-xs text-gray-600">{{ $tandaTerima->tanggal_terima_pelabuhan->format('d F Y') }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($tandaTerima->tanggal_garasi)
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-warehouse text-purple-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-gray-900">Masuk Garasi</div>
+                            <div class="text-xs text-gray-600">{{ $tandaTerima->tanggal_garasi->format('d F Y') }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($tandaTerima->tanggal_checkpoint_supir)
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-camera text-orange-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-gray-900">Checkpoint Supir</div>
+                            <div class="text-xs text-gray-600">{{ $tandaTerima->tanggal_checkpoint_supir->format('d F Y') }}</div>
+                            @php
+                                $hasImages = false;
+                                if ($tandaTerima->gambar_checkpoint) {
+                                    $hasImages = true;
+                                } elseif ($tandaTerima->suratJalan && $tandaTerima->suratJalan->gambar_checkpoint) {
+                                    $hasImages = true;
+                                }
+                            @endphp
+                            @if($hasImages)
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-check-circle mr-1"></i>Foto tersedia
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    @if(!$tandaTerima->tanggal_ambil_kontainer && !$tandaTerima->tanggal_terima_pelabuhan && !$tandaTerima->tanggal_garasi && !$tandaTerima->tanggal_checkpoint_supir)
+                    <div class="text-center text-gray-500 py-4">
+                        <i class="fas fa-calendar-times text-2xl mb-2"></i>
+                        <p class="text-sm">Belum ada aktivitas tercatat</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Metadata -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-md font-semibold text-gray-900 mb-4">Informasi Tambahan</h3>
+                <h3 class="text-md font-semibold text-gray-900 mb-4">Informasi Sistem</h3>
+                
+                <!-- Statistik Ringkas -->
+                @php
+                    // Try to get images from tanda terima first, then from related surat jalan
+                    $gambarCheckpointSidebar = null;
+                    if ($tandaTerima->gambar_checkpoint) {
+                        $gambarCheckpointSidebar = $tandaTerima->gambar_checkpoint;
+                    } elseif ($tandaTerima->suratJalan && $tandaTerima->suratJalan->gambar_checkpoint) {
+                        $gambarCheckpointSidebar = $tandaTerima->suratJalan->gambar_checkpoint;
+                    }
+                @endphp
+                
+                @if($gambarCheckpointSidebar)
+                @php
+                    $isJson = is_string($gambarCheckpointSidebar) && (str_starts_with($gambarCheckpointSidebar, '[') || str_starts_with($gambarCheckpointSidebar, '{'));
+                    $imagePaths = $isJson ? json_decode($gambarCheckpointSidebar, true) : [$gambarCheckpointSidebar];
+                    $imageCount = is_array($imagePaths) ? count(array_filter($imagePaths)) : 1;
+                @endphp
+                <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-images text-blue-600"></i>
+                            <span class="text-sm font-semibold text-blue-900">Foto Checkpoint</span>
+                        </div>
+                        <span class="text-sm font-bold text-blue-700">{{ $imageCount }} file</span>
+                    </div>
+                </div>
+                @endif
+
                 <dl class="space-y-3">
                     <div>
+                        <dt class="text-xs font-medium text-gray-500 uppercase">ID Tanda Terima</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-mono">#{{ $tandaTerima->id }}</dd>
+                    </div>
+                    <div>
                         <dt class="text-xs font-medium text-gray-500 uppercase">Dibuat Oleh</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->creator->name ?? 'System' }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-user text-gray-400 text-xs"></i>
+                                {{ $tandaTerima->creator->name ?? 'System' }}
+                            </div>
+                        </dd>
                     </div>
                     <div>
                         <dt class="text-xs font-medium text-gray-500 uppercase">Tanggal Dibuat</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->created_at?->format('d F Y H:i') ?? '-' }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-calendar-plus text-gray-400 text-xs"></i>
+                                {{ $tandaTerima->created_at?->format('d F Y H:i') ?? '-' }}
+                            </div>
+                        </dd>
                     </div>
                     @if($tandaTerima->updated_by)
                     <div>
                         <dt class="text-xs font-medium text-gray-500 uppercase">Diupdate Oleh</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->updater->name ?? '-' }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-user-edit text-gray-400 text-xs"></i>
+                                {{ $tandaTerima->updater->name ?? '-' }}
+                            </div>
+                        </dd>
                     </div>
                     @endif
                     <div>
                         <dt class="text-xs font-medium text-gray-500 uppercase">Terakhir Update</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->updated_at?->format('d F Y H:i') ?? '-' }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-gray-400 text-xs"></i>
+                                {{ $tandaTerima->updated_at?->format('d F Y H:i') ?? '-' }}
+                            </div>
+                        </dd>
                     </div>
+                    
+                    @if($tandaTerima->surat_jalan_id)
+                    <div class="pt-3 border-t border-gray-200">
+                        <dt class="text-xs font-medium text-green-600 uppercase">Linked to Surat Jalan</dt>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-link text-green-600 text-xs"></i>
+                                <code class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">ID: {{ $tandaTerima->surat_jalan_id }}</code>
+                            </div>
+                        </dd>
+                    </div>
+                    @endif
                 </dl>
             </div>
 
