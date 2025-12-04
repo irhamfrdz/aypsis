@@ -150,15 +150,15 @@
                                 Nomor Tanda Terima
                             </label>
                             <input type="text" name="nomor_tanda_terima" id="nomor_tanda_terima"
-                                   value="{{ old('nomor_tanda_terima') }}" readonly
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-600 cursor-not-allowed @error('nomor_tanda_terima') border-red-500 @enderror"
-                                   placeholder="Nomor akan dibuat otomatis (TTTSJ/YYYY/MM/0001)">
+                                   value="{{ old('nomor_tanda_terima') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_tanda_terima') border-red-500 @enderror"
+                                   placeholder="Masukkan nomor tanda terima (opsional)">
                             @error('nomor_tanda_terima')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             <p class="mt-1 text-xs text-gray-500">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Nomor akan dibuat otomatis saat menyimpan
+                                Kosongkan jika ingin diisi nanti
                             </p>
                         </div>
                         <div>

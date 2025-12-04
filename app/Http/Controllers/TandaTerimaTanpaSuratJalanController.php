@@ -378,8 +378,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             \Log::info('nama_barang[]:', ['data' => $request->input('nama_barang'), 'count' => count($request->input('nama_barang', []))]);
             \Log::info('dimensi_items (should be empty):', ['data' => $request->input('dimensi_items')]);
 
-            // Generate tanda terima number
-            $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
+            // Set created_by
             $validated['created_by'] = Auth::user()->name;
 
             // (Legacy flattened dimensi items merged before validation)

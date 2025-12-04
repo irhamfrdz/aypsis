@@ -252,9 +252,9 @@ class ProspekController extends Controller
 
             $tujuan = (object) $tujuanMapping[$tujuanId];
 
-            // Get prospek aktif yang sesuai dengan tujuan ini
+            // Get prospek aktif dan batal yang sesuai dengan tujuan ini
             $keywords = $tujuan->keywords;
-            $prospeksAktif = Prospek::where('status', 'aktif')
+            $prospeksAktif = Prospek::whereIn('status', ['aktif', 'batal'])
                 ->get()
                 ->filter(function($prospek) use ($keywords) {
                     $tujuanPengiriman = strtolower($prospek->tujuan_pengiriman ?? '');
@@ -398,32 +398,6 @@ class ProspekController extends Controller
                     \Log::info('Creating NaikKapal record with data:', $naikKapalData);
                     $naikKapal = NaikKapal::create($naikKapalData);
                     \Log::info('Successfully created NaikKapal record with ID: ' . $naikKapal->id);
-                    
-                    // Simpan data ke tabel bls juga
-                    $blData = [
-                        'prospek_id' => $prospek->id,
-                        'nomor_kontainer' => $naikKapalData['nomor_kontainer'],
-                        'no_seal' => $prospek->no_seal,
-                        'tipe_kontainer' => $prospek->tipe,
-                        'no_voyage' => $request->no_voyage,
-                        'nama_kapal' => $masterKapal->nama_kapal,
-                        'nama_barang' => $prospek->barang,
-                        'tonnage' => $prospek->tonase,
-                        'volume' => $naikKapalData['total_volume'],
-                        'term' => $prospek->tandaTerima ? $prospek->tandaTerima->term : null,
-                        'kuantitas' => $prospek->kuantitas,
-                    ];
-                    
-                    try {
-                        $bl = Bl::create($blData);
-                    } catch (\Exception $blError) {
-                        \Log::error('Failed to create BL record', [
-                            'prospek_id' => $prospek->id,
-                            'error' => $blError->getMessage(),
-                            'data' => $blData
-                        ]);
-                        // Lanjutkan meski BL gagal dibuat
-                    }
                     
                     $updatedCount++;
                     $updatedKontainers[] = $naikKapalData['nomor_kontainer'];

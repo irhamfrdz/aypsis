@@ -272,4 +272,120 @@ class NaikKapalController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Handle bulk actions for naik kapal records
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|in:masukkan_ke_bls,tidak_naik_kapal',
+            'selected_ids' => 'required|string'
+        ]);
+
+        try {
+            $selectedIds = json_decode($request->selected_ids, true);
+            
+            if (empty($selectedIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data yang dipilih'
+                ]);
+            }
+
+            $naikKapals = NaikKapal::whereIn('id', $selectedIds)->get();
+            
+            if ($naikKapals->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
+
+            DB::beginTransaction();
+
+            if ($request->action === 'masukkan_ke_bls') {
+                $this->processToBlsAction($naikKapals);
+                $message = count($selectedIds) . ' data berhasil dimasukkan ke BLS';
+            } elseif ($request->action === 'tidak_naik_kapal') {
+                $this->processTidakNaikKapalAction($naikKapals);
+                $message = count($selectedIds) . ' data berhasil ditandai sebagai tidak naik kapal';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Bulk action error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Process moving naik kapal records to BLS table
+     */
+    private function processToBlsAction($naikKapals)
+    {
+        foreach ($naikKapals as $naikKapal) {
+            // Create BL record
+            \App\Models\Bl::create([
+                'prospek_id' => $naikKapal->prospek_id,
+                'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                'no_seal' => $naikKapal->no_seal,
+                'tipe_kontainer' => $naikKapal->tipe_kontainer,
+                'no_voyage' => $naikKapal->no_voyage,
+                'nama_kapal' => $naikKapal->nama_kapal,
+                'nama_barang' => $naikKapal->jenis_barang,
+                'tonnage' => $naikKapal->tonase,
+                'volume' => $naikKapal->total_volume,
+                'kuantitas' => $naikKapal->kuantitas,
+                'pelabuhan_tujuan' => $naikKapal->pelabuhan_tujuan,
+                'tanggal_muat' => $naikKapal->tanggal_muat,
+                'jam_muat' => $naikKapal->jam_muat,
+                'created_by' => Auth::id()
+            ]);
+
+            // Update prospek status if needed
+            if ($naikKapal->prospek) {
+                $naikKapal->prospek->update([
+                    'status' => 'sudah_muat'
+                ]);
+            }
+
+            // Optionally remove from naik_kapal table or mark as processed
+            // $naikKapal->delete();
+            // OR mark as processed:
+            $naikKapal->update(['status' => 'Moved to BLS']);
+        }
+    }
+
+    /**
+     * Process marking naik kapal records as tidak naik kapal
+     */
+    private function processTidakNaikKapalAction($naikKapals)
+    {
+        foreach ($naikKapals as $naikKapal) {
+            // Update naik kapal status
+            $naikKapal->update([
+                'status' => 'Tidak Naik Kapal',
+                'keterangan' => 'Ditandai sebagai tidak naik kapal pada ' . now()->format('d/m/Y H:i')
+            ]);
+
+            // Update prospek status to 'batal'
+            if ($naikKapal->prospek) {
+                $naikKapal->prospek->update([
+                    'status' => 'batal'
+                ]);
+            }
+        }
+    }
 }

@@ -79,16 +79,54 @@
         </div>
     @endif
 
+    {{-- Bulk Actions --}}
+    <div id="bulkActionsPanel" class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4 hidden">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-purple-600 mr-2"></i>
+                <span id="selectedCountText" class="text-sm font-medium text-purple-800">0 item dipilih</span>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" id="btnMasukkanKeBls" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-file-alt mr-2"></i>
+                    Masukkan ke BLS
+                </button>
+                <button type="button" id="btnTidakNaikKapal" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-times-circle mr-2"></i>
+                    Tidak Naik Kapal
+                </button>
+                <button type="button" id="btnClearSelection" class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- Data Table --}}
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 resizable-table" id="naikKapalTable">
                 <thead class="bg-gray-50">
-                    <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kontainer<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Barang<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tipe Kontainer<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal & Voyage<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Volume & Tonase<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Muat<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Prospek<div class="resize-handle"></div></th><th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
+                    <tr>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                        </th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kontainer<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Barang<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tipe Kontainer<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal & Voyage<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Volume & Tonase<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Muat<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Prospek<div class="resize-handle"></div></th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $naikKapal)
                         <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <input type="checkbox" name="selected_items[]" value="{{ $naikKapal->id }}" class="item-checkbox rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $naikKapal->nomor_kontainer }}</div>
                                 <div class="text-sm text-gray-500">{{ $naikKapal->ukuran_kontainer }}</div>
@@ -167,7 +205,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="9" class="px-6 py-4 text-center text-gray-500">
                                 <i class="fas fa-ship text-4xl mb-4 text-gray-300"></i>
                                 <p class="text-lg">Belum ada data naik kapal</p>
                                 <p class="text-sm">Data naik kapal akan muncul ketika tersedia</p>
@@ -203,6 +241,137 @@ document.addEventListener('DOMContentLoaded', function() {
         const kapalId = this.value;
         loadVoyages(kapalId);
     });
+
+    // Checkbox functionality
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+
+    // Select/deselect all functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
+    });
+
+    // Individual checkbox change
+    itemCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateSelectedCount();
+        });
+    });
+
+    function updateSelectAllState() {
+        const checkedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        const totalCount = itemCheckboxes.length;
+        
+        if (checkedCount === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedCount === totalCount) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+
+    function updateSelectedCount() {
+        const checkedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        const bulkActionsPanel = document.getElementById('bulkActionsPanel');
+        const selectedCountText = document.getElementById('selectedCountText');
+        
+        if (checkedCount > 0) {
+            bulkActionsPanel.classList.remove('hidden');
+            selectedCountText.textContent = `${checkedCount} item dipilih`;
+        } else {
+            bulkActionsPanel.classList.add('hidden');
+        }
+    }
+
+    // Bulk action button events
+    document.getElementById('btnMasukkanKeBls').addEventListener('click', function() {
+        const selectedIds = getSelectedIds();
+        if (selectedIds.length === 0) return;
+        
+        if (confirm(`Yakin ingin memasukkan ${selectedIds.length} data ke BLS?`)) {
+            processBulkAction('masukkan_ke_bls', selectedIds);
+        }
+    });
+
+    document.getElementById('btnTidakNaikKapal').addEventListener('click', function() {
+        const selectedIds = getSelectedIds();
+        if (selectedIds.length === 0) return;
+        
+        if (confirm(`Yakin ingin menandai ${selectedIds.length} data sebagai tidak naik kapal?`)) {
+            processBulkAction('tidak_naik_kapal', selectedIds);
+        }
+    });
+
+    document.getElementById('btnClearSelection').addEventListener('click', function() {
+        selectAllCheckbox.checked = false;
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    });
+
+    function getSelectedIds() {
+        const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+        return Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+    }
+
+    function processBulkAction(action, selectedIds) {
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('action', action);
+        formData.append('selected_ids', JSON.stringify(selectedIds));
+
+        fetch('{{ route("naik-kapal.bulk-action") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showToast('success', data.message);
+                // Reload page to reflect changes
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showToast('error', data.message || 'Terjadi kesalahan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', 'Terjadi kesalahan saat memproses data');
+        });
+    }
+
+    function showToast(type, message) {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        
+        toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center`;
+        toast.innerHTML = `
+            <i class="fas ${icon} mr-2"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
 
     function loadVoyages(kapalId, selectVoyage = '') {
         voyageSelect.innerHTML = '<option value="">Loading...</option>';

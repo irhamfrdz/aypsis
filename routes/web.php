@@ -3309,6 +3309,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('naik-kapal.download.template')
                ->middleware('can:prospek-view');
                
+          Route::post('naik-kapal/bulk-action', [NaikKapalController::class, 'bulkAction'])
+               ->name('naik-kapal.bulk-action')
+               ->middleware('can:prospek-edit');
+               
           Route::resource('naik-kapal', NaikKapalController::class)
                      ->middleware('can:prospek-edit');
 
