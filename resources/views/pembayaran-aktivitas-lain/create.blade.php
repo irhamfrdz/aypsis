@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- Ensure CSRF token is available -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="container-fluid px-4 py-6">
     <div class="bg-white rounded-lg shadow-sm">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -21,8 +24,56 @@
             </a>
         </div>
 
-        <form action="{{ route('pembayaran-aktivitas-lain.store') }}" method="POST" class="p-6">
+        <form action="{{ route('pembayaran-aktivitas-lain.store') }}" method="POST" class="p-6" id="pembayaran_form">
             @csrf
+            
+            <!-- Display Laravel validation errors -->
+            @if ($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-semibold text-red-800 mb-2">Terdapat Error pada Form</h3>
+                            <ul class="text-sm text-red-700 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>• {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Display session flash messages -->
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-semibold text-red-800 mb-2">Error</h3>
+                            <p class="text-sm text-red-700">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-semibold text-green-800 mb-2">Berhasil</h3>
+                            <p class="text-sm text-green-700">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
             
             <!-- Double Book Accounting Info -->
             <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -225,10 +276,17 @@
 
             <!-- Action Buttons -->
             <div class="mt-6 flex justify-end gap-3">
+                <!-- Debug button untuk test error (hanya untuk development) -->
+                @if(config('app.debug'))
+                    <button type="button" onclick="showErrorMessage('Test error message untuk memastikan error handling berfungsi dengan baik.')" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium text-sm rounded-md transition">
+                        Test Error
+                    </button>
+                @endif
+                
                 <a href="{{ route('pembayaran-aktivitas-lain.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium text-sm rounded-md transition">
                     Batal
                 </a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition" id="submit_btn">
                     <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -238,6 +296,9 @@
         </form>
     </div>
 </div>
+
+<!-- Error/Success notification area -->
+<div id="notification-area" class="fixed top-4 right-4 z-50"></div>
 
 <!-- Modal for Vehicle Master Data -->
 <div id="vehicleMasterModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
@@ -305,8 +366,145 @@
     </div>
 </div>
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+.select2-container {
+    width: 100% !important;
+}
+.select2-container .select2-selection--single {
+    height: 38px !important;
+    padding: 6px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+}
+.select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 24px !important;
+}
+.select2-container .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+    right: 6px !important;
+}
+.select2-dropdown {
+    border-radius: 6px !important;
+}
+.select2-container--open .select2-selection--single {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+.select2-results__option--highlighted {
+    background-color: #3b82f6 !important;
+}
+</style>
+@endpush
+
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// Ensure jQuery is available globally first
+window.jQuery = window.$ = window.$ || function() {
+    console.error('jQuery is not loaded');
+    return null;
+};
+
+// Load scripts in sequence
+function loadScripts() {
+    // Load jQuery if not already available
+    if (typeof window.jQuery === 'undefined' || typeof window.jQuery.fn === 'undefined') {
+        const jqueryScript = document.createElement('script');
+        jqueryScript.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+        jqueryScript.onload = function() {
+            console.log('jQuery loaded');
+            loadSelect2();
+        };
+        jqueryScript.onerror = function() {
+            console.error('Failed to load jQuery');
+        };
+        document.head.appendChild(jqueryScript);
+    } else {
+        loadSelect2();
+    }
+}
+
+function loadSelect2() {
+    // Load Select2
+    const select2Script = document.createElement('script');
+    select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+    select2Script.onload = function() {
+        console.log('Select2 loaded');
+        // Wait a bit for everything to initialize
+        setTimeout(initializeSelect2, 100);
+    };
+    select2Script.onerror = function() {
+        console.error('Failed to load Select2');
+    };
+    document.head.appendChild(select2Script);
+}
+
+function initializeSelect2() {
+    if (typeof $ === 'undefined' || typeof $.fn.select2 === 'undefined') {
+        console.error('Select2 or jQuery not available');
+        return;
+    }
+
+    console.log('Initializing Select2...');
+    
+    // Initialize Select2 for all dropdowns
+    $('#jenis_aktivitas').select2({
+        placeholder: "Pilih Jenis Aktivitas",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#sub_jenis_kendaraan_select').select2({
+        placeholder: "Pilih Sub Jenis",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('select[name="nomor_polisi"]').select2({
+        placeholder: "Pilih Nomor Polisi",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('select[name="nomor_voyage"]').select2({
+        placeholder: "Pilih Nomor Voyage",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#akun_coa_select').select2({
+        placeholder: "Pilih Akun COA",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#akun_bank_select').select2({
+        placeholder: "Pilih Bank/Kas",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#penerima_dropdown').select2({
+        placeholder: "Pilih dari Karyawan",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#debit_kredit').select2({
+        placeholder: "Pilih Jenis Transaksi",
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Initialize main functionality after Select2 is ready
+    initializeMainFunctionality();
+}
+
+// Initialize main functionality
+function initializeMainFunctionality() {
     const jenisAktivitas = document.getElementById('jenis_aktivitas');
     const subJenisKendaraan = document.getElementById('sub_jenis_kendaraan');
     const subJenisSelect = document.getElementById('sub_jenis_kendaraan_select');
@@ -319,24 +517,38 @@ document.addEventListener('DOMContentLoaded', function() {
         if (jenisAktivitas.value === 'Pembayaran Kendaraan') {
             subJenisKendaraan.classList.remove('hidden');
             subJenisSelect.setAttribute('required', 'required');
+            // Reinitialize Select2 after showing
+            setTimeout(() => {
+                $('#sub_jenis_kendaraan_select').select2({
+                    placeholder: "Pilih Sub Jenis",
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
         } else {
             subJenisKendaraan.classList.add('hidden');
             subJenisSelect.removeAttribute('required');
-            subJenisSelect.value = '';
-            // Hide nomor polisi when jenis aktivitas changes
+            $('#sub_jenis_kendaraan_select').val('').trigger('change');
             nomorPolisiField.classList.add('hidden');
             nomorPolisiSelect.removeAttribute('required');
-            nomorPolisiSelect.value = '';
+            $('select[name="nomor_polisi"]').val('').trigger('change');
         }
         
-        // Handle voyage dropdown for kapal
         if (jenisAktivitas.value === 'Pembayaran Kapal') {
             nomorVoyageField.classList.remove('hidden');
             nomorVoyageSelect.setAttribute('required', 'required');
+            // Reinitialize Select2 after showing
+            setTimeout(() => {
+                $('select[name="nomor_voyage"]').select2({
+                    placeholder: "Pilih Nomor Voyage",
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
         } else {
             nomorVoyageField.classList.add('hidden');
             nomorVoyageSelect.removeAttribute('required');
-            nomorVoyageSelect.value = '';
+            $('select[name="nomor_voyage"]').val('').trigger('change');
         }
     }
 
@@ -345,32 +557,45 @@ document.addEventListener('DOMContentLoaded', function() {
         if (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR') {
             nomorPolisiField.classList.remove('hidden');
             nomorPolisiSelect.setAttribute('required', 'required');
+            // Reinitialize Select2 after showing
+            setTimeout(() => {
+                $('select[name="nomor_polisi"]').select2({
+                    placeholder: "Pilih Nomor Polisi",
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
         } else {
             nomorPolisiField.classList.add('hidden');
             nomorPolisiSelect.removeAttribute('required');
-            nomorPolisiSelect.value = '';
+            $('select[name="nomor_polisi"]').val('').trigger('change');
         }
     }
 
-    // Initial check on page load
     toggleSubJenisKendaraan();
     toggleNomorPolisi();
 
-    // Listen for changes
-    jenisAktivitas.addEventListener('change', toggleSubJenisKendaraan);
-    subJenisSelect.addEventListener('change', toggleNomorPolisi);
+    // Use Select2 change events
+    $('#jenis_aktivitas').on('change', function() {
+        jenisAktivitas.value = this.value;
+        toggleSubJenisKendaraan();
+    });
     
-    // Handle penerima dropdown
+    $('#sub_jenis_kendaraan_select').on('change', function() {
+        subJenisSelect.value = this.value;
+        toggleNomorPolisi();
+    });
+    
     const penerimaDropdown = document.getElementById('penerima_dropdown');
     const penerimaInput = document.getElementById('penerima_input');
     
-    penerimaDropdown.addEventListener('change', function() {
+    // Use Select2 change event for penerima dropdown
+    $('#penerima_dropdown').on('change', function() {
         if (this.value) {
             penerimaInput.value = this.value;
         }
     });
     
-    // Double Book Accounting - Dynamic Journal Preview
     const debitKreditSelect = document.getElementById('debit_kredit');
     const akunCoaSelect = document.getElementById('akun_coa_select');
     const akunBankSelect = document.getElementById('akun_bank_select');
@@ -436,17 +661,14 @@ document.addEventListener('DOMContentLoaded', function() {
         journalContent.innerHTML = journalHtml;
         journalPreview.classList.remove('hidden');
     }
-    
-    // Add event listeners for real-time preview
-    debitKreditSelect.addEventListener('change', updateJournalPreview);
-    akunCoaSelect.addEventListener('change', updateJournalPreview);
-    akunBankSelect.addEventListener('change', updateJournalPreview);
+    // Use Select2 change events for journal preview
+    $('#debit_kredit').on('change', updateJournalPreview);
+    $('#akun_coa_select').on('change', updateJournalPreview);
+    $('#akun_bank_select').on('change', updateJournalPreview);
     jumlahInput.addEventListener('input', updateJournalPreview);
     
-    // Initial preview check
     updateJournalPreview();
     
-    // Handle form submission with vehicle master data check
     const form = document.querySelector('form');
     const vehicleMasterModal = document.getElementById('vehicleMasterModal');
     const closeModalBtn = document.getElementById('closeModal');
@@ -456,34 +678,185 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSubmittingAfterModal = false;
     
     form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Always prevent default submission
+        
         if (isSubmittingAfterModal) {
-            return; // Allow normal submission
+            isSubmittingAfterModal = false; // Reset flag
         }
         
-        const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
-        const nomorPolisi = document.querySelector('select[name="nomor_polisi"]').value;
+        // Validate form before submission
+        if (!validateForm()) {
+            return;
+        }
         
-        if (jenisAktivitas === 'Pembayaran Kendaraan' && nomorPolisi) {
-            e.preventDefault();
-            
-            // Show confirmation dialog
-            if (confirm('Apakah Anda ingin mengubah data master kendaraan untuk plat nomor: ' + nomorPolisi + '?')) {
-                showVehicleMasterModal(nomorPolisi);
-            } else {
-                // Continue with normal form submission
-                isSubmittingAfterModal = true;
-                form.submit();
+        const jenisAktivitasValue = document.getElementById('jenis_aktivitas').value;
+        const nomorPolisiValue = document.querySelector('select[name="nomor_polisi"]').value;
+        
+        if (jenisAktivitasValue === 'Pembayaran Kendaraan' && nomorPolisiValue && !isSubmittingAfterModal) {
+            if (confirm('Apakah Anda ingin mengubah data master kendaraan untuk plat nomor: ' + nomorPolisiValue + '?')) {
+                showVehicleMasterModal(nomorPolisiValue);
+                return;
             }
         }
+        
+        // Submit form via AJAX
+        submitFormWithErrorHandling();
     });
     
+    // Form validation function
+    function validateForm() {
+        const requiredFields = [
+            { id: 'tanggal', name: 'Tanggal' },
+            { id: 'jenis_aktivitas', name: 'Jenis Aktivitas' },
+            { name: 'jumlah', name: 'Jumlah' },
+            { id: 'debit_kredit', name: 'Jenis Transaksi' },
+            { id: 'akun_coa_select', name: 'Akun COA' },
+            { id: 'akun_bank_select', name: 'Bank/Kas' },
+            { id: 'penerima_input', name: 'Penerima' },
+            { name: 'keterangan', name: 'Keterangan' }
+        ];
+        
+        const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
+        
+        // Add conditional required fields
+        if (jenisAktivitas === 'Pembayaran Kendaraan') {
+            requiredFields.push({ id: 'sub_jenis_kendaraan_select', name: 'Sub Jenis Kendaraan' });
+            
+            const subJenis = document.getElementById('sub_jenis_kendaraan_select').value;
+            if (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR') {
+                requiredFields.push({ name: 'nomor_polisi', name: 'Nomor Polisi' });
+            }
+        } else if (jenisAktivitas === 'Pembayaran Kapal') {
+            requiredFields.push({ name: 'nomor_voyage', name: 'Nomor Voyage' });
+        }
+        
+        for (const field of requiredFields) {
+            let element;
+            if (field.id) {
+                element = document.getElementById(field.id);
+            } else {
+                element = document.querySelector(`[name="${field.name.toLowerCase()}"]`) || 
+                         document.querySelector(`[name="${field.name}"]`);
+            }
+            
+            if (!element || !element.value.trim()) {
+                showErrorMessage(`${field.name} harus diisi!`);
+                if (element) element.focus();
+                return false;
+            }
+        }
+        
+        // Validate jumlah
+        const jumlah = parseFloat(document.querySelector('[name="jumlah"]').value);
+        if (isNaN(jumlah) || jumlah <= 0) {
+            showErrorMessage('Jumlah harus berupa angka positif!');
+            document.querySelector('[name="jumlah"]').focus();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Function to handle form submission with error handling
+    function submitFormWithErrorHandling() {
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        
+        try {
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Menyimpan...';
+            
+            // Collect form data
+            const formData = new FormData(form);
+            
+            // Make AJAX request
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') || 
+                                   document.querySelector('input[name="_token"]').value
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json().catch(() => {
+                        // If response is not JSON (maybe redirect), handle as success
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                            return;
+                        }
+                        throw new Error('Invalid response format');
+                    });
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+                    }).catch(() => {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    });
+                }
+            })
+            .then(data => {
+                if (data) {
+                    // Success response
+                    showSuccessMessage(data.message || 'Data berhasil disimpan!');
+                    
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else {
+                            // Default redirect to index
+                            window.location.href = "{{ route('pembayaran-aktivitas-lain.index') }}";
+                        }
+                    }, 1500);
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                
+                // Try to extract meaningful error message
+                let errorMessage = 'Terjadi kesalahan saat menyimpan data.';
+                
+                if (error.message) {
+                    if (error.message.includes('HTTP 422')) {
+                        errorMessage = 'Data tidak valid. Periksa kembali form Anda.';
+                    } else if (error.message.includes('HTTP 500')) {
+                        errorMessage = 'Terjadi kesalahan server. Silakan hubungi administrator.';
+                    } else if (error.message.includes('HTTP 419')) {
+                        errorMessage = 'Sesi telah habis. Silakan refresh halaman dan coba lagi.';
+                    } else if (error.message.includes('Network')) {
+                        errorMessage = 'Koneksi internet bermasalah. Periksa koneksi Anda.';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                }
+                
+                showErrorMessage(errorMessage);
+            })
+            .finally(() => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+            
+        } catch (error) {
+            console.error('Error in form submission:', error);
+            showErrorMessage('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    }
+    
     function showVehicleMasterModal(nomorPolisi) {
-        // Get vehicle data from the dropdown
         const mobilSelect = document.querySelector('select[name="nomor_polisi"]');
         const selectedOption = mobilSelect.options[mobilSelect.selectedIndex];
         const mobilText = selectedOption.text;
         
-        // Parse vehicle data from option text (format: "PLAT - MEREK JENIS")
         const parts = mobilText.split(' - ');
         const plat = parts[0] || '';
         const merekJenis = parts[1] || '';
@@ -491,7 +864,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const merek = merekJenisParts[0] || '';
         const jenis = merekJenisParts.slice(1).join(' ') || '';
         
-        // Populate modal fields
         document.getElementById('modal_nomor_polisi').value = plat;
         document.getElementById('modal_merek').value = merek;
         document.getElementById('modal_jenis').value = jenis;
@@ -500,7 +872,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modal_status').value = 'aktif';
         document.getElementById('modal_keterangan').value = '';
         
-        // Show modal
         vehicleMasterModal.classList.remove('hidden');
     }
     
@@ -508,12 +879,10 @@ document.addEventListener('DOMContentLoaded', function() {
         vehicleMasterModal.classList.add('hidden');
     }
     
-    // Modal event listeners
     closeModalBtn.addEventListener('click', closeModal);
     cancelModalBtn.addEventListener('click', closeModal);
     
     saveVehicleBtn.addEventListener('click', function() {
-        // Here you can add AJAX call to update vehicle master data
         const vehicleData = {
             nomor_polisi: document.getElementById('modal_nomor_polisi').value,
             merek: document.getElementById('modal_merek').value,
@@ -524,195 +893,152 @@ document.addEventListener('DOMContentLoaded', function() {
             keterangan: document.getElementById('modal_keterangan').value
         };
         
-        // Show loading state
+        // Validate required fields
+        if (!vehicleData.nomor_polisi || !vehicleData.merek || !vehicleData.jenis) {
+            showErrorMessage('Nomor polisi, merek, dan jenis kendaraan harus diisi!');
+            return;
+        }
+        
         saveVehicleBtn.disabled = true;
         saveVehicleBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Menyimpan...';
         
-        // Simulate API call (replace with actual AJAX call)
+        // Simulate API call with error handling
         setTimeout(() => {
-            alert('Data master kendaraan berhasil diperbarui!');
-            closeModal();
+            // Simulate random success/failure (80% success rate)
+            const isSuccess = Math.random() > 0.2;
             
-            // Reset button
-            saveVehicleBtn.disabled = false;
-            saveVehicleBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Simpan Perubahan';
-            
-            // Continue with form submission
-            isSubmittingAfterModal = true;
-            form.submit();
-        }, 2000);
-        
-        // TODO: Replace above setTimeout with actual AJAX call like:
-        /*
-        fetch('/api/mobils/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify(vehicleData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Data master kendaraan berhasil diperbarui!');
+            if (isSuccess) {
+                showSuccessMessage('Data master kendaraan berhasil diperbarui!');
                 closeModal();
+                
+                saveVehicleBtn.disabled = false;
+                saveVehicleBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Simpan Perubahan';
+                
                 isSubmittingAfterModal = true;
-                form.submit();
+                submitFormWithErrorHandling();
             } else {
-                alert('Gagal memperbarui data: ' + data.message);
+                // Handle error case
+                saveVehicleBtn.disabled = false;
+                saveVehicleBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Simpan Perubahan';
+                
+                showErrorMessage('Gagal memperbarui data master kendaraan. Silakan coba lagi atau hubungi administrator.');
             }
-        })
-        .catch(error => {
-            alert('Terjadi kesalahan: ' + error.message);
-        })
-        .finally(() => {
-            saveVehicleBtn.disabled = false;
-            saveVehicleBtn.innerHTML = 'Simpan Perubahan';
-        });
-        */
+        }, 2000);
     });
     
-    // Close modal when clicking outside
     vehicleMasterModal.addEventListener('click', function(e) {
         if (e.target === vehicleMasterModal) {
             closeModal();
         }
     });
     
-    // Handle form submission with vehicle master data check
-    const form = document.querySelector('form');
-    const vehicleMasterModal = document.getElementById('vehicleMasterModal');
-    const closeModalBtn = document.getElementById('closeModal');
-    const cancelModalBtn = document.getElementById('cancelModalBtn');
-    const saveVehicleBtn = document.getElementById('saveVehicleBtn');
-    
-    let isSubmittingAfterModal = false;
-    
-    form.addEventListener('submit', function(e) {
-        if (isSubmittingAfterModal) {
-            return; // Allow normal submission
-        }
+    // Utility functions for showing messages
+    function showErrorMessage(message) {
+        // Remove any existing notifications
+        removeExistingNotifications();
         
-        const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
-        const nomorPolisi = document.querySelector('select[name="nomor_polisi"]').value;
+        // Handle multiline messages
+        const formattedMessage = message.replace(/\n/g, '<br>');
         
-        if (jenisAktivitas === 'Pembayaran Kendaraan' && nomorPolisi) {
-            e.preventDefault();
-            
-            // Show confirmation dialog
-            if (confirm('Apakah Anda ingin mengubah data master kendaraan untuk plat nomor: ' + nomorPolisi + '?')) {
-                showVehicleMasterModal(nomorPolisi);
-            } else {
-                // Continue with normal form submission
-                isSubmittingAfterModal = true;
-                form.submit();
-            }
-        }
-    });
-    
-    function showVehicleMasterModal(nomorPolisi) {
-        // Get vehicle data from the dropdown
-        const mobilSelect = document.querySelector('select[name="nomor_polisi"]');
-        const selectedOption = mobilSelect.options[mobilSelect.selectedIndex];
-        const mobilText = selectedOption.text;
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md';
+        notification.innerHTML = `
+            <div class="flex items-start">
+                <svg class="w-5 h-5 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-medium">Error!</p>
+                    <div class="text-sm mt-1">${formattedMessage}</div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-red-200 hover:text-white">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        `;
         
-        // Parse vehicle data from option text (format: "PLAT - MEREK JENIS")
-        const parts = mobilText.split(' - ');
-        const plat = parts[0] || '';
-        const merekJenis = parts[1] || '';
-        const merekJenisParts = merekJenis.split(' ');
-        const merek = merekJenisParts[0] || '';
-        const jenis = merekJenisParts.slice(1).join(' ') || '';
+        document.body.appendChild(notification);
         
-        // Populate modal fields
-        document.getElementById('modal_nomor_polisi').value = plat;
-        document.getElementById('modal_merek').value = merek;
-        document.getElementById('modal_jenis').value = jenis;
-        document.getElementById('modal_tahun').value = '';
-        document.getElementById('modal_warna').value = '';
-        document.getElementById('modal_status').value = 'aktif';
-        document.getElementById('modal_keterangan').value = '';
-        
-        // Show modal
-        vehicleMasterModal.classList.remove('hidden');
-    }
-    
-    function closeModal() {
-        vehicleMasterModal.classList.add('hidden');
-    }
-    
-    // Modal event listeners
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelModalBtn.addEventListener('click', closeModal);
-    
-    saveVehicleBtn.addEventListener('click', function() {
-        // Here you can add AJAX call to update vehicle master data
-        const vehicleData = {
-            nomor_polisi: document.getElementById('modal_nomor_polisi').value,
-            merek: document.getElementById('modal_merek').value,
-            jenis: document.getElementById('modal_jenis').value,
-            tahun: document.getElementById('modal_tahun').value,
-            warna: document.getElementById('modal_warna').value,
-            status: document.getElementById('modal_status').value,
-            keterangan: document.getElementById('modal_keterangan').value
-        };
-        
-        // Show loading state
-        saveVehicleBtn.disabled = true;
-        saveVehicleBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Menyimpan...';
-        
-        // Simulate API call (replace with actual AJAX call)
+        // Auto remove after 8 seconds for errors (longer since they might be important)
         setTimeout(() => {
-            alert('Data master kendaraan berhasil diperbarui!');
-            closeModal();
-            
-            // Reset button
-            saveVehicleBtn.disabled = false;
-            saveVehicleBtn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Simpan Perubahan';
-            
-            // Continue with form submission
-            isSubmittingAfterModal = true;
-            form.submit();
-        }, 2000);
-        
-        // TODO: Replace above setTimeout with actual AJAX call like:
-        /*
-        fetch('/api/mobils/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify(vehicleData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Data master kendaraan berhasil diperbarui!');
-                closeModal();
-                isSubmittingAfterModal = true;
-                form.submit();
-            } else {
-                alert('Gagal memperbarui data: ' + data.message);
+            if (notification.parentNode) {
+                notification.remove();
             }
-        })
-        .catch(error => {
-            alert('Terjadi kesalahan: ' + error.message);
-        })
-        .finally(() => {
-            saveVehicleBtn.disabled = false;
-            saveVehicleBtn.innerHTML = 'Simpan Perubahan';
-        });
-        */
-    });
+        }, 8000);
+        
+        // Also log to console for debugging
+        console.error('Error:', message);
+    }
     
-    // Close modal when clicking outside
-    vehicleMasterModal.addEventListener('click', function(e) {
-        if (e.target === vehicleMasterModal) {
-            closeModal();
-        }
+    function showSuccessMessage(message) {
+        // Remove any existing notifications
+        removeExistingNotifications();
+        
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                    <p class="font-medium">Berhasil!</p>
+                    <p class="text-sm mt-1">${message}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-green-200 hover:text-white">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+    
+    function removeExistingNotifications() {
+        const existingNotifications = document.querySelectorAll('.fixed.top-4.right-4');
+        existingNotifications.forEach(notification => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        });
+    }
+}
+</script>
+
+<script>
+// Start loading scripts when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, starting script initialization...');
+    loadScripts();
+});
+
+// Add error event listener to catch any unhandled errors
+window.addEventListener('error', function(event) {
+    console.error('JavaScript Error:', event.error);
+    console.error('Error details:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno
     });
 });
+
+// Add unhandled promise rejection listener
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled Promise Rejection:', event.reason);
+    console.error('Promise:', event.promise);
+});
 </script>
+@endpush
 @endsection

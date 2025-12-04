@@ -17,7 +17,7 @@
 
         <!-- Filter Section -->
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <form method="GET" action="{{ route('pembayaran-aktivitas-lain.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <form method="GET" action="{{ route('pembayaran-aktivitas-lain.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Dari</label>
                     <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
@@ -26,15 +26,7 @@
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Sampai</label>
                     <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                        <option value="">Semua</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                    </select>
-                </div>
+
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Pencarian</label>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Nomor, jenis, keterangan..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
@@ -59,11 +51,12 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Aktivitas</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akun Biaya</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sub Jenis</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akun COA</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akun Bank</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit/Kredit</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -74,6 +67,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nomor }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $item->jenis_aktivitas }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ $item->sub_jenis_kendaraan ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ $item->penerima }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 @if($item->akun_coa_id && isset($akunCoas[$item->akun_coa_id]))
                                     {{ $akunCoas[$item->akun_coa_id]->kode_nomor }} - {{ $akunCoas[$item->akun_coa_id]->nama_akun }}
@@ -81,22 +76,19 @@
                                     -
                                 @endif
                             </td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                @if($item->akun_bank_id && isset($akunCoas[$item->akun_bank_id]))
+                                    {{ $akunCoas[$item->akun_bank_id]->kode_nomor }} - {{ $akunCoas[$item->akun_bank_id]->nama_akun }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ucfirst($item->metode_pembayaran) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($item->debit_kredit == 'debit')
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Debit</span>
                                 @else
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Kredit</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->status == 'pending')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                @elseif($item->status == 'approved')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Approved</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -110,29 +102,25 @@
                                         </a>
                                     @endcan
                                     @can('pembayaran-aktivitas-lain-update')
-                                        @if($item->status == 'pending')
-                                            <a href="{{ route('pembayaran-aktivitas-lain.edit', $item) }}" class="text-amber-600 hover:text-amber-900" title="Edit">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('pembayaran-aktivitas-lain.edit', $item) }}" class="text-amber-600 hover:text-amber-900" title="Edit">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
                                     @endcan
                                     @can('pembayaran-aktivitas-lain-delete')
-                                        @if($item->status != 'paid')
-                                            <button onclick="confirmDelete({{ $item->id }})" class="text-red-600 hover:text-red-900" title="Hapus">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        @endif
+                                        <button onclick="confirmDelete({{ $item->id }})" class="text-red-600 hover:text-red-900" title="Hapus">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
                                     @endcan
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="11" class="px-6 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>

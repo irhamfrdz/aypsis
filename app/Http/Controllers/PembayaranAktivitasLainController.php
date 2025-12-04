@@ -41,10 +41,13 @@ class PembayaranAktivitasLainController extends Controller
 
         $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        // Get all unique akun_coa_ids from the results
+        // Get all unique akun_coa_ids and akun_bank_ids from the results
         $akunCoaIds = $pembayarans->pluck('akun_coa_id')->filter()->unique();
+        $akunBankIds = $pembayarans->pluck('akun_bank_id')->filter()->unique();
+        $allAkunIds = $akunCoaIds->merge($akunBankIds)->unique();
+        
         $akunCoas = DB::table('akun_coa')
-            ->whereIn('id', $akunCoaIds)
+            ->whereIn('id', $allAkunIds)
             ->get()
             ->keyBy('id');
 
