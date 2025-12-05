@@ -86,6 +86,10 @@
                         <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->jenis_transaksi ?? '-' }}</div>
                     </div>
                     <div>
+                        <label class="{{ $labelClasses }}">Nomor Accurate</label>
+                        <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->nomor_accurate ?? '-' }}</div>
+                    </div>
+                    <div>
                         <label class="{{ $labelClasses }}">Status Pembayaran</label>
                         <div>
                             <span class="px-2 py-1 text-xs font-medium rounded-full
