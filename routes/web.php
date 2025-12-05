@@ -1676,10 +1676,14 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-bongkaran.select-ship')
          ->middleware('can:surat-jalan-bongkaran-view');
     
-    Route::get('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'index'])
+    Route::get('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectKapal'])
          ->name('surat-jalan-bongkaran.index')
          ->middleware('can:surat-jalan-bongkaran-view');
-    
+
+    Route::get('surat-jalan-bongkaran/list', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'index'])
+         ->name('surat-jalan-bongkaran.list')
+         ->middleware('can:surat-jalan-bongkaran-view');
+
     Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
          ->name('surat-jalan-bongkaran.create')
          ->middleware('can:surat-jalan-bongkaran-create');
@@ -1745,6 +1749,11 @@ Route::middleware(['auth'])->group(function () {
     // Special routes must come BEFORE resource routes to avoid conflicts
     Route::get('pranota-uang-rit/select-uang-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'selectUangJalan'])
          ->name('pranota-uang-rit.select-uang-jalan')
+         ->middleware('can:pranota-uang-rit-create');
+
+    // Page for selecting the date range before creating a pranota
+    Route::get('pranota-uang-rit/select-date', [\App\Http\Controllers\PranotaUangRitController::class, 'selectDate'])
+         ->name('pranota-uang-rit.select-date')
          ->middleware('can:pranota-uang-rit-create');
 
     Route::post('pranota-uang-rit/from-selection', [\App\Http\Controllers\PranotaUangRitController::class, 'createFromSelection'])
@@ -1965,6 +1974,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tanda-terima-tanpa-surat-jalan/create-lcl', [\App\Http\Controllers\TandaTerimaLclController::class, 'create'])
          ->name('tanda-terima-tanpa-surat-jalan.create-lcl')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+
+    // Bulk export (selected) for standard tanda terima tanpa surat jalan
+    Route::get('tanda-terima-tanpa-surat-jalan/export', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'bulkExport'])
+         ->name('tanda-terima-tanpa-surat-jalan.export')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
 
     // Download image route (must be before resource route)
     Route::get('tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}', 

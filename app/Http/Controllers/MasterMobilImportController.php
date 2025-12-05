@@ -317,7 +317,9 @@ class MasterMobilImportController extends Controller
 
             switch ($format) {
                 case 'excel':
-                    return $this->exportToExcel($mobils, $request);
+                    // Use Maatwebsite Excel (XLSX) to export where possible
+                    $fileName = 'master_mobil_' . date('Y-m-d_H-i-s') . '.xlsx';
+                    return Excel::download(new \App\Exports\MobilExport($mobils), $fileName);
                 case 'csv':
                     return $this->exportToCsv($mobils, $request);
                 case 'pdf':

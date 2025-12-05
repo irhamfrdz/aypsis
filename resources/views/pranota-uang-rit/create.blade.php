@@ -40,6 +40,32 @@
 
         <form action="{{ route('pranota-uang-rit.store') }}" method="POST" id="pranotaForm" class="space-y-3">
             @csrf
+            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+
+            @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
+            <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
+                <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
+                <a href="{{ route('pranota-uang-rit.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
+            </div>
+            @endif
+
+            {{-- Local debug info to help diagnose filtering issues --}}
+            @if(app()->isLocal())
+            <div class="mt-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded p-2">
+                <p class="mb-1">Debug: filter range: <strong>{{ $viewStartDate }}</strong> - <strong>{{ $viewEndDate }}</strong></p>
+                <p class="mb-1">Eligible count: <strong>{{ $eligibleCount ?? 'N/A' }}</strong></p>
+                <p class="mb-1">SuratJalans returned: <strong>{{ $suratJalans->count() ?? 'N/A' }}</strong></p>
+                @if($suratJalans->count() > 0)
+                <p class="mb-1">Sample tanggal surat jalan: <strong>{{ $suratJalans->first()->tanggal_surat_jalan ?? 'N/A' }}</strong></p>
+                <p class="mb-1">Sample ID: <strong>{{ $suratJalans->first()->id ?? 'N/A' }}</strong> - No: <strong>{{ $suratJalans->first()->no_surat_jalan ?? 'N/A' }}</strong></p>
+                @endif
+                @if($suratJalans->count() > 1)
+                <p class="mb-1">Last sample tanggal: <strong>{{ $suratJalans->last()->tanggal_surat_jalan ?? 'N/A' }}</strong> - No: <strong>{{ $suratJalans->last()->no_surat_jalan ?? 'N/A' }}</strong></p>
+                @endif
+                <p class="mb-0">Check laravel.log for 'Date filtering impact' entry. If filtering still not working, there may be a database issue.</p>
+            </div>
+            @endif
 
             <!-- Hidden inputs untuk data hutang dan tabungan per supir -->
             <div id="supirDetailsInputs"></div>

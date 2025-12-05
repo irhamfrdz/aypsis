@@ -6,6 +6,7 @@ use App\Models\MasterKapal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterKapalController extends Controller
 {
@@ -421,10 +422,12 @@ class MasterKapalController extends Controller
     }
 
     /**
-     * Export data to CSV
+     * Export data to CSV or Excel
      */
     public function export(Request $request)
     {
+        $format = $request->get('format', 'csv');
+
         $query = MasterKapal::query();
 
         // Apply same filters as index method
@@ -450,6 +453,21 @@ class MasterKapalController extends Controller
 
         $kapals = $query->get();
 
+        switch ($format) {
+            case 'excel':
+                $fileName = 'master-kapal-' . date('Y-m-d-H-i-s') . '.xlsx';
+                return Excel::download(new \App\Exports\KapalExport($kapals), $fileName);
+            case 'csv':
+            default:
+                return $this->exportToCsv($kapals);
+        }
+    }
+
+    /**
+     * Export data to CSV format
+     */
+    private function exportToCsv($kapals)
+    {
         $filename = 'master-kapal-' . date('Y-m-d-H-i-s') . '.csv';
 
         $headers = [
@@ -459,7 +477,7 @@ class MasterKapalController extends Controller
 
         $callback = function() use ($kapals) {
             $file = fopen('php://output', 'w');
-            
+
             // Add BOM for UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
@@ -484,7 +502,7 @@ class MasterKapalController extends Controller
             // Data rows
             foreach ($kapals as $index => $kapal) {
                 $totalKapasitas = ($kapal->kapasitas_kontainer_palka ?? 0) + ($kapal->kapasitas_kontainer_deck ?? 0);
-                
+
                 fputcsv($file, [
                     $index + 1,
                     $kapal->kode,

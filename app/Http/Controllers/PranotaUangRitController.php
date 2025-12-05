@@ -18,9 +18,12 @@ class PranotaUangRitController extends Controller
      */
     public function index(Request $request)
     {
-        // If no date range is provided, show a date selection page first
+        // Default to last 30 days if no date range is provided
         if (!($request->filled('start_date') && $request->filled('end_date'))) {
-            return view('pranota-uang-rit.select-date', ['start_date' => $request->start_date, 'end_date' => $request->end_date]);
+            $request->merge([
+                'start_date' => now()->subDays(30)->format('Y-m-d'),
+                'end_date' => now()->format('Y-m-d'),
+            ]);
         }
 
         $query = PranotaUangRit::with(['suratJalan', 'creator', 'approver']);
@@ -40,9 +43,9 @@ class PranotaUangRitController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by date range
+        // Filter by date range (use pranota table's 'tanggal' column)
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('tanggal_surat_jalan', [$request->start_date, $request->end_date]);
+            $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
         }
 
         // Filter by supir
@@ -56,14 +59,61 @@ class PranotaUangRitController extends Controller
     }
 
     /**
+     * Show the date selection page for creating a new pranota.
+     */
+    public function selectDate(Request $request)
+    {
+        // Provide existing values if available
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        return view('pranota-uang-rit.select-date', compact('start_date', 'end_date'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        // Redirect to the select uang jalan page if no date range is provided
-        if (!request()->filled('start_date') || !request()->filled('end_date')) {
-            return redirect()->route('pranota-uang-rit.select-uang-jalan');
+        // Default to last 30 days for create if date range is not provided
+        $startDate = request()->input('start_date', now()->subDays(30)->format('Y-m-d'));
+        $endDate = request()->input('end_date', now()->format('Y-m-d'));
+
+        // Validate date inputs
+        if (request()->filled('start_date') && request()->filled('end_date')) {
+            try {
+                $startCheck = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $endCheck = \Carbon\Carbon::parse($endDate)->endOfDay();
+                if ($startCheck->gt($endCheck)) {
+                    return redirect()->route('pranota-uang-rit.select-date')->withInput()->with('error', 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
+                }
+            } catch (\Exception $e) {
+                return redirect()->route('pranota-uang-rit.select-date')->withInput()->with('error', 'Format tanggal tidak valid.');
+            }
         }
+        // Apply date range filter first for better performance and consistency
+        $startDateObj = null;
+        $endDateObj = null;
+        if (!empty($startDate) && !empty($endDate)) {
+            try {
+                $startDateObj = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
+                
+                // Logging for debugging
+                Log::info('PranotaUangRit::create date filters', [
+                    'start' => $startDateObj->toDateString(), 
+                    'end' => $endDateObj->toDateString(),
+                    'start_input' => $startDate,
+                    'end_input' => $endDate
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Date parsing failed', ['start' => $startDate, 'end' => $endDate, 'error' => $e->getMessage()]);
+                // If parsing fails, use default last 30 days
+                $startDateObj = \Carbon\Carbon::now()->subDays(30)->startOfDay();
+                $endDateObj = \Carbon\Carbon::now()->endOfDay();
+            }
+        }
+
         // Get available surat jalans that haven't been processed for pranota uang rit
         // Only include surat jalans that use 'menggunakan_rit' and status pembayaran uang rit 'belum_dibayar'
         $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
@@ -89,51 +139,110 @@ class PranotaUangRitController extends Controller
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
                   ->orWhereHas('tandaTerima');
+            });
+
+        // Apply date range filter to base query BEFORE any cloning - use where with DATE() function for explicit filtering
+        if ($startDateObj && $endDateObj) {
+            $baseQuery->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDateObj->toDateString())
+                      ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDateObj->toDateString());
+            
+            // Log the actual SQL query for debugging
+            $sqlQuery = $baseQuery->toSql();
+            $bindings = $baseQuery->getBindings();
+            
+            Log::info('Applied date filter to base query', [
+                'start_filter' => $startDateObj->toDateString(),
+                'end_filter' => $endDateObj->toDateString(),
+                'using_where_with_DATE_function' => true,
+                'sql_query_preview' => str_replace('?', "'%s'", $sqlQuery),
+                'bindings_count' => count($bindings)
+            ]);
+        }
+
+        $baseQuery->orderBy('created_at', 'desc');
+
+        // Now calculate statistics based on the filtered base query
+        $baseQueryBeforeDate = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
+            // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
+            $q->where('status', 'approved')
+              ->orWhere('status', 'sudah_checkpoint')
+              ->orWhere('status', 'active')
+              ->orWhereNotNull('tanggal_checkpoint')
+              ->orWhereHas('tandaTerima')
+              ->orWhereHas('approvals', function($sub) {
+                  $sub->where('status', 'approved');
+              });
+        })
+            ->where('rit', 'menggunakan_rit')
+            ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
+            ->whereNotIn('id', function($query) {
+                $query->select('surat_jalan_id')
+                    ->from('pranota_uang_rits')
+                    ->whereNotNull('surat_jalan_id')
+                    ->whereNotIn('status', ['cancelled']);
             })
-            ->orderBy('created_at', 'desc');
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
+        
+        $countBeforeDate = $baseQueryBeforeDate->count();
+        $countAfterDate = (clone $baseQuery)->count();
+        
+        Log::info('Date filtering impact', [
+            'count_before_date_filter' => $countBeforeDate,
+            'count_after_date_filter' => $countAfterDate,
+            'date_filter_applied' => ($startDateObj && $endDateObj),
+            'start_date' => $startDateObj ? $startDateObj->toDateString() : null,
+            'end_date' => $endDateObj ? $endDateObj->toDateString() : null
+        ]);
+        
+        $eligibleCount = (clone $baseQuery)->count();
+        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function($subQuery) {
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+        })->count();
+        
+        // Get final surat jalans (no need to reapply filters, they're already in baseQuery)
+        $suratJalans = (clone $baseQuery)->get();
+        $finalFilteredCount = $suratJalans->count();
 
-            $eligibleCount = (clone $baseQuery)->count();
-            $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function($subQuery) {
-                $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
-            })->count();
-            $finalFilteredCount = (clone $baseQuery)->where('rit', 'menggunakan_rit')
-                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
-                ->whereNotIn('id', function($subQuery) {
-                    $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
-                })
-                ->where(function($q) {
-                    $q->whereNotNull('tanggal_checkpoint')->orWhereHas('tandaTerima');
-                })->count();
-
-            $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
-            $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function($subQuery) {
-                $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
-            })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
-            $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit']);
-
-            $suratJalans = (clone $baseQuery)
-                ->where('rit', 'menggunakan_rit')
-                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
-                ->whereNotIn('id', function($subQuery) {
-                    $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
-                })
-                ->where(function($q) {
-                    $q->whereNotNull('tanggal_checkpoint')->orWhereHas('tandaTerima');
-                })->orderBy('created_at', 'desc')->get();
+        // Get examples for debugging
+        $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
+        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function($subQuery) {
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+        })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
+        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
+        
+        // Pass the start and end dates to the view so UI shows selected range explicitly
+        $viewStartDate = $startDate;
+        $viewEndDate = $endDate;
 
         Log::info('Final Surat Jalans for Pranota: ' . $suratJalans->count());
+        Log::info('Date filtering applied', [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'start_obj' => $startDateObj ? $startDateObj->toDateString() : null,
+            'end_obj' => $endDateObj ? $endDateObj->toDateString() : null,
+            'eligible_count' => $eligibleCount,
+            'final_count' => $finalFilteredCount
+        ]);
         
-        // Debug: Show some sample data
+        // Debug: Show some sample data with dates
         if ($suratJalans->count() > 0) {
             $sample = $suratJalans->first();
             Log::info('Sample Surat Jalan: ', [
                 'id' => $sample->id,
                 'no_surat_jalan' => $sample->no_surat_jalan,
+                'tanggal_surat_jalan' => $sample->tanggal_surat_jalan,
                 'status' => $sample->status,
                 'rit' => $sample->rit,
                 'supir_nama' => $sample->supir_nama,
                 'kenek_nama' => $sample->kenek_nama
             ]);
+            
+            // Log ALL dates to see if filtering is working
+            $allDates = $suratJalans->pluck('tanggal_surat_jalan', 'no_surat_jalan')->toArray();
+            Log::info('ALL Surat Jalan dates returned:', $allDates);
         }
 
         // Compute extra diagnostics: SJs that have Tanda Terima but are excluded from final list
@@ -142,9 +251,9 @@ class PranotaUangRitController extends Controller
             ->whereHas('tandaTerima')
             ->whereNotIn('id', $suratJalanIncludedIds)
             ->take(10)
-            ->get(['id', 'no_surat_jalan', 'supir', 'status', 'rit', 'status_pembayaran_uang_rit']);
+            ->get(['id', 'no_surat_jalan', 'supir', 'status', 'rit', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
 
-        return view('pranota-uang-rit.create', compact('suratJalans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples'));
+        return view('pranota-uang-rit.create', compact('suratJalans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate'));
     }
 
     /**
@@ -188,9 +297,24 @@ class PranotaUangRitController extends Controller
             });
         }
 
-        // Filter by date range
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('tanggal_surat_jalan', [$request->start_date, $request->end_date]);
+        // Filter by date range using whereDate for robust date comparison
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        if ($startDate && $endDate) {
+            try {
+                $startDateObj = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
+                if ($startDateObj->gt($endDateObj)) {
+                    return redirect()->route('pranota-uang-rit.select-uang-jalan')
+                            ->withInput()
+                            ->with('error', 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
+                }
+                $query->whereDate('tanggal_surat_jalan', '>=', $startDateObj->toDateString())
+                      ->whereDate('tanggal_surat_jalan', '<=', $endDateObj->toDateString());
+            } catch (\Exception $e) {
+                // Invalid date format, ignore filter and show all but return an error message
+                return redirect()->route('pranota-uang-rit.select-uang-jalan')->withInput()->with('error', 'Format tanggal tidak valid.');
+            }
         }
 
         // Filter by supir

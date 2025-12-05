@@ -693,7 +693,7 @@ class SuratJalanBongkaranController extends Controller
         try {
             $suratJalanBongkaran->delete();
             
-            return redirect()->route('surat-jalan-bongkaran.index')
+            return redirect()->route('surat-jalan-bongkaran.list')
                            ->with('success', 'Surat Jalan Bongkaran berhasil dihapus.');
                            
         } catch (\Exception $e) {

@@ -21,7 +21,7 @@
                         Edit
                     </a>
                 @endcan
-                <a href="{{ route('surat-jalan-bongkaran.index') }}"
+                <a href="{{ route('surat-jalan-bongkaran.list') }}"
                    class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm whitespace-nowrap">
                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -334,7 +334,7 @@
                         Edit
                     </a>
                 @endcan
-                <a href="{{ route('surat-jalan-bongkaran.index') }}"
+                <a href="{{ route('surat-jalan-bongkaran.list') }}"
                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>

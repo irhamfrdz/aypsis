@@ -49,7 +49,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
             $rows = $query->with('order.pengirim')->orderBy('created_at', 'desc')->get()->map(function($s) {
                 return [
                     $s->no_surat_jalan,
-                    $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/m/Y') : '-',
+                    $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/M/Y') : '-',
                     $s->no_kontainer,
                     $s->supir,
                     $s->no_plat,
@@ -83,7 +83,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $t->id,
                 'TT-' . $t->id,
                 $t->no_surat_jalan,
-                $t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/m/Y') : '-',
+                $t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/M/Y') : '-',
                 $t->no_kontainer,
                 $t->jenis_barang,
                 $t->tujuan_pengiriman,

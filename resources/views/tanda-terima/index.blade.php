@@ -243,7 +243,7 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/y') : '-' }}
+                                {{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $suratJalan->no_kontainer ?: '-' }}</code>
@@ -293,7 +293,7 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $item->tanggal_surat_jalan ? \Carbon\Carbon::parse($item->tanggal_surat_jalan)->format('d/m/y') : '-' }}
+                                {{ $item->tanggal_surat_jalan ? \Carbon\Carbon::parse($item->tanggal_surat_jalan)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $item->no_kontainer ?: '-' }}</code>
@@ -362,7 +362,7 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $tandaTerima->tanggal_checkpoint_supir ? $tandaTerima->tanggal_checkpoint_supir->format('d/m/y') : '-' }}
+                                {{ $tandaTerima->tanggal_checkpoint_supir ? $tandaTerima->tanggal_checkpoint_supir->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>

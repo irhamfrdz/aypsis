@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TandaTerimaTanpaSuratJalanExport;
 
 class TandaTerimaTanpaSuratJalanController extends Controller
 {
@@ -243,6 +245,54 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'tujuanKegiatanUtamas', 
             'jenisBarangs'
         , 'containerOptions'));
+    }
+
+    /**
+     * Bulk export selected tanda terima (non-LCL) to Excel
+     */
+    public function bulkExport(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        $fileName = 'tanda_terima_tanpa_surat_jalan_export_' . date('Ymd_His') . '.xlsx';
+
+        // If IDs provided, export selected
+        if (!empty($ids)) {
+            try {
+                return Excel::download(new TandaTerimaTanpaSuratJalanExport($ids), $fileName);
+            } catch (\Exception $e) {
+                Log::error('Error exporting selected Tanda Terima Tanpa Surat Jalan: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
+            }
+        }
+
+        // Otherwise export filtered dataset based on current filters (GET params)
+        $tipe = $request->get('tipe');
+        $search = $request->get('search');
+        $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
+
+        // Only support non-LCL filtered export from this controller
+        if ($tipe === 'lcl') {
+            return redirect()->route('tanda-terima-lcl.export', $request->query());
+        }
+
+        $query = TandaTerimaTanpaSuratJalan::query();
+        if (!empty($search)) {
+            $query->search($search);
+        }
+        if (!empty($start_date) && !empty($end_date)) {
+            $query->byDateRange($start_date, $end_date);
+        }
+
+        $items = $query->orderBy('created_at', 'desc')->pluck('id')->toArray();
+
+        try {
+            return Excel::download(new TandaTerimaTanpaSuratJalanExport($items), $fileName);
+        } catch (\Exception $e) {
+            Log::error('Error exporting filtered Tanda Terima Tanpa Surat Jalan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
+        }
     }
 
     /**

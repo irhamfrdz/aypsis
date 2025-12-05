@@ -29,6 +29,14 @@
                     <div class="text-lg font-semibold text-green-600">{{ $stats['selesai'] ?? 0 }}</div>
                     <div class="text-gray-500 text-xs">Selesai</div>
                 </div>
+                <div class="flex items-center gap-2">
+                    @can('tanda-terima-tanpa-surat-jalan-view')
+                        <a href="{{ route('tanda-terima-tanpa-surat-jalan.export', request()->query()) }}" class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow text-sm">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Download Excel
+                        </a>
+                    @endcan
+                </div>
             </div>
         </div>
 
@@ -244,7 +252,7 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $tandaTerima->tanggal_tanda_terima->format('d/m/Y') }}</div>
+                                        <div class="text-sm text-gray-900">{{ $tandaTerima->tanggal_tanda_terima->format('d/M/Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
@@ -297,7 +305,7 @@
                                             @if($tandaTerima->nomor_seal)
                                                 <div class="text-sm text-gray-900">{{ $tandaTerima->nomor_seal }}</div>
                                                 @if($tandaTerima->tanggal_seal)
-                                                    <div class="text-xs text-gray-500">{{ $tandaTerima->tanggal_seal->format('d/m/Y') }}</div>
+                                                    <div class="text-xs text-gray-500">{{ $tandaTerima->tanggal_seal->format('d/M/Y') }}</div>
                                                 @endif
                                             @else
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">

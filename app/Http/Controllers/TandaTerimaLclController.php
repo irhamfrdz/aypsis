@@ -467,7 +467,7 @@ class TandaTerimaLclController extends Controller
                 
                 fputcsv($file, [
                     $tandaTerima->nomor_tanda_terima,
-                    $tandaTerima->tanggal_tanda_terima->format('d/m/Y'),
+                    $tandaTerima->tanggal_tanda_terima->format('d/M/Y'),
                     $tandaTerima->no_surat_jalan_customer,
                     $tandaTerima->term->nama_status ?? '',
                     $tandaTerima->nama_penerima,

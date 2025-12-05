@@ -110,7 +110,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
      */
     private function formatExpiredDate(?\Carbon\Carbon $expiredDate): string
     {
-        return $expiredDate ? $expiredDate->format('d/m/y') : '';
+        return $expiredDate ? $expiredDate->format('d/M/Y') : '';
     }
 
     public function collection()

@@ -18,10 +18,37 @@
             </div>
             <div class="flex gap-2">
                 @can('master-kapal.view')
-                <a href="{{ route('master-kapal.export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" 
-                   class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-200 inline-flex items-center">
-                    <i class="fas fa-file-export mr-2"></i> Export CSV
-                </a>
+                <!-- Export Dropdown -->
+                <div class="relative">
+                    <button type="button" id="export-dropdown-button"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 inline-flex items-center"
+                            onclick="toggleExportDropdown()">
+                        <i class="fas fa-file-export mr-2"></i> Export Data
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <!-- Export Dropdown Menu -->
+                    <div id="export-dropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 hidden">
+                        <div class="py-1">
+                            <a href="{{ route('master-kapal.export', ['format' => 'excel']) }}{{ request()->getQueryString() ? '&' . request()->getQueryString() : '' }}"
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <svg class="w-4 h-4 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Export to Excel
+                            </a>
+                            <a href="{{ route('master-kapal.export', ['format' => 'csv']) }}{{ request()->getQueryString() ? '&' . request()->getQueryString() : '' }}"
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <svg class="w-4 h-4 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Export to CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 @endcan
                 @can('master-kapal.create')
                 <a href="{{ route('master-kapal.import-form') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200 inline-flex items-center">
@@ -316,6 +343,22 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    // Export dropdown toggle
+    function toggleExportDropdown() {
+        const dropdown = document.getElementById('export-dropdown');
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('export-dropdown');
+        const button = document.getElementById('export-dropdown-button');
+
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
 </script>
 @endpush
 
