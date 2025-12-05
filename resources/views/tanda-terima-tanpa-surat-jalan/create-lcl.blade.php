@@ -1524,21 +1524,15 @@
         // Initialize nomor kontainer dropdown
         initializeNomorKontainerDropdown();
         
-        // Ensure manual value is submitted if manual option chosen
+        // Handle manual nomor kontainer submission (optional)
         const createLclForm = document.querySelector('form');
         if (createLclForm) {
             createLclForm.addEventListener('submit', function(e) {
                 const hiddenInput = document.getElementById('nomor_kontainer');
                 const manualField = document.getElementById('nomor_kontainer_manual');
                 if (hiddenInput && hiddenInput.value === '__manual__') {
-                    if (!manualField || !manualField.value.trim()) {
-                        e.preventDefault();
-                        alert('Silakan isi nomor kontainer pada input manual.');
-                        (manualField || document.getElementById('nomorKontainerSearch')).focus();
-                        return false;
-                    }
-                    // Set hidden input to manual value
-                    hiddenInput.value = manualField.value.trim();
+                    // Set hidden input to manual value (can be empty as it's optional)
+                    hiddenInput.value = manualField && manualField.value.trim() ? manualField.value.trim() : '';
                 }
             });
         }
