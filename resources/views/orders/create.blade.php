@@ -634,23 +634,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedTipe = tipeKontainerSelect.value;
         
         if (selectedTipe === 'cargo') {
-            // Hide size and unit kontainer fields for cargo
-            sizeKontainerContainer.style.display = 'none';
+            // For cargo, show size kontainer but hide unit kontainer
+            sizeKontainerContainer.style.display = 'block';
             unitKontainerContainer.style.display = 'none';
             
-            // Remove required attributes and clear values
-            sizeKontainerSelect.removeAttribute('required');
+            // Size kontainer still required for cargo (for uang jalan calculation)
+            sizeKontainerSelect.setAttribute('required', 'required');
+            // Unit kontainer not required for cargo
             unitKontainerInput.removeAttribute('required');
-            sizeKontainerSelect.value = '';
-            unitKontainerInput.value = '';
+            unitKontainerInput.value = '1'; // Set default value of 1 for cargo
         } else {
-            // Show size and unit kontainer fields for other types
+            // Show both size and unit kontainer fields for other types
             sizeKontainerContainer.style.display = 'block';
             unitKontainerContainer.style.display = 'block';
             
-            // Add required attributes back
+            // Add required attributes back for both fields
             sizeKontainerSelect.setAttribute('required', 'required');
             unitKontainerInput.setAttribute('required', 'required');
+            
+            // Clear the default value if switching from cargo
+            if (unitKontainerInput.value === '1') {
+                unitKontainerInput.value = '';
+            }
         }
     }
 
@@ -1141,26 +1146,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const tipeKontainer = document.getElementById('tipe_kontainer').value;
             
             if (tipeKontainer === 'cargo') {
-                // For cargo, we don't need size_kontainer and unit_kontainer
-                // Set them to empty or remove them before submission
+                // For cargo, keep size_kontainer but ensure unit_kontainer has default value
                 const sizeKontainerSelect = document.getElementById('size_kontainer');
                 const unitKontainerInput = document.getElementById('unit_kontainer');
                 
                 if (sizeKontainerSelect) {
-                    sizeKontainerSelect.value = '';
-                    sizeKontainerSelect.removeAttribute('required');
-                    sizeKontainerSelect.removeAttribute('name'); // Don't send this field
+                    // Keep size_kontainer required for cargo (needed for uang jalan calculation)
+                    sizeKontainerSelect.setAttribute('name', 'size_kontainer');
+                    sizeKontainerSelect.setAttribute('required', 'required');
                 }
                 
                 if (unitKontainerInput) {
-                    unitKontainerInput.value = '';
-                    unitKontainerInput.removeAttribute('required');
-                    unitKontainerInput.removeAttribute('name'); // Don't send this field
+                    // Set unit to 1 for cargo if empty, and keep the field
+                    if (!unitKontainerInput.value) {
+                        unitKontainerInput.value = '1';
+                    }
+                    unitKontainerInput.setAttribute('name', 'unit_kontainer');
+                    unitKontainerInput.removeAttribute('required'); // Not required for cargo
                 }
                 
-                console.log('Cargo type selected - size and unit fields removed from submission');
+                console.log('Cargo type selected - size kontainer kept for uang jalan calculation, unit set to default');
             } else {
-                // For other types, ensure the fields have their names back
+                // For other types, ensure the fields have their names back and are required
                 const sizeKontainerSelect = document.getElementById('size_kontainer');
                 const unitKontainerInput = document.getElementById('unit_kontainer');
                 

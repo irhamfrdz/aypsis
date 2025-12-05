@@ -987,64 +987,50 @@ function checkSizeWarning() {
     }
 }
 
-function handleTipeKontainerVisibility() {
-    const tipeKontainer = document.querySelector('input[name="tipe_kontainer"]').value.toLowerCase();
-    const sizeContainer = document.getElementById('size_container');
-    const jumlahKontainerContainer = document.getElementById('jumlah_kontainer_container');
-    const sizeSelect = document.querySelector('select[name="size"]');
-    const jumlahKontainerInput = document.querySelector('input[name="jumlah_kontainer"]');
+function handleSupirCustomerSelection() {
+    const supirSelect = document.getElementById('supir-select');
+    const isSupplierCustomerInput = document.getElementById('is_supir_customer');
+    const supirCustomerDiv = document.getElementById('supir-customer-input');
+    const namaSupirCustomerInput = document.getElementById('nama-supir-customer');
+    const uangJalanInput = document.getElementById('uang-jalan-input');
 
-    if (tipeKontainer === 'cargo') {
-        // Hide size and jumlah kontainer fields for cargo
-        sizeContainer.style.display = 'none';
-        jumlahKontainerContainer.style.display = 'none';
-        
-        // Remove required attributes and clear values
-        sizeSelect.removeAttribute('required');
-        jumlahKontainerInput.removeAttribute('required');
-        sizeSelect.value = '';
-        jumlahKontainerInput.value = '';
-        
-        console.log('Cargo type detected - hiding size and jumlah kontainer fields');
-    } else {
-        // Show size and jumlah kontainer fields for other types
-        sizeContainer.style.display = 'block';
-        jumlahKontainerContainer.style.display = 'block';
-        
-        // Set default values if empty
-        if (!jumlahKontainerInput.value) {
-            jumlahKontainerInput.value = '1';
+    if (!supirSelect || !isSupplierCustomerInput || !supirCustomerDiv) return;
+
+    const selectedOption = supirSelect.options[supirSelect.selectedIndex];
+    const dataCustomer = selectedOption ? selectedOption.getAttribute('data-supir-customer') : '0';
+
+    if (dataCustomer === '1' || supirSelect.value === '__CUSTOMER__') {
+        // Mark as customer
+        isSupplierCustomerInput.value = '1';
+        // Show input for nama_supir_customer
+        if (supirCustomerDiv.classList.contains('hidden')) {
+            supirCustomerDiv.classList.remove('hidden');
         }
-        
-        console.log('Non-cargo type detected - showing size and jumlah kontainer fields');
+        // Disable uang_jalan and set to 0
+        if (uangJalanInput) {
+            uangJalanInput.value = '0';
+            uangJalanInput.setAttribute('readonly', 'readonly');
+            uangJalanInput.disabled = true;
+        }
+        // Clear supir-select value so we use nama_supir_customer instead when submitting
+        // But keep the select value so UI remains consistent
+    } else {
+        // Unset customer
+        isSupplierCustomerInput.value = '0';
+        // Hide input for nama_supir_customer
+        if (!supirCustomerDiv.classList.contains('hidden')) {
+            supirCustomerDiv.classList.add('hidden');
+            if (namaSupirCustomerInput) namaSupirCustomerInput.value = '';
+        }
+        // Re-enable uang_jalan
+        if (uangJalanInput) {
+            uangJalanInput.removeAttribute('readonly');
+            uangJalanInput.disabled = false;
+            // Optionally recalc uang jalan
+            updateUangJalan();
+        }
     }
 }
-
-// Handle form submission for cargo type
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const tipeKontainer = document.querySelector('input[name="tipe_kontainer"]').value.toLowerCase();
-            
-            if (tipeKontainer === 'cargo') {
-                // For cargo, remove size and jumlah_kontainer from submission if they're hidden
-                const sizeSelect = document.querySelector('select[name="size"]');
-                const jumlahKontainerInput = document.querySelector('input[name="jumlah_kontainer"]');
-                
-                if (sizeSelect && sizeSelect.parentElement.style.display === 'none') {
-                    sizeSelect.removeAttribute('name');
-                }
-                
-                if (jumlahKontainerInput && jumlahKontainerInput.parentElement.style.display === 'none') {
-                    jumlahKontainerInput.removeAttribute('name');
-                }
-                
-                console.log('Cargo form submission - removed hidden fields');
-            }
-        });
-    }
-});
 
 // Ensure is_supir_customer updated on submit for edge-case where change event didn't fire
 document.addEventListener('DOMContentLoaded', function() {
@@ -1114,7 +1100,6 @@ function handleReadonlyValidationErrors() {
 // Auto-populate uang jalan when page loads if order is selected
 @if($selectedOrder && $selectedOrder->tujuan_ambil)
 document.addEventListener('DOMContentLoaded', function() {
-    handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
     checkSizeWarning(); // Check size warning on load
     preventReadonlyFocus(); // Prevent focus on readonly fields
@@ -1126,51 +1111,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Auto-updating uang jalan for selected order');
     }, 500);
 });
-// Handle supir customer selection: show/hide nama_supir_customer and disable uang_jalan
-function handleSupirCustomerSelection() {
-    const supirSelect = document.getElementById('supir-select');
-    const isSupplierCustomerInput = document.getElementById('is_supir_customer');
-    const supirCustomerDiv = document.getElementById('supir-customer-input');
-    const namaSupirCustomerInput = document.getElementById('nama-supir-customer');
-    const uangJalanInput = document.getElementById('uang-jalan-input');
-
-    if (!supirSelect || !isSupplierCustomerInput || !supirCustomerDiv) return;
-
-    const selectedOption = supirSelect.options[supirSelect.selectedIndex];
-    const dataCustomer = selectedOption ? selectedOption.getAttribute('data-supir-customer') : '0';
-
-    if (dataCustomer === '1' || supirSelect.value === '__CUSTOMER__') {
-        // Mark as customer
-        isSupplierCustomerInput.value = '1';
-        // Show input for nama_supir_customer
-        if (supirCustomerDiv.classList.contains('hidden')) {
-            supirCustomerDiv.classList.remove('hidden');
-        }
-        // Disable uang_jalan and set to 0
-        if (uangJalanInput) {
-            uangJalanInput.value = '0';
-            uangJalanInput.setAttribute('readonly', 'readonly');
-            uangJalanInput.disabled = true;
-        }
-        // Clear supir-select value so we use nama_supir_customer instead when submitting
-        // But keep the select value so UI remains consistent
-    } else {
-        // Unset customer
-        isSupplierCustomerInput.value = '0';
-        // Hide input for nama_supir_customer
-        if (!supirCustomerDiv.classList.contains('hidden')) {
-            supirCustomerDiv.classList.add('hidden');
-            if (namaSupirCustomerInput) namaSupirCustomerInput.value = '';
-        }
-        // Re-enable uang_jalan
-        if (uangJalanInput) {
-            uangJalanInput.removeAttribute('readonly');
-            uangJalanInput.disabled = false;
-            // Optionally recalc uang jalan
-            updateUangJalan();
-        }
-    }
-}
 
 // Initial run to update UI if old('supir') == '__CUSTOMER__'
 document.addEventListener('DOMContentLoaded', function() {
@@ -1178,11 +1118,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 @else
 document.addEventListener('DOMContentLoaded', function() {
-    handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
     checkSizeWarning(); // Check size warning on load
     preventReadonlyFocus(); // Prevent focus on readonly fields
     handleReadonlyValidationErrors(); // Handle validation errors for readonly fields
+    handleSupirCustomerSelection(); // Handle supir customer selection
 });
 @endif
 </script>
