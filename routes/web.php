@@ -2715,6 +2715,17 @@ Route::middleware(['auth'])->group(function() {
          ->name('tagihan-cat.destroy')
          ->middleware('can:tagihan-cat-delete');
 
+    // OB (Operasional Bongkaran) routes
+    Route::get('ob', [\App\Http\Controllers\ObController::class, 'index'])
+         ->name('ob.index')
+         ->middleware('can:ob-view');
+    Route::get('ob/get-voyage-by-kapal', [\App\Http\Controllers\ObController::class, 'getVoyageByKapal'])
+         ->name('ob.get-voyage-by-kapal')
+         ->middleware('can:ob-view');
+    Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'selectShipVoyage'])
+         ->name('ob.select')
+         ->middleware('can:ob-view');
+
     // Tagihan OB routes
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
          ->name('tagihan-ob.index')
@@ -2778,6 +2789,20 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pranota-ob/{pranotaOb}/approve', [\App\Http\Controllers\PranotaObController::class, 'approve'])
          ->name('pranota-ob.approve')
          ->middleware('can:pranota-ob-approve');
+
+    // OB Main Module routes (Ship and Voyage Selection)
+    Route::get('ob', [\App\Http\Controllers\ObController::class, 'index'])
+         ->name('ob.index')
+         ->middleware('can:ob-view');
+    Route::get('ob/get-voyages', [\App\Http\Controllers\ObController::class, 'getVoyages'])
+         ->name('ob.get-voyages')
+         ->middleware('can:ob-view');
+    Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'select'])
+         ->name('ob.select')
+         ->middleware('can:ob-view');
+    Route::get('ob/dashboard', [\App\Http\Controllers\ObController::class, 'dashboard'])
+         ->name('ob.dashboard')
+         ->middleware('can:ob-view');
     Route::post('pranota-ob/{pranotaOb}/submit', [\App\Http\Controllers\PranotaObController::class, 'submit'])
          ->name('pranota-ob.submit')
          ->middleware('can:pranota-ob-update');

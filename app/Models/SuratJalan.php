@@ -74,6 +74,7 @@ class SuratJalan extends Model
         'tanggal_surat_jalan' => 'date',
         'tanggal_muat' => 'date',
         'tanggal_tanda_terima' => 'date',
+        'tanggal_checkpoint' => 'date',
         'input_date' => 'datetime',
         'waktu_berangkat' => 'datetime',
         'uang_jalan' => 'decimal:2',
@@ -91,6 +92,7 @@ class SuratJalan extends Model
         'tanggal_surat_jalan',
         'tanggal_muat',
         'tanggal_tanda_terima',
+        'tanggal_checkpoint',
         'input_date',
         'waktu_berangkat',
     ];

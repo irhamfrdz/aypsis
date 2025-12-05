@@ -64,8 +64,8 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         $rows = $prospeks->map(function($p) {
             return [
                 $p->no_surat_jalan,
-                $p->tanggal ? $p->tanggal->format('d/m/Y') : '-',
-                ($p->suratJalan && $p->suratJalan->tanggal_checkpoint) ? $p->suratJalan->tanggal_checkpoint->format('d/m/Y') : '-',
+                $p->tanggal ? (is_string($p->tanggal) ? \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') : $p->tanggal->format('d/m/Y')) : '-',
+                ($p->suratJalan && $p->suratJalan->tanggal_checkpoint) ? (is_string($p->suratJalan->tanggal_checkpoint) ? \Carbon\Carbon::parse($p->suratJalan->tanggal_checkpoint)->format('d/m/Y') : $p->suratJalan->tanggal_checkpoint->format('d/m/Y')) : '-',
                 $p->nama_supir,
                 $p->barang,
                 $p->pt_pengirim,

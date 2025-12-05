@@ -149,11 +149,11 @@
                                 {{ $prospek->no_surat_jalan ?? '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $prospek->tanggal ? $prospek->tanggal->format('d/m/Y') : '-' }}
+                                {{ $prospek->tanggal ? (is_string($prospek->tanggal) ? \Carbon\Carbon::parse($prospek->tanggal)->format('d/m/Y') : $prospek->tanggal->format('d/m/Y')) : '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($prospek->suratJalan && $prospek->suratJalan->tanggal_checkpoint)
-                                    {{ \Carbon\Carbon::parse($prospek->suratJalan->tanggal_checkpoint)->format('d/m/Y') }}
+                                    {{ is_string($prospek->suratJalan->tanggal_checkpoint) ? \Carbon\Carbon::parse($prospek->suratJalan->tanggal_checkpoint)->format('d/m/Y') : $prospek->suratJalan->tanggal_checkpoint->format('d/m/Y') }}
                                 @else
                                     -
                                 @endif
