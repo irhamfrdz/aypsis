@@ -556,7 +556,12 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Print SJ function - Print directly from BL data
+// Print SJ function - Print surat jalan bongkaran
+function printSJBongkaran(suratJalanId) {
+    // Open print page in new window/tab
+    const printUrl = `/surat-jalan-bongkaran/${suratJalanId}/print`;
+    window.open(printUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+}
 
 // Print BA function - Print Berita Acara directly from BL data
 

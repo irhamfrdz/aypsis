@@ -3,173 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Jalan Bongkaran - Blank</title>
+    <title>Surat Jalan Bongkaran</title>
     <style>
-        /* File cleared for re-measurement. Add styles as needed. */
-        html, body { margin: 0; padding: 0; }
-        .container { width: 100%; height: 100%; position: relative; }
-
-        /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
+        @page {
+            size: 165mm 215mm;
+            margin: 0mm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: white;
+            font-size: 14px; /* increased base font-size for print */
+        }
+        
+        .container {
+            width: 165mm;
+            height: 215mm;
+            margin: 0;
+            padding: 20mm 5mm 5mm 5mm;  /* Menambah padding top untuk memberi ruang tanggal */
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        /* Header Section */
         .date-header {
             position: absolute;
-            top: 1.25cm; /* 1.25cm dari atas */
-            left: 10cm;  /* 10cm dari kiri */
+            top: 15mm;  /* 1.5cm dari atas */
+            left: 100mm;  /* 10cm dari kiri */
             font-size: 16px;
             font-weight: bold;
         }
-
-        /* Nomor Voyage: posisi absolute sesuai permintaan */
-        .no-voyage {
+        
+        /* Nomor Surat Jalan */
+        .no-surat-jalan {
             position: absolute;
-            top: 5cm;    /* 5cm dari atas */
-            left: 3.5cm;  /* 3.5cm dari kiri */
-            font-size: 14px;
+            top: 35mm;  /* 3.5cm dari atas */
+            left: 100mm;  /* 10cm dari kiri */
+            font-size: 16px;
             font-weight: bold;
         }
-
-        /* Nama Kapal: posisi absolute sesuai permintaan */
-        .nama-kapal {
-            position: absolute;
-            top: 6cm;    /* 6cm dari atas */
-            left: 3.5cm;  /* 3.5cm dari kiri */
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        /* Nomor Plat: posisi absolute sesuai permintaan */
+        
+        /* No Plat Section */
         .no-plat {
             position: absolute;
-            top: 4.5cm; /* 4.5cm dari atas */
-            left: 8cm;   /* 8cm dari kiri */
+            top: 55mm;  /* 5.5cm dari atas */
+            left: 85mm; /* 8.5cm dari kiri */
             font-size: 16px;
             font-weight: bold;
         }
-
-        /* Nomor BL: posisi absolute sesuai permintaan */
-        .no-bl {
-            position: absolute;
-            top: 4.25cm; /* 4.25cm dari atas */
-            left: 13cm;   /* 13cm dari kiri */
-            font-size: 14px;
-            font-weight: bold;
+        
+        /* Tabel 3 Kolom */
+        .table-section {
+            margin-bottom: 15mm;
         }
-        /* Nomor Kontainer: posisi absolute sesuai permintaan */
-        .no-kontainer {
-            position: absolute;
-            top: 9cm; /* 9cm dari atas */
-            left: 1cm; /* 1cm dari kiri */
-            font-size: 16px;
-            font-weight: bold;
+        
+        .table-row {
+            display: flex;
+            margin-bottom: 7mm;
         }
-        /* Jenis Pengiriman: posisi absolute */
-        .jenis-pengiriman-abs {
-            position: absolute;
-            top: 9cm; /* 9cm dari atas */
-            left: 6cm; /* 6cm dari kiri */
-            font-size: 16px;
+        
+        .col {
+            width: 50mm;
+            font-size: 13px;
             font-weight: bold;
+            text-align: left;
+            padding-right: 5mm;
         }
-        /* Nama Barang: posisi absolute sesuai permintaan */
-        .nama-barang-abs {
+        
+        /* Tipe Kontainer dengan posisi absolut */
+        .tipe-kontainer {
             position: absolute;
-            top: 9cm; /* 9cm dari atas */
-            left: 10.5cm; /* 10.5cm dari kiri */
+            top: 90mm;  /* 9cm dari atas */
+            left: 60mm; /* 6cm dari kiri */
             font-size: 17px;
             font-weight: bold;
         }
-        /* Seal number: posisi absolute sesuai permintaan */
-        .seal-abs {
+        
+        /* Nama Pengirim dengan posisi absolut */
+        .nama-pengirim {
             position: absolute;
-            top: 11.5cm; /* 11.5cm dari atas */
-            left: 1cm; /* 1cm dari kiri */
-            font-size: 24px;
+            top: 115mm;  /* 11.5cm dari atas */
+            left: 110mm; /* 11cm dari kiri */
+            font-size: 17px;
             font-weight: bold;
         }
-        /* Pelabuhan tujuan: posisi absolute sesuai permintaan */
-        .pelabuhan-abs {
+        
+        /* Nama Barang dengan posisi absolut */
+        .nama-barang {
             position: absolute;
-            top: 15cm; /* 15cm dari atas */
-            left: 1cm; /* 1cm dari kiri */
+            top: 90mm;  /* 9cm dari atas */
+            left: 110mm; /* 11cm dari kiri */
+            font-size: 17px;
+            font-weight: bold;
+        }
+        
+        /* Tujuan Ambil dengan posisi absolut */
+        .tujuan-ambil {
+            position: absolute;
+            top: 140mm;  /* 14cm dari atas */
+            left: 110mm; /* 11cm dari kiri */
+            font-size: 17px;
+            font-weight: bold;
+        }
+        
+        /* Nomor Seal dengan posisi absolut */
+        .nomor-seal {
+            position: absolute;
+            top: 140mm;  /* 14cm dari atas */
+            left: 10mm;  /* 1cm dari kiri */
+            font-size: 24px; /* Increased from 17px */
+            font-weight: bold;
+        }
+        
+        /* No. Voyage at top-left */
+        .no-voyage {
+            position: absolute;
+            top: 45mm; /* 4.5cm */
+            left: 35mm; /* 3.5cm */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        /* Tujuan Kirim dengan posisi absolut */
+        .tujuan-kirim {
+            position: absolute;
+            top: 110mm;  /* 11cm dari atas */
+            left: 10mm;  /* 1cm dari kiri */
+            font-size: 17px;
+            font-weight: bold;
+        }
+        
+        .col-center {
+            text-align: center;
+        }
+        
+        /* Baris SEAL, UKURAN, PENGIRIM */
+        .seal-row {
+            display: flex;
+            margin-bottom: 15mm;
+        }
+        
+        .seal-col {
+            width: 50mm;
+            font-size: 16px;
+            font-weight: bold;
+            padding-right: 5mm;
+        }
+        
+        .ukuran-col {
+            width: 50mm;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Times New Roman', serif;
+            padding-right: 5mm;
+        }
+        
+        .pengirim-col {
+            width: 50mm;
             font-size: 16px;
             font-weight: bold;
         }
-        /* Pengirim: posisi absolute (atas 11cm, kiri 10.5cm) */
-        .pengirim-abs {
+        
+        /* Baris Bawah: Tujuan */
+        .bottom-row {
+            display: flex;
+            margin-bottom: 10mm;
+        }
+        
+        /* TTD Section */
+        .ttd-section {
             position: absolute;
-            top: 11cm; /* 11cm dari atas */
-            left: 10.5cm; /* 10.5cm dari kiri */
-            font-size: 14px;
+            bottom: 15mm;
+            left: 5mm;
+            right: 5mm;
+        }
+        
+        .ttd-row {
+            display: flex;
+            text-align: center;
+            margin-bottom: 5mm;
+        }
+        
+        .ttd-col {
+            width: 50mm;
+            font-size: 17px;
             font-weight: bold;
         }
-        /* Tujuan Pengambilan: posisi absolute (atas 14.5cm, kiri 10.5cm) */
-        .tujuan-pengambilan-abs {
+        
+        .supir-name {
             position: absolute;
-            top: 14.5cm; /* 14.5cm dari atas */
-            left: 10.5cm; /* 10.5cm dari kiri */
-            font-size: 14px;
+            top: 190mm;  /* 19cm dari atas */
+            left: 60mm;  /* 6cm dari kiri */
+            text-align: center;
+            font-size: 17px;
             font-weight: bold;
+        }
+        
+        @media print {
+            @page { 
+                margin: 0 !important; 
+                size: 165mm 215mm !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background: white !important;
+                color: black !important;
+            }
+            
+            .container {
+                box-shadow: none !important;
+                padding: 20mm 5mm 5mm 5mm !important;  /* Konsisten dengan padding non-print */
+                page-break-inside: avoid !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+
+            /* Print-specific override for nomor-seal to ensure clarity on print */
+            .nomor-seal {
+                font-size: 26px !important;
+                font-weight: bold !important;
+            }
+            
+            /* Aggressively hide browser headers/footers */
+            @page { margin: 0 !important; }
+            @page :first { margin-top: 0 !important; }
+            @page :left { margin: 0 !important; }
+            @page :right { margin: 0 !important; }
+            
+            /* Hide print instructions when printing */
+            div[style*="background: #f0f0f0"] {
+                display: none !important;
+            }
+            
+            /* Hide all possible header/footer elements */
+            header, .header, .print-header, 
+            footer, .footer:not(.ttd-section .ttd-col), .print-footer,
+            nav, .nav, .navigation,
+            .page-header, .page-footer { 
+                display: none !important; 
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Prevent page breaks */
+            * { 
+                page-break-inside: avoid !important;
+                -webkit-region-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
         }
     </style>
-    
 </head>
 <body>
-    <!-- File intentionally cleared for re-measurement -->
+    <!-- Print Instructions (only visible on screen) -->
+    <div style="display: block; padding: 10px; background: #f0f0f0; margin-bottom: 10px; font-size: 14px; border: 1px solid #ccc;">
+        <strong>PETUNJUK PRINT:</strong> Untuk menghilangkan URL dan nomor halaman, pastikan <strong>"Headers and footers"</strong> dinonaktifkan di pengaturan print browser (Ctrl+P → More settings → hapus centang "Headers and footers")
+    </div>
+
     <div class="container">
-        <!-- Tanggal Surat Jalan (posisi top 1.25cm, left 10cm) -->
+        <!-- SESI 1: HEADER -->
         <div class="date-header">
             {{ $suratJalanBongkaran->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalanBongkaran->tanggal_surat_jalan)->format('d-M-Y') : '' }}
         </div>
-
-        <!-- Nomor Voyage (posisi top 5cm, left 3.5cm) -->
+        
+        <!-- NO VOYAGE -->
         <div class="no-voyage">
-            {{ strtoupper($suratJalanBongkaran->no_voyage ?? '') }}
-        </div>
-
-        <!-- Nama Kapal (posisi top 6cm, left 3.5cm) -->
-        <div class="nama-kapal">
-            {{-- Print ship name property instead of the whole model (which renders JSON) --}}
-            {{ strtoupper(optional($suratJalanBongkaran->kapal)->nama_kapal ?? ($suratJalanBongkaran->nama_kapal ?? '')) }}
+            {{ $suratJalanBongkaran->no_voyage ?? '' }}
         </div>
         
-        <!-- Nomor Plat (posisi top 4.5cm, left 8cm) -->
+        <!-- NOMOR SURAT JALAN removed -->
+        
+        <!-- SESI 2: NO PLAT KENDARAAN -->
         <div class="no-plat">
-            {{ strtoupper($suratJalanBongkaran->no_plat ?? '') }}
+            {{ $suratJalanBongkaran->no_plat ? strtoupper($suratJalanBongkaran->no_plat) : '' }}
         </div>
         
-        <!-- Nomor BL (posisi top 4.25cm, left 13cm) -->
-        <div class="no-bl">
-            {{ strtoupper($suratJalanBongkaran->bl->nomor_bl ?? $suratJalanBongkaran->no_bl ?? $suratJalanBongkaran->noBillOfLading ?? '') }}
+        <!-- TIPE KONTAINER dengan posisi absolut -->
+        <div class="tipe-kontainer">
+            {{ $suratJalanBongkaran->size ? strtoupper($suratJalanBongkaran->size . 'FT') : '' }}
         </div>
-        <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
-        <div class="no-kontainer">
-            {{ strtoupper($suratJalanBongkaran->no_kontainer ?? '') }}
+        
+        <!-- NAMA PENGIRIM dengan posisi absolut -->
+        <div class="nama-pengirim">
+            {{ $suratJalanBongkaran->pengirim ? strtoupper($suratJalanBongkaran->pengirim) : '' }}
         </div>
-        <!-- Jenis Pengiriman (posisi top 9cm, left 6cm) -->
-        <div class="jenis-pengiriman-abs">
-            {{ $suratJalanBongkaran->jenis_pengiriman ? strtoupper($suratJalanBongkaran->jenis_pengiriman) : '' }}
+        
+        <!-- NAMA BARANG dengan posisi absolut -->
+        <div class="nama-barang">
+            {{ $suratJalanBongkaran->jenis_barang ? strtoupper($suratJalanBongkaran->jenis_barang) : '' }}
         </div>
-        <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
-        <div class="nama-barang-abs">
-            {{ $suratJalanBongkaran->jenis_barang ? strtoupper($suratJalanBongkaran->jenis_barang) : ($suratJalanBongkaran->order && $suratJalanBongkaran->order->jenisBarang ? strtoupper($suratJalanBongkaran->order->jenisBarang->nama) : '') }}
+        
+        <!-- TUJUAN AMBIL dengan posisi absolut -->
+        <div class="tujuan-ambil">
+            {{ $suratJalanBongkaran->tujuan_pengambilan ? strtoupper($suratJalanBongkaran->tujuan_pengambilan) : '' }}
         </div>
-        <!-- Pengirim (posisi top 11cm, left 10.5cm) -->
-        <div class="pengirim-abs">
-            {{ strtoupper($suratJalanBongkaran->pengirim ?? ($suratJalanBongkaran->order && $suratJalanBongkaran->order->pengirim ? optional($suratJalanBongkaran->order->pengirim)->nama_pengirim : '')) }}
-        </div>
-        <!-- Tujuan Pengambilan (posisi top 14.5cm, left 10.5cm) -->
-        <div class="tujuan-pengambilan-abs">
-            {{ strtoupper($suratJalanBongkaran->tujuan_pengambilan ?? ($suratJalanBongkaran->order && $suratJalanBongkaran->order->tujuanAmbil ? optional($suratJalanBongkaran->order->tujuanAmbil)->ke : '')) }}
-        </div>
-        <!-- Seal number (posisi top 11.5cm, left 1cm) -->
-        <div class="seal-abs">
+        
+        <!-- NOMOR SEAL dengan posisi absolut -->
+        <div class="nomor-seal">
             {{ $suratJalanBongkaran->no_seal ? strtoupper($suratJalanBongkaran->no_seal) : '' }}
         </div>
-        <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) -->
-        <div class="pelabuhan-abs">
-            {{ $suratJalanBongkaran->pelabuhan_tujuan ? strtoupper($suratJalanBongkaran->pelabuhan_tujuan) : ($suratJalanBongkaran->tujuan_pengiriman ? strtoupper($suratJalanBongkaran->tujuan_pengiriman) : '') }}
+        
+        <!-- TUJUAN KIRIM dengan posisi absolut -->
+        <div class="tujuan-kirim">
+            {{ $suratJalanBongkaran->tujuan_pengiriman ? strtoupper($suratJalanBongkaran->tujuan_pengiriman) : '' }}
         </div>
-        <!-- Add layout elements here while you remeasure the print layout -->
+        
+        <!-- SESI 3: TABEL BARANG (3 Kolom) -->
+        <div class="table-section">
+            <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Kosong (Jenis Barang dipindah) -->
+            <div class="table-row">
+                <div class="col">{{ strtoupper($suratJalanBongkaran->no_kontainer ?? '') }}</div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <!-- Baris 2 & 3: Kosong -->
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <!-- Baris 4: KOSONG (Seal dipindah ke posisi absolut) | KOSONG | KOSONG (Pengirim dipindah ke posisi absolut) -->
+            <div class="seal-row">
+                <div class="seal-col"></div>
+                <div class="ukuran-col"></div>
+                <div class="pengirim-col"></div>
+            </div>
+            
+            <!-- Baris 5, 6, 7: Kosong -->
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <!-- Baris 8: KOSONG (Tujuan Kirim dipindah ke posisi absolut) | Kosong | Kosong (Tujuan Ambil dipindah ke posisi absolut) -->
+            <div class="bottom-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+        </div>
+        
+        <!-- NAMA SUPIR dengan posisi absolut -->
+        <div class="supir-name">
+            {{ $suratJalanBongkaran->supir ? strtoupper($suratJalanBongkaran->supir) : '' }}
+        </div>
+        
+        <!-- SESI 4: TTD AREA -->
+        <div class="ttd-section">
+            <div class="ttd-row">
+                <div class="ttd-col"></div>
+                <div class="ttd-col"></div>
+                <div class="ttd-col"></div>
+            </div>
+        </div>
     </div>
     
+    <script>
+        // Aggressive clean print function
+        window.onload = function() {
+            // Remove title completely
+            document.title = '';
+            
+            // Remove any meta info
+            var metas = document.getElementsByTagName('meta');
+            for(var i = 0; i < metas.length; i++) {
+                if(metas[i].name === 'description' || metas[i].name === 'keywords') {
+                    metas[i].remove();
+                }
+            }
+            
+            // Print with delay
+            setTimeout(function() {
+                // Try to override browser print settings
+                try {
+                    var printSettings = {
+                        silent: true,
+                        printBackground: false,
+                        deviceName: ''
+                    };
+                } catch(e) {}
+                
+                window.print();
+            }, 300);
+        }
+        
+        // Clean up before print
+        window.addEventListener('beforeprint', function() {
+            document.title = '';
+            
+            // Hide any remaining elements
+            var elementsToHide = ['header', 'nav', '.header', '.nav'];
+            elementsToHide.forEach(function(selector) {
+                var elements = document.querySelectorAll(selector);
+                elements.forEach(function(el) {
+                    el.style.display = 'none';
+                });
+            });
+        });
+        
+        // Clean up after print
+        window.addEventListener('afterprint', function() {
+            document.title = '';
+        });
+    </script>
 </body>
 </html>
