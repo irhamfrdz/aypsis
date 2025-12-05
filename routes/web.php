@@ -2797,9 +2797,6 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob/get-voyages', [\App\Http\Controllers\ObController::class, 'getVoyages'])
          ->name('ob.get-voyages')
          ->middleware('can:ob-view');
-    Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'select'])
-         ->name('ob.select')
-         ->middleware('can:ob-view');
     Route::get('ob/dashboard', [\App\Http\Controllers\ObController::class, 'dashboard'])
          ->name('ob.dashboard')
          ->middleware('can:ob-view');

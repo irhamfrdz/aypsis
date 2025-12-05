@@ -58,121 +58,49 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+        public function index(Request $request)
     {
-        // Redirect to select ship if no kapal and voyage selected
-        if (!$request->filled('nama_kapal') || !$request->filled('no_voyage')) {
-            return redirect()->route('surat-jalan-bongkaran.select-ship');
-        }
-
-        $mode = $request->input('mode', 'bl'); // Default to BL mode
-        $selectedKapal = $request->nama_kapal;
-        $selectedVoyage = $request->no_voyage;
+        // Show Surat Jalan Bongkaran data
+        $query = SuratJalanBongkaran::query();
         
-        if ($mode === 'surat_jalan') {
-            // Show Surat Jalan Bongkaran data
-            $query = SuratJalanBongkaran::query();
-            
-            // Filter berdasarkan kapal dan voyage
-            $query->where('nama_kapal', $selectedKapal)
-                  ->where('no_voyage', $selectedVoyage);
-            
-            // Search in surat jalan bongkaran
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                      ->orWhere('no_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('jenis_barang', 'like', "%{$search}%")
-                      ->orWhere('supir', 'like', "%{$search}%")
-                      ->orWhere('no_plat', 'like', "%{$search}%");
-                });
-            }
-            
-            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(25);
-            
-            // Get data for modal form
-            $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
-                                                    ->whereNull('tanggal_berhenti')
-                                                    ->orderBy('nama_panggilan')
-                                                    ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
-            
-            $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-                                                  ->whereNull('tanggal_berhenti')
-                                                  ->orderBy('nama_panggilan')
-                                                  ->get(['id', 'nama_lengkap', 'nama_panggilan']);
-            
-            $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
-                                                                   ->orderBy('ke')
-                                                                   ->get();
-            
-            $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                             ->where('status', 'aktif')
-                                             ->orderBy('nama_kegiatan')
-                                             ->get();
-
-            $terms = \App\Models\Term::orderBy('kode')->get();
-
-            return view('surat-jalan-bongkaran.index', compact('suratJalans', 'selectedKapal', 'selectedVoyage', 'mode', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
-        } else {
-            // Default BL mode
-            $query = Bl::query();
-
-            // Filter berdasarkan kapal (required)
-            $query->where('nama_kapal', $selectedKapal);
-
-            // Filter berdasarkan voyage (required)
-            $query->where('no_voyage', $selectedVoyage);
-
-            // Exclude BL dengan barang empty
-            $query->where(function($q) {
-                $q->whereNotNull('nama_barang')
-                  ->where('nama_barang', '!=', '')
-                  ->where('nama_barang', 'not like', '%empty%')
-                  ->where('nama_barang', 'not like', '%kosong%')
-                  ->where('nama_barang', '!=', '-');
+        // Search in surat jalan bongkaran
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('no_seal', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
             });
-
-            // Search
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('nomor_bl', 'like', "%{$search}%")
-                      ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('nama_barang', 'like', "%{$search}%")
-                      ->orWhere('term', 'like', "%{$search}%")
-                      ->orWhere('penerima', 'like', "%{$search}%");
-                });
-            }
-
-            $bls = $query->with('suratJalanBongkaran')->orderBy('created_at', 'desc')->paginate(25);
-
-            // Get data for modal form
-            $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
-                                                    ->whereNull('tanggal_berhenti')
-                                                    ->orderBy('nama_panggilan')
-                                                    ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
-            
-            $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-                                                  ->whereNull('tanggal_berhenti')
-                                                  ->orderBy('nama_panggilan')
-                                                  ->get(['id', 'nama_lengkap', 'nama_panggilan']);
-            
-            $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
-                                                                   ->orderBy('ke')
-                                                                   ->get();
-            
-            $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                             ->where('status', 'aktif')
-                                             ->orderBy('nama_kegiatan')
-                                             ->get();
-
-            $terms = \App\Models\Term::orderBy('kode')->get();
-
-            return view('surat-jalan-bongkaran.index', compact('bls', 'selectedKapal', 'selectedVoyage', 'mode', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
         }
+        
+        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(25);
+        
+        // Get data for modal form
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
+                                                ->whereNull('tanggal_berhenti')
+                                                ->orderBy('nama_panggilan')
+                                                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
+        
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
+                                              ->whereNull('tanggal_berhenti')
+                                              ->orderBy('nama_panggilan')
+                                              ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+        
+        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
+                                                               ->orderBy('ke')
+                                                               ->get();
+        
+        $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                         ->where('status', 'aktif')
+                                         ->orderBy('nama_kegiatan')
+                                         ->get();
+
+        $terms = \App\Models\Term::orderBy('kode')->get();
+
+        return view('surat-jalan-bongkaran.index', compact('suratJalans', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
     }
 
     /**
@@ -557,6 +485,11 @@ class SuratJalanBongkaranController extends Controller
         }
         $validatedData['input_by'] = Auth::id();
 
+        // Ensure uang_jalan_nominal has a default value if not provided
+        if (!isset($validatedData['uang_jalan_nominal'])) {
+            $validatedData['uang_jalan_nominal'] = null;
+        }
+
         try {
             DB::beginTransaction();
 
@@ -844,3 +777,4 @@ class SuratJalanBongkaranController extends Controller
         ]);
     }
 }
+

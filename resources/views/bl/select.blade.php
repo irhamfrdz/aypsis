@@ -27,7 +27,7 @@
                     <select id="kapal_id" name="kapal_id" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
                         <option value="">--Pilih Kapal--</option>
                         @foreach($masterKapals as $kapal)
-                            <option value="{{ $kapal->id }}">{{ $kapal->nama_kapal }} {{ $kapal->nickname ? '('.$kapal->nickname.')' : '' }}</option>
+                            <option value="{{ $kapal->nama_kapal }}">{{ $kapal->nama_kapal }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -56,22 +56,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const goToIndexFilteredBtn = document.getElementById('goToIndexFiltered');
 
     kapalSelect.addEventListener('change', function() {
-        const kapalId = this.value;
+        const namaKapal = this.value;
         voyageSelect.innerHTML = '<option value="">Loading...</option>';
         voyageSelect.disabled = true;
 
-        if (!kapalId) {
+        if (!namaKapal) {
             voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
             voyageSelect.disabled = false;
             return;
         }
 
-        // Ambil nama kapal dari option yang dipilih
-        const kapalName = kapalSelect.options[kapalSelect.selectedIndex].text.split(' (')[0];
-        
-        console.log('Nama kapal dipilih:', kapalName);
+        console.log('Nama kapal dipilih:', namaKapal);
 
-        fetch(`{{ route('bl.get-voyage-by-kapal') }}?nama_kapal=${encodeURIComponent(kapalName)}`, {
+        fetch(`{{ route('bl.get-voyage-by-kapal') }}?nama_kapal=${encodeURIComponent(namaKapal)}`, {
             method: 'GET',
             headers: { 
                 'Accept': 'application/json',
@@ -107,19 +104,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Go to index with filter
     goToIndexFilteredBtn.addEventListener('click', function() {
-        const kapalId = kapalSelect.value;
+        const namaKapal = kapalSelect.value;
         const voyage = voyageSelect.value;
 
-        if (!kapalId || !voyage) {
+        if (!namaKapal || !voyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
             return;
         }
-
-        const kapalName = kapalSelect.options[kapalSelect.selectedIndex].text.split(' (')[0];
         
         // Redirect to BL index with filter parameters
         const url = new URL('{{ route("bl.index") }}', window.location.origin);
-        url.searchParams.set('nama_kapal', kapalName);
+        url.searchParams.set('nama_kapal', namaKapal);
         url.searchParams.set('no_voyage', voyage);
         
         window.location.href = url.toString();

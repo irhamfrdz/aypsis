@@ -1,53 +1,304 @@
 @extends('layouts.app')
 
-@section('title', 'OB - Pilih Kapal & Voyage')
-@section('page_title', 'OB - Pilih Kapal & Voyage')
+@section('title', 'OB - Data Naik Kapal')
+@section('page_title', 'OB - Data Naik Kapal')
 
 @section('content')
-    <div class="bg-white shadow-lg rounded-lg p-6 max-w-6xl mx-auto">
-        <div class="mb-6">
-            <h1 class="text-xl font-bold text-gray-900 mb-2">OB - Ocean Bunker</h1>
-            <p class="text-sm text-gray-600">Pilih kapal dan voyage untuk melanjutkan ke modul OB</p>
+<div class="container mx-auto px-4 py-6">
+    {{-- Header --}}
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-ship mr-3 text-orange-600 text-2xl"></i>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
+                    <p class="text-gray-600">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
+                </a>
+                <a href="{{ route('tagihan-ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-file-invoice mr-2"></i>Tagihan OB
+                </a>
+                <a href="{{ route('pranota-ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-clipboard-list mr-2"></i>Pranota OB
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- Alert Messages --}}
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <i class="fas fa-check-circle mr-2"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    {{-- Statistics Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
+                    <i class="fas fa-boxes text-2xl text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Kontainer</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalKontainer }}</p>
+                </div>
+            </div>
         </div>
 
-        @if(session('success'))
-            <div class="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    {{ session('success') }}
+        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+                    <i class="fas fa-check text-2xl text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Sudah OB</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $sudahOB }}</p>
                 </div>
             </div>
-        @endif
+        </div>
 
-        @if(session('error'))
-            <div class="mb-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                    </svg>
-                    {{ session('error') }}
+        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-yellow-100 rounded-full p-3">
+                    <i class="fas fa-clock text-2xl text-yellow-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Belum OB</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $belumOB }}</p>
                 </div>
             </div>
-        @endif
+        </div>
+    </div>
 
-        <!-- Ship and Voyage Selection Form -->
-        <form id="selectionForm" action="{{ route('ob.select') }}" method="POST">
-            @csrf
+    {{-- Filter Section --}}
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <form method="GET" action="{{ route('ob.index') }}">
+            <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
+            <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
             
-            <!-- Ship Selection -->
-            <div class="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
-                <h3 class="text-lg font-semibold text-blue-900 mb-4">1. Pilih Kapal</h3>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div>
-                        <label for="ship_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Kapal <span class="text-red-500">*</span>
-                        </label>
-                        <select name="ship_id" id="ship_id" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">-- Pilih Kapal --</option>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {{-- Search --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                    <input type="text"
+                           name="search"
+                           value="{{ request('search') }}"
+                           placeholder="No kontainer, seal, barang..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                {{-- Status OB Filter --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status OB</label>
+                    <select name="status_ob" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="sudah" {{ request('status_ob') == 'sudah' ? 'selected' : '' }}>Sudah OB</option>
+                        <option value="belum" {{ request('status_ob') == 'belum' ? 'selected' : '' }}>Belum OB</option>
+                    </select>
+                </div>
+
+                {{-- Tipe Kontainer Filter --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
+                    <select name="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Tipe</option>
+                        <option value="FCL" {{ request('tipe_kontainer') == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="LCL" {{ request('tipe_kontainer') == 'LCL' ? 'selected' : '' }}>LCL</option>
+                        <option value="CARGO" {{ request('tipe_kontainer') == 'CARGO' ? 'selected' : '' }}>CARGO</option>
+                    </select>
+                </div>
+
+                {{-- Size Kontainer Filter --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Size Kontainer</label>
+                    <select name="size_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Size</option>
+                        <option value="20" {{ request('size_kontainer') == '20' ? 'selected' : '' }}>20 Feet</option>
+                        <option value="40" {{ request('size_kontainer') == '40' ? 'selected' : '' }}>40 Feet</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-4">
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-search mr-2"></i>
+                        Filter
+                    </button>
+                    <a href="{{ route('ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {{-- Table Section --}}
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Muat</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tonase</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status OB</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($naikKapals as $key => $naikKapal)
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $naikKapals->firstItem() + $key }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                                {{ $naikKapal->nomor_kontainer ?: '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                                {{ $naikKapal->no_seal ?: '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $naikKapal->jenis_barang ?: '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($naikKapal->tipe_kontainer)
+                                    @php
+                                        $tipeUpper = strtoupper($naikKapal->tipe_kontainer);
+                                        $tipeConfig = [
+                                            'FCL' => ['color' => 'bg-purple-100 text-purple-800', 'icon' => 'fa-shipping-fast'],
+                                            'LCL' => ['color' => 'bg-orange-100 text-orange-800', 'icon' => 'fa-box'],
+                                            'CARGO' => ['color' => 'bg-blue-100 text-blue-800', 'icon' => 'fa-truck']
+                                        ];
+                                        $config = $tipeConfig[$tipeUpper] ?? ['color' => 'bg-gray-100 text-gray-800', 'icon' => 'fa-shipping-fast'];
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['color'] }}">
+                                        <i class="fas {{ $config['icon'] }} mr-1"></i>
+                                        {{ $tipeUpper }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($naikKapal->size_kontainer)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {{ $naikKapal->size_kontainer == '20' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                        <i class="fas fa-box mr-1"></i>
+                                        {{ $naikKapal->size_kontainer }} Feet
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $naikKapal->tanggal_muat ? $naikKapal->tanggal_muat->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $naikKapal->formattedVolume }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $naikKapal->formattedTonase }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($naikKapal->sudah_ob)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Sudah OB
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Belum OB
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    @if(!$naikKapal->sudah_ob)
+                                        <button type="button" onclick="markAsOB({{ $naikKapal->id }})"
+                                               class="text-green-600 hover:text-green-900 transition duration-150"
+                                               title="Tandai sudah OB">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    @else
+                                        <button type="button" onclick="unmarkOB({{ $naikKapal->id }})"
+                                               class="text-yellow-600 hover:text-yellow-900 transition duration-150"
+                                               title="Batalkan OB">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    @endif
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                       title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="px-4 py-8 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
+                                    <p class="text-lg font-medium">Tidak ada data kontainer yang ditemukan</p>
+                                    <p class="text-sm text-gray-400 mt-1">Untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        @if($naikKapals->hasPages())
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
+                {{ $naikKapals->links() }}
+            </div>
+        @endif
+    </div>
+</div>
+
+<script>
+function markAsOB(naikKapalId) {
+    if (confirm('Apakah Anda yakin ingin menandai kontainer ini sudah OB?')) {
+        // TODO: Implement AJAX call to mark as OB
+        console.log('Mark as OB:', naikKapalId);
+    }
+}
+
+function unmarkOB(naikKapalId) {
+    if (confirm('Apakah Anda yakin ingin membatalkan status OB kontainer ini?')) {
+        // TODO: Implement AJAX call to unmark OB
+        console.log('Unmark OB:', naikKapalId);
+    }
+}
+</script>
+
+@endsection
                             @foreach($ships as $ship)
                                 <option value="{{ $ship->id }}" 
                                         data-nickname="{{ $ship->nickname }}"

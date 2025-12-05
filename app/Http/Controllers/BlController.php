@@ -113,7 +113,13 @@ class BlController extends Controller
             }
         }
 
-        $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
+        // Get distinct kapal names from bls table instead of master_kapals
+        $masterKapals = Bl::whereNotNull('nama_kapal')
+            ->select('nama_kapal')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->get();
+            
         return view('bl.select', compact('masterKapals'));
     }
 
