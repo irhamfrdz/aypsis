@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SuratJalanExport;
 
 class SuratJalanController extends Controller
 {
@@ -75,6 +77,28 @@ class SuratJalanController extends Controller
                             ->paginate(15);
 
         return view('surat-jalan.index', compact('suratJalans'));
+    }
+
+    /**
+     * Export surat jalan listing to Excel with current filters
+     */
+    public function exportExcel(Request $request)
+    {
+        // Permission check, reuse surat-jalan-view or dedicated export permission
+        if (!auth()->user()->can('surat-jalan-export')) {
+            Log::warning('User lacks permission for surat-jalan-export', ['user_id' => auth()->id()]);
+            abort(403, 'Anda tidak memiliki permission untuk melakukan export surat jalan.');
+        }
+
+        try {
+            $filters = $request->only(['search', 'status', 'status_pembayaran', 'tipe_kontainer', 'start_date', 'end_date']);
+            $fileName = 'surat_jalan_export_' . date('Ymd_His') . '.xlsx';
+            $export = new SuratJalanExport($filters, []);
+            return Excel::download($export, $fileName);
+        } catch (\Exception $e) {
+            Log::error('Error exporting surat jalan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export surat jalan: ' . $e->getMessage());
+        }
     }
 
     /**

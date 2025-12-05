@@ -1462,6 +1462,11 @@ Route::middleware(['auth'])->group(function () {
          ->middleware('can:surat-jalan-create');
 
     // Surat Jalan Management with permissions - Separate routes to avoid middleware conflicts
+    // Export Surat Jalan (Excel)
+    Route::get('surat-jalan/export', [\App\Http\Controllers\SuratJalanController::class, 'exportExcel'])
+         ->name('surat-jalan.export')
+         ->middleware('can:surat-jalan-export');
+
     Route::get('surat-jalan', [\App\Http\Controllers\SuratJalanController::class, 'index'])
          ->name('surat-jalan.index')
          ->middleware('can:surat-jalan-view');
