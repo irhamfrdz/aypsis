@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TandaTerimaFilteredExport;
 
 class TandaTerimaController extends Controller
 {
@@ -1310,6 +1312,24 @@ class TandaTerimaController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error exporting tanda terima to Excel: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export tanda terima (or surat jalan missing) based on current filters (GET)
+     */
+    public function exportFiltered(Request $request)
+    {
+        try {
+            $filters = $request->only(['search', 'mode', 'status']);
+            $fileName = 'tanda_terima_export_' . date('Ymd_His') . '.xlsx';
+
+            // If mode is missing, we will export surat jalans without tanda terima
+            $export = new TandaTerimaFilteredExport($filters);
+            return Excel::download($export, $fileName);
+        } catch (\Exception $e) {
+            Log::error('Error exporting filtered tanda terima: ' . $e->getMessage());
             return back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
         }
     }
