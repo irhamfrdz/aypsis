@@ -1571,6 +1571,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('uang-jalan.select-surat-jalan')
          ->middleware('can:uang-jalan-create');
     
+    // Export Uang Jalan (Excel)
+    Route::get('uang-jalan/export', [\App\Http\Controllers\UangJalanController::class, 'exportExcel'])
+         ->name('uang-jalan.export')
+         ->middleware('can:uang-jalan-export');
+
     Route::resource('uang-jalan', \App\Http\Controllers\UangJalanController::class)
          ->middleware([
              'index' => 'can:uang-jalan-view',

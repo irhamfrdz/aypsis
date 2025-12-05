@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
 use App\Models\UangJalan;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UangJalanExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +18,8 @@ class UangJalanController extends Controller
         $this->middleware('permission:uang-jalan-create')->only(['create', 'store']);
         $this->middleware('permission:uang-jalan-update')->only(['edit', 'update']);
         $this->middleware('permission:uang-jalan-delete')->only(['destroy']);
+        // Allow export only to users with export permission
+        $this->middleware('permission:uang-jalan-export')->only(['exportExcel']);
     }
 
     /**
@@ -396,6 +400,23 @@ class UangJalanController extends Controller
             return redirect()
                 ->route('uang-jalan.index')
                 ->with('error', 'Terjadi kesalahan saat menghapus uang jalan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export Uang Jalan listing to Excel with current filters
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $filters = $request->only(['search', 'status', 'tanggal_dari', 'tanggal_sampai']);
+            $fileName = 'uang_jalan_export_' . date('Ymd_His') . '.xlsx';
+
+            $export = new UangJalanExport($filters, []);
+            return Excel::download($export, $fileName);
+        } catch (\Exception $e) {
+            \Log::error('Error exporting uang jalan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export uang jalan: ' . $e->getMessage());
         }
     }
 }
