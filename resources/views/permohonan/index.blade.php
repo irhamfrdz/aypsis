@@ -43,7 +43,10 @@
                     + Tambah Permohonan
                 </a>
 
-                <a href="{{ route('permohonan.export') }}" class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm">Download CSV</a>
+                <a href="{{ route('permohonan.export') }}?{{ http_build_query(request()->only(['search','date_from','date_to','kegiatan','status','amount_min'])) }}" class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm">Download CSV</a>
+                @can('permohonan')
+                <a href="{{ route('permohonan.export-excel') }}?{{ http_build_query(request()->only(['search','date_from','date_to','kegiatan','status','amount_min'])) }}" class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm ml-2">Download Excel</a>
+                @endcan
 
                 <form action="{{ route('permohonan.import') }}" method="POST" enctype="multipart/form-data">
                     @csrf

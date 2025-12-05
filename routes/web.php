@@ -2061,6 +2061,11 @@ Route::get('/test-gate-in-ajax', function () {
          ->name('permohonan.export')
          ->middleware('can:permohonan');
 
+    // Excel (XLSX) export for permohonan - filter-aware
+    Route::get('permohonan/export-excel', [PermohonanController::class, 'exportExcel'])
+         ->name('permohonan.export-excel')
+         ->middleware('can:permohonan');
+
     Route::post('permohonan/import', [PermohonanController::class, 'import'])
          ->name('permohonan.import')
          ->middleware('can:permohonan');

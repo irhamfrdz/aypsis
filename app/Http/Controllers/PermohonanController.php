@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PermohonanExport;
 
 class PermohonanController extends Controller
 {
@@ -498,7 +500,51 @@ class PermohonanController extends Controller
                 'created_at','updated_at','kontainer_nomor_list'
             ], $delimiter);
 
-            $rows = Permohonan::with(['supir','krani','kontainers'])->orderBy('created_at', 'desc')->get();
+            // Apply same filters as index to the export
+            $queryBuilder = Permohonan::with(['supir','krani','kontainers'])->latest();
+
+            if ($request->filled('search')) {
+                $searchTerm = $request->input('search');
+                $queryBuilder->where(function ($q) use ($searchTerm) {
+                    $q->where('nomor_memo', 'like', "%{$searchTerm}%")
+                      ->orWhere('kegiatan', 'like', "%{$searchTerm}%")
+                      ->orWhere('vendor_perusahaan', 'like', "%{$searchTerm}%")
+                      ->orWhere('dari', 'like', "%{$searchTerm}%")
+                      ->orWhere('ke', 'like', "%{$searchTerm}%")
+                      ->orWhere('catatan', 'like', "%{$searchTerm}%")
+                      ->orWhere('alasan_adjustment', 'like', "%{$searchTerm}%")
+                      ->orWhereHas('supir', function ($subq) use ($searchTerm) {
+                          $subq->where('nama_panggilan', 'like', "%{$searchTerm}%")
+                               ->orWhere('nama_lengkap', 'like', "%{$searchTerm}%");
+                      })
+                      ->orWhereHas('krani', function ($subq) use ($searchTerm) {
+                          $subq->where('nama_panggilan', 'like', "%{$searchTerm}%")
+                               ->orWhere('nama_lengkap', 'like', "%{$searchTerm}%");
+                      });
+                });
+            }
+
+            if ($request->filled('date_from')) {
+                $queryBuilder->whereDate('tanggal_memo', '>=', $request->input('date_from'));
+            }
+
+            if ($request->filled('date_to')) {
+                $queryBuilder->whereDate('tanggal_memo', '<=', $request->input('date_to'));
+            }
+
+            if ($request->filled('kegiatan')) {
+                $queryBuilder->where('kegiatan', $request->input('kegiatan'));
+            }
+
+            if ($request->filled('status')) {
+                $queryBuilder->where('status', $request->input('status'));
+            }
+
+            if ($request->filled('amount_min')) {
+                $queryBuilder->where('total_harga_setelah_adj', '>=', $request->input('amount_min'));
+            }
+
+            $rows = $queryBuilder->orderBy('created_at', 'desc')->get();
             foreach ($rows as $r) {
                 $kegiatanNama = null;
                 try {
@@ -630,5 +676,20 @@ class PermohonanController extends Controller
         $msg = "Import selesai. Baris: $row, berhasil: $created.";
         if (!empty($errors)) return redirect()->back()->with('warning', $msg)->with('import_errors', $errors);
         return redirect()->back()->with('success', $msg);
+    }
+
+    /**
+     * Export permohonan to Excel (XLSX) and respect filters
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $filters = $request->only(['search','date_from','date_to','kegiatan','status','amount_min']);
+            $fileName = 'permohonans_' . date('Ymd_His') . '.xlsx';
+            $export = new PermohonanExport($filters, []);
+            return Excel::download($export, $fileName);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal export permohonan: ' . $e->getMessage());
+        }
     }
 }
