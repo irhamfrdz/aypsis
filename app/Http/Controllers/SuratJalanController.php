@@ -50,9 +50,25 @@ class SuratJalanController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by status pembayaran
+        // Filter by status pembayaran with overall logic
         if ($request->filled('status_pembayaran') && $request->status_pembayaran !== 'all') {
-            $query->where('status_pembayaran', $request->status_pembayaran);
+            $statusPembayaran = $request->status_pembayaran;
+            
+            $query->where(function($q) use ($statusPembayaran) {
+                if ($statusPembayaran === 'sudah_dibayar') {
+                    // Sudah dibayar: status_pembayaran = 'sudah_dibayar' OR status_pembayaran_uang_jalan = 'dibayar'
+                    $q->where('status_pembayaran', 'sudah_dibayar')
+                      ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
+                } elseif ($statusPembayaran === 'belum_dibayar') {
+                    // Belum dibayar: ada uang jalan tapi belum dibayar
+                    $q->where('status_pembayaran_uang_jalan', 'sudah_masuk_uang_jalan')
+                      ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                } else { // belum_masuk_pranota
+                    // Belum masuk pranota: belum ada uang jalan sama sekali
+                    $q->where('status_pembayaran_uang_jalan', 'belum_ada')
+                      ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                }
+            });
         }
 
         // Filter by tipe kontainer

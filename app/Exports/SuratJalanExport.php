@@ -45,7 +45,23 @@ class SuratJalanExport implements FromCollection, WithHeadings, ShouldAutoSize, 
             }
 
             if (!empty($this->filters['status_pembayaran']) && $this->filters['status_pembayaran'] !== 'all') {
-                $query->where('status_pembayaran', $this->filters['status_pembayaran']);
+                $statusPembayaran = $this->filters['status_pembayaran'];
+                
+                $query->where(function($q) use ($statusPembayaran) {
+                    if ($statusPembayaran === 'sudah_dibayar') {
+                        // Sudah dibayar: status_pembayaran = 'sudah_dibayar' OR status_pembayaran_uang_jalan = 'dibayar'
+                        $q->where('status_pembayaran', 'sudah_dibayar')
+                          ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
+                    } elseif ($statusPembayaran === 'belum_dibayar') {
+                        // Belum dibayar: ada uang jalan tapi belum dibayar
+                        $q->where('status_pembayaran_uang_jalan', 'sudah_masuk_uang_jalan')
+                          ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                    } else { // belum_masuk_pranota
+                        // Belum masuk pranota: belum ada uang jalan sama sekali
+                        $q->where('status_pembayaran_uang_jalan', 'belum_ada')
+                          ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                    }
+                });
             }
 
             if (!empty($this->filters['tipe_kontainer'])) {
