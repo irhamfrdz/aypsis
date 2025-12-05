@@ -1742,6 +1742,15 @@ Route::middleware(['auth'])->group(function () {
     // � PRANOTA UANG RIT MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
 
+    // Special routes must come BEFORE resource routes to avoid conflicts
+    Route::get('pranota-uang-rit/select-uang-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'selectUangJalan'])
+         ->name('pranota-uang-rit.select-uang-jalan')
+         ->middleware('can:pranota-uang-rit-create');
+
+    Route::post('pranota-uang-rit/from-selection', [\App\Http\Controllers\PranotaUangRitController::class, 'createFromSelection'])
+         ->name('pranota-uang-rit.from-selection')
+         ->middleware('can:pranota-uang-rit-create');
+
     // Pranota Uang Rit Management with permissions
     Route::resource('pranota-uang-rit', \App\Http\Controllers\PranotaUangRitController::class)
          ->middleware([
@@ -1753,15 +1762,6 @@ Route::middleware(['auth'])->group(function () {
              'update' => 'can:pranota-uang-rit-update',
              'destroy' => 'can:pranota-uang-rit-delete'
          ]);
-
-    // Special route for selecting uang jalan
-    Route::get('pranota-uang-rit/select-uang-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'selectUangJalan'])
-         ->name('pranota-uang-rit.select-uang-jalan')
-         ->middleware('can:pranota-uang-rit-create');
-
-    Route::post('pranota-uang-rit/from-selection', [\App\Http\Controllers\PranotaUangRitController::class, 'createFromSelection'])
-         ->name('pranota-uang-rit.from-selection')
-         ->middleware('can:pranota-uang-rit-create');
 
     // Additional Pranota Uang Rit routes for workflow
     Route::post('pranota-uang-rit/{pranotaUangRit}/submit', [\App\Http\Controllers\PranotaUangRitController::class, 'submit'])

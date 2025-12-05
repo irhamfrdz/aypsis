@@ -12,7 +12,6 @@ class TandaTerima extends Model
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',
-        'nomor_tanda_terima',
         'tanggal_surat_jalan',
         'supir',
         'supir_pengganti',

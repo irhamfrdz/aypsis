@@ -186,7 +186,6 @@ class TandaTerimaController extends Controller
                     'sj.no_plat',
                     'sj.kegiatan',
                     'tt.id as tanda_terima_id',
-                    'tt.nomor_tanda_terima',
                     'tt.created_at'
                 );
 
@@ -195,8 +194,7 @@ class TandaTerimaController extends Controller
                 $query->where(function($q) use ($search) {
                     $q->where('sj.no_surat_jalan', 'like', "%{$search}%")
                       ->orWhere('sj.supir', 'like', "%{$search}%")
-                      ->orWhere('sj.no_kontainer', 'like', "%{$search}%")
-                      ->orWhere('tt.nomor_tanda_terima', 'like', "%{$search}%");
+                      ->orWhere('sj.no_kontainer', 'like', "%{$search}%");
                 });
             }
 
@@ -315,7 +313,6 @@ class TandaTerimaController extends Controller
     {
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
-            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terimas,nomor_tanda_terima',
             // Field yang akan disinkronkan ke surat jalan
             'tanggal_surat_jalan' => 'nullable|date',
             'nomor_surat_jalan' => 'nullable|string|max:255',
@@ -399,7 +396,6 @@ class TandaTerimaController extends Controller
             $tandaTerima = new TandaTerima();
             $tandaTerima->surat_jalan_id = $suratJalan->id;
             $tandaTerima->no_surat_jalan = $suratJalan->no_surat_jalan;
-            $tandaTerima->nomor_tanda_terima = $request->nomor_tanda_terima;
             $tandaTerima->tanggal_surat_jalan = $suratJalan->tanggal_surat_jalan;
             $tandaTerima->supir = $suratJalan->supir;
             $tandaTerima->kegiatan = $suratJalan->kegiatan;
@@ -637,7 +633,7 @@ class TandaTerimaController extends Controller
             // Handle gambar checkpoint upload
             $uploadedImages = [];
             if ($request->hasFile('gambar_checkpoint')) {
-                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'), $request->nomor_tanda_terima);
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'), 'TT_' . $tandaTerima->id);
                 if (!empty($uploadedImages)) {
                     // Save images to tanda_terima as well
                     $tandaTerima->update(['gambar_checkpoint' => json_encode($uploadedImages)]);
@@ -834,7 +830,6 @@ class TandaTerimaController extends Controller
         }
 
         $request->validate([
-            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terimas,nomor_tanda_terima,' . $tandaTerima->id,
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
@@ -926,7 +921,6 @@ class TandaTerimaController extends Controller
             }
             
             $updateData = [
-                'nomor_tanda_terima' => $request->nomor_tanda_terima,
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
@@ -1077,7 +1071,7 @@ class TandaTerimaController extends Controller
 
             // Handle image upload if present
             if ($request->hasFile('gambar_checkpoint')) {
-                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'), $request->nomor_tanda_terima);
+                $uploadedImages = $this->handleImageUpload($request->file('gambar_checkpoint'), 'TT_' . $tandaTerima->id);
                 
                 // Update related Surat Jalan with checkpoint images if tanda terima is linked
                 if ($tandaTerima->surat_jalan_id) {
@@ -1617,15 +1611,15 @@ class TandaTerimaController extends Controller
             
             foreach ($uploadedFiles as $index => $file) {
                 if ($file->isValid()) {
-                    // Generate filename based on nomor_tanda_terima if available
+                    // Generate filename based on tanda terima ID if available
                     $extension = $file->getClientOriginalExtension();
                     
                     if ($nomorTandaTerima) {
-                        // Clean nomor_tanda_terima for filename (remove special characters)
-                        $cleanNomorTT = Str::slug($nomorTandaTerima, '_');
-                        $filename = $cleanNomorTT . '_' . ($index + 1) . '.' . $extension;
+                        // Clean identifier for filename (remove special characters)
+                        $cleanIdentifier = Str::slug($nomorTandaTerima, '_');
+                        $filename = $cleanIdentifier . '_' . ($index + 1) . '.' . $extension;
                     } else {
-                        // Fallback to original naming if no nomor_tanda_terima
+                        // Fallback to original naming if no identifier
                         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                         $filename = 'checkpoint_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
                     }

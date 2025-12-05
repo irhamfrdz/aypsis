@@ -80,7 +80,7 @@
     </div>
 
     <!-- Selection Form -->
-    <form id="selectionForm" method="POST" action="{{ route('pranota-uang-rit.create-from-selection') }}">
+    <form id="selectionForm" method="POST" action="{{ route('pranota-uang-rit.from-selection') }}">
         @csrf
         
         <!-- Selection Actions -->

@@ -199,8 +199,8 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -210,7 +210,7 @@
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
                             </th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Tanda Terima</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -300,7 +300,7 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap">
-                                <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">{{ $item->nomor_tanda_terima ?: '-' }}</code>
+                                <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">TT-{{ $item->tanda_terima_id }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -348,7 +348,7 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
-                                    <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">{{ $tandaTerima->nomor_tanda_terima ?: '-' }}</code>
+                                    <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">TT-{{ $tandaTerima->id }}</code>
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
@@ -446,7 +446,7 @@
                                              class="hidden absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                             <div class="py-1">
                                                 <button type="button"
-                                                        onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', '{{ $tandaTerima->nomor_tanda_terima }}')"
+                                                        onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', 'TT-{{ $tandaTerima->id }}')"
                                                         class="block w-full px-4 py-2 text-left text-xs text-purple-600 hover:bg-purple-50">
                                                     <i class="fas fa-history mr-2"></i>Riwayat
                                                 </button>

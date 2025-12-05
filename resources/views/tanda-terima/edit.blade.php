@@ -56,7 +56,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Edit Tanda Terima</h1>
-                <p class="text-gray-600 mt-1">No. Tanda Terima: <span class="font-semibold">{{ $tandaTerima->nomor_tanda_terima ?? '-' }}</span></p>
+                <p class="text-gray-600 mt-1">ID Tanda Terima: <span class="font-semibold">TT-{{ $tandaTerima->id }}</span></p>
                 @if($tandaTerima->suratJalan)
                     <p class="text-gray-600 text-sm">No. Surat Jalan: <span class="font-semibold">{{ $tandaTerima->suratJalan->no_surat_jalan }}</span></p>
                 @endif
@@ -106,26 +106,6 @@
             @endif
 
             <div class="space-y-6">
-                <!-- Nomor Tanda Terima -->
-                <div>
-                    <label for="nomor_tanda_terima" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Tanda Terima <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text"
-                           name="nomor_tanda_terima"
-                           id="nomor_tanda_terima"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono @error('nomor_tanda_terima') border-red-500 @enderror"
-                           placeholder="Masukkan nomor tanda terima"
-                           value="{{ old('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima) }}"
-                           required>
-                    @error('nomor_tanda_terima')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    <p class="mt-1 text-xs text-gray-500">
-                        <i class="fas fa-hash mr-1"></i>Format: Misal TT-2025-001
-                    </p>
-                </div>
-
                 <!-- Informasi Surat Jalan Section (Read-only) -->
                 @if($tandaTerima->suratJalan)
                 <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">

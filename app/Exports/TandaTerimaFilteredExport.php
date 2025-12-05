@@ -81,7 +81,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
         $rows = $query->orderBy('created_at', 'desc')->get()->map(function($t) {
             return [
                 $t->id,
-                $t->nomor_tanda_terima,
+                'TT-' . $t->id,
                 $t->no_surat_jalan,
                 $t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/m/Y') : '-',
                 $t->no_kontainer,
@@ -102,7 +102,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
             return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim'];
         }
 
-        return ['ID', 'Nomor Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Jenis Barang', 'Tujuan', 'Kegiatan', 'Status', 'Pengirim'];
+        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Jenis Barang', 'Tujuan', 'Kegiatan', 'Status', 'Pengirim'];
     }
 
     public function registerEvents(): array

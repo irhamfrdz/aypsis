@@ -42,7 +42,7 @@ class PranotaUangRitController extends Controller
 
         // Filter by date range
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+            $query->whereBetween('tanggal_surat_jalan', [$request->start_date, $request->end_date]);
         }
 
         // Filter by supir
@@ -190,7 +190,7 @@ class PranotaUangRitController extends Controller
 
         // Filter by date range
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+            $query->whereBetween('tanggal_surat_jalan', [$request->start_date, $request->end_date]);
         }
 
         // Filter by supir
