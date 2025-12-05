@@ -125,6 +125,15 @@ class SuratJalanBongkaranController extends Controller
             // Filter berdasarkan voyage (required)
             $query->where('no_voyage', $selectedVoyage);
 
+            // Exclude BL dengan barang empty
+            $query->where(function($q) {
+                $q->whereNotNull('nama_barang')
+                  ->where('nama_barang', '!=', '')
+                  ->where('nama_barang', 'not like', '%empty%')
+                  ->where('nama_barang', 'not like', '%kosong%')
+                  ->where('nama_barang', '!=', '-');
+            });
+
             // Search
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -132,11 +141,13 @@ class SuratJalanBongkaranController extends Controller
                     $q->where('nomor_bl', 'like', "%{$search}%")
                       ->orWhere('nomor_kontainer', 'like', "%{$search}%")
                       ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('nama_barang', 'like', "%{$search}%");
+                      ->orWhere('nama_barang', 'like', "%{$search}%")
+                      ->orWhere('term', 'like', "%{$search}%")
+                      ->orWhere('penerima', 'like', "%{$search}%");
                 });
             }
 
-            $bls = $query->orderBy('created_at', 'desc')->paginate(25);
+            $bls = $query->with('suratJalanBongkaran')->orderBy('created_at', 'desc')->paginate(25);
 
             // Get data for modal form
             $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
@@ -824,6 +835,7 @@ class SuratJalanBongkaranController extends Controller
             'tonnage' => $bl->tonnage,
             'volume' => $bl->volume,
             'status_bongkar' => $bl->status_bongkar,
+            'term' => $bl->term ?? '',
             'pengirim' => $bl->pengirim ?? '',
             'penerima' => $bl->penerima ?? '',
             'alamat_pengiriman' => $bl->alamat_pengiriman ?? '',

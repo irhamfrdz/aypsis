@@ -98,7 +98,7 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                                    id="search" 
                                    name="search" 
-                                   placeholder="{{ request('mode') == 'surat_jalan' ? 'Cari nomor surat jalan, container, seal, supir, plat...' : 'Cari nomor BL, container, seal, kapal, voyage, barang...' }}" 
+                                   placeholder="{{ request('mode') == 'surat_jalan' ? 'Cari nomor surat jalan, container, seal, supir, plat...' : 'Cari nomor BL, container, seal, term, barang, penerima...' }}" 
                                    value="{{ request('search') }}">
                         </div>
                         <div class="flex items-end gap-2">
@@ -215,6 +215,8 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat Jalan</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -265,10 +267,44 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->penerima, 30) ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->term ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        @if($bl->suratJalanBongkaran)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                {{ $bl->suratJalanBongkaran->nomor_surat_jalan }}
+                                            </span>
+                                        @elseif(empty($bl->nama_barang) || trim($bl->nama_barang) === '' || trim($bl->nama_barang) === '-')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M9 12a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd"/>
+                                                    <path fill-rule="evenodd" d="M9 5a1 1 0 112 0v4a1 1 0 11-2 0V5z" clip-rule="evenodd"/>
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Tidak Perlu (Empty)
+                                            </span>
+                                        @elseif(strtolower($bl->term ?? '') === 'port to port' || strtolower($bl->term ?? '') === 'port-to-port' || strtolower($bl->term ?? '') === 'ptp')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Tidak Perlu (P2P)
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Perlu Surat Jalan
+                                            </span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-4 py-12 text-center">
+                                    <td colspan="10" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -361,7 +397,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih term</option>
                                 @foreach($terms as $term)
-                                    <option value="{{ $term->kode }}">{{ $term->kode }} - {{ $term->nama_term }}</option>
+                                    <option value="{{ $term->kode }}">{{ $term->kode }} - {{ $term->nama_status }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -697,6 +733,8 @@ function buatSuratJalan(blId) {
     fetch(`/api/bl/${blId}`)
         .then(response => response.json())
         .then(data => {
+            console.log('Fetched BL Data:', data); // Debug log to see all data
+            
             // Populate hidden BL ID
             document.getElementById('modal_bl_id').value = blId;
             
@@ -719,6 +757,97 @@ function buatSuratJalan(blId) {
             document.getElementById('modal_jenis_barang').value = data.nama_barang || '';
             document.getElementById('modal_pengirim').value = data.pengirim || '';
             document.getElementById('modal_tujuan_pengiriman').value = data.pelabuhan_tujuan || '';
+            
+            // Set term from BL data if available
+            console.log('BL Data Term:', data.term); // Debug log
+            const termSelect = document.getElementById('modal_term');
+            
+            if (termSelect) {
+                // Reset select first
+                termSelect.value = '';
+                
+                // First, let's see what term options are available
+                console.log('Available term options in dropdown:');
+                for (let i = 0; i < termSelect.options.length; i++) {
+                    console.log(`${i}: Value="${termSelect.options[i].value}" Text="${termSelect.options[i].text}"`);
+                }
+                
+                // Check if term exists and is not undefined/null/empty
+                if (data.term && data.term !== 'undefined' && data.term !== null && data.term.toString().trim() !== '') {
+                    const termValue = data.term.toString().toLowerCase().trim();
+                    console.log('Processing term value:', termValue);
+                    
+                    // Try to find matching option (case insensitive)
+                    const options = termSelect.options;
+                    let matched = false;
+                    
+                    for (let i = 0; i < options.length; i++) {
+                        const optionValue = options[i].value.toLowerCase().trim();
+                        const optionText = options[i].text.toLowerCase().trim();
+                        
+                        console.log(`Checking option ${i}: value="${optionValue}" text="${optionText}"`);
+                        
+                        // Skip empty values or placeholder options
+                        if (!options[i].value || options[i].value === '' || 
+                            optionText.includes('pilih') || optionText.includes('select') ||
+                            optionValue === 'pilih' || optionValue === 'select') {
+                            console.log(`Skipping option ${i}: placeholder or empty`);
+                            continue;
+                        }
+                        
+                        // Check multiple matching criteria
+                        if (optionValue === termValue || 
+                            optionText === termValue ||
+                            optionText.includes(termValue) ||
+                            termValue.includes(optionValue) ||
+                            (termValue.includes('door') && optionText.includes('door')) ||
+                            (termValue.includes('port') && optionText.includes('port')) ||
+                            (termValue.includes('cif') && optionText.includes('cif')) ||
+                            (termValue.includes('fob') && optionText.includes('fob'))) {
+                            termSelect.value = options[i].value;
+                            console.log('Term matched successfully:', options[i].value, options[i].text);
+                            matched = true;
+                            break;
+                        }
+                    }
+                    
+                    // If no match found with smart matching, try exact value assignment
+                    if (!matched) {
+                        console.log('No smart match found, trying exact value match...');
+                        // Try direct assignment with original value
+                        for (let i = 0; i < options.length; i++) {
+                            // Skip empty values or placeholder options
+                            if (!options[i].value || options[i].value === '' || 
+                                options[i].text.toLowerCase().includes('pilih') || 
+                                options[i].text.toLowerCase().includes('select')) {
+                                continue;
+                            }
+                            
+                            console.log(`Checking exact match: "${options[i].value}" === "${data.term}"`);
+                            if (options[i].value === data.term) {
+                                termSelect.value = options[i].value;
+                                console.log('Term matched by exact value:', options[i].value);
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!matched) {
+                        console.warn('No matching term found for:', data.term);
+                        console.log('This means either:');
+                        console.log('1. Term data from BL does not match any term options in dropdown');
+                        console.log('2. Term might be stored differently in BL vs Term master data');
+                        console.log('3. There might be whitespace or case issues');
+                    } else {
+                        console.log('Final term value set to:', termSelect.value);
+                    }
+                } else {
+                    console.log('Term data is empty, undefined, or null:', data.term);
+                }
+            } else {
+                console.error('Term select element not found');
+            }
             
             // Set jenis pengiriman if available
             if (data.jenis_pengiriman) {
@@ -863,13 +992,16 @@ function handleFormSubmit(event) {
         return response.json();
     })
     .then(data => {
-        // Success - redirect with success message
-        if (data.redirect) {
-            window.location.href = data.redirect + '?success=1';
-        } else {
-            // Reload page to show success message
+        // Success - stay on index page and show success message
+        closeModal();
+        
+        // Show success message
+        showSuccessAlert('Berhasil!', 'Surat jalan bongkaran berhasil dibuat dan disimpan.');
+        
+        // Reload page to refresh data and show updated table
+        setTimeout(() => {
             window.location.reload();
-        }
+        }, 2000);
     })
     .catch(error => {
         console.error('Error:', error);
@@ -990,10 +1122,57 @@ function showModalAlert(title, message, type = 'error') {
     }
 }
 
+// Show success alert on main page
+function showSuccessAlert(title, message) {
+    // Remove existing alerts if any
+    const existingAlerts = document.querySelectorAll('.page-alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'page-alert bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6 flex items-center';
+    
+    alertDiv.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span><strong>${title}</strong> ${message}</span>
+        <button type="button" class="ml-auto text-green-600 hover:text-green-800" onclick="this.parentElement.remove()">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+        </button>
+    `;
+    
+    // Insert after page header
+    const pageHeader = document.querySelector('.flex-1.p-6 > .flex.items-center.justify-between');
+    if (pageHeader && pageHeader.parentNode) {
+        pageHeader.parentNode.insertBefore(alertDiv, pageHeader.nextSibling);
+    } else {
+        // Fallback: insert at the beginning of the main content
+        const mainContent = document.querySelector('.flex-1.p-6');
+        if (mainContent) {
+            mainContent.insertBefore(alertDiv, mainContent.firstChild);
+        }
+    }
+    
+    // Scroll to top to show the alert
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // Close modal function
 function closeModal() {
     document.getElementById('modalBuatSuratJalan').classList.add('hidden');
-    document.getElementById('formBuatSuratJalan').reset();
+    const form = document.getElementById('formBuatSuratJalan');
+    form.reset();
+    
+    // Reset select fields specifically
+    document.getElementById('modal_term').value = '';
+    document.getElementById('modal_aktifitas').value = '';
+    document.getElementById('modal_tujuan_pengambilan').value = '';
+    document.getElementById('modal_jenis_pengiriman').value = '';
+    document.getElementById('modal_supir').value = '';
+    document.getElementById('modal_kenek').value = '';
+    document.getElementById('modal_krani').value = '';
     
     // Reset button state
     const submitBtn = document.getElementById('btnSubmitModal');

@@ -254,7 +254,7 @@ class PembayaranPranotaUangJalanController extends Controller
             $pranotaCount = count($validated['pranota_uang_jalan_ids']);
             $successMessage = 'Pembayaran ' . $nomorPembayaran . ' berhasil disimpan untuk ' . $pranotaCount . ' pranota uang jalan.';
             if ($totalProspeksCreated > 0) {
-                $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL/CARGO telah dibuat otomatis.';
+                $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL/CARGO (non-bongkaran) telah dibuat otomatis.';
             }
 
             // Redirect langsung ke index page setelah berhasil membuat pembayaran
@@ -473,7 +473,16 @@ class PembayaranPranotaUangJalanController extends Controller
 
                 $suratJalan = $uangJalan->suratJalan;
 
-                // Only process FCL and CARGO type surat jalan
+                // Skip bongkaran uang jalan - should not be converted to prospek
+                $jenisSuratJalan = strtolower($suratJalan->jenis_surat_jalan ?? '');
+                $isBongkaranTable = get_class($suratJalan) === 'App\Models\SuratJalanBongkaran';
+                $isBongkaran = $jenisSuratJalan === 'bongkaran' || $isBongkaranTable;
+                
+                if ($isBongkaran) {
+                    continue; // Skip bongkaran from prospek creation
+                }
+
+                // Only process FCL and CARGO type surat jalan (excluding bongkaran)
                 $tipeKontainer = strtoupper($suratJalan->tipe_kontainer ?? '');
                 if ($tipeKontainer !== 'FCL' && $tipeKontainer !== 'CARGO') {
                     continue;
@@ -547,7 +556,7 @@ class PembayaranPranotaUangJalanController extends Controller
             }
 
             if ($prospeksCreated > 0) {
-                Log::info('Total prospek created from uang jalan payment', [
+                Log::info('Total prospek created from FCL/CARGO (non-bongkaran) uang jalan payment', [
                     'pranota_id' => $pranotaId,
                     'total_prospeks' => $prospeksCreated
                 ]);

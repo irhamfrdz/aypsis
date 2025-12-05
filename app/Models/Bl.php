@@ -48,4 +48,12 @@ class Bl extends Model
     {
         return $this->belongsTo(Prospek::class);
     }
+
+    /**
+     * Get the surat jalan bongkaran for this BL.
+     */
+    public function suratJalanBongkaran()
+    {
+        return $this->hasOne(SuratJalanBongkaran::class, 'bl_id');
+    }
 }

@@ -211,7 +211,7 @@
                         <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
-                        <strong>Info:</strong> Pembayaran akan otomatis dicatat ke akun "Biaya Uang Jalan Muat" dan Bank yang dipilih menggunakan sistem double book accounting. Uang jalan dengan tipe FCL/CARGO akan otomatis dibuat menjadi data prospek.
+                        <strong>Info:</strong> Pembayaran akan otomatis dicatat ke akun "Biaya Uang Jalan Muat" dan Bank yang dipilih menggunakan sistem double book accounting.
                     </p>
                 </div>
                 <div class="overflow-x-auto max-h-60">
@@ -320,16 +320,9 @@
                                                 $tipeKontainers = $pranota->uangJalans->map(function($item) {
                                                     return $item->suratJalan->tipe_kontainer ?? null;
                                                 })->filter()->unique();
-                                                $hasProspekType = $tipeKontainers->contains(function($tipe) {
-                                                    $tipeUpper = strtoupper($tipe ?? '');
-                                                    return $tipeUpper === 'FCL' || $tipeUpper === 'CARGO';
-                                                });
                                             @endphp
                                             @if($tipeKontainers->count() > 0)
                                                 {{ $tipeKontainers->take(2)->implode(', ') }}
-                                                @if($hasProspekType)
-                                                    <span class="ml-1 px-1 py-0.5 text-xs bg-blue-100 text-blue-600 rounded">→ Prospek</span>
-                                                @endif
                                             @else
                                                 -
                                             @endif
@@ -369,9 +362,7 @@
                             <p class="text-xs text-blue-600">
                                 <span class="px-1 py-0.5 bg-blue-100 text-blue-600 rounded">📊 Double Book</span> = Otomatis jurnal ke COA
                             </p>
-                            <p class="text-xs text-blue-600">
-                                <span class="px-1 py-0.5 bg-blue-100 text-blue-600 rounded">→ Prospek</span> = Akan otomatis masuk ke data prospek
-                            </p>
+
                         </div>
                     </div>
                 </div>

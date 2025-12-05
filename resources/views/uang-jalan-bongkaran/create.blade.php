@@ -114,7 +114,9 @@
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 min-w-0">
                     <!-- Status -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Status <span class="text-red-600">*</span></label>
@@ -131,6 +133,40 @@
                         @error('status')
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Pilihan Kegiatan Bongkar/Muat -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Kegiatan <span class="text-red-600">*</span></label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" 
+                                       name="kegiatan_bongkar_muat" 
+                                       value="bongkar" 
+                                       {{ old('kegiatan_bongkar_muat', 'bongkar') == 'bongkar' ? 'checked' : '' }}
+                                       required
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Bongkar</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" 
+                                       name="kegiatan_bongkar_muat" 
+                                       value="muat" 
+                                       {{ old('kegiatan_bongkar_muat') == 'muat' ? 'checked' : '' }}
+                                       required
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Muat</span>
+                            </label>
+                        </div>
+                        @error('kegiatan_bongkar_muat')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded p-2">
+                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            Default "Bongkar" dipilih untuk surat jalan bongkaran
+                        </p>
                     </div>
                 </div>
             </div>

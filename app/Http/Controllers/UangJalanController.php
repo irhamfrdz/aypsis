@@ -86,8 +86,8 @@ class UangJalanController extends Controller
         $search = $request->get('search');
         $status = $request->get('status', 'all'); // Default filter
         
-        // Query surat jalan dengan filter
-        $query = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
+        // Query surat jalan biasa dengan filter
+        $querySuratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
             ->whereNotNull('order_id') // Hanya surat jalan yang ada ordernya
             ->where('status_pembayaran_uang_jalan', 'belum_ada') // Hanya yang belum ada uang jalan
             ->where(function($q) {
@@ -97,14 +97,21 @@ class UangJalanController extends Controller
                   ->orWhere('is_supir_customer', 0);
             });
         
-        // Filter berdasarkan status
+        // Query surat jalan bongkaran dengan filter
+        $querySuratJalanBongkaran = \App\Models\SuratJalanBongkaran::query();
+        
+        // Exclude surat jalan bongkaran yang sudah memiliki uang jalan
+        $existingUangJalanBongkaranIds = \App\Models\UangJalanBongkaran::pluck('surat_jalan_bongkaran_id')->toArray();
+        $querySuratJalanBongkaran->whereNotIn('id', $existingUangJalanBongkaranIds);
+        
+        // Filter berdasarkan status untuk surat jalan biasa
         if ($status && $status !== 'all') {
-            $query->where('status', $status);
+            $querySuratJalan->where('status', $status);
         }
         
-        // Filter berdasarkan pencarian
+        // Filter berdasarkan pencarian untuk surat jalan biasa
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $querySuratJalan->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('kenek', 'like', "%{$search}%")
@@ -116,12 +123,66 @@ class UangJalanController extends Controller
                                  });
                   });
             });
+            
+            // Filter berdasarkan pencarian untuk surat jalan bongkaran
+            $querySuratJalanBongkaran->where(function ($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('kenek', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+            });
         }
         
-        // Urutkan berdasarkan tanggal terbaru
-        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')
-                           ->orderBy('created_at', 'desc')
-                           ->paginate(15);
+        // Ambil data surat jalan biasa
+        $suratJalansBiasa = $querySuratJalan->orderBy('tanggal_surat_jalan', 'desc')
+                                           ->orderBy('created_at', 'desc')
+                                           ->get();
+        
+        // Ambil data surat jalan bongkaran
+        $suratJalansBongkaran = $querySuratJalanBongkaran->orderBy('tanggal_surat_jalan', 'desc')
+                                                         ->orderBy('created_at', 'desc')
+                                                         ->get();
+        
+        // Tambahkan flag untuk membedakan jenis surat jalan
+        $suratJalansBiasa->each(function($item) {
+            $item->jenis_surat_jalan = 'biasa';
+        });
+        
+        $suratJalansBongkaran->each(function($item) {
+            $item->jenis_surat_jalan = 'bongkaran';
+            // Normalisasi field untuk konsistensi di frontend
+            $item->no_surat_jalan = $item->nomor_surat_jalan;
+            $item->no_kontainer = $item->no_kontainer ?? $item->nomor_kontainer;
+        });
+        
+        // Gabungkan kedua collection dan urutkan berdasarkan tanggal
+        $allSuratJalans = $suratJalansBiasa->concat($suratJalansBongkaran)
+                                          ->sortByDesc(function($item) {
+                                              return $item->tanggal_surat_jalan ?? $item->created_at;
+                                          });
+        
+        // Manual pagination
+        $perPage = 15;
+        $currentPage = $request->get('page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        
+        $paginatedItems = $allSuratJalans->slice($offset, $perPage)->values();
+        $total = $allSuratJalans->count();
+        
+        $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedItems,
+            $total,
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'pageName' => 'page',
+            ]
+        );
+        
+        $suratJalans->appends($request->query());
         
         // Status options untuk filter
         $statusOptions = [
@@ -141,34 +202,52 @@ class UangJalanController extends Controller
     public function create(Request $request)
     {
         $suratJalanId = $request->get('surat_jalan_id');
+        $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
         
         if (!$suratJalanId) {
             return redirect()->route('uang-jalan.select-surat-jalan')
                            ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
         }
         
-        // Ambil data surat jalan dengan relasi yang diperlukan
-        $suratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
-                                ->findOrFail($suratJalanId);
-        
-        // Cek apakah surat jalan ini adalah supir customer - jika ya, tidak boleh dibuat uang jalan
-        if (!empty($suratJalan->is_supir_customer) && $suratJalan->is_supir_customer) {
-            return redirect()->route('uang-jalan.select-surat-jalan')
-                           ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan dengan Supir Customer.');
-        }
+        if ($jenisSuratJalan === 'bongkaran') {
+            // Ambil data surat jalan bongkaran
+            $suratJalan = \App\Models\SuratJalanBongkaran::findOrFail($suratJalanId);
+            
+            // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini
+            $existingUangJalan = \App\Models\UangJalanBongkaran::where('surat_jalan_bongkaran_id', $suratJalanId)->first();
+            
+            if ($existingUangJalan) {
+                return redirect()->route('uang-jalan.select-surat-jalan')
+                               ->with('error', 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat.');
+            }
+            
+            // Normalisasi field untuk konsistensi dengan surat jalan biasa
+            $suratJalan->no_surat_jalan = $suratJalan->nomor_surat_jalan;
+            $suratJalan->no_kontainer = $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer;
+        } else {
+            // Ambil data surat jalan dengan relasi yang diperlukan
+            $suratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
+                                    ->findOrFail($suratJalanId);
+            
+            // Cek apakah surat jalan ini adalah supir customer - jika ya, tidak boleh dibuat uang jalan
+            if (!empty($suratJalan->is_supir_customer) && $suratJalan->is_supir_customer) {
+                return redirect()->route('uang-jalan.select-surat-jalan')
+                               ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan dengan Supir Customer.');
+            }
 
-        // Cek apakah sudah ada uang jalan untuk surat jalan ini
-        $existingUangJalan = UangJalan::where('surat_jalan_id', $suratJalanId)->first();
-        
-        if ($existingUangJalan) {
-            return redirect()->route('uang-jalan.select-surat-jalan')
-                           ->with('error', 'Uang jalan untuk surat jalan ini sudah dibuat.');
+            // Cek apakah sudah ada uang jalan untuk surat jalan ini
+            $existingUangJalan = UangJalan::where('surat_jalan_id', $suratJalanId)->first();
+            
+            if ($existingUangJalan) {
+                return redirect()->route('uang-jalan.select-surat-jalan')
+                               ->with('error', 'Uang jalan untuk surat jalan ini sudah dibuat.');
+            }
         }
         
         // Generate nomor uang jalan untuk preview
         $nomorUangJalan = UangJalan::generateNomorUangJalan();
         
-        return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan'));
+        return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'jenisSuratJalan'));
     }
 
     /**

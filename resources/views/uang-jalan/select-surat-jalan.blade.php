@@ -238,6 +238,9 @@
                                 <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-20" onclick="sortTable('no_sj')">
                                     No SJ ↕
                                 </th>
+                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-12" onclick="sortTable('jenis')">
+                                    Jenis ↕
+                                </th>
                                 <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer w-16" onclick="sortTable('nama_supir')">
                                     Supir ↕
                                 </th>
@@ -266,7 +269,7 @@
                         </thead>
                         <tbody id="suratJalanTableBody" class="bg-white divide-y divide-gray-100">
                             @forelse($suratJalans as $suratJalan)
-                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ addslashes($isBongkaran ? ($suratJalan->pengirim ?? '') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) }}', '{{ addslashes($suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '') }}')">
+                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ addslashes($isBongkaran ? ($suratJalan->pengirim ?? '') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) }}', '{{ addslashes($suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '') }}', '{{ $suratJalan->jenis_surat_jalan ?? 'biasa' }}')">
                                     <td class="px-1 py-1">
                                         <div class="text-xs font-medium text-blue-600 hover:text-blue-800 leading-tight">
                                             {{ $suratJalan->{$noField} }}
@@ -274,6 +277,11 @@
                                         @if($suratJalan->order)
                                             <div style="font-size: 9px;" class="text-gray-500 leading-tight">{{ $suratJalan->order->nomor_order }}</div>
                                         @endif
+                                    </td>
+                                    <td class="px-1 py-1">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ isset($suratJalan->jenis_surat_jalan) && $suratJalan->jenis_surat_jalan === 'bongkaran' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+                                            {{ isset($suratJalan->jenis_surat_jalan) && $suratJalan->jenis_surat_jalan === 'bongkaran' ? 'BGK' : 'MKT' }}
+                                        </span>
                                     </td>
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="{{ $suratJalan->supir }}">
                                         {{ $suratJalan->supir }}
@@ -285,7 +293,7 @@
                                         {{ $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '-' }}
                                     </td>
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $isBongkaran ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}">
-                                        {{ $isBongkaran ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}
+                                        {{ isset($suratJalan->jenis_surat_jalan) && $suratJalan->jenis_surat_jalan === 'bongkaran' ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}
                                     </td>
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="{{ $suratJalan->tujuan_pengambilan ?? '-' }}">
                                         {{ $suratJalan->tujuan_pengambilan ?? '-' }}
@@ -302,7 +310,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-2 py-4 text-center text-gray-500">
+                                    <td colspan="10" class="px-2 py-4 text-center text-gray-500">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-6 h-6 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -378,9 +386,11 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const selectedId = document.getElementById('selected_surat_jalan_id').value;
+        const jenisSuratJalan = document.getElementById('jenis_surat_jalan')?.value || 'biasa';
+        
         if (selectedId) {
-            // Redirect to create page with selected surat jalan id
-                const createUrl = '{{ route($createRouteName) }}?{{ $suratJalanQueryParam }}=' + selectedId;
+            // Redirect to create page with selected surat jalan id and jenis
+            const createUrl = '{{ route($createRouteName) }}?{{ $suratJalanQueryParam }}=' + selectedId + '&jenis_surat_jalan=' + encodeURIComponent(jenisSuratJalan);
             window.location.href = createUrl;
         }
     });
@@ -439,12 +449,13 @@ function closeSuratJalanModal() {
     document.body.style.overflow = 'auto';
 }
 
-function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim, noKontainer) {
+function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim, noKontainer, jenisSuratJalan = 'biasa') {
     // Set hidden input value
     document.getElementById('selected_surat_jalan_id').value = id;
     
-    // Set display input value
-    document.getElementById('selected_surat_jalan_display').value = noSuratJalan + ' - ' + supir;
+    // Set display input value dengan jenis surat jalan
+    const jenisLabel = jenisSuratJalan === 'bongkaran' ? '[BGK]' : '[MKT]';
+    document.getElementById('selected_surat_jalan_display').value = jenisLabel + ' ' + noSuratJalan + ' - ' + supir;
     
     // Update preview
     document.getElementById('preview-tanggal').textContent = tanggal || '-';
@@ -455,6 +466,17 @@ function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim, noKo
     // Show preview and enable submit button
     document.getElementById('suratJalanPreview').classList.remove('hidden');
     document.getElementById('submitBtn').disabled = false;
+    
+    // Store jenis surat jalan untuk form submission
+    let hiddenJenis = document.getElementById('jenis_surat_jalan');
+    if (!hiddenJenis) {
+        hiddenJenis = document.createElement('input');
+        hiddenJenis.type = 'hidden';
+        hiddenJenis.id = 'jenis_surat_jalan';
+        hiddenJenis.name = 'jenis_surat_jalan';
+        document.getElementById('selectSuratJalanForm').appendChild(hiddenJenis);
+    }
+    hiddenJenis.value = jenisSuratJalan;
     
     // Close modal
     closeSuratJalanModal();
@@ -491,6 +513,10 @@ function sortTable(column) {
             case 'no_sj':
                 aVal = a.no_surat_jalan || '';
                 bVal = b.no_surat_jalan || '';
+                break;
+            case 'jenis':
+                aVal = a.jenis_surat_jalan || 'biasa';
+                bVal = b.jenis_surat_jalan || 'biasa';
                 break;
             case 'nama_supir':
                 aVal = a.supir || '';
@@ -552,7 +578,10 @@ function updateTableDisplay() {
         
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 cursor-pointer transition-colors';
-        row.onclick = () => selectSuratJalan(item.id, item.no_surat_jalan, item.supir, item.no_plat, tanggal, pengirim, item.no_kontainer);
+        row.onclick = () => selectSuratJalan(item.id, item.no_surat_jalan, item.supir, item.no_plat, tanggal, pengirim, item.no_kontainer, item.jenis_surat_jalan || 'biasa');
+        
+        const jenisLabel = (item.jenis_surat_jalan === 'bongkaran') ? 'BGK' : 'MKT';
+        const jenisBadgeClass = (item.jenis_surat_jalan === 'bongkaran') ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800';
         
         row.innerHTML = `
             <td class="px-1 py-1">
@@ -560,6 +589,11 @@ function updateTableDisplay() {
                     ${item.no_surat_jalan}
                 </div>
                 ${orderNo ? `<div style="font-size: 9px;" class="text-gray-500 leading-tight">${orderNo}</div>` : ''}
+            </td>
+            <td class="px-1 py-1">
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${jenisBadgeClass}">
+                    ${jenisLabel}
+                </span>
             </td>
             <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="${item.supir || '-'}">
                 ${item.supir || '-'}

@@ -48,6 +48,15 @@
                             <span class="font-medium">No. Order:</span>
                             <div>{{ $suratJalan->order->nomor_order }}</div>
                         </div>
+                        @elseif(isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran')
+                        <div>
+                            <span class="font-medium">Pengirim:</span>
+                            <div class="truncate">{{ $suratJalan->pengirim ?? '-' }}</div>
+                        </div>
+                        <div>
+                            <span class="font-medium">Jenis Barang:</span>
+                            <div>{{ $suratJalan->jenis_barang ?? '-' }}</div>
+                        </div>
                         @endif
                         <div>
                             <span class="font-medium">Supir:</span>
@@ -63,7 +72,14 @@
                         </div>
                         <div>
                             <span class="font-medium">Uang Jalan:</span>
-                            <div class="text-sm font-semibold">Rp {{ number_format($suratJalan->uang_jalan ?? 0, 0, ',', '.') }}</div>
+                            @php
+                                $nilaiUangJalan = $suratJalan->uang_jalan ?? 0;
+                                // Untuk surat jalan bongkaran, jika uang_jalan kosong/0, gunakan uang_jalan_nominal
+                                if ((isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran') && (!$nilaiUangJalan || $nilaiUangJalan == 0)) {
+                                    $nilaiUangJalan = $suratJalan->uang_jalan_nominal ?? 0;
+                                }
+                            @endphp
+                            <div class="text-sm font-semibold">Rp {{ number_format($nilaiUangJalan, 0, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
@@ -132,30 +148,46 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Pilihan Bongkar/Muat -->
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Kegiatan <span class="text-red-600">*</span></label>
-                        <div class="flex gap-3">
-                            <label class="flex items-center">
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Kegiatan <span class="text-red-600">*</span></label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center cursor-pointer">
                                 <input type="radio" 
                                        name="kegiatan_bongkar_muat" 
                                        value="bongkar" 
-                                       {{ old('kegiatan_bongkar_muat') == 'bongkar' ? 'checked' : '' }}
+                                       @if(old('kegiatan_bongkar_muat'))
+                                           {{ old('kegiatan_bongkar_muat') == 'bongkar' ? 'checked' : '' }}
+                                       @else
+                                           {{ (isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran') ? 'checked' : '' }}
+                                       @endif
                                        required
-                                       class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                <span class="ml-1.5 text-xs text-gray-700">Bongkar</span>
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Bongkar</span>
                             </label>
-                            <label class="flex items-center">
+                            <label class="flex items-center cursor-pointer">
                                 <input type="radio" 
                                        name="kegiatan_bongkar_muat" 
                                        value="muat" 
-                                       {{ old('kegiatan_bongkar_muat') == 'muat' ? 'checked' : '' }}
+                                       @if(old('kegiatan_bongkar_muat'))
+                                           {{ old('kegiatan_bongkar_muat') == 'muat' ? 'checked' : '' }}
+                                       @else
+                                           {{ (!isset($jenisSuratJalan) || $jenisSuratJalan != 'bongkaran') ? 'checked' : '' }}
+                                       @endif
                                        required
-                                       class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                <span class="ml-1.5 text-xs text-gray-700">Muat</span>
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Muat</span>
                             </label>
                         </div>
                         @error('kegiatan_bongkar_muat')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
+                        @if(isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran')
+                            <p class="mt-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded p-2">
+                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                                Otomatis dipilih "Bongkar" karena surat jalan bongkaran
+                            </p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -170,10 +202,17 @@
                         <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Uang Jalan <span class="text-red-600">*</span></label>
                         <div class="relative">
                             <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
+                            @php
+                                $defaultUangJalan = $suratJalan->uang_jalan ?? 0;
+                                // Untuk surat jalan bongkaran, jika uang_jalan kosong/0, gunakan uang_jalan_nominal
+                                if ((isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran') && (!$defaultUangJalan || $defaultUangJalan == 0)) {
+                                    $defaultUangJalan = $suratJalan->uang_jalan_nominal ?? 0;
+                                }
+                            @endphp
                             <input type="number"
                                    name="jumlah_uang_jalan"
                                    id="jumlah_uang_jalan"
-                                   value="{{ old('jumlah_uang_jalan', intval($suratJalan->uang_jalan ?? 0)) }}"
+                                   value="{{ old('jumlah_uang_jalan', intval($defaultUangJalan)) }}"
                                    min="0"
                                    step="1"
                                    required
