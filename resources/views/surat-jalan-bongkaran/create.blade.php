@@ -698,7 +698,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tujuan kegiatan utama data for uang jalan calculation
     const tujuanKegiatanData = @json($tujuanKegiatanUtamas->keyBy('ke'));
     
-    // Nomor surat jalan will be manually entered by user
+    // Auto generate nomor surat jalan if needed
+    const generateNomor = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const date = String(today.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        
+        return `SJB/${year}${month}${date}/${random}`;
+    };
+    
+    // Set default nomor if empty
+    const nomorInput = document.getElementById('nomor_surat_jalan');
+    if (nomorInput && !nomorInput.value) {
+        nomorInput.value = generateNomor();
+    }
     
     // Set default tanggal to today
     const tanggalInput = document.getElementById('tanggal_surat_jalan');
