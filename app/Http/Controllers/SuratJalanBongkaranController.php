@@ -501,13 +501,13 @@ class SuratJalanBongkaranController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Surat Jalan Bongkaran berhasil dibuat.',
-                    'redirect' => route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
+                    'message' => 'Surat jalan berhasil disimpan.',
+                    'redirect' => route('surat-jalan-bongkaran.index')
                 ]);
             }
 
-            return redirect()->route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
-                           ->with('success', 'Surat Jalan Bongkaran berhasil dibuat.');
+            return redirect()->route('surat-jalan-bongkaran.index')
+                           ->with('success', 'Surat jalan berhasil disimpan.');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -544,7 +544,35 @@ class SuratJalanBongkaranController extends Controller
         // Get terms untuk dropdown term pembayaran  
         $terms = \App\Models\Term::orderBy('kode')->get();
 
-        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'terms'));
+        // Get data for dropdowns (same as create method)
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
+                                                ->whereNull('tanggal_berhenti')
+                                                ->orderBy('nama_panggilan')
+                                                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
+        
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
+                                              ->whereNull('tanggal_berhenti')
+                                              ->orderBy('nama_panggilan')
+                                              ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+        
+        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
+                                                               ->orderBy('ke')
+                                                               ->get();
+        
+        $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                         ->where('status', 'aktif')
+                                         ->orderBy('nama_kegiatan')
+                                         ->get();
+
+        return view('surat-jalan-bongkaran.edit', compact(
+            'suratJalanBongkaran', 
+            'kapals', 
+            'terms',
+            'karyawanSupirs',
+            'karyawanKranis', 
+            'tujuanKegiatanUtamas',
+            'masterKegiatans'
+        ));
     }
 
     /**
