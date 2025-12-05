@@ -145,7 +145,16 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach($pembayaranPranotaUangJalan->pranotaUangJalans as $pranota)
                             <tr>
-                                <td class="px-4 py-2 text-sm">{{ $pranota->nomor_pranota }}</td>
+                                <td class="px-4 py-2 text-sm">
+                                    @can('pranota-uang-jalan-view')
+                                        <a href="{{ route('pranota-uang-jalan.show', $pranota) }}" 
+                                           class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                            {{ $pranota->nomor_pranota }}
+                                        </a>
+                                    @else
+                                        {{ $pranota->nomor_pranota }}
+                                    @endcan
+                                </td>
                                 <td class="px-4 py-2 text-sm">
                                     {{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') : '-' }}
                                 </td>
