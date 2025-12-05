@@ -815,6 +815,26 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for OB (Ocean Bunker) permissions (ob-view) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'ob-') === 0) {
+                $module = 'ob';
+                $action = str_replace('ob-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map OB actions (currently only view is supported)
+                $actionMap = [
+                    'view' => 'view'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Special handling for master-kapal permissions (master-kapal-view, master-kapal-create, etc.) - MUST BE BEFORE Pattern 3
             if (strpos($permissionName, 'master-kapal-') === 0) {
                 $module = 'master-kapal';
@@ -3191,6 +3211,16 @@ class UserController extends Controller
                                     $found = true;
                                 }
                             }
+                        }
+                    }
+
+                    // Handle OB (Ocean Bunker) permissions explicitly
+                    if ($module === 'ob' && $action === 'view') {
+                        $permissionName = 'ob-view';
+                        $directPermission = Permission::where('name', $permissionName)->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
                         }
                     }
 
