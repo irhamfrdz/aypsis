@@ -306,18 +306,21 @@ use Illuminate\Support\Str;
                                 </span>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap">
-                                @if($suratJalan->status_pembayaran)
+                                @php
+                                    $overallStatus = $suratJalan->overall_status_pembayaran;
+                                @endphp
+                                @if($overallStatus)
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium
-                                        @if($suratJalan->status_pembayaran == 'sudah_dibayar')
+                                        @if($overallStatus == 'sudah_dibayar')
                                             bg-green-100 text-green-800
-                                        @elseif($suratJalan->status_pembayaran == 'belum_dibayar')
+                                        @elseif($overallStatus == 'belum_dibayar')
                                             bg-yellow-100 text-yellow-800
                                         @else
                                             bg-blue-100 text-blue-800
                                         @endif">
-                                        @if($suratJalan->status_pembayaran == 'sudah_dibayar')
+                                        @if($overallStatus == 'sudah_dibayar')
                                             Dibayar
-                                        @elseif($suratJalan->status_pembayaran == 'belum_dibayar')
+                                        @elseif($overallStatus == 'belum_dibayar')
                                             Belum Bayar
                                         @else
                                             Belum Pranota

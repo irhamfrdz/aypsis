@@ -355,6 +355,32 @@ class SuratJalan extends Model
     }
 
     /**
+     * Get overall payment status considering all payment components
+     */
+    public function getOverallStatusPembayaranAttribute()
+    {
+        // Prioritas logika:
+        // 1. Jika ada status_pembayaran dan sudah dibayar, return sudah_dibayar
+        // 2. Jika uang jalan sudah dibayar, return "sudah_dibayar" 
+        // 3. Jika sudah ada uang jalan tapi belum dibayar, return "belum_dibayar"
+        // 4. Jika belum ada uang jalan sama sekali, return "belum_masuk_pranota"
+        
+        // Cek status pembayaran umum dulu
+        if ($this->status_pembayaran === 'sudah_dibayar') {
+            return 'sudah_dibayar';
+        }
+        
+        // Cek status pembayaran uang jalan
+        if ($this->status_pembayaran_uang_jalan === 'dibayar') {
+            return 'sudah_dibayar';
+        } elseif ($this->status_pembayaran_uang_jalan === 'sudah_masuk_uang_jalan') {
+            return 'belum_dibayar';
+        } else {
+            return 'belum_masuk_pranota';
+        }
+    }
+
+    /**
      * Scopes for status pembayaran
      */
     public function scopeBelumDibayar($query)
