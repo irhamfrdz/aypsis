@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PranotaUangJalanExport;
 
 class PranotaSuratJalanController extends Controller
 {
@@ -61,6 +63,27 @@ class PranotaSuratJalanController extends Controller
         ];
 
         return view('pranota-uang-jalan.index', compact('pranotaUangJalans', 'stats'));
+    }
+
+    /**
+     * Export pranota uang jalan listing to Excel with current filters
+     */
+    public function exportExcel(Request $request)
+    {
+        $user = Auth::user();
+        if (!$this->hasPranotaUangJalanPermission($user, 'pranota-uang-jalan-export')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengekspor pranota uang jalan.');
+        }
+
+        try {
+            $filters = $request->only(['search', 'status']);
+            $fileName = 'pranota_uang_jalan_export_' . date('Ymd_His') . '.xlsx';
+            $export = new PranotaUangJalanExport($filters, []);
+            return Excel::download($export, $fileName);
+        } catch (\Exception $e) {
+            Log::error('Error exporting pranota uang jalan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export pranota uang jalan: ' . $e->getMessage());
+        }
     }
 
     /**

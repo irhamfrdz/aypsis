@@ -1608,6 +1608,11 @@ Route::middleware(['auth'])->group(function () {
     // ====================================
 
     // Pranota Uang Jalan Management with permissions
+    // Export Pranota Uang Jalan
+    Route::get('pranota-uang-jalan/export', [\App\Http\Controllers\PranotaSuratJalanController::class, 'exportExcel'])
+         ->name('pranota-uang-jalan.export')
+         ->middleware('can:pranota-uang-jalan-export');
+
     Route::resource('pranota-uang-jalan', \App\Http\Controllers\PranotaSuratJalanController::class)
          ->middleware([
              'index' => 'can:pranota-uang-jalan-view',
