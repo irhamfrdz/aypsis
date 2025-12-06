@@ -33,18 +33,22 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectShip(Request $request)
     {
-        // Get unique kapal names from BL table
+        // Get unique kapal names from BL table (only BLs with non-empty nama_barang)
         $kapals = Bl::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
+                    ->whereNotNull('nama_barang')
+                    ->where('nama_barang', '!=', '')
                     ->distinct()
                     ->orderBy('nama_kapal')
                     ->get()
                     ->pluck('nama_kapal');
 
-        // Get voyages for selected kapal
+        // Get voyages for selected kapal (only BLs with non-empty nama_barang)
         $voyages = collect();
         if ($request->filled('nama_kapal')) {
             $voyages = Bl::where('nama_kapal', $request->nama_kapal)
+                        ->whereNotNull('nama_barang')
+                        ->where('nama_barang', '!=', '')
                         ->select('no_voyage')
                         ->whereNotNull('no_voyage')
                         ->distinct()
@@ -108,6 +112,10 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('no_voyage', $selectedVoyage);
             }
 
+            // Filter out BL with empty nama_barang
+            $query->whereNotNull('nama_barang')
+                  ->where('nama_barang', '!=', '');
+
             // Search in BL data
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -155,9 +163,11 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectKapal(Request $request)
     {
-        // Get unique kapal names from BLs table
+        // Get unique kapal names from BLs table (only BLs with non-empty nama_barang)
         $kapals = Bl::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
+                    ->whereNotNull('nama_barang')
+                    ->where('nama_barang', '!=', '')
                     ->distinct()
                     ->orderBy('nama_kapal')
                     ->get()
@@ -168,10 +178,12 @@ class SuratJalanBongkaranController extends Controller
                         ];
                     });
         
-        // Get BL data based on selected kapal
+        // Get BL data based on selected kapal (only BLs with non-empty nama_barang)
         $bls = collect();
         if ($request->filled('nama_kapal')) {
             $bls = Bl::where('nama_kapal', $request->nama_kapal)
+                    ->whereNotNull('nama_barang')
+                    ->where('nama_barang', '!=', '')
                     ->distinct()
                     ->get(['no_voyage', 'nomor_bl'])
                     ->groupBy('no_voyage');
@@ -208,11 +220,13 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
-        // Get BL data for this kapal with container information
+        // Get BL data for this kapal with container information (only BLs with non-empty nama_barang)
         $bls = Bl::where('nama_kapal', $selectedKapalName)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
-              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
+              ->whereNotNull('nama_barang')
+              ->where('nama_barang', '!=', '')
+              ->get(['id', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
 
         // Group by voyage and get unique voyages
         $voyages = $bls->pluck('no_voyage')->unique()->values();
