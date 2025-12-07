@@ -33,22 +33,18 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectShip(Request $request)
     {
-        // Get unique kapal names from BL table (only BLs with non-empty nama_barang)
+        // Get unique kapal names from BL table
         $kapals = Bl::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
-                    ->whereNotNull('nama_barang')
-                    ->where('nama_barang', '!=', '')
                     ->distinct()
                     ->orderBy('nama_kapal')
                     ->get()
                     ->pluck('nama_kapal');
 
-        // Get voyages for selected kapal (only BLs with non-empty nama_barang)
+        // Get voyages for selected kapal
         $voyages = collect();
         if ($request->filled('nama_kapal')) {
             $voyages = Bl::where('nama_kapal', $request->nama_kapal)
-                        ->whereNotNull('nama_barang')
-                        ->where('nama_barang', '!=', '')
                         ->select('no_voyage')
                         ->whereNotNull('no_voyage')
                         ->distinct()
@@ -84,6 +80,12 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('no_voyage', $selectedVoyage);
             }
 
+            // Exclude surat jalan rows with nama_barang that are empty indicators
+            // or a single hyphen '-' (case-insensitive). Keep the list clean.
+            $query->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
+                ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
+                ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')");
+
             // Search in surat jalan bongkaran
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -103,6 +105,10 @@ class SuratJalanBongkaranController extends Controller
         } else {
             // Show BL (Bill of Lading) data - default mode
             $query = Bl::query();
+            // Join with terms table to fetch human friendly term name
+            $query->leftJoin('terms as t', 'bls.term', '=', 't.kode')
+                ->select('bls.*', 't.nama_status as term_nama')
+                ->with('suratJalanBongkaran');
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
@@ -112,9 +118,11 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('no_voyage', $selectedVoyage);
             }
 
-            // Filter out BL with empty nama_barang
-            $query->whereNotNull('nama_barang')
-                  ->where('nama_barang', '!=', '');
+            // Exclude BL rows with nama_barang that are empty indicators (e.g. 'empty', 'kosong')
+            // or a single hyphen '-' (case-insensitive). This keeps the BL list clean on the index page.
+            $query->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
+                ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
+                ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')");
 
             // Search in BL data
             if ($request->filled('search')) {
@@ -129,7 +137,7 @@ class SuratJalanBongkaranController extends Controller
                 });
             }
 
-            $bls = $query->orderBy('created_at', 'desc')->paginate(25);
+            $bls = $query->orderBy('bls.created_at', 'desc')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
         }
 
@@ -163,11 +171,9 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectKapal(Request $request)
     {
-        // Get unique kapal names from BLs table (only BLs with non-empty nama_barang)
+        // Get unique kapal names from BLs table
         $kapals = Bl::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
-                    ->whereNotNull('nama_barang')
-                    ->where('nama_barang', '!=', '')
                     ->distinct()
                     ->orderBy('nama_kapal')
                     ->get()
@@ -178,15 +184,17 @@ class SuratJalanBongkaranController extends Controller
                         ];
                     });
         
-        // Get BL data based on selected kapal (only BLs with non-empty nama_barang)
+        // Get BL data based on selected kapal
         $bls = collect();
         if ($request->filled('nama_kapal')) {
             $bls = Bl::where('nama_kapal', $request->nama_kapal)
-                    ->whereNotNull('nama_barang')
-                    ->where('nama_barang', '!=', '')
-                    ->distinct()
-                    ->get(['no_voyage', 'nomor_bl'])
-                    ->groupBy('no_voyage');
+                // Exclude BLs with nama_barang that are placeholders
+                ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
+                ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
+                ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')")
+                ->distinct()
+                ->get(['no_voyage', 'nomor_bl'])
+                ->groupBy('no_voyage');
         }
         
         return view('surat-jalan-bongkaran.select-kapal', compact('kapals', 'bls'));
@@ -220,13 +228,15 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
-        // Get BL data for this kapal with container information (only BLs with non-empty nama_barang)
-        $bls = Bl::where('nama_kapal', $selectedKapalName)
+        // Get BL data for this kapal with container information
+          $bls = Bl::where('nama_kapal', $selectedKapalName)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
-              ->whereNotNull('nama_barang')
-              ->where('nama_barang', '!=', '')
-              ->get(['id', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
+              // Exclude BLs with nama_barang indicating empty values
+              ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
+              ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
+              ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')")
+              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
 
         // Group by voyage and get unique voyages
         $voyages = $bls->pluck('no_voyage')->unique()->values();

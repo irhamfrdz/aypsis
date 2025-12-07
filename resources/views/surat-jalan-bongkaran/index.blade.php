@@ -210,6 +210,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
@@ -222,6 +223,13 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($bls as $index => $bl)
+                                @php
+                                    $namaBarangForCheck = strtolower(trim($bl->nama_barang ?? ''));
+                                    $shouldSkip = $namaBarangForCheck === '-' || $namaBarangForCheck === '' || strpos($namaBarangForCheck, 'empty') !== false || strpos($namaBarangForCheck, 'kosong') !== false;
+                                @endphp
+                                @if($shouldSkip)
+                                    @continue
+                                @endif
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
@@ -259,6 +267,15 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        @if(strtolower($bl->term) === 'port to port')
+                                            <span class="text-gray-500 italic">Tidak perlu surat jalan</span>
+                                        @elseif($bl->suratJalanBongkaran)
+                                            <span class="font-semibold text-blue-600">{{ $bl->suratJalanBongkaran->nomor_surat_jalan }}</span>
+                                        @else
+                                            <span class="text-orange-600 font-medium">Perlu surat jalan</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $bls->firstItem() + $index }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         <span class="font-semibold text-gray-900">{{ $bl->nomor_bl ?: '-' }}</span>
@@ -266,13 +283,15 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_seal ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->term ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        {{ $bl->term ? ($bl->term_nama ? $bl->term . ' - ' . $bl->term_nama : $bl->term) : '-' }}
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->penerima, 30) ?: '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-4 py-12 text-center">
+                                    <td colspan="10" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -365,7 +384,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih term</option>
                                 @foreach($terms as $term)
-                                    <option value="{{ $term->kode }}">{{ $term->kode }} - {{ $term->nama_term }}</option>
+                                    <option value="{{ $term->kode }}">{{ $term->kode }} - {{ $term->nama_status }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -409,12 +428,12 @@
                                    placeholder="Masukkan tujuan alamat">
                         </div>
 
-                        <!-- Tujuan Pengambilan -->
+                        <!-- Tujuan Pengiriman -->
                         <div>
-                            <label for="modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
+                            <label for="modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
                             <select name="tujuan_pengambilan" id="modal_tujuan_pengambilan"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih tujuan pengambilan</option>
+                                <option value="">Pilih tujuan pengiriman</option>
                                 @foreach($tujuanKegiatanUtamas as $tujuan)
                                     <option value="{{ $tujuan->ke }}" 
                                             data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
@@ -538,8 +557,12 @@
                         <!-- Size Kontainer -->
                         <div>
                             <label for="modal_size" class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
-                            <input type="text" name="size" id="modal_size" readonly
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                            <select name="size" id="modal_size"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih size kontainer</option>
+                                <option value="20">20</option>
+                                <option value="40">40</option>
+                            </select>
                         </div>
 
                         <!-- Informasi Packaging -->
@@ -774,6 +797,7 @@ function setupModalUangJalanCalculation(containerSize) {
     const tujuanPengambilanSelect = document.getElementById('modal_tujuan_pengambilan');
     const uangJalanNominalInput = document.getElementById('modal_uang_jalan_nominal');
     const uangJalanTypeRadios = document.querySelectorAll('input[name="uang_jalan_type"]');
+    const sizeSelect = document.getElementById('modal_size');
     
     function calculateModalUangJalan() {
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
@@ -781,12 +805,15 @@ function setupModalUangJalanCalculation(containerSize) {
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('input[name="uang_jalan_type"]:checked');
         
+        // Get current size from dropdown
+        const currentSize = sizeSelect.value;
+        
         let uangJalan = 0;
         
         // Determine uang jalan based on container size
-        if (containerSize === '20' || containerSize === '20ft') {
+        if (currentSize === '20' || currentSize === '20ft') {
             uangJalan = uangJalan20;
-        } else if (containerSize === '40' || containerSize === '40ft' || containerSize === '40hc' || containerSize === '40 hc') {
+        } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
             uangJalan = uangJalan40;
         } else {
             // Default to 20ft if size is not clear
@@ -803,12 +830,14 @@ function setupModalUangJalanCalculation(containerSize) {
         }
     }
     
-    if (tujuanPengambilanSelect && uangJalanNominalInput) {
+    if (tujuanPengambilanSelect && uangJalanNominalInput && sizeSelect) {
         // Remove existing listeners
         tujuanPengambilanSelect.removeEventListener('change', calculateModalUangJalan);
+        sizeSelect.removeEventListener('change', calculateModalUangJalan);
         
         // Add new listeners
         tujuanPengambilanSelect.addEventListener('change', calculateModalUangJalan);
+        sizeSelect.addEventListener('change', calculateModalUangJalan);
         
         uangJalanTypeRadios.forEach(radio => {
             radio.removeEventListener('change', calculateModalUangJalan);

@@ -478,7 +478,7 @@ class OrderController extends Controller
                 'pengirim_id',
                 'nama_pengirim',
                 'term_id', 
-                'nama_term',
+                'nama_status',
                 'jenis_barang_id',
                 'nama_jenis_barang',
                 'tujuan_ambil',
