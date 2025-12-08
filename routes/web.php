@@ -1642,6 +1642,11 @@ Route::middleware(['auth'])->group(function () {
                ->name('pranota-uang-jalan-bongkaran.index')
                ->middleware('can:pranota-uang-jalan-bongkaran-view');
 
+     // Alias route for pranota-ob.index (backward compatibility)
+          Route::get('pranota-ob', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
+               ->name('pranota-ob.index')
+               ->middleware('can:pranota-uang-jalan-bongkaran-view');
+
      // Pranota Uang Jalan Bongkaran Management with permissions
       Route::resource('pranota-uang-jalan-bongkaran', \App\Http\Controllers\PranotaUangJalanBongkaranController::class)
              ->middleware([
