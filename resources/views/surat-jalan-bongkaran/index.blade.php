@@ -164,7 +164,7 @@
                                                 </svg>
                                             </button>
 
-                                            <div id="dropdown-sj-{{ $sj->id }}" class="hidden fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                            <div id="dropdown-sj-{{ $sj->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
                                                     <a href="#" onclick="editSuratJalan({{ $sj->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
@@ -248,7 +248,7 @@
                                                 </svg>
                                             </button>
 
-                                            <div id="dropdown-{{ $bl->id }}" class="hidden fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                            <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
                                                     @if($bl->suratJalanBongkaran)
                                                         <a href="#" onclick="editSuratJalanFromBL({{ $bl->suratJalanBongkaran->id }}); return false;" 
@@ -1078,22 +1078,7 @@ function toggleDropdown(dropdownId) {
     // Toggle the clicked dropdown
     const dropdown = document.getElementById(dropdownId);
     if (dropdown) {
-        const isHidden = dropdown.classList.contains('hidden');
-        
-        if (isHidden) {
-            // Get button position to position dropdown correctly
-            const button = event.target.closest('button');
-            const buttonRect = button.getBoundingClientRect();
-            
-            // Position dropdown using fixed positioning
-            dropdown.style.position = 'fixed';
-            dropdown.style.top = (buttonRect.bottom + 4) + 'px';
-            dropdown.style.left = buttonRect.left + 'px';
-            
-            dropdown.classList.remove('hidden');
-        } else {
-            dropdown.classList.add('hidden');
-        }
+        dropdown.classList.toggle('hidden');
     }
 }
 
