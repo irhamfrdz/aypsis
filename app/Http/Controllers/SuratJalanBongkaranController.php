@@ -57,6 +57,31 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Get voyages for a specific kapal via AJAX.
+     */
+    public function getVoyages(Request $request)
+    {
+        $nama_kapal = $request->query('nama_kapal');
+
+        if (!$nama_kapal) {
+            return response()->json(['success' => false, 'message' => 'Nama kapal is required'], 400);
+        }
+
+        $voyages = Bl::where('nama_kapal', $nama_kapal)
+                    ->select('no_voyage')
+                    ->whereNotNull('no_voyage')
+                    ->distinct()
+                    ->orderBy('no_voyage')
+                    ->get()
+                    ->pluck('no_voyage');
+
+        return response()->json([
+            'success' => true,
+            'voyages' => $voyages
+        ]);
+    }
+
+    /**
      * Display a listing of the resource.
      */
         public function index(Request $request)

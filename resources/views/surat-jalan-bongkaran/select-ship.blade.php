@@ -100,17 +100,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const form = document.getElementById('selectShipForm');
 
-    // When kapal changes, fetch voyages
-    kapalSelect.addEventListener('change', function() {
-        const kapal = this.value;
-        
-        if (kapal) {
-            // Reload page with kapal parameter to get voyages
-            window.location.href = `{{ route('surat-jalan-bongkaran.select-ship') }}?nama_kapal=${encodeURIComponent(kapal)}`;
-        } else {
+    // Function to load voyages for selected kapal
+    function loadVoyages(kapalName) {
+        if (!kapalName) {
             voyageSelect.disabled = true;
             voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+            return;
         }
+
+        // Show loading state
+        voyageSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">Memuat voyage...</option>';
+
+        // Make AJAX request to get voyages
+        fetch(`{{ route('surat-jalan-bongkaran.get-voyages') }}?nama_kapal=${encodeURIComponent(kapalName)}`)
+            .then(response => response.json())
+            .then(data => {
+                voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+                
+                if (data.success && data.voyages && data.voyages.length > 0) {
+                    data.voyages.forEach(voyage => {
+                        const option = document.createElement('option');
+                        option.value = voyage;
+                        option.textContent = voyage;
+                        voyageSelect.appendChild(option);
+                    });
+                    voyageSelect.disabled = false;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage ditemukan</option>';
+                    voyageSelect.disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading voyages:', error);
+                voyageSelect.innerHTML = '<option value="">Error memuat voyage</option>';
+                voyageSelect.disabled = true;
+            });
+    }
+
+    // When kapal changes, load voyages via AJAX
+    kapalSelect.addEventListener('change', function() {
+        const kapal = this.value;
+        loadVoyages(kapal);
+        updateSubmitButton();
     });
 
     // Enable/disable submit button based on selections
@@ -125,8 +157,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    kapalSelect.addEventListener('change', updateSubmitButton);
     voyageSelect.addEventListener('change', updateSubmitButton);
+    
+    // Load voyages if kapal is already selected (from URL parameter or page reload)
+    const initialKapalValue = kapalSelect.value;
+    if (initialKapalValue) {
+        loadVoyages(initialKapalValue);
+    }
     
     // Initial check
     updateSubmitButton();
