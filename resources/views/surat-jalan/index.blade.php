@@ -166,7 +166,7 @@ use Illuminate\Support\Str;
                 <table class="min-w-full divide-y divide-gray-200 text-xs resizable-table" id="suratJalanTable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="resizable-th px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16" style="position: relative;">Actions<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16 sticky left-0 bg-gray-50 z-10" style="position: sticky;">Actions<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Order<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">No. SJ<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
@@ -186,7 +186,7 @@ use Illuminate\Support\Str;
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($suratJalans as $suratJalan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-2 py-2 whitespace-nowrap text-center">
+                            <td class="px-2 py-2 whitespace-nowrap text-center sticky left-0 bg-white z-10">
                                 <div class="relative inline-block text-left">
                                     <button type="button" onclick="toggleDropdown('dropdown-{{ $suratJalan->id }}')"
                                             class="inline-flex items-center justify-center w-6 h-6 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors duration-200">

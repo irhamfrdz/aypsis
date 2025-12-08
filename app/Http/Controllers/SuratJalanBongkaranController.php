@@ -605,8 +605,32 @@ class SuratJalanBongkaranController extends Controller
         
         // Get terms untuk dropdown term pembayaran  
         $terms = \App\Models\Term::orderBy('kode')->get();
+        
+        // Get master kegiatan untuk dropdown aktifitas
+        $masterKegiatans = MasterKegiatan::orderBy('nama_kegiatan')->get();
+        
+        // Get tujuan kegiatan utama untuk dropdown tujuan pengiriman
+        $tujuanKegiatanUtamas = TujuanKegiatanUtama::orderBy('ke')->get();
+        
+        // Get karyawan supir untuk dropdown supir (from karyawans table)
+        $karyawanSupirs = \App\Models\Karyawan::where('pekerjaan', 'Supir')
+                              ->orderBy('nama_panggilan')
+                              ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
+        
+        // Get karyawan krani untuk dropdown kenek dan krani (from karyawans table)
+        $karyawanKranis = \App\Models\Karyawan::where('pekerjaan', 'Krani')
+                              ->orderBy('nama_panggilan')
+                              ->get(['id', 'nama_panggilan', 'nama_lengkap']);
 
-        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'terms'));
+        return view('surat-jalan-bongkaran.edit', compact(
+            'suratJalanBongkaran', 
+            'kapals', 
+            'terms', 
+            'masterKegiatans', 
+            'tujuanKegiatanUtamas', 
+            'karyawanSupirs', 
+            'karyawanKranis'
+        ));
     }
 
     /**
@@ -691,11 +715,32 @@ class SuratJalanBongkaranController extends Controller
 
             DB::commit();
 
+            // Check if this is an AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Surat Jalan Bongkaran berhasil diperbarui.',
+                    'redirect' => route('surat-jalan-bongkaran.list', [
+                        'nama_kapal' => $request->nama_kapal,
+                        'no_voyage' => $request->no_voyage
+                    ])
+                ]);
+            }
+
             return redirect()->route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
                            ->with('success', 'Surat Jalan Bongkaran berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Check if this is an AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -776,6 +821,7 @@ class SuratJalanBongkaranController extends Controller
         // Ship data
         $baData->nama_kapal = $bl->nama_kapal;
         $baData->no_voyage = $bl->no_voyage;
+        $baData->pelabuhan_asal = $bl->pelabuhan_asal ?? '';
         $baData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
         $baData->tujuan_pengiriman = $bl->pelabuhan_tujuan ?? '';
         
@@ -804,6 +850,48 @@ class SuratJalanBongkaranController extends Controller
         $baData->catatan = '-';
 
         return view('surat-jalan-bongkaran.print-ba', compact('baData'));
+    }
+
+    /**
+     * Get Surat Jalan Bongkaran data by ID for API (for edit modal)
+     */
+    public function getSuratJalanById($id)
+    {
+        $suratJalan = SuratJalanBongkaran::find($id);
+        
+        if (!$suratJalan) {
+            return response()->json(['error' => 'Surat Jalan not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $suratJalan->id,
+            'bl_id' => $suratJalan->bl_id,
+            'nomor_surat_jalan' => $suratJalan->nomor_surat_jalan,
+            'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('Y-m-d') : null,
+            'term' => $suratJalan->term ?? '',
+            'aktifitas' => $suratJalan->aktifitas ?? '',
+            'pengirim' => $suratJalan->pengirim ?? '',
+            'jenis_barang' => $suratJalan->jenis_barang ?? '',
+            'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
+            'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
+            'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',
+            'jenis_pengiriman' => $suratJalan->jenis_pengiriman ?? '',
+            'tanggal_ambil_barang' => $suratJalan->tanggal_ambil_barang ? $suratJalan->tanggal_ambil_barang->format('Y-m-d') : null,
+            'supir' => $suratJalan->supir ?? '',
+            'no_plat' => $suratJalan->no_plat ?? '',
+            'kenek' => $suratJalan->kenek ?? '',
+            'krani' => $suratJalan->krani ?? '',
+            'no_kontainer' => $suratJalan->no_kontainer ?? '',
+            'no_seal' => $suratJalan->no_seal ?? '',
+            'no_bl' => $suratJalan->no_bl ?? '',
+            'size' => $suratJalan->size ?? '',
+            'karton' => $suratJalan->karton ?? 'tidak',
+            'plastik' => $suratJalan->plastik ?? 'tidak',
+            'terpal' => $suratJalan->terpal ?? 'tidak',
+            'rit' => $suratJalan->rit ?? 'menggunakan_rit',
+            'uang_jalan_type' => $suratJalan->uang_jalan_type ?? 'full',
+            'uang_jalan_nominal' => $suratJalan->uang_jalan_nominal ?? 0,
+        ]);
     }
 
     /**

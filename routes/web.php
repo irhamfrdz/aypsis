@@ -1680,6 +1680,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('api.bl.show')
          ->middleware('can:surat-jalan-bongkaran-view');
     
+    // API endpoint to fetch Surat Jalan Bongkaran data
+    Route::get('api/surat-jalan-bongkaran/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getSuratJalanById'])
+         ->name('api.surat-jalan-bongkaran.show')
+         ->middleware('can:surat-jalan-bongkaran-view');
+    
     Route::get('surat-jalan-bongkaran/select-ship', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
          ->name('surat-jalan-bongkaran.select-ship')
          ->middleware('can:surat-jalan-bongkaran-view');
