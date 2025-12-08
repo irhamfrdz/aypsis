@@ -121,6 +121,18 @@
                 </div>
             </form>
 
+            <!-- Debug Info -->
+            @if(config('app.debug'))
+                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                    <strong>Debug Info:</strong><br>
+                    @if(request('mode') == 'surat_jalan')
+                        Total Surat Jalan: {{ $suratJalans->total() }}
+                    @else
+                        Total BL: {{ $bls->total() }}
+                    @endif
+                </div>
+            @endif
+
             <!-- Table -->
             <div class="relative">
                 @if(request('mode') == 'surat_jalan')
@@ -226,13 +238,6 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($bls as $index => $bl)
-                                @php
-                                    $namaBarangForCheck = strtolower(trim($bl->nama_barang ?? ''));
-                                    $shouldSkip = $namaBarangForCheck === '-' || $namaBarangForCheck === '' || strpos($namaBarangForCheck, 'empty') !== false || strpos($namaBarangForCheck, 'kosong') !== false;
-                                @endphp
-                                @if($shouldSkip)
-                                    @continue
-                                @endif
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
@@ -271,9 +276,7 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
-                                        @if(strtolower($bl->term) === 'port to port')
-                                            <span class="text-gray-500 italic">Tidak perlu surat jalan</span>
-                                        @elseif($bl->suratJalanBongkaran)
+                                        @if($bl->suratJalanBongkaran)
                                             <span class="font-semibold text-blue-600">{{ $bl->suratJalanBongkaran->nomor_surat_jalan }}</span>
                                         @else
                                             <span class="text-orange-600 font-medium">Perlu surat jalan</span>

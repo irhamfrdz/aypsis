@@ -80,12 +80,6 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('no_voyage', $selectedVoyage);
             }
 
-            // Exclude surat jalan rows with nama_barang that are empty indicators
-            // or a single hyphen '-' (case-insensitive). Keep the list clean.
-            $query->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
-                ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
-                ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')");
-
             // Search in surat jalan bongkaran
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -117,12 +111,6 @@ class SuratJalanBongkaranController extends Controller
             if ($selectedVoyage) {
                 $query->where('no_voyage', $selectedVoyage);
             }
-
-            // Exclude BL rows with nama_barang that are empty indicators (e.g. 'empty', 'kosong')
-            // or a single hyphen '-' (case-insensitive). This keeps the BL list clean on the index page.
-            $query->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
-                ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
-                ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')");
 
             // Search in BL data
             if ($request->filled('search')) {
