@@ -39,6 +39,7 @@ use App\Http\Controllers\PembayaranPranotaSuratJalanController;
 use App\Http\Controllers\PembayaranPranotaUangJalanController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\PembayaranAktivitasLainController;
+use App\Http\Controllers\PembayaranAktivitasLainnyaController;
 use App\Http\Controllers\PembayaranUangMukaController;
 use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\RealisasiUangMukaController;
@@ -1584,6 +1585,21 @@ Route::middleware(['auth'])->group(function () {
          ->name('uang-jalan.select-surat-jalan')
          ->middleware('can:uang-jalan-create');
     
+    // Custom route untuk select surat jalan penyesuaian
+    Route::get('uang-jalan/select-surat-jalan-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalanPenyesuaian'])
+         ->name('uang-jalan.select-surat-jalan-penyesuaian')
+         ->middleware('can:uang-jalan-create');
+    
+    // Custom route untuk create penyesuaian
+    Route::get('uang-jalan/create-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'createPenyesuaian'])
+         ->name('uang-jalan.create-penyesuaian')
+         ->middleware('can:uang-jalan-create');
+    
+    // Custom route untuk store penyesuaian
+    Route::post('uang-jalan/store-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'storePenyesuaian'])
+         ->name('uang-jalan.store-penyesuaian')
+         ->middleware('can:uang-jalan-create');
+    
     // Export Uang Jalan (Excel)
     Route::get('uang-jalan/export', [\App\Http\Controllers\UangJalanController::class, 'exportExcel'])
          ->name('uang-jalan.export')
@@ -3070,6 +3086,28 @@ Route::prefix('pembayaran-aktivitas-lain')->name('pembayaran-aktivitas-lain.')->
          ->middleware('can:pembayaran-aktivitas-lain-approve');
     Route::post('/{pembayaranAktivitasLain}/mark-as-paid', [PembayaranAktivitasLainController::class, 'markAsPaid'])->name('mark-as-paid')
          ->middleware('can:pembayaran-aktivitas-lain-approve');
+});
+
+// Pembayaran Aktivitas Lainnya routes
+Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainnya.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PembayaranAktivitasLainnyaController::class, 'index'])->name('index')
+         ->middleware('can:pembayaran-aktivitas-lainnya-view');
+    Route::get('/create', [PembayaranAktivitasLainnyaController::class, 'create'])->name('create')
+         ->middleware('can:pembayaran-aktivitas-lainnya-create');
+    Route::post('/', [PembayaranAktivitasLainnyaController::class, 'store'])->name('store')
+         ->middleware('can:pembayaran-aktivitas-lainnya-create');
+    Route::get('/{pembayaranAktivitasLainnya}', [PembayaranAktivitasLainnyaController::class, 'show'])->name('show')
+         ->middleware('can:pembayaran-aktivitas-lainnya-view');
+    Route::get('/{pembayaranAktivitasLainnya}/edit', [PembayaranAktivitasLainnyaController::class, 'edit'])->name('edit')
+         ->middleware('can:pembayaran-aktivitas-lainnya-update');
+    Route::put('/{pembayaranAktivitasLainnya}', [PembayaranAktivitasLainnyaController::class, 'update'])->name('update')
+         ->middleware('can:pembayaran-aktivitas-lainnya-update');
+    Route::delete('/{pembayaranAktivitasLainnya}', [PembayaranAktivitasLainnyaController::class, 'destroy'])->name('destroy')
+         ->middleware('can:pembayaran-aktivitas-lainnya-delete');
+    Route::post('/{pembayaranAktivitasLainnya}/approve', [PembayaranAktivitasLainnyaController::class, 'approve'])->name('approve')
+         ->middleware('can:pembayaran-aktivitas-lainnya-approve');
+    Route::post('/{pembayaranAktivitasLainnya}/mark-as-paid', [PembayaranAktivitasLainnyaController::class, 'markAsPaid'])->name('mark-as-paid')
+         ->middleware('can:pembayaran-aktivitas-lainnya-approve');
 });
 
 // Pembayaran Uang Muka routes

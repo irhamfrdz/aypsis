@@ -266,17 +266,47 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                    <input type="text"
-                           name="tujuan_pengiriman"
-                           value="{{ old('tujuan_pengiriman', $suratJalan->tujuan_pengiriman) }}"
-                           placeholder="Tujuan pengiriman"
-                           readonly
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 @error('tujuan_pengiriman') border-red-500 @enderror">
-                    @error('tujuan_pengiriman')
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="tujuan_pengiriman_id" class="text-sm font-medium text-gray-700">
+                            Tujuan Pengiriman
+                        </label>
+                        <a href="{{ route('tujuan-kirim.create') }}" id="add_tujuan_pengiriman_link" target="_blank"
+                           class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                           title="Tambah Tujuan Pengiriman">
+                            Tambah
+                        </a>
+                    </div>
+                    <div class="relative">
+                        <div class="dropdown-container-tujuan-pengiriman">
+                            <input type="text" id="search_tujuan_pengiriman" placeholder="Cari tujuan pengiriman..."
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                            <select name="tujuan_pengiriman_id" id="tujuan_pengiriman_id"
+                                    class="hidden w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_pengiriman_id') border-red-500 @enderror">
+                                <option value="">Pilih Tujuan Pengiriman</option>
+                                @foreach($tujuanKirimOptions ?? [] as $tujuanKirim)
+                                    @php
+                                        $isSelected = false;
+                                        if (old('tujuan_pengiriman_id')) {
+                                            $isSelected = old('tujuan_pengiriman_id') == $tujuanKirim->id;
+                                        } else {
+                                            // Check if this tujuan kirim matches the current surat jalan's tujuan_pengiriman
+                                            $isSelected = ($suratJalan->tujuan_pengiriman == $tujuanKirim->nama_tujuan);
+                                        }
+                                    @endphp
+                                    <option value="{{ $tujuanKirim->id }}" {{ $isSelected ? 'selected' : '' }}>
+                                        {{ $tujuanKirim->nama_tujuan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div id="dropdown_options_tujuan_pengiriman" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    @error('tujuan_pengiriman_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Data tujuan pengiriman diambil dari order yang dipilih</p>
+                    <p class="text-xs text-gray-500 mt-1">Perubahan tujuan pengiriman akan mengupdate data order terkait</p>
                 </div>
 
                 <div>
@@ -1080,6 +1110,14 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdownId: 'dropdown_options_nomor_kontainer',
         containerClass: 'dropdown-container-nomor-kontainer'
     });
+
+    // Initialize Tujuan Pengiriman dropdown
+    createSearchableDropdown({
+        selectId: 'tujuan_pengiriman_id',
+        searchId: 'search_tujuan_pengiriman',
+        dropdownId: 'dropdown_options_tujuan_pengiriman',
+        containerClass: 'dropdown-container-tujuan-pengiriman'
+    });
     
     // Set initial value for pengirim search input if edit mode has existing data
     const pengirimSelect = document.getElementById('pengirim_id');
@@ -1303,6 +1341,38 @@ document.addEventListener('DOMContentLoaded', function() {
             const popup = window.open(
                 url,
                 'addPengirim',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }
+    
+    // Handle Tujuan Pengiriman "Tambah" link
+    const addTujuanPengirimanLink = document.getElementById('add_tujuan_pengiriman_link');
+    if (addTujuanPengirimanLink) {
+        addTujuanPengirimanLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = document.getElementById('search_tujuan_pengiriman')?.value.trim() || '';
+            let url = "{{ route('tujuan-kirim.create') }}";
+
+            // Add popup parameter and nama_tujuan if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addTujuanPengiriman',
                 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
             );
 

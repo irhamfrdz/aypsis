@@ -541,6 +541,7 @@ class SuratJalanController extends Controller
             'pengirim_id' => 'nullable|exists:pengirims,id',
             'jenis_barang_id' => 'nullable|exists:jenis_barangs,id',
             'tujuan_pengambilan_id' => 'nullable|exists:tujuan_kegiatan_utamas,id',
+            'tujuan_pengiriman_id' => 'nullable|exists:master_tujuan_kirim,id',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'retur_barang' => 'nullable|string|max:255',
             'jumlah_retur' => 'nullable|integer|min:0',
@@ -588,6 +589,12 @@ class SuratJalanController extends Controller
                 unset($data['tujuan_pengambilan_id']);
             }
 
+            if (!empty($data['tujuan_pengiriman_id'])) {
+                $tujuanPengiriman = \App\Models\MasterTujuanKirim::find($data['tujuan_pengiriman_id']);
+                $data['tujuan_pengiriman'] = $tujuanPengiriman ? $tujuanPengiriman->nama_tujuan : null;
+                unset($data['tujuan_pengiriman_id']);
+            }
+
             // Set default values for required fields if empty
             if (empty($data['status_pembayaran_uang_rit'])) {
                 $data['status_pembayaran_uang_rit'] = 'belum_dibayar';
@@ -620,6 +627,39 @@ class SuratJalanController extends Controller
             }
 
             $suratJalan->update($data);
+
+            // Update tujuan pengiriman di order jika ada perubahan
+            if ($suratJalan->order_id && isset($data['tujuan_pengiriman'])) {
+                try {
+                    $order = $suratJalan->order;
+                    if ($order) {
+                        $oldTujuanPengiriman = $order->tujuan_pengiriman;
+                        $newTujuanPengiriman = $data['tujuan_pengiriman'];
+
+                        // Update tujuan pengiriman di order jika berbeda
+                        if ($oldTujuanPengiriman !== $newTujuanPengiriman) {
+                            $order->update([
+                                'tujuan_pengiriman' => $newTujuanPengiriman,
+                                'updated_by' => Auth::id()
+                            ]);
+
+                            Log::info('Order tujuan pengiriman updated from surat jalan edit', [
+                                'surat_jalan_id' => $suratJalan->id,
+                                'order_id' => $order->id,
+                                'old_tujuan_pengiriman' => $oldTujuanPengiriman,
+                                'new_tujuan_pengiriman' => $newTujuanPengiriman,
+                                'updated_by' => Auth::id()
+                            ]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error updating order tujuan pengiriman: ' . $e->getMessage(), [
+                        'surat_jalan_id' => $suratJalan->id,
+                        'order_id' => $suratJalan->order_id
+                    ]);
+                    // Don't fail the surat jalan update if order update fails
+                }
+            }
 
             // Handle order units processing - only if surat jalan is already approved
             $newJumlahKontainer = $suratJalan->jumlah_kontainer;

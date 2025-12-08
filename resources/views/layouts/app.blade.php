@@ -1407,6 +1407,13 @@
                         <span class="text-xs">Pembayaran Aktivitas Lain</span>
                     </a>
                 @endif
+
+                {{-- Pembayaran Aktivitas Lainnya --}}
+                @if($isAdmin || ($user && $user->can('pembayaran-aktivitas-lainnya-view')))
+                    <a href="{{ route('pembayaran-aktivitas-lainnya.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lainnya.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran Aktivitas Lainnya</span>
+                    </a>
+                @endif
                 
                 {{-- Realisasi Uang Muka --}}
                 @if($isAdmin || ($user && $user->can('realisasi-uang-muka-view')))
