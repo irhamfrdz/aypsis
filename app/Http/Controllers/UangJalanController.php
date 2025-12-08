@@ -315,23 +315,12 @@ class UangJalanController extends Controller
         $search = $request->get('search');
         $status = $request->get('status', 'all'); // Default filter
         
-        // Query surat jalan biasa dengan filter - untuk penyesuaian, kita ambil yang sudah ada uang jalan
-        $querySuratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang', 'uangJalan'])
-            ->whereNotNull('order_id') // Hanya surat jalan yang ada ordernya
-            ->where('status_pembayaran_uang_jalan', 'sudah_ada') // Hanya yang sudah ada uang jalan
-            ->where(function($q) {
-                // Exclude surat jalan yang merupakan 'supir customer'
-                $q->whereNull('is_supir_customer')
-                  ->orWhere('is_supir_customer', false)
-                  ->orWhere('is_supir_customer', 0);
-            });
+        // Query surat jalan biasa - tampilkan semua
+        $querySuratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang', 'uangJalans'])
+            ->whereNotNull('order_id'); // Hanya surat jalan yang ada ordernya
         
-        // Query surat jalan bongkaran dengan filter - untuk penyesuaian
-        $querySuratJalanBongkaran = \App\Models\SuratJalanBongkaran::with(['uangJalanBongkaran'])->query();
-        
-        // Include surat jalan bongkaran yang sudah memiliki uang jalan
-        $existingUangJalanBongkaranIds = \App\Models\UangJalanBongkaran::pluck('surat_jalan_bongkaran_id')->toArray();
-        $querySuratJalanBongkaran->whereIn('id', $existingUangJalanBongkaranIds);
+        // Query surat jalan bongkaran - tampilkan semua
+        $querySuratJalanBongkaran = \App\Models\SuratJalanBongkaran::with(['uangJalanBongkarans']);
         
         // Filter berdasarkan status untuk surat jalan biasa
         if ($status && $status !== 'all') {

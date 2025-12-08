@@ -464,4 +464,12 @@ class SuratJalan extends Model
     {
         return $this->hasMany(UangJalan::class);
     }
+
+    /**
+     * Get the current/active uang jalan (latest one)
+     */
+    public function uangJalan()
+    {
+        return $this->hasOne(UangJalan::class)->latestOfMany();
+    }
 }

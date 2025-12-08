@@ -14,7 +14,7 @@
     $noField = 'no_surat_jalan';
 @endphp
 
-@section('page_title', 'Tambah Penyesuaian Uang Jalan')
+@section('page_title', 'Tambah Uang Jalan Baru')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-4">
@@ -53,14 +53,14 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <!-- Header with Green Background -->
             <div class="bg-green-500 px-4 py-3 rounded-t-lg">
-                <h1 class="text-base font-semibold text-white">Tambah Penyesuaian Uang Jalan</h1>
+                <h1 class="text-base font-semibold text-white">Penyesuaian Uang Jalan</h1>
             </div>
 
             <!-- Form Content -->
             <div class="p-4">
                 <!-- Info -->
                 <div class="mb-3 p-2 bg-green-50 border border-green-200 rounded text-xs">
-                    <strong>Info:</strong> {{ $suratJalans->total() }} surat jalan tersedia untuk penyesuaian
+                    <strong>Info:</strong> {{ $suratJalans->total() }} surat jalan tersedia untuk disesuaikan uang jalannya
                 </div>
 
                 <form id="selectSuratJalanForm" method="GET">
@@ -72,7 +72,7 @@
                             <input type="text"
                                    id="selected_surat_jalan_display"
                                    class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 cursor-pointer focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                   placeholder="Klik untuk memilih surat jalan"
+                                   placeholder="Klik untuk memilih surat jalan yang akan disesuaikan"
                                    readonly
                                    onclick="openSuratJalanModal()">
                             <button type="button"
@@ -85,12 +85,12 @@
                             </button>
                         </div>
                         <input type="hidden" id="selected_surat_jalan_id" name="surat_jalan_id" value="">
-                        <p class="mt-0.5 text-xs text-gray-500">Klik "Pilih" untuk memilih surat jalan yang akan disesuaikan</p>
+                        <p class="mt-0.5 text-xs text-gray-500">Klik "Pilih" untuk memilih surat jalan yang akan disesuaikan uang jalannya</p>
                     </div>
 
                     <!-- Preview Information (Hidden by default) -->
                     <div id="suratJalanPreview" class="hidden mb-4 p-3 bg-green-50 border border-green-200 rounded">
-                        <h3 class="text-xs font-medium text-green-900 mb-2">Detail Surat Jalan & Uang Jalan</h3>
+                        <h3 class="text-xs font-medium text-green-900 mb-2">Detail Surat Jalan</h3>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                             <div>
                                 <span class="text-gray-600">Tanggal SJ:</span>
@@ -128,7 +128,7 @@
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            Lanjutkan
+                            Lanjutkan ke Form Penyesuaian
                         </button>
                     </div>
                 </form>
@@ -139,7 +139,7 @@
         <div id="suratJalanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
             <div class="relative top-4 mx-auto p-4 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white max-h-screen overflow-y-auto">
                 <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <h3 class="text-lg font-medium text-gray-900">Pilih Surat Jalan</h3>
+                    <h3 class="text-lg font-medium text-gray-900">Pilih Surat Jalan untuk Uang Jalan Baru</h3>
                     <button onclick="closeSuratJalanModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -198,7 +198,7 @@
                                     data-tanggal="{{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}"
                                     data-supir="{{ $suratJalan->supir ?? '-' }}"
                                     data-plat="{{ $suratJalan->no_plat ?? '-' }}"
-                                    data-uang-jalan="{{ $suratJalan->jenis_surat_jalan === 'biasa' ? ($suratJalan->uangJalan->jumlah_total ?? 0) : ($suratJalan->uangJalanBongkaran->jumlah_total ?? 0) }}"
+                                    data-uang-jalan="{{ $suratJalan->jenis_surat_jalan === 'biasa' ? ($suratJalan->uangJalans->first()->jumlah_total ?? 0) : ($suratJalan->uangJalanBongkarans->first()->jumlah_total ?? 0) }}"
                                     data-jenis="{{ $suratJalan->jenis_surat_jalan }}">
                                     <td class="px-3 py-2 whitespace-nowrap">
                                         <input type="radio" name="selected_surat_jalan" value="{{ $suratJalan->id }}"
@@ -217,7 +217,7 @@
                                         {{ $suratJalan->no_plat ?? '-' }}
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold text-green-600">
-                                        Rp {{ number_format($suratJalan->jenis_surat_jalan === 'biasa' ? ($suratJalan->uangJalan->jumlah_total ?? 0) : ($suratJalan->uangJalanBongkaran->jumlah_total ?? 0), 0, ',', '.') }}
+                                        Rp {{ number_format($suratJalan->jenis_surat_jalan === 'biasa' ? ($suratJalan->uangJalans->first()->jumlah_total ?? 0) : ($suratJalan->uangJalanBongkarans->first()->jumlah_total ?? 0), 0, ',', '.') }}
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap">
                                         <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
@@ -232,7 +232,7 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="px-3 py-8 text-center text-sm text-gray-500">
-                                        Tidak ada surat jalan yang tersedia untuk penyesuaian
+                                        Tidak ada surat jalan yang tersedia untuk disesuaikan uang jalannya
                                     </td>
                                 </tr>
                             @endforelse
