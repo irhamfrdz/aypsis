@@ -20,19 +20,29 @@ class PembayaranAktivitasLain extends Model
         'keterangan',
         'jumlah',
         'debit_kredit',
+        'metode_pembayaran',
+        'status',
         'akun_coa_id',
         'akun_bank_id',
+        'approved_by',
+        'approved_at',
         'created_by',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'jumlah' => 'decimal:2',
+        'approved_at' => 'datetime',
     ];
 
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function akunCoa()

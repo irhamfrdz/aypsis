@@ -2780,8 +2780,14 @@ Route::middleware(['auth'])->group(function() {
     Route::post('ob/mark-as-ob', [\App\Http\Controllers\ObController::class, 'markAsOB'])
          ->name('ob.mark-as-ob')
          ->middleware('can:ob-view');
+    Route::post('ob/mark-as-ob-bl', [\App\Http\Controllers\ObController::class, 'markAsOBBl'])
+         ->name('ob.mark-as-ob-bl')
+         ->middleware('can:ob-view');
     Route::post('ob/unmark-ob', [\App\Http\Controllers\ObController::class, 'unmarkOB'])
          ->name('ob.unmark-ob')
+         ->middleware('can:ob-view');
+    Route::post('ob/unmark-ob-bl', [\App\Http\Controllers\ObController::class, 'unmarkOBBl'])
+         ->name('ob.unmark-ob-bl')
          ->middleware('can:ob-view');
 
     // Tagihan OB routes
@@ -2813,40 +2819,6 @@ Route::middleware(['auth'])->group(function() {
          ->name('tagihan-ob.create-from-ob-muat')
          ->middleware('can:tagihan-ob-create');
 
-    // Pranota OB routes
-    Route::get('pranota-ob/generate-nomor-preview', [\App\Http\Controllers\PranotaObController::class, 'generateNomorPreview'])
-         ->name('pranota-ob.generate-nomor-preview')
-         ->middleware('can:pranota-ob-create');
-    Route::get('pranota-ob', [\App\Http\Controllers\PranotaObController::class, 'index'])
-         ->name('pranota-ob.index')
-         ->middleware('can:pranota-ob-view');
-    Route::get('pranota-ob/create', [\App\Http\Controllers\PranotaObController::class, 'create'])
-         ->name('pranota-ob.create')
-         ->middleware('can:pranota-ob-create');
-    Route::post('pranota-ob', [\App\Http\Controllers\PranotaObController::class, 'store'])
-         ->name('pranota-ob.store')
-         ->middleware('can:pranota-ob-create');
-    Route::get('pranota-ob/{pranotaOb}/print', [\App\Http\Controllers\PranotaObController::class, 'print'])
-         ->name('pranota-ob.print')
-         ->middleware('can:pranota-ob-view');
-    Route::get('pranota-ob/{pranotaOb}/edit', [\App\Http\Controllers\PranotaObController::class, 'edit'])
-         ->name('pranota-ob.edit')
-         ->middleware('can:pranota-ob-update');
-    Route::get('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'show'])
-         ->name('pranota-ob.show')
-         ->middleware('can:pranota-ob-view');
-    Route::post('pranota-ob/{pranotaOb}/update-dp', [\App\Http\Controllers\PranotaObController::class, 'updateDp'])
-         ->name('pranota-ob.update-dp')
-         ->middleware('can:pranota-ob-update');
-    Route::put('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'update'])
-         ->name('pranota-ob.update')
-         ->middleware('can:pranota-ob-update');
-    Route::delete('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'destroy'])
-         ->name('pranota-ob.destroy')
-         ->middleware('can:pranota-ob-delete');
-    Route::post('pranota-ob/{pranotaOb}/approve', [\App\Http\Controllers\PranotaObController::class, 'approve'])
-         ->name('pranota-ob.approve')
-         ->middleware('can:pranota-ob-approve');
 
     // OB Main Module routes (Ship and Voyage Selection)
     Route::get('ob', [\App\Http\Controllers\ObController::class, 'index'])
@@ -2858,14 +2830,7 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob/dashboard', [\App\Http\Controllers\ObController::class, 'dashboard'])
          ->name('ob.dashboard')
          ->middleware('can:ob-view');
-    Route::post('pranota-ob/{pranotaOb}/submit', [\App\Http\Controllers\PranotaObController::class, 'submit'])
-         ->name('pranota-ob.submit')
-         ->middleware('can:pranota-ob-update');
-    Route::post('pranota-ob/{pranotaOb}/cancel', [\App\Http\Controllers\PranotaObController::class, 'cancel'])
-         ->name('pranota-ob.cancel')
-         ->middleware('can:pranota-ob-update');
-    Route::get('api/available-tagihan-ob', [\App\Http\Controllers\PranotaObController::class, 'getAvailableTagihanOb'])
-         ->name('api.available-tagihan-ob');
+
 
     // Pranota CAT routes
     Route::get('pranota-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'index'])

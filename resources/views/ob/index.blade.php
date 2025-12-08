@@ -1,7 +1,12 @@
 @extends('layouts.app')
 
+@if(isset($bls) && $bls->count() > 0)
+@section('title', 'OB - Data Bongkaran')
+@section('page_title', 'OB - Data Bongkaran')
+@else
 @section('title', 'OB - Data Naik Kapal')
 @section('page_title', 'OB - Data Naik Kapal')
+@endif
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -11,7 +16,11 @@
             <div class="flex items-center">
                 <i class="fas fa-ship mr-3 text-orange-600 text-2xl"></i>
                 <div>
+                    @if(isset($bls) && $bls->count() > 0)
+                    <h1 class="text-2xl font-bold text-gray-800">OB - Data Bongkaran</h1>
+                    @else
                     <h1 class="text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
+                    @endif
                     <p class="text-gray-600">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
                 </div>
             </div>
@@ -21,9 +30,6 @@
                 </a>
                 <a href="{{ route('tagihan-ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-file-invoice mr-2"></i>Tagihan OB
-                </a>
-                <a href="{{ route('pranota-ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-clipboard-list mr-2"></i>Pranota OB
                 </a>
             </div>
         </div>
@@ -150,12 +156,22 @@
     </div>
 
     {{-- Table Section --}}
+    {{-- Bulk Actions --}}
+    <div id="bulk-actions" class="hidden bg-gray-50 px-4 py-3 border-b border-gray-200 mb-4">
+        <button type="button" id="btnMasukPranota" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+            <i class="fas fa-plus mr-2"></i>Masukan ke Pranota
+        </button>
+    </div>
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             @if(isset($bls))
             <table class="min-w-full table-auto">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <input type="checkbox" id="select-all" class="mr-2">
+                            Checklist
+                        </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -173,6 +189,9 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($bls as $key => $bl)
                     <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}">
+                        </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bls->firstItem() + $key }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
@@ -185,20 +204,64 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tonnage ?? '-' }}</td>
                         <td class="px-4 py-4 text-sm text-gray-900">
                             @if($bl->sudah_ob)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Sudah OB</span>
+                                <div class="flex flex-col space-y-1">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Sudah OB
+                                    </span>
+                                    @if($bl->supir)
+                                        <div class="text-xs text-gray-600">
+                                            <i class="fas fa-user mr-1"></i>
+                                            <span class="font-medium">{{ $bl->supir->nama_panggilan }}</span>
+                                            @if($bl->supir->plat)
+                                                <span class="text-gray-500">({{ $bl->supir->plat }})</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    @if($bl->tanggal_ob)
+                                        <div class="text-xs text-gray-500">
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            {{ $bl->tanggal_ob->format('d/m/Y H:i') }}
+                                        </div>
+                                    @endif
+                                </div>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">Belum OB</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Belum OB
+                                </span>
                             @endif
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center space-x-2">
-                                <a href="#" class="text-blue-600 hover:text-blue-900 transition duration-150" title="Lihat Detail"><i class="fas fa-eye"></i></a>
+                                @if(!$bl->sudah_ob)
+                                    <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                           class="text-green-600 hover:text-green-900 transition duration-150"
+                                           title="Tandai sudah OB">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                @else
+                                    <button type="button" onclick="unmarkOB('bl', {{ $bl->id }})"
+                                           class="text-yellow-600 hover:text-yellow-900 transition duration-150"
+                                           title="Batalkan OB">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                @endif
+                                <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                       class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                       title="Input Supir OB">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                                <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
+                                   title="Lihat Detail">
+                                    <i class="fas fa-eye"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                        <td colspan="13" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -207,6 +270,10 @@
             <table class="min-w-full table-auto">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <input type="checkbox" id="select-all" class="mr-2">
+                            Checklist
+                        </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
@@ -223,6 +290,9 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
                         <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}">
+                            </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapals->firstItem() + $key }}
                             </td>
@@ -307,19 +377,24 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     @if(!$naikKapal->sudah_ob)
-                                        <button type="button" onclick="openSupirModal({{ $naikKapal->id }})"
+                                        <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
                                                class="text-green-600 hover:text-green-900 transition duration-150"
                                                title="Tandai sudah OB">
                                             <i class="fas fa-check"></i>
                                         </button>
                                     @else
-                                        <button type="button" onclick="unmarkOB({{ $naikKapal->id }})"
+                                        <button type="button" onclick="unmarkOB('naik_kapal', {{ $naikKapal->id }})"
                                                class="text-yellow-600 hover:text-yellow-900 transition duration-150"
                                                title="Batalkan OB">
                                             <i class="fas fa-undo"></i>
                                         </button>
                                     @endif
-                                    <a href="#" class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                    <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                                           class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                           title="Input Supir OB">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                    <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
                                        title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -328,7 +403,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="12" class="px-4 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
                                     <p class="text-lg font-medium">Tidak ada data kontainer yang ditemukan</p>
@@ -372,7 +447,8 @@
 
             <!-- Modal Body -->
             <form id="formMarkOB" class="mt-4">
-                <input type="hidden" id="naik_kapal_id" name="naik_kapal_id">
+                <input type="hidden" id="record_type" name="record_type">
+                <input type="hidden" id="record_id" name="record_id">
                 
                 <div class="mb-4">
                     <label for="supir_id" class="block text-sm font-medium text-gray-700 mb-2">
@@ -418,9 +494,48 @@
     </div>
 </div>
 
+<!-- Modal Masuk Pranota -->
+<div id="pranotaModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Konfirmasi Masuk Pranota</h3>
+                <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-4">
+                <p class="text-sm text-gray-700 mb-4">Berikut adalah detail kontainer yang akan dimasukkan ke pranota. Semua kontainer yang telah Anda pilih di semua halaman akan diproses.</p>
+                <ul id="pranota-items" class="list-disc list-inside space-y-2 text-sm text-gray-800 max-h-60 overflow-y-auto">
+                    <!-- Items will be populated by JavaScript -->
+                </ul>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end gap-3 pt-3 border-t">
+                <button type="button" onclick="closePranotaModal()"
+                        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md transition duration-200">
+                    Batal
+                </button>
+                <button type="button" id="btnConfirmPranota"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Konfirmasi Masuk Pranota
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function openSupirModal(naikKapalId) {
-    document.getElementById('naik_kapal_id').value = naikKapalId;
+function openSupirModal(type, id) {
+    document.getElementById('record_type').value = type;
+    document.getElementById('record_id').value = id;
     document.getElementById('supir_id').value = '';
     document.getElementById('catatan').value = '';
     document.getElementById('supirModal').classList.remove('hidden');
@@ -439,11 +554,60 @@ document.addEventListener('click', function(event) {
     }
 });
 
+// Pranota Modal functions
+function openPranotaModal(items, totalCount) {
+    const list = document.getElementById('pranota-items');
+    list.innerHTML = '';
+    
+    // Add total count
+    const totalLi = document.createElement('li');
+    totalLi.className = 'text-sm font-semibold text-gray-900';
+    totalLi.textContent = `Total kontainer yang dipilih: ${totalCount}`;
+    list.appendChild(totalLi);
+    
+    // Add sample items from current page
+    if (items.length > 0) {
+        const sampleLi = document.createElement('li');
+        sampleLi.className = 'text-sm text-gray-600 mt-2';
+        sampleLi.textContent = 'Contoh kontainer dari halaman ini:';
+        list.appendChild(sampleLi);
+        
+        items.slice(0, 5).forEach(item => { // Show max 5 examples
+            const li = document.createElement('li');
+            li.className = 'text-sm text-gray-800 ml-4';
+            li.textContent = `Kontainer: ${item.nomor_kontainer || '-'}, Barang: ${item.nama_barang || '-'}, Tipe: ${item.tipe || '-'}, Size: ${item.size || '-'} Feet`;
+            list.appendChild(li);
+        });
+        
+        if (totalCount > 5) {
+            const moreLi = document.createElement('li');
+            moreLi.className = 'text-sm text-gray-600 ml-4';
+            moreLi.textContent = `... dan ${totalCount - 5} kontainer lainnya`;
+            list.appendChild(moreLi);
+        }
+    }
+    
+    document.getElementById('pranotaModal').classList.remove('hidden');
+}
+
+function closePranotaModal() {
+    document.getElementById('pranotaModal').classList.add('hidden');
+}
+
+// Close pranota modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('pranotaModal');
+    if (event.target === modal) {
+        closePranotaModal();
+    }
+});
+
 // Handle form submission
 document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const naikKapalId = document.getElementById('naik_kapal_id').value;
+    const recordType = document.getElementById('record_type').value;
+    const recordId = document.getElementById('record_id').value;
     const supirId = document.getElementById('supir_id').value;
     const catatan = document.getElementById('catatan').value;
     
@@ -456,18 +620,31 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
     
+    // Determine endpoint based on record type
+    let endpoint = '/ob/mark-as-ob';
+    let requestData = {
+        naik_kapal_id: recordId,
+        supir_id: supirId,
+        catatan: catatan
+    };
+    
+    if (recordType === 'bl') {
+        endpoint = '/ob/mark-as-ob-bl';
+        requestData = {
+            bl_id: recordId,
+            supir_id: supirId,
+            catatan: catatan
+        };
+    }
+    
     // Send AJAX request
-    fetch('/ob/mark-as-ob', {
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
-        body: JSON.stringify({
-            naik_kapal_id: naikKapalId,
-            supir_id: supirId,
-            catatan: catatan
-        })
+        body: JSON.stringify(requestData)
     })
     .then(response => response.json())
     .then(data => {
@@ -488,18 +665,25 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     });
 });
 
-function unmarkOB(naikKapalId) {
+function unmarkOB(type, id) {
     if (confirm('Apakah Anda yakin ingin membatalkan status OB kontainer ini?')) {
+        // Determine endpoint based on type
+        let endpoint = '/ob/unmark-ob';
+        let requestData = { naik_kapal_id: id };
+        
+        if (type === 'bl') {
+            endpoint = '/ob/unmark-ob-bl';
+            requestData = { bl_id: id };
+        }
+        
         // Send AJAX request to unmark
-        fetch('/ob/unmark-ob', {
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify({
-                naik_kapal_id: naikKapalId
-            })
+            body: JSON.stringify(requestData)
         })
         .then(response => response.json())
         .then(data => {
@@ -516,6 +700,120 @@ function unmarkOB(naikKapalId) {
         });
     }
 }
+
+// Handle bulk actions
+const checkboxes = document.querySelectorAll('.row-checkbox');
+const bulkActions = document.getElementById('bulk-actions');
+const selectAll = document.getElementById('select-all');
+
+// Storage key based on current page
+const storageKey = `selected_ob_{{ $namaKapal }}_{{ $noVoyage }}`;
+
+function getSelectedIds() {
+    const stored = localStorage.getItem(storageKey);
+    return stored ? JSON.parse(stored) : [];
+}
+
+function saveSelectedIds(ids) {
+    localStorage.setItem(storageKey, JSON.stringify(ids));
+}
+
+function loadSelectedCheckboxes() {
+    const selectedIds = getSelectedIds();
+    checkboxes.forEach(cb => {
+        if (selectedIds.includes(cb.value)) {
+            cb.checked = true;
+        }
+    });
+    checkSelected();
+}
+
+function checkSelected() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    const selected = document.querySelectorAll('.row-checkbox:checked');
+    bulkActions.classList.toggle('hidden', selected.length === 0);
+    
+    // Update select all for current page
+    const currentPageCheckboxes = document.querySelectorAll('.row-checkbox');
+    const currentPageSelected = document.querySelectorAll('.row-checkbox:checked');
+    selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
+    selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
+    
+    // Save to storage
+    const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+    saveSelectedIds(allSelected);
+}
+
+checkboxes.forEach(cb => cb.addEventListener('change', checkSelected));
+
+selectAll.addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    checkSelected();
+});
+
+// Load selected on page load
+document.addEventListener('DOMContentLoaded', loadSelectedCheckboxes);
+
+document.getElementById('btnMasukPranota').addEventListener('click', function() {
+    const selectedIds = getSelectedIds();
+    if (selectedIds.length === 0) {
+        alert('Silakan pilih kontainer terlebih dahulu');
+        return;
+    }
+    
+    // Get details from current page checkboxes for display
+    const selectedCheckboxes = Array.from(document.querySelectorAll('.row-checkbox:checked'));
+    const items = selectedCheckboxes.map(cb => ({
+        id: cb.value,
+        type: cb.getAttribute('data-type'),
+        nomor_kontainer: cb.getAttribute('data-nomor-kontainer'),
+        nama_barang: cb.getAttribute('data-nama-barang'),
+        tipe: cb.getAttribute('data-tipe'),
+        size: cb.getAttribute('data-size')
+    }));
+    
+    openPranotaModal(items, selectedIds.length);
+});
+
+document.getElementById('btnConfirmPranota').addEventListener('click', function() {
+    const selectedIds = getSelectedIds();
+    const items = selectedIds.map(id => ({ id: id, type: 'unknown' })); // Type will be determined server-side
+    
+    const btnConfirm = document.getElementById('btnConfirmPranota');
+    btnConfirm.disabled = true;
+    btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+    
+    // Send to pranota endpoint
+    fetch('/ob/masuk-pranota', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ items: items })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Berhasil memasukkan ke pranota');
+            closePranotaModal();
+            // Clear storage after success
+            localStorage.removeItem(storageKey);
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan');
+            btnConfirm.disabled = false;
+            btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses');
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
+    });
+});
 </script>
 
 @endsection

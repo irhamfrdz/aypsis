@@ -67,7 +67,7 @@ class ObController extends Controller
 
         // If BL exists for this combination, prefer displaying BL records
         if ($hasBl) {
-            $queryBl = Bl::with(['prospek'])
+            $queryBl = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage);
 
@@ -313,6 +313,86 @@ class ObController extends Controller
             ]);
         } catch (\Exception $e) {
             \Log::error('Mark as OB error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mark BL as OB with selected supir
+     */
+    public function markAsOBBl(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'bl_id' => 'required|exists:bls,id',
+                'supir_id' => 'required|exists:karyawans,id',
+                'catatan' => 'nullable|string'
+            ]);
+
+            $bl = Bl::findOrFail($request->bl_id);
+            
+            // Update status OB
+            $bl->sudah_ob = true;
+            $bl->supir_id = $request->supir_id;
+            $bl->tanggal_ob = now();
+            $bl->catatan_ob = $request->catatan;
+            $bl->updated_by = $user->id;
+            $bl->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'BL berhasil ditandai sudah OB'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Mark as OB BL error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Unmark BL from OB status
+     */
+    public function unmarkOBBl(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'bl_id' => 'required|exists:bls,id'
+            ]);
+
+            $bl = Bl::findOrFail($request->bl_id);
+            
+            // Reset OB status
+            $bl->sudah_ob = false;
+            $bl->supir_id = null;
+            $bl->tanggal_ob = null;
+            $bl->catatan_ob = null;
+            $bl->updated_by = $user->id;
+            $bl->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'BL berhasil dibatalkan dari status OB'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Unmark OB BL error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

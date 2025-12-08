@@ -896,6 +896,11 @@
                             <span class="ml-2 text-sm text-gray-700">Penerima</span>
                         </label>
                         <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="alamat_penerima" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Alamat Penerima</span>
+                        </label>
+                        <label class="flex items-center">
                             <input type="checkbox" name="columns[]" value="alamat_pengiriman" 
                                    class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
                             <span class="ml-2 text-sm text-gray-700">Alamat Pengiriman</span>

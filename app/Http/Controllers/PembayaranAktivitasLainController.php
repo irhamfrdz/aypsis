@@ -122,7 +122,14 @@ class PembayaranAktivitasLainController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
         
-        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans'));
+        $suratJalans = DB::table('surat_jalans')
+            ->select('id', 'no_surat_jalan', 'tujuan_pengiriman', 'uang_jalan')
+            ->whereNotNull('no_surat_jalan')
+            ->where('no_surat_jalan', '!=', '')
+            ->orderBy('no_surat_jalan')
+            ->get();
+        
+        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
     }
 
     public function store(Request $request)
@@ -133,9 +140,11 @@ class PembayaranAktivitasLainController extends Controller
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
             'nomor_voyage' => 'nullable|string|max:255',
+            'no_surat_jalan' => 'nullable|string|max:255',
+            'jenis_penyesuaian' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|integer|min:0',
             'debit_kredit' => 'required|in:debit,kredit',
             'akun_coa_id' => 'required|exists:akun_coa,id',
             'akun_bank_id' => 'required|exists:akun_coa,id',
@@ -294,7 +303,7 @@ class PembayaranAktivitasLainController extends Controller
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|integer|min:0',
             'metode_pembayaran' => 'required|string',
         ]);
 

@@ -126,9 +126,41 @@
                         <option value="">Pilih Jenis Aktivitas</option>
                         <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas') == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
                         <option value="Pembayaran Kapal" {{ old('jenis_aktivitas') == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
+                        <option value="Pembayaran Adjusment Uang Jalan" {{ old('jenis_aktivitas') == 'Pembayaran Adjusment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjusment Uang Jalan</option>
                         <option value="Pembayaran Lain Lain" {{ old('jenis_aktivitas') == 'Pembayaran Lain Lain' ? 'selected' : '' }}>Pembayaran Lain Lain</option>
                     </select>
                     @error('jenis_aktivitas')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Surat Jalan (Hidden by default) -->
+                <div id="surat_jalan_field" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Surat Jalan <span class="text-red-500">*</span></label>
+                    <select name="no_surat_jalan" id="surat_jalan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('no_surat_jalan') border-red-500 @enderror">
+                        <option value="">Pilih Surat Jalan</option>
+                        @foreach($suratJalans as $suratJalan)
+                            <option value="{{ $suratJalan->no_surat_jalan }}" data-uang-jalan="{{ $suratJalan->uang_jalan }}" {{ old('no_surat_jalan') == $suratJalan->no_surat_jalan ? 'selected' : '' }}>
+                                {{ $suratJalan->no_surat_jalan }} - {{ $suratJalan->tujuan_pengiriman }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('no_surat_jalan')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Jenis Penyesuaian (Hidden by default) -->
+                <div id="jenis_penyesuaian_field" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Penyesuaian <span class="text-red-500">*</span></label>
+                    <select name="jenis_penyesuaian" id="jenis_penyesuaian_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_penyesuaian') border-red-500 @enderror">
+                        <option value="">Pilih Jenis Penyesuaian</option>
+                        <option value="pengurangan" {{ old('jenis_penyesuaian') == 'pengurangan' ? 'selected' : '' }}>Pengurangan</option>
+                        <option value="penambahan" {{ old('jenis_penyesuaian') == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
+                        <option value="pengembalian penuh" {{ old('jenis_penyesuaian') == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
+                        <option value="pengembalian sebagian" {{ old('jenis_penyesuaian') == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
+                    </select>
+                    @error('jenis_penyesuaian')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -183,7 +215,7 @@
                 <!-- Jumlah -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="jumlah" value="{{ old('jumlah') }}" required min="0" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jumlah') border-red-500 @enderror">
+                    <input type="number" name="jumlah" value="{{ old('jumlah') }}" required min="0" step="1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jumlah') border-red-500 @enderror">
                     @error('jumlah')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -499,6 +531,18 @@ function initializeSelect2() {
         width: '100%'
     });
 
+    $('#surat_jalan_select').select2({
+        placeholder: "Pilih Surat Jalan",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#jenis_penyesuaian_select').select2({
+        placeholder: "Pilih Jenis Penyesuaian",
+        allowClear: true,
+        width: '100%'
+    });
+
     // Initialize main functionality after Select2 is ready
     initializeMainFunctionality();
 }
@@ -550,6 +594,46 @@ function initializeMainFunctionality() {
             nomorVoyageSelect.removeAttribute('required');
             $('select[name="nomor_voyage"]').val('').trigger('change');
         }
+        
+        const suratJalanField = document.getElementById('surat_jalan_field');
+        const suratJalanSelect = document.getElementById('surat_jalan_select');
+        
+        if (jenisAktivitas.value === 'Pembayaran Adjusment Uang Jalan') {
+            suratJalanField.classList.remove('hidden');
+            suratJalanSelect.setAttribute('required', 'required');
+            // Reinitialize Select2 after showing
+            setTimeout(() => {
+                $('#surat_jalan_select').select2({
+                    placeholder: "Pilih Surat Jalan",
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
+        } else {
+            suratJalanField.classList.add('hidden');
+            suratJalanSelect.removeAttribute('required');
+            $('#surat_jalan_select').val('').trigger('change');
+        }
+        
+        const jenisPenyesuaianField = document.getElementById('jenis_penyesuaian_field');
+        const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
+        
+        if (jenisAktivitas.value === 'Pembayaran Adjusment Uang Jalan') {
+            jenisPenyesuaianField.classList.remove('hidden');
+            jenisPenyesuaianSelect.setAttribute('required', 'required');
+            // Reinitialize Select2 after showing
+            setTimeout(() => {
+                $('#jenis_penyesuaian_select').select2({
+                    placeholder: "Pilih Jenis Penyesuaian",
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
+        } else {
+            jenisPenyesuaianField.classList.add('hidden');
+            jenisPenyesuaianSelect.removeAttribute('required');
+            $('#jenis_penyesuaian_select').val('').trigger('change');
+        }
     }
 
     function toggleNomorPolisi() {
@@ -584,6 +668,21 @@ function initializeMainFunctionality() {
     $('#sub_jenis_kendaraan_select').on('change', function() {
         subJenisSelect.value = this.value;
         toggleNomorPolisi();
+    });
+    
+    // Event listener for surat jalan selection to auto-fill jumlah
+    $('#surat_jalan_select').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const uangJalan = selectedOption.data('uang-jalan');
+        const jumlahInput = $('input[name="jumlah"]');
+        
+        if (uangJalan && !isNaN(uangJalan)) {
+            jumlahInput.val(uangJalan);
+            // Trigger input event to update journal preview
+            jumlahInput.trigger('input');
+        } else {
+            jumlahInput.val('');
+        }
     });
     
     const penerimaDropdown = document.getElementById('penerima_dropdown');
@@ -728,6 +827,9 @@ function initializeMainFunctionality() {
             }
         } else if (jenisAktivitas === 'Pembayaran Kapal') {
             requiredFields.push({ name: 'nomor_voyage', name: 'Nomor Voyage' });
+        } else if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
+            requiredFields.push({ id: 'surat_jalan_select', name: 'Surat Jalan' });
+            requiredFields.push({ id: 'jenis_penyesuaian_select', name: 'Jenis Penyesuaian' });
         }
         
         for (const field of requiredFields) {
@@ -748,8 +850,8 @@ function initializeMainFunctionality() {
         
         // Validate jumlah
         const jumlah = parseFloat(document.querySelector('[name="jumlah"]').value);
-        if (isNaN(jumlah) || jumlah <= 0) {
-            showErrorMessage('Jumlah harus berupa angka positif!');
+        if (isNaN(jumlah) || jumlah <= 0 || !Number.isInteger(jumlah)) {
+            showErrorMessage('Jumlah harus berupa angka bulat positif!');
             document.querySelector('[name="jumlah"]').focus();
             return false;
         }
