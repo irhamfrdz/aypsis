@@ -350,6 +350,10 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            
+
+                            
+
                             {{-- Master Data --}}
                             <tr class="module-row" data-module="master">
                                 <td class="module-header">
@@ -1113,6 +1117,23 @@
                                 <td><input type="checkbox" name="permissions[master-pricelist-uang-jalan-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-uang-jalan-batam']['create']) && $userMatrixPermissions['master-pricelist-uang-jalan-batam']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-pricelist-uang-jalan-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-uang-jalan-batam']['update']) && $userMatrixPermissions['master-pricelist-uang-jalan-batam']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-pricelist-uang-jalan-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-uang-jalan-batam']['delete']) && $userMatrixPermissions['master-pricelist-uang-jalan-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Pricelist OB --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist OB</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob']['view']) && $userMatrixPermissions['master-pricelist-ob']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob']['create']) && $userMatrixPermissions['master-pricelist-ob']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob']['update']) && $userMatrixPermissions['master-pricelist-ob']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob']['delete']) && $userMatrixPermissions['master-pricelist-ob']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

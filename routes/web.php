@@ -689,6 +689,14 @@ Route::middleware([
              ->name('pricelist-ob.store')
              ->middleware('can:master-pricelist-ob-create');
         
+        // Import/Export routes for pricelist OB (must come before parameterized routes)
+        Route::get('pricelist-ob/export-template', [MasterPricelistObController::class, 'exportTemplate'])
+             ->name('pricelist-ob.export-template')
+             ->middleware('can:master-pricelist-ob-view');
+        Route::post('pricelist-ob/import', [MasterPricelistObController::class, 'import'])
+             ->name('pricelist-ob.import')
+             ->middleware('can:master-pricelist-ob-create');
+
         Route::get('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'show'])
              ->name('pricelist-ob.show')
              ->middleware('can:master-pricelist-ob-view');
@@ -2763,6 +2771,12 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:ob-view');
     Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'selectShipVoyage'])
          ->name('ob.select')
+         ->middleware('can:ob-view');
+    Route::post('ob/mark-as-ob', [\App\Http\Controllers\ObController::class, 'markAsOB'])
+         ->name('ob.mark-as-ob')
+         ->middleware('can:ob-view');
+    Route::post('ob/unmark-ob', [\App\Http\Controllers\ObController::class, 'unmarkOB'])
+         ->name('ob.unmark-ob')
          ->middleware('can:ob-view');
 
     // Tagihan OB routes

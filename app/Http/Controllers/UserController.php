@@ -944,6 +944,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-cat-', '', $action);
                             $module = 'master-pricelist-cat';
                         }
+                        // Special handling for master-pricelist-ob permissions
+                        elseif (strpos($action, 'pricelist-ob-') === 0) {
+                            // For master-pricelist-ob-view, extract the action
+                            $action = str_replace('pricelist-ob-', '', $action);
+                            $module = 'master-pricelist-ob';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -2081,6 +2087,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-sewa-kontainer-create',
                             'update' => 'master-pricelist-sewa-kontainer-update',
                             'delete' => 'master-pricelist-sewa-kontainer-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-ob permissions explicitly
+                    if ($module === 'master-pricelist-ob' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-ob-view',
+                            'create' => 'master-pricelist-ob-create',
+                            'update' => 'master-pricelist-ob-update',
+                            'delete' => 'master-pricelist-ob-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

@@ -133,7 +133,10 @@ class SuratJalanBongkaranController extends Controller
                       ->orWhere('no_seal', 'like', "%{$search}%")
                       ->orWhere('term', 'like', "%{$search}%")
                       ->orWhere('nama_barang', 'like', "%{$search}%")
-                      ->orWhere('penerima', 'like', "%{$search}%");
+                      ->orWhere('penerima', 'like', "%{$search}%")
+                      ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
+                          $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
+                      });
                 });
             }
 
@@ -573,11 +576,11 @@ class SuratJalanBongkaranController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Surat Jalan Bongkaran berhasil dibuat.',
-                    'redirect' => route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
+                    'redirect' => route('surat-jalan-bongkaran.list')
                 ]);
             }
 
-            return redirect()->route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
+            return redirect()->route('surat-jalan-bongkaran.list')
                            ->with('success', 'Surat Jalan Bongkaran berhasil dibuat.');
 
         } catch (\Exception $e) {

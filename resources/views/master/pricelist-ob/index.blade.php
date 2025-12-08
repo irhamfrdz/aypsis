@@ -28,6 +28,18 @@
                             Tambah Pricelist OB
                         </a>
                         @endcan
+                        @can('master-pricelist-ob-view')
+                        <a href="{{ route('master.pricelist-ob.export-template') }}" class="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M20 20H4"/></svg>
+                            Download Template CSV
+                        </a>
+                        @endcan
+                        @can('master-pricelist-ob-create')
+                        <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M20 20H4"/></svg>
+                            Import CSV / Excel
+                        </button>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -68,9 +80,54 @@
                             <a href="{{ route('master.pricelist-ob.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
                                 Reset
                             </a>
+                            
+                            
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Import Modal -->
+        <div id="importModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Import Data CSV / Excel</h3>
+                        <button onclick="document.getElementById('importModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                            <span class="text-2xl">&times;</span>
+                        </button>
+                    </div>
+
+                    <form action="{{ route('master.pricelist-ob.import') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-4">
+                            <label for="file" class="block text-sm font-medium text-gray-700 mb-2">Pilih File CSV atau Excel</label>
+                            <input type="file" name="file" id="file" accept=".csv,.txt,.xlsx,.xls" required
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <p class="mt-1 text-sm text-gray-500">Format file: CSV (delimiter ; ) atau Excel (.xlsx) dengan header sesuai template</p>
+                        </div>
+
+                        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="text-sm font-medium text-blue-800 mb-2">Format yang Diharapkan:</h4>
+                            <p class="text-xs text-blue-700 mb-2">Header kolom (case-insensitive):</p>
+                            <div class="text-xs text-blue-700 font-mono bg-white p-2 rounded border">
+                                size_kontainer;status_kontainer;biaya;keterangan
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
+                                class="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400 transition-colors duration-200">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors duration-200">
+                                Import Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 

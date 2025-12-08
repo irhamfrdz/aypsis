@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MasterKapal;
 use App\Models\PergerakanKapal;
 use App\Models\NaikKapal;
+use App\Models\Bl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -33,11 +34,23 @@ class ObController extends Controller
         }
 
         // Show ship and voyage selection if no filters
-        // Get list of ships from naik_kapal table (distinct ship names)
-        $ships = NaikKapal::select('nama_kapal')
+        // Get list of ships from both naik_kapal and bls tables (distinct ship names)
+        $shipsNaik = NaikKapal::whereNotNull('nama_kapal')
+            ->select('nama_kapal')
             ->distinct()
-            ->orderBy('nama_kapal', 'asc')
-            ->get();
+            ->pluck('nama_kapal');
+
+        $shipsBl = Bl::whereNotNull('nama_kapal')
+            ->select('nama_kapal')
+            ->distinct()
+            ->pluck('nama_kapal');
+
+        $shipNames = $shipsNaik->merge($shipsBl)->filter()->unique()->values()->sort()->values();
+
+        // Convert back to objects with nama_kapal property to keep view compatibility
+        $ships = $shipNames->map(function ($name) {
+            return (object)['nama_kapal' => $name];
+        });
 
         return view('ob.select', compact('ships'));
     }
@@ -47,8 +60,52 @@ class ObController extends Controller
      */
     private function showOBData(Request $request, $namaKapal, $noVoyage)
     {
-        // Get naik_kapal data for the selected ship and voyage
-        $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy'])
+        // Check if we have BL records for this ship/voyage
+        $hasBl = Bl::where('nama_kapal', $namaKapal)
+            ->where('no_voyage', $noVoyage)
+            ->exists();
+
+        // If BL exists for this combination, prefer displaying BL records
+        if ($hasBl) {
+            $queryBl = Bl::with(['prospek'])
+                ->where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage);
+
+            $perPage = $request->get('per_page', 15);
+            $bls = $queryBl->orderBy('nomor_bl', 'asc')
+                ->paginate($perPage)
+                ->withQueryString();
+
+            $totalKontainer = Bl::where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage)
+                ->count();
+
+            $sudahOB = Bl::where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage)
+                ->where('sudah_ob', true)
+                ->count();
+
+            $belumOB = $totalKontainer - $sudahOB;
+
+            // Get list of supir (drivers) from karyawan table
+            $supirs = \App\Models\Karyawan::where('divisi', 'supir')
+                ->whereNull('tanggal_berhenti')
+                ->orderBy('nama_panggilan')
+                ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
+
+            return view('ob.index', compact(
+                'bls',
+                'namaKapal',
+                'noVoyage',
+                'totalKontainer',
+                'sudahOB',
+                'belumOB',
+                'supirs'
+            ));
+        }
+
+        // Default: Get naik_kapal data for the selected ship and voyage
+        $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
             ->where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage);
 
@@ -97,13 +154,20 @@ class ObController extends Controller
 
         $belumOB = $totalKontainer - $sudahOB;
 
+        // Get list of supir (drivers) from karyawan table
+        $supirs = \App\Models\Karyawan::where('divisi', 'supir')
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
+
         return view('ob.index', compact(
             'naikKapals', 
             'namaKapal', 
             'noVoyage', 
             'totalKontainer', 
             'sudahOB', 
-            'belumOB'
+            'belumOB',
+            'supirs'
         ));
     }
 
@@ -129,11 +193,11 @@ class ObController extends Controller
 
         try {
             \Log::info('getVoyageByKapal called', ['nama_kapal' => $namaKapal]);
-            // Get voyages for the selected ship from naik_kapal
+            // Get voyages for the selected ship from naik_kapal and bls tables
             // We group by no_voyage and order by latest tanggal_muat per voyage to avoid SQL strict mode errors
             $kapalClean = strtolower(str_replace('.', '', $namaKapal));
 
-            $voyages = NaikKapal::select('no_voyage')
+            $voyagesNaik = NaikKapal::select('no_voyage')
                 // try exact match first; if not, fallback to normalized like
                 ->where(function($q) use ($namaKapal, $kapalClean) {
                     $q->where('nama_kapal', $namaKapal)
@@ -145,6 +209,22 @@ class ObController extends Controller
                 ->orderByRaw('MAX(tanggal_muat) DESC')
                 ->pluck('no_voyage')
                 ->toArray();
+
+            // Get voyages from Bl table as well
+            $voyagesBl = Bl::select('no_voyage')
+                ->where(function($q) use ($namaKapal, $kapalClean) {
+                    $q->where('nama_kapal', $namaKapal)
+                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                })
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->distinct()
+                ->orderBy('no_voyage', 'desc')
+                ->pluck('no_voyage')
+                ->toArray();
+
+            // Merge and unique voyages
+            $voyages = collect($voyagesNaik)->merge($voyagesBl)->filter()->unique()->values()->toArray();
             \Log::info('getVoyageByKapal results', ['nama_kapal' => $namaKapal, 'voyages_count' => count($voyages)]);
             return response()->json([
                 'success' => true,
@@ -198,5 +278,86 @@ class ObController extends Controller
             'no_voyage' => $voyage
         ])->with('success', "Berhasil memilih kapal {$namaKapal} dengan voyage {$voyage}");
     }
+
+    /**
+     * Mark container as OB with selected supir
+     */
+    public function markAsOB(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'naik_kapal_id' => 'required|exists:naik_kapal,id',
+                'supir_id' => 'required|exists:karyawans,id',
+                'catatan' => 'nullable|string'
+            ]);
+
+            $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+            
+            // Update status OB
+            $naikKapal->sudah_ob = true;
+            $naikKapal->supir_id = $request->supir_id;
+            $naikKapal->tanggal_ob = now();
+            $naikKapal->catatan_ob = $request->catatan;
+            $naikKapal->updated_by = $user->id;
+            $naikKapal->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kontainer berhasil ditandai sudah OB'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Mark as OB error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Unmark container from OB status
+     */
+    public function unmarkOB(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'naik_kapal_id' => 'required|exists:naik_kapal,id'
+            ]);
+
+            $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+            
+            // Reset OB status
+            $naikKapal->sudah_ob = false;
+            $naikKapal->supir_id = null;
+            $naikKapal->tanggal_ob = null;
+            $naikKapal->catatan_ob = null;
+            $naikKapal->updated_by = $user->id;
+            $naikKapal->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status OB kontainer berhasil dibatalkan'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Unmark OB error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
 

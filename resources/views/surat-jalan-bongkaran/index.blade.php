@@ -122,9 +122,10 @@
             </form>
 
             <!-- Table -->
-            <div class="overflow-x-auto">
+            <div class="relative">
                 @if(request('mode') == 'surat_jalan')
                     <!-- Surat Jalan Bongkaran Table -->
+                    <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200" id="suratJalanTable">
                         <thead class="bg-gray-50">
                             <tr>
@@ -144,14 +145,14 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
-                                            <button type="button" onclick="toggleDropdown('dropdown-sj-{{ $sj->id }}')"
+                                            <button type="button" onclick="event.stopPropagation(); toggleDropdown('dropdown-sj-{{ $sj->id }}')"
                                                     class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                                 </svg>
                                             </button>
 
-                                            <div id="dropdown-sj-{{ $sj->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                            <div id="dropdown-sj-{{ $sj->id }}" class="hidden absolute left-0 z-[9999] mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
                                                     <a href="#" onclick="editSuratJalan({{ $sj->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
@@ -204,8 +205,10 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 @else
                     <!-- BL Table -->
+                    <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200" id="blTable">
                         <thead class="bg-gray-50">
                             <tr>
@@ -233,14 +236,14 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
-                                            <button type="button" onclick="toggleDropdown('dropdown-{{ $bl->id }}')"
+                                            <button type="button" onclick="event.stopPropagation(); toggleDropdown('dropdown-{{ $bl->id }}')"
                                                     class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                                 </svg>
                                             </button>
 
-                                            <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                            <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-[9999] mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
                                                     <a href="#" onclick="buatSuratJalan({{ $bl->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
@@ -304,6 +307,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 @endif
             </div>
 

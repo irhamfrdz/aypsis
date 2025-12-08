@@ -152,6 +152,58 @@
     {{-- Table Section --}}
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
+            @if(isset($bls))
+            <table class="min-w-full table-auto">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tonase</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status OB</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($bls as $key => $bl)
+                    <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bls->firstItem() + $key }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->nama_barang ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer . ' Feet' : '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/Y') : '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->volume ?? '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tonnage ?? '-' }}</td>
+                        <td class="px-4 py-4 text-sm text-gray-900">
+                            @if($bl->sudah_ob)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Sudah OB</span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">Belum OB</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="#" class="text-blue-600 hover:text-blue-900 transition duration-150" title="Lihat Detail"><i class="fas fa-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="12" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+            @else
             <table class="min-w-full table-auto">
                 <thead class="bg-gray-50">
                     <tr>
@@ -222,12 +274,29 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapal->formattedTonase }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-4 py-4 text-sm text-gray-900">
                                 @if($naikKapal->sudah_ob)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Sudah OB
-                                    </span>
+                                    <div class="flex flex-col space-y-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Sudah OB
+                                        </span>
+                                        @if($naikKapal->supir)
+                                            <div class="text-xs text-gray-600">
+                                                <i class="fas fa-user mr-1"></i>
+                                                <span class="font-medium">{{ $naikKapal->supir->nama_panggilan }}</span>
+                                                @if($naikKapal->supir->plat)
+                                                    <span class="text-gray-500">({{ $naikKapal->supir->plat }})</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                        @if($naikKapal->tanggal_ob)
+                                            <div class="text-xs text-gray-500">
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                {{ $naikKapal->tanggal_ob->format('d/m/Y H:i') }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                                         <i class="fas fa-clock mr-1"></i>
@@ -238,7 +307,7 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     @if(!$naikKapal->sudah_ob)
-                                        <button type="button" onclick="markAsOB({{ $naikKapal->id }})"
+                                        <button type="button" onclick="openSupirModal({{ $naikKapal->id }})"
                                                class="text-green-600 hover:text-green-900 transition duration-150"
                                                title="Tandai sudah OB">
                                             <i class="fas fa-check"></i>
@@ -272,337 +341,180 @@
             </table>
         </div>
 
+        @endif
+
         {{-- Pagination --}}
-        @if($naikKapals->hasPages())
+        @if((isset($bls) && $bls->hasPages()) || (!isset($bls) && isset($naikKapals) && $naikKapals->hasPages()))
             <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
-                {{ $naikKapals->links() }}
+                @if(isset($bls))
+                    {{ $bls->links() }}
+                @else
+                    {{ $naikKapals->links() }}
+                @endif
             </div>
         @endif
     </div>
 </div>
 
-<script>
-function markAsOB(naikKapalId) {
-    if (confirm('Apakah Anda yakin ingin menandai kontainer ini sudah OB?')) {
-        // TODO: Implement AJAX call to mark as OB
-        console.log('Mark as OB:', naikKapalId);
-    }
-}
-
-function unmarkOB(naikKapalId) {
-    if (confirm('Apakah Anda yakin ingin membatalkan status OB kontainer ini?')) {
-        // TODO: Implement AJAX call to unmark OB
-        console.log('Unmark OB:', naikKapalId);
-    }
-}
-</script>
-
-@endsection
-                                <option value="{{ $ship->id }}" 
-                                        data-nickname="{{ $ship->nickname }}"
-                                        data-pelayaran="{{ $ship->pelayaran }}"
-                                        {{ request('ship_id') == $ship->id ? 'selected' : '' }}>
-                                    {{ $ship->nama_kapal }} @if($ship->nickname) ({{ $ship->nickname }}) @endif
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    @if($selectedShip)
-                        <div class="bg-white rounded-lg p-3 border border-blue-300">
-                            <h4 class="font-medium text-blue-900 mb-2">Informasi Kapal</h4>
-                            <div class="text-sm text-gray-700 space-y-1">
-                                <p><span class="font-medium">Nama:</span> {{ $selectedShip->nama_kapal }}</p>
-                                <p><span class="font-medium">Kode:</span> {{ $selectedShip->kode_kapal }}</p>
-                                @if($selectedShip->nickname)
-                                    <p><span class="font-medium">Nickname:</span> {{ $selectedShip->nickname }}</p>
-                                @endif
-                                @if($selectedShip->pelayaran)
-                                    <p><span class="font-medium">Pelayaran:</span> {{ $selectedShip->pelayaran }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                </div>
+<!-- Modal Pilih Supir -->
+<div id="supirModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Pilih Supir</h3>
+                <button type="button" onclick="closeSupirModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
 
-            <!-- Voyage Selection -->
-            <div class="bg-orange-50 rounded-lg p-4 mb-6 border border-orange-200">
-                <h3 class="text-lg font-semibold text-orange-900 mb-4">2. Pilih Voyage</h3>
+            <!-- Modal Body -->
+            <form id="formMarkOB" class="mt-4">
+                <input type="hidden" id="naik_kapal_id" name="naik_kapal_id">
                 
-                <!-- Filters for voyage -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                        <input type="date" name="start_date" id="start_date" 
-                               value="{{ request('start_date') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    </div>
-                    <div>
-                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
-                        <input type="date" name="end_date" id="end_date" 
-                               value="{{ request('end_date') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="button" onclick="filterVoyages()" 
-                                class="w-full px-4 py-2 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
-                            Filter Voyage
-                        </button>
-                    </div>
+                <div class="mb-4">
+                    <label for="supir_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Supir <span class="text-red-500">*</span>
+                    </label>
+                    <select id="supir_id" name="supir_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Pilih Supir</option>
+                        @foreach($supirs as $supir)
+                            <option value="{{ $supir->id }}">
+                                {{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}
+                                @if($supir->plat)
+                                    ({{ $supir->plat }})
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <!-- Voyage List -->
-                <div id="voyageContainer">
-                    @if($voyages->count() > 0)
-                        <div class="space-y-3">
-                            @foreach($voyages as $voyage)
-                                <div class="bg-white rounded-lg p-4 border border-orange-200 hover:border-orange-400 transition-colors voyage-item cursor-pointer" 
-                                     onclick="selectVoyage({{ $voyage->id }}, '{{ $voyage->voyage }}', '{{ $voyage->nama_kapal }}')">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex-1">
-                                            <div class="flex items-center space-x-4">
-                                                <div>
-                                                    <input type="radio" name="voyage_id" value="{{ $voyage->id }}" 
-                                                           id="voyage_{{ $voyage->id }}"
-                                                           {{ request('voyage_id') == $voyage->id ? 'checked' : '' }}
-                                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h4 class="text-lg font-semibold text-gray-900">Voyage: {{ $voyage->voyage }}</h4>
-                                                    <p class="text-sm text-gray-600">{{ $voyage->nama_kapal }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                                <div>
-                                                    <span class="font-medium text-gray-700">Tanggal Sandar:</span>
-                                                    <p class="text-gray-600">{{ $voyage->tanggal_sandar ? \Carbon\Carbon::parse($voyage->tanggal_sandar)->format('d/m/Y') : '-' }}</p>
-                                                </div>
-                                                <div>
-                                                    <span class="font-medium text-gray-700">Tanggal Berangkat:</span>
-                                                    <p class="text-gray-600">{{ $voyage->tanggal_berangkat ? \Carbon\Carbon::parse($voyage->tanggal_berangkat)->format('d/m/Y') : '-' }}</p>
-                                                </div>
-                                                <div>
-                                                    <span class="font-medium text-gray-700">Tujuan Asal:</span>
-                                                    <p class="text-gray-600">{{ $voyage->tujuan_asal ?: '-' }}</p>
-                                                </div>
-                                                <div>
-                                                    <span class="font-medium text-gray-700">Tujuan:</span>
-                                                    <p class="text-gray-600">{{ $voyage->tujuan_tujuan ?: '-' }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                {{ $voyage->status === 'aktif' ? 'bg-green-100 text-green-800' : 
-                                                   ($voyage->status === 'selesai' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
-                                                {{ ucfirst($voyage->status) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Pagination -->
-                        <div class="mt-6">
-                            {{ $voyages->links() }}
-                        </div>
-                    @else
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada voyage ditemukan</h3>
-                            <p class="mt-1 text-sm text-gray-500">Silakan pilih kapal terlebih dahulu atau sesuaikan filter tanggal.</p>
-                        </div>
-                    @endif
+                <div class="mb-4">
+                    <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Catatan (Opsional)
+                    </label>
+                    <textarea id="catatan" name="catatan" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                 </div>
-            </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-between items-center pt-6 border-t border-gray-200">
-                <div>
-                    <p class="text-sm text-gray-600">
-                        <span class="font-medium">Info:</span> Setelah memilih kapal dan voyage, Anda akan diarahkan ke dashboard OB untuk kapal dan voyage tersebut.
-                    </p>
-                </div>
-                <div class="flex space-x-3">
-                    <button type="button" onclick="resetSelection()" 
-                            class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                        Reset
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 pt-3 border-t">
+                    <button type="button" onclick="closeSupirModal()"
+                            class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md transition duration-200">
+                        Batal
                     </button>
-                    <button type="submit" id="submitBtn" disabled
-                            class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Lanjutkan ke Dashboard OB
+                    <button type="submit" id="btnSubmitOB"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition duration-200">
+                        <i class="fas fa-check mr-2"></i>
+                        Tandai Sudah OB
                     </button>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
+</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const shipSelect = document.getElementById('ship_id');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    // Check initial state
-    updateSubmitButton();
-    
-    // Ship selection change
-    shipSelect.addEventListener('change', function() {
-        if (this.value) {
-            loadVoyagesForShip(this.value);
-        } else {
-            clearVoyages();
-        }
-        updateSubmitButton();
-    });
-    
-    // Voyage selection change  
-    document.addEventListener('change', function(e) {
-        if (e.target.name === 'voyage_id') {
-            updateSubmitButton();
-        }
-    });
+function openSupirModal(naikKapalId) {
+    document.getElementById('naik_kapal_id').value = naikKapalId;
+    document.getElementById('supir_id').value = '';
+    document.getElementById('catatan').value = '';
+    document.getElementById('supirModal').classList.remove('hidden');
+}
+
+function closeSupirModal() {
+    document.getElementById('supirModal').classList.add('hidden');
+    document.getElementById('formMarkOB').reset();
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('supirModal');
+    if (event.target === modal) {
+        closeSupirModal();
+    }
 });
 
-function selectVoyage(voyageId, voyageName, shipName) {
-    const radio = document.getElementById('voyage_' + voyageId);
-    if (radio) {
-        radio.checked = true;
-        updateSubmitButton();
-    }
-}
-
-function updateSubmitButton() {
-    const shipSelect = document.getElementById('ship_id');
-    const voyageSelected = document.querySelector('input[name="voyage_id"]:checked');
-    const submitBtn = document.getElementById('submitBtn');
+// Handle form submission
+document.getElementById('formMarkOB').addEventListener('submit', function(e) {
+    e.preventDefault();
     
-    if (shipSelect.value && voyageSelected) {
-        submitBtn.disabled = false;
-    } else {
-        submitBtn.disabled = true;
-    }
-}
-
-function loadVoyagesForShip(shipId) {
-    fetch(`{{ route('ob.get-voyages') }}?ship_id=${shipId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateVoyageList(data.voyages);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading voyages:', error);
-        });
-}
-
-function updateVoyageList(voyages) {
-    const container = document.getElementById('voyageContainer');
+    const naikKapalId = document.getElementById('naik_kapal_id').value;
+    const supirId = document.getElementById('supir_id').value;
+    const catatan = document.getElementById('catatan').value;
     
-    if (voyages.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada voyage untuk kapal ini</h3>
-                <p class="mt-1 text-sm text-gray-500">Silakan pilih kapal lain.</p>
-            </div>
-        `;
+    if (!supirId) {
+        alert('Silakan pilih supir terlebih dahulu');
         return;
     }
     
-    let html = '<div class="space-y-3">';
+    const btnSubmit = document.getElementById('btnSubmitOB');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
     
-    voyages.forEach(voyage => {
-        const statusClass = voyage.status === 'aktif' ? 'bg-green-100 text-green-800' : 
-                           (voyage.status === 'selesai' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800');
-        
-        html += `
-            <div class="bg-white rounded-lg p-4 border border-orange-200 hover:border-orange-400 transition-colors voyage-item cursor-pointer" 
-                 onclick="selectVoyage(${voyage.id}, '${voyage.voyage}', '${voyage.nama_kapal || ''}')">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center space-x-4">
-                            <div>
-                                <input type="radio" name="voyage_id" value="${voyage.id}" 
-                                       id="voyage_${voyage.id}"
-                                       class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-gray-900">Voyage: ${voyage.voyage}</h4>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                                <span class="font-medium text-gray-700">Tanggal Sandar:</span>
-                                <p class="text-gray-600">${voyage.tanggal_sandar || '-'}</p>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-700">Tanggal Berangkat:</span>
-                                <p class="text-gray-600">${voyage.tanggal_berangkat || '-'}</p>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-700">Tujuan Asal:</span>
-                                <p class="text-gray-600">${voyage.tujuan_asal || '-'}</p>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-700">Tujuan:</span>
-                                <p class="text-gray-600">${voyage.tujuan_tujuan || '-'}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
-                            ${voyage.status ? voyage.status.charAt(0).toUpperCase() + voyage.status.slice(1) : 'Unknown'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function clearVoyages() {
-    const container = document.getElementById('voyageContainer');
-    container.innerHTML = `
-        <div class="text-center py-8">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Silakan pilih kapal terlebih dahulu</h3>
-            <p class="mt-1 text-sm text-gray-500">Voyage akan ditampilkan setelah Anda memilih kapal.</p>
-        </div>
-    `;
-}
-
-function filterVoyages() {
-    const form = new FormData();
-    form.append('ship_id', document.getElementById('ship_id').value);
-    form.append('start_date', document.getElementById('start_date').value);
-    form.append('end_date', document.getElementById('end_date').value);
-    
-    const params = new URLSearchParams();
-    for (let [key, value] of form) {
-        if (value) {
-            params.append(key, value);
+    // Send AJAX request
+    fetch('/ob/mark-as-ob', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            naik_kapal_id: naikKapalId,
+            supir_id: supirId,
+            catatan: catatan
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload page to show updated status
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan');
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
         }
-    }
-    
-    window.location.href = `{{ route('ob.index') }}?${params.toString()}`;
-}
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menyimpan data');
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
+    });
+});
 
-function resetSelection() {
-    window.location.href = '{{ route('ob.index') }}';
+function unmarkOB(naikKapalId) {
+    if (confirm('Apakah Anda yakin ingin membatalkan status OB kontainer ini?')) {
+        // Send AJAX request to unmark
+        fetch('/ob/unmark-ob', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                naik_kapal_id: naikKapalId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to show updated status
+                window.location.reload();
+            } else {
+                alert(data.message || 'Terjadi kesalahan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat membatalkan OB');
+        });
+    }
 }
 </script>
 

@@ -30,6 +30,9 @@ class NaikKapal extends Model
         'total_tonase',
         'kuantitas',
         'sudah_ob',
+        'supir_id',
+        'tanggal_ob',
+        'catatan_ob',
         // 'status', // Kolom tidak ada di table
         'keterangan',
         'created_by',
@@ -38,12 +41,14 @@ class NaikKapal extends Model
 
     protected $dates = [
         'tanggal_muat',
+        'tanggal_ob',
         'created_at',
         'updated_at'
     ];
 
     protected $casts = [
         'tanggal_muat' => 'date',
+        'tanggal_ob' => 'datetime',
         'jam_muat' => 'datetime:H:i',
         'total_volume' => 'decimal:3',
         'total_tonase' => 'decimal:3',
@@ -72,6 +77,11 @@ class NaikKapal extends Model
     public function prospek()
     {
         return $this->belongsTo(Prospek::class);
+    }
+
+    public function supir()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir_id');
     }
 
     public function createdBy()
