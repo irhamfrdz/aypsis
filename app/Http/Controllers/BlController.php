@@ -372,7 +372,7 @@ class BlController extends Controller
             'ids' => 'required|string',
             'tonnage_dipindah' => 'required|numeric|min:0.01',
             'volume_dipindah' => 'required|numeric|min:0.001',
-            'nama_barang_dipindah' => 'required|string|max:255',
+            'nama_barang_dipindah' => 'required|string',
             'term_baru' => 'nullable|string|max:100',
             'keterangan' => 'required|string|max:1000'
         ]);
