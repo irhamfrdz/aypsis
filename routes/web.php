@@ -1585,21 +1585,6 @@ Route::middleware(['auth'])->group(function () {
          ->name('uang-jalan.select-surat-jalan')
          ->middleware('can:uang-jalan-create');
     
-    // Custom route untuk select surat jalan penyesuaian
-    Route::get('uang-jalan/select-surat-jalan-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalanPenyesuaian'])
-         ->name('uang-jalan.select-surat-jalan-penyesuaian')
-         ->middleware('can:uang-jalan-create');
-    
-    // Custom route untuk create penyesuaian
-    Route::get('uang-jalan/create-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'createPenyesuaian'])
-         ->name('uang-jalan.create-penyesuaian')
-         ->middleware('can:uang-jalan-create');
-    
-    // Custom route untuk store penyesuaian
-    Route::post('uang-jalan/store-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'storePenyesuaian'])
-         ->name('uang-jalan.store-penyesuaian')
-         ->middleware('can:uang-jalan-create');
-    
     // Export Uang Jalan (Excel)
     Route::get('uang-jalan/export', [\App\Http\Controllers\UangJalanController::class, 'exportExcel'])
          ->name('uang-jalan.export')
