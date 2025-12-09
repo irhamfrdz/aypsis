@@ -191,11 +191,26 @@
                     <tr class="hover:bg-gray-50 transition duration-150">
                         @php
                             $biaya = 0;
-                            if (empty($bl->nama_barang) || $bl->nama_barang === '-') {
-                                $pricelist = \App\Models\MasterPricelistOb::where('nama', '')->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
-                            } else {
-                                $pricelist = \App\Models\MasterPricelistOb::where('nama', $bl->nama_barang)->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
+                            // determine status: empty if nama_barang is empty or '-' else full
+                            $status = (empty($bl->nama_barang) || $bl->nama_barang === '-') ? 'empty' : 'full';
+
+                            // map size to value used in master_pricelist_ob ('20ft'/'40ft')
+                            $sizeStr = null;
+                            if (!empty($bl->size_kontainer)) {
+                                $sizeInt = intval($bl->size_kontainer);
+                                if ($sizeInt === 20) {
+                                    $sizeStr = '20ft';
+                                } elseif ($sizeInt === 40) {
+                                    $sizeStr = '40ft';
+                                }
                             }
+
+                            // Query pricelist by status and size (master_pricelist_ob only has status_kontainer & size_kontainer)
+                            $pricelistQuery = \App\Models\MasterPricelistOb::where('status_kontainer', $status);
+                            if ($sizeStr) {
+                                $pricelistQuery = $pricelistQuery->where('size_kontainer', $sizeStr);
+                            }
+                            $pricelist = $pricelistQuery->first();
                             $biaya = $pricelist ? $pricelist->biaya : 0;
                         @endphp
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -301,11 +316,21 @@
                         <tr class="hover:bg-gray-50 transition duration-150">
                             @php
                                 $biaya = 0;
-                                if (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '-') {
-                                    $pricelist = \App\Models\MasterPricelistOb::where('nama', '')->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
-                                } else {
-                                    $pricelist = \App\Models\MasterPricelistOb::where('nama', $naikKapal->jenis_barang)->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
+                                $status = (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '-') ? 'empty' : 'full';
+                                $sizeStr = null;
+                                if (!empty($naikKapal->size_kontainer)) {
+                                    $sizeInt = intval($naikKapal->size_kontainer);
+                                    if ($sizeInt === 20) {
+                                        $sizeStr = '20ft';
+                                    } elseif ($sizeInt === 40) {
+                                        $sizeStr = '40ft';
+                                    }
                                 }
+                                $pricelistQuery = \App\Models\MasterPricelistOb::where('status_kontainer', $status);
+                                if ($sizeStr) {
+                                    $pricelistQuery = $pricelistQuery->where('size_kontainer', $sizeStr);
+                                }
+                                $pricelist = $pricelistQuery->first();
                                 $biaya = $pricelist ? $pricelist->biaya : 0;
                             @endphp
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
