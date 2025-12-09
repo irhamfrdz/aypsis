@@ -579,6 +579,11 @@ document.addEventListener('click', function(event) {
 // Pranota Modal functions
 function openPranotaModal() {
     const selectedItems = getSelectedItems();
+    // Ensure ship/voyage info available before opening modal
+    if (!__PRANOTA_nama_kapal || !__PRANOTA_no_voyage) {
+        alert('Informasi kapal dan voyage tidak ditemukan');
+        return;
+    }
     if (selectedItems.length === 0) {
         alert('Silakan pilih kontainer terlebih dahulu');
         return;
