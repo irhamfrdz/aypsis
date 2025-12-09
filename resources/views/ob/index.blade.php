@@ -189,8 +189,17 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($bls as $key => $bl)
                     <tr class="hover:bg-gray-50 transition duration-150">
+                        @php
+                            $biaya = 0;
+                            if (empty($bl->nama_barang) || $bl->nama_barang === '-') {
+                                $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', '')->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
+                            } else {
+                                $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', $bl->nama_barang)->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
+                            }
+                            $biaya = $pricelist ? $pricelist->biaya : 0;
+                        @endphp
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}">
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $biaya }}">
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bls->firstItem() + $key }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
@@ -290,8 +299,17 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
                         <tr class="hover:bg-gray-50 transition duration-150">
+                            @php
+                                $biaya = 0;
+                                if (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '-') {
+                                    $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', '')->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
+                                } else {
+                                    $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', $naikKapal->jenis_barang)->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
+                                }
+                                $biaya = $pricelist ? $pricelist->biaya : 0;
+                            @endphp
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}">
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $biaya }}">
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapals->firstItem() + $key }}
@@ -513,15 +531,12 @@
                 <p class="text-sm text-gray-700 mb-4">Berikut adalah detail kontainer yang akan dimasukkan ke pranota. Semua kontainer yang telah Anda pilih di semua halaman akan diproses.</p>
                 <div class="overflow-x-auto">
                     <table id="pranota-table" class="min-w-full table-auto border border-gray-300">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No. Kontainer</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Nama Barang</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Tipe</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Size</th>
-                            </tr>
-                        </thead>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Biaya</th>
                         <tbody id="pranota-items" class="bg-white divide-y divide-gray-200">
                             <!-- Items will be populated by JavaScript -->
                         </tbody>
@@ -594,6 +609,7 @@ function openPranotaModal() {
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.nama_barang || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.tipe || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.size ? item.size + ' Feet' : '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">Rp ${parseInt(item.biaya || 0).toLocaleString('id-ID')}</td>
         `;
         
         tbody.appendChild(row);
@@ -759,7 +775,8 @@ function checkSelected() {
         nomor_kontainer: cb.getAttribute('data-nomor-kontainer'),
         nama_barang: cb.getAttribute('data-nama-barang'),
         tipe: cb.getAttribute('data-tipe'),
-        size: cb.getAttribute('data-size')
+        size: cb.getAttribute('data-size'),
+        biaya: cb.getAttribute('data-biaya')
     }));
     saveSelectedItems(allSelected);
 }
