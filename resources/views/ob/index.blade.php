@@ -191,8 +191,18 @@
                     <tr class="hover:bg-gray-50 transition duration-150">
                         @php
                             $biaya = 0;
-                            // determine status: empty if nama_barang is empty or '-' else full
-                            $status = (empty($bl->nama_barang) || $bl->nama_barang === '-') ? 'empty' : 'full';
+                            // determine status from nama_barang
+                            $status = 'full';
+                            if (empty($bl->nama_barang) || $bl->nama_barang === '') {
+                                $status = 'empty';
+                            } else {
+                                $lowerName = strtolower($bl->nama_barang);
+                                if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                                    $status = 'empty';
+                                } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
+                                    $status = 'full';
+                                }
+                            }
 
                             // map size to value used in master_pricelist_ob ('20ft'/'40ft')
                             $sizeStr = null;
@@ -316,7 +326,17 @@
                         <tr class="hover:bg-gray-50 transition duration-150">
                             @php
                                 $biaya = 0;
-                                $status = (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '-') ? 'empty' : 'full';
+                                $status = 'full';
+                                if (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '') {
+                                    $status = 'empty';
+                                } else {
+                                    $lowerName = strtolower($naikKapal->jenis_barang);
+                                    if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                                        $status = 'empty';
+                                    } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
+                                        $status = 'full';
+                                    }
+                                }
                                 $sizeStr = null;
                                 if (!empty($naikKapal->size_kontainer)) {
                                     $sizeInt = intval($naikKapal->size_kontainer);
