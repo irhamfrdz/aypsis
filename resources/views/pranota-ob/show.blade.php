@@ -2,12 +2,15 @@
 
 @section('content')
 <div class="max-w-full mx-auto px-3 py-2 overflow-hidden">
-    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4">
         <div>
             <h1 class="text-lg font-semibold text-gray-900">Detail Pranota OB</h1>
             <p class="text-xs text-gray-600">Nomor Pranota: {{ $pranota->nomor_pranota }}</p>
         </div>
-        <a href="{{ route('pranota-ob.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Kembali</a>
+        <div class="flex space-x-2">
+            <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Print</a>
+            <a href="{{ route('pranota-ob.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Kembali</a>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

@@ -1684,6 +1684,11 @@ Route::middleware(['auth'])->group(function () {
                    'show' => 'can:pranota-ob-view',
                ]);
 
+     // Pranota OB Print route
+          Route::get('pranota-ob/{pranota}/print', [\App\Http\Controllers\PranotaObController::class, 'print'])
+               ->name('pranota-ob.print')
+               ->middleware('can:pranota-ob-view');
+
      // Pranota Uang Jalan Bongkaran Management with permissions
       Route::resource('pranota-uang-jalan-bongkaran', \App\Http\Controllers\PranotaUangJalanBongkaranController::class)
              ->middleware([
