@@ -192,9 +192,9 @@
                         @php
                             $biaya = 0;
                             if (empty($bl->nama_barang) || $bl->nama_barang === '-') {
-                                $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', '')->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
+                                $pricelist = \App\Models\MasterPricelistOb::where('jenis_barang', '')->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
                             } else {
-                                $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', $bl->nama_barang)->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
+                                $pricelist = \App\Models\MasterPricelistOb::where('jenis_barang', $bl->nama_barang)->where('tipe_kontainer', $bl->tipe_kontainer)->where('size_kontainer', $bl->size_kontainer)->first();
                             }
                             $biaya = $pricelist ? $pricelist->biaya : 0;
                         @endphp
@@ -302,9 +302,9 @@
                             @php
                                 $biaya = 0;
                                 if (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '-') {
-                                    $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', '')->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
+                                    $pricelist = \App\Models\MasterPricelistOb::where('jenis_barang', '')->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
                                 } else {
-                                    $pricelist = \App\Models\MasterPricelistOb::where('nama_barang', $naikKapal->jenis_barang)->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
+                                    $pricelist = \App\Models\MasterPricelistOb::where('jenis_barang', $naikKapal->jenis_barang)->where('tipe_kontainer', $naikKapal->tipe_kontainer)->where('size_kontainer', $naikKapal->size_kontainer)->first();
                                 }
                                 $biaya = $pricelist ? $pricelist->biaya : 0;
                             @endphp
