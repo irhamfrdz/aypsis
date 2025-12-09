@@ -84,9 +84,8 @@
                             </label>
                             <select name="nomor_kontainer" 
                                     id="nomor_kontainer" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror"
-                                    required>
-                                <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
+                                <option value="">-- Pilih dari List atau Input Manual --</option>
                                 @if(isset($containersData) && $containersData->count() > 0)
                                     @foreach($containersData as $container)
                                         <option value="{{ $container->nomor_seri_gabungan }}" 
@@ -99,7 +98,16 @@
                                     @endforeach
                                 @endif
                             </select>
+                            <input type="text" 
+                                   name="nomor_kontainer_manual" 
+                                   id="nomor_kontainer_manual" 
+                                   value="{{ old('nomor_kontainer_manual') }}"
+                                   class="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                   placeholder="Atau input nomor kontainer manual">
                             @error('nomor_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            @error('nomor_kontainer_manual')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -208,7 +216,7 @@
                         <!-- Periode -->
                         <div>
                             <label for="periode" class="block text-sm font-medium text-gray-700 mb-2">
-                                Periode (hari)
+                                Periode
                             </label>
                             <input type="number" 
                                    name="periode" 
@@ -435,7 +443,7 @@ function filterContainersByVendor() {
         if (option.value === '') {
             // Update placeholder text
             if (selectedVendor) {
-                option.textContent = '-- Pilih Nomor Kontainer --';
+                option.textContent = '-- Pilih dari List --';
             } else {
                 option.textContent = '-- Pilih Vendor Terlebih Dahulu --';
             }

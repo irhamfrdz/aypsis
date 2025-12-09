@@ -99,6 +99,24 @@
                     @enderror
                 </div>
 
+                <!-- Tipe Penyesuaian -->
+                <div id="tipe_penyeseuaian_div" style="display: none;">
+                    <label for="tipe_penyeseuaian" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tipe Penyesuaian
+                    </label>
+                    <select name="tipe_penyeseuaian" id="tipe_penyeseuaian"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tipe_penyeseuaian') border-red-500 @enderror">
+                        <option value="">Pilih Tipe Penyesuaian</option>
+                        <option value="mel" {{ old('tipe_penyeseuaian') == 'mel' ? 'selected' : '' }}>Mel</option>
+                        <option value="pelancar" {{ old('tipe_penyeseuaian') == 'pelancar' ? 'selected' : '' }}>Pelancar</option>
+                        <option value="jumlah kawalan" {{ old('tipe_penyeseuaian') == 'jumlah kawalan' ? 'selected' : '' }}>Jumlah Kawalan</option>
+                        <option value="jumlah parkir" {{ old('tipe_penyeseuaian') == 'jumlah parkir' ? 'selected' : '' }}>Jumlah Parkir</option>
+                    </select>
+                    @error('tipe_penyeseuaian')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Total Pembayaran -->
                 <div>
                     <label for="total_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
@@ -221,6 +239,21 @@ document.querySelector('input[name="is_dp"]').addEventListener('change', functio
         document.getElementById('supir_container').innerHTML = '';
     }
 });
+
+// Show/hide tipe penyesuaian based on jenis transaksi
+document.getElementById('jenis_transaksi').addEventListener('change', function() {
+    const div = document.getElementById('tipe_penyeseuaian_div');
+    if (this.value === 'kredit') {
+        div.style.display = 'block';
+    } else {
+        div.style.display = 'none';
+    }
+});
+
+// Initialize on load
+if (document.getElementById('jenis_transaksi').value === 'kredit') {
+    document.getElementById('tipe_penyeseuaian_div').style.display = 'block';
+}
 
 // Supir management
 let supirRowCount = 0;

@@ -237,6 +237,63 @@
                 </div>
             </div>
 
+            <!-- Jumlah Penyesuaian & Kas/Bank -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Jumlah Penyesuaian & Kas/Bank</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Jumlah Penyesuaian -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Penyesuaian <span class="text-red-600">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
+                            <input type="number"
+                                   name="jumlah_penyesuaian"
+                                   id="jumlah_penyesuaian"
+                                   value="{{ old('jumlah_penyesuaian', 0) }}"
+                                   step="0.01"
+                                   required
+                                   class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_penyesuaian') border-red-500 @enderror">
+                            @error('jumlah_penyesuaian')
+                                <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Nomor Kas/Bank -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Kas/Bank</label>
+                        <select name="nomor_kas_bank"
+                                class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kas_bank') border-red-500 @enderror">
+                            <option value="">Pilih Kas/Bank</option>
+                            @foreach(\App\Models\Coa::where('tipe_akun', 'Kas/Bank')->get() as $coa)
+                                <option value="{{ $coa->id }}" {{ old('nomor_kas_bank') == $coa->id ? 'selected' : '' }}>
+                                    {{ $coa->nomor_akun }} - {{ $coa->nama_akun }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('nomor_kas_bank')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alasan Penyesuaian -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Alasan Penyesuaian</h3>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Alasan Penyesuaian <span class="text-red-600">*</span></label>
+                    <textarea name="alasan_penyesuaian"
+                              rows="3"
+                              placeholder="Masukkan alasan penyesuaian uang jalan"
+                              required
+                              class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('alasan_penyesuaian') border-red-500 @enderror">{{ old('alasan_penyesuaian') }}</textarea>
+                    @error('alasan_penyesuaian')
+                        <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
             <!-- Total & Memo -->
             <div class="mb-6">
                 <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Total & Memo</h3>
@@ -355,19 +412,23 @@ function calculateTotal() {
     } else if (jenis === 'pengembalian_penuh') {
         jenisText = 'Pengembalian Penuh';
         adjustment = -currentTotal;
-        inputJumlah.value = adjustment;
+        inputJumlah.value = Math.abs(adjustment);
         inputJumlah.disabled = true;
     } else if (jenis === 'pengembalian_sebagian') {
         jenisText = 'Pengembalian Sebagian';
         inputJumlah.disabled = false;
     }
     
-    // For penambahan and pengurangan, set the calculated adjustment
-    if (jenis === 'penambahan' || jenis === 'pengurangan') {
-        inputJumlah.value = adjustment;
+    // For penambahan and pengurangan, set the calculated adjustment if not manually entered
+    if ((jenis === 'penambahan' || jenis === 'pengurangan') && !inputJumlah.value) {
+        inputJumlah.value = Math.abs(adjustment);
     }
     
-    const newTotal = currentTotal + adjustment;
+    // Get the actual adjustment amount from the input field
+    const actualAdjustment = parseFloat(inputJumlah.value) || 0;
+    const finalAdjustment = (jenis === 'pengurangan' || jenis === 'pengembalian_penuh' || jenis === 'pengembalian_sebagian') ? -actualAdjustment : actualAdjustment;
+    
+    const newTotal = currentTotal + finalAdjustment;
     
     document.getElementById('jumlah_total_baru').value = newTotal;
     
@@ -375,7 +436,7 @@ function calculateTotal() {
     document.getElementById('jenis-summary').textContent = jenisText;
     const debitKredit = document.querySelector('select[name="debit_kredit"]').value;
     document.getElementById('debit-kredit-summary').textContent = debitKredit === 'debit' ? 'Debit' : 'Kredit';
-    document.getElementById('jumlah-summary').textContent = Math.abs(adjustment).toLocaleString('id-ID');
+    document.getElementById('jumlah-summary').textContent = Math.abs(actualAdjustment).toLocaleString('id-ID');
     
     // Update component summaries
     document.getElementById('mel-summary').textContent = jumlahMel.toLocaleString('id-ID');
@@ -394,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Update on component changes
-    document.querySelectorAll('input[name="jumlah_mel"], input[name="jumlah_pelancar"], input[name="jumlah_kawalan"], input[name="jumlah_parkir"]').forEach(input => {
+    document.querySelectorAll('input[name="jumlah_mel"], input[name="jumlah_pelancar"], input[name="jumlah_kawalan"], input[name="jumlah_parkir"], input[name="jumlah_penyesuaian"]').forEach(input => {
         input.addEventListener('input', calculateTotal);
     });
 });

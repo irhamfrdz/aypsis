@@ -19,6 +19,7 @@ class UangJalanAdjustment extends Model
         'jumlah_pelancar',
         'jumlah_kawalan',
         'jumlah_parkir',
+        'nomor_kas_bank',
         'alasan_penyesuaian',
         'memo',
         'created_by'
@@ -41,5 +42,10 @@ class UangJalanAdjustment extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function kasBank()
+    {
+        return $this->belongsTo(Coa::class, 'nomor_kas_bank');
     }
 }

@@ -574,6 +574,7 @@ class UangJalanController extends Controller
             'jumlah_pelancar' => 'nullable|numeric|min:0',
             'jumlah_kawalan' => 'nullable|numeric|min:0',
             'jumlah_parkir' => 'nullable|numeric|min:0',
+            'nomor_kas_bank' => 'nullable|exists:akun_coa,id',
             'alasan_penyesuaian' => 'required|string|max:500',
             'tanggal_penyesuaian' => 'required|date',
             'memo' => 'nullable|string|max:1000'
@@ -613,6 +614,7 @@ class UangJalanController extends Controller
                 'jumlah_pelancar' => $request->jumlah_pelancar,
                 'jumlah_kawalan' => $request->jumlah_kawalan,
                 'jumlah_parkir' => $request->jumlah_parkir,
+                'nomor_kas_bank' => $request->nomor_kas_bank,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'memo' => $request->memo,
                 'created_by' => Auth::id()

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Jobs\RunCreateNextPeriode;
 use App\Models\MasterPricelistSewaKontainer;
+use App\Models\Kontainer;
 
 class DaftarTagihanKontainerSewaController extends Controller
 {
@@ -488,6 +489,15 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         $data = $this->validateData($request);
 
+        // Custom validation: ensure nomor_kontainer or nomor_kontainer_manual is provided
+        if (empty($data['nomor_kontainer']) && empty($data['nomor_kontainer_manual'])) {
+            return back()->withErrors(['nomor_kontainer' => 'Nomor kontainer wajib diisi.'])->withInput();
+        }
+
+        // Handle nomor_kontainer: use manual if select is empty
+        $data['nomor_kontainer'] = $data['nomor_kontainer'] ?: $data['nomor_kontainer_manual'];
+        unset($data['nomor_kontainer_manual']);
+
         // Fill missing numeric fields with 0 to avoid null numeric issues
         foreach (['dpp','ppn','pph','grand_total'] as $n) {
             if (!isset($data[$n]) || $data[$n] === null || $data[$n] === '') {
@@ -517,6 +527,35 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         DaftarTagihanKontainerSewa::create($data);
 
+        // Update or create kontainer
+        $kontainer = Kontainer::where('nomor_seri_gabungan', $data['nomor_kontainer'])
+                              ->where('vendor', $data['vendor'])
+                              ->first();
+        if ($kontainer) {
+            $kontainer->update([
+                'status' => 'sewa',
+                'tanggal_mulai_sewa' => $data['tanggal_awal'],
+                'tanggal_selesai_sewa' => $data['tanggal_akhir'],
+            ]);
+        } else {
+            // Parse nomor_kontainer to get awalan, nomor_seri, akhiran
+            $parsed = $this->parseContainerNumber($data['nomor_kontainer']);
+            
+            // Create new kontainer if not exists
+            Kontainer::create([
+                'awalan_kontainer' => $parsed['awalan'],
+                'nomor_seri_kontainer' => $parsed['nomor_seri'],
+                'akhiran_kontainer' => $parsed['akhiran'],
+                'nomor_seri_gabungan' => $data['nomor_kontainer'],
+                'vendor' => $data['vendor'],
+                'ukuran' => $data['size'],
+                'tipe_kontainer' => 'DRY',
+                'status' => 'tersedia',
+                'tanggal_mulai_sewa' => $data['tanggal_awal'],
+                'tanggal_selesai_sewa' => $data['tanggal_akhir'],
+            ]);
+        }
+
         return redirect()->route('daftar-tagihan-kontainer-sewa.index')->with('success', 'Tagihan kontainer berhasil dibuat.');
     }
 
@@ -544,6 +583,15 @@ class DaftarTagihanKontainerSewaController extends Controller
     public function update(Request $request, DaftarTagihanKontainerSewa $tagihan)
     {
         $data = $this->validateData($request);
+
+        // Custom validation: ensure nomor_kontainer or nomor_kontainer_manual is provided
+        if (empty($data['nomor_kontainer']) && empty($data['nomor_kontainer_manual'])) {
+            return back()->withErrors(['nomor_kontainer' => 'Nomor kontainer wajib diisi.'])->withInput();
+        }
+
+        // Handle nomor_kontainer: use manual if select is empty
+        $data['nomor_kontainer'] = $data['nomor_kontainer'] ?: $data['nomor_kontainer_manual'];
+        unset($data['nomor_kontainer_manual']);
 
         // Log untuk debugging
         \Log::info('Update Tagihan - Data received:', [
@@ -609,7 +657,8 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         return $request->validate([
             'vendor' => 'required|string|max:255',
-            'nomor_kontainer' => 'required|string|max:100',
+            'nomor_kontainer' => 'nullable|string|max:100',
+            'nomor_kontainer_manual' => 'nullable|string|max:100',
             'size' => 'nullable|string|max:50',
             'group' => 'nullable|string|max:100',
             'tanggal_awal' => 'required|date',
@@ -2692,5 +2741,48 @@ class DaftarTagihanKontainerSewaController extends Controller
         if (strlen($data['nomor_kontainer']) < 4) {
             throw new \Exception("Nomor kontainer terlalu pendek: {$data['nomor_kontainer']}");
         }
+    }
+
+    /**
+     * Parse container number into awalan, nomor_seri, akhiran
+     */
+    private function parseContainerNumber($nomorKontainer)
+    {
+        $nomorKontainer = trim($nomorKontainer);
+        
+        // Standard format: 4 letters prefix + 6 digits serial + optional suffix (check digit)
+        if (preg_match('/^([A-Z]{4})(\d{6})(.*)$/', $nomorKontainer, $matches)) {
+            return [
+                'awalan' => $matches[1],
+                'nomor_seri' => $matches[2],
+                'akhiran' => trim($matches[3]),
+            ];
+        }
+        
+        // Fallback: try to extract as much as possible
+        $awalan = '';
+        $nomor_seri = '';
+        $akhiran = '';
+        
+        // Extract letters at the beginning
+        if (preg_match('/^([A-Z]+)/', $nomorKontainer, $matches)) {
+            $awalan = $matches[1];
+            $nomorKontainer = substr($nomorKontainer, strlen($awalan));
+        }
+        
+        // Extract digits (up to 6 for nomor_seri)
+        if (preg_match('/^(\d{1,6})/', $nomorKontainer, $matches)) {
+            $nomor_seri = $matches[1];
+            $akhiran = substr($nomorKontainer, strlen($nomor_seri));
+        } else {
+            // If no digits, put everything in nomor_seri
+            $nomor_seri = $nomorKontainer;
+        }
+        
+        return [
+            'awalan' => $awalan,
+            'nomor_seri' => $nomor_seri,
+            'akhiran' => trim($akhiran),
+        ];
     }
 }
