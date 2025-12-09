@@ -438,11 +438,11 @@ class SuratJalanController extends Controller
     {
         $suratJalan = SuratJalan::findOrFail($id);
 
-        // Cek apakah sudah ada pembayaran pranota uang jalan
-        if ($suratJalan->status_pembayaran_uang_jalan === 'dibayar') {
-            return redirect()->route('surat-jalan.index')
-                           ->with('error', 'Surat jalan tidak dapat diedit karena pembayaran pranota uang jalan sudah dibuat.');
-        }
+        // Cek apakah sudah ada pembayaran pranota uang jalan - dihapus agar bisa edit meski sudah dibayar
+        // if ($suratJalan->status_pembayaran_uang_jalan === 'dibayar') {
+        //     return redirect()->route('surat-jalan.index')
+        //                    ->with('error', 'Surat jalan tidak dapat diedit karena pembayaran pranota uang jalan sudah dibuat.');
+        // }
 
         // Get karyawan supir data - hanya divisi supir
         $supirs = Karyawan::where('divisi', 'supir')
@@ -528,11 +528,11 @@ class SuratJalanController extends Controller
     {
         $suratJalan = SuratJalan::findOrFail($id);
 
-        // Cek apakah sudah ada pembayaran pranota uang jalan
-        if ($suratJalan->status_pembayaran_uang_jalan === 'dibayar') {
-            return redirect()->route('surat-jalan.index')
-                           ->with('error', 'Surat jalan tidak dapat diupdate karena pembayaran pranota uang jalan sudah dibuat.');
-        }
+        // Cek apakah sudah ada pembayaran pranota uang jalan - dihapus agar bisa update meski sudah dibayar
+        // if ($suratJalan->status_pembayaran_uang_jalan === 'dibayar') {
+        //     return redirect()->route('surat-jalan.index')
+        //                    ->with('error', 'Surat jalan tidak dapat diupdate karena pembayaran pranota uang jalan sudah dibuat.');
+        // }
 
         $request->validate([
             'tanggal_surat_jalan' => 'required|date',

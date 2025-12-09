@@ -567,10 +567,12 @@ class UangJalanController extends Controller
     {
         $request->validate([
             'uang_jalan_id' => 'required|exists:uang_jalans,id',
-            'jenis_penyesuaian' => 'required|in:penambahan,pengurangan',
-            'jumlah_penyesuaian' => 'required|numeric|min:0.01',
+            'jenis_penyesuaian' => 'required|in:penambahan,pengurangan,pengembalian_penuh,pengembalian_sebagian',
+            'debit_kredit' => 'required|in:debit,kredit',
+            'jumlah_penyesuaian' => 'required|numeric',
             'alasan_penyesuaian' => 'required|string|max:500',
-            'keterangan' => 'nullable|string|max:1000'
+            'tanggal_penyesuaian' => 'required|date',
+            'memo' => 'nullable|string|max:1000'
         ]);
 
         $uangJalan = UangJalan::findOrFail($request->uang_jalan_id);
@@ -584,18 +586,28 @@ class UangJalanController extends Controller
 
         try {
             // Hitung jumlah penyesuaian berdasarkan jenis
-            $jumlahPenyesuaian = $request->jenis_penyesuaian === 'penambahan'
-                ? $request->jumlah_penyesuaian
-                : -$request->jumlah_penyesuaian;
+            $jumlahPenyesuaian = $request->jumlah_penyesuaian;
 
-            // Update uang jalan dengan penyesuaian
-            $uangJalan->update([
+            // Jika jenis adalah pengurangan atau pengembalian, buat negatif
+            if (in_array($request->jenis_penyesuaian, ['pengurangan', 'pengembalian_penuh', 'pengembalian_sebagian'])) {
+                $jumlahPenyesuaian = -$request->jumlah_penyesuaian;
+            }
+
+            // Jika pengembalian penuh, set ke -total saat ini
+            if ($request->jenis_penyesuaian === 'pengembalian_penuh') {
+                $jumlahPenyesuaian = -$uangJalan->jumlah_total;
+            }
+
+            // Simpan adjustment sebagai record baru
+            UangJalanAdjustment::create([
+                'uang_jalan_id' => $request->uang_jalan_id,
+                'tanggal_penyesuaian' => $request->tanggal_penyesuaian,
+                'jenis_penyesuaian' => $request->jenis_penyesuaian,
+                'debit_kredit' => $request->debit_kredit,
+                'jumlah_penyesuaian' => $jumlahPenyesuaian,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
-                'jumlah_penyesuaian' => ($uangJalan->jumlah_penyesuaian ?? 0) + $jumlahPenyesuaian,
-                'jumlah_total' => $uangJalan->subtotal + ($uangJalan->jumlah_penyesuaian ?? 0) + $jumlahPenyesuaian,
-                'total_uang_jalan' => $uangJalan->subtotal + ($uangJalan->jumlah_penyesuaian ?? 0) + $jumlahPenyesuaian,
-                'keterangan' => $request->keterangan ?? $uangJalan->keterangan,
-                'updated_by' => Auth::id()
+                'memo' => $request->memo,
+                'created_by' => Auth::id()
             ]);
 
             Log::info('Uang jalan adjustment created successfully', [

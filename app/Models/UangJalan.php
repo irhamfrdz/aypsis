@@ -80,6 +80,14 @@ class UangJalan extends Model
     }
 
     /**
+     * Relationship dengan UangJalanAdjustment
+     */
+    public function adjustments()
+    {
+        return $this->hasMany(UangJalanAdjustment::class, 'uang_jalan_id');
+    }
+
+    /**
      * Scope untuk status tertentu
      */
     public function scopeByStatus($query, $status)

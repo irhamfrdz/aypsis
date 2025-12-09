@@ -86,7 +86,7 @@
 
             <div class="mb-6">
                 <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Informasi Penyesuaian</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <!-- Tanggal Penyesuaian -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Penyesuaian <span class="text-red-600">*</span></label>
@@ -122,9 +122,42 @@
                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
                                 <span class="ml-2 text-sm text-gray-700 font-medium">Pengurangan</span>
                             </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" 
+                                       name="jenis_penyesuaian" 
+                                       value="pengembalian_penuh" 
+                                       {{ old('jenis_penyesuaian') == 'pengembalian_penuh' ? 'checked' : '' }}
+                                       required
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Pengembalian Penuh</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" 
+                                       name="jenis_penyesuaian" 
+                                       value="pengembalian_sebagian" 
+                                       {{ old('jenis_penyesuaian') == 'pengembalian_sebagian' ? 'checked' : '' }}
+                                       required
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 focus:ring-2 border-gray-300 border-2">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Pengembalian Sebagian</span>
+                            </label>
                         </div>
                         @error('jenis_penyesuaian')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Debit/Kredit -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Debit/Kredit <span class="text-red-600">*</span></label>
+                        <select name="debit_kredit"
+                                required
+                                class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('debit_kredit') border-red-500 @enderror">
+                            <option value="">Pilih Debit/Kredit</option>
+                            <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>Debit</option>
+                            <option value="kredit" {{ old('debit_kredit') == 'kredit' ? 'selected' : '' }}>Kredit</option>
+                        </select>
+                        @error('debit_kredit')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -214,9 +247,12 @@
                     <div class="flex-1">
                         <h4 class="text-xs font-medium text-yellow-800 mb-1">Ringkasan Penyesuaian</h4>
                         <div class="text-xs text-yellow-700">
-                            <div class="grid grid-cols-2 gap-3 mb-2">
+                            <div class="grid grid-cols-3 gap-3 mb-2">
                                 <div>
-                                    <span class="font-medium">Jenis:</span> <span id="jenis-summary">{{ old('jenis_penyesuaian', 'penambahan') == 'penambahan' ? 'Penambahan' : 'Pengurangan' }}</span>
+                                    <span class="font-medium">Jenis:</span> <span id="jenis-summary">{{ old('jenis_penyesuaian', 'penambahan') == 'penambahan' ? 'Penambahan' : (old('jenis_penyesuaian') == 'pengurangan' ? 'Pengurangan' : (old('jenis_penyesuaian') == 'pengembalian_penuh' ? 'Pengembalian Penuh' : (old('jenis_penyesuaian') == 'pengembalian_sebagian' ? 'Pengembalian Sebagian' : 'Penambahan'))) }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Debit/Kredit:</span> <span id="debit-kredit-summary">{{ old('debit_kredit', 'debit') == 'debit' ? 'Debit' : 'Kredit' }}</span>
                                 </div>
                                 <div>
                                     <span class="font-medium">Jumlah:</span> Rp <span id="jumlah-summary">{{ number_format(abs(old('jumlah_penyesuaian', 0)), 0, ',', '.') }}</span>
@@ -248,14 +284,35 @@
 <script>
 function calculateTotal() {
     const currentTotal = {{ $uangJalan->jumlah_total ?? 0 }};
-    const adjustment = parseFloat(document.getElementById('jumlah_penyesuaian').value) || 0;
+    const jenis = document.querySelector('input[name="jenis_penyesuaian"]:checked').value;
+    let adjustment = parseFloat(document.getElementById('jumlah_penyesuaian').value) || 0;
+    let jenisText = '';
+    const inputJumlah = document.getElementById('jumlah_penyesuaian');
+    
+    if (jenis === 'penambahan') {
+        jenisText = 'Penambahan';
+        inputJumlah.disabled = false;
+    } else if (jenis === 'pengurangan') {
+        jenisText = 'Pengurangan';
+        inputJumlah.disabled = false;
+    } else if (jenis === 'pengembalian_penuh') {
+        jenisText = 'Pengembalian Penuh';
+        adjustment = -currentTotal;
+        inputJumlah.value = adjustment;
+        inputJumlah.disabled = true;
+    } else if (jenis === 'pengembalian_sebagian') {
+        jenisText = 'Pengembalian Sebagian';
+        inputJumlah.disabled = false;
+    }
+    
     const newTotal = currentTotal + adjustment;
     
     document.getElementById('jumlah_total_baru').value = newTotal;
     
     // Update summary
-    const jenis = document.querySelector('input[name="jenis_penyesuaian"]:checked').value;
-    document.getElementById('jenis-summary').textContent = jenis === 'penambahan' ? 'Penambahan' : 'Pengurangan';
+    document.getElementById('jenis-summary').textContent = jenisText;
+    const debitKredit = document.querySelector('select[name="debit_kredit"]').value;
+    document.getElementById('debit-kredit-summary').textContent = debitKredit === 'debit' ? 'Debit' : 'Kredit';
     document.getElementById('jumlah-summary').textContent = Math.abs(adjustment).toLocaleString('id-ID');
 }
 
