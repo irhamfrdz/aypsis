@@ -15,6 +15,10 @@ class UangJalanAdjustment extends Model
         'jenis_penyesuaian',
         'debit_kredit',
         'jumlah_penyesuaian',
+        'jumlah_mel',
+        'jumlah_pelancar',
+        'jumlah_kawalan',
+        'jumlah_parkir',
         'alasan_penyesuaian',
         'memo',
         'created_by'
@@ -22,7 +26,11 @@ class UangJalanAdjustment extends Model
 
     protected $casts = [
         'tanggal_penyesuaian' => 'date',
-        'jumlah_penyesuaian' => 'decimal:2'
+        'jumlah_penyesuaian' => 'decimal:2',
+        'jumlah_mel' => 'decimal:2',
+        'jumlah_pelancar' => 'decimal:2',
+        'jumlah_kawalan' => 'decimal:2',
+        'jumlah_parkir' => 'decimal:2'
     ];
 
     public function uangJalan()

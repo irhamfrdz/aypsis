@@ -570,6 +570,10 @@ class UangJalanController extends Controller
             'jenis_penyesuaian' => 'required|in:penambahan,pengurangan,pengembalian_penuh,pengembalian_sebagian',
             'debit_kredit' => 'required|in:debit,kredit',
             'jumlah_penyesuaian' => 'required|numeric',
+            'jumlah_mel' => 'nullable|numeric|min:0',
+            'jumlah_pelancar' => 'nullable|numeric|min:0',
+            'jumlah_kawalan' => 'nullable|numeric|min:0',
+            'jumlah_parkir' => 'nullable|numeric|min:0',
             'alasan_penyesuaian' => 'required|string|max:500',
             'tanggal_penyesuaian' => 'required|date',
             'memo' => 'nullable|string|max:1000'
@@ -605,6 +609,10 @@ class UangJalanController extends Controller
                 'jenis_penyesuaian' => $request->jenis_penyesuaian,
                 'debit_kredit' => $request->debit_kredit,
                 'jumlah_penyesuaian' => $jumlahPenyesuaian,
+                'jumlah_mel' => $request->jumlah_mel,
+                'jumlah_pelancar' => $request->jumlah_pelancar,
+                'jumlah_kawalan' => $request->jumlah_kawalan,
+                'jumlah_parkir' => $request->jumlah_parkir,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'memo' => $request->memo,
                 'created_by' => Auth::id()

@@ -163,42 +163,76 @@
                 </div>
             </div>
 
-            <!-- Penyesuaian -->
+            <!-- Penyesuaian Komponen Biaya -->
             <div class="mb-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Detail Penyesuaian</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Alasan Penyesuaian -->
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Penyesuaian Komponen Biaya</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <!-- Jumlah Mel -->
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Alasan Penyesuaian <span class="text-red-600">*</span></label>
-                        <input type="text" 
-                               name="alasan_penyesuaian"
-                               value="{{ old('alasan_penyesuaian') }}"
-                               placeholder="Masukkan alasan penyesuaian"
-                               required
-                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('alasan_penyesuaian') border-red-500 @enderror">
-                        @error('alasan_penyesuaian')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Jumlah Penyesuaian -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Penyesuaian <span class="text-red-600">*</span></label>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Mel</label>
                         <div class="relative">
                             <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
                             <input type="number" 
-                                   name="jumlah_penyesuaian"
-                                   id="jumlah_penyesuaian"
-                                   value="{{ old('jumlah_penyesuaian', 0) }}"
-                                   step="1"
-                                   required
-                                   oninput="calculateTotal()"
-                                   class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_penyesuaian') border-red-500 @enderror">
-                            @error('jumlah_penyesuaian')
+                                   name="jumlah_mel"
+                                   value="{{ old('jumlah_mel', 0) }}"
+                                   step="0.01"
+                                   class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_mel') border-red-500 @enderror">
+                            @error('jumlah_mel')
                                 <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <p class="mt-0.5 text-xs text-gray-500">Masukkan nilai positif untuk penambahan, negatif untuk pengurangan</p>
+                        <p class="mt-0.5 text-xs text-gray-500">Biaya mel saat ini: Rp {{ number_format($uangJalan->jumlah_mel ?? 0, 0, ',', '.') }}</p>
+                    </div>
+
+                    <!-- Jumlah Pelancar -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Pelancar</label>
+                        <div class="relative">
+                            <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
+                            <input type="number" 
+                                   name="jumlah_pelancar"
+                                   value="{{ old('jumlah_pelancar', 0) }}"
+                                   step="0.01"
+                                   class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_pelancar') border-red-500 @enderror">
+                            @error('jumlah_pelancar')
+                                <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <p class="mt-0.5 text-xs text-gray-500">Biaya pelancar saat ini: Rp {{ number_format($uangJalan->jumlah_pelancar ?? 0, 0, ',', '.') }}</p>
+                    </div>
+
+                    <!-- Jumlah Kawalan -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Kawalan</label>
+                        <div class="relative">
+                            <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
+                            <input type="number" 
+                                   name="jumlah_kawalan"
+                                   value="{{ old('jumlah_kawalan', 0) }}"
+                                   step="0.01"
+                                   class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_kawalan') border-red-500 @enderror">
+                            @error('jumlah_kawalan')
+                                <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <p class="mt-0.5 text-xs text-gray-500">Biaya kawalan saat ini: Rp {{ number_format($uangJalan->jumlah_kawalan ?? 0, 0, ',', '.') }}</p>
+                    </div>
+
+                    <!-- Jumlah Parkir -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah Parkir</label>
+                        <div class="relative">
+                            <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
+                            <input type="number" 
+                                   name="jumlah_parkir"
+                                   value="{{ old('jumlah_parkir', 0) }}"
+                                   step="0.01"
+                                   class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_parkir') border-red-500 @enderror">
+                            @error('jumlah_parkir')
+                                <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <p class="mt-0.5 text-xs text-gray-500">Biaya parkir saat ini: Rp {{ number_format($uangJalan->jumlah_parkir ?? 0, 0, ',', '.') }}</p>
                     </div>
                 </div>
             </div>
@@ -258,6 +292,20 @@
                                     <span class="font-medium">Jumlah:</span> Rp <span id="jumlah-summary">{{ number_format(abs(old('jumlah_penyesuaian', 0)), 0, ',', '.') }}</span>
                                 </div>
                             </div>
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2 pt-2 border-t border-yellow-300">
+                                <div>
+                                    <span class="font-medium">Mel:</span> Rp <span id="mel-summary">{{ number_format(old('jumlah_mel', 0), 0, ',', '.') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Pelancar:</span> Rp <span id="pelancar-summary">{{ number_format(old('jumlah_pelancar', 0), 0, ',', '.') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Kawalan:</span> Rp <span id="kawalan-summary">{{ number_format(old('jumlah_kawalan', 0), 0, ',', '.') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Parkir:</span> Rp <span id="parkir-summary">{{ number_format(old('jumlah_parkir', 0), 0, ',', '.') }}</span>
+                                </div>
+                            </div>
                             <div class="pt-2 border-t border-yellow-300">
                                 <p class="text-xs"><strong>Pastikan data sudah benar sebelum menyimpan.</strong></p>
                             </div>
@@ -285,15 +333,24 @@
 function calculateTotal() {
     const currentTotal = {{ $uangJalan->jumlah_total ?? 0 }};
     const jenis = document.querySelector('input[name="jenis_penyesuaian"]:checked').value;
-    let adjustment = parseFloat(document.getElementById('jumlah_penyesuaian').value) || 0;
     let jenisText = '';
     const inputJumlah = document.getElementById('jumlah_penyesuaian');
+    
+    // Get component values
+    const jumlahMel = parseFloat(document.querySelector('input[name="jumlah_mel"]').value) || 0;
+    const jumlahPelancar = parseFloat(document.querySelector('input[name="jumlah_pelancar"]').value) || 0;
+    const jumlahKawalan = parseFloat(document.querySelector('input[name="jumlah_kawalan"]').value) || 0;
+    const jumlahParkir = parseFloat(document.querySelector('input[name="jumlah_parkir"]').value) || 0;
+    
+    // Calculate total adjustment from components
+    let adjustment = jumlahMel + jumlahPelancar + jumlahKawalan + jumlahParkir;
     
     if (jenis === 'penambahan') {
         jenisText = 'Penambahan';
         inputJumlah.disabled = false;
     } else if (jenis === 'pengurangan') {
         jenisText = 'Pengurangan';
+        adjustment = -adjustment; // Make negative for reduction
         inputJumlah.disabled = false;
     } else if (jenis === 'pengembalian_penuh') {
         jenisText = 'Pengembalian Penuh';
@@ -305,6 +362,11 @@ function calculateTotal() {
         inputJumlah.disabled = false;
     }
     
+    // For penambahan and pengurangan, set the calculated adjustment
+    if (jenis === 'penambahan' || jenis === 'pengurangan') {
+        inputJumlah.value = adjustment;
+    }
+    
     const newTotal = currentTotal + adjustment;
     
     document.getElementById('jumlah_total_baru').value = newTotal;
@@ -314,6 +376,12 @@ function calculateTotal() {
     const debitKredit = document.querySelector('select[name="debit_kredit"]').value;
     document.getElementById('debit-kredit-summary').textContent = debitKredit === 'debit' ? 'Debit' : 'Kredit';
     document.getElementById('jumlah-summary').textContent = Math.abs(adjustment).toLocaleString('id-ID');
+    
+    // Update component summaries
+    document.getElementById('mel-summary').textContent = jumlahMel.toLocaleString('id-ID');
+    document.getElementById('pelancar-summary').textContent = jumlahPelancar.toLocaleString('id-ID');
+    document.getElementById('kawalan-summary').textContent = jumlahKawalan.toLocaleString('id-ID');
+    document.getElementById('parkir-summary').textContent = jumlahParkir.toLocaleString('id-ID');
 }
 
 // Calculate total on page load
@@ -323,6 +391,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update on radio change
     document.querySelectorAll('input[name="jenis_penyesuaian"]').forEach(radio => {
         radio.addEventListener('change', calculateTotal);
+    });
+    
+    // Update on component changes
+    document.querySelectorAll('input[name="jumlah_mel"], input[name="jumlah_pelancar"], input[name="jumlah_kawalan"], input[name="jumlah_parkir"]').forEach(input => {
+        input.addEventListener('input', calculateTotal);
     });
 });
 </script>
