@@ -15,45 +15,73 @@
 
         <div class="mb-4">
             <h4 class="text-sm font-medium mb-1">Ringkasan Per Supir</h4>
-            <table class="min-w-full table-auto border-collapse">
+            <table class="min-w-full table-auto border-collapse text-xs">
                 <thead>
                     <tr>
-                        <th class="border px-3 py-2 text-left text-xs">Supir</th>
-                        <th class="border px-3 py-2 text-center text-xs">Full (20')</th>
-                        <th class="border px-3 py-2 text-center text-xs">Full (40')</th>
-                        <th class="border px-3 py-2 text-center text-xs">Total Full</th>
-                        <th class="border px-3 py-2 text-center text-xs">Empty (20')</th>
-                        <th class="border px-3 py-2 text-center text-xs">Empty (40')</th>
-                        <th class="border px-3 py-2 text-center text-xs">Total Empty</th>
-                        <th class="border px-3 py-2 text-right text-xs">Total</th>
-                        <th class="border px-3 py-2 text-right text-xs">Biaya</th>
+                        <th class="border px-2 py-1" rowspan="2">Keterangan</th>
+                        @foreach($perSupirCounts as $supirName => $counts)
+                            <th class="border px-2 py-1 text-center" colspan="2">{{ $supirName }}</th>
+                        @endforeach
+                        <th class="border px-2 py-1 text-center" rowspan="2">Total</th>
+                    </tr>
+                    <tr>
+                        @foreach($perSupirCounts as $supirName => $counts)
+                            <th class="border px-2 py-1 text-center">20'</th>
+                            <th class="border px-2 py-1 text-center">40'</th>
+                        @endforeach
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($perSupirCounts as $supirName => $counts)
-                        @php
-                            $full20 = $counts['sizes']['20']['full'] ?? 0;
-                            $full40 = $counts['sizes']['40']['full'] ?? 0;
-                            $empty20 = $counts['sizes']['20']['empty'] ?? 0;
-                            $empty40 = $counts['sizes']['40']['empty'] ?? 0;
-                            $totalFull = $full20 + $full40;
-                            $totalEmpty = $empty20 + $empty40;
-                            $total = $totalFull + $totalEmpty;
-                            $biaya = $perSupir[$supirName] ?? 0;
-                        @endphp
+                    @php
+                        $rows = [
+                            ['label' => "Full", 'status' => 'full'],
+                            ['label' => "Empty", 'status' => 'empty'],
+                        ];
+                    @endphp
+
+                    @foreach($rows as $r)
                         <tr>
-                            <td class="border px-3 py-2 text-sm">{{ $supirName }}</td>
-                            <td class="border px-3 py-2 text-center text-sm">{{ $full20 }}</td>
-                            <td class="border px-3 py-2 text-center text-sm">{{ $full40 }}</td>
-                            <td class="border px-3 py-2 text-center text-sm">{{ $totalFull }}</td>
-                            <td class="border px-3 py-2 text-center text-sm">{{ $empty20 }}</td>
-                            <td class="border px-3 py-2 text-center text-sm">{{ $empty40 }}</td>
-                            <td class="border px-3 py-2 text-center text-sm">{{ $totalEmpty }}</td>
-                            <td class="border px-3 py-2 text-right text-sm">{{ $total }}</td>
-                            <td class="border px-3 py-2 text-right text-sm">Rp {{ number_format($biaya, 0, ',', '.') }}</td>
+                            <td class="border px-2 py-1">{{ $r['label'] }}</td>
+                            @php $sumRow = 0; @endphp
+                            @foreach($perSupirCounts as $supirName => $counts)
+                                @php
+                                    $val20 = $counts['sizes']['20'][$r['status']] ?? 0;
+                                    $val40 = $counts['sizes']['40'][$r['status']] ?? 0;
+                                    $sumRow += ($val20 + $val40);
+                                @endphp
+                                <td class="border px-2 py-1 text-center">{{ $val20 }}</td>
+                                <td class="border px-2 py-1 text-center">{{ $val40 }}</td>
+                            @endforeach
+                            <td class="border px-2 py-1 text-center">{{ $sumRow }}</td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="border px-2 py-1">JUMLAH</td>
+                        @php $grand = 0; @endphp
+                        @foreach($perSupirCounts as $supirName => $counts)
+                            @php
+                                $val20 = $counts['sizes']['20']['full'] ?? 0 + ($counts['sizes']['20']['empty'] ?? 0);
+                                $val40 = $counts['sizes']['40']['full'] ?? 0 + ($counts['sizes']['40']['empty'] ?? 0);
+                                $colTotal = $val20 + $val40;
+                                $grand += $colTotal;
+                            @endphp
+                            <td class="border px-2 py-1 text-center">{{ $val20 }}</td>
+                            <td class="border px-2 py-1 text-center">{{ $val40 }}</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-center">{{ $grand }}</td>
+                    </tr>
+                    <tr>
+                        <td class="border px-2 py-1">BIAYA</td>
+                        @php $totalBiayaCol = 0; @endphp
+                        @foreach($perSupir as $supirName => $sumBiaya)
+                            @php $totalBiayaCol += $sumBiaya; @endphp
+                            <td class="border px-2 py-1 text-right" colspan="2">Rp {{ number_format($sumBiaya, 0, ',', '.') }}</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-right">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
