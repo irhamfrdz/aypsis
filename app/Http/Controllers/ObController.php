@@ -6,6 +6,8 @@ use App\Models\MasterKapal;
 use App\Models\PergerakanKapal;
 use App\Models\NaikKapal;
 use App\Models\Bl;
+use App\Models\MasterPricelistOb;
+use App\Models\PranotaOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -87,6 +89,39 @@ class ObController extends Controller
 
             $belumOB = $totalKontainer - $sudahOB;
 
+            // Pre-compute pricing map and attach biaya & detected_status for each BL
+            $pricelists = MasterPricelistOb::all();
+            $priceMap = [];
+            foreach ($pricelists as $pl) {
+                $key = ($pl->status_kontainer ?? '') . '|' . ($pl->size_kontainer ?? '');
+                $priceMap[$key] = $pl->biaya;
+            }
+            foreach ($bls as $bl) {
+                $status = 'full';
+                if (empty($bl->nama_barang) || $bl->nama_barang === '') {
+                    $status = 'empty';
+                } else {
+                    $lowerName = strtolower($bl->nama_barang);
+                    if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                        $status = 'empty';
+                    } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
+                        $status = 'full';
+                    }
+                }
+                $sizeStr = null;
+                if (!empty($bl->size_kontainer)) {
+                    $sizeInt = intval($bl->size_kontainer);
+                    if ($sizeInt === 20) {
+                        $sizeStr = '20ft';
+                    } elseif ($sizeInt === 40) {
+                        $sizeStr = '40ft';
+                    }
+                }
+                $key = $status . '|' . ($sizeStr ?? '');
+                $bl->biaya = isset($priceMap[$key]) ? $priceMap[$key] : null;
+                $bl->detected_status = $status;
+            }
+
             // Get list of supir (drivers) from karyawan table
             $supirs = \App\Models\Karyawan::where('divisi', 'supir')
                 ->whereNull('tanggal_berhenti')
@@ -153,6 +188,39 @@ class ObController extends Controller
             ->count();
 
         $belumOB = $totalKontainer - $sudahOB;
+
+        // Pre-compute pricing map and attach biaya & detected_status for each naikKapal
+        $pricelists = MasterPricelistOb::all();
+        $priceMap = [];
+        foreach ($pricelists as $pl) {
+            $key = ($pl->status_kontainer ?? '') . '|' . ($pl->size_kontainer ?? '');
+            $priceMap[$key] = $pl->biaya;
+        }
+        foreach ($naikKapals as $nk) {
+            $status = 'full';
+            if (empty($nk->jenis_barang) || $nk->jenis_barang === '') {
+                $status = 'empty';
+            } else {
+                $lowerName = strtolower($nk->jenis_barang);
+                if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                    $status = 'empty';
+                } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
+                    $status = 'full';
+                }
+            }
+            $sizeStr = null;
+            if (!empty($nk->size_kontainer)) {
+                $sizeInt = intval($nk->size_kontainer);
+                if ($sizeInt === 20) {
+                    $sizeStr = '20ft';
+                } elseif ($sizeInt === 40) {
+                    $sizeStr = '40ft';
+                }
+            }
+            $key = $status . '|' . ($sizeStr ?? '');
+            $nk->biaya = isset($priceMap[$key]) ? $priceMap[$key] : null;
+            $nk->detected_status = $status;
+        }
 
         // Get list of supir (drivers) from karyawan table
         $supirs = \App\Models\Karyawan::where('divisi', 'supir')
@@ -432,6 +500,58 @@ class ObController extends Controller
             ]);
         } catch (\Exception $e) {
             \Log::error('Unmark OB error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store selected items into a new OB pranota
+     */
+    public function masukPranota(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'nomor_pranota' => 'required|string|unique:pranota_obs,nomor_pranota',
+                'items' => 'required|array',
+                'items.*.id' => 'required|integer',
+                'items.*.type' => 'required|in:naik_kapal,bl',
+            ]);
+
+            // Get nama_kapal and no_voyage from session or request
+            $namaKapal = session('selected_ob_ship.nama_kapal') ?? $request->get('nama_kapal');
+            $noVoyage = session('selected_ob_voyage') ?? $request->get('no_voyage');
+
+            if (!$namaKapal || !$noVoyage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Informasi kapal dan voyage tidak ditemukan'
+                ], 400);
+            }
+
+            // Create pranota
+            PranotaOb::create([
+                'nomor_pranota' => $request->nomor_pranota,
+                'nama_kapal' => $namaKapal,
+                'no_voyage' => $noVoyage,
+                'items' => $request->items,
+                'created_by' => $user->id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pranota OB berhasil dibuat'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Masuk Pranota error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

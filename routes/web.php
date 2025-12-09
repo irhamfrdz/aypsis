@@ -2827,6 +2827,9 @@ Route::middleware(['auth'])->group(function() {
     Route::post('ob/unmark-ob-bl', [\App\Http\Controllers\ObController::class, 'unmarkOBBl'])
          ->name('ob.unmark-ob-bl')
          ->middleware('can:ob-view');
+    Route::post('ob/masuk-pranota', [\App\Http\Controllers\ObController::class, 'masukPranota'])
+         ->name('ob.masuk-pranota')
+         ->middleware('can:ob-view');
 
     // Tagihan OB routes
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])

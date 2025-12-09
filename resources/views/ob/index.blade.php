@@ -189,42 +189,8 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($bls as $key => $bl)
                     <tr class="hover:bg-gray-50 transition duration-150">
-                        @php
-                            $biaya = 0;
-                            // determine status from nama_barang
-                            $status = 'full';
-                            if (empty($bl->nama_barang) || $bl->nama_barang === '') {
-                                $status = 'empty';
-                            } else {
-                                $lowerName = strtolower($bl->nama_barang);
-                                if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                                    $status = 'empty';
-                                } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
-                                    $status = 'full';
-                                }
-                            }
-
-                            // map size to value used in master_pricelist_ob ('20ft'/'40ft')
-                            $sizeStr = null;
-                            if (!empty($bl->size_kontainer)) {
-                                $sizeInt = intval($bl->size_kontainer);
-                                if ($sizeInt === 20) {
-                                    $sizeStr = '20ft';
-                                } elseif ($sizeInt === 40) {
-                                    $sizeStr = '40ft';
-                                }
-                            }
-
-                            // Query pricelist by status and size (master_pricelist_ob only has status_kontainer & size_kontainer)
-                            $pricelistQuery = \App\Models\MasterPricelistOb::where('status_kontainer', $status);
-                            if ($sizeStr) {
-                                $pricelistQuery = $pricelistQuery->where('size_kontainer', $sizeStr);
-                            }
-                            $pricelist = $pricelistQuery->first();
-                            $biaya = $pricelist ? $pricelist->biaya : 0;
-                        @endphp
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $biaya }}">
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}">
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bls->firstItem() + $key }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
@@ -324,37 +290,8 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
                         <tr class="hover:bg-gray-50 transition duration-150">
-                            @php
-                                $biaya = 0;
-                                $status = 'full';
-                                if (empty($naikKapal->jenis_barang) || $naikKapal->jenis_barang === '') {
-                                    $status = 'empty';
-                                } else {
-                                    $lowerName = strtolower($naikKapal->jenis_barang);
-                                    if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                                        $status = 'empty';
-                                    } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
-                                        $status = 'full';
-                                    }
-                                }
-                                $sizeStr = null;
-                                if (!empty($naikKapal->size_kontainer)) {
-                                    $sizeInt = intval($naikKapal->size_kontainer);
-                                    if ($sizeInt === 20) {
-                                        $sizeStr = '20ft';
-                                    } elseif ($sizeInt === 40) {
-                                        $sizeStr = '40ft';
-                                    }
-                                }
-                                $pricelistQuery = \App\Models\MasterPricelistOb::where('status_kontainer', $status);
-                                if ($sizeStr) {
-                                    $pricelistQuery = $pricelistQuery->where('size_kontainer', $sizeStr);
-                                }
-                                $pricelist = $pricelistQuery->first();
-                                $biaya = $pricelist ? $pricelist->biaya : 0;
-                            @endphp
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $biaya }}">
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}">
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapals->firstItem() + $key }}
@@ -574,12 +511,23 @@
             <!-- Modal Body -->
             <div class="mt-4">
                 <p class="text-sm text-gray-700 mb-4">Berikut adalah detail kontainer yang akan dimasukkan ke pranota. Semua kontainer yang telah Anda pilih di semua halaman akan diproses.</p>
+                
+                <div class="mb-4">
+                    <label for="nomor_pranota" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Pranota <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="nomor_pranota" name="nomor_pranota" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Masukkan nomor pranota...">
+                </div>
+                
                 <div class="overflow-x-auto">
                     <table id="pranota-table" class="min-w-full table-auto border border-gray-300">
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No. Kontainer</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Nama Barang</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Tipe</th>
+                                <!-- Tipe column removed intentionally -->
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Supir</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Size</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Biaya</th>
                         <tbody id="pranota-items" class="bg-white divide-y divide-gray-200">
@@ -644,17 +592,24 @@ function openPranotaModal() {
     totalP.textContent = `Total kontainer yang dipilih: ${selectedItems.length}`;
     
     // Add all items to table
-    selectedItems.forEach((item, index) => {
+            selectedItems.forEach((item, index) => {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50';
-        
-        row.innerHTML = `
+                let biayaDisplay = '';
+                if (item.biaya === null || item.biaya === undefined || item.biaya === '') {
+                    biayaDisplay = `<span class="text-red-600">Biaya belum diatur</span>`;
+                } else {
+                    const v = Number(item.biaya);
+                    biayaDisplay = `Rp ${v.toLocaleString('id-ID')}`;
+                }
+
+            row.innerHTML = `
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-mono">${item.nomor_kontainer || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.nama_barang || '-'}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.tipe || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.supir || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.size ? item.size + ' Feet' : '-'}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">Rp ${parseInt(item.biaya || 0).toLocaleString('id-ID')}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${biayaDisplay}</td>
         `;
         
         tbody.appendChild(row);
@@ -665,6 +620,7 @@ function openPranotaModal() {
 
 function closePranotaModal() {
     document.getElementById('pranotaModal').classList.add('hidden');
+    document.getElementById('nomor_pranota').value = '';
 }
 
 // Close pranota modal when clicking outside
@@ -821,7 +777,9 @@ function checkSelected() {
         nama_barang: cb.getAttribute('data-nama-barang'),
         tipe: cb.getAttribute('data-tipe'),
         size: cb.getAttribute('data-size'),
-        biaya: cb.getAttribute('data-biaya')
+        biaya: cb.getAttribute('data-biaya'),
+        status: cb.getAttribute('data-status'),
+        supir: cb.getAttribute('data-supir')
     }));
     saveSelectedItems(allSelected);
 }
@@ -848,6 +806,12 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
         return;
     }
     
+    const nomorPranota = document.getElementById('nomor_pranota').value.trim();
+    if (!nomorPranota) {
+        alert('Silakan masukkan nomor pranota');
+        return;
+    }
+    
     const items = selectedItems.map(item => ({ id: item.id, type: item.type }));
     
     const btnConfirm = document.getElementById('btnConfirmPranota');
@@ -861,7 +825,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
-        body: JSON.stringify({ items: items })
+        body: JSON.stringify({ items: items, nomor_pranota: nomorPranota })
     })
     .then(response => response.json())
     .then(data => {
