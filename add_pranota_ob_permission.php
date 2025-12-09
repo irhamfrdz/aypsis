@@ -11,6 +11,7 @@ $app = require_once __DIR__.'/bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 echo "=== Menambahkan Permission Pranota OB ===\n\n";
 
@@ -24,15 +25,21 @@ try {
         'pranota-ob-export',
     ];
 
+    // Detect whether permissions table has 'guard_name' column (some installations omit it)
+    $hasGuardName = Schema::hasColumn('permissions', 'guard_name');
+
     foreach ($permissions as $permName) {
         $perm = DB::table('permissions')->where('name', $permName)->first();
         if (!$perm) {
-            $id = DB::table('permissions')->insertGetId([
+            $data = [
                 'name' => $permName,
-                'guard_name' => 'web',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+            if ($hasGuardName) {
+                $data['guard_name'] = 'web';
+            }
+            $id = DB::table('permissions')->insertGetId($data);
             echo "✅ Permission '$permName' dibuat (ID: $id)\n";
         } else {
             echo "ℹ️  Permission '$permName' sudah ada (ID: {$perm->id})\n";
