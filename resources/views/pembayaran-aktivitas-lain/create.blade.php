@@ -165,6 +165,20 @@
                     @enderror
                 </div>
 
+                <!-- Tipe Penyesuaian (Hidden by default) -->
+                <div id="tipe_penyesuaian_field" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Penyesuaian <span class="text-red-500">*</span></label>
+                    <select name="tipe_penyesuaian[]" id="tipe_penyesuaian_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('tipe_penyesuaian') border-red-500 @enderror" multiple>
+                        <option value="mel" {{ in_array('mel', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>MEL</option>
+                        <option value="parkir" {{ in_array('parkir', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>Parkir</option>
+                        <option value="pelancar" {{ in_array('pelancar', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>Pelancar</option>
+                        <option value="kawalan" {{ in_array('kawalan', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>Kawalan</option>
+                    </select>
+                    @error('tipe_penyesuaian')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Sub Jenis Kendaraan (Hidden by default) -->
                 <div id="sub_jenis_kendaraan" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sub Jenis Kendaraan <span class="text-red-500">*</span></label>
@@ -543,6 +557,13 @@ function initializeSelect2() {
         width: '100%'
     });
 
+    $('#tipe_penyesuaian_select').select2({
+        placeholder: "Pilih Tipe Penyesuaian (bisa pilih lebih dari satu)",
+        allowClear: true,
+        width: '100%',
+        multiple: true
+    });
+
     // Initialize main functionality after Select2 is ready
     initializeMainFunctionality();
 }
@@ -618,6 +639,9 @@ function initializeMainFunctionality() {
         const jenisPenyesuaianField = document.getElementById('jenis_penyesuaian_field');
         const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
         
+        const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
+        const tipePenyesuaianSelect = document.getElementById('tipe_penyesuaian_select');
+        
         if (jenisAktivitas.value === 'Pembayaran Adjusment Uang Jalan') {
             jenisPenyesuaianField.classList.remove('hidden');
             jenisPenyesuaianSelect.setAttribute('required', 'required');
@@ -629,10 +653,26 @@ function initializeMainFunctionality() {
                     width: '100%'
                 });
             }, 100);
+            
+            tipePenyesuaianField.classList.remove('hidden');
+            tipePenyesuaianSelect.setAttribute('required', 'required');
+            // Reinitialize Select2 after showing
+            setTimeout(() => {
+                $('#tipe_penyesuaian_select').select2({
+                    placeholder: "Pilih Tipe Penyesuaian (bisa pilih lebih dari satu)",
+                    allowClear: true,
+                    width: '100%',
+                    multiple: true
+                });
+            }, 100);
         } else {
             jenisPenyesuaianField.classList.add('hidden');
             jenisPenyesuaianSelect.removeAttribute('required');
             $('#jenis_penyesuaian_select').val('').trigger('change');
+            
+            tipePenyesuaianField.classList.add('hidden');
+            tipePenyesuaianSelect.removeAttribute('required');
+            $('#tipe_penyesuaian_select').val('').trigger('change');
         }
     }
 
@@ -830,8 +870,8 @@ function initializeMainFunctionality() {
         } else if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
             requiredFields.push({ id: 'surat_jalan_select', name: 'Surat Jalan' });
             requiredFields.push({ id: 'jenis_penyesuaian_select', name: 'Jenis Penyesuaian' });
+            requiredFields.push({ id: 'tipe_penyesuaian_select', name: 'Tipe Penyesuaian' });
         }
-        
         for (const field of requiredFields) {
             let element;
             if (field.id) {
@@ -841,7 +881,20 @@ function initializeMainFunctionality() {
                          document.querySelector(`[name="${field.name}"]`);
             }
             
-            if (!element || !element.value.trim()) {
+            let value = element ? element.value.trim() : '';
+            
+            // Special handling for multiple select
+            if (field.id === 'tipe_penyesuaian_select') {
+                const selectedValues = $('#tipe_penyesuaian_select').val();
+                if (!selectedValues || selectedValues.length === 0) {
+                    showErrorMessage(`${field.name} harus diisi!`);
+                    if (element) element.focus();
+                    return false;
+                }
+                continue; // Skip the general check
+            }
+            
+            if (!element || !value) {
                 showErrorMessage(`${field.name} harus diisi!`);
                 if (element) element.focus();
                 return false;

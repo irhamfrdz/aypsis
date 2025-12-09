@@ -13,6 +13,8 @@ class PembayaranAktivitasLain extends Model
         'nomor',
         'tanggal',
         'jenis_aktivitas',
+        'jenis_penyesuaian',
+        'tipe_penyesuaian',
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
@@ -21,7 +23,6 @@ class PembayaranAktivitasLain extends Model
         'jumlah',
         'debit_kredit',
         'metode_pembayaran',
-        'status',
         'akun_coa_id',
         'akun_bank_id',
         'approved_by',
@@ -31,7 +32,8 @@ class PembayaranAktivitasLain extends Model
 
     protected $casts = [
         'tanggal' => 'date',
-        'jumlah' => 'decimal:2',
+        'jumlah' => 'integer',
+        'tipe_penyesuaian' => 'array',
         'approved_at' => 'datetime',
     ];
 
