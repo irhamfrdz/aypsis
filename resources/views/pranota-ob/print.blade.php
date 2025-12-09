@@ -10,10 +10,7 @@
                 <p class="text-sm">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
                 <p class="text-sm">Kapal / Voyage: {{ $pranota->nama_kapal ?? '-' }} / {{ $pranota->no_voyage ?? '-' }}</p>
             </div>
-            <div class="text-sm text-right">
-                <p>Tanggal Cetak: {{ now()->format('d/m/Y H:i') }}</p>
-                <p>Pembuat: {{ $pranota->creator?->nama_lengkap ?? $pranota->creator?->name ?? '-' }}</p>
-            </div>
+            <!-- Right column removed as per request (no print of Tanggal Cetak / Pembuat) -->
         </div>
 
         <div class="mb-4">
@@ -60,46 +57,20 @@
             </table>
         </div>
 
-        <table class="min-w-full border-collapse table-auto">
-            <thead>
-                <tr>
-                    <th class="border px-3 py-2 text-left text-xs">No</th>
-                    <th class="border px-3 py-2 text-left text-xs">Nomor Kontainer</th>
-                    <th class="border px-3 py-2 text-left text-xs">Jenis Barang</th>
-                    <th class="border px-3 py-2 text-left text-xs">Supir</th>
-                    <th class="border px-3 py-2 text-left text-xs">Size</th>
-                    <th class="border px-3 py-2 text-right text-xs">Biaya</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($displayItems as $i => $item)
-                <tr>
-                    <td class="border px-3 py-2 text-sm">{{ $i + 1 }}</td>
-                    <td class="border px-3 py-2 text-sm">{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                    <td class="border px-3 py-2 text-sm">{{ $item['nama_barang'] ?? '-' }}</td>
-                    <td class="border px-3 py-2 text-sm">{{ $item['supir'] ?? '-' }}</td>
-                    <td class="border px-3 py-2 text-sm">{{ $item['size'] ?? '-' }}</td>
-                    <td class="border px-3 py-2 text-sm text-right">
-                        @if($item['biaya'])
-                            Rp {{ number_format($item['biaya'], 0, ',', '.') }}
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td class="border px-3 py-8 text-center text-gray-500" colspan="6">Tidak ada item</td>
-                </tr>
-                @endforelse
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td class="border px-3 py-2 text-sm font-medium" colspan="5">Total</td>
-                    <td class="border px-3 py-2 text-sm font-medium text-right">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
-                </tr>
-            </tfoot>
-        </table>
+        <div class="mt-4">
+            <table class="min-w-full table-auto border-collapse">
+                <tbody>
+                    <tr>
+                        <td class="px-3 py-2 text-sm font-medium">Total Kontainer</td>
+                        <td class="px-3 py-2 text-sm">{{ array_sum(array_map(function($c){ return array_sum(array_map('array_sum', array_column($c['sizes'], null))); }, $perSupirCounts)) ?? 0 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-3 py-2 text-sm font-medium">Total Biaya</td>
+                        <td class="px-3 py-2 text-sm">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
         <div class="mt-6 flex justify-between text-sm">
             <div>
