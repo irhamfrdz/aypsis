@@ -187,7 +187,7 @@ use Illuminate\Support\Str;
                         @forelse($suratJalans as $suratJalan)
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-2 whitespace-nowrap text-center sticky left-0 bg-white z-10">
-                                <div class="relative inline-block text-left">
+                                <div class="relative inline-block text-left z-50">
                                     <button type="button" onclick="toggleDropdown('dropdown-{{ $suratJalan->id }}')"
                                             class="inline-flex items-center justify-center w-6 h-6 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors duration-200">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,50 +195,69 @@ use Illuminate\Support\Str;
                                         </svg>
                                     </button>
                                     
-                                    <div id="dropdown-{{ $suratJalan->id }}" class="hidden absolute left-0 z-50 mt-1 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                    <div id="dropdown-{{ $suratJalan->id }}" class="hidden absolute left-0 top-full z-50 mt-1 min-w-max max-w-xs rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                         <div class="py-1">
-                                            {{-- Kondisi: Hanya tampilkan tombol Edit dan Cancel jika status pembayaran uang jalan belum 'dibayar'
-                                                 Ini untuk mencegah perubahan data surat jalan setelah pembayaran sudah dilakukan,
-                                                 agar tidak terjadi inkonsistensi antara data surat jalan dan pembayaran --}}
-                                            {{-- @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar') --}}
-                                            <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" 
-                                               class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                                <svg class="mr-2 h-3 w-3 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            {{-- Tombol Edit - selalu tersedia --}}
+                                                          <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}"
+                                                              class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900 whitespace-nowrap">
+                                                                <svg class="mr-2 h-4 w-4 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                 </svg>
                                                 Edit
                                             </a>
-                                            <button onclick="updateStatus('{{ $suratJalan->id }}', 'cancelled')" 
-                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900">
-                                                <svg class="mr-2 h-3 w-3 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                            {{-- Tombol Cancel - untuk membatalkan surat jalan --}}
+                                            <button onclick="updateStatus('{{ $suratJalan->id }}', 'cancelled')"
+                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 whitespace-nowrap">
+                                                <svg class="mr-2 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
                                                 Cancel
                                             </button>
-                                            {{-- @endif --}}
-                                            <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
-                                               target="_blank"
-                                               class="group flex items-center px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
-                                                <svg class="mr-2 h-3 w-3 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                            {{-- Tombol Print --}}
+                                                          <a href="{{ route('surat-jalan.print', $suratJalan->id) }}"
+                                                              target="_blank"
+                                                              class="group flex items-center px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900 whitespace-nowrap">
+                                                <svg class="mr-2 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                 </svg>
                                                 Print SJ
                                             </a>
-                                            <a href="{{ route('surat-jalan.print-memo', $suratJalan->id) }}" 
-                                               target="_blank"
-                                               class="group flex items-center px-3 py-1.5 text-xs text-green-700 hover:bg-green-50 hover:text-green-900">
-                                                <svg class="mr-2 h-3 w-3 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                            {{-- Tombol Memo --}}
+                                                          <a href="{{ route('surat-jalan.print-memo', $suratJalan->id) }}"
+                                                              target="_blank"
+                                                              class="group flex items-center px-3 py-1.5 text-xs text-green-700 hover:bg-green-50 hover:text-green-900 whitespace-nowrap">
+                                                <svg class="mr-2 h-4 w-4 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                                 </svg>
                                                 Memo
                                             </a>
-                                            <button onclick="printPreprinted('{{ $suratJalan->id }}')" 
-                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900">
-                                                <svg class="mr-2 h-3 w-3 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                            {{-- Tombol Pre Printed --}}
+                                                <button onclick="printPreprinted('{{ $suratJalan->id }}')"
+                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900 whitespace-nowrap">
+                                                <svg class="mr-2 h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                                 </svg>
                                                 Pre Printed
                                             </button>
+
+                                            {{-- Tombol Delete --}}
+                                            <div class="border-t border-gray-100"></div>
+                                            <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline w-full">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    onclick="return confirm('Yakin ingin menghapus surat jalan ini?')"
+                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 whitespace-nowrap">
+                                                    <svg class="mr-2 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                    Hapus
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -336,37 +355,57 @@ use Illuminate\Support\Str;
                                 @endif
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center space-x-1">
-                                    <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-blue-600 hover:text-blue-900" title="Detail">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="flex items-center justify-center space-x-2">
+                                    {{-- Tombol Detail --}}
+                                                <a href="{{ route('surat-jalan.show', $suratJalan->id) }}"
+                                                    class="text-blue-600 hover:text-blue-900 transition-colors duration-200 whitespace-nowrap"
+                                       title="Lihat Detail">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
                                     </a>
-                                    <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" class="text-green-600 hover:text-green-900" title="Print" target="_blank">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                                        </svg>
-                                    </a>
-                                    {{-- @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar') --}}
-                                    <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                    {{-- Tombol Edit --}}
+                                                <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}"
+                                                    class="text-indigo-600 hover:text-indigo-900 transition-colors duration-200 whitespace-nowrap"
+                                       title="Edit Surat Jalan">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
-                                    {{-- @endif --}}
+
+                                    {{-- Tombol Print --}}
+                                                <a href="{{ route('surat-jalan.print', $suratJalan->id) }}"
+                                                    class="text-green-600 hover:text-green-900 transition-colors duration-200 whitespace-nowrap"
+                                       title="Print Surat Jalan"
+                                       target="_blank">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                        </svg>
+                                    </a>
+
+                                    {{-- Tombol Audit (hanya untuk user dengan permission) --}}
                                     @can('audit-log-view')
-                                    <button type="button" onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->nomor_surat }}')" class="text-purple-600 hover:text-purple-900" title="Audit">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="button"
+                                            onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->no_surat_jalan }}')"
+                                            class="text-purple-600 hover:text-purple-900 transition-colors duration-200 whitespace-nowrap"
+                                            title="Lihat Audit Log">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </button>
                                     @endcan
-                                    <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin hapus?')">
+
+                                    {{-- Tombol Delete --}}
+                                    <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="submit"
+                                            onclick="return confirm('Yakin ingin menghapus surat jalan ini?')"
+                                            class="text-red-600 hover:text-red-900 transition-colors duration-200 whitespace-nowrap"
+                                                title="Hapus Surat Jalan">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
                                         </button>
@@ -410,17 +449,41 @@ use Illuminate\Support\Str;
 
 <script>
 // Toggle dropdown menu
-function toggleDropdown(dropdownId) {
-    // Close all other dropdowns first
-    document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
-        if (dropdown.id !== dropdownId) {
-            dropdown.classList.add('hidden');
-        }
-    });
-    
-    // Toggle the clicked dropdown
-    const dropdown = document.getElementById(dropdownId);
-    dropdown.classList.toggle('hidden');
+        function toggleDropdown(dropdownId) {
+            // Close all other dropdowns first
+            document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+                if (dropdown.id !== dropdownId) {
+                    dropdown.classList.add('hidden');
+                    dropdown.style.position = '';
+                    dropdown.style.left = '';
+                    dropdown.style.top = '';
+                    dropdown.style.zIndex = '';
+                    dropdown.style.width = '';
+                }
+            });
+
+            // Toggle the clicked dropdown
+            const dropdown = document.getElementById(dropdownId);
+            const button = dropdown.parentElement.querySelector('button');
+            const isHidden = dropdown.classList.contains('hidden');
+
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                // Get button position
+                const rect = button.getBoundingClientRect();
+                dropdown.style.position = 'fixed';
+                dropdown.style.left = rect.left + 'px';
+                dropdown.style.top = (rect.bottom + 4) + 'px'; // 4px offset
+                dropdown.style.zIndex = '9999';
+                dropdown.style.width = dropdown.offsetWidth + 'px';
+            } else {
+                dropdown.classList.add('hidden');
+                dropdown.style.position = '';
+                dropdown.style.left = '';
+                dropdown.style.top = '';
+                dropdown.style.zIndex = '';
+                dropdown.style.width = '';
+            }
 }
 
 // Close dropdowns when clicking outside
