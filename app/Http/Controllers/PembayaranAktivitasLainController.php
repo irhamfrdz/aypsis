@@ -34,6 +34,7 @@ class PembayaranAktivitasLainController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nomor', 'like', "%{$search}%")
+                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
                   ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
@@ -135,11 +136,15 @@ class PembayaranAktivitasLainController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan',
+            'tipe_penyesuaian_detail' => 'nullable|array',
+            'tipe_penyesuaian_detail.*.tipe' => 'required|string|in:mel,parkir,pelancar,kawalan',
+            'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
             'nomor_voyage' => 'nullable|string|max:255',

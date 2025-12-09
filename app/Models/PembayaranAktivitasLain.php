@@ -11,10 +11,12 @@ class PembayaranAktivitasLain extends Model
 
     protected $fillable = [
         'nomor',
+        'nomor_accurate',
         'tanggal',
         'jenis_aktivitas',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
+        'tipe_penyesuaian_detail',
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
@@ -34,6 +36,7 @@ class PembayaranAktivitasLain extends Model
         'tanggal' => 'date',
         'jumlah' => 'integer',
         'tipe_penyesuaian' => 'array',
+        'tipe_penyesuaian_detail' => 'array',
         'approved_at' => 'datetime',
     ];
 

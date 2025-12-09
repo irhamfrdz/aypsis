@@ -110,6 +110,15 @@
                     <input type="text" value="{{ $nomor }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm">
                 </div>
 
+                <!-- Nomor Accurate -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Accurate</label>
+                    <input type="text" name="nomor_accurate" value="{{ old('nomor_accurate') }}" placeholder="Masukkan nomor accurate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_accurate') border-red-500 @enderror">
+                    @error('nomor_accurate')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Tanggal -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal <span class="text-red-500">*</span></label>
@@ -168,13 +177,27 @@
                 <!-- Tipe Penyesuaian (Hidden by default) -->
                 <div id="tipe_penyesuaian_field" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Penyesuaian <span class="text-red-500">*</span></label>
-                    <select name="tipe_penyesuaian[]" id="tipe_penyesuaian_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('tipe_penyesuaian') border-red-500 @enderror" multiple>
-                        <option value="mel" {{ in_array('mel', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>MEL</option>
-                        <option value="parkir" {{ in_array('parkir', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>Parkir</option>
-                        <option value="pelancar" {{ in_array('pelancar', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>Pelancar</option>
-                        <option value="kawalan" {{ in_array('kawalan', old('tipe_penyesuaian', [])) ? 'selected' : '' }}>Kawalan</option>
-                    </select>
-                    @error('tipe_penyesuaian')
+
+                    <!-- Container untuk input dinamis -->
+                    <div id="tipe_penyesuaian_container" class="space-y-3">
+                        <!-- Template untuk input baru akan ditambahkan di sini -->
+                    </div>
+
+                    <!-- Tombol tambah -->
+                    <button type="button" id="add_tipe_penyesuaian_btn" class="mt-3 inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Tambah Tipe Penyesuaian
+                    </button>
+
+                    @error('tipe_penyesuaian_detail')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    @error('tipe_penyesuaian_detail.*.tipe')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    @error('tipe_penyesuaian_detail.*.nominal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -557,13 +580,6 @@ function initializeSelect2() {
         width: '100%'
     });
 
-    $('#tipe_penyesuaian_select').select2({
-        placeholder: "Pilih Tipe Penyesuaian (bisa pilih lebih dari satu)",
-        allowClear: true,
-        width: '100%',
-        multiple: true
-    });
-
     // Initialize main functionality after Select2 is ready
     initializeMainFunctionality();
 }
@@ -653,27 +669,26 @@ function initializeMainFunctionality() {
                     width: '100%'
                 });
             }, 100);
-            
-            tipePenyesuaianField.classList.remove('hidden');
-            tipePenyesuaianSelect.setAttribute('required', 'required');
-            // Reinitialize Select2 after showing
-            setTimeout(() => {
-                $('#tipe_penyesuaian_select').select2({
-                    placeholder: "Pilih Tipe Penyesuaian (bisa pilih lebih dari satu)",
-                    allowClear: true,
-                    width: '100%',
-                    multiple: true
-                });
-            }, 100);
+
+            // Toggle tipe penyesuaian based on jenis penyesuaian
+            toggleTipePenyesuaian();
         } else {
             jenisPenyesuaianField.classList.add('hidden');
             jenisPenyesuaianSelect.removeAttribute('required');
             $('#jenis_penyesuaian_select').val('').trigger('change');
-            
-            tipePenyesuaianField.classList.add('hidden');
-            tipePenyesuaianSelect.removeAttribute('required');
-            $('#tipe_penyesuaian_select').val('').trigger('change');
+
+            // Clear all dynamic inputs
+            clearTipePenyesuaianInputs();
+            // Clear jumlah if not adjustment payment
+            const jumlahInput = document.querySelector('input[name="jumlah"]');
+            if (jumlahInput && !jumlahInput.dataset.manual) {
+                jumlahInput.value = '';
+                jumlahInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         }
+        
+        // Update jumlah field state (read-only for adjustment payments)
+        calculateTotalJumlah();
     }
 
     function toggleNomorPolisi() {
@@ -696,8 +711,228 @@ function initializeMainFunctionality() {
         }
     }
 
+    function toggleTipePenyesuaian() {
+        const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
+        const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
+        const jumlahInput = document.querySelector('input[name="jumlah"]');
+        
+        if (jenisPenyesuaian === 'pengembalian penuh') {
+            // Sembunyikan tipe penyesuaian
+            tipePenyesuaianField.classList.add('hidden');
+            // Clear all dynamic inputs
+            clearTipePenyesuaianInputs();
+            // Set jumlah ke uang jalan dari surat jalan yang dipilih
+            const selectedSuratJalan = $('#surat_jalan_select').find('option:selected');
+            const uangJalan = selectedSuratJalan.data('uang-jalan');
+            if (uangJalan && !isNaN(uangJalan)) {
+                jumlahInput.value = uangJalan;
+                jumlahInput.readOnly = true;
+                jumlahInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                // Tambahkan indicator
+                let indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
+                if (!indicator) {
+                    indicator = document.createElement('p');
+                    indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
+                    indicator.innerHTML = '🔄 Jumlah diisi otomatis dari uang jalan surat jalan';
+                    jumlahInput.parentNode.appendChild(indicator);
+                }
+            }
+        } else if (jenisPenyesuaian === 'pengembalian sebagian') {
+            // Sembunyikan tipe penyesuaian
+            tipePenyesuaianField.classList.add('hidden');
+            // Clear all dynamic inputs
+            clearTipePenyesuaianInputs();
+            // Jumlah bisa diinputkan manual, editable
+            jumlahInput.readOnly = false;
+            jumlahInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            // Remove indicator if exists
+            const indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        } else {
+            // Tampilkan tipe penyesuaian
+            tipePenyesuaianField.classList.remove('hidden');
+            // Initialize dynamic input fields for tipe penyesuaian
+            initializeTipePenyesuaianInputs();
+            // Hitung total dari nominal tipe penyesuaian
+            calculateTotalJumlah();
+        }
+    }
+
+    // Functions for dynamic tipe penyesuaian inputs
+    function initializeTipePenyesuaianInputs() {
+        const container = document.getElementById('tipe_penyesuaian_container');
+        const addBtn = document.getElementById('add_tipe_penyesuaian_btn');
+
+        // Clear existing inputs
+        container.innerHTML = '';
+
+        // Add event listener to add button
+        addBtn.onclick = function() {
+            addTipePenyesuaianInput();
+        };
+
+        // Add at least one input by default
+        addTipePenyesuaianInput();
+    }
+
+    function clearTipePenyesuaianInputs() {
+        const container = document.getElementById('tipe_penyesuaian_container');
+        container.innerHTML = '';
+    }
+
+    function addTipePenyesuaianInput(existingTipe = '', existingNominal = '') {
+        const container = document.getElementById('tipe_penyesuaian_container');
+        const inputCount = container.children.length;
+
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Penyesuaian</label>
+                <select name="tipe_penyesuaian_detail[${inputCount}][tipe]" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" required>
+                    <option value="">Pilih Tipe</option>
+                    <option value="mel" ${existingTipe === 'mel' ? 'selected' : ''}>MEL</option>
+                    <option value="parkir" ${existingTipe === 'parkir' ? 'selected' : ''}>Parkir</option>
+                    <option value="pelancar" ${existingTipe === 'pelancar' ? 'selected' : ''}>Pelancar</option>
+                    <option value="kawalan" ${existingTipe === 'kawalan' ? 'selected' : ''}>Kawalan</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nominal (Rp)</label>
+                <input type="number" name="tipe_penyesuaian_detail[${inputCount}][nominal]" value="${existingNominal}" min="0" step="1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" required>
+            </div>
+            <div class="flex-shrink-0">
+                <button type="button" onclick="removeTipePenyesuaianInput(this)" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(inputGroup);
+
+        // Reinitialize Select2 for new select elements
+        setTimeout(() => {
+            $(inputGroup).find('select').select2({
+                placeholder: "Pilih Tipe",
+                allowClear: true,
+                width: '100%'
+            });
+        }, 100);
+
+        // Add event listener to nominal input for auto-calculation
+        const nominalInput = inputGroup.querySelector('input[name*="[nominal]"]');
+        if (nominalInput) {
+            nominalInput.addEventListener('input', calculateTotalJumlah);
+        }
+    }
+
+    // Make removeTipePenyesuaianInput available globally
+    window.removeTipePenyesuaianInput = function(button) {
+        const container = document.getElementById('tipe_penyesuaian_container');
+        const inputGroup = button.closest('.flex.items-end.gap-3');
+
+        // Only remove if there's more than one input
+        if (container.children.length > 1) {
+            inputGroup.remove();
+            // Reindex remaining inputs
+            reindexTipePenyesuaianInputs();
+        } else {
+            showErrorMessage('Minimal harus ada satu tipe penyesuaian!');
+        }
+    };
+
+    function reindexTipePenyesuaianInputs() {
+        const container = document.getElementById('tipe_penyesuaian_container');
+        const inputs = container.querySelectorAll('.flex.items-end.gap-3');
+
+        inputs.forEach((inputGroup, index) => {
+            const select = inputGroup.querySelector('select');
+            const input = inputGroup.querySelector('input');
+
+            if (select) {
+                select.name = `tipe_penyesuaian_detail[${index}][tipe]`;
+            }
+            if (input) {
+                input.name = `tipe_penyesuaian_detail[${index}][nominal]`;
+            }
+        });
+
+
+
+        // Recalculate total after reindexing
+        calculateTotalJumlah();
+    }
+
+    function calculateTotalJumlah() {
+        const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
+        const jumlahInput = document.querySelector('input[name="jumlah"]');
+        
+        // Only auto-calculate for "Pembayaran Adjusment Uang Jalan"
+        if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
+            const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
+            
+            if (jenisPenyesuaian === 'pengembalian penuh') {
+                // Jumlah sudah di-set di toggleTipePenyesuaian, pastikan read-only
+                jumlahInput.readOnly = true;
+                jumlahInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                // Indicator sudah ditambahkan di toggleTipePenyesuaian
+            } else if (jenisPenyesuaian === 'pengembalian sebagian') {
+                // Jumlah editable, remove read-only
+                jumlahInput.readOnly = false;
+                jumlahInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                // Remove indicator
+                const indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            } else {
+                const container = document.getElementById('tipe_penyesuaian_container');
+                const nominalInputs = container.querySelectorAll('input[name*="[nominal]"]');
+                
+                let total = 0;
+                nominalInputs.forEach(input => {
+                    const value = parseFloat(input.value) || 0;
+                    total += value;
+                });
+                
+                // Update jumlah field
+                jumlahInput.value = total;
+                jumlahInput.readOnly = true;
+                jumlahInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                
+                // Add visual indicator
+                let indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
+                if (!indicator) {
+                    indicator = document.createElement('p');
+                    indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
+                    indicator.innerHTML = '🔄 Jumlah dihitung otomatis dari total nominal tipe penyesuaian';
+                    jumlahInput.parentNode.appendChild(indicator);
+                }
+                
+                // Trigger input event to update journal preview
+                jumlahInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        } else {
+            // Remove read-only and indicator for other activity types
+            jumlahInput.readOnly = false;
+            jumlahInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            
+            const indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+    }
+
     toggleSubJenisKendaraan();
     toggleNomorPolisi();
+    
+    // Initialize jumlah field state
+    calculateTotalJumlah();
 
     // Use Select2 change events
     $('#jenis_aktivitas').on('change', function() {
@@ -710,18 +945,38 @@ function initializeMainFunctionality() {
         toggleNomorPolisi();
     });
     
+    $('#jenis_penyesuaian_select').on('change', function() {
+        toggleTipePenyesuaian();
+    });
+    
     // Event listener for surat jalan selection to auto-fill jumlah
     $('#surat_jalan_select').on('change', function() {
         const selectedOption = $(this).find('option:selected');
         const uangJalan = selectedOption.data('uang-jalan');
         const jumlahInput = $('input[name="jumlah"]');
+        const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
+        const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
         
-        if (uangJalan && !isNaN(uangJalan)) {
-            jumlahInput.val(uangJalan);
-            // Trigger input event to update journal preview
-            jumlahInput.trigger('input');
+        if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
+            if (jenisPenyesuaian === 'pengembalian penuh') {
+                if (uangJalan && !isNaN(uangJalan)) {
+                    jumlahInput.val(uangJalan);
+                    // Trigger input event to update journal preview
+                    jumlahInput.trigger('input');
+                } else {
+                    jumlahInput.val('');
+                }
+            }
+            // For other adjustment types, jumlah is calculated from tipe penyesuaian
         } else {
-            jumlahInput.val('');
+            // For non-adjustment payments, fill jumlah with uang jalan
+            if (uangJalan && !isNaN(uangJalan)) {
+                jumlahInput.val(uangJalan);
+                // Trigger input event to update journal preview
+                jumlahInput.trigger('input');
+            } else {
+                jumlahInput.val('');
+            }
         }
     });
     
@@ -870,7 +1125,16 @@ function initializeMainFunctionality() {
         } else if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
             requiredFields.push({ id: 'surat_jalan_select', name: 'Surat Jalan' });
             requiredFields.push({ id: 'jenis_penyesuaian_select', name: 'Jenis Penyesuaian' });
-            requiredFields.push({ id: 'tipe_penyesuaian_select', name: 'Tipe Penyesuaian' });
+            const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
+            if (jenisPenyesuaian !== 'pengembalian penuh' && jenisPenyesuaian !== 'pengembalian sebagian') {
+                // For non-full refund and non-partial refund, require tipe penyesuaian
+                const container = document.getElementById('tipe_penyesuaian_container');
+                const nominalInputs = container.querySelectorAll('input[name*="[nominal]"]');
+                if (nominalInputs.length === 0 || Array.from(nominalInputs).every(input => !input.value.trim())) {
+                    showErrorMessage('Minimal harus ada satu tipe penyesuaian dengan nominal!');
+                    return false;
+                }
+            }
         }
         for (const field of requiredFields) {
             let element;
@@ -883,17 +1147,6 @@ function initializeMainFunctionality() {
             
             let value = element ? element.value.trim() : '';
             
-            // Special handling for multiple select
-            if (field.id === 'tipe_penyesuaian_select') {
-                const selectedValues = $('#tipe_penyesuaian_select').val();
-                if (!selectedValues || selectedValues.length === 0) {
-                    showErrorMessage(`${field.name} harus diisi!`);
-                    if (element) element.focus();
-                    return false;
-                }
-                continue; // Skip the general check
-            }
-            
             if (!element || !value) {
                 showErrorMessage(`${field.name} harus diisi!`);
                 if (element) element.focus();
@@ -901,12 +1154,32 @@ function initializeMainFunctionality() {
             }
         }
         
-        // Validate jumlah
-        const jumlah = parseFloat(document.querySelector('[name="jumlah"]').value);
-        if (isNaN(jumlah) || jumlah <= 0 || !Number.isInteger(jumlah)) {
-            showErrorMessage('Jumlah harus berupa angka bulat positif!');
-            document.querySelector('[name="jumlah"]').focus();
-            return false;
+        // Validate jumlah (skip for auto-calculated adjustment payments)
+        const currentJenisAktivitas = document.getElementById('jenis_aktivitas').value;
+        if (currentJenisAktivitas !== 'Pembayaran Adjusment Uang Jalan') {
+            const jumlah = parseFloat(document.querySelector('[name="jumlah"]').value);
+            if (isNaN(jumlah) || jumlah <= 0 || !Number.isInteger(jumlah)) {
+                showErrorMessage('Jumlah harus berupa angka bulat positif!');
+                document.querySelector('[name="jumlah"]').focus();
+                return false;
+            }
+        } else {
+            const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
+            if (jenisPenyesuaian === 'pengembalian sebagian') {
+                const jumlah = parseFloat(document.querySelector('[name="jumlah"]').value);
+                if (isNaN(jumlah) || jumlah <= 0 || !Number.isInteger(jumlah)) {
+                    showErrorMessage('Jumlah pengembalian sebagian harus berupa angka bulat positif!');
+                    document.querySelector('[name="jumlah"]').focus();
+                    return false;
+                }
+            } else {
+                // For other adjustment types, validate that total is > 0
+                const totalJumlah = parseFloat(document.querySelector('[name="jumlah"]').value);
+                if (isNaN(totalJumlah) || totalJumlah <= 0) {
+                    showErrorMessage('Total nominal tipe penyesuaian harus lebih dari 0!');
+                    return false;
+                }
+            }
         }
         
         return true;
@@ -1169,9 +1442,7 @@ function initializeMainFunctionality() {
         });
     }
 }
-</script>
 
-<script>
 // Start loading scripts when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, starting script initialization...');
@@ -1194,6 +1465,10 @@ window.addEventListener('unhandledrejection', function(event) {
     console.error('Unhandled Promise Rejection:', event.reason);
     console.error('Promise:', event.promise);
 });
+</script>
+
+<script>
+// This script block is now empty - can be removed
 </script>
 @endpush
 @endsection

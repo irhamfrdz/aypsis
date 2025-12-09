@@ -29,7 +29,7 @@
 
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Pencarian</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Nomor, jenis, keterangan..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Nomor, nomor accurate, jenis, keterangan..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition">
@@ -49,6 +49,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Accurate</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Aktivitas</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sub Jenis</th>
@@ -65,6 +66,7 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pembayarans->firstItem() + $index }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nomor }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->nomor_accurate ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $item->jenis_aktivitas }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $item->sub_jenis_kendaraan ?? '-' }}</td>
