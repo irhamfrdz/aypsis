@@ -569,16 +569,22 @@ document.addEventListener('click', function(event) {
 });
 
 // Pranota Modal functions
-function openPranotaModal(items, totalCount) {
+function openPranotaModal() {
+    const selectedItems = getSelectedItems();
+    if (selectedItems.length === 0) {
+        alert('Silakan pilih kontainer terlebih dahulu');
+        return;
+    }
+    
     const tbody = document.getElementById('pranota-items');
     tbody.innerHTML = '';
     
     // Set total count
     const totalP = document.getElementById('total-count');
-    totalP.textContent = `Total kontainer yang dipilih: ${totalCount}`;
+    totalP.textContent = `Total kontainer yang dipilih: ${selectedItems.length}`;
     
     // Add all items to table
-    items.forEach((item, index) => {
+    selectedItems.forEach((item, index) => {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50';
         
