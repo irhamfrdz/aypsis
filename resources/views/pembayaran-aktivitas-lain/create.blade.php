@@ -284,9 +284,9 @@
                     </div>
                 </div>
 
-                <!-- Akun COA -->
+                <!-- Akun Biaya -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Akun COA <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Akun Biaya <span class="text-red-500">*</span></label>
                     <select name="akun_coa_id" id="akun_coa_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_coa_id') border-red-500 @enderror">
                         <option value="">Pilih Akun COA</option>
                         @foreach($akunBiaya as $akun)
@@ -545,7 +545,7 @@ function initializeSelect2() {
     });
 
     $('#akun_coa_select').select2({
-        placeholder: "Pilih Akun COA",
+        placeholder: "Pilih Akun Biaya",
         allowClear: true,
         width: '100%'
     });
@@ -991,7 +991,7 @@ function initializeMainFunctionality() {
     });
     
     const debitKreditSelect = document.getElementById('debit_kredit');
-    const akunCoaSelect = document.getElementById('akun_coa_select');
+    const akunBiayaSelect = document.getElementById('akun_coa_select');
     const akunBankSelect = document.getElementById('akun_bank_select');
     const jumlahInput = document.querySelector('input[name="jumlah"]');
     const journalPreview = document.getElementById('journal_preview');
@@ -999,16 +999,16 @@ function initializeMainFunctionality() {
     
     function updateJournalPreview() {
         const jenisTransaksi = debitKreditSelect.value;
-        const akunCoa = akunCoaSelect.selectedOptions[0];
+        const akunBiaya = akunBiayaSelect.selectedOptions[0];
         const akunBank = akunBankSelect.selectedOptions[0];
         const jumlah = parseFloat(jumlahInput.value) || 0;
         
-        if (!jenisTransaksi || !akunCoa || !akunBank || jumlah <= 0) {
+        if (!jenisTransaksi || !akunBiaya || !akunBank || jumlah <= 0) {
             journalPreview.classList.add('hidden');
             return;
         }
         
-        const akunCoaNama = akunCoa.dataset.nama || akunCoa.textContent;
+        const akunBiayaNama = akunBiaya.dataset.nama || akunBiaya.textContent;
         const akunBankNama = akunBank.dataset.nama || akunBank.textContent;
         const jumlahFormatted = new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -1023,7 +1023,7 @@ function initializeMainFunctionality() {
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-green-50 p-2 rounded border border-green-200">
                         <p class="font-medium text-green-700">DEBIT (+)</p>
-                        <p class="text-xs text-green-600">${akunCoaNama}</p>
+                        <p class="text-xs text-green-600">${akunBiayaNama}</p>
                         <p class="font-bold text-green-700">${jumlahFormatted}</p>
                     </div>
                     <div class="bg-red-50 p-2 rounded border border-red-200">
@@ -1032,7 +1032,7 @@ function initializeMainFunctionality() {
                         <p class="font-bold text-red-700">${jumlahFormatted}</p>
                     </div>
                 </div>
-                <p class="text-xs text-gray-600 mt-1">💡 <strong>Efek:</strong> ${akunCoaNama} bertambah, ${akunBankNama} berkurang</p>
+                <p class="text-xs text-gray-600 mt-1">💡 <strong>Efek:</strong> ${akunBiayaNama} bertambah, ${akunBankNama} berkurang</p>
             `;
         } else {
             journalHtml = `
@@ -1044,11 +1044,11 @@ function initializeMainFunctionality() {
                     </div>
                     <div class="bg-red-50 p-2 rounded border border-red-200">
                         <p class="font-medium text-red-700">KREDIT (-)</p>
-                        <p class="text-xs text-red-600">${akunCoaNama}</p>
+                        <p class="text-xs text-red-600">${akunBiayaNama}</p>
                         <p class="font-bold text-red-700">${jumlahFormatted}</p>
                     </div>
                 </div>
-                <p class="text-xs text-gray-600 mt-1">💡 <strong>Efek:</strong> ${akunBankNama} bertambah, ${akunCoaNama} berkurang</p>
+                <p class="text-xs text-gray-600 mt-1">💡 <strong>Efek:</strong> ${akunBankNama} bertambah, ${akunBiayaNama} berkurang</p>
             `;
         }
         
@@ -1104,7 +1104,7 @@ function initializeMainFunctionality() {
             { id: 'jenis_aktivitas', name: 'Jenis Aktivitas' },
             { name: 'jumlah', name: 'Jumlah' },
             { id: 'debit_kredit', name: 'Jenis Transaksi' },
-            { id: 'akun_coa_select', name: 'Akun COA' },
+            { id: 'akun_coa_select', name: 'Akun Biaya' },
             { id: 'akun_bank_select', name: 'Bank/Kas' },
             { id: 'penerima_input', name: 'Penerima' },
             { name: 'keterangan', name: 'Keterangan' }
