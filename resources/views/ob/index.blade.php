@@ -511,9 +511,23 @@
             <!-- Modal Body -->
             <div class="mt-4">
                 <p class="text-sm text-gray-700 mb-4">Berikut adalah detail kontainer yang akan dimasukkan ke pranota. Semua kontainer yang telah Anda pilih di semua halaman akan diproses.</p>
-                <ul id="pranota-items" class="list-disc list-inside space-y-2 text-sm text-gray-800 max-h-60 overflow-y-auto">
-                    <!-- Items will be populated by JavaScript -->
-                </ul>
+                <div class="overflow-x-auto">
+                    <table id="pranota-table" class="min-w-full table-auto border border-gray-300">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No. Kontainer</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Nama Barang</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Tipe</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Size</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pranota-items" class="bg-white divide-y divide-gray-200">
+                            <!-- Items will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <p id="total-count" class="text-sm font-semibold text-gray-900 mt-4"></p>
             </div>
 
             <!-- Modal Footer -->
@@ -556,36 +570,28 @@ document.addEventListener('click', function(event) {
 
 // Pranota Modal functions
 function openPranotaModal(items, totalCount) {
-    const list = document.getElementById('pranota-items');
-    list.innerHTML = '';
+    const tbody = document.getElementById('pranota-items');
+    tbody.innerHTML = '';
     
-    // Add total count
-    const totalLi = document.createElement('li');
-    totalLi.className = 'text-sm font-semibold text-gray-900';
-    totalLi.textContent = `Total kontainer yang dipilih: ${totalCount}`;
-    list.appendChild(totalLi);
+    // Set total count
+    const totalP = document.getElementById('total-count');
+    totalP.textContent = `Total kontainer yang dipilih: ${totalCount}`;
     
-    // Add sample items from current page
-    if (items.length > 0) {
-        const sampleLi = document.createElement('li');
-        sampleLi.className = 'text-sm text-gray-600 mt-2';
-        sampleLi.textContent = 'Contoh kontainer dari halaman ini:';
-        list.appendChild(sampleLi);
+    // Add all items to table
+    items.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
         
-        items.slice(0, 5).forEach(item => { // Show max 5 examples
-            const li = document.createElement('li');
-            li.className = 'text-sm text-gray-800 ml-4';
-            li.textContent = `Kontainer: ${item.nomor_kontainer || '-'}, Barang: ${item.nama_barang || '-'}, Tipe: ${item.tipe || '-'}, Size: ${item.size || '-'} Feet`;
-            list.appendChild(li);
-        });
+        row.innerHTML = `
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-mono">${item.nomor_kontainer || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.nama_barang || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.tipe || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.size ? item.size + ' Feet' : '-'}</td>
+        `;
         
-        if (totalCount > 5) {
-            const moreLi = document.createElement('li');
-            moreLi.className = 'text-sm text-gray-600 ml-4';
-            moreLi.textContent = `... dan ${totalCount - 5} kontainer lainnya`;
-            list.appendChild(moreLi);
-        }
-    }
+        tbody.appendChild(row);
+    });
     
     document.getElementById('pranotaModal').classList.remove('hidden');
 }
@@ -709,19 +715,20 @@ const selectAll = document.getElementById('select-all');
 // Storage key based on current page
 const storageKey = `selected_ob_{{ $namaKapal }}_{{ $noVoyage }}`;
 
-function getSelectedIds() {
+function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
     return stored ? JSON.parse(stored) : [];
 }
 
-function saveSelectedIds(ids) {
-    localStorage.setItem(storageKey, JSON.stringify(ids));
+function saveSelectedItems(items) {
+    localStorage.setItem(storageKey, JSON.stringify(items));
 }
 
 function loadSelectedCheckboxes() {
-    const selectedIds = getSelectedIds();
+    const selectedItems = getSelectedItems();
     checkboxes.forEach(cb => {
-        if (selectedIds.includes(cb.value)) {
+        const item = selectedItems.find(item => item.id === cb.value);
+        if (item) {
             cb.checked = true;
         }
     });
@@ -739,9 +746,16 @@ function checkSelected() {
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
-    // Save to storage
-    const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
-    saveSelectedIds(allSelected);
+    // Save to storage - collect all selected items
+    const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => ({
+        id: cb.value,
+        type: cb.getAttribute('data-type'),
+        nomor_kontainer: cb.getAttribute('data-nomor-kontainer'),
+        nama_barang: cb.getAttribute('data-nama-barang'),
+        tipe: cb.getAttribute('data-tipe'),
+        size: cb.getAttribute('data-size')
+    }));
+    saveSelectedItems(allSelected);
 }
 
 checkboxes.forEach(cb => cb.addEventListener('change', checkSelected));
@@ -756,29 +770,17 @@ selectAll.addEventListener('change', function() {
 document.addEventListener('DOMContentLoaded', loadSelectedCheckboxes);
 
 document.getElementById('btnMasukPranota').addEventListener('click', function() {
-    const selectedIds = getSelectedIds();
-    if (selectedIds.length === 0) {
+    openPranotaModal();
+});
+
+document.getElementById('btnConfirmPranota').addEventListener('click', function() {
+    const selectedItems = getSelectedItems();
+    if (selectedItems.length === 0) {
         alert('Silakan pilih kontainer terlebih dahulu');
         return;
     }
     
-    // Get details from current page checkboxes for display
-    const selectedCheckboxes = Array.from(document.querySelectorAll('.row-checkbox:checked'));
-    const items = selectedCheckboxes.map(cb => ({
-        id: cb.value,
-        type: cb.getAttribute('data-type'),
-        nomor_kontainer: cb.getAttribute('data-nomor-kontainer'),
-        nama_barang: cb.getAttribute('data-nama-barang'),
-        tipe: cb.getAttribute('data-tipe'),
-        size: cb.getAttribute('data-size')
-    }));
-    
-    openPranotaModal(items, selectedIds.length);
-});
-
-document.getElementById('btnConfirmPranota').addEventListener('click', function() {
-    const selectedIds = getSelectedIds();
-    const items = selectedIds.map(id => ({ id: id, type: 'unknown' })); // Type will be determined server-side
+    const items = selectedItems.map(item => ({ id: item.id, type: item.type }));
     
     const btnConfirm = document.getElementById('btnConfirmPranota');
     btnConfirm.disabled = true;
