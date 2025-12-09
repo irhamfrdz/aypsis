@@ -799,6 +799,10 @@ document.getElementById('btnMasukPranota').addEventListener('click', function() 
     openPranotaModal();
 });
 
+// Server expects nama_kapal and no_voyage; provide them and validate client-side
+const __PRANOTA_nama_kapal = @json($namaKapal ?? null);
+const __PRANOTA_no_voyage = @json($noVoyage ?? null);
+
 document.getElementById('btnConfirmPranota').addEventListener('click', function() {
     const selectedItems = getSelectedItems();
     if (selectedItems.length === 0) {
@@ -814,6 +818,12 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     
     const items = selectedItems.map(item => ({ id: item.id, type: item.type }));
     
+    // client-side validation for ship/voyage information
+    if (!__PRANOTA_nama_kapal || !__PRANOTA_no_voyage) {
+        alert('Informasi kapal dan voyage tidak ditemukan');
+        return;
+    }
+
     const btnConfirm = document.getElementById('btnConfirmPranota');
     btnConfirm.disabled = true;
     btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
@@ -825,7 +835,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
-        body: JSON.stringify({ items: items, nomor_pranota: nomorPranota })
+        body: JSON.stringify({ items: items, nomor_pranota: nomorPranota, nama_kapal: __PRANOTA_nama_kapal, no_voyage: __PRANOTA_no_voyage })
     })
     .then(response => response.json())
     .then(data => {
