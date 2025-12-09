@@ -8,7 +8,7 @@
             <div>
                 <h2 class="text-2xl font-semibold">Pranota OB</h2>
                 <p class="text-sm">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-                <p class="text-sm">Kapal / Voyage: {{ $pranota->nama_kapal ?? '-' }} / {{ $pranota->no_voyage ?? '-' }}</p>
+                <!-- Kapal / Voyage removed as per request -->
             </div>
             <!-- Right column removed as per request (no print of Tanggal Cetak / Pembuat) -->
         </div>
