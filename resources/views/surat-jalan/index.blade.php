@@ -200,7 +200,7 @@ use Illuminate\Support\Str;
                                             {{-- Kondisi: Hanya tampilkan tombol Edit dan Cancel jika status pembayaran uang jalan belum 'dibayar'
                                                  Ini untuk mencegah perubahan data surat jalan setelah pembayaran sudah dilakukan,
                                                  agar tidak terjadi inkonsistensi antara data surat jalan dan pembayaran --}}
-                                            @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar')
+                                            {{-- @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar') --}}
                                             <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" 
                                                class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                                                 <svg class="mr-2 h-3 w-3 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +215,7 @@ use Illuminate\Support\Str;
                                                 </svg>
                                                 Cancel
                                             </button>
-                                            @endif
+                                            {{-- @endif --}}
                                             <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
                                                target="_blank"
                                                class="group flex items-center px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
@@ -348,13 +348,13 @@ use Illuminate\Support\Str;
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                         </svg>
                                     </a>
-                                    @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar')
+                                    {{-- @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar') --}}
                                     <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
-                                    @endif
+                                    {{-- @endif --}}
                                     @can('audit-log-view')
                                     <button type="button" onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->nomor_surat }}')" class="text-purple-600 hover:text-purple-900" title="Audit">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
