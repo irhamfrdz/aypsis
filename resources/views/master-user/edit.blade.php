@@ -1457,6 +1457,25 @@
                             </tr>
 
                             {{-- Pranota Rit Kenek --}}
+                                                        {{-- Pranota OB --}}
+                                                        <tr class="submodule-row" data-parent="aktivitas">
+                                                            <td class="submodule">
+                                                                <div class="flex items-center justify-between">
+                                                                    <div>
+                                                                        <span class="module-icon">📄</span>
+                                                                        <span class="font-medium">Pranota OB</span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td><input type="checkbox" name="permissions[pranota-ob][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.view') || (isset($userMatrixPermissions['pranota-ob']['view']) && $userMatrixPermissions['pranota-ob']['view']) || ($user && $user->can('pranota-ob-view'))) checked @endif></td>
+                                                            <td><input type="checkbox" name="permissions[pranota-ob][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.create') || (isset($userMatrixPermissions['pranota-ob']['create']) && $userMatrixPermissions['pranota-ob']['create']) || ($user && $user->can('pranota-ob-create'))) checked @endif></td>
+                                                            <td><input type="checkbox" name="permissions[pranota-ob][update]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.update') || (isset($userMatrixPermissions['pranota-ob']['update']) && $userMatrixPermissions['pranota-ob']['update']) || ($user && $user->can('pranota-ob-update'))) checked @endif></td>
+                                                            <td><input type="checkbox" name="permissions[pranota-ob][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.delete') || (isset($userMatrixPermissions['pranota-ob']['delete']) && $userMatrixPermissions['pranota-ob']['delete']) || ($user && $user->can('pranota-ob-delete'))) checked @endif></td>
+                                                            <td class="empty-cell"></td>
+                                                            <td><input type="checkbox" name="permissions[pranota-ob][print]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.print') || (isset($userMatrixPermissions['pranota-ob']['print']) && $userMatrixPermissions['pranota-ob']['print']) || ($user && $user->can('pranota-ob-print'))) checked @endif></td>
+                                                            <td><input type="checkbox" name="permissions[pranota-ob][export]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.export') || (isset($userMatrixPermissions['pranota-ob']['export']) && $userMatrixPermissions['pranota-ob']['export']) || ($user && $user->can('pranota-ob-export'))) checked @endif></td>
+                                                        </tr>
+
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
                                     <div class="flex items-center">
