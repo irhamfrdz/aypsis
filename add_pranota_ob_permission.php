@@ -11,7 +11,6 @@ $app = require_once __DIR__.'/bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 echo "=== Menambahkan Permission Pranota OB ===\n\n";
 
@@ -25,21 +24,14 @@ try {
         'pranota-ob-export',
     ];
 
-    // Detect whether permissions table has 'guard_name' column (some installations omit it)
-    $hasGuardName = Schema::hasColumn('permissions', 'guard_name');
-
     foreach ($permissions as $permName) {
         $perm = DB::table('permissions')->where('name', $permName)->first();
         if (!$perm) {
-            $data = [
+            $id = DB::table('permissions')->insertGetId([
                 'name' => $permName,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
-            if ($hasGuardName) {
-                $data['guard_name'] = 'web';
-            }
-            $id = DB::table('permissions')->insertGetId($data);
+            ]);
             echo "✅ Permission '$permName' dibuat (ID: $id)\n";
         } else {
             echo "ℹ️  Permission '$permName' sudah ada (ID: {$perm->id})\n";
@@ -58,7 +50,7 @@ try {
     echo "User yang tersedia:\n";
     foreach ($users as $index => $user) {
         $displayName = property_exists($user, 'name') ? $user->name : ($user->username ?? 'user');
-        echo ($index + 1) . ". {$displayName} ({$user->email})\n";
+        echo ($index + 1) . ". {$displayName} ({$user->username})\n";
     }
 
     echo "\nPilih user (masukkan nomor, atau 'all' untuk semua user, atau 'skip' untuk tidak menambahkan): ";

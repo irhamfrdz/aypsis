@@ -118,7 +118,7 @@
                             </div>
                             <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span class="text-gray-600 font-medium">Tanggal Daftar</span>
-                                <span class="font-semibold">{{ $user->created_at->format('d/m/Y') }}</span>
+                                <span class="font-semibold">{{ $user->created_at ? $user->created_at->format('d/m/Y') : '-' }}</span>
                             </div>
                             @if($user->approved_at)
                                 <div class="flex justify-between items-center py-2 border-b border-gray-100">
@@ -248,8 +248,8 @@
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">Tanggal Registrasi</label>
                             <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <div class="font-medium">{{ $user->created_at->format('d/m/Y H:i:s') }}</div>
-                                <div class="text-sm text-gray-500 mt-1">{{ $user->created_at->diffForHumans() }}</div>
+                                <div class="font-medium">{{ $user->created_at ? $user->created_at->format('d/m/Y H:i:s') : '-' }}</div>
+                                <div class="text-sm text-gray-500 mt-1">{{ $user->created_at ? $user->created_at->diffForHumans() : '-' }}</div>
                             </div>
                         </div>
                     </div>
@@ -587,8 +587,8 @@
                                         <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                                             <div class="flex items-center justify-between mb-3">
                                                 <h5 class="text-lg font-semibold text-gray-900">Registrasi User</h5>
-                                                <time class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full" datetime="{{ $user->created_at->toISOString() }}">
-                                                    {{ $user->created_at->format('d/m/Y H:i') }}
+                                                <time class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full" datetime="{{ $user->created_at ? $user->created_at->toISOString() : '' }}">
+                                                    {{ $user->created_at ? $user->created_at->format('d/m/Y H:i') : '-' }}
                                                 </time>
                                             </div>
                                             <p class="text-gray-700 mb-3">

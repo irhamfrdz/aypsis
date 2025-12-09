@@ -56,7 +56,10 @@
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->nomor_pranota }}</td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->nama_kapal }} / {{ $pranota->no_voyage }}</td>
                         <td class="px-3 py-2 text-sm text-gray-900 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ is_array($pranota->items) ? count($pranota->items) : 0 }}</span>
+                            @php
+                                $itemsCount = ($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0);
+                            @endphp
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ $itemsCount }}</span>
                         </td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->creator?->nama_lengkap ?? $pranota->creator?->name ?? '-' }}</td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->created_at->format('d/m/Y H:i') }}</td>

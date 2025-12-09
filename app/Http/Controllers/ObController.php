@@ -537,14 +537,68 @@ class ObController extends Controller
                 ], 400);
             }
 
+            // Build snapshot items before create so pranota keeps essential info
+            $itemsToSave = $request->items;
+            foreach ($itemsToSave as $idx => $it) {
+                if (!isset($it['type']) || !isset($it['id'])) continue;
+                if ($it['type'] === 'bl') {
+                    $bl = \DB::table('bls')->find($it['id']);
+                    if ($bl) {
+                        $itemsToSave[$idx]['nomor_kontainer'] = $bl->nomor_kontainer ?? null;
+                        $itemsToSave[$idx]['nama_barang'] = $bl->nama_barang ?? null;
+                        $itemsToSave[$idx]['size'] = $bl->size_kontainer ?? null;
+                        // Use biaya from request if provided, otherwise from DB
+                        $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null);
+                        if (!empty($bl->supir_id)) {
+                            $sup = \DB::table('karyawans')->find($bl->supir_id);
+                            $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_lengkap ?? $sup->name ?? null) : null;
+                        }
+                    }
+                } elseif ($it['type'] === 'naik_kapal') {
+                    $nk = \DB::table('naik_kapal')->find($it['id']);
+                    if ($nk) {
+                        $itemsToSave[$idx]['nomor_kontainer'] = $nk->nomor_kontainer ?? null;
+                        $itemsToSave[$idx]['nama_barang'] = $nk->jenis_barang ?? ($nk->nama_barang ?? null);
+                        $itemsToSave[$idx]['size'] = $nk->size_kontainer ?? ($nk->ukuran_kontainer ?? null);
+                        // Use biaya from request if provided, otherwise from DB
+                        $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null);
+                        if (!empty($nk->supir_id)) {
+                            $sup = \DB::table('karyawans')->find($nk->supir_id);
+                            $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_lengkap ?? $sup->name ?? null) : null;
+                        }
+                    }
+                }
+            }
+
             // Create pranota
-            PranotaOb::create([
+            $pranota = PranotaOb::create([
                 'nomor_pranota' => $request->nomor_pranota,
                 'nama_kapal' => $namaKapal,
                 'no_voyage' => $noVoyage,
-                'items' => $request->items,
+                'items' => $itemsToSave,
                 'created_by' => $user->id,
             ]);
+
+            // Create pivot rows
+            foreach ($itemsToSave as $it) {
+                $itemType = null;
+                if (isset($it['type'])) {
+                    if ($it['type'] === 'bl') $itemType = \App\Models\Bl::class;
+                    elseif ($it['type'] === 'naik_kapal') $itemType = \App\Models\NaikKapal::class;
+                    elseif ($it['type'] === 'tagihan_ob') $itemType = \App\Models\TagihanOb::class;
+                }
+                \App\Models\PranotaObItem::create([
+                    'pranota_ob_id' => $pranota->id,
+                    'item_type' => $itemType,
+                    'item_id' => $it['id'] ?? null,
+                    'nomor_kontainer' => $it['nomor_kontainer'] ?? null,
+                    'nama_barang' => $it['nama_barang'] ?? ($it['jenis_barang'] ?? null),
+                    'supir' => $it['supir'] ?? null,
+                    'size' => $it['size'] ?? ($it['size_kontainer'] ?? null),
+                    'biaya' => $it['biaya'] ?? null,
+                    'created_by' => $user->id,
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

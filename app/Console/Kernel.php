@@ -32,7 +32,10 @@ class Kernel extends ConsoleKernel
     BackfillTagihanMasaString::class,
     CreateNextPeriodeTagihan::class,
     UpdateKontainerPeriods::class,
-    CheckTagihanPermissions::class,
+        // Pranota OB tools
+        \App\Console\Commands\CheckPranotaObItems::class,
+        \App\Console\Commands\DumpPranotaOb::class,
+        \App\Console\Commands\BackfillPranotaObItems::class,
     CheckTagihanPerbaikanPermissions::class,
     ValidateDuplicateKontainers::class,
     ];

@@ -102,7 +102,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $item->creator->name ?? '-' }}
-                                        <br><small class="text-gray-500">{{ $item->created_at->format('d/m/Y') }}</small>
+                                        <br><small class="text-gray-500">{{ $item->created_at ? $item->created_at->format('d/m/Y') : '-' }}</small>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">

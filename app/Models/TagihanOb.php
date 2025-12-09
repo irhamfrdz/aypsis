@@ -63,7 +63,8 @@ class TagihanOb extends Model
      */
     public function pranotaObItem()
     {
-        return $this->hasOne(PranotaObItem::class);
+        // The pranota_ob_items stores item_type as model class, and item_id as the id
+        return $this->hasOne(PranotaObItem::class, 'item_id', 'id')->where('item_type', self::class);
     }
 
     /**

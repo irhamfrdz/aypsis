@@ -246,7 +246,7 @@
             <div class="info-item">
                 <span class="label">Tanggal Dibuat</span>
                 <span class="separator">:</span>
-                <span class="value">{{ $pranotaUangKenek->created_at->format('d/m/Y H:i') }}</span>
+                <span class="value">{{ $pranotaUangKenek->created_at ? $pranotaUangKenek->created_at->format('d/m/Y H:i') : '-' }}</span>
             </div>
         </div>
         

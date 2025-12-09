@@ -211,13 +211,13 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-500 mb-1">Dibuat Oleh</label>
                             <div class="text-sm text-gray-900">{{ $pranotaUangKenek->createdBy->name ?? '-' }}</div>
-                            <div class="text-xs text-gray-500">{{ $pranotaUangKenek->created_at->format('d/m/Y H:i') }}</div>
+                            <div class="text-xs text-gray-500">{{ $pranotaUangKenek->created_at ? $pranotaUangKenek->created_at->format('d/m/Y H:i') : '-' }}</div>
                         </div>
                         @if($pranotaUangKenek->updated_at && $pranotaUangKenek->updated_at != $pranotaUangKenek->created_at)
                         <div>
                             <label class="block text-sm font-medium text-gray-500 mb-1">Terakhir Diupdate</label>
                             <div class="text-sm text-gray-900">{{ $pranotaUangKenek->updatedBy->name ?? '-' }}</div>
-                            <div class="text-xs text-gray-500">{{ $pranotaUangKenek->updated_at->format('d/m/Y H:i') }}</div>
+                            <div class="text-xs text-gray-500">{{ $pranotaUangKenek->updated_at ? $pranotaUangKenek->updated_at->format('d/m/Y H:i') : '-' }}</div>
                         </div>
                         @endif
                         @if($pranotaUangKenek->approved_at)

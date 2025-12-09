@@ -62,9 +62,9 @@
                                         <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-2">
                                             Tanggal <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="date" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal') border-red-500 @enderror" 
-                                               id="tanggal" name="tanggal" value="{{ old('tanggal', $pranotaUangRit->tanggal->format('Y-m-d')) }}" required>
+                                             <input type="date" 
+                                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal') border-red-500 @enderror" 
+                                                 id="tanggal" name="tanggal" value="{{ old('tanggal', $pranotaUangRit->tanggal ? $pranotaUangRit->tanggal->format('Y-m-d') : '') }}" required>
                                         @error('tanggal')
                                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
@@ -263,7 +263,7 @@
                             <div class="mb-4">
                                 <strong class="text-gray-700">Dibuat:</strong><br>
                                 <span class="text-gray-600">
-                                    {{ $pranotaUangRit->created_at->format('d/m/Y H:i') }}
+                                    {{ $pranotaUangRit->created_at ? $pranotaUangRit->created_at->format('d/m/Y H:i') : '-' }}
                                     @if($pranotaUangRit->creator)
                                         oleh {{ $pranotaUangRit->creator->name }}
                                     @endif
@@ -272,7 +272,7 @@
                             @if($pranotaUangRit->updated_at != $pranotaUangRit->created_at)
                             <div class="mb-0">
                                 <strong class="text-gray-700">Terakhir Update:</strong><br>
-                                <span class="text-gray-600">{{ $pranotaUangRit->updated_at->format('d/m/Y H:i') }}</span>
+                                <span class="text-gray-600">{{ $pranotaUangRit->updated_at ? $pranotaUangRit->updated_at->format('d/m/Y H:i') : '-' }}</span>
                             </div>
                             @endif
                         </div>
