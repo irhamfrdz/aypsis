@@ -13,14 +13,29 @@
                         <h1 class="text-2xl font-bold text-gray-900">Daftar Uang Jalan</h1>
                         <p class="text-gray-600 mt-1">Kelola data uang jalan yang telah diinput</p>
                     </div>
-                    @can('uang-jalan-create')
-                    <a href="{{ route('uang-jalan.select-surat-jalan') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                          @can('uang-jalan-create')
+                          <div class="inline-flex items-center gap-2">
+                                <a href="{{ route('uang-jalan.select-surat-jalan') }}" 
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         Tambah Uang Jalan
-                    </a>
+                        </a>
+
+                        @if(Route::has('uang-jalan.adjustment.select-surat-jalan'))
+                        @can('uang-jalan-create')
+                        <a href="{{ route('uang-jalan.adjustment.select-surat-jalan') }}"
+                           class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm"
+                           title="Tambah Uang Jalan Pengurangan/Penambahan">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                            Tambah Uang Jalan Pengurangan/Penambahan
+                        </a>
+                        @endcan
+                        @endif
+                    </div>
                     @endcan
                 </div>
             </div>
@@ -236,14 +251,29 @@
                     <p class="text-gray-500 mb-6 max-w-md mx-auto">
                         Belum ada uang jalan yang diinput atau tidak ada yang memenuhi kriteria filter yang Anda tentukan.
                     </p>
-                    @can('uang-jalan-create')
-                    <a href="{{ route('uang-jalan.select-surat-jalan') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                          @can('uang-jalan-create')
+                          <div class="inline-flex items-center gap-2 justify-center">
+                                <a href="{{ route('uang-jalan.select-surat-jalan') }}" 
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         Tambah Uang Jalan Pertama
-                    </a>
+                        </a>
+
+                        @if(Route::has('uang-jalan.adjustment.select-surat-jalan'))
+                        @can('uang-jalan-create')
+                        <a href="{{ route('uang-jalan.adjustment.select-surat-jalan') }}"
+                           class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm"
+                           title="Tambah Uang Jalan Pengurangan/Penambahan">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                            Tambah Uang Jalan Pengurangan/Penambahan
+                        </a>
+                        @endcan
+                        @endif
+                    </div>
                     @endcan
                 </div>
             @endif

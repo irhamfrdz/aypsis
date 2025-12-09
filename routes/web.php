@@ -1584,6 +1584,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('uang-jalan/select-surat-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalan'])
          ->name('uang-jalan.select-surat-jalan')
          ->middleware('can:uang-jalan-create');
+
+    // Alias route untuk select surat jalan penyesuaian (penambahan/pengurangan UJ)
+    Route::get('uang-jalan/select-surat-jalan-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalan'])
+         ->name('uang-jalan.select-surat-jalan-penyesuaian')
+         ->middleware('can:uang-jalan-create');
     
     // Export Uang Jalan (Excel)
     Route::get('uang-jalan/export', [\App\Http\Controllers\UangJalanController::class, 'exportExcel'])
@@ -1600,6 +1605,29 @@ Route::middleware(['auth'])->group(function () {
              'update' => 'can:uang-jalan-update',
              'destroy' => 'can:uang-jalan-delete'
          ]);
+
+    // Uang Jalan Adjustment Routes (Penambahan/Pengurangan)
+    Route::prefix('uang-jalan')->name('uang-jalan.')->group(function () {
+        Route::get('adjustment/get-first-uang-jalan', [\App\Http\Controllers\UangJalanController::class, 'getFirstUangJalanForAdjustment'])
+             ->name('adjustment.get-first-uang-jalan')
+             ->middleware('can:uang-jalan-create');
+        
+        Route::get('adjustment/select-surat-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalanAdjustment'])
+             ->name('adjustment.select-surat-jalan')
+             ->middleware('can:uang-jalan-create');
+        
+        Route::get('adjustment/select-uang-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectUangJalanAdjustment'])
+             ->name('adjustment.select-uang-jalan')
+             ->middleware('can:uang-jalan-create');
+        
+        Route::get('adjustment/create', [\App\Http\Controllers\UangJalanController::class, 'createAdjustment'])
+             ->name('adjustment.create')
+             ->middleware('can:uang-jalan-create');
+        
+        Route::post('adjustment/store', [\App\Http\Controllers\UangJalanController::class, 'storeAdjustment'])
+             ->name('adjustment.store')
+             ->middleware('can:uang-jalan-create');
+    });
 
      // Uang Jalan Bongkaran Management
      Route::get('uang-jalan-bongkaran/select-surat-jalan-bongkaran', [\App\Http\Controllers\UangJalanBongkaranController::class, 'selectSuratJalanBongkaran'])

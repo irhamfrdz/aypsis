@@ -1,23 +1,20 @@
 @extends('layouts.app')
 
 @php
-    $routePrefix = $routePrefix ?? 'uang-jalan';
-    $isPenyesuaian = $isPenyesuaian ?? false;
-    $isBongkaran = $routePrefix === 'uang-jalan-bongkaran';
-    $pageTitleText = $isBongkaran ? 'Uang Jalan Bongkaran' : ($isPenyesuaian ? 'Uang Jalan (Penyesuaian)' : 'Uang Jalan');
-    $selectRouteName = $isBongkaran ? 'uang-jalan-bongkaran.select-surat-jalan-bongkaran' : 'uang-jalan.select-surat-jalan';
+    $routePrefix = 'uang-jalan';
+    $isPenyesuaian = true;
+    $pageTitleText = 'Uang Jalan (Penyesuaian)';
+    $selectRouteName = 'uang-jalan.adjustment.select-surat-jalan';
     $indexRouteName = $routePrefix . '.index';
-    // If it's a penyesuaian flow, keep create route as normal create for now.
-    $createRouteName = $routePrefix . '.create';
-    $suratJalanQueryParam = $isBongkaran ? 'surat_jalan_bongkaran_id' : 'surat_jalan_id';
-    $statusOptions = $statusOptions ?? ['all' => 'Semua Status'];
+    $createRouteName = 'uang-jalan.adjustment.select-uang-jalan';
+    $suratJalanQueryParam = 'surat_jalan_id';
+    $statusOptions = ['all' => 'Semua Status'];
     $status = $status ?? 'all';
     $suratJalans = $suratJalans ?? collect([]);
-    // The bongkaran variant uses 'nomor_surat_jalan' while normal uses 'no_surat_jalan'
-    $noField = $isBongkaran ? 'nomor_surat_jalan' : 'no_surat_jalan';
+    $noField = 'no_surat_jalan';
 @endphp
 
-@section('page_title', 'Tambah Data ' . $pageTitleText)
+@section('page_title', 'Pilih Surat Jalan - ' . $pageTitleText)
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-4">
@@ -48,29 +45,29 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <!-- Header with Blue Background -->
             <div class="bg-blue-500 px-4 py-3 rounded-t-lg">
-                <h1 class="text-base font-semibold text-white">Tambah Data {{ $pageTitleText }}</h1>
+                <h1 class="text-base font-semibold text-white">Pilih Surat Jalan untuk Penyesuaian Uang Jalan</h1>
             </div>
 
             <!-- Form Content -->
             <div class="p-4">
                 <!-- Info -->
                 <div class="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                    <strong>Info:</strong> {{ $suratJalans->total() }} surat jalan tersedia
+                    <strong>Info:</strong> {{ $suratJalans->total() }} surat jalan tersedia untuk penyesuaian uang jalan
                 </div>
-                
+
                 <form id="selectSuratJalanForm" method="GET">
                     <div class="mb-4">
                         <label for="no_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
                             No Surat Jalan <span class="text-red-500">*</span>
                         </label>
                         <div class="flex gap-2">
-                            <input type="text" 
-                                   id="selected_surat_jalan_display" 
+                            <input type="text"
+                                   id="selected_surat_jalan_display"
                                    class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                    placeholder="Klik untuk memilih surat jalan"
                                    readonly
                                    onclick="openSuratJalanModal()">
-                            <button type="button" 
+                            <button type="button"
                                     onclick="openSuratJalanModal()"
                                     class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition-colors">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +77,7 @@
                             </button>
                         </div>
                         <input type="hidden" id="selected_surat_jalan_id" name="surat_jalan_id" value="">
-                        <p class="mt-0.5 text-xs text-gray-500">Klik "Pilih" untuk memilih surat jalan</p>
+                        <p class="mt-0.5 text-xs text-gray-500">Klik "Pilih" untuk memilih surat jalan yang akan disesuaikan uang jalannya</p>
                     </div>
 
                     <!-- Preview Information (Hidden by default) -->
@@ -108,16 +105,16 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200">
-                        <button type="submit" 
+                        <button type="submit"
                                 id="submitBtn"
                                 class="inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded transition-colors"
                                 disabled>
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            Lanjutkan
+                            Lanjutkan ke Form Penyesuaian
                         </button>
-                                <a href="{{ route($indexRouteName) }}" 
+                                <a href="{{ route($indexRouteName) }}"
                            class="inline-flex items-center justify-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-colors">
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -130,7 +127,7 @@
 
             <!-- Filter Options (Collapsible) -->
             <div class="border-t border-gray-200">
-                <button type="button" 
+                <button type="button"
                         id="toggleFilter"
                         class="w-full px-4 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none flex items-center justify-between">
                     <span>Filter & Pencarian</span>
@@ -138,17 +135,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
-                
+
                 <div id="filterPanel" class="hidden border-t border-gray-200 bg-gray-50 p-3">
                     <form method="GET" action="{{ route($selectRouteName) }}" id="filterForm">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <!-- Search Input -->
                             <div>
                                 <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Pencarian</label>
-                                <input type="text" 
-                                       id="search" 
-                                       name="search" 
-                                       value="{{ $search }}" 
+                                <input type="text"
+                                       id="search"
+                                       name="search"
+                                       value="{{ $search }}"
                                        placeholder="Cari no surat jalan, supir, plat, kontainer, pengirim..."
                                        class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             </div>
@@ -156,7 +153,7 @@
                             <!-- Status Filter -->
                             <div>
                                 <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                                <select id="status" name="status" 
+                                <select id="status" name="status"
                                         class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                     @foreach($statusOptions as $value => $label)
                                         <option value="{{ $value }}" {{ $status === $value ? 'selected' : '' }}>
@@ -169,11 +166,11 @@
 
                         <!-- Filter Action Buttons -->
                         <div class="flex gap-2 mt-3">
-                            <button type="submit" 
+                            <button type="submit"
                                     class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors">
                                 Terapkan
                             </button>
-                            <a href="{{ route($selectRouteName) }}" 
+                            <a href="{{ route($selectRouteName) }}"
                                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors">
                                 Reset
                             </a>
@@ -197,7 +194,7 @@
             <div class="bg-blue-600 px-4 py-2">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm leading-6 font-medium text-white" id="modal-title">
-                        DATA Surat Jalan
+                        DATA Surat Jalan untuk Penyesuaian Uang Jalan
                     </h3>
                     <button type="button" class="text-white hover:text-gray-200" onclick="closeSuratJalanModal()">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -213,15 +210,15 @@
                 <div class="mb-3 flex flex-wrap gap-2 items-end">
                     <div class="flex-1 min-w-0">
                         <label for="modal-search" class="block text-xs font-medium text-gray-700 mb-1">Search:</label>
-                        <input type="text" 
-                               id="modal-search" 
+                        <input type="text"
+                               id="modal-search"
                                placeholder="Cari no surat jalan, supir, plat, kontainer, pengirim..."
                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                onkeyup="filterSuratJalan()">
                     </div>
                     <div class="w-20">
                         <label for="modal-show" class="block text-xs font-medium text-gray-700 mb-1">Show</label>
-                        <select id="modal-show" 
+                        <select id="modal-show"
                                 class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 onchange="updateTableDisplay()">
                             <option value="10">10</option>
@@ -271,7 +268,7 @@
                         </thead>
                         <tbody id="suratJalanTableBody" class="bg-white divide-y divide-gray-100">
                             @forelse($suratJalans as $suratJalan)
-                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ addslashes($isBongkaran ? ($suratJalan->pengirim ?? '') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) }}', '{{ addslashes($suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '') }}', '{{ $suratJalan->jenis_surat_jalan ?? 'biasa' }}')">
+                                <tr class="hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectSuratJalan({{ $suratJalan->id }}, '{{ addslashes($suratJalan->{$noField}) }}', '{{ addslashes($suratJalan->supir) }}', '{{ addslashes($suratJalan->no_plat) }}', '{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '' }}', '{{ addslashes($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}', '{{ addslashes($suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '') }}', '{{ $suratJalan->jenis_surat_jalan ?? 'biasa' }}')">
                                     <td class="px-1 py-1">
                                         <div class="text-xs font-medium text-blue-600 hover:text-blue-800 leading-tight">
                                             {{ $suratJalan->{$noField} }}
@@ -294,8 +291,8 @@
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '-' }}">
                                         {{ $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer ?? '-' }}
                                     </td>
-                                    <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $isBongkaran ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}">
-                                        {{ isset($suratJalan->jenis_surat_jalan) && $suratJalan->jenis_surat_jalan === 'bongkaran' ? ($suratJalan->pengirim ?? '-') : ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-') }}
+                                    <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 80px;" title="{{ $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-' }}">
+                                        {{ $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-' }}
                                     </td>
                                     <td class="px-1 py-1 text-xs text-gray-900 truncate" style="max-width: 60px;" title="{{ $suratJalan->tujuan_pengambilan ?? '-' }}">
                                         {{ $suratJalan->tujuan_pengambilan ?? '-' }}
@@ -375,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Debug: Check if data is loaded
     console.log('All Surat Jalans:', allSuratJalans);
     console.log('Filtered Surat Jalans:', filteredSuratJalans);
-    
+
     const submitBtn = document.getElementById('submitBtn');
     const previewDiv = document.getElementById('suratJalanPreview');
     const form = document.getElementById('selectSuratJalanForm');
@@ -386,15 +383,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const selectedId = document.getElementById('selected_surat_jalan_id').value;
-        const jenisSuratJalan = document.getElementById('jenis_surat_jalan')?.value || 'biasa';
-        
+
         if (selectedId) {
-            // Redirect to create page with selected surat jalan id and jenis
-            const penyesuaianQuery = '{{ $isPenyesuaian ? "&penyesuaian=1" : "" }}';
-            const createUrl = '{{ route($createRouteName) }}?{{ $suratJalanQueryParam }}=' + selectedId + '&jenis_surat_jalan=' + encodeURIComponent(jenisSuratJalan) + penyesuaianQuery;
-            window.location.href = createUrl;
+            // Redirect langsung ke form adjustment dengan uang jalan pertama yang available
+            // Menggunakan AJAX untuk mendapatkan uang_jalan_id pertama
+            fetch('{{ url("uang-jalan/adjustment/get-first-uang-jalan") }}?surat_jalan_id=' + selectedId, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.uang_jalan_id) {
+                    const createAdjustmentUrl = '{{ route("uang-jalan.adjustment.create") }}?uang_jalan_id=' + data.uang_jalan_id;
+                    window.location.href = createAdjustmentUrl;
+                } else {
+                    alert('Tidak ada uang jalan yang dapat disesuaikan untuk surat jalan ini.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengambil data uang jalan.');
+            });
         }
     });
 
@@ -402,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toggleFilterBtn) {
         toggleFilterBtn.addEventListener('click', function() {
             const isHidden = filterPanel.classList.contains('hidden');
-            
+
             if (isHidden) {
                 filterPanel.classList.remove('hidden');
                 filterIcon.classList.add('rotate-180');
@@ -437,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function openSuratJalanModal() {
     document.getElementById('suratJalanModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    
+
     // Reset filter dan update display
     document.getElementById('modal-search').value = '';
     document.getElementById('modal-show').value = '10';
@@ -455,21 +469,21 @@ function closeSuratJalanModal() {
 function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim, noKontainer, jenisSuratJalan = 'biasa') {
     // Set hidden input value
     document.getElementById('selected_surat_jalan_id').value = id;
-    
+
     // Set display input value dengan jenis surat jalan
     const jenisLabel = jenisSuratJalan === 'bongkaran' ? '[BGK]' : '[MKT]';
     document.getElementById('selected_surat_jalan_display').value = jenisLabel + ' ' + noSuratJalan + ' - ' + supir;
-    
+
     // Update preview
     document.getElementById('preview-tanggal').textContent = tanggal || '-';
     document.getElementById('preview-supir').textContent = supir || '-';
     document.getElementById('preview-plat').textContent = plat || '-';
     document.getElementById('preview-pengirim').textContent = pengirim || '-';
-    
+
     // Show preview and enable submit button
     document.getElementById('suratJalanPreview').classList.remove('hidden');
     document.getElementById('submitBtn').disabled = false;
-    
+
     // Store jenis surat jalan untuk form submission
     let hiddenJenis = document.getElementById('jenis_surat_jalan');
     if (!hiddenJenis) {
@@ -480,14 +494,14 @@ function selectSuratJalan(id, noSuratJalan, supir, plat, tanggal, pengirim, noKo
         document.getElementById('selectSuratJalanForm').appendChild(hiddenJenis);
     }
     hiddenJenis.value = jenisSuratJalan;
-    
+
     // Close modal
     closeSuratJalanModal();
 }
 
 function filterSuratJalan() {
     const searchTerm = document.getElementById('modal-search').value.toLowerCase();
-    
+
     filteredSuratJalans = allSuratJalans.filter(item => {
         return (item.no_surat_jalan && item.no_surat_jalan.toLowerCase().includes(searchTerm)) ||
                (item.supir && item.supir.toLowerCase().includes(searchTerm)) ||
@@ -496,7 +510,7 @@ function filterSuratJalan() {
                (item.pengirim && item.pengirim.toLowerCase().includes(searchTerm)) ||
                (item.order && item.order.pengirim && item.order.pengirim.nama_pengirim && item.order.pengirim.nama_pengirim.toLowerCase().includes(searchTerm));
     });
-    
+
     currentPage = 1;
     updateTableDisplay();
 }
@@ -508,10 +522,10 @@ function sortTable(column) {
         currentSort.column = column;
         currentSort.direction = 'asc';
     }
-    
+
     filteredSuratJalans.sort((a, b) => {
         let aVal = '', bVal = '';
-        
+
         switch(column) {
             case 'no_sj':
                 aVal = a.no_surat_jalan || '';
@@ -554,14 +568,14 @@ function sortTable(column) {
                 bVal = b.jenis_barang || '';
                 break;
         }
-        
+
         if (currentSort.direction === 'asc') {
             return aVal.localeCompare(bVal);
         } else {
             return bVal.localeCompare(aVal);
         }
     });
-    
+
     updateTableDisplay();
 }
 
@@ -570,22 +584,22 @@ function updateTableDisplay() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedData = filteredSuratJalans.slice(startIndex, endIndex);
-    
+
     const tbody = document.getElementById('suratJalanTableBody');
     tbody.innerHTML = '';
-    
+
     paginatedData.forEach(item => {
         const tanggal = item.tanggal_surat_jalan ? new Date(item.tanggal_surat_jalan).toLocaleDateString('id-ID') : '';
         const pengirim = item.pengirim || (item.order && item.order.pengirim ? item.order.pengirim.nama_pengirim : '-');
         const orderNo = item.order ? item.order.nomor_order : '';
-        
+
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 cursor-pointer transition-colors';
         row.onclick = () => selectSuratJalan(item.id, item.no_surat_jalan, item.supir, item.no_plat, tanggal, pengirim, item.no_kontainer, item.jenis_surat_jalan || 'biasa');
-        
+
         const jenisLabel = (item.jenis_surat_jalan === 'bongkaran') ? 'BGK' : 'MKT';
         const jenisBadgeClass = (item.jenis_surat_jalan === 'bongkaran') ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800';
-        
+
         row.innerHTML = `
             <td class="px-1 py-1">
                 <div class="text-xs font-medium text-blue-600 hover:text-blue-800 leading-tight">
@@ -623,14 +637,14 @@ function updateTableDisplay() {
                 ${item.jenis_barang || '-'}
             </td>
         `;
-        
+
         tbody.appendChild(row);
     });
-    
+
     // Update pagination info
     const showingFrom = Math.min(startIndex + 1, filteredSuratJalans.length);
     const showingTo = Math.min(endIndex, filteredSuratJalans.length);
-    
+
     document.getElementById('showingFrom').textContent = showingFrom;
     document.getElementById('showingTo').textContent = showingTo;
     document.getElementById('totalEntries').textContent = filteredSuratJalans.length;

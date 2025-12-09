@@ -197,6 +197,9 @@ use Illuminate\Support\Str;
                                     
                                     <div id="dropdown-{{ $suratJalan->id }}" class="hidden absolute left-0 z-50 mt-1 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                         <div class="py-1">
+                                            {{-- Kondisi: Hanya tampilkan tombol Edit dan Cancel jika status pembayaran uang jalan belum 'dibayar'
+                                                 Ini untuk mencegah perubahan data surat jalan setelah pembayaran sudah dilakukan,
+                                                 agar tidak terjadi inkonsistensi antara data surat jalan dan pembayaran --}}
                                             @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar')
                                             <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" 
                                                class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900">

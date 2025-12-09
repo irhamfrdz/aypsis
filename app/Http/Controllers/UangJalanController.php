@@ -15,7 +15,7 @@ class UangJalanController extends Controller
     public function __construct()
     {
         $this->middleware('permission:uang-jalan-view')->only(['index', 'show']);
-        $this->middleware('permission:uang-jalan-create')->only(['create', 'store']);
+        $this->middleware('permission:uang-jalan-create')->only(['create', 'store', 'selectSuratJalanAdjustment', 'selectUangJalanAdjustment', 'createAdjustment', 'storeAdjustment']);
         $this->middleware('permission:uang-jalan-update')->only(['edit', 'update']);
         $this->middleware('permission:uang-jalan-delete')->only(['destroy']);
         // Allow export only to users with export permission
@@ -87,6 +87,8 @@ class UangJalanController extends Controller
      */
     public function selectSuratJalan(Request $request)
     {
+        // Determine if this select page is for penyesuaian (penambahan/pengurangan uang jalan)
+        $isPenyesuaian = $request->get('penyesuaian') || \Route::currentRouteName() === 'uang-jalan.select-surat-jalan-penyesuaian';
         $search = $request->get('search');
         $status = $request->get('status', 'all'); // Default filter
         
@@ -197,7 +199,7 @@ class UangJalanController extends Controller
             'approved' => 'Approved'
         ];
         
-        return view('uang-jalan.select-surat-jalan', compact('suratJalans', 'search', 'status', 'statusOptions'));
+        return view('uang-jalan.select-surat-jalan', compact('suratJalans', 'search', 'status', 'statusOptions', 'isPenyesuaian'));
     }
 
     /**
@@ -417,6 +419,205 @@ class UangJalanController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error exporting uang jalan: ' . $e->getMessage());
             return back()->with('error', 'Gagal export uang jalan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get first available uang jalan for adjustment from selected surat jalan
+     */
+    public function getFirstUangJalanForAdjustment(Request $request)
+    {
+        $suratJalanId = $request->get('surat_jalan_id');
+
+        if (!$suratJalanId) {
+            return response()->json(['success' => false, 'message' => 'Surat jalan ID diperlukan']);
+        }
+
+        $suratJalan = SuratJalan::find($suratJalanId);
+
+        if (!$suratJalan) {
+            return response()->json(['success' => false, 'message' => 'Surat jalan tidak ditemukan']);
+        }
+
+        // Ambil uang jalan pertama yang bisa di-adjust
+        $uangJalan = $suratJalan->uangJalan()
+            ->whereIn('status', ['belum_masuk_pranota', 'sudah_masuk_pranota'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($uangJalan) {
+            return response()->json([
+                'success' => true,
+                'uang_jalan_id' => $uangJalan->id,
+                'nomor_uang_jalan' => $uangJalan->nomor_uang_jalan
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada uang jalan yang dapat disesuaikan'
+            ]);
+        }
+    }
+
+    /**
+     * Display a listing of surat jalan untuk dipilih sebagai basis adjustment uang jalan.
+     */
+    public function selectSuratJalanAdjustment(Request $request)
+    {
+        $search = $request->get('search');
+        $status = $request->get('status', 'all');
+
+        // Query surat jalan yang sudah memiliki uang jalan (untuk adjustment)
+        $query = SuratJalan::with(['order.pengirim', 'order.jenisBarang', 'uangJalan'])
+            ->whereNotNull('order_id')
+            ->where('status_pembayaran_uang_jalan', 'sudah_masuk_uang_jalan')
+            ->whereHas('uangJalan', function($q) {
+                $q->whereIn('status', ['belum_masuk_pranota', 'sudah_masuk_pranota']);
+            });
+
+        // Filter berdasarkan status
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // Filter berdasarkan pencarian
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('kenek', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhereHas('order', function ($orderQuery) use ($search) {
+                      $orderQuery->where('nomor_order', 'like', "%{$search}%")
+                                 ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
+                                     $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                                 });
+                  })
+                  ->orWhereHas('uangJalan', function ($uangJalanQuery) use ($search) {
+                      $uangJalanQuery->where('nomor_uang_jalan', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(15);
+
+        $statusOptions = [
+            'all' => 'Semua Status',
+            'belum_masuk_checkpoint' => 'Belum Masuk Checkpoint',
+            'sudah_masuk_checkpoint' => 'Sudah Masuk Checkpoint',
+            'sudah_berangkat' => 'Sudah Berangkat',
+            'approved' => 'Approved'
+        ];
+
+        return view('uang-jalan.adjustment.select-surat-jalan-adjustment', compact('suratJalans', 'search', 'status', 'statusOptions'));
+    }
+
+    /**
+     * Display a listing of uang jalan untuk dipilih sebagai basis adjustment.
+     */
+    public function selectUangJalanAdjustment(Request $request)
+    {
+        $suratJalanId = $request->get('surat_jalan_id');
+
+        if (!$suratJalanId) {
+            return redirect()->route('uang-jalan.adjustment.select-surat-jalan')
+                           ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
+        }
+
+        $suratJalan = SuratJalan::with(['order.pengirim', 'uangJalan'])->findOrFail($suratJalanId);
+
+        // Ambil semua uang jalan untuk surat jalan ini yang bisa di-adjust
+        $uangJalans = $suratJalan->uangJalan()
+            ->whereIn('status', ['belum_masuk_pranota', 'sudah_masuk_pranota'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('uang-jalan.adjustment.select-uang-jalan-adjustment', compact('suratJalan', 'uangJalans'));
+    }
+
+    /**
+     * Show the form for creating a new adjustment for uang jalan.
+     */
+    public function createAdjustment(Request $request)
+    {
+        $uangJalanId = $request->get('uang_jalan_id');
+
+        if (!$uangJalanId) {
+            return redirect()->route('uang-jalan.adjustment.select-surat-jalan')
+                           ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
+        }
+
+        $uangJalan = UangJalan::with(['suratJalan.order.pengirim'])->findOrFail($uangJalanId);
+
+        // Cek apakah uang jalan masih bisa di-adjust
+        if (!in_array($uangJalan->status, ['belum_masuk_pranota', 'sudah_masuk_pranota'])) {
+            return redirect()->route('uang-jalan.adjustment.select-surat-jalan')
+                           ->with('error', 'Uang jalan dengan status ' . $uangJalan->status . ' tidak dapat di-adjust.');
+        }
+
+        return view('uang-jalan.adjustment.create-adjustment', compact('uangJalan'));
+    }
+
+    /**
+     * Store a newly created adjustment for uang jalan in storage.
+     */
+    public function storeAdjustment(Request $request)
+    {
+        $request->validate([
+            'uang_jalan_id' => 'required|exists:uang_jalans,id',
+            'jenis_penyesuaian' => 'required|in:penambahan,pengurangan',
+            'jumlah_penyesuaian' => 'required|numeric|min:0.01',
+            'alasan_penyesuaian' => 'required|string|max:500',
+            'keterangan' => 'nullable|string|max:1000'
+        ]);
+
+        $uangJalan = UangJalan::findOrFail($request->uang_jalan_id);
+
+        // Cek apakah uang jalan masih bisa di-adjust
+        if (!in_array($uangJalan->status, ['belum_masuk_pranota', 'sudah_masuk_pranota'])) {
+            return redirect()->back()
+                           ->with('error', 'Uang jalan dengan status ' . $uangJalan->status . ' tidak dapat di-adjust.')
+                           ->withInput();
+        }
+
+        try {
+            // Hitung jumlah penyesuaian berdasarkan jenis
+            $jumlahPenyesuaian = $request->jenis_penyesuaian === 'penambahan'
+                ? $request->jumlah_penyesuaian
+                : -$request->jumlah_penyesuaian;
+
+            // Update uang jalan dengan penyesuaian
+            $uangJalan->update([
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                'jumlah_penyesuaian' => ($uangJalan->jumlah_penyesuaian ?? 0) + $jumlahPenyesuaian,
+                'jumlah_total' => $uangJalan->subtotal + ($uangJalan->jumlah_penyesuaian ?? 0) + $jumlahPenyesuaian,
+                'total_uang_jalan' => $uangJalan->subtotal + ($uangJalan->jumlah_penyesuaian ?? 0) + $jumlahPenyesuaian,
+                'keterangan' => $request->keterangan ?? $uangJalan->keterangan,
+                'updated_by' => Auth::id()
+            ]);
+
+            Log::info('Uang jalan adjustment created successfully', [
+                'uang_jalan_id' => $uangJalan->id,
+                'jenis_penyesuaian' => $request->jenis_penyesuaian,
+                'jumlah_penyesuaian' => $jumlahPenyesuaian,
+                'adjusted_by' => Auth::id()
+            ]);
+
+            return redirect()->route('uang-jalan.index')
+                           ->with('success', 'Penyesuaian uang jalan berhasil disimpan untuk ' . $uangJalan->nomor_uang_jalan);
+
+        } catch (\Exception $e) {
+            Log::error('Error creating uang jalan adjustment', [
+                'uang_jalan_id' => $request->uang_jalan_id,
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+
+            return redirect()->back()
+                           ->with('error', 'Terjadi kesalahan saat menyimpan penyesuaian: ' . $e->getMessage())
+                           ->withInput();
         }
     }
 }
