@@ -10,8 +10,13 @@
         th, td { border: 1px solid #ddd; padding: 6px; font-size: 12px; }
         th { background: #f7f7f7; }
         @media print {
-            @page { size: auto; margin: 10mm; }
+            /* Half folio (setengah folio) - landscape orientation: 210mm x 165mm */
+            @page { size: 210mm 165mm landscape; margin: 8mm; }
+            html, body { width: 210mm; height: 165mm; }
             .no-print { display: none; }
+            /* Reduce font sizes to better fit half folio */
+            body { font-size: 12px; }
+            table th, table td { font-size: 11px; padding: 4px; }
         }
     </style>
 </head>
