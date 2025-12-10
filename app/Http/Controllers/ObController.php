@@ -73,6 +73,33 @@ class ObController extends Controller
                 ->where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage);
 
+            // Apply filters from request (similar to naik_kapal branch)
+            if ($request->filled('status_ob')) {
+                if ($request->status_ob === 'sudah') {
+                    $queryBl->where('sudah_ob', true);
+                } elseif ($request->status_ob === 'belum') {
+                    $queryBl->where('sudah_ob', false);
+                }
+            }
+
+            if ($request->filled('tipe_kontainer')) {
+                $queryBl->where('tipe_kontainer', $request->tipe_kontainer);
+            }
+
+            if ($request->filled('size_kontainer')) {
+                $queryBl->where('size_kontainer', $request->size_kontainer);
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $queryBl->where(function($q) use ($search) {
+                    $q->where('nomor_kontainer', 'like', "%{$search}%")
+                      ->orWhere('no_seal', 'like', "%{$search}%")
+                      ->orWhere('nama_barang', 'like', "%{$search}%")
+                      ->orWhere('nomor_bl', 'like', "%{$search}%");
+                });
+            }
+
             $perPage = $request->get('per_page', 15);
             $bls = $queryBl->orderBy('nomor_bl', 'asc')
                 ->paginate($perPage)
