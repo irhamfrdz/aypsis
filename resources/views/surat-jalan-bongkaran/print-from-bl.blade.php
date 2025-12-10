@@ -24,7 +24,7 @@
         /* Nomor Voyage: posisi absolute sesuai permintaan */
         .no-voyage {
             position: absolute;
-            top: 5cm;    /* 5cm dari atas */
+            top: 5.5cm;    /* 5.5cm dari atas */
             left: 3.5cm;  /* 3.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
