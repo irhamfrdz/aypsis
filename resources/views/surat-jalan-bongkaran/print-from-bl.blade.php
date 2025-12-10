@@ -15,7 +15,7 @@
         /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
         .date-header {
             position: absolute;
-            top: 0.75cm; /* 0.75cm dari atas */
+            top: -0.75cm; /* dipindahkan 1.5cm ke atas dari sebelumnya 0.75cm */
             left: 10.5cm;  /* 10.5cm dari kiri */
             font-size: 16px;
             font-weight: bold;
@@ -24,7 +24,7 @@
         /* Nomor Voyage: posisi absolute sesuai permintaan */
         .no-voyage {
             position: absolute;
-            top: 5.5cm;    /* 5.5cm dari atas */
+            top: 5cm;    /* 5cm dari atas */
             left: 3.5cm;  /* 3.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
