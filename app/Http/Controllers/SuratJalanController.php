@@ -267,7 +267,8 @@ class SuratJalanController extends Controller
             'no_plat' => 'nullable|string|max:20',
             'kenek' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|string|max:50',
-            'nomor_kontainer' => 'nullable|string|max:255',
+            'nomor_kontainer' => 'nullable',
+            'nomor_kontainer.*' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:1',
@@ -301,7 +302,14 @@ class SuratJalanController extends Controller
 
             // Map nomor_kontainer to no_kontainer (database column name)
             if (isset($data['nomor_kontainer'])) {
-                $data['no_kontainer'] = $data['nomor_kontainer'];
+                // Store as CSV string for backward compatibility with existing DB column
+                if (is_array($data['nomor_kontainer'])) {
+                    $filteredKontainers = array_filter(array_map('trim', $data['nomor_kontainer']));
+                    $data['no_kontainer'] = implode(',', $filteredKontainers);
+                } else {
+                    // Accept either array or string input gracefully
+                    $data['no_kontainer'] = $data['nomor_kontainer'];
+                }
                 unset($data['nomor_kontainer']);
             }
 
@@ -550,7 +558,8 @@ class SuratJalanController extends Controller
             'no_plat' => 'nullable|string|max:20',
             'kenek' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|string|max:50',
-            'nomor_kontainer' => 'nullable|string|max:255',
+            'nomor_kontainer' => 'nullable|array',
+            'nomor_kontainer.*' => 'nullable|string|max:255',
             'kontainer_id' => 'nullable|integer|min:1',
             'no_seal' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
@@ -566,7 +575,12 @@ class SuratJalanController extends Controller
 
             // Map nomor_kontainer to no_kontainer (database column name)
             if (isset($data['nomor_kontainer'])) {
-                $data['no_kontainer'] = $data['nomor_kontainer'];
+                if (is_array($data['nomor_kontainer'])) {
+                    $filteredKontainers = array_filter(array_map('trim', $data['nomor_kontainer']));
+                    $data['no_kontainer'] = implode(',', $filteredKontainers);
+                } else {
+                    $data['no_kontainer'] = $data['nomor_kontainer'];
+                }
                 unset($data['nomor_kontainer']);
             }
 

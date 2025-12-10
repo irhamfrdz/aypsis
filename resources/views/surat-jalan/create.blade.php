@@ -345,8 +345,8 @@
                         <!-- Multiple container search inputs will be rendered here by JS as nomor_kontainer_search_1, nomor_kontainer_search_2, etc. -->
                         <!-- Fallback single input for noscript or before JS runs -->
                         <div class="relative mb-2">
-                            <input type="hidden" name="nomor_kontainer[]" id="nomor_kontainer_1" value="{{ old('nomor_kontainer') }}">
-                            <input type="text" id="nomor_kontainer_search_1" placeholder="Cari atau ketik nomor kontainer..." value="{{ old('nomor_kontainer') }}"
+                            <input type="hidden" name="nomor_kontainer[]" id="nomor_kontainer_1" value="{{ old('nomor_kontainer.0', old('nomor_kontainer')) }}">
+                            <input type="text" id="nomor_kontainer_search_1" placeholder="Cari atau ketik nomor kontainer..." value="{{ old('nomor_kontainer.0', old('nomor_kontainer')) }}"
                                    class="nomor-kontainer-search w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
                             <div id="nomor_kontainer_dropdown_1" class="nomor-kontainer-dropdown absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                             @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
@@ -373,6 +373,12 @@
                     @error('nomor_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    {{-- Show individual nomor_kontainer.* errors when multiple kontainers used --}}
+                    @for ($i = 0; $i < (int) old('jumlah_kontainer', 1); $i++)
+                        @error('nomor_kontainer.' . $i)
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    @endfor
                     <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia) dan kontainer sewa (status: tersedia). Data berasal dari table stock_kontainers dan kontainers. Filter otomatis berdasarkan size kontainer. Jika <strong>Jumlah Kontainer</strong> &gt; 1, Anda dapat memilih beberapa number kontainer.</p>
                 </div>
 
@@ -651,6 +657,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // setupKontainerDropdownEvents() is now called inside initializeKontainerFiltering()
 });
 
+// Prefilled kontainer values (from old input) as an array
+window.oldNomorKontainer = {!! json_encode(array_values((array) old('nomor_kontainer'))) !!};
+
 function setupKontainerDropdownEvents() {
     // Support multiple search inputs and dropdowns. We'll set active search input to identify which hidden to update.
     const searchInputs = document.querySelectorAll('.nomor-kontainer-search');
@@ -790,6 +799,19 @@ function renderKontainerInputs(count) {
         wrapper.appendChild(search);
         wrapper.appendChild(dropdown);
         container.appendChild(wrapper);
+
+        // Prefill hidden and search inputs if old values are provided
+        try {
+            if (window.oldNomorKontainer && Array.isArray(window.oldNomorKontainer)) {
+                const oldVal = window.oldNomorKontainer[i-1];
+                if (oldVal) {
+                    hidden.value = oldVal;
+                    search.value = oldVal;
+                }
+            }
+        } catch (e) {
+            // ignore if old not defined
+        }
     }
 
     // Re-populate dropdowns with current options and setup events
