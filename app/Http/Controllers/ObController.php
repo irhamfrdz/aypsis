@@ -90,6 +90,12 @@ class ObController extends Controller
                 $queryBl->where('size_kontainer', $request->size_kontainer);
             }
 
+            // Dedicated nomor_kontainer filter for BL list
+            if ($request->filled('nomor_kontainer')) {
+                $num = $request->nomor_kontainer;
+                $queryBl->where('nomor_kontainer', 'like', "%{$num}%");
+            }
+
             if ($request->filled('search')) {
                 $search = $request->search;
                 $queryBl->where(function($q) use ($search) {
@@ -188,14 +194,21 @@ class ObController extends Controller
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%");
-            });
-        }
+            // Dedicated nomor_kontainer filter (exact/partial match)
+            if ($request->filled('nomor_kontainer')) {
+                $num = $request->nomor_kontainer;
+                $query->where('nomor_kontainer', 'like', "%{$num}%");
+            }
+
+            // General search fallback
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_kontainer', 'like', "%{$search}%")
+                      ->orWhere('no_seal', 'like', "%{$search}%")
+                      ->orWhere('jenis_barang', 'like', "%{$search}%");
+                });
+            }
 
         // Pagination
         $perPage = $request->get('per_page', 15);
