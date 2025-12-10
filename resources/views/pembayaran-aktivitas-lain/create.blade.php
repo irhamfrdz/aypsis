@@ -160,7 +160,7 @@
                 </div>
 
                 <!-- Jenis Penyesuaian (Hidden by default) -->
-                <div id="jenis_penyesuaian_field" class="hidden">
+                <div id="jenis_penyesuaian_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Adjusment Uang Jalan' ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Penyesuaian <span class="text-red-500">*</span></label>
                     <select name="jenis_penyesuaian" id="jenis_penyesuaian_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_penyesuaian') border-red-500 @enderror">
                         <option value="">Pilih Jenis Penyesuaian</option>
@@ -175,7 +175,7 @@
                 </div>
 
                 <!-- Tipe Penyesuaian (Hidden by default) -->
-                <div id="tipe_penyesuaian_field" class="hidden">
+                <div id="tipe_penyesuaian_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Adjusment Uang Jalan' ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Penyesuaian <span class="text-red-500">*</span></label>
 
                     <!-- Container untuk input dinamis -->
