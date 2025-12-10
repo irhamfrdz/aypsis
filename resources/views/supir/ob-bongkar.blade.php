@@ -99,6 +99,19 @@
             </div>
 
             <!-- Form Pilih Kapal dan Voyage -->
+            @php
+                // Group BLs by kapal (nama_kapal) to get voyages per ship
+                $blsByKapal = \App\Models\Bl::select('nama_kapal', 'no_voyage')
+                    ->whereNotNull('nama_kapal')
+                    ->whereNotNull('no_voyage')
+                    ->where('nama_kapal', '!=', '')
+                    ->where('no_voyage', '!=', '')
+                    ->groupBy('nama_kapal', 'no_voyage')
+                    ->orderBy('nama_kapal')
+                    ->orderBy('no_voyage')
+                    ->get()
+                    ->groupBy('nama_kapal');
+            @endphp
             <div class="bg-white rounded-lg shadow-sm p-4">
                 <form action="{{ route('supir.ob-bongkar.store') }}" method="POST" id="obBongkarForm">
                     @csrf
@@ -119,11 +132,11 @@
                                        onblur="hideKapalDropdown()">
                                 <input type="hidden" id="kapal" name="kapal" required>
                                 <div id="kapal-dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden">
-                                    @foreach($masterKapals as $kapal)
+                                    @foreach($blsByKapal->keys() as $kapalName)
                                         <div class="kapal-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm" 
-                                             data-value="{{ $kapal->nama_kapal }}"
-                                             onmousedown="selectKapal('{{ $kapal->nama_kapal }}')">
-                                            {{ $kapal->nama_kapal }}
+                                             data-value="{{ $kapalName }}"
+                                             onmousedown="selectKapal('{{ $kapalName }}')">
+                                            {{ $kapalName }}
                                         </div>
                                     @endforeach
                                 </div>
@@ -211,6 +224,10 @@
             ],
             @endforeach
         };
+
+        // Selected initial values from server
+        const initialSelectedKapal = @json($selectedKapal ?? '');
+        const initialSelectedVoyage = @json($selectedVoyage ?? '');
 
         // Debug: Log voyage data to console
         console.log('Voyage Data (from BL):', voyageData);
@@ -388,9 +405,31 @@
             }
         }
 
-        // Debug: Log initial state
+        // Debug: Log initial state and apply pre-selection if provided
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded. Available kapal in voyageData:', Object.keys(voyageData));
+
+            try {
+                if (initialSelectedKapal) {
+                    // Use the input/hidden approach used in this page
+                    document.getElementById('kapal-search').value = initialSelectedKapal;
+                    document.getElementById('kapal').value = initialSelectedKapal;
+                    // Update voyage options based on the selected kapal
+                    updateVoyageOptions();
+                }
+
+                if (initialSelectedVoyage) {
+                    // After the voyage options are populated, select the voyage
+                    // delay slightly to ensure options are added
+                    setTimeout(() => {
+                        document.getElementById('voyage-search').value = initialSelectedVoyage;
+                        document.getElementById('voyage').value = initialSelectedVoyage;
+                        updateKapalDetails();
+                    }, 10);
+                }
+            } catch (e) {
+                console.warn('Failed applying initial selections:', e);
+            }
         });
     </script>
 </body>
