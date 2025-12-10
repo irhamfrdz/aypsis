@@ -14,9 +14,11 @@
 
         /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
         .date-header {
-            position: absolute;
-            top: -0.75cm; /* dipindahkan 1.5cm ke atas dari sebelumnya 0.75cm */
+            position: fixed; /* anchor to the page so it doesn't get cropped */
+            top: 0.2cm; /* safe positive offset near top of page */
             left: 10.5cm;  /* 10.5cm dari kiri */
+            z-index: 1000; /* ensure visibility */
+            color: #000; /* force black color on print */
             font-size: 16px;
             font-weight: bold;
         }
