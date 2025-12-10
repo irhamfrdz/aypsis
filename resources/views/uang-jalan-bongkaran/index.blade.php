@@ -136,18 +136,7 @@
                                         {{ $uangJalan->nomor_uang_jalan ?? '-'}}
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900 w-32">
-                                        @php
-                                            $sj = $uangJalan->suratJalanBongkaran;
-                                            $term = optional($sj)->term;
-                                        @endphp
-
-                                        @if($term && strtolower($term) === 'port to port')
-                                            <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-800">
-                                                Tidak perlu surat jalan
-                                            </span>
-                                        @else
-                                            {{ optional($sj)->nomor_surat_jalan ?? '-'}}
-                                        @endif
+                                        {{ $uangJalan->suratJalanBongkaran->nomor_surat_jalan ?? '-'}}
                                     </td>
                                     <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 w-20">
                                         {{ $uangJalan->tanggal_uang_jalan ? $uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
