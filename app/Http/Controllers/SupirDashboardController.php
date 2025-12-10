@@ -110,7 +110,19 @@ class SupirDashboardController extends Controller
             'naik_kapal_only' => array_diff($naikKapalNames, $masterNames)
         ]);
 
-        return view('supir.ob-muat', compact('masterKapals', 'naikKapals'));
+        // Prepare voyage data as a plain PHP array for JS injection
+        $voyageData = $naikKapals->groupBy('nama_kapal')->map(function($voyages) {
+            return $voyages->map(function($v) {
+                return [
+                    'voyage' => $v->no_voyage,
+                    'tanggal_muat' => $v->tanggal_muat ? $v->tanggal_muat->format('d/m/Y') : '-',
+                    'pelabuhan_tujuan' => $v->pelabuhan_tujuan ?? '-',
+                    'jenis_barang' => $v->jenis_barang ?? '-',
+                ];
+            })->values()->toArray();
+        })->toArray();
+
+        return view('supir.ob-muat', compact('masterKapals', 'naikKapals', 'voyageData'));
     }
 
     public function obMuatStoreSelection(Request $request)

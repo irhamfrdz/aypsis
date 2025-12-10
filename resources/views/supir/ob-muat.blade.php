@@ -151,17 +151,8 @@
     </main>
 
     <script>
-        // Data voyage berdasarkan kapal dari naik_kapal (serialized safely via @json)
-        const voyageData = @json($naikKapals->groupBy('nama_kapal')->map(function($voyages) {
-            return $voyages->map(function($v) {
-                return [
-                    'voyage' => $v->no_voyage,
-                    'tanggal_muat' => $v->tanggal_muat ? $v->tanggal_muat->format('d/m/Y') : '-',
-                    'pelabuhan_tujuan' => $v->pelabuhan_tujuan ?? '-',
-                    'jenis_barang' => $v->jenis_barang ?? '-',
-                ];
-            })->values();
-        })->toArray());
+        // Data voyage sudah diproses di controller supaya Blade tidak perlu mengeksekusi closures
+        const voyageData = @json($voyageData ?? []);
 
         // Selected values passed from server (outside object literal)
         const initialSelectedKapal = @json($selectedKapal ?? '');
