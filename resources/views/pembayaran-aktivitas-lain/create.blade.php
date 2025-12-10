@@ -951,8 +951,8 @@ function initializeMainFunctionality() {
     // Initialize jumlah field state
     calculateTotalJumlah();
 
-    // Use Select2 change events
-    $('#jenis_aktivitas').on('change', function() {
+    // Use Select2 change events - include select2-specific events for reliability
+    $('#jenis_aktivitas').on('change select2:select select2:unselect', function() {
         jenisAktivitas.value = this.value;
         toggleSubJenisKendaraan();
     });
@@ -965,6 +965,17 @@ function initializeMainFunctionality() {
     $('#jenis_penyesuaian_select').on('change', function() {
         toggleTipePenyesuaian();
     });
+
+    // Force hide jenis/tipes penyesuaian on init unless it's adjust money type
+    if (jenisAktivitas.value !== 'Pembayaran Adjusment Uang Jalan') {
+        const jenisPenyesuaianFieldInit = document.getElementById('jenis_penyesuaian_field');
+        const jenisPenyesuaianSelectInit = document.getElementById('jenis_penyesuaian_select');
+        const tipePenyesuaianFieldInit = document.getElementById('tipe_penyesuaian_field');
+        if (jenisPenyesuaianFieldInit) jenisPenyesuaianFieldInit.classList.add('hidden');
+        if (jenisPenyesuaianSelectInit) { jenisPenyesuaianSelectInit.removeAttribute('required'); $(jenisPenyesuaianSelectInit).val('').trigger('change'); }
+        if (tipePenyesuaianFieldInit) tipePenyesuaianFieldInit.classList.add('hidden');
+        clearTipePenyesuaianInputs();
+    }
     
     // Event listener for surat jalan selection to auto-fill jumlah
     $('#surat_jalan_select').on('change', function() {
