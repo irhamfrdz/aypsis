@@ -371,4 +371,48 @@ class PembayaranAktivitasLainController extends Controller
             return back()->with('error', 'Gagal mengubah status: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Print list (filtered) of Pembayaran Aktivitas Lain
+     */
+    public function printIndex(Request $request)
+    {
+        $query = PembayaranAktivitasLain::with(['creator', 'approver']);
+
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor', 'like', "%{$search}%")
+                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                  ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%");
+            });
+        }
+
+        $pembayarans = $query->orderBy('created_at', 'desc')->get();
+
+        // Prepare akun map similar to index
+        $akunIds = $pembayarans->pluck('akun_coa_id')->filter()->merge($pembayarans->pluck('akun_bank_id')->filter())->unique();
+        $akunCoas = DB::table('akun_coa')->whereIn('id', $akunIds)->get()->keyBy('id');
+
+        return view('pembayaran-aktivitas-lain.print', compact('pembayarans', 'akunCoas'));
+    }
+
+    /**
+     * Print a single Pembayaran Aktivitas Lain
+     */
+    public function print(PembayaranAktivitasLain $pembayaranAktivitasLain)
+    {
+        $pembayaranAktivitasLain->load(['creator', 'approver']);
+
+        $akunCoas = DB::table('akun_coa')->whereIn('id', [$pembayaranAktivitasLain->akun_coa_id, $pembayaranAktivitasLain->akun_bank_id])->get()->keyBy('id');
+
+        return view('pembayaran-aktivitas-lain.print-single', compact('pembayaranAktivitasLain', 'akunCoas'));
+    }
 }

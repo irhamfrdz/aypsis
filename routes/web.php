@@ -3115,6 +3115,11 @@ Route::prefix('pembayaran-aktivitas-lain')->name('pembayaran-aktivitas-lain.')->
          ->middleware('can:pembayaran-aktivitas-lain-approve');
     Route::post('/{pembayaranAktivitasLain}/mark-as-paid', [PembayaranAktivitasLainController::class, 'markAsPaid'])->name('mark-as-paid')
          ->middleware('can:pembayaran-aktivitas-lain-approve');
+    // Print routes
+    Route::get('/print', [PembayaranAktivitasLainController::class, 'printIndex'])->name('print.index')
+         ->middleware('can:pembayaran-aktivitas-lain-print');
+    Route::get('/{pembayaranAktivitasLain}/print', [PembayaranAktivitasLainController::class, 'print'])->name('print')
+         ->middleware('can:pembayaran-aktivitas-lain-print');
 });
 
 // Pembayaran Aktivitas Lainnya routes

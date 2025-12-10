@@ -13,6 +13,16 @@
                     Tambah Baru
                 </a>
             @endcan
+            @can('pembayaran-aktivitas-lain-print')
+                <button onclick="openPrintWindow()" class="ml-3 inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white font-medium text-sm rounded-md transition duration-150 ease-in-out">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18H4a2 2 0 01-2-2V9a2 2 0 012-2h16a2 2 0 012 2v7a2 2 0 01-2 2h-2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 14h12v7H6z"/>
+                    </svg>
+                    Print Tabel
+                </button>
+            @endcan
         </div>
 
         <!-- Filter Section -->
@@ -110,6 +120,9 @@
                                             </svg>
                                         </a>
                                     @endcan
+                                    @can('pembayaran-aktivitas-lain-print')
+                                        <a href="{{ route('pembayaran-aktivitas-lain.print', $item) }}" class="text-green-600 hover:text-green-900" target="_blank">Print</a>
+                                    @endcan
                                     @can('pembayaran-aktivitas-lain-delete')
                                         <button onclick="confirmDelete({{ $item->id }})" class="text-red-600 hover:text-red-900" title="Hapus">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,6 +217,11 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
         form.submit();
     }
 });
+
+function openPrintWindow() {
+    const params = new URLSearchParams(window.location.search);
+    window.open(`{{ route('pembayaran-aktivitas-lain.print.index') }}?${params.toString()}`, '_blank');
+}
 </script>
 @endpush
 @endsection
