@@ -732,18 +732,16 @@ function escapeHtml(str) {
 }
 
 function initializeKontainerFiltering() {
-    // Store original options for filtering
+    // Store original options for filtering by collecting any server-rendered .kontainer-option elements
     window.allKontainerOptions = [];
-    const kontainerDropdown = document.getElementById('nomor_kontainer_dropdown');
-
-    if (kontainerDropdown) {
-        const options = kontainerDropdown.querySelectorAll('.kontainer-option');
-        options.forEach(function(option) {
+    const initialOptions = document.querySelectorAll('.kontainer-option');
+    if (initialOptions && initialOptions.length) {
+        initialOptions.forEach(function(option) {
             const value = option.getAttribute('data-value') || option.getAttribute('data-text');
             if (value) {
                 window.allKontainerOptions.push({
                     value: value,
-                    text: option.textContent.trim(),
+                    text: option.getAttribute('data-text') || option.textContent.trim(),
                     ukuran: option.getAttribute('data-ukuran'),
                     tipe: option.getAttribute('data-tipe'),
                     source: option.getAttribute('data-source') || 'stock_kontainers'
@@ -803,7 +801,7 @@ function filterNomorKontainerBySize() {
     const sizeSelect = document.getElementById('size-select');
     const kontainerDropdownElems = document.querySelectorAll('.nomor-kontainer-dropdown');
     const selectedSize = sizeSelect ? sizeSelect.value : '';
-    if (!kontainerDropdown) return;
+    if (!kontainerDropdownElems || kontainerDropdownElems.length === 0) return;
 
     // Clear current dropdown lists
     kontainerDropdownElems.forEach(function(elem){ elem.innerHTML = ''; });
