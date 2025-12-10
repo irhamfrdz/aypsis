@@ -28,7 +28,7 @@
                     <!-- Download filtered Excel (works for both tanda terima and missing surat jalan based on mode param) -->
                     <form id="downloadFilteredExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline;">
                         @csrf
-                        <input type="hidden" name="mode" value="{{ request('mode') }}">
+                        <input type="hidden" name="mode" value="{{ $mode ?? request('mode') }}">
                         <input type="hidden" name="search" value="{{ request('search') }}">
                         <input type="hidden" name="status" value="{{ request('status') }}">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
@@ -40,7 +40,7 @@
                     </form>
 
                     <!-- Additional button specifically for missing surat jalan (still uses the same export route, with mode=missing) -->
-                    @if(request('mode') === 'missing')
+                    @if(($mode ?? request('mode')) === 'missing')
                         <form id="downloadMissingSuratJalanExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline; margin-left: 6px;">
                             @csrf
                             <input type="hidden" name="mode" value="missing">
@@ -103,15 +103,15 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="p-6 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-gray-900">
-                @if(request('mode') === 'missing')
+                @if(($mode ?? request('mode')) === 'missing')
                     Surat Jalan (Belum Ada Tanda Terima - Hanya yang Sudah Bayar Uang Jalan)
-                @elseif(request('mode') === 'with_tanda_terima')
+                @elseif(($mode ?? request('mode')) === 'with_tanda_terima')
                     Surat Jalan (Sudah Ada Tanda Terima)
                 @else
                     Daftar Tanda Terima
                 @endif
             </h2>
-            @if(request('mode') === 'missing')
+            @if(($mode ?? request('mode')) === 'missing')
             <div class="mt-2">
                 <p class="text-sm text-gray-600">
                     <i class="fas fa-info-circle mr-1"></i>
@@ -134,9 +134,9 @@
                     </div>
                     <div class="md:col-span-4">
                         <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="" {{ request('mode') == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
-                            <option value="missing" {{ request('mode') == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima (Hanya yang sudah bayar uang jalan)</option>
-                            <option value="with_tanda_terima" {{ request('mode') == 'with_tanda_terima' ? 'selected' : '' }}>Surat Jalan Sudah Ada Tanda Terima</option>
+                            <option value="" {{ ($mode ?? request('mode')) == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
+                            <option value="missing" {{ ($mode ?? request('mode')) == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima (Hanya yang sudah bayar uang jalan)</option>
+                            <option value="with_tanda_terima" {{ ($mode ?? request('mode')) == 'with_tanda_terima' ? 'selected' : '' }}>Surat Jalan Sudah Ada Tanda Terima</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
@@ -159,11 +159,11 @@
                         <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
                         <span class="ml-2 text-sm text-gray-700">Pilih Semua</span>
                     </label>
-                    <span id="selectedCount" class="text-sm text-gray-500">@if(request('mode') === 'missing') 0 surat jalan dipilih @else 0 tanda terima dipilih @endif</span>
+                    <span id="selectedCount" class="text-sm text-gray-500">@if(($mode ?? request('mode')) === 'missing') 0 surat jalan dipilih @else 0 tanda terima dipilih @endif</span>
                 </div>
 
                 <!-- Bulk Delete Button -->
-                @if(request('mode') !== 'missing')
+                @if(($mode ?? request('mode')) !== 'missing')
                 <div id="bulkActionsContainer" class="hidden">
                     <div class="flex items-center gap-2">
                     <button type="button"
@@ -202,15 +202,15 @@
 
             <!-- Table -->
             <div class="overflow-x-auto">
-                @if(request('mode') === 'missing')
-                <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="suratJalanTable">
-                @elseif(request('mode') === 'with_tanda_terima')
+                @if(($mode ?? request('mode')) === 'missing')
+                    <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="suratJalanTable">
+                @elseif(($mode ?? request('mode')) === 'with_tanda_terima')
                 <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="suratJalanWithTandaTerimaTable">
                 @else
                 <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="tandaTerimaTable">
                 @endif
                     <thead class="bg-gray-50">
-                        @if(request('mode') === 'missing')
+                        @if(($mode ?? request('mode')) === 'missing')
                         <tr>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 48px;">
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
@@ -225,7 +225,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
-                        @elseif(request('mode') === 'with_tanda_terima')
+                        @elseif(($mode ?? request('mode')) === 'with_tanda_terima')
                         <tr>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 48px;">
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
@@ -259,7 +259,7 @@
                         @endif
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @if(request('mode') === 'missing')
+                        @if(($mode ?? request('mode')) === 'missing')
                         @forelse($suratJalans as $suratJalan)
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-3 py-2 whitespace-nowrap">
@@ -309,7 +309,7 @@
                             </td>
                         </tr>
                         @endforelse
-                        @elseif(request('mode') === 'with_tanda_terima')
+                        @elseif(($mode ?? request('mode')) === 'with_tanda_terima')
                         @forelse($suratJalansWithTandaTerima as $item)
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-3 py-2 whitespace-nowrap">
@@ -519,7 +519,7 @@
             </div>
 
             <!-- Pagination -->
-            @if(request('mode') === 'missing')
+            @if(($mode ?? request('mode')) === 'missing')
                 @if(isset($suratJalans) && $suratJalans->hasPages())
                 <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
                     <div class="flex flex-1 justify-between sm:hidden">
@@ -562,7 +562,7 @@
                     </div>
                 </div>
                 @endif
-            @elseif(request('mode') === 'with_tanda_terima')
+            @elseif(($mode ?? request('mode')) === 'with_tanda_terima')
                 @if(isset($suratJalansWithTandaTerima) && $suratJalansWithTandaTerima->hasPages())
                 <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
                     <div class="flex flex-1 justify-between sm:hidden">
@@ -695,7 +695,7 @@
         const selectedCount = checkboxes.length;
 
         // Update count display
-        const mode = '{{ request('mode') }}';
+        const mode = '{{ $mode ?? request('mode') }}';
         let selectionText = `${selectedCount} dipilih`;
         if (selectedCount > 0) {
             if (mode === 'missing') {
@@ -751,7 +751,7 @@
 
     // Bulk export to Excel function
     function bulkExportExcel() {
-        const mode = '{{ request('mode') }}';
+        const mode = '{{ $mode ?? request('mode') }}';
         let checkboxes;
         let message;
         let ids;
@@ -779,7 +779,7 @@
 
     // Bulk delete function
     function bulkDelete() {
-        const mode = '{{ request('mode') }}';
+        const mode = '{{ $mode ?? request('mode') }}';
         let checkboxes;
         let message;
         let ids;
