@@ -626,13 +626,23 @@ function initializeMainFunctionality() {
                     width: '100%'
                 });
             }, 100);
-            
-            // Pastikan field penyesuaian disembunyikan untuk pembayaran kapal
-            const jenisPenyesuaianField = document.getElementById('jenis_penyesuaian_field');
-            const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
-            if (jenisPenyesuaianField) jenisPenyesuaianField.classList.add('hidden');
-            if (tipePenyesuaianField) tipePenyesuaianField.classList.add('hidden');
+            // Hide any adjustment fields if previously visible (Kapal doesn't use penyesuaian)
+            var jenisPenyesuaianFieldEl = document.getElementById('jenis_penyesuaian_field');
+            var jenisPenyesuaianSelectEl = document.getElementById('jenis_penyesuaian_select');
+            var tipePenyesuaianFieldEl = document.getElementById('tipe_penyesuaian_field');
+            if (jenisPenyesuaianFieldEl) jenisPenyesuaianFieldEl.classList.add('hidden');
+            if (jenisPenyesuaianSelectEl) { jenisPenyesuaianSelectEl.removeAttribute('required'); $(jenisPenyesuaianSelectEl).val('').trigger('change'); }
+            if (tipePenyesuaianFieldEl) tipePenyesuaianFieldEl.classList.add('hidden');
+            // Clear dynamic tipe penyesuaian inputs, if any
             clearTipePenyesuaianInputs();
+            // Ensure jumlah is editable and visual indicators are removed
+            const jumlahInputForKapal = document.querySelector('input[name="jumlah"]');
+            if (jumlahInputForKapal) {
+                jumlahInputForKapal.readOnly = false;
+                jumlahInputForKapal.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                const indicator = jumlahInputForKapal.parentNode.querySelector('.auto-calc-indicator');
+                if (indicator) indicator.remove();
+            }
         } else {
             nomorVoyageField.classList.add('hidden');
             nomorVoyageSelect.removeAttribute('required');
