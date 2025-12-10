@@ -626,6 +626,13 @@ function initializeMainFunctionality() {
                     width: '100%'
                 });
             }, 100);
+            
+            // Pastikan field penyesuaian disembunyikan untuk pembayaran kapal
+            const jenisPenyesuaianField = document.getElementById('jenis_penyesuaian_field');
+            const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
+            if (jenisPenyesuaianField) jenisPenyesuaianField.classList.add('hidden');
+            if (tipePenyesuaianField) tipePenyesuaianField.classList.add('hidden');
+            clearTipePenyesuaianInputs();
         } else {
             nomorVoyageField.classList.add('hidden');
             nomorVoyageSelect.removeAttribute('required');
