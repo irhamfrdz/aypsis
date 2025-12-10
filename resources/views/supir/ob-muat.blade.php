@@ -111,10 +111,12 @@
                             </label>
                             <select id="kapal" name="kapal" required 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    onchange="updateVoyageOptions()">
+                                    onchange="updateVoyageOptions(); updateKapalDetails();">
                                 <option value="">--Pilih Kapal--</option>
-                                @foreach($masterKapals as $kapal)
-                                    <option value="{{ $kapal->nama_kapal }}">{{ $kapal->nama_kapal }}</option>
+                                {{-- Use naik_kapals (naik kapal rows) to populate available ships so voyages are picked from the same data source --}}
+                                @php $shipGroups = $naikKapals->groupBy('nama_kapal')->keys(); @endphp
+                                @foreach($shipGroups as $kapalName)
+                                    <option value="{{ $kapalName }}" {{ $kapalName == ($selectedKapal ?? '') ? 'selected' : '' }}>{{ $kapalName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -177,6 +179,10 @@
             @endif
         };
 
+        // Selected values passed from server (outside object literal)
+        const initialSelectedKapal = @json($selectedKapal ?? '');
+        const initialSelectedVoyage = @json($selectedVoyage ?? '');
+
         // Debug: Log voyage data to console
         console.log('Voyage Data (from Naik Kapal):', voyageData);
         console.log('Total Kapal in voyageData:', Object.keys(voyageData).length);
@@ -227,11 +233,19 @@
                     }
                     
                     option.textContent = displayText;
+                    // mark selected if the server passed an initial selected voyage
+                    if (initialSelectedVoyage && item.voyage === initialSelectedVoyage) {
+                        option.selected = true;
+                    }
                     voyageSelect.appendChild(option);
                 });
                 
                 // Enable voyage dropdown
                 voyageSelect.disabled = false;
+                // If a server-selected voyage exists, ensure the button state is updated
+                if (initialSelectedVoyage) {
+                    updateKapalDetails();
+                }
                 console.log('Voyage dropdown enabled with', Object.keys(uniqueVoyages).length, 'unique options');
             } else if (selectedKapal) {
                 console.log('No voyages found for kapal:', selectedKapal);
@@ -289,10 +303,31 @@
         // Debug: Log initial state
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded. Available kapal in voyageData:', Object.keys(voyageData));
-            
+
             @if($naikKapals->count() == 0)
             console.warn('No naik kapal data found. Using sample data.');
             @endif
+
+            // Preselect kapal and voyage if provided by the server
+            try {
+                if (initialSelectedKapal) {
+                    const kapalSelect = document.getElementById('kapal');
+                    kapalSelect.value = initialSelectedKapal;
+                    updateVoyageOptions();
+                }
+
+                if (initialSelectedVoyage) {
+                    const voyageSelect = document.getElementById('voyage');
+                    // If options already exist and one is selected by updateVoyageOptions, updateKapalDetails will be called.
+                    // Otherwise, explicitly set and call updateKapalDetails
+                    if (voyageSelect.querySelector(`option[value="${initialSelectedVoyage}"]`)) {
+                        voyageSelect.value = initialSelectedVoyage;
+                        updateKapalDetails();
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed applying initial selections:', e);
+            }
         });
     </script>
 </body>
