@@ -86,6 +86,19 @@
     </div>
     @endif
 
+    @if(!empty($fallback_missing))
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle mr-2 text-blue-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-blue-800">Tidak ditemukan pada Data Tanda Terima; menampilkan hasil dari Surat Jalan (Belum Ada Tanda Terima).</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Main Card -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="p-6 border-b border-gray-200">

@@ -232,6 +232,49 @@ class TandaTerimaController extends Controller
         // Order by newest and paginate
         $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
+        // If no results were found and a search term exists, try to fallback to 'missing' (surat jalan without tanda terima)
+        if (!empty($search) && $tandaTerimas->total() === 0) {
+            // Build missing surat jalan query similar to above
+            $suratQuery = SuratJalan::with(['order.pengirim']);
+
+            // Apply search filter for surat jalan
+            $suratQuery->where(function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhereHas('order', function($orderQuery) use ($search) {
+                      $orderQuery->whereHas('pengirim', function($pengirimQuery) use ($search) {
+                          $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                      });
+                  });
+            });
+
+            // Apply status filter if provided
+            if (!empty($status)) {
+                $suratQuery->where('status', $status);
+            }
+
+            // Only include surat jalan without tanda terima
+            $suratQuery->whereDoesntHave('tandaTerima');
+
+            // Only include surat jalan that have completed pranota uang jalan payment
+            $suratQuery->whereHas('uangJalans', function($uangJalanQuery) {
+                $uangJalanQuery->whereHas('pranotaUangJalan', function($pranotaQuery) {
+                    $pranotaQuery->whereHas('pembayaranPranotaUangJalans', function($pembayaranQuery) {
+                        $pembayaranQuery->where('status_pembayaran', 'paid');
+                    });
+                });
+            });
+
+            $suratJalans = $suratQuery->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
+
+            // Return the view with missing surat jalan results and a fallback flag
+            $mode = 'missing';
+            $fallback_missing = true;
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'mode', 'fallback_missing'));
+        }
+
         return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'mode'));
     }
 
