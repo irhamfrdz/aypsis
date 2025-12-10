@@ -18,11 +18,24 @@
                 <!-- bulkActionsContainer moved to table area; header doesn't need duplicate id -->
             </div>
             <div>
-                <a href="{{ route('tanda-terima.select-surat-jalan') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
-                    <i class="fas fa-plus mr-2"></i>
-                    Tambah Tanda Terima
-                </a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('tanda-terima.select-surat-jalan') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Tambah Tanda Terima
+                    </a>
+                    @can('tanda-terima-export')
+                    <form id="downloadFilteredExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Download Excel
+                        </button>
+                    </form>
+                    @endcan
+                </div>
             </div>
         </div>
     </div>
@@ -116,23 +129,10 @@
                     </label>
                     <span id="selectedCount" class="text-sm text-gray-500">@if(request('mode') === 'missing') 0 surat jalan dipilih @else 0 tanda terima dipilih @endif</span>
                 </div>
-                <!-- Right-side Actions -->
-                <div class="flex items-center gap-2">
-                    {{-- Download current filtered list as Excel (uses GET route to export filtered data) --}}
-                    @can('tanda-terima-export')
-                    <button type="button" id="downloadFilteredExcelBtn"
-                            onclick="downloadFilteredExcel()"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l3-3m-3 3l-3-3M21 12v7a1 1 0 01-1 1H4a1 1 0 01-1-1v-7"/>
-                        </svg>
-                        Download Excel
-                    </button>
-                    @endcan
 
-                    <!-- Bulk Delete Button -->
-                    @if(request('mode') !== 'missing')
-                    <div id="bulkActionsContainer" class="hidden">
+                <!-- Bulk Delete Button -->
+                @if(request('mode') !== 'missing')
+                <div id="bulkActionsContainer" class="hidden">
                     <div class="flex items-center gap-2">
                     <button type="button"
                             onclick="bulkExportExcel()"
@@ -790,18 +790,6 @@
         // Initial update
         updateSelection();
     });
-
-    // Download filtered list as Excel
-    function downloadFilteredExcel() {
-        const baseUrl = '{{ route('tanda-terima.export') }}';
-        const query = window.location.search || '';
-        // Use window.open to avoid navigating away from the list page
-        const win = window.open(baseUrl + query, '_blank');
-        if (!win) {
-            // Fallback if popup is blocked
-            window.location.href = baseUrl + query;
-        }
-    }
 
     // Function to toggle dropdown
     function toggleDropdown(dropdownId) {

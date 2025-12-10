@@ -1982,6 +1982,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima.export')
          ->middleware('can:tanda-terima-export');
 
+    // Route untuk export Excel tanda terima berdasarkan filter (POST, for form submission)
+    Route::post('tanda-terima/export', [\App\Http\Controllers\TandaTerimaController::class, 'exportFiltered'])
+         ->name('tanda-terima.export.post')
+         ->middleware('can:tanda-terima-export');
+
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════

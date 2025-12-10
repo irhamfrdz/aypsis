@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use App\Models\MasterKegiatan;
 
 class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
 {
@@ -79,17 +80,21 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
         }
 
         $rows = $query->orderBy('created_at', 'desc')->get()->map(function($t) {
+            $kegiatanName = MasterKegiatan::where('kode_kegiatan', $t->kegiatan)->value('nama_kegiatan') ?? $t->kegiatan;
+            $tanggal = data_get($t, 'suratJalan.tanggal_surat_jalan') ? \Carbon\Carbon::parse(data_get($t, 'suratJalan.tanggal_surat_jalan'))->format('d/M/Y') : ($t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/M/Y') : '-');
+            $tujuanAmbil = data_get($t, 'suratJalan.tujuan_pengambilan') ?: data_get($t, 'suratJalan.order.tujuan_ambil', '-');
             return [
                 $t->id,
                 'TT-' . $t->id,
                 $t->no_surat_jalan,
-                $t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/M/Y') : '-',
+                $tanggal,
                 $t->no_kontainer,
                 $t->jenis_barang,
-                $t->tujuan_pengiriman,
-                $t->kegiatan,
+                $tujuanAmbil,
+                $t->tujuan_pengiriman ?: '-',
+                $kegiatanName,
                 $t->status,
-                optional($t->suratJalan->order->pengirim)->nama_pengirim ?? '-',
+                data_get($t, 'suratJalan.order.pengirim.nama_pengirim', '-'),
             ];
         });
 
@@ -102,7 +107,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
             return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim'];
         }
 
-        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Jenis Barang', 'Tujuan', 'Kegiatan', 'Status', 'Pengirim'];
+        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim'];
     }
 
     public function registerEvents(): array
