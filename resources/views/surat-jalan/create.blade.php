@@ -908,7 +908,7 @@ function updateKontainerRules() {
     const pricelistInfo = document.getElementById('pricelist-info');
     const pricelistInfoText = document.getElementById('pricelist-info-text');
     
-    if (sizeSelect && jumlahKontainerInput) {
+        if (sizeSelect && jumlahKontainerInput) {
         const selectedSize = sizeSelect.value;
         const jumlahKontainer = parseInt(jumlahKontainerInput.value) || 1;
         
@@ -917,6 +917,9 @@ function updateKontainerRules() {
             pricelistInfo.classList.add('hidden');
         }
         
+        // Always ensure min is 1
+        jumlahKontainerInput.min = '1';
+
         if (selectedSize === '40' || selectedSize === '45') {
             // Untuk size 40ft dan 45ft, hanya bisa 1 kontainer
             jumlahKontainerInput.value = '1';
@@ -932,7 +935,13 @@ function updateKontainerRules() {
         } else if (selectedSize === '20') {
             // Untuk size 20ft, bisa lebih dari 1 kontainer
             jumlahKontainerInput.disabled = false;
-            jumlahKontainerInput.removeAttribute('max');
+            // Allow multiple containers for 20ft; remove max constraint
+            // Set max to 2 (business rule: if need more allow changing this)
+            jumlahKontainerInput.max = '2';
+            // If someone previously set max=1 because of 40/45, ensure the existing value remains valid
+            if (!jumlahKontainerInput.value || parseInt(jumlahKontainerInput.value) < 1) {
+                jumlahKontainerInput.value = '1';
+            }
             jumlahKontainerInput.style.backgroundColor = '';
             jumlahKontainerInput.style.color = '';
             
@@ -941,7 +950,7 @@ function updateKontainerRules() {
                 jumlahKontainerNote.className = 'text-xs text-green-600 mt-1';
             }
             
-            // Show pricelist info for 2 kontainer 20ft
+            // Show pricelist info and note if 2 kontainers selected for 20ft
             if (jumlahKontainer === 2) {
                 if (pricelistInfo && pricelistInfoText) {
                     pricelistInfo.classList.remove('hidden');
