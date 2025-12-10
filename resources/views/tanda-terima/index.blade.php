@@ -15,9 +15,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Tanda Terima</h1>
                 <p class="text-gray-600 mt-1">Kelola tanda terima kontainer dari surat jalan yang sudah di-approve</p>
-                @if(request('mode') !== 'missing')
-                <div id="bulkActionsContainer" class="hidden">
-                @endif
+                <!-- bulkActionsContainer moved to table area; header doesn't need duplicate id -->
             </div>
             <div>
                 @can('tanda-terima-export')
