@@ -39,6 +39,16 @@ class PranotaTagihanCat extends Model
         return TagihanCat::whereIn('id', $this->tagihan_cat_ids)->get();
     }
 
+    public function tagihanCats()
+    {
+        return $this->belongsToMany(
+            TagihanCat::class,
+            'pranota_tagihan_cat_items',
+            'pranota_tagihan_cat_id',
+            'tagihan_cat_id'
+        )->withTimestamps();
+    }
+
     public function calculateTotalAmount()
     {
         if (empty($this->tagihan_cat_ids)) {

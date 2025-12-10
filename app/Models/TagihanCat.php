@@ -47,10 +47,10 @@ protected $table = 'tagihan_cat';
     public function pranota(): BelongsToMany
     {
         return $this->belongsToMany(
-            Pranota::class,
+            PranotaTagihanCat::class,
             'pranota_tagihan_cat_items',
             'tagihan_cat_id',
-            'pranota_id'
+            'pranota_tagihan_cat_id'
         )->withTimestamps();
     }
 
