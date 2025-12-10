@@ -818,6 +818,7 @@ function initializeMainFunctionality() {
                 <select name="tipe_penyesuaian_detail[${inputCount}][tipe]" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" required>
                     <option value="">Pilih Tipe</option>
                     <option value="mel" ${existingTipe === 'mel' ? 'selected' : ''}>MEL</option>
+                    <option value="krani" ${existingTipe === 'krani' ? 'selected' : ''}>Krani</option>
                     <option value="parkir" ${existingTipe === 'parkir' ? 'selected' : ''}>Parkir</option>
                     <option value="pelancar" ${existingTipe === 'pelancar' ? 'selected' : ''}>Pelancar</option>
                     <option value="kawalan" ${existingTipe === 'kawalan' ? 'selected' : ''}>Kawalan</option>
