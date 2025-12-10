@@ -168,8 +168,9 @@
         const initialSelectedVoyage = @json($selectedVoyage ?? '');
 
         // Debug: Log voyage data to console
+        const voyageDataKeys = (voyageData && typeof voyageData === 'object') ? Object.keys(voyageData) : [];
         console.log('Voyage Data (from Naik Kapal):', voyageData);
-        console.log('Total Kapal in voyageData:', Object.keys(voyageData).length);
+        console.log('Total Kapal in voyageData:', voyageDataKeys.length);
 
         function updateVoyageOptions() {
             const kapalSelect = document.getElementById('kapal');
@@ -186,7 +187,7 @@
             // Disable button
             proceedBtn.disabled = true;
             
-            if (selectedKapal && voyageData[selectedKapal]) {
+            if (selectedKapal && voyageData && voyageData[selectedKapal]) {
                 console.log('Voyages for', selectedKapal, ':', voyageData[selectedKapal]);
                 
                 // Populate voyage options - hapus duplikat dan format dengan baik
@@ -282,7 +283,10 @@
         }
 
         // Event listener untuk voyage selection
-        document.getElementById('voyage').addEventListener('change', updateKapalDetails);
+        const voyageSelectEl = document.getElementById('voyage');
+        if (voyageSelectEl) {
+            voyageSelectEl.addEventListener('change', updateKapalDetails);
+        }
 
         // Debug: Log initial state
         document.addEventListener('DOMContentLoaded', function() {
