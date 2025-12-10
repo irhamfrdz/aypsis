@@ -157,15 +157,6 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
-                                            @can('surat-jalan-bongkaran-update')
-                                                <button type="button" onclick="event.stopPropagation(); editSuratJalan({{ $sj->id }})"
-                                                        class="inline-flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2 transition-colors duration-200"
-                                                        title="Edit Surat Jalan">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                    </svg>
-                                                </button>
-                                            @endcan
                                             <button type="button" onclick="event.stopPropagation(); toggleDropdown('dropdown-sj-{{ $sj->id }}')"
                                                     class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,17 +241,6 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
-                                            @if($bl->suratJalanBongkaran)
-                                                @can('surat-jalan-bongkaran-update')
-                                                    <button type="button" onclick="event.stopPropagation(); editSuratJalanFromBL({{ $bl->suratJalanBongkaran->id }})"
-                                                            class="inline-flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2 transition-colors duration-200"
-                                                            title="Edit Surat Jalan">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                        </svg>
-                                                    </button>
-                                                @endcan
-                                            @endif
                                             <button type="button" onclick="event.stopPropagation(); toggleDropdown('dropdown-{{ $bl->id }}')"
                                                     class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
