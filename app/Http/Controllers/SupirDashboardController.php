@@ -325,8 +325,10 @@ class SupirDashboardController extends Controller
             
             $tagihanOb->save();
 
-            // Update status OB pada tabel naik_kapal
+            // Update status OB pada tabel naik_kapal and mark driver & timestamp
             $naikKapal->sudah_ob = true;
+            $naikKapal->supir_id = $user->id;
+            $naikKapal->tanggal_ob = now();
             $naikKapal->save();
 
             // Log activity untuk audit trail
@@ -664,8 +666,10 @@ class SupirDashboardController extends Controller
             
             $tagihanOb->save();
 
-            // Update status OB pada tabel bls
+            // Update status OB pada tabel bls and mark driver & timestamp
             $bl->sudah_ob = true;
+            $bl->supir_id = $user->id;
+            $bl->tanggal_ob = now();
             $bl->save();
 
             \Log::info('TagihanOb Bongkar Created', [

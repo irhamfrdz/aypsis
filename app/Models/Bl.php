@@ -26,7 +26,6 @@ class Bl extends Model
         'nama_barang',
         'pengirim',
         'penerima',
-        'alamat_penerima',
         'alamat_pengiriman',
         'contact_person',
         'tonnage',

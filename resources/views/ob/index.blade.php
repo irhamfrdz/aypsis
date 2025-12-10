@@ -112,6 +112,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Kontainer</label>
                     <input type="text"
+                           id="nomor_kontainer"
                            name="nomor_kontainer"
                            value="{{ request('nomor_kontainer') }}"
                            placeholder="Masukkan nomor kontainer"
@@ -643,6 +644,23 @@ document.addEventListener('click', function(event) {
     const modal = document.getElementById('pranotaModal');
     if (event.target === modal) {
         closePranotaModal();
+    }
+});
+
+// Normalize nomor_kontainer input while typing
+document.addEventListener('DOMContentLoaded', function() {
+    const containerInput = document.getElementById('nomor_kontainer');
+    if (containerInput) {
+        containerInput.addEventListener('input', function(e) {
+            // Uppercase and remove non-alphanumeric characters (spaces, dashes, dots, etc.)
+            let v = e.target.value.toUpperCase();
+            v = v.replace(/[^A-Z0-9]/g, '');
+            e.target.value = v;
+        });
+        // Normalize initial value if present
+        if (containerInput.value && containerInput.value.length > 0) {
+            containerInput.value = containerInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        }
     }
 });
 

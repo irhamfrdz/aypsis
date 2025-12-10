@@ -151,33 +151,17 @@
     </main>
 
     <script>
-        // Data voyage berdasarkan kapal dari naik_kapal
-        const voyageData = {
-            @if($naikKapals->count() > 0)
-                @foreach($naikKapals->groupBy('nama_kapal') as $namaKapal => $voyages)
-                '{{ $namaKapal }}': [
-                    @foreach($voyages as $voyage)
-                    {
-                        voyage: '{{ $voyage->no_voyage }}',
-                        tanggal_muat: '{{ $voyage->tanggal_muat ? date("d/m/Y", strtotime($voyage->tanggal_muat)) : "-" }}',
-                        pelabuhan_tujuan: '{{ $voyage->pelabuhan_tujuan ?? "-" }}',
-                        jenis_barang: '{{ $voyage->jenis_barang ?? "-" }}'
-                    },
-                    @endforeach
-                ],
-                @endforeach
-            @else
-                // No voyage data available - using sample data for testing
-                'KM SAMPLE KAPAL': [
-                    {
-                        voyage: 'SAMPLE001',
-                        tanggal_muat: '{{ date("d/m/Y") }}',
-                        pelabuhan_tujuan: 'Pelabuhan Tujuan',
-                        jenis_barang: 'General Cargo'
-                    }
-                ]
-            @endif
-        };
+        // Data voyage berdasarkan kapal dari naik_kapal (serialized safely via @json)
+        const voyageData = @json($naikKapals->groupBy('nama_kapal')->map(function($voyages) {
+            return $voyages->map(function($v) {
+                return [
+                    'voyage' => $v->no_voyage,
+                    'tanggal_muat' => $v->tanggal_muat ? $v->tanggal_muat->format('d/m/Y') : '-',
+                    'pelabuhan_tujuan' => $v->pelabuhan_tujuan ?? '-',
+                    'jenis_barang' => $v->jenis_barang ?? '-',
+                ];
+            })->values();
+        })->toArray());
 
         // Selected values passed from server (outside object literal)
         const initialSelectedKapal = @json($selectedKapal ?? '');

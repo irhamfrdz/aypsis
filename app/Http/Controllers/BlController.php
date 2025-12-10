@@ -527,21 +527,20 @@ class BlController extends Controller
             'H1' => 'Nama Barang',
             'I1' => 'Pengirim',
             'J1' => 'Penerima',
-            'K1' => 'Alamat Penerima',
-            'L1' => 'Alamat Pengiriman',
-            'M1' => 'Contact Person',
-            'N1' => 'Tipe Kontainer',
-            'O1' => 'Ukuran Kontainer',
-            'P1' => 'Tonnage',
-            'Q1' => 'Volume',
-            'R1' => 'Satuan',
-            'S1' => 'Kuantitas',
-            'T1' => 'Term',
-            'U1' => 'Supir OB',
-            'V1' => 'Tanggal Muat',
-            'W1' => 'Jam Muat',
-            'X1' => 'Prospek ID',
-            'Y1' => 'Keterangan'
+            'K1' => 'Alamat Pengiriman',
+            'L1' => 'Contact Person',
+            'M1' => 'Tipe Kontainer',
+            'N1' => 'Ukuran Kontainer',
+            'O1' => 'Tonnage',
+            'P1' => 'Volume',
+            'Q1' => 'Satuan',
+            'R1' => 'Kuantitas',
+            'S1' => 'Term',
+            'T1' => 'Supir OB',
+            'U1' => 'Tanggal Muat',
+            'V1' => 'Jam Muat',
+            'W1' => 'Prospek ID',
+            'X1' => 'Keterangan'
         ];
 
         // Set headers with styling
@@ -568,7 +567,6 @@ class BlController extends Controller
                 'Elektronik',
                 'PT. Supplier Electronics',
                 'PT. ABC Indonesia',
-                'Jl. Sudirman No. 123, Jakarta Pusat',
                 'Jl. Raya Industri No. 123, Batam',
                 'Budi Santoso (08123456789)',
                 '20 FT',
@@ -595,7 +593,6 @@ class BlController extends Controller
                 'Makanan & Minuman',
                 'CV. Produsen Makanan',
                 'CV. XYZ Trading',
-                'Jl. Tunjungan No. 456, Surabaya',
                 'Jl. Mangga Dua Raya No. 456, Jakarta',
                 'Ahmad Wijaya (08234567890)',
                 '40 FT',
@@ -624,7 +621,7 @@ class BlController extends Controller
         }
 
         // Auto-size columns
-        foreach (range('A', 'Y') as $col) {
+        foreach (range('A', 'X') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -743,12 +740,24 @@ class BlController extends Controller
                     throw new \Exception('Tidak dapat membuka file CSV');
                 }
                 
-                // Skip header row and capture header for diagnostics
+                // Read header row and build header map for robust mapping
                 $header = fgetcsv($handle, 0, ';');
                 // Normalize header values for basic validation
                 $normalizedHeader = array_map(function($h) {
                     return strtolower(trim(preg_replace('/\s+/', ' ', $h ?? '')));
                 }, (array)$header);
+
+                // Build header -> index map
+                $headerMap = [];
+                foreach ($normalizedHeader as $idx => $colName) {
+                    $clean = $colName;
+                    // Remove asterisks and parentheses content, replace _ and - with space
+                    $clean = str_replace('*', '', $clean);
+                    $clean = preg_replace('/\s*\([^\)]*\)\s*/', ' ', $clean);
+                    $clean = str_replace(['_', '-'], ' ', $clean);
+                    $clean = trim(preg_replace('/\s+/', ' ', $clean));
+                    $headerMap[$clean] = $idx;
+                }
                 // Check if critical columns exist in header
                 $requiredHeaderKeywords = ['nama', 'kapal', 'voyage', 'kontainer'];
                 foreach (['kapal', 'voyage'] as $keyword) {
@@ -787,7 +796,7 @@ class BlController extends Controller
                             continue;
                         }
                         
-                        // Mapping kolom sesuai format template:
+                        // Use headerMap when available to locate columns robustly
                         // 0: nomor_bl
                         // 1: nomor_kontainer
                         // 2: no_seal
@@ -798,10 +807,9 @@ class BlController extends Controller
                         // 7: nama_barang
                         // 8: pengirim
                         // 9: penerima
-                        // 10: alamat_penerima
-                        // 11: alamat_pengiriman
-                        // 12: contact_person
-                        // 13: tipe_kontainer
+                        // 10: alamat_pengiriman
+                        // 11: contact_person
+                        // 12: tipe_kontainer
                         // 13: ukuran_kontainer
                         // 14: tonnage
                         // 15: volume
@@ -814,10 +822,26 @@ class BlController extends Controller
                         // 22: prospek_id
                         // 23: keterangan
                         
-                        $nomorKontainer = isset($row[1]) ? trim($row[1]) : null;
-                        $namaKapal = isset($row[3]) ? trim($row[3]) : null;
-                        $noVoyage = isset($row[4]) ? trim($row[4]) : null;
-                        $sizeKontainerFromFile = isset($row[13]) ? trim($row[13]) : null;
+                        $getCol = function($aliases, $defaultIndex = null) use ($row, $headerMap) {
+                            foreach ((array)$aliases as $alias) {
+                                $key = strtolower(trim(preg_replace('/\s+/', ' ', $alias)));
+                                if (array_key_exists($key, $headerMap)) {
+                                    $idx = $headerMap[$key];
+                                    return isset($row[$idx]) ? trim($row[$idx]) : null;
+                                }
+                            }
+                            // fallback: use default index if provided
+                            if (is_numeric($defaultIndex) && isset($row[$defaultIndex])) {
+                                return trim($row[$defaultIndex]);
+                            }
+                            return null;
+                        };
+
+                        // Resolve important fields using header aliases with fallback indexes (original template positions)
+                        $nomorKontainer = $getCol(['nomor kontainer', 'nomor_kontainer', 'nomor kontainer*'], 1);
+                        $namaKapal = $getCol(['nama kapal', 'nama_kapal', 'nama kapal*'], 3);
+                        $noVoyage = $getCol(['no voyage', 'no_voyage', 'no voyage*'], 4);
+                        $sizeKontainerFromFile = $getCol(['ukuran kontainer', 'ukuran_kontainer', 'ukuran kontainer*', 'size kontainer'], 13);
 
                         // Prepare short row preview for diagnostics
                         $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
@@ -829,7 +853,7 @@ class BlController extends Controller
 
                         // Check duplicate container numbers within the same uploaded file
                         // Allow same nomor_kontainer if pengirim is different
-                        $pengirim = isset($row[8]) ? trim($row[8]) : '';
+                        $pengirim = $getCol(['pengirim', 'pengirim*'], 8) ?: '';
                         if (!empty($nomorKontainer)) {
                             $existingPengirimList = $containerNumbersSeen[$nomorKontainer] ?? [];
                             // Normalize pengirim for comparison
@@ -865,10 +889,12 @@ class BlController extends Controller
 
                         // Parse tonnage dan volume (validate numeric)
                         $tonnage = null;
-                        if (isset($row[14]) && !empty(trim($row[14]))) {
-                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
+                        // Determine tonnage/volume using header aliases and robust parsing
+                        $tonnageRaw = $getCol(['tonnage', 'tonnage (ton)', 'tonnage*'], 14);
+                        if (isset($tonnageRaw) && $tonnageRaw !== '') {
+                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($tonnageRaw));
                             if (!is_numeric($tonnageStr)) {
-                                $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$row[14]}') ({$rowPreview})";
+                                $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$tonnageRaw}') ({$rowPreview})";
                                 $tonnage = null;
                             } else {
                                 $tonnage = (float)$tonnageStr;
@@ -876,10 +902,11 @@ class BlController extends Controller
                         }
                         
                         $volume = null;
-                        if (isset($row[15]) && !empty(trim($row[15]))) {
-                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[15]));
+                        $volumeRaw = $getCol(['volume', 'volume (m³)', 'volume*'], 15);
+                        if (isset($volumeRaw) && $volumeRaw !== '') {
+                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($volumeRaw));
                             if (!is_numeric($volumeStr)) {
-                                $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$row[15]}') ({$rowPreview})";
+                                $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$volumeRaw}') ({$rowPreview})";
                                 $volume = null;
                             } else {
                                 $volume = (float)$volumeStr;
@@ -887,20 +914,21 @@ class BlController extends Controller
                         }
 
                         // Check tanggal_muat (if present) parsing
-                        if (isset($row[20]) && !empty(trim($row[20]))) {
+                        $tanggalMuatRaw = $getCol(['tanggal muat', 'tanggal_muat'], 20);
+                        if (!empty($tanggalMuatRaw)) {
                             try {
-                                $tanggalMuatRaw = trim($row[20]);
                                 $tanggalMuat = Carbon::parse($tanggalMuatRaw);
                             } catch (\Exception $e) {
-                                $errors[] = "Baris {$rowNumber}: Format tanggal muat tidak valid ('{$row[20]}') ({$rowPreview})";
+                                $errors[] = "Baris {$rowNumber}: Format tanggal muat tidak valid ('{$tanggalMuatRaw}') ({$rowPreview})";
                             }
                         }
 
                         // Validate prospek_id if provided
-                        if (isset($row[22]) && !empty(trim($row[22]))) {
-                            $prospekId = trim($row[22]);
+                        $prospekId = $getCol(['prospek id', 'prospek_id'], 22);
+                        if (!empty($prospekId)) {
+                            $prospekId = trim($prospekId);
                             if (!is_numeric($prospekId) || !Prospek::find($prospekId)) {
-                                $errors[] = "Baris {$rowNumber}: Prospek dengan ID '{$row[22]}' tidak ditemukan ({$rowPreview})";
+                                $errors[] = "Baris {$rowNumber}: Prospek dengan ID '{$prospekId}' tidak ditemukan ({$rowPreview})";
                             }
                         }
 
@@ -909,27 +937,26 @@ class BlController extends Controller
 
                         // Create BL record
                         Bl::create([
-                            'nomor_bl' => isset($row[0]) ? trim($row[0]) : null,
+                            'nomor_bl' => $getCol(['nomor bl', 'nomor_bl'], 0) ?: null,
                             'nomor_kontainer' => $nomorKontainer,
-                            'no_seal' => isset($row[2]) ? trim($row[2]) : null,
+                            'no_seal' => $getCol(['no seal', 'no_seal'], 2) ?: null,
                             'nama_kapal' => $namaKapal,
                             'no_voyage' => $noVoyage,
-                            'pelabuhan_asal' => isset($row[5]) ? trim($row[5]) : null,
-                            'pelabuhan_tujuan' => isset($row[6]) ? trim($row[6]) : null,
-                            'nama_barang' => isset($row[7]) ? trim($row[7]) : null,
-                            'pengirim' => isset($row[8]) ? trim($row[8]) : null,
-                            'penerima' => isset($row[9]) ? trim($row[9]) : null,
-                            'alamat_penerima' => isset($row[10]) ? trim($row[10]) : null,
-                            'alamat_pengiriman' => isset($row[11]) ? trim($row[11]) : null,
-                            'contact_person' => isset($row[12]) ? trim($row[12]) : null,
-                            'tipe_kontainer' => isset($row[13]) ? trim($row[13]) : null,
+                            'pelabuhan_asal' => $getCol(['pelabuhan asal', 'pelabuhan_asal'], 5) ?: null,
+                            'pelabuhan_tujuan' => $getCol(['pelabuhan tujuan', 'pelabuhan_tujuan'], 6) ?: null,
+                            'nama_barang' => $getCol(['nama barang', 'nama_barang'], 7) ?: null,
+                            'pengirim' => $pengirim ?: $getCol(['pengirim'], 8),
+                            'penerima' => $getCol(['penerima'], 9) ?: null,
+                            'alamat_pengiriman' => $getCol(['alamat pengiriman', 'alamat_pengiriman'], 10) ?: null,
+                            'contact_person' => $getCol(['contact person', 'contact_person'], 11) ?: null,
+                            'tipe_kontainer' => $getCol(['tipe kontainer', 'tipe_kontainer'], 12) ?: null,
                             'size_kontainer' => $autoFilledSize['size'],
                             'tonnage' => $tonnage,
                             'volume' => $volume,
-                            'satuan' => isset($row[16]) ? trim($row[16]) : null,
-                            'kuantitas' => isset($row[17]) && !empty(trim($row[17])) ? (int)trim($row[17]) : null,
-                            'term' => isset($row[18]) ? trim($row[18]) : null,
-                            'supir_ob' => isset($row[19]) ? trim($row[19]) : null,
+                            'satuan' => $getCol(['satuan'], 16) ?: null,
+                            'kuantitas' => $getCol(['kuantitas'], 17) ? (int)$getCol(['kuantitas'], 17) : null,
+                            'term' => $getCol(['term'], 18) ?: null,
+                            'supir_ob' => $getCol(['supir ob', 'supir_ob'], 19) ?: null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -948,12 +975,69 @@ class BlController extends Controller
                 $worksheet = $spreadsheet->getActiveSheet();
                 $highestRow = $worksheet->getHighestRow();
 
+                // Build header map from first row to support header-aware mapping
+                $highestCol = $worksheet->getHighestColumn();
+                $highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestCol);
+                $xlsHeaderMap = [];
+                for ($col = 1; $col <= $highestColumnIndex; $col++) {
+                    $headerVal = $worksheet->getCellByColumnAndRow($col, 1)->getValue();
+                    if ($headerVal !== null) {
+                        $clean = strtolower(trim(preg_replace('/\s+/', ' ', (string)$headerVal)));
+                        // Remove asterisk markers and parentheses content, replace _ and - with space
+                        $clean = str_replace('*', '', $clean);
+                        $clean = preg_replace('/\s*\([^\)]*\)\s*/', ' ', $clean);
+                        $clean = str_replace(['_', '-'], ' ', $clean);
+                        $clean = trim(preg_replace('/\s+/', ' ', $clean));
+                        $xlsHeaderMap[$clean] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+                    }
+                }
+
+                $getXlsCell = function($aliases, $fallbackCell) use ($worksheet, $xlsHeaderMap) {
+                    foreach ((array)$aliases as $alias) {
+                        $key = strtolower(trim(preg_replace('/\s+/', ' ', $alias)));
+                        if (isset($xlsHeaderMap[$key])) {
+                            $col = $xlsHeaderMap[$key];
+                            return $worksheet->getCell("{$col}{ROW}")->getValue();
+                        }
+                    }
+                    // replace {ROW} at call time
+                    return null;
+                };
+
                 for ($row = 2; $row <= $highestRow; $row++) {
                     try {
-                        $nomorKontainer = $worksheet->getCell("B{$row}")->getValue();
-                        $namaKapal = $worksheet->getCell("D{$row}")->getValue();
-                        $noVoyage = $worksheet->getCell("E{$row}")->getValue();
-                        $sizeKontainerFromFile = $worksheet->getCell("N{$row}")->getValue();
+                        // Resolve using header mapping whenever possible with fallback to original column letters
+                        $nomorKontainer = null;
+                        if (isset($xlsHeaderMap['nomor kontainer'])) {
+                            $col = $xlsHeaderMap['nomor kontainer'];
+                            $nomorKontainer = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $nomorKontainer = $worksheet->getCell("B{$row}")->getValue();
+                        }
+
+                        $namaKapal = null;
+                        if (isset($xlsHeaderMap['nama kapal'])) {
+                            $col = $xlsHeaderMap['nama kapal'];
+                            $namaKapal = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $namaKapal = $worksheet->getCell("D{$row}")->getValue();
+                        }
+
+                        $noVoyage = null;
+                        if (isset($xlsHeaderMap['no voyage'])) {
+                            $col = $xlsHeaderMap['no voyage'];
+                            $noVoyage = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $noVoyage = $worksheet->getCell("E{$row}")->getValue();
+                        }
+
+                        $sizeKontainerFromFile = null;
+                        if (isset($xlsHeaderMap['ukuran kontainer'])) {
+                            $col = $xlsHeaderMap['ukuran kontainer'];
+                            $sizeKontainerFromFile = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $sizeKontainerFromFile = $worksheet->getCell("N{$row}")->getValue();
+                        }
 
                         // Prepare short row preview for diagnostics
                         $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
@@ -970,7 +1054,13 @@ class BlController extends Controller
 
                         // Check duplicate container numbers within the same uploaded file
                         // Allow same nomor_kontainer if pengirim is different
-                        $pengirim = $worksheet->getCell("I{$row}")->getValue();
+                        $pengirim = null;
+                        if (isset($xlsHeaderMap['pengirim'])) {
+                            $col = $xlsHeaderMap['pengirim'];
+                            $pengirim = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $pengirim = $worksheet->getCell("I{$row}")->getValue();
+                        }
                         if (!empty($nomorKontainer)) {
                             $existingPengirimList = $containerNumbersSeen[$nomorKontainer] ?? [];
                             $normalizedPengirim = mb_strtolower(trim($pengirim ?? ''));
@@ -1003,24 +1093,48 @@ class BlController extends Controller
                         }
 
                         // Validate tonnage and volume
-                        $rawTonnage = $worksheet->getCell("O{$row}")->getValue();
+                        $rawTonnage = null;
+                        if (isset($xlsHeaderMap['tonnage'])) {
+                            $col = $xlsHeaderMap['tonnage'];
+                            $rawTonnage = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $rawTonnage = $worksheet->getCell("O{$row}")->getValue();
+                        }
+                        $tonnage = null;
                         if (!empty($rawTonnage)) {
                             $tonnageStr = str_replace(['.', ','], ['', '.'], trim($rawTonnage));
                             if (!is_numeric($tonnageStr)) {
                                 $errors[] = "Baris {$row}: Nilai tonnage tidak valid ('{$rawTonnage}') ({$rowPreview})";
+                            } else {
+                                $tonnage = (float)$tonnageStr;
                             }
                         }
 
-                        $rawVolume = $worksheet->getCell("P{$row}")->getValue();
+                        $rawVolume = null;
+                        if (isset($xlsHeaderMap['volume'])) {
+                            $col = $xlsHeaderMap['volume'];
+                            $rawVolume = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $rawVolume = $worksheet->getCell("P{$row}")->getValue();
+                        }
+                        $volume = null;
                         if (!empty($rawVolume)) {
                             $volumeStr = str_replace(['.', ','], ['', '.'], trim($rawVolume));
                             if (!is_numeric($volumeStr)) {
                                 $errors[] = "Baris {$row}: Nilai volume tidak valid ('{$rawVolume}') ({$rowPreview})";
+                            } else {
+                                $volume = (float)$volumeStr;
                             }
                         }
 
                         // Validate tanggal muat if present
-                        $tanggalMuatCell = $worksheet->getCell("U{$row}")->getValue();
+                        $tanggalMuatCell = null;
+                        if (isset($xlsHeaderMap['tanggal muat'])) {
+                            $col = $xlsHeaderMap['tanggal muat'];
+                            $tanggalMuatCell = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $tanggalMuatCell = $worksheet->getCell("U{$row}")->getValue();
+                        }
                         if (!empty($tanggalMuatCell)) {
                             try {
                                 Carbon::parse($tanggalMuatCell);
@@ -1030,7 +1144,13 @@ class BlController extends Controller
                         }
 
                         // Validate prospek_id if provided
-                        $prospekCell = $worksheet->getCell("W{$row}")->getValue();
+                        $prospekCell = null;
+                        if (isset($xlsHeaderMap['prospek id'])) {
+                            $col = $xlsHeaderMap['prospek id'];
+                            $prospekCell = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $prospekCell = $worksheet->getCell("W{$row}")->getValue();
+                        }
                         if (!empty($prospekCell)) {
                             $prospekId = trim($prospekCell);
                             if (!is_numeric($prospekId) || !Prospek::find($prospekId)) {
@@ -1038,32 +1158,44 @@ class BlController extends Controller
                             }
                         }
 
+                        // Parse kuantitas - integer
+                        $kuantitasRaw = null;
+                        if (isset($xlsHeaderMap['kuantitas'])) {
+                            $col = $xlsHeaderMap['kuantitas'];
+                            $kuantitasRaw = $worksheet->getCell("{$col}{$row}")->getValue();
+                        } else {
+                            $kuantitasRaw = $worksheet->getCell("S{$row}")->getValue();
+                        }
+                        $kuantitas = null;
+                        if (!empty($kuantitasRaw) && is_numeric($kuantitasRaw)) {
+                            $kuantitas = (int)$kuantitasRaw;
+                        }
+
                         // For debugging convenience, prepare a short row preview for possible error messages
                         $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-');
 
                         // Create BL record
                         Bl::create([
-                            'nomor_bl' => $worksheet->getCell("A{$row}")->getValue() ?: null,
+                            'nomor_bl' => (isset($xlsHeaderMap['nomor bl']) ? ($worksheet->getCell("{$xlsHeaderMap['nomor bl']}{$row}")->getValue() ?: null) : ($worksheet->getCell("A{$row}")->getValue() ?: null)),
                             'nomor_kontainer' => $nomorKontainer,
-                            'no_seal' => $worksheet->getCell("C{$row}")->getValue() ?: null,
+                            'no_seal' => (isset($xlsHeaderMap['no seal']) ? ($worksheet->getCell("{$xlsHeaderMap['no seal']}{$row}")->getValue() ?: null) : ($worksheet->getCell("C{$row}")->getValue() ?: null)),
                             'nama_kapal' => $namaKapal,
                             'no_voyage' => $noVoyage,
-                            'pelabuhan_asal' => $worksheet->getCell("F{$row}")->getValue() ?: null,
-                            'pelabuhan_tujuan' => $worksheet->getCell("G{$row}")->getValue() ?: null,
-                            'nama_barang' => $worksheet->getCell("H{$row}")->getValue() ?: null,
-                            'pengirim' => $worksheet->getCell("I{$row}")->getValue() ?: null,
-                            'penerima' => $worksheet->getCell("J{$row}")->getValue() ?: null,
-                            'alamat_penerima' => $worksheet->getCell("K{$row}")->getValue() ?: null,
-                            'alamat_pengiriman' => $worksheet->getCell("L{$row}")->getValue() ?: null,
-                            'contact_person' => $worksheet->getCell("M{$row}")->getValue() ?: null,
-                            'tipe_kontainer' => $worksheet->getCell("N{$row}")->getValue() ?: null,
+                            'pelabuhan_asal' => (isset($xlsHeaderMap['pelabuhan asal']) ? ($worksheet->getCell("{$xlsHeaderMap['pelabuhan asal']}{$row}")->getValue() ?: null) : ($worksheet->getCell("F{$row}")->getValue() ?: null)),
+                            'pelabuhan_tujuan' => (isset($xlsHeaderMap['pelabuhan tujuan']) ? ($worksheet->getCell("{$xlsHeaderMap['pelabuhan tujuan']}{$row}")->getValue() ?: null) : ($worksheet->getCell("G{$row}")->getValue() ?: null)),
+                            'nama_barang' => (isset($xlsHeaderMap['nama barang']) ? ($worksheet->getCell("{$xlsHeaderMap['nama barang']}{$row}")->getValue() ?: null) : ($worksheet->getCell("H{$row}")->getValue() ?: null)),
+                            'pengirim' => $pengirim ?: (isset($xlsHeaderMap['pengirim']) ? ($worksheet->getCell("{$xlsHeaderMap['pengirim']}{$row}")->getValue() ?: null) : ($worksheet->getCell("I{$row}")->getValue() ?: null)),
+                            'penerima' => (isset($xlsHeaderMap['penerima']) ? ($worksheet->getCell("{$xlsHeaderMap['penerima']}{$row}")->getValue() ?: null) : ($worksheet->getCell("J{$row}")->getValue() ?: null)),
+                            'alamat_pengiriman' => (isset($xlsHeaderMap['alamat pengiriman']) ? ($worksheet->getCell("{$xlsHeaderMap['alamat pengiriman']}{$row}")->getValue() ?: null) : ($worksheet->getCell("K{$row}")->getValue() ?: null)),
+                            'contact_person' => (isset($xlsHeaderMap['contact person']) ? ($worksheet->getCell("{$xlsHeaderMap['contact person']}{$row}")->getValue() ?: null) : ($worksheet->getCell("L{$row}")->getValue() ?: null)),
+                            'tipe_kontainer' => (isset($xlsHeaderMap['tipe kontainer']) ? ($worksheet->getCell("{$xlsHeaderMap['tipe kontainer']}{$row}")->getValue() ?: null) : ($worksheet->getCell("M{$row}")->getValue() ?: null)),
                             'size_kontainer' => $autoFilledSize['size'],
-                            'tonnage' => $worksheet->getCell("P{$row}")->getValue() ?: null,
-                            'volume' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
-                            'satuan' => $worksheet->getCell("R{$row}")->getValue() ?: null,
-                            'kuantitas' => $worksheet->getCell("S{$row}")->getValue() ?: null,
-                            'term' => $worksheet->getCell("T{$row}")->getValue() ?: null,
-                            'supir_ob' => $worksheet->getCell("U{$row}")->getValue() ?: null,
+                            'tonnage' => $tonnage,
+                            'volume' => $volume,
+                            'satuan' => (isset($xlsHeaderMap['satuan']) ? ($worksheet->getCell("{$xlsHeaderMap['satuan']}{$row}")->getValue() ?: null) : ($worksheet->getCell("R{$row}")->getValue() ?: null)),
+                            'kuantitas' => $kuantitas,
+                            'term' => (isset($xlsHeaderMap['term']) ? ($worksheet->getCell("{$xlsHeaderMap['term']}{$row}")->getValue() ?: null) : ($worksheet->getCell("T{$row}")->getValue() ?: null)),
+                            'supir_ob' => (isset($xlsHeaderMap['supir ob']) ? ($worksheet->getCell("{$xlsHeaderMap['supir ob']}{$row}")->getValue() ?: null) : ($worksheet->getCell("U{$row}")->getValue() ?: null)),
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -1226,7 +1358,6 @@ class BlController extends Controller
             'satuan' => 'Satuan',
             'term' => 'Term',
             'penerima' => 'Penerima',
-            'alamat_penerima' => 'Alamat Penerima',
             'alamat_pengiriman' => 'Alamat Pengiriman',
             'contact_person' => 'Contact Person',
             'supir_ob' => 'Supir OB',
@@ -1311,9 +1442,6 @@ class BlController extends Controller
                         break;
                     case 'alamat_pengiriman':
                         $value = $bl->alamat_pengiriman ? strip_tags($bl->alamat_pengiriman) : '';
-                        break;
-                    case 'alamat_penerima':
-                        $value = $bl->alamat_penerima ? strip_tags($bl->alamat_penerima) : '';
                         break;
                     default:
                         // Handle all other fields safely

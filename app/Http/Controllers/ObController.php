@@ -92,14 +92,18 @@ class ObController extends Controller
 
             // Dedicated nomor_kontainer filter for BL list
             if ($request->filled('nomor_kontainer')) {
-                $num = $request->nomor_kontainer;
-                $queryBl->where('nomor_kontainer', 'like', "%{$num}%");
+                // Normalize user input: uppercase and remove non-alphanumeric characters
+                $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
+                // Normalize nomor_kontainer in DB using SQL functions for better matching
+                $queryBl->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
             }
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $queryBl->where(function($q) use ($search) {
-                    $q->where('nomor_kontainer', 'like', "%{$search}%")
+                // Also normalize nomor_kontainer for search comparisons
+                $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                $queryBl->where(function($q) use ($search, $searchNum) {
+                    $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
                       ->orWhere('no_seal', 'like', "%{$search}%")
                       ->orWhere('nama_barang', 'like', "%{$search}%")
                       ->orWhere('nomor_bl', 'like', "%{$search}%");
@@ -196,15 +200,19 @@ class ObController extends Controller
 
             // Dedicated nomor_kontainer filter (exact/partial match)
             if ($request->filled('nomor_kontainer')) {
-                $num = $request->nomor_kontainer;
-                $query->where('nomor_kontainer', 'like', "%{$num}%");
+                // Normalize user input: uppercase and remove non-alphanumeric characters
+                $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
+                // Normalize nomor_kontainer in DB using SQL functions for better matching
+                $query->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
             }
 
             // General search fallback
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('nomor_kontainer', 'like', "%{$search}%")
+                // Normalize nomor kontainer for better matches against formatted values
+                $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                $query->where(function($q) use ($search, $searchNum) {
+                    $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
                       ->orWhere('no_seal', 'like', "%{$search}%")
                       ->orWhere('jenis_barang', 'like', "%{$search}%");
                 });

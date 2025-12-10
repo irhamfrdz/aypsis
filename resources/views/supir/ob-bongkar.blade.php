@@ -199,31 +199,14 @@
     </main>
 
     <script>
-        // Data voyage berdasarkan kapal dari BL
-        const voyageData = {
-            @php
-                // Ambil data BL yang dikelompokkan berdasarkan kapal dan voyage
-                $blsByKapal = \App\Models\Bl::select('nama_kapal', 'no_voyage')
-                    ->whereNotNull('nama_kapal')
-                    ->whereNotNull('no_voyage')
-                    ->where('nama_kapal', '!=', '')
-                    ->where('no_voyage', '!=', '')
-                    ->groupBy('nama_kapal', 'no_voyage')
-                    ->orderBy('nama_kapal')
-                    ->orderBy('no_voyage')
-                    ->get()
-                    ->groupBy('nama_kapal');
-            @endphp
-            @foreach($blsByKapal as $namaKapal => $bls)
-            '{{ $namaKapal }}': [
-                @foreach($bls as $bl)
-                {
-                    voyage: '{{ $bl->no_voyage }}'
-                },
-                @endforeach
-            ],
-            @endforeach
-        };
+        // Data voyage berdasarkan kapal dari BL (serialized safely via @json)
+        const voyageData = @json($blsByKapal->map(function($bls) {
+            return $bls->map(function($b) {
+                return [
+                    'voyage' => $b->no_voyage,
+                ];
+            })->values();
+        })->toArray());
 
         // Selected initial values from server
         const initialSelectedKapal = @json($selectedKapal ?? '');

@@ -307,9 +307,6 @@
                                 Pelabuhan Tujuan
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Alamat Penerima
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_barang', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Nama Barang
@@ -414,11 +411,7 @@
                                         {{ $bl->pelabuhan_tujuan ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">
-                                        {{ $bl->alamat_penerima ?: '-' }}
-                                    </div>
-                                </td>
+                                <!-- alamat_penerima removed -->
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">
                                         {{ Str::limit($bl->nama_barang, 30) }}
@@ -895,11 +888,7 @@
                                    class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
                             <span class="ml-2 text-sm text-gray-700">Penerima</span>
                         </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" name="columns[]" value="alamat_penerima" 
-                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
-                            <span class="ml-2 text-sm text-gray-700">Alamat Penerima</span>
-                        </label>
+                        <!-- alamat_penerima export option removed -->
                         <label class="flex items-center">
                             <input type="checkbox" name="columns[]" value="alamat_pengiriman" 
                                    class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
