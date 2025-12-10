@@ -64,7 +64,8 @@ class ProspekController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                    $q->where('nama_supir', 'like', '%' . $search . '%')
+                                $q->where('nama_supir', 'like', '%' . $search . '%')
+                                    ->orWhere('no_surat_jalan', 'like', '%' . $search . '%')
                       ->orWhere('barang', 'like', '%' . $search . '%')
                       ->orWhere('pt_pengirim', 'like', '%' . $search . '%')
                       ->orWhere('nomor_kontainer', 'like', '%' . $search . '%')
