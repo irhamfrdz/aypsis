@@ -341,11 +341,14 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
-                    <div class="relative">
-                        <input type="hidden" name="nomor_kontainer" id="nomor_kontainer" value="{{ old('nomor_kontainer') }}">
-                        <input type="text" id="nomor_kontainer_search" placeholder="Cari atau ketik nomor kontainer..." value="{{ old('nomor_kontainer') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
-                        <div id="nomor_kontainer_dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                    <div id="nomor_kontainer_container_inputs">
+                        <!-- Multiple container search inputs will be rendered here by JS as nomor_kontainer_search_1, nomor_kontainer_search_2, etc. -->
+                        <!-- Fallback single input for noscript or before JS runs -->
+                        <div class="relative mb-2">
+                            <input type="hidden" name="nomor_kontainer[]" id="nomor_kontainer_1" value="{{ old('nomor_kontainer') }}">
+                            <input type="text" id="nomor_kontainer_search_1" placeholder="Cari atau ketik nomor kontainer..." value="{{ old('nomor_kontainer') }}"
+                                   class="nomor-kontainer-search w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
+                            <div id="nomor_kontainer_dropdown_1" class="nomor-kontainer-dropdown absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                             @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
                                 @foreach($stockKontainers as $stock)
                                     <div class="kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
@@ -365,10 +368,12 @@
                             @endif
                         </div>
                     </div>
+                    <div id="nomor_kontainer_container_note" class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia). Gunakan tombol untuk memilih lebih dari 1 bila jumlah kontainer > 1.</div>
+                    </div>
                     @error('nomor_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia) dan kontainer sewa (status: tersedia). Data berasal dari table stock_kontainers dan kontainers. Filter otomatis berdasarkan size kontainer.</p>
+                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia) dan kontainer sewa (status: tersedia). Data berasal dari table stock_kontainers dan kontainers. Filter otomatis berdasarkan size kontainer. Jika <strong>Jumlah Kontainer</strong> &gt; 1, Anda dapat memilih beberapa number kontainer.</p>
                 </div>
 
                 <div>
@@ -647,62 +652,76 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupKontainerDropdownEvents() {
-    const searchInput = document.getElementById('nomor_kontainer_search');
-    const dropdown = document.getElementById('nomor_kontainer_dropdown');
-    const hiddenInput = document.getElementById('nomor_kontainer');
+    // Support multiple search inputs and dropdowns. We'll set active search input to identify which hidden to update.
+    const searchInputs = document.querySelectorAll('.nomor-kontainer-search');
+    const dropdowns = document.querySelectorAll('.nomor-kontainer-dropdown');
 
-    if (!searchInput || !dropdown || !hiddenInput) return;
+    // If there are no elements, nothing to do
+    if (!searchInputs || !dropdowns) return;
 
-    // Show dropdown on focus/click
-    searchInput.addEventListener('focus', function() {
-        dropdown.classList.remove('hidden');
-    });
+    // Attach listeners per search input
+    searchInputs.forEach(function(searchInput, idx) {
+        const dropdown = document.getElementById('nomor_kontainer_dropdown_' + (idx+1));
+        const hiddenInput = document.getElementById('nomor_kontainer_' + (idx+1));
+        if (!dropdown || !hiddenInput) return;
 
-    searchInput.addEventListener('click', function() {
-        dropdown.classList.remove('hidden');
-    });
+        // Show dropdown on focus/click
+        searchInput.addEventListener('focus', function() {
+            // hide other dropdowns
+            dropdowns.forEach(d => d.classList.add('hidden'));
+            dropdown.classList.remove('hidden');
+        });
 
-    // Filter dropdown on typing
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        filterDropdownOptions(searchTerm);
-        dropdown.classList.remove('hidden');
-    });
+        searchInput.addEventListener('click', function() {
+            dropdowns.forEach(d => d.classList.add('hidden'));
+            dropdown.classList.remove('hidden');
+        });
 
-    // Handle clicking on dropdown options
-    dropdown.addEventListener('click', function(e) {
-        const option = e.target.closest('.kontainer-option');
-        if (option) {
-            const value = option.getAttribute('data-value');
-            const text = option.getAttribute('data-text');
-            
-            // Set values
-            hiddenInput.value = value;
-            searchInput.value = text;
-            
-            // Hide dropdown
-            dropdown.classList.add('hidden');
-            
-            console.log('Selected kontainer:', value);
-        }
-    });
+        // Filter dropdown on typing
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterDropdownOptions(searchTerm, dropdown);
+            dropdown.classList.remove('hidden');
+        });
 
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.add('hidden');
-        }
+        // Handle clicking on dropdown options
+        dropdown.addEventListener('click', function(e) {
+            const option = e.target.closest('.kontainer-option');
+            if (option) {
+                const value = option.getAttribute('data-value');
+                const text = option.getAttribute('data-text');
+                
+                // Set values
+                hiddenInput.value = value;
+                searchInput.value = text;
+                
+                // Hide dropdown
+                dropdown.classList.add('hidden');
+                console.log('Selected kontainer:', value, 'for input index', idx+1);
+            }
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
     });
 }
 
 function filterDropdownOptions(searchTerm) {
-    const dropdown = document.getElementById('nomor_kontainer_dropdown');
-    const options = dropdown.querySelectorAll('.kontainer-option');
+    // Optional dropdown parameter
+    let dropdownArg = arguments.length > 1 ? arguments[1] : null;
+    const dropdowns = dropdownArg ? [dropdownArg] : Array.from(document.querySelectorAll('.nomor-kontainer-dropdown'));
 
-    options.forEach(function(option) {
-        const text = option.getAttribute('data-text') || '';
-        const visible = text.toLowerCase().includes(searchTerm);
-        option.style.display = visible ? 'block' : 'none';
+    dropdowns.forEach(function(dd) {
+        const options = dd.querySelectorAll('.kontainer-option');
+        options.forEach(function(option) {
+            const text = option.getAttribute('data-text') || '';
+            const visible = text.toLowerCase().includes(searchTerm);
+            option.style.display = visible ? 'block' : 'none';
+        });
     });
 }
 
@@ -733,41 +752,68 @@ function initializeKontainerFiltering() {
         });
 
         // Clear dropdown (we'll repopulate via filter function)
-        // filterNomorKontainerBySize will populate the dropdown
-        const sizeSelect = document.getElementById('size-select');
-        if (sizeSelect && sizeSelect.value) {
-            filterNomorKontainerBySize();
-        } else {
-            // populate with all
-            filterNomorKontainerBySize();
-        }
-        
+        // filterNomorKontainerBySize will populate the dropdowns
+        // Render inputs based on jumlah_kontainer and populate
+        const jumlahKontainerInput = document.getElementById('jumlah_kontainer_input');
+        const initialCount = jumlahKontainerInput ? parseInt(jumlahKontainerInput.value) || 1 : 1;
+        renderKontainerInputs(initialCount);
+        // Populate all dropdowns according to size
+        filterNomorKontainerBySize();
         // Setup dropdown events after initial population
         setupKontainerDropdownEvents();
     }
 }
 
+function renderKontainerInputs(count) {
+    const container = document.getElementById('nomor_kontainer_container_inputs');
+    if (!container) return;
+    container.innerHTML = '';
+
+    for (let i = 1; i <= count; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative mb-2';
+
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'nomor_kontainer[]';
+        hidden.id = `nomor_kontainer_${i}`;
+
+        const search = document.createElement('input');
+        search.type = 'text';
+        search.id = `nomor_kontainer_search_${i}`;
+        search.className = 'nomor-kontainer-search w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500';
+        search.placeholder = 'Cari atau ketik nomor kontainer...';
+
+        const dropdown = document.createElement('div');
+        dropdown.id = `nomor_kontainer_dropdown_${i}`;
+        dropdown.className = 'nomor-kontainer-dropdown absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto';
+
+        wrapper.appendChild(hidden);
+        wrapper.appendChild(search);
+        wrapper.appendChild(dropdown);
+        container.appendChild(wrapper);
+    }
+
+    // Re-populate dropdowns with current options and setup events
+    filterNomorKontainerBySize();
+    setupKontainerDropdownEvents();
+}
+
 function filterNomorKontainerBySize() {
     const sizeSelect = document.getElementById('size-select');
-    const kontainerDropdown = document.getElementById('nomor_kontainer_dropdown');
+    const kontainerDropdownElems = document.querySelectorAll('.nomor-kontainer-dropdown');
     const selectedSize = sizeSelect ? sizeSelect.value : '';
     if (!kontainerDropdown) return;
 
-    // Clear current dropdown list
-    kontainerDropdown.innerHTML = '';
+    // Clear current dropdown lists
+    kontainerDropdownElems.forEach(function(elem){ elem.innerHTML = ''; });
     
     if (!selectedSize) {
         // Show all options if no size selected
         window.allKontainerOptions.forEach(function(optionData) {
-            const item = document.createElement('div');
-            item.className = 'kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100';
-            item.setAttribute('data-value', optionData.value);
-            item.setAttribute('data-text', optionData.value);
-            item.setAttribute('data-ukuran', optionData.ukuran);
-            item.setAttribute('data-tipe', optionData.tipe);
-            item.setAttribute('data-source', optionData.source);
-            item.innerHTML = `<div class="flex justify-between items-center"><div class="text-sm font-medium">${escapeHtml(optionData.text)}</div><div class="text-xs text-gray-500">${escapeHtml(optionData.source)}</div></div>`;
-            kontainerDropdown.appendChild(item);
+            const itemHtml = `<div class="kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100" data-value="${escapeHtml(optionData.value)}" data-text="${escapeHtml(optionData.value)}" data-ukuran="${escapeHtml(optionData.ukuran)}" data-tipe="${escapeHtml(optionData.tipe)}" data-source="${escapeHtml(optionData.source)}"><div class="flex justify-between items-center"><div class="text-sm font-medium">${escapeHtml(optionData.text)}</div><div class="text-xs text-gray-500">${escapeHtml(optionData.source)}</div></div></div>`;
+            // append to all dropdown elements
+            kontainerDropdownElems.forEach(function(elem){ elem.insertAdjacentHTML('beforeend', itemHtml); });
         });
         console.log('No size selected - showing all kontainers:', window.allKontainerOptions.length);
     } else {
@@ -787,15 +833,9 @@ function filterNomorKontainerBySize() {
                 normalizedUkuran.startsWith(normalizedSize);
             
             if (sizeMatches) {
-                const item = document.createElement('div');
-                item.className = 'kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100';
-                item.setAttribute('data-value', optionData.value);
-                item.setAttribute('data-text', optionData.value);
-                item.setAttribute('data-ukuran', optionData.ukuran);
-                item.setAttribute('data-tipe', optionData.tipe);
-                item.setAttribute('data-source', optionData.source);
-                item.innerHTML = `<div class="flex justify-between items-center"><div class="text-sm font-medium">${escapeHtml(optionData.text)}</div><div class="text-xs text-gray-500">${escapeHtml(optionData.source)}</div></div>`;
-                kontainerDropdown.appendChild(item);
+                const itemHtml = `<div class="kontainer-option px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100" data-value="${escapeHtml(optionData.value)}" data-text="${escapeHtml(optionData.value)}" data-ukuran="${escapeHtml(optionData.ukuran)}" data-tipe="${escapeHtml(optionData.tipe)}" data-source="${escapeHtml(optionData.source)}"><div class="flex justify-between items-center"><div class="text-sm font-medium">${escapeHtml(optionData.text)}</div><div class="text-xs text-gray-500">${escapeHtml(optionData.source)}</div></div></div>`;
+                // append to all dropdown elements
+                kontainerDropdownElems.forEach(function(elem){ elem.insertAdjacentHTML('beforeend', itemHtml); });
                 filteredCount++;
             }
         });
@@ -911,6 +951,12 @@ function updateKontainerRules() {
         if (sizeSelect && jumlahKontainerInput) {
         const selectedSize = sizeSelect.value;
         const jumlahKontainer = parseInt(jumlahKontainerInput.value) || 1;
+        // If number of container inputs doesn't match jumlahKontainer, re-render inputs
+        const currentInputs = document.querySelectorAll('#nomor_kontainer_container_inputs .nomor-kontainer-search');
+        const currentCount = currentInputs ? currentInputs.length : 0;
+        if (currentCount !== jumlahKontainer) {
+            renderKontainerInputs(jumlahKontainer);
+        }
         
         // Hide pricelist info by default
         if (pricelistInfo) {
