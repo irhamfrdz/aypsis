@@ -52,6 +52,19 @@
                                 Download Surat Jalan (Belum Ada TT)
                             </button>
                         </form>
+                    <!-- Additional button to export combined Tanda Terima and missing Surat Jalan -->
+                    <form id="downloadCombinedExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline; margin-left: 6px;">
+                        @csrf
+                        <input type="hidden" name="mode" value="combined">
+                        <input type="hidden" name="search" value="{{ request('search') }}">
+                        <input type="hidden" name="status" value="{{ request('status') }}">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Download Gabungan (TT + SJ Belum TT)
+                        </button>
+                    </form>
                     @endif
                     @endcan
                 </div>
