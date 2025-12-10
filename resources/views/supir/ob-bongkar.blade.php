@@ -111,6 +111,13 @@
                     ->orderBy('no_voyage')
                     ->get()
                     ->groupBy('nama_kapal');
+    $voyageData = $blsByKapal->map(function($bls) {
+        return $bls->map(function($b) {
+            return [
+                'voyage' => $b->no_voyage
+            ];
+        })->values();
+    })->toArray();
             @endphp
             <div class="bg-white rounded-lg shadow-sm p-4">
                 <form action="{{ route('supir.ob-bongkar.store') }}" method="POST" id="obBongkarForm">
@@ -134,8 +141,7 @@
                                 <div id="kapal-dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden">
                                     @foreach($blsByKapal->keys() as $kapalName)
                                         <div class="kapal-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm" 
-                                             data-value="{{ $kapalName }}"
-                                             onmousedown="selectKapal('{{ $kapalName }}')">
+                                             data-value="{{ $kapalName }}">
                                             {{ $kapalName }}
                                         </div>
                                     @endforeach
@@ -199,18 +205,12 @@
     </main>
 
     <script>
-        // Data voyage berdasarkan kapal dari BL (serialized safely via @json)
-        const voyageData = @json($blsByKapal->map(function($bls) {
-            return $bls->map(function($b) {
-                return [
-                    'voyage' => $b->no_voyage,
-                ];
-            })->values();
-        })->toArray());
+        // Data voyage berdasarkan kapal dari BL (serialized safely via @@json)
+        const voyageData = {!! json_encode($voyageData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!};
 
         // Selected initial values from server
-        const initialSelectedKapal = @json($selectedKapal ?? '');
-        const initialSelectedVoyage = @json($selectedVoyage ?? '');
+        const initialSelectedKapal = {!! json_encode($selectedKapal ?? '') !!};
+        const initialSelectedVoyage = {!! json_encode($selectedVoyage ?? '') !!};
 
         // Debug: Log voyage data to console
         console.log('Voyage Data (from BL):', voyageData);
@@ -335,7 +335,7 @@
                     const div = document.createElement('div');
                     div.className = 'voyage-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm';
                     div.textContent = item.voyage;
-                    div.onmousedown = function() { selectVoyage(item.voyage); };
+                    div.dataset.voyage = item.voyage;
                     voyageDropdown.appendChild(div);
                 });
                 
@@ -412,6 +412,23 @@
                 }
             } catch (e) {
                 console.warn('Failed applying initial selections:', e);
+            }
+
+            // Delegated event listeners for kapal and voyage options (avoid inline JS in attributes)
+            const kapalDropdownEl = document.getElementById('kapal-dropdown');
+            if (kapalDropdownEl) {
+                kapalDropdownEl.addEventListener('mousedown', function (e) {
+                    const el = e.target.closest('.kapal-option');
+                    if (el) selectKapal(el.dataset.value);
+                });
+            }
+
+            const voyageDropdownEl = document.getElementById('voyage-dropdown');
+            if (voyageDropdownEl) {
+                voyageDropdownEl.addEventListener('mousedown', function (e) {
+                    const el = e.target.closest('.voyage-option');
+                    if (el) selectVoyage(el.dataset.voyage);
+                });
             }
         });
     </script>

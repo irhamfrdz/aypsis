@@ -25,8 +25,12 @@
                         Tambah Tanda Terima
                     </a>
                     @can('tanda-terima-export')
+                    <!-- Download filtered Excel (works for both tanda terima and missing surat jalan based on mode param) -->
                     <form id="downloadFilteredExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline;">
                         @csrf
+                        <input type="hidden" name="mode" value="{{ request('mode') }}">
+                        <input type="hidden" name="search" value="{{ request('search') }}">
+                        <input type="hidden" name="status" value="{{ request('status') }}">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -34,6 +38,21 @@
                             Download Excel
                         </button>
                     </form>
+
+                    <!-- Additional button specifically for missing surat jalan (still uses the same export route, with mode=missing) -->
+                    @if(request('mode') === 'missing')
+                        <form id="downloadMissingSuratJalanExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline; margin-left: 6px;">
+                            @csrf
+                            <input type="hidden" name="mode" value="missing">
+                            <input type="hidden" name="search" value="{{ request('search') }}">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Download Surat Jalan (Belum Ada TT)
+                            </button>
+                        </form>
+                    @endif
                     @endcan
                 </div>
             </div>

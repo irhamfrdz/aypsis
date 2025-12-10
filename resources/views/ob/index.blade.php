@@ -191,8 +191,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tonase</th>
+                        {{-- Volume and Tonase columns removed per request --}}
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status OB</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -211,8 +210,7 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer . ' Feet' : '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/Y') : '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->volume ?? '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tonnage ?? '-' }}</td>
+                        {{-- Volume and Tonase cells removed per request --}}
                         <td class="px-4 py-4 text-sm text-gray-900">
                             @if($bl->sudah_ob)
                                 <div class="flex flex-col space-y-1">
@@ -272,7 +270,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="13" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                        <td colspan="11" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -292,8 +290,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Muat</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tonase</th>
+                        {{-- Volume and Tonase columns removed per request --}}
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status OB</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -349,12 +346,7 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapal->tanggal_muat ? $naikKapal->tanggal_muat->format('d/m/Y') : '-' }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $naikKapal->formattedVolume }}
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $naikKapal->formattedTonase }}
-                            </td>
+                            {{-- Volume and Tonase cells removed per request --}}
                             <td class="px-4 py-4 text-sm text-gray-900">
                                 @if($naikKapal->sudah_ob)
                                     <div class="flex flex-col space-y-1">
@@ -414,7 +406,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="10" class="px-4 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
                                     <p class="text-lg font-medium">Tidak ada data kontainer yang ditemukan</p>
