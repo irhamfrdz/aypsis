@@ -679,6 +679,7 @@ function initializeMainFunctionality() {
         
         if (jenisVal === 'Pembayaran Adjusment Uang Jalan') {
             jenisPenyesuaianField.classList.remove('hidden');
+            jenisPenyesuaianField.style.display = '';
             jenisPenyesuaianSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
             setTimeout(() => {
@@ -693,6 +694,7 @@ function initializeMainFunctionality() {
             toggleTipePenyesuaian();
         } else {
             jenisPenyesuaianField.classList.add('hidden');
+            jenisPenyesuaianField.style.display = 'none';
             jenisPenyesuaianSelect.removeAttribute('required');
             $('#jenis_penyesuaian_select').val('').trigger('change');
             jenisPenyesuaianField.style.display = 'none';
@@ -774,6 +776,7 @@ function initializeMainFunctionality() {
         } else {
             // Tampilkan tipe penyesuaian
             tipePenyesuaianField.classList.remove('hidden');
+            tipePenyesuaianField.style.display = '';
             // Initialize dynamic input fields for tipe penyesuaian
             initializeTipePenyesuaianInputs();
             // Hitung total dari nominal tipe penyesuaian
