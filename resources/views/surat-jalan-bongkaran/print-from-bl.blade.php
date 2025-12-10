@@ -30,7 +30,7 @@
         .nama-kapal {
             position: absolute;
             top: 6cm;    /* 6cm dari atas */
-            left: 3.5cm;  /* 3.5cm dari kiri */
+            left: 4.5cm;  /* 4.5cm dari kiri (updated) */
             font-size: 14px;
             font-weight: bold;
         }
