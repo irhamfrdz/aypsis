@@ -217,7 +217,7 @@
                                 $hasPranotaForCheckbox = false;
                                 if (!empty($tagihanCat->pranota) && $tagihanCat->pranota->isNotEmpty()) {
                                     $hasPranotaForCheckbox = true;
-                                } elseif (\App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->exists()) {
+                                } elseif (\App\Models\PranotaTagihanCat::whereJsonContains('tagihan_cat_ids', $tagihanCat->id)->exists()) {
                                     $hasPranotaForCheckbox = true;
                                 }
                             @endphp
@@ -251,8 +251,8 @@
                                 $tanggalPranota = null;
                                 if (!empty($tagihanCat->pranota) && $tagihanCat->pranota->isNotEmpty()) {
                                     $tanggalPranota = $tagihanCat->pranota->first()->tanggal_pranota;
-                                } elseif (\App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->exists()) {
-                                    $pranota = \App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->first();
+                                } elseif (\App\Models\PranotaTagihanCat::whereJsonContains('tagihan_cat_ids', $tagihanCat->id)->exists()) {
+                                    $pranota = \App\Models\PranotaTagihanCat::whereJsonContains('tagihan_cat_ids', $tagihanCat->id)->first();
                                     $tanggalPranota = $pranota->tanggal_pranota;
                                 }
                             @endphp
@@ -338,7 +338,7 @@
                                     $hasPranota = false;
                                     if (!empty($tagihanCat->pranota) && $tagihanCat->pranota->isNotEmpty()) {
                                         $hasPranota = true;
-                                    } elseif (\App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->exists()) {
+                                    } elseif (\App\Models\PranotaTagihanCat::whereJsonContains('tagihan_cat_ids', $tagihanCat->id)->exists()) {
                                         $hasPranota = true;
                                     }
                                 @endphp
