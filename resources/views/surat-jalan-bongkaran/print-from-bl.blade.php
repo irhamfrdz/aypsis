@@ -26,7 +26,7 @@
         /* Nomor Voyage: posisi absolute sesuai permintaan */
         .no-voyage {
             position: absolute;
-            top: 5cm;    /* 5cm dari atas */
+            top: 5.0cm;    /* 5.0cm dari atas (moved slightly up) */
             left: 3.5cm;  /* 3.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
@@ -35,7 +35,7 @@
         /* Nama Kapal: posisi absolute sesuai permintaan */
         .nama-kapal {
             position: absolute;
-            top: 5.5cm;    /* 5.5cm dari atas */
+            top: 5.0cm;    /* 5.0cm dari atas (moved slightly up) */
             left: 3.5cm;   /* 3.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
