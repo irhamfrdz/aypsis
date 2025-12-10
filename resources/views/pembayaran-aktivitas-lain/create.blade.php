@@ -596,6 +596,7 @@ function initializeMainFunctionality() {
 
     function toggleSubJenisKendaraan() {
         const jenisVal = (jenisAktivitas.value || '').trim();
+        console.debug('toggleSubJenisKendaraan called, jenisVal=', jenisVal);
         if (jenisVal === 'Pembayaran Kendaraan') {
             subJenisKendaraan.classList.remove('hidden');
             subJenisSelect.setAttribute('required', 'required');
