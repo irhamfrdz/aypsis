@@ -595,7 +595,8 @@ function initializeMainFunctionality() {
     const nomorVoyageSelect = nomorVoyageField.querySelector('select');
 
     function toggleSubJenisKendaraan() {
-        if (jenisAktivitas.value === 'Pembayaran Kendaraan') {
+        const jenisVal = (jenisAktivitas.value || '').trim();
+        if (jenisVal === 'Pembayaran Kendaraan') {
             subJenisKendaraan.classList.remove('hidden');
             subJenisSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -615,7 +616,7 @@ function initializeMainFunctionality() {
             $('select[name="nomor_polisi"]').val('').trigger('change');
         }
         
-        if (jenisAktivitas.value === 'Pembayaran Kapal') {
+        if (jenisVal === 'Pembayaran Kapal') {
             nomorVoyageField.classList.remove('hidden');
             nomorVoyageSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -652,7 +653,7 @@ function initializeMainFunctionality() {
         const suratJalanField = document.getElementById('surat_jalan_field');
         const suratJalanSelect = document.getElementById('surat_jalan_select');
         
-        if (jenisAktivitas.value === 'Pembayaran Adjusment Uang Jalan') {
+        if (jenisVal === 'Pembayaran Adjusment Uang Jalan') {
             suratJalanField.classList.remove('hidden');
             suratJalanSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -675,7 +676,7 @@ function initializeMainFunctionality() {
         const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
         const tipePenyesuaianSelect = document.getElementById('tipe_penyesuaian_select');
         
-        if (jenisAktivitas.value === 'Pembayaran Adjusment Uang Jalan') {
+        if (jenisVal === 'Pembayaran Adjusment Uang Jalan') {
             jenisPenyesuaianField.classList.remove('hidden');
             jenisPenyesuaianSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
