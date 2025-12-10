@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pranota extends Model
 {
+    protected $table = 'pranotalist';
     protected $fillable = [
         'nomor_pranota',
         'tanggal_pranota',
