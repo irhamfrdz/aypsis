@@ -694,6 +694,8 @@ function initializeMainFunctionality() {
             jenisPenyesuaianField.classList.add('hidden');
             jenisPenyesuaianSelect.removeAttribute('required');
             $('#jenis_penyesuaian_select').val('').trigger('change');
+            jenisPenyesuaianField.style.display = 'none';
+            if (tipePenyesuaianField) tipePenyesuaianField.style.display = 'none';
 
             // Clear all dynamic inputs
             clearTipePenyesuaianInputs();
