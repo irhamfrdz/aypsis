@@ -716,35 +716,63 @@
 
     // Bulk export to Excel function
     function bulkExportExcel() {
-        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+        const mode = '{{ request('mode') }}';
+        let checkboxes;
+        let message;
+        let ids;
+
+        if (mode === 'with_tanda_terima') {
+            checkboxes = document.querySelectorAll('.surat-jalan-with-tt-checkbox:checked');
+            message = 'Pilih minimal 1 surat jalan untuk di-export.';
+            ids = Array.from(checkboxes).map(cb => cb.value); // tanda_terima_id
+        } else {
+            checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+            message = 'Pilih minimal 1 tanda terima untuk di-export.';
+            ids = Array.from(checkboxes).map(cb => cb.value); // tanda_terima_id
+        }
+
         const selectedCount = checkboxes.length;
 
         if (selectedCount === 0) {
-            alert('Pilih minimal 1 tanda terima untuk di-export.');
+            alert(message);
             return;
         }
 
-        const tandaTerimaIds = Array.from(checkboxes).map(cb => cb.value);
-        document.getElementById('bulkExportIds').value = JSON.stringify(tandaTerimaIds);
+        document.getElementById('bulkExportIds').value = JSON.stringify(ids);
         document.getElementById('bulkExportForm').submit();
     }
 
     // Bulk delete function
     function bulkDelete() {
-        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+        const mode = '{{ request('mode') }}';
+        let checkboxes;
+        let message;
+        let ids;
+        let noSuratJalans;
+
+        if (mode === 'with_tanda_terima') {
+            checkboxes = document.querySelectorAll('.surat-jalan-with-tt-checkbox:checked');
+            message = 'Pilih minimal 1 surat jalan untuk dihapus.';
+            ids = Array.from(checkboxes).map(cb => cb.value); // tanda_terima_id
+            noSuratJalans = Array.from(checkboxes).map(cb => cb.dataset.noSuratJalan).join(', ');
+        } else {
+            checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+            message = 'Pilih minimal 1 tanda terima untuk dihapus.';
+            ids = Array.from(checkboxes).map(cb => cb.value); // tanda_terima_id
+            noSuratJalans = Array.from(checkboxes).map(cb => cb.dataset.noSuratJalan).join(', ');
+        }
+
         const selectedCount = checkboxes.length;
 
         if (selectedCount === 0) {
-            alert('Pilih minimal 1 tanda terima untuk dihapus.');
+            alert(message);
             return;
         }
 
-        const noSuratJalans = Array.from(checkboxes).map(cb => cb.dataset.noSuratJalan).join(', ');
         const confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedCount} tanda terima?\n\nNo. Surat Jalan:\n${noSuratJalans}\n\nTindakan ini tidak dapat dibatalkan!`;
 
         if (confirm(confirmMessage)) {
-            const tandaTerimaIds = Array.from(checkboxes).map(cb => cb.value);
-            document.getElementById('bulkDeleteIds').value = JSON.stringify(tandaTerimaIds);
+            document.getElementById('bulkDeleteIds').value = JSON.stringify(ids);
             document.getElementById('bulkDeleteForm').submit();
         }
     }
