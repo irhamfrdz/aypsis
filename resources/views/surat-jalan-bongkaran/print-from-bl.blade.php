@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surat Jalan Bongkaran - Print Preview</title>
     <style>
+        /* Same paper size as surat-jalan/print.blade.php */
+        @page { size: 165mm 215mm; margin: 0mm; }
+
         html, body { margin: 0; padding: 0; }
-        .container { width: 100%; height: 100%; position: relative; }
+        /* Container now matches the exact print paper size (no padding so absolute positions map to page origin) */
+        .container { width: 165mm; height: 215mm; position: relative; box-sizing: border-box; padding: 0mm; margin: 0mm; }
 
         /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
         .date-header {
             position: absolute;
-            top: 1.25cm; /* 1.25cm dari atas */
-            left: 10cm;  /* 10cm dari kiri */
+            top: 0.75cm; /* 0.75cm dari atas */
+            left: 10.5cm;  /* 10.5cm dari kiri */
             font-size: 16px;
             font-weight: bold;
         }
@@ -29,8 +33,8 @@
         /* Nama Kapal: posisi absolute sesuai permintaan */
         .nama-kapal {
             position: absolute;
-            top: 6cm;    /* 6cm dari atas */
-            left: 4.5cm;  /* 4.5cm dari kiri (updated) */
+            top: 5.5cm;    /* 5.5cm dari atas */
+            left: 3.5cm;   /* 3.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
         }
@@ -107,6 +111,16 @@
             left: 10.5cm; /* 10.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
+        }
+    </style>
+    <style>
+        /* Print-specific overrides to avoid browser margins or headers/scale issues */
+        @media print {
+            @page { size: 165mm 215mm; margin: 0mm; }
+            html, body { margin: 0 !important; padding: 0 !important; }
+            .container { padding: 0 !important; margin: 0 !important; }
+            /* Hide non-content elements on print if needed */
+            header, nav, .header, .nav { display: none !important; }
         }
     </style>
     
