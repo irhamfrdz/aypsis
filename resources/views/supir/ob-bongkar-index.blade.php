@@ -147,6 +147,9 @@
                             </thead>
                             <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
                                 @foreach($bls as $bl)
+                                    {{-- Skip rendering if container is CARGO (uppercase or lowercase) --}}
+                                    @php $kontainerVal = strtoupper(trim($bl->nomor_kontainer ?? '')); @endphp
+                                    @if($kontainerVal !== 'CARGO')
                                     <tr class="hover:bg-gray-50 table-row" 
                                         data-kontainer="{{ strtolower($bl->nomor_kontainer ?? '') }}"
                                         data-seal="{{ strtolower($bl->no_seal ?? '') }}"
@@ -219,6 +222,7 @@
                                             @endif
                                         </td>
                                     </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
