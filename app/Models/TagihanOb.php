@@ -136,4 +136,19 @@ class TagihanOb extends Model
         
         return $pricelist ? $pricelist->biaya : 0;
     }
+
+    /**
+     * Mutator to normalize nomor_kontainer when saving to DB
+     */
+    public function setNomorKontainerAttribute($value)
+    {
+        if ($value === null) {
+            $this->attributes['nomor_kontainer'] = null;
+            return;
+        }
+
+        $normalized = trim((string) $value);
+        // store as-is with trimmed spaces; upper/lowercase will be handled in queries
+        $this->attributes['nomor_kontainer'] = $normalized;
+    }
 }

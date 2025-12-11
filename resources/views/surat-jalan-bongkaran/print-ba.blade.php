@@ -1,187 +1,182 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berita Acara Bongkaran - Print Preview</title>
+    <title>Print BA - Surat Jalan Bongkaran</title>
     <style>
         @page {
-            size: 8.5in 13in; /* Folio paper size */
-            margin: 0;
+            size: 210mm 330mm; /* Ukuran F4 */
+            margin: 0; /* set 0 so absolute offsets are exact, outer print margins handled by browser */
         }
-
-        html, body {
+        body {
             margin: 0;
             padding: 0;
-            width: 8.5in;
-            height: 13in;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
         }
-
-        .container {
-            width: 8.5in;
-            height: 13in;
-            position: relative;
-        }
-
+        /* Positioned pengirim data */
         .pengirim {
             position: absolute;
-            top: 6.75cm;
-            left: 4cm;
-            font-size: 14px;
-            font-weight: bold;
+            top: 6.5cm; /* 6,5cm from top */
+            left: 4cm;  /* 4cm from left */
+            width: 12cm; /* reasonable width for address area */
+            white-space: pre-wrap; /* keep new lines */
+            line-height: 1.2;
         }
-
+        /* Positioned penerima data */
         .penerima {
             position: absolute;
-            top: 8cm;
-            left: 4cm;
-            font-size: 14px;
-            font-weight: bold;
+            top: 7.5cm; /* 7,5cm from top */
+            left: 4cm;  /* 4cm from left */
+            width: 12cm; /* same width to align with pengirim */
+            white-space: pre-wrap;
+            line-height: 1.2;
         }
-
-        .nama-kapal {
+        /* Positioned container number */
+        .no-kontainer {
             position: absolute;
-            top: 6.5cm;
-            left: 17.5cm;
-            font-size: 14px;
-            font-weight: bold;
+            top: 11cm; /* 11cm from top */
+            left: 1cm;  /* 1cm from left */
+            white-space: nowrap; /* container number single-line */
+            font-weight: 600;
+            font-size: 13px;
         }
-
-        .alamat-pengiriman {
-            position: absolute;
-            top: 8cm;
-            left: 4cm;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .pelabuhan-info {
-            position: absolute;
-            top: 8cm;
-            left: 17.5cm;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .nomor-kontainer {
-            position: absolute;
-            top: 11cm;
-            left: 1cm;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
+        /* Positioned nama barang (jenis barang) */
         .nama-barang {
             position: absolute;
-            top: 10cm;
-            left: 9cm;
-            max-width: 9.59cm; /* Page width 21.59cm - left 9cm - right margin 3cm */
-            font-size: 14px;
-            font-weight: bold;
-            word-wrap: break-word;
-            white-space: normal;
+            top: 11cm; /* 11cm from top */
+            left: 8cm; /* 8cm from left */
+            max-width: 11cm;
+            white-space: pre-wrap;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
         }
-
-        .unit-kontainer {
+        /* Positioned nama kapal */
+        .nama-kapal {
             position: absolute;
-            top: 10cm;
-            left: 4.5cm;
-            font-size: 14px;
-            font-weight: bold;
+            top: 6.25cm; /* 6.25cm from top */
+            left: 18.5cm; /* 18.5cm from left */
+            white-space: nowrap;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: left;
         }
-
-        .pelabuhan-info {
+        /* Positioned nomor voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) */
+        .no-voyage {
             position: absolute;
-            top: 8cm;
-            left: 17.5cm;
-            font-size: 14px;
-            font-weight: bold;
+            top: 5.5cm; /* 5.5cm from top */
+            left: 11.25cm; /* 11.25cm from left */
+            white-space: nowrap;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: left;
+        }
+        /* Positioned pelabuhan route (asal - tujuan) */
+        .pelabuhan-route {
+            position: absolute;
+            top: 8cm; /* 8cm from top */
+            left: 18.5cm; /* 18.5cm from left */
+            max-width: 11.5cm;
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: left;
+        }
+        /* Positioned name 'Alex' from bottom-right */
+        .alex-name {
+            position: absolute;
+            bottom: 1.75cm; /* 1.75cm from bottom */
+            right: 3.5cm; /* 3.5cm from right */
+            font-weight: 600;
+            font-size: 12px;
+            white-space: nowrap;
+            text-align: right;
+        }
+        @media print {
+            /* ensure no printing artifacts from browser margins */
+            html, body { width: 210mm; height: 330mm; }
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
+    {{-- Pengirim (ambil dari tabel bls via $baData->pengirim) --}}
+    @if(isset($baData) && !empty($baData->pengirim))
+        <div class="pengirim">{!! nl2br(e($baData->pengirim)) !!}</div>
+    @else
+        <div class="pengirim">&nbsp;</div>
+    @endif
+    {{-- Penerima (ambil dari tabel bls via $baData->penerima) --}}
+    @if(isset($baData) && !empty($baData->penerima))
+        <div class="penerima">{!! nl2br(e($baData->penerima)) !!}</div>
+    @else
+        <div class="penerima">&nbsp;</div>
+    @endif
+    {{-- Nomor Kontainer (ambil dari tabel bls via $baData->no_kontainer) --}}
+    @if(isset($baData) && !empty($baData->no_kontainer))
+        <div class="no-kontainer">{{ e($baData->no_kontainer) }}</div>
+    @else
+        <div class="no-kontainer">&nbsp;</div>
+    @endif
+    {{-- Nama Barang (ambil dari tabel bls via $baData->jenis_barang) --}}
+    @if(isset($baData) && !empty($baData->jenis_barang))
+        <div class="nama-barang">{!! nl2br(e($baData->jenis_barang)) !!}</div>
+    @else
+        <div class="nama-barang">&nbsp;</div>
+    @endif
+    {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}
+    @if(isset($baData) && !empty($baData->nama_kapal))
+        <div class="nama-kapal">{{ e($baData->nama_kapal) }}</div>
+    @else
+        <div class="nama-kapal">&nbsp;</div>
+    @endif
+    {{-- Nomor Voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) --}}
     @php
-        // Function to convert month number to Roman numerals
-        function toRoman($num) {
-            $romans = [
-                1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V',
-                6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X',
-                11 => 'XI', 12 => 'XII'
-            ];
-            return $romans[$num] ?? '';
+        $voyageNumber = $baData->no_voyage ?? '';
+        $dateForVoyage = $baData->tanggal_ba ?? now();
+        try {
+            $carbon = \Carbon\Carbon::parse($dateForVoyage);
+        } catch (\Exception $e) {
+            $carbon = \Carbon\Carbon::now();
         }
-
-        // Get current date
-        $currentDate = now();
-        $bulanRomawi = toRoman($currentDate->month);
-        $tahun = $currentDate->year;
-        
-        // Format: nomor BL/nomor voyage/bulan(romawi)/tahun
-        $nomorBlInfo = strtoupper($baData->no_bl ?? '') . '/' . 
-                       strtoupper($baData->no_voyage ?? '') . '/' . 
-                       $bulanRomawi . '/' . 
-                       $tahun;
-
-        // Replace "SUNDA KELAPA" with "JAKARTA" for display
-        $pelabuhanAsal = strtoupper($baData->pelabuhan_asal ?? '');
-        $pelabuhanTujuan = strtoupper($baData->pelabuhan_tujuan ?? '');
-        
-        if ($pelabuhanAsal === 'SUNDA KELAPA') {
-            $pelabuhanAsal = 'JAKARTA';
+        $romanMonths = [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'];
+        $voyageFormatted = '';
+        if(!empty($voyageNumber)) {
+            $voyageFormatted = $voyageNumber . '/' . ($romanMonths[$carbon->month] ?? '') . '/' . $carbon->format('Y');
         }
-        if ($pelabuhanTujuan === 'SUNDA KELAPA') {
-            $pelabuhanTujuan = 'JAKARTA';
-        }
-        
-        $pelabuhanInfo = $pelabuhanAsal . ' - ' . $pelabuhanTujuan;
     @endphp
+    @if(!empty($voyageFormatted))
+        <div class="no-voyage">{{ e($voyageFormatted) }}</div>
+    @else
+        <div class="no-voyage">&nbsp;</div>
+    @endif
+    {{-- Pelabuhan Asal - Pelabuhan Tujuan (ambil dari tabel bls via $baData->pelabuhan_asal dan $baData->pelabuhan_tujuan) --}}
+    @php
+        // Helper to map 'sunda kelapa' (any case/format) to 'Jakarta'
+        $mapPelabuhan = function ($value) {
+            $v = trim((string) ($value ?? ''));
+            if ($v === '') return '';
+            $clean = mb_strtolower(preg_replace('/[^a-z0-9 ]+/i', ' ', $v));
+            $clean = preg_replace('/\s+/', ' ', $clean);
+            if (in_array($clean, ['sunda kelapa', 'sundakelapa', 'sunda_kelapa', 'sunda-kelapa'], true)) {
+                return 'Jakarta';
+            }
+            return $v;
+        };
 
-    <div class="container">
-        <!-- Nomor BL Info (posisi top 5.5cm, left 11cm) -->
-        <div class="nomor-bl-info">
-            {{ $nomorBlInfo }}
-        </div>
-
-        <!-- Pengirim (posisi top 6.5cm, left 4cm) -->
-        <div class="pengirim">
-            {{ strtoupper($baData->pengirim ?? '') }}
-        </div>
-
-        <!-- Penerima (posisi top 8cm, left 4cm) -->
-        <div class="penerima">
-            {{ strtoupper($baData->penerima ?? '') }}
-        </div>
-
-        <!-- Nama Kapal (posisi top 6.5cm, left 17.5cm) -->
-        <div class="nama-kapal">
-            {{ strtoupper($baData->nama_kapal ?? '') }}
-        </div>
-
-        <!-- Alamat Pengiriman (posisi top 8cm, left 4cm) -->
-        <div class="alamat-pengiriman">
-            {{ strtoupper($baData->alamat_pengiriman ?? '') }}
-        </div>
-
-        <!-- Pelabuhan Info (posisi top 8cm, left 17.5cm) -->
-        <div class="pelabuhan-info">
-            {{ $pelabuhanInfo }}
-        </div>
-
-        <!-- Nomor Kontainer (posisi top 10cm, left 1cm) -->
-        <div class="nomor-kontainer">
-            {{ strtoupper($baData->no_kontainer ?? '') }}
-        </div>
-
-        <!-- Unit Kontainer (posisi top 10cm, left 4.5cm) -->
-        <div class="unit-kontainer">
-            1 UNIT
-        </div>
-
-        <!-- Nama Barang (posisi top 10cm, left 9cm, max-width 9.59cm) -->
-        <div class="nama-barang">
-            {{ strtoupper($baData->jenis_barang ?? '') }}
-        </div>
-    </div>
+        $asal = $mapPelabuhan($baData->pelabuhan_asal ?? '');
+        $tujuan = $mapPelabuhan($baData->pelabuhan_tujuan ?? '');
+        $pelabuhanText = '';
+        if ($asal !== '' || $tujuan !== '') {
+            $pelabuhanText = trim(($asal ?? '') . ' - ' . ($tujuan ?? ''));
+        }
+    @endphp
+    @if(!empty($pelabuhanText))
+        <div class="pelabuhan-route">{{ e($pelabuhanText) }}</div>
+    @else
+        <div class="pelabuhan-route">&nbsp;</div>
+    @endif
+    {{-- Nama Alex (static) --}}
+    <div class="alex-name">Alex</div>
 </body>
 </html>
