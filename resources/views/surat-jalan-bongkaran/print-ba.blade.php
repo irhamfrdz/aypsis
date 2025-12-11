@@ -56,18 +56,18 @@
             font-weight: bold;
         }
 
-        .nomor-bl-info {
+        .pelabuhan-info {
             position: absolute;
-            top: 5.5cm;
-            left: 11cm;
+            top: 8cm;
+            left: 17.5cm;
             font-size: 14px;
             font-weight: bold;
         }
 
         .nomor-kontainer {
             position: absolute;
-            top: 10cm;
-            left: 0cm; /* shifted 1cm to the left from previous 1cm */
+            top: 11cm;
+            left: 1cm;
             font-size: 14px;
             font-weight: bold;
         }
