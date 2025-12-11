@@ -124,6 +124,9 @@ class ObController extends Controller
                 ->paginate($perPage)
                 ->withQueryString();
 
+            // Enable query logging
+            \DB::enableQueryLog();
+
             $totalKontainer = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
                 ->count();
@@ -134,10 +137,16 @@ class ObController extends Controller
                 ->where('sudah_ob', true)
                 ->count();
             
+            $sudahOB_v1_sql = \DB::getQueryLog();
+            \DB::flushQueryLog();
+            
             $sudahOB_v2 = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', '=', 1)
                 ->count();
+            
+            $sudahOB_v2_sql = \DB::getQueryLog();
+            \DB::flushQueryLog();
             
             $sudahOB_v3 = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
@@ -145,8 +154,19 @@ class ObController extends Controller
                 ->where('sudah_ob', '!=', 0)
                 ->count();
 
+            $sudahOB_v3_sql = \DB::getQueryLog();
+            \DB::flushQueryLog();
+
             $sudahOB = $sudahOB_v1; // Use version 1 as default
             $belumOB = $totalKontainer - $sudahOB;
+
+            // Get sample of all BLs untuk debugging
+            $allBlsSample = Bl::where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage)
+                ->select('id', 'nomor_kontainer', 'sudah_ob', 'supir_id', 'tanggal_ob', 'nama_kapal', 'no_voyage')
+                ->limit(10)
+                ->get()
+                ->toArray();
 
             // Debug logging untuk investigate issue
             \Log::info('OB Index - BL Query Debug', [
@@ -161,12 +181,10 @@ class ObController extends Controller
                 'sudah_ob_v2_equals_1' => $sudahOB_v2,
                 'sudah_ob_v3_not_null_not_zero' => $sudahOB_v3,
                 'belum_ob_count' => $belumOB,
-                'all_bls_sample' => Bl::where('nama_kapal', $namaKapal)
-                    ->where('no_voyage', $noVoyage)
-                    ->select('id', 'nomor_kontainer', 'sudah_ob', 'supir_id', 'tanggal_ob', 'nama_kapal', 'no_voyage')
-                    ->limit(5)
-                    ->get()
-                    ->toArray(),
+                'sql_query_v1' => $sudahOB_v1_sql,
+                'sql_query_v2' => $sudahOB_v2_sql,
+                'sql_query_v3' => $sudahOB_v3_sql,
+                'all_bls_sample' => $allBlsSample,
                 'raw_sudah_ob_data' => Bl::where('nama_kapal', $namaKapal)
                     ->where('no_voyage', $noVoyage)
                     ->where('sudah_ob', true)
