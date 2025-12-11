@@ -175,6 +175,9 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        No
+                                    </th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         No Kontainer
                                     </th>
@@ -193,7 +196,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
-                                @foreach($bls as $bl)
+                                @foreach($bls as $index => $bl)
                                     {{-- Skip rendering if container contains the word 'cargo' (case-insensitive) --}}
                                     @php
                                         $kontainerRaw = $bl->nomor_kontainer ?? '';
@@ -206,6 +209,9 @@
                                         data-seal="{{ strtolower($bl->no_seal ?? '') }}"
                                         data-barang="{{ strtolower($bl->nama_barang ?? '') }}"
                                         data-status="{{ ($bl->sudah_ob ?? false) ? 'sudah' : 'belum' }}">
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700">
+                                            {{ $index + 1 }}
+                                        </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-8 w-8">
