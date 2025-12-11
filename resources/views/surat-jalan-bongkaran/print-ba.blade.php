@@ -26,7 +26,7 @@
 
         .pengirim {
             position: absolute;
-            top: 6.5cm;
+            top: 6.75cm;
             left: 4cm;
             font-size: 14px;
             font-weight: bold;
