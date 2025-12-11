@@ -57,8 +57,8 @@
         /* Positioned nama kapal */
         .nama-kapal {
             position: absolute;
-            top: 6.25cm; /* 6.25cm from top */
-            left: 18.5cm; /* 18.5cm from left */
+            top: 6.0cm; /* moved up slightly: 6.0cm */
+            left: 18.25cm; /* moved left slightly: 18.25cm */
             white-space: nowrap;
             font-weight: 600;
             font-size: 14px;
