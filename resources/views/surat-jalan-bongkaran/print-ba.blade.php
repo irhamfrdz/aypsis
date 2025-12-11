@@ -40,7 +40,7 @@
         .no-kontainer {
             position: absolute;
             top: 11cm; /* 11cm from top */
-            left: 1cm;  /* 1cm from left */
+            left: 0cm;  /* 0cm from left */
             white-space: nowrap; /* container number single-line */
             font-weight: bold;
             font-size: 16px; /* larger to highlight container number */
