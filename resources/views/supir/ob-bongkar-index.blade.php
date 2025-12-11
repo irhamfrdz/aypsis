@@ -96,78 +96,35 @@
 
             <!-- Header Info Kapal & Voyage -->
             <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-                <div class="flex flex-col space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="bg-orange-100 p-2 rounded-lg">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 class="text-lg font-bold text-gray-900">OB Bongkar (Step 2)</h2>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-medium">Kapal:</span> {{ $selectedKapal }} | 
-                                    <span class="font-medium">Voyage:</span> {{ $selectedVoyage }}
-                                </p>
-                            </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-orange-100 p-2 rounded-lg">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                            </svg>
                         </div>
-                        <div class="text-right">
-                            <div class="flex items-center space-x-4">
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-500">Total</p>
-                                    <p class="text-lg font-bold text-orange-600">{{ $bls->count() }}</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-500">Sudah OB</p>
-                                    <p class="text-lg font-bold text-green-600">{{ $bls->where('sudah_ob', true)->count() }}</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-500">Belum OB</p>
-                                    <p class="text-lg font-bold text-yellow-600">{{ $bls->where('sudah_ob', false)->count() }}</p>
-                                </div>
-                            </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">OB Bongkar (Step 2)</h2>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Kapal:</span> {{ $selectedKapal }} | 
+                                <span class="font-medium">Voyage:</span> {{ $selectedVoyage }}
+                            </p>
                         </div>
                     </div>
-                    
-                    <!-- Filter Status Section -->
-                    <div class="border-t pt-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-sm font-medium text-gray-700">Filter Status:</span>
-                                <div class="flex space-x-2">
-                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => '']) }}" 
-                                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $statusFilter == '' ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                        Semua Status
-                                    </a>
-                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => 'belum']) }}" 
-                                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $statusFilter == 'belum' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                        Belum OB
-                                    </a>
-                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => 'sudah']) }}" 
-                                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $statusFilter == 'sudah' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                        Sudah OB
-                                    </a>
-                                </div>
+                    <div class="text-right">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500">Total</p>
+                                <p class="text-lg font-bold text-orange-600">{{ $bls->count() }}</p>
                             </div>
-                            
-                            @if($statusFilter)
-                                <div class="flex items-center space-x-2">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                        {{ $statusFilter == 'belum' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                                        </svg>
-                                        Filter: {{ $statusFilter == 'belum' ? 'Belum OB' : 'Sudah OB' }}
-                                    </span>
-                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => '']) }}" 
-                                       class="text-gray-400 hover:text-gray-600 transition-colors" title="Hapus filter">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </a>
-                                </div>
-                            @endif
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500">Sudah OB</p>
+                                <p class="text-lg font-bold text-green-600">{{ $bls->where('sudah_ob', true)->count() }}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500">Belum OB</p>
+                                <p class="text-lg font-bold text-yellow-600">{{ $bls->where('sudah_ob', false)->count() }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -176,24 +133,39 @@
             <!-- Daftar Kontainer -->
             <div class="bg-white rounded-lg shadow-sm">
                 <div class="px-4 py-3 border-b border-gray-200">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900">Daftar Nomor Kontainer</h3>
-                            <p class="text-sm text-gray-600">Pilih kontainer untuk melakukan OB Bongkar</p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
-                                <input type="text" 
-                                       id="searchInput" 
-                                       placeholder="Cari nomor kontainer, seal, barang..." 
-                                       class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                                       oninput="searchTable()">
+                    <div class="flex flex-col space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Daftar Nomor Kontainer</h3>
+                                <p class="text-sm text-gray-600">Pilih kontainer untuk melakukan OB Bongkar</p>
                             </div>
+                            <div class="flex-shrink-0">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <input type="text" 
+                                           id="searchInput" 
+                                           placeholder="Cari nomor kontainer, seal, barang..." 
+                                           class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                                           oninput="searchTable()">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Filter Status -->
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600 font-medium">Filter:</span>
+                            <button onclick="filterByStatus('all')" id="filter-all" class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-orange-600 text-white border-orange-600">
+                                Semua ({{ $bls->count() }})
+                            </button>
+                            <button onclick="filterByStatus('sudah')" id="filter-sudah" class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
+                                Sudah OB ({{ $bls->where('sudah_ob', true)->count() }})
+                            </button>
+                            <button onclick="filterByStatus('belum')" id="filter-belum" class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
+                                Belum OB ({{ $bls->where('sudah_ob', false)->count() }})
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -232,7 +204,8 @@
                                     <tr class="hover:bg-gray-50 table-row" 
                                         data-kontainer="{{ strtolower($bl->nomor_kontainer ?? '') }}"
                                         data-seal="{{ strtolower($bl->no_seal ?? '') }}"
-                                        data-barang="{{ strtolower($bl->nama_barang ?? '') }}">
+                                        data-barang="{{ strtolower($bl->nama_barang ?? '') }}"
+                                        data-status="{{ ($bl->sudah_ob ?? false) ? 'sudah' : 'belum' }}">
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-8 w-8">
@@ -289,7 +262,6 @@
                                                     @csrf
                                                     <input type="hidden" name="kapal" value="{{ $selectedKapal }}">
                                                     <input type="hidden" name="voyage" value="{{ $selectedVoyage }}">
-                                                    <input type="hidden" name="status_filter" value="{{ $statusFilter ?? '' }}">
                                                     <input type="hidden" name="bl_id" value="{{ $bl->id }}">
                                                     <button type="submit"
                                                             class="ob-submit-btn inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -350,6 +322,61 @@
     </main>
 
     <script>
+        // Current filter state
+        let currentFilter = 'all';
+
+        // Filter by status
+        function filterByStatus(status) {
+            currentFilter = status;
+            const tableRows = document.querySelectorAll('.table-row');
+            const noResults = document.getElementById('noResults');
+            let visibleCount = 0;
+
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-orange-600', 'text-white', 'border-orange-600');
+                btn.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+            });
+            
+            const activeBtn = document.getElementById('filter-' + status);
+            activeBtn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+            activeBtn.classList.add('bg-orange-600', 'text-white', 'border-orange-600');
+
+            // Filter rows
+            tableRows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                let isVisible = false;
+
+                if (status === 'all') {
+                    isVisible = true;
+                } else {
+                    isVisible = rowStatus === status;
+                }
+
+                if (isVisible) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Apply search filter if there's a search term
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (searchTerm) {
+                searchTable();
+            }
+
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+
+            console.log('Filter applied:', status, '| Visible rows:', visibleCount);
+        }
+
         // Handle form submission with loading state
         function handleSubmit(form, kontainerNo) {
             if (!confirm('Yakin ingin memproses OB Bongkar untuk kontainer ' + kontainerNo + '?\n\nPastikan nomor kontainer sudah benar.')) {
@@ -386,11 +413,19 @@
                 const kontainer = row.getAttribute('data-kontainer') || '';
                 const seal = row.getAttribute('data-seal') || '';
                 const barang = row.getAttribute('data-barang') || '';
+                const rowStatus = row.getAttribute('data-status');
 
-                // Check if any field matches the search term
-                const isVisible = kontainer.includes(searchTerm) || 
-                                seal.includes(searchTerm) || 
-                                barang.includes(searchTerm);
+                // Check if matches search term
+                const matchesSearch = !searchTerm || 
+                                    kontainer.includes(searchTerm) || 
+                                    seal.includes(searchTerm) || 
+                                    barang.includes(searchTerm);
+
+                // Check if matches status filter
+                const matchesFilter = currentFilter === 'all' || rowStatus === currentFilter;
+
+                // Show row only if matches both search and filter
+                const isVisible = matchesSearch && matchesFilter;
 
                 if (isVisible) {
                     row.style.display = '';
@@ -401,14 +436,14 @@
             });
 
             // Show/hide no results message
-            if (visibleCount === 0 && searchTerm !== '') {
+            if (visibleCount === 0) {
                 noResults.classList.remove('hidden');
             } else {
                 noResults.classList.add('hidden');
             }
 
             // Update visible count in console
-            console.log('Search term:', searchTerm);
+            console.log('Search term:', searchTerm, '| Filter:', currentFilter);
             console.log('Visible rows:', visibleCount, 'of', tableRows.length);
         }
 
