@@ -498,27 +498,36 @@ class SupirDashboardController extends Controller
 
         $selectedKapal = $request->get('kapal');
         $selectedVoyage = $request->get('voyage');
+        $statusFilter = $request->get('status_filter', ''); // '' = semua, 'belum' = belum OB, 'sudah' = sudah OB
 
         // Ambil data BL berdasarkan kapal dan voyage untuk bongkar
         // Status sudah_ob langsung dibaca dari database
-        $bls = \App\Models\Bl::where('nama_kapal', $selectedKapal)
+        $query = \App\Models\Bl::where('nama_kapal', $selectedKapal)
                              ->where('no_voyage', $selectedVoyage)
                              ->whereNotNull('nomor_kontainer')
-                             ->where('nomor_kontainer', '!=', '')
-                             ->orderBy('nomor_kontainer')
-                             ->get();
+                             ->where('nomor_kontainer', '!=', '');
+
+        // Apply status filter jika ada
+        if ($statusFilter === 'belum') {
+            $query->where('sudah_ob', false);
+        } elseif ($statusFilter === 'sudah') {
+            $query->where('sudah_ob', true);
+        }
+
+        $bls = $query->orderBy('nomor_kontainer')->get();
 
         // Log untuk debugging
         \Log::info('OB Bongkar Index Data', [
             'selected_kapal' => $selectedKapal,
             'selected_voyage' => $selectedVoyage,
+            'status_filter' => $statusFilter,
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
             'user_id' => $user->id,
             'user_name' => $user->name
         ]);
 
-        return view('supir.ob-bongkar-index', compact('bls', 'selectedKapal', 'selectedVoyage'));
+        return view('supir.ob-bongkar-index', compact('bls', 'selectedKapal', 'selectedVoyage', 'statusFilter'));
     }
 
     /**
@@ -671,10 +680,19 @@ class SupirDashboardController extends Controller
                 'timestamp' => now()
             ]);
 
-            return redirect()->route('supir.ob-bongkar.index', [
+            // Maintain status filter in redirect
+            $redirectParams = [
                 'kapal' => $selectedKapal,
-                'voyage' => $selectedVoyage
-            ])->with('success', '✓ OB Bongkar berhasil! Kontainer ' . $nomorKontainer . ' telah diproses oleh ' . $user->name . ' pada ' . now()->format('d-m-Y H:i'));
+                'voyage' => $selectedVoyage,
+            ];
+            
+            // Add status_filter to redirect if it was provided
+            if ($request->has('status_filter') && $request->get('status_filter') !== '') {
+                $redirectParams['status_filter'] = $request->get('status_filter');
+            }
+            
+            return redirect()->route('supir.ob-bongkar.index', $redirectParams)
+                ->with('success', '✓ OB Bongkar berhasil! Kontainer ' . $nomorKontainer . ' telah diproses oleh ' . $user->name . ' pada ' . now()->format('d-m-Y H:i'));
 
         } catch (\Illuminate\Database\QueryException $e) {
             \Log::error('OB Bongkar Process - Database Error', [

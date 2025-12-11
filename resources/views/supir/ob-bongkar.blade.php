@@ -122,7 +122,7 @@
             <div class="bg-white rounded-lg shadow-sm p-4">
                 <form action="{{ route('supir.ob-bongkar.store') }}" method="POST" id="obBongkarForm">
                     @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Dropdown Kapal dengan Search -->
                         <div>
                             <label for="kapal" class="block text-sm font-medium text-gray-700 mb-1">
@@ -169,6 +169,19 @@
                                     <!-- Options will be populated dynamically -->
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Filter Status OB -->
+                        <div>
+                            <label for="status_filter" class="block text-sm font-medium text-gray-700 mb-1">
+                                Filter Status OB
+                            </label>
+                            <select id="status_filter" name="status_filter" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm">
+                                <option value="">Semua Status</option>
+                                <option value="belum">Belum OB</option>
+                                <option value="sudah">Sudah OB</option>
+                            </select>
                         </div>
                     </div>
 
@@ -381,10 +394,15 @@
         function proceedToObBongkar() {
             const kapal = document.getElementById('kapal').value;
             const voyage = document.getElementById('voyage').value;
+            const statusFilter = document.getElementById('status_filter').value;
             
             if (kapal && voyage) {
-                // Redirect to OB Bongkar index page with selected kapal and voyage
-                window.location.href = `/supir/ob-bongkar/index?kapal=${encodeURIComponent(kapal)}&voyage=${encodeURIComponent(voyage)}`;
+                // Redirect to OB Bongkar index page with selected kapal, voyage, and status filter
+                let url = `/supir/ob-bongkar/index?kapal=${encodeURIComponent(kapal)}&voyage=${encodeURIComponent(voyage)}`;
+                if (statusFilter) {
+                    url += `&status_filter=${encodeURIComponent(statusFilter)}`;
+                }
+                window.location.href = url;
             }
         }
 

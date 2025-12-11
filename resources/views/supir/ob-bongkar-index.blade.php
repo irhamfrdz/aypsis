@@ -96,35 +96,78 @@
 
             <!-- Header Info Kapal & Voyage -->
             <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="bg-orange-100 p-2 rounded-lg">
-                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
-                            </svg>
+                <div class="flex flex-col space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-orange-100 p-2 rounded-lg">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-900">OB Bongkar (Step 2)</h2>
+                                <p class="text-sm text-gray-600">
+                                    <span class="font-medium">Kapal:</span> {{ $selectedKapal }} | 
+                                    <span class="font-medium">Voyage:</span> {{ $selectedVoyage }}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="text-lg font-bold text-gray-900">OB Bongkar (Step 2)</h2>
-                            <p class="text-sm text-gray-600">
-                                <span class="font-medium">Kapal:</span> {{ $selectedKapal }} | 
-                                <span class="font-medium">Voyage:</span> {{ $selectedVoyage }}
-                            </p>
+                        <div class="text-right">
+                            <div class="flex items-center space-x-4">
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-500">Total</p>
+                                    <p class="text-lg font-bold text-orange-600">{{ $bls->count() }}</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-500">Sudah OB</p>
+                                    <p class="text-lg font-bold text-green-600">{{ $bls->where('sudah_ob', true)->count() }}</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-500">Belum OB</p>
+                                    <p class="text-lg font-bold text-yellow-600">{{ $bls->where('sudah_ob', false)->count() }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <div class="flex items-center space-x-4">
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="text-lg font-bold text-orange-600">{{ $bls->count() }}</p>
+                    
+                    <!-- Filter Status Section -->
+                    <div class="border-t pt-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-medium text-gray-700">Filter Status:</span>
+                                <div class="flex space-x-2">
+                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => '']) }}" 
+                                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $statusFilter == '' ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        Semua Status
+                                    </a>
+                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => 'belum']) }}" 
+                                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $statusFilter == 'belum' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        Belum OB
+                                    </a>
+                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => 'sudah']) }}" 
+                                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $statusFilter == 'sudah' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        Sudah OB
+                                    </a>
+                                </div>
                             </div>
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">Sudah OB</p>
-                                <p class="text-lg font-bold text-green-600">{{ $bls->where('sudah_ob', true)->count() }}</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">Belum OB</p>
-                                <p class="text-lg font-bold text-yellow-600">{{ $bls->where('sudah_ob', false)->count() }}</p>
-                            </div>
+                            
+                            @if($statusFilter)
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                        {{ $statusFilter == 'belum' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                        </svg>
+                                        Filter: {{ $statusFilter == 'belum' ? 'Belum OB' : 'Sudah OB' }}
+                                    </span>
+                                    <a href="{{ route('supir.obBongkarIndex', ['kapal' => $selectedKapal, 'voyage' => $selectedVoyage, 'status_filter' => '']) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors" title="Hapus filter">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -246,6 +289,7 @@
                                                     @csrf
                                                     <input type="hidden" name="kapal" value="{{ $selectedKapal }}">
                                                     <input type="hidden" name="voyage" value="{{ $selectedVoyage }}">
+                                                    <input type="hidden" name="status_filter" value="{{ $statusFilter ?? '' }}">
                                                     <input type="hidden" name="bl_id" value="{{ $bl->id }}">
                                                     <button type="submit"
                                                             class="ob-submit-btn inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
