@@ -67,7 +67,7 @@
         .nomor-kontainer {
             position: absolute;
             top: 10cm;
-            left: 1cm;
+            left: 0cm; /* shifted 1cm to the left from previous 1cm */
             font-size: 14px;
             font-weight: bold;
         }
