@@ -326,7 +326,7 @@
                                 </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($tagihan) }}', '{{ $tagihan->id }}', '{{ $tagihan->nomor_tagihan }}')"
+                                            onclick="showAuditLog('{{ get_class($tagihanCat) }}', '{{ $tagihanCat->id }}', '{{ $tagihanCat->nomor_tagihan_cat ?? $tagihanCat->id }}')"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat
