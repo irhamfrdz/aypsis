@@ -48,6 +48,10 @@
                     <i class="fas fa-exchange-alt mr-2"></i>
                     Ganti Kapal/Voyage
                 </a>
+                <button type="button" id="btnPrint" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-print mr-2"></i>
+                    Print
+                </button>
                 <button type="button" id="btnExportExcel" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-file-excel mr-2"></i>
                     Export Excel
@@ -234,6 +238,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Safety guard: if the page doesn't have the naik-kapal table, skip the script
+    const naikKapalTable = document.getElementById('naikKapalTable');
+    if (!naikKapalTable) return;
 
     // Checkbox functionality
     const selectAllCheckbox = document.getElementById('selectAll');
@@ -283,6 +290,64 @@ document.addEventListener('DOMContentLoaded', function() {
             bulkActionsPanel.classList.add('hidden');
         }
     }
+
+    // Print functionality
+    document.getElementById('btnPrint').addEventListener('click', function() {
+        // Hide elements that shouldn't be printed
+        const elementsToHide = [
+            document.getElementById('bulkActionsPanel'),
+            ...document.querySelectorAll('.flex.gap-3'), // Hide action buttons
+            ...document.querySelectorAll('th:last-child'), // Hide Aksi column header
+            ...document.querySelectorAll('td:last-child'), // Hide Aksi column data
+            ...document.querySelectorAll('input[type="checkbox"]') // Hide checkboxes
+        ];
+        
+        elementsToHide.forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+        
+        // Add print-specific styles
+        const printStyle = document.createElement('style');
+        printStyle.id = 'print-style';
+        printStyle.innerHTML = `
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .container, .container * {
+                    visibility: visible;
+                }
+                .container {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                }
+                table {
+                    page-break-inside: auto;
+                }
+                tr {
+                    page-break-inside: avoid;
+                    page-break-after: auto;
+                }
+                .shadow-sm {
+                    box-shadow: none !important;
+                }
+            }
+        `;
+        document.head.appendChild(printStyle);
+        
+        // Trigger print
+        window.print();
+        
+        // Restore hidden elements after print
+        setTimeout(() => {
+            elementsToHide.forEach(el => {
+                if (el) el.style.display = '';
+            });
+            document.getElementById('print-style').remove();
+        }, 100);
+    });
 
     // Export Excel functionality
     document.getElementById('btnExportExcel').addEventListener('click', function() {
@@ -401,3 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.remove();
         }, 3000);
     }
+});
+</script>
+
+@endsection
