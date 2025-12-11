@@ -76,6 +76,44 @@ class NaikKapalController extends Controller
     }
 
     /**
+     * Print page for selected kapal and voyage.
+     */
+    public function print(Request $request)
+    {
+        $kapal = \App\Models\MasterKapal::find($request->kapal_id);
+        
+        if (!$kapal || !$request->filled('no_voyage')) {
+            return redirect()->route('naik-kapal.select')
+                ->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
+        }
+        
+        $query = NaikKapal::with(['prospek', 'createdBy'])
+            ->where('nama_kapal', $kapal->nama_kapal)
+            ->where('no_voyage', $request->no_voyage);
+        
+        // Filter by status BL if provided
+        if ($request->filled('status_filter')) {
+            if ($request->status_filter === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($request->status_filter === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+        
+        $naikKapals = $query->orderBy('created_at', 'desc')->get();
+        
+        return view('naik-kapal.print', [
+            'naikKapals' => $naikKapals,
+            'kapal' => $kapal,
+            'voyage' => $request->no_voyage,
+            'statusFilter' => $request->status_filter
+        ]);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

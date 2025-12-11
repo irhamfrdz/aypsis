@@ -291,62 +291,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Print functionality
+    // Print functionality - open in new tab
     document.getElementById('btnPrint').addEventListener('click', function() {
-        // Hide elements that shouldn't be printed
-        const elementsToHide = [
-            document.getElementById('bulkActionsPanel'),
-            ...document.querySelectorAll('.flex.gap-3'), // Hide action buttons
-            ...document.querySelectorAll('th:last-child'), // Hide Aksi column header
-            ...document.querySelectorAll('td:last-child'), // Hide Aksi column data
-            ...document.querySelectorAll('input[type="checkbox"]') // Hide checkboxes
-        ];
+        const kapalId = "{{ request('kapal_id') }}";
+        const noVoyage = "{{ request('no_voyage') }}";
+        const statusFilter = "{{ request('status_filter') }}";
         
-        elementsToHide.forEach(el => {
-            if (el) el.style.display = 'none';
-        });
+        if (!kapalId || !noVoyage) {
+            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            return;
+        }
         
-        // Add print-specific styles
-        const printStyle = document.createElement('style');
-        printStyle.id = 'print-style';
-        printStyle.innerHTML = `
-            @media print {
-                body * {
-                    visibility: hidden;
-                }
-                .container, .container * {
-                    visibility: visible;
-                }
-                .container {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                }
-                table {
-                    page-break-inside: auto;
-                }
-                tr {
-                    page-break-inside: avoid;
-                    page-break-after: auto;
-                }
-                .shadow-sm {
-                    box-shadow: none !important;
-                }
-            }
-        `;
-        document.head.appendChild(printStyle);
+        // Build print URL with parameters
+        let printUrl = "{{ route('naik-kapal.print') }}?kapal_id=" + kapalId + "&no_voyage=" + noVoyage;
+        if (statusFilter) {
+            printUrl += "&status_filter=" + statusFilter;
+        }
         
-        // Trigger print
-        window.print();
-        
-        // Restore hidden elements after print
-        setTimeout(() => {
-            elementsToHide.forEach(el => {
-                if (el) el.style.display = '';
-            });
-            document.getElementById('print-style').remove();
-        }, 100);
+        // Open print page in new tab
+        window.open(printUrl, '_blank');
     });
 
     // Export Excel functionality
