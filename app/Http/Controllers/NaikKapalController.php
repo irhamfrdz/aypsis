@@ -16,15 +16,19 @@ class NaikKapalController extends Controller
      */
     public function index(Request $request)
     {
+        // Redirect to select page if required parameters are missing
+        if (!$request->filled('kapal_id') || !$request->filled('no_voyage')) {
+            return redirect()->route('naik-kapal.select')
+                ->with('info', 'Silakan pilih kapal dan voyage terlebih dahulu.');
+        }
+        
         $query = NaikKapal::with(['prospek', 'createdBy']);
         
-        // Filter by kapal and voyage if provided
-        if ($request->filled('kapal_id') && $request->filled('no_voyage')) {
-            $kapal = \App\Models\MasterKapal::find($request->kapal_id);
-            if ($kapal) {
-                $query->where('nama_kapal', $kapal->nama_kapal)
-                      ->where('no_voyage', $request->no_voyage);
-            }
+        // Filter by kapal and voyage
+        $kapal = \App\Models\MasterKapal::find($request->kapal_id);
+        if ($kapal) {
+            $query->where('nama_kapal', $kapal->nama_kapal)
+                  ->where('no_voyage', $request->no_voyage);
         }
         
         // Additional filters
@@ -57,6 +61,18 @@ class NaikKapalController extends Controller
         }
 
         return view('naik-kapal.index', compact('naikKapals', 'selectedKapal'));
+    }
+
+    /**
+     * Show the selection form for kapal and voyage.
+     */
+    public function select()
+    {
+        $kapals = \App\Models\MasterKapal::where('status', 'aktif')
+            ->orderBy('nama_kapal')
+            ->get();
+            
+        return view('naik-kapal.select', compact('kapals'));
     }
 
     /**

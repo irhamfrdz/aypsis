@@ -165,11 +165,18 @@
                                 <span id="selectedCount" class="text-sm text-blue-600">
                                     Terpilih: 0 dari {{ $prospeksAktif->count() }} prospek
                                 </span>
-                                <button type="button" 
-                                        id="clearAllBtn"
-                                        class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition duration-200">
-                                    Clear Semua
-                                </button>
+                                <div class="flex gap-2">
+                                    <button type="button" 
+                                            id="selectAllBtn"
+                                            class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition duration-200">
+                                        Select All
+                                    </button>
+                                    <button type="button" 
+                                            id="clearAllBtn"
+                                            class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition duration-200">
+                                        Clear Semua
+                                    </button>
+                                </div>
                             </div>
                             
                             @error('prospek_ids')
@@ -555,6 +562,30 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTableVisibility();
         reorderTableRows();
     };
+    
+    // Select All button
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    selectAllBtn.addEventListener('click', function() {
+        prospekOptions.forEach(option => {
+            const id = option.getAttribute('data-id');
+            const text = option.getAttribute('data-text');
+            const tipe = option.getAttribute('data-tipe');
+            const supir = option.getAttribute('data-supir');
+            const tanggal = option.getAttribute('data-tanggal');
+            
+            // Only add if not already selected
+            if (!selectedProspeks.find(p => p.id === id)) {
+                selectedProspeks.push({ id, text, tipe, supir, tanggal });
+                addChip(id, text, tanggal);
+                addTableRow(id, text, tipe, supir, tanggal);
+                option.classList.add('selected');
+            }
+        });
+        
+        updateSelectedCount();
+        updateHiddenInputs();
+        updateTableVisibility();
+    });
     
     // Clear All button  
     clearAllBtn.addEventListener('click', function() {

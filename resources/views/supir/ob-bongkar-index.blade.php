@@ -379,10 +379,6 @@
 
         // Handle form submission with loading state
         function handleSubmit(form, kontainerNo) {
-            if (!confirm('Yakin ingin memproses OB Bongkar untuk kontainer ' + kontainerNo + '?\n\nPastikan nomor kontainer sudah benar.')) {
-                return false;
-            }
-
             const btn = form.querySelector('.ob-submit-btn');
             const btnText = btn.querySelector('.btn-text');
             const iconDefault = btn.querySelector('.icon-default');

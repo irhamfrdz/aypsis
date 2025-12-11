@@ -3442,6 +3442,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
          ->middleware('can:prospek-edit');
 
           // 🚢 Naik Kapal Management
+          Route::get('naik-kapal/select', [NaikKapalController::class, 'select'])
+               ->name('naik-kapal.select')
+               ->middleware('can:prospek-view');
+               
           Route::get('naik-kapal/download-template', [NaikKapalController::class, 'downloadTemplate'])
                ->name('naik-kapal.download.template')
                ->middleware('can:prospek-view');
