@@ -12,7 +12,7 @@
             margin: 0;
             padding: 0;
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 12px;
+            font-size: 14px; /* increased base font size */
         }
         /* Positioned pengirim data */
         .pengirim {
@@ -22,6 +22,7 @@
             width: 12cm; /* reasonable width for address area */
             white-space: pre-wrap; /* keep new lines */
             line-height: 1.2;
+            font-size: 14px;
         }
         /* Positioned penerima data */
         .penerima {
@@ -31,6 +32,7 @@
             width: 12cm; /* same width to align with pengirim */
             white-space: pre-wrap;
             line-height: 1.2;
+            font-size: 14px;
         }
         /* Positioned container number */
         .no-kontainer {
@@ -39,7 +41,7 @@
             left: 1cm;  /* 1cm from left */
             white-space: nowrap; /* container number single-line */
             font-weight: 600;
-            font-size: 13px;
+            font-size: 16px; /* larger to highlight container number */
         }
         /* Positioned nama barang (jenis barang) */
         .nama-barang {
@@ -48,7 +50,7 @@
             left: 8cm; /* 8cm from left */
             max-width: 11cm;
             white-space: pre-wrap;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
             line-height: 1.2;
         }
@@ -59,7 +61,7 @@
             left: 18.5cm; /* 18.5cm from left */
             white-space: nowrap;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 14px;
             text-align: left;
         }
         /* Positioned nomor voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) */
@@ -69,7 +71,7 @@
             left: 11.25cm; /* 11.25cm from left */
             white-space: nowrap;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 14px;
             text-align: left;
         }
         /* Positioned pelabuhan route (asal - tujuan) */
@@ -79,7 +81,7 @@
             left: 18.5cm; /* 18.5cm from left */
             max-width: 11.5cm;
             white-space: nowrap;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
             text-align: left;
         }
@@ -89,7 +91,7 @@
             bottom: 1.75cm; /* 1.75cm from bottom */
             right: 3.5cm; /* 3.5cm from right */
             font-weight: 600;
-            font-size: 12px;
+            font-size: 14px;
             white-space: nowrap;
             text-align: right;
         }
