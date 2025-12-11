@@ -23,6 +23,7 @@
             white-space: pre-wrap; /* keep new lines */
             line-height: 1.2;
             font-size: 14px;
+            font-weight: bold;
         }
         /* Positioned penerima data */
         .penerima {
@@ -33,6 +34,7 @@
             white-space: pre-wrap;
             line-height: 1.2;
             font-size: 14px;
+            font-weight: bold;
         }
         /* Positioned container number */
         .no-kontainer {
@@ -40,7 +42,7 @@
             top: 11cm; /* 11cm from top */
             left: 1cm;  /* 1cm from left */
             white-space: nowrap; /* container number single-line */
-            font-weight: 600;
+            font-weight: bold;
             font-size: 16px; /* larger to highlight container number */
         }
         /* Positioned nama barang (jenis barang) */
@@ -51,7 +53,7 @@
             max-width: 11cm;
             white-space: pre-wrap;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: bold;
             line-height: 1.2;
         }
         /* Positioned nama kapal */
@@ -60,7 +62,7 @@
             top: 6.0cm; /* moved up slightly: 6.0cm */
             left: 18.25cm; /* moved left slightly: 18.25cm */
             white-space: nowrap;
-            font-weight: 600;
+            font-weight: bold;
             font-size: 14px;
             text-align: left;
         }
@@ -70,7 +72,7 @@
             top: 5.5cm; /* 5.5cm from top */
             left: 11.25cm; /* 11.25cm from left */
             white-space: nowrap;
-            font-weight: 600;
+            font-weight: bold;
             font-size: 14px;
             text-align: left;
         }
@@ -82,7 +84,7 @@
             max-width: 11.5cm;
             white-space: nowrap;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: bold;
             text-align: left;
         }
         /* Positioned name 'Alex' from bottom-right */
@@ -90,7 +92,7 @@
             position: absolute;
             bottom: 1.75cm; /* 1.75cm from bottom */
             right: 3.5cm; /* 3.5cm from right */
-            font-weight: 600;
+            font-weight: bold;
             font-size: 14px;
             white-space: nowrap;
             text-align: right;
