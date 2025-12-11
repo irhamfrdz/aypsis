@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>OB Bongkar - Daftar Kontainer - AYPSIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,6 +30,11 @@
                     <h1 class="text-xl font-bold text-gray-800">OB Bongkar - Daftar Kontainer</h1>
                 </div>
                 <div class="flex items-center space-x-3">
+                    <button onclick="window.location.reload()" class="text-gray-600 hover:text-gray-900" title="Refresh halaman">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
                     <span class="hidden sm:block text-sm text-gray-600">Halo, {{ Auth::user()->name }}!</span>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
@@ -41,23 +49,47 @@
         <div class="max-w-4xl mx-auto">
             <!-- Flash Messages -->
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded mb-4 text-sm" role="alert">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded mb-4 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
-                        <span class="font-medium">{{ session('success') }}</span>
+                        <div class="flex-1">
+                            <p class="font-bold mb-1">Berhasil!</p>
+                            <p class="text-sm">{{ session('success') }}</p>
+                        </div>
                     </div>
                 </div>
             @endif
             
             @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm" role="alert">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-4 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                         </svg>
-                        <span class="font-medium">{{ session('error') }}</span>
+                        <div class="flex-1">
+                            <p class="font-bold mb-1">Proses OB Bongkar Gagal</p>
+                            <p class="text-sm">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            
+            @if($errors->any())
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-4 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-bold mb-1">Terjadi Kesalahan</p>
+                            <ul class="list-disc list-inside text-sm space-y-1">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -209,18 +241,22 @@
                                                     Selesai
                                                 </button>
                                             @else
-                                                <form action="{{ route('supir.ob-bongkar.process') }}" method="POST" class="inline" 
-                                                      onsubmit="return confirm('Yakin ingin memproses OB Bongkar untuk kontainer {{ $bl->nomor_kontainer }}?')">
+                                                <form action="{{ route('supir.ob-bongkar.process') }}" method="POST" class="inline ob-form" 
+                                                      onsubmit="return handleSubmit(this, '{{ $bl->nomor_kontainer }}')">
                                                     @csrf
                                                     <input type="hidden" name="kapal" value="{{ $selectedKapal }}">
                                                     <input type="hidden" name="voyage" value="{{ $selectedVoyage }}">
                                                     <input type="hidden" name="bl_id" value="{{ $bl->id }}">
                                                     <button type="submit"
-                                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
-                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            class="ob-submit-btn inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        <svg class="w-3 h-3 mr-1 icon-default" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
                                                         </svg>
-                                                        OB Bongkar
+                                                        <svg class="w-3 h-3 mr-1 icon-loading hidden animate-spin" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        <span class="btn-text">OB Bongkar</span>
                                                     </button>
                                                 </form>
                                             @endif
@@ -270,6 +306,30 @@
     </main>
 
     <script>
+        // Handle form submission with loading state
+        function handleSubmit(form, kontainerNo) {
+            if (!confirm('Yakin ingin memproses OB Bongkar untuk kontainer ' + kontainerNo + '?\n\nPastikan nomor kontainer sudah benar.')) {
+                return false;
+            }
+
+            const btn = form.querySelector('.ob-submit-btn');
+            const btnText = btn.querySelector('.btn-text');
+            const iconDefault = btn.querySelector('.icon-default');
+            const iconLoading = btn.querySelector('.icon-loading');
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btnText.textContent = 'Memproses...';
+            iconDefault.classList.add('hidden');
+            iconLoading.classList.remove('hidden');
+
+            console.log('%c⏳ Memproses OB Bongkar...', 'color: orange; font-weight: bold;');
+            console.log('Kontainer:', kontainerNo);
+            console.log('Timestamp:', new Date().toLocaleString());
+
+            return true;
+        }
+
         // Search Function
         function searchTable() {
             const searchInput = document.getElementById('searchInput');
@@ -316,20 +376,6 @@
             }
         });
 
-        // Auto refresh setiap 30 detik untuk update data terbaru
-        let autoRefreshTimer = setTimeout(function() {
-            window.location.reload();
-        }, 30000);
-
-        // Pause auto-refresh when user is searching
-        document.getElementById('searchInput').addEventListener('input', function() {
-            clearTimeout(autoRefreshTimer);
-            // Restart timer setelah 30 detik dari input terakhir
-            autoRefreshTimer = setTimeout(function() {
-                window.location.reload();
-            }, 30000);
-        });
-
         // Debug info
         console.log('=== OB Bongkar Index Debug Info ===');
         console.log('Selected Kapal:', '{{ $selectedKapal }}');
@@ -340,6 +386,25 @@
         console.log('User:', '{{ Auth::user()->name }}');
         console.log('User ID:', {{ Auth::user()->id }});
         console.log('Page loaded at:', new Date().toLocaleString());
+        
+        @if(session('success'))
+        console.log('%c✓ SUCCESS', 'color: green; font-weight: bold; font-size: 14px;');
+        console.log('Message:', '{{ session('success') }}');
+        @endif
+        
+        @if(session('error'))
+        console.error('%c✗ ERROR', 'color: red; font-weight: bold; font-size: 14px;');
+        console.error('Message:', '{{ session('error') }}');
+        console.error('⚠️ Jika error ini terus muncul, screenshot dan laporkan ke administrator');
+        @endif
+        
+        @if($errors->any())
+        console.error('%c✗ VALIDATION ERRORS', 'color: red; font-weight: bold; font-size: 14px;');
+        @foreach($errors->all() as $error)
+        console.error('- {{ $error }}');
+        @endforeach
+        @endif
+        
         console.log('===================================');
     </script>
 </body>

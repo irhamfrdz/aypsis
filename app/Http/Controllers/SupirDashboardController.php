@@ -187,6 +187,7 @@ class SupirDashboardController extends Controller
         $selectedVoyage = $request->get('voyage');
 
         // Ambil data dari tabel naik_kapal berdasarkan kapal dan voyage
+        // Status sudah_ob langsung dibaca dari database
         $bls = \App\Models\NaikKapal::where('nama_kapal', $selectedKapal)
                              ->where('no_voyage', $selectedVoyage)
                              ->whereNotNull('nomor_kontainer')
@@ -194,22 +195,9 @@ class SupirDashboardController extends Controller
                              ->orderBy('nomor_kontainer')
                              ->get();
 
-        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini (untuk OB Muat)
-        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
-                                                  ->where('voyage', $selectedVoyage)
-                                                  ->where('kegiatan', 'muat')
-                                                  ->pluck('nomor_kontainer')
-                                                  ->toArray();
-
-        // Tambahkan status OB ke setiap naik_kapal
-        $bls->each(function ($naikKapal) use ($existingTagihanOb) {
-            // Field sudah sesuai dengan view (nomor_kontainer sudah ada)
+        // Tambahkan field nama_barang untuk view
+        $bls->each(function ($naikKapal) {
             $naikKapal->nama_barang = $naikKapal->jenis_barang ?? '-';
-            
-            // Status OB dianggap TRUE jika:
-            // 1. Field sudah_ob di database naik_kapal = true, ATAU
-            // 2. Sudah ada tagihan OB untuk kontainer ini
-            $naikKapal->sudah_ob = ($naikKapal->sudah_ob == true) || in_array($naikKapal->nomor_kontainer, $existingTagihanOb);
         });
 
         // Log untuk debugging
@@ -218,7 +206,6 @@ class SupirDashboardController extends Controller
             'selected_voyage' => $selectedVoyage,
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
-            'existing_tagihan_ob' => $existingTagihanOb,
             'user_id' => $user->id,
             'user_name' => $user->name,
             'source_table' => 'naik_kapal'
@@ -246,124 +233,62 @@ class SupirDashboardController extends Controller
         $selectedVoyage = $request->get('voyage');
         $naikKapalId = $request->get('naik_kapal_id');
 
+        // Validasi apakah user memiliki karyawan_id
+        if (!$user->karyawan_id) {
+            \Log::error('OB Muat Process - No Karyawan ID', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'karyawan_id' => null
+            ]);
+            return back()->with('error', '❌ Akun Anda belum terhubung dengan data karyawan. Silakan hubungi administrator.');
+        }
+
+        // Validasi apakah karyawan dengan ID tersebut ada
+        $karyawan = \App\Models\Karyawan::find($user->karyawan_id);
+        if (!$karyawan) {
+            \Log::error('OB Muat Process - Karyawan Not Found', [
+                'user_id' => $user->id,
+                'karyawan_id' => $user->karyawan_id
+            ]);
+            return back()->with('error', '❌ Data karyawan tidak ditemukan. Silakan hubungi administrator.');
+        }
+
         // Ambil data NaikKapal
         $naikKapal = \App\Models\NaikKapal::findOrFail($naikKapalId);
         $nomorKontainer = $naikKapal->nomor_kontainer;
 
-        // Cek apakah sudah ada tagihan OB untuk kontainer ini (OB Muat)
-        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
-                                                  ->where('voyage', $selectedVoyage)
-                                                  ->where('nomor_kontainer', $nomorKontainer)
-                                                  ->where('kegiatan', 'muat')
-                                                  ->first();
-
-        if ($existingTagihanOb) {
-            return back()->with('error', 'Tagihan OB Muat untuk kontainer ' . $nomorKontainer . ' sudah ada.');
-        }
-
-        // Cari surat jalan terkait untuk mendapatkan data kegiatan/aktifitas
-        \Log::info('Searching SuratJalan', [
-            'no_kontainer' => $nomorKontainer,
-            'supir' => $user->name,
-        ]);
-        
-        $suratJalan = \App\Models\SuratJalan::where('no_kontainer', $nomorKontainer)
-                                           ->where('supir', $user->name)
-                                           ->where(function($query) {
-                                               $query->whereNotNull('aktifitas')
-                                                     ->orWhereNotNull('kegiatan');
-                                           })
-                                           ->first();
-                                           
-        \Log::info('SuratJalan found', [
-            'found' => $suratJalan ? true : false,
-            'kegiatan' => $suratJalan->kegiatan ?? null,
-            'size' => $suratJalan->size ?? null,
-        ]);
-
-        // Tentukan status kontainer berdasarkan kegiatan pada surat jalan
-        $statusKontainer = 'empty'; // default
-        $kegiatan = null;
-        
-        if ($suratJalan) {
-            // Prioritas aktifitas, fallback ke kegiatan
-            $kegiatan = $suratJalan->aktifitas ?: $suratJalan->kegiatan;
-            if ($kegiatan) {
-                $statusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($kegiatan);
-            }
-        } else {
-            // Jika tidak ditemukan dengan supir yang sama, coba cari tanpa filter supir
-            $suratJalanAlt = \App\Models\SuratJalan::where('no_kontainer', $nomorKontainer)
-                                                   ->whereNotNull('kegiatan')
-                                                   ->first();
-            \Log::info('Alternative SuratJalan search', [
-                'found' => $suratJalanAlt ? true : false,
-                'kegiatan' => $suratJalanAlt->kegiatan ?? null,
-                'supir' => $suratJalanAlt->supir ?? null,
-            ]);
-            
-            if ($suratJalanAlt) {
-                $suratJalan = $suratJalanAlt; // Use alternative surat jalan
-                $kegiatan = $suratJalanAlt->kegiatan;
-                $statusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($kegiatan);
-            }
+        // Cek apakah kontainer sudah di-OB sebelumnya
+        if ($naikKapal->sudah_ob) {
+            return back()->with('error', 'Kontainer ' . $nomorKontainer . ' sudah pernah di-OB sebelumnya.');
         }
 
         try {
-            // Buat TagihanOb baru secara otomatis
-            $tagihanOb = new \App\Models\TagihanOb();
-            $tagihanOb->kapal = $selectedKapal;
-            $tagihanOb->voyage = $selectedVoyage;
-            $tagihanOb->kegiatan = 'muat';
-            $tagihanOb->nomor_kontainer = $nomorKontainer;
-            $tagihanOb->nama_supir = $user->name;
-            $tagihanOb->barang = $naikKapal->jenis_barang ?? 'General Cargo';
-            $tagihanOb->status_kontainer = $statusKontainer;
-            $tagihanOb->naik_kapal_id = $naikKapal->id;
-            $tagihanOb->created_by = $user->id;
-            
-            // Ambil size kontainer dari naik_kapal, fallback ke surat jalan
-            $sizeKontainer = '20ft'; // default
-            if ($naikKapal->size_kontainer && in_array($naikKapal->size_kontainer, ['20ft', '40ft'])) {
-                $sizeKontainer = $naikKapal->size_kontainer;
-            } elseif ($suratJalan && $suratJalan->size) {
-                // Convert size dari surat jalan (20, 40) ke format pricelist (20ft, 40ft)
-                $sizeKontainer = $suratJalan->size . 'ft';
-            }
-            
-            // Hitung biaya otomatis dari pricelist
-            $biaya = \App\Models\TagihanOb::calculateBiayaFromPricelist($sizeKontainer, $statusKontainer);
-            $tagihanOb->biaya = $biaya;
-            
-            $tagihanOb->save();
-
-            // Update status OB pada tabel naik_kapal and mark driver & timestamp
+            // Update status OB pada tabel naik_kapal dan mark driver & timestamp
             $naikKapal->sudah_ob = true;
-            $naikKapal->supir_id = $user->id;
+            $naikKapal->supir_id = $user->karyawan_id; // Gunakan karyawan_id dari user
             $naikKapal->tanggal_ob = now();
-            $naikKapal->save();
+            $naikKapal->catatan_ob = 'OB Muat - diproses oleh ' . $user->name . ' (Karyawan ID: ' . $user->karyawan_id . ')';
+            $naikKapal->updated_by = $user->id;
+            $saved = $naikKapal->save();
 
-            // Log activity untuk audit trail
-            \Log::info('TagihanOb Created via OB Muat Process', [
-                'tagihan_ob_id' => $tagihanOb->id,
+            // Log activity untuk debugging
+            \Log::info('OB Muat Process - NaikKapal Updated', [
                 'naik_kapal_id' => $naikKapal->id,
-                'user_id' => $user->id,
-                'user_name' => $user->name,
+                'nomor_kontainer' => $nomorKontainer,
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
-                'nomor_kontainer' => $nomorKontainer,
-                'kegiatan' => 'muat',
-                'kegiatan_surat_jalan' => $kegiatan ?? null,
-                'status_kontainer' => $statusKontainer,
-                'size_kontainer' => $sizeKontainer,
-                'biaya' => $biaya,
+                'supir' => $user->name,
+                'supir_id' => $user->id,
+                'tanggal_ob' => $naikKapal->tanggal_ob,
+                'sudah_ob' => $naikKapal->sudah_ob,
+                'save_result' => $saved,
                 'timestamp' => now()
             ]);
 
             return redirect()->route('supir.ob-muat.index', [
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage
-            ])->with('success', 'OB Muat berhasil diproses! Tagihan OB untuk kontainer ' . $nomorKontainer . ' telah dibuat dengan status: ' . ucfirst($statusKontainer) . ', Biaya: Rp ' . number_format($biaya, 0, ',', '.'));
+            ])->with('success', 'OB Muat berhasil diproses untuk kontainer ' . $nomorKontainer . '!');
 
         } catch (\Exception $e) {
             \Log::error('Error processing OB Muat', [
@@ -575,6 +500,7 @@ class SupirDashboardController extends Controller
         $selectedVoyage = $request->get('voyage');
 
         // Ambil data BL berdasarkan kapal dan voyage untuk bongkar
+        // Status sudah_ob langsung dibaca dari database
         $bls = \App\Models\Bl::where('nama_kapal', $selectedKapal)
                              ->where('no_voyage', $selectedVoyage)
                              ->whereNotNull('nomor_kontainer')
@@ -582,25 +508,12 @@ class SupirDashboardController extends Controller
                              ->orderBy('nomor_kontainer')
                              ->get();
 
-        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini
-        // Note: Tabel tagihan_ob tidak memiliki kolom 'kegiatan', jadi kita cek berdasarkan kapal dan voyage saja
-        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
-                                                  ->where('voyage', $selectedVoyage)
-                                                  ->pluck('nomor_kontainer')
-                                                  ->toArray();
-
-        // Tambahkan status OB ke setiap BL
-        $bls->each(function ($bl) use ($existingTagihanOb) {
-            $bl->sudah_ob = in_array($bl->nomor_kontainer, $existingTagihanOb);
-        });
-
         // Log untuk debugging
         \Log::info('OB Bongkar Index Data', [
             'selected_kapal' => $selectedKapal,
             'selected_voyage' => $selectedVoyage,
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
-            'existing_tagihan_ob' => $existingTagihanOb,
             'user_id' => $user->id,
             'user_name' => $user->name
         ]);
@@ -616,116 +529,183 @@ class SupirDashboardController extends Controller
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
         if (!$user->isSupir()) {
+            \Log::warning('OB Bongkar Process - Unauthorized Access', [
+                'user_id' => $user->id ?? null,
+                'user_name' => $user->name ?? null,
+                'is_supir' => false
+            ]);
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
         // Validasi parameter yang required
-        $request->validate([
-            'kapal' => 'required|string',
-            'voyage' => 'required|string',
-            'bl_id' => 'required|exists:bls,id',
-        ]);
+        try {
+            $request->validate([
+                'kapal' => 'required|string',
+                'voyage' => 'required|string',
+                'bl_id' => 'required|exists:bls,id',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('OB Bongkar Process - Validation Failed', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+                'user_id' => $user->id
+            ]);
+            return back()->with('error', 'Data tidak lengkap. Pastikan kapal, voyage, dan kontainer sudah dipilih.');
+        }
 
         $selectedKapal = $request->get('kapal');
         $selectedVoyage = $request->get('voyage');
         $blId = $request->get('bl_id');
 
-        // Ambil data BL
-        $bl = \App\Models\Bl::findOrFail($blId);
+        // Validasi apakah user memiliki karyawan_id
+        if (!$user->karyawan_id) {
+            \Log::error('OB Bongkar Process - No Karyawan ID', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'karyawan_id' => null,
+                'error' => 'User tidak memiliki karyawan_id',
+                'solution' => 'Set karyawan_id di tabel users untuk user ini'
+            ]);
+            return back()->with('error', '❌ Akun Anda (User ID: ' . $user->id . ' - ' . $user->name . ') belum terhubung dengan data karyawan. Silakan hubungi administrator untuk mengatur karyawan_id di akun Anda.');
+        }
+
+        // Validasi apakah karyawan dengan ID tersebut ada
+        $karyawan = \App\Models\Karyawan::find($user->karyawan_id);
+        if (!$karyawan) {
+            \Log::error('OB Bongkar Process - Karyawan Not Found', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'karyawan_id' => $user->karyawan_id,
+                'error' => 'Karyawan dengan ID ' . $user->karyawan_id . ' tidak ditemukan di tabel karyawans'
+            ]);
+            return back()->with('error', '❌ Data karyawan (ID: ' . $user->karyawan_id . ') tidak ditemukan di sistem. Silakan hubungi administrator.');
+        }
+
+        // Log request awal
+        \Log::info('OB Bongkar Process - Started', [
+            'bl_id' => $blId,
+            'kapal' => $selectedKapal,
+            'voyage' => $selectedVoyage,
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'karyawan_id' => $karyawan->id,
+            'karyawan_nama' => $karyawan->nama_lengkap ?? $karyawan->nama_panggilan
+        ]);
+
+        // Ambil data BL dengan detailed logging
+        try {
+            $bl = \App\Models\Bl::findOrFail($blId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('OB Bongkar Process - BL Not Found', [
+                'bl_id' => $blId,
+                'error' => 'Data kontainer tidak ditemukan di database'
+            ]);
+            return back()->with('error', 'Data kontainer tidak ditemukan. Silakan refresh halaman dan coba lagi.');
+        }
+
         $nomorKontainer = $bl->nomor_kontainer;
 
-        // Cek apakah sudah ada tagihan OB untuk kontainer ini (OB Bongkar)
-        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
-                                                  ->where('voyage', $selectedVoyage)
-                                                  ->where('nomor_kontainer', $nomorKontainer)
-                                                  ->where('kegiatan', 'bongkar')
-                                                  ->first();
+        // Log status BL sebelum proses
+        \Log::info('OB Bongkar Process - BL Status Before', [
+            'bl_id' => $bl->id,
+            'nomor_kontainer' => $nomorKontainer,
+            'sudah_ob_before' => $bl->sudah_ob,
+            'supir_id_before' => $bl->supir_id,
+            'tanggal_ob_before' => $bl->tanggal_ob,
+            'updated_at_before' => $bl->updated_at
+        ]);
 
-        if ($existingTagihanOb) {
-            return back()->with('error', 'Tagihan OB Bongkar untuk kontainer ' . $nomorKontainer . ' sudah ada.');
+        // Cek apakah kontainer sudah di-OB sebelumnya
+        if ($bl->sudah_ob) {
+            $supirName = $bl->supir ? $bl->supir->nama_panggilan : 'Unknown';
+            $tanggalOb = $bl->tanggal_ob ? $bl->tanggal_ob->format('d-m-Y H:i') : 'Unknown';
+            
+            \Log::warning('OB Bongkar Process - Already OB', [
+                'bl_id' => $bl->id,
+                'nomor_kontainer' => $nomorKontainer,
+                'sudah_ob' => true,
+                'supir_sebelumnya' => $supirName,
+                'tanggal_ob_sebelumnya' => $tanggalOb
+            ]);
+            
+            return back()->with('error', 'Kontainer ' . $nomorKontainer . ' sudah pernah di-OB oleh ' . $supirName . ' pada ' . $tanggalOb . '. Tidak dapat OB ulang.');
         }
 
         try {
-            // Ambil size kontainer dari BL
-            $sizeKontainer = '20ft'; // default
-            if ($bl->tipe_kontainer && in_array($bl->tipe_kontainer, ['20ft', '40ft'])) {
-                $sizeKontainer = $bl->tipe_kontainer;
-            } elseif ($bl->size) {
-                // Convert size dari BL (20, 40) ke format pricelist (20ft, 40ft)
-                $sizeKontainer = $bl->size . 'ft';
-            }
-            
-            // Default status kontainer untuk bongkar adalah 'full'
-            $statusKontainer = 'full';
-            
-            // Hitung biaya otomatis dari pricelist
-            $biaya = \App\Models\TagihanOb::calculateBiayaFromPricelist($sizeKontainer, $statusKontainer);
-            
-            // Buat tagihan OB baru untuk bongkar
-            $tagihanOb = new \App\Models\TagihanOb();
-            $tagihanOb->kapal = $selectedKapal;
-            $tagihanOb->voyage = $selectedVoyage;
-            $tagihanOb->kegiatan = 'bongkar';
-            $tagihanOb->nomor_kontainer = $nomorKontainer;
-            $tagihanOb->nama_supir = $user->name;
-            $tagihanOb->bl_id = $blId;
-            $tagihanOb->created_by = $user->id;
-            $tagihanOb->size_kontainer = $sizeKontainer;
-            $tagihanOb->barang = $bl->nama_barang ?? 'General Cargo';
-            $tagihanOb->status_kontainer = $statusKontainer;
-            $tagihanOb->biaya = $biaya;
-            $tagihanOb->keterangan = 'OB Bongkar - dibuat oleh supir';
-            
-            $tagihanOb->save();
-
-            // Update status OB pada tabel bls and mark driver & timestamp
+            // Update status OB pada tabel bls dan mark driver & timestamp
             $bl->sudah_ob = true;
-            $bl->supir_id = $user->id;
+            $bl->supir_id = $user->karyawan_id; // Gunakan karyawan_id dari user
             $bl->tanggal_ob = now();
+            $bl->catatan_ob = 'OB Bongkar - diproses oleh ' . $user->name . ' (Karyawan ID: ' . $user->karyawan_id . ')';
+            $bl->updated_by = $user->id;
+            
+            // Attempt to save with detailed error handling
             $saved = $bl->save();
 
-            // Log before save untuk debugging
-            \Log::info('Updating BL Status OB', [
-                'bl_id' => $bl->id,
-                'nomor_kontainer' => $nomorKontainer,
-                'sudah_ob_before' => $bl->getOriginal('sudah_ob'),
-                'sudah_ob_after' => $bl->sudah_ob,
-                'save_result' => $saved
-            ]);
+            // Verify save was successful
+            if (!$saved) {
+                throw new \Exception('Model save() returned false - data gagal tersimpan ke database');
+            }
 
-            // Refresh model dari database untuk memastikan perubahan tersimpan
+            // Refresh from database to confirm
             $bl->refresh();
 
-            \Log::info('TagihanOb Bongkar Created', [
-                'tagihan_ob_id' => $tagihanOb->id,
+            // Verify data was actually updated in database
+            if (!$bl->sudah_ob) {
+                throw new \Exception('Status sudah_ob gagal tersimpan - nilai masih false setelah refresh dari database');
+            }
+
+            // Log success dengan detail lengkap
+            \Log::info('OB Bongkar Process - SUCCESS', [
                 'bl_id' => $bl->id,
                 'nomor_kontainer' => $nomorKontainer,
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
-                'kegiatan' => 'bongkar',
                 'supir' => $user->name,
                 'supir_id' => $user->id,
-                'size_kontainer' => $sizeKontainer,
-                'status_kontainer' => $statusKontainer,
-                'biaya' => $biaya,
-                'sudah_ob_confirmed' => $bl->sudah_ob
+                'tanggal_ob' => $bl->tanggal_ob,
+                'sudah_ob_after' => $bl->sudah_ob,
+                'updated_at_after' => $bl->updated_at,
+                'save_result' => $saved,
+                'verified' => 'Data berhasil tersimpan dan terverifikasi',
+                'timestamp' => now()
             ]);
 
             return redirect()->route('supir.ob-bongkar.index', [
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage
-            ])->with('success', 'OB Bongkar berhasil diproses! Tagihan OB untuk kontainer ' . $nomorKontainer . ' telah dibuat dengan status: ' . ucfirst($statusKontainer) . ', Biaya: Rp ' . number_format($biaya, 0, ',', '.'));
+            ])->with('success', '✓ OB Bongkar berhasil! Kontainer ' . $nomorKontainer . ' telah diproses oleh ' . $user->name . ' pada ' . now()->format('d-m-Y H:i'));
 
-        } catch (\Exception $e) {
-            \Log::error('Error creating TagihanOb Bongkar', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('OB Bongkar Process - Database Error', [
+                'error_type' => 'QueryException',
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'sql_state' => $e->errorInfo[0] ?? null,
+                'bl_id' => $blId,
+                'nomor_kontainer' => $nomorKontainer,
                 'user_id' => $user->id,
-                'request_data' => $request->all()
+                'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'])
-                        ->withInput();
+            return back()->with('error', '❌ Gagal menyimpan ke database. Error: ' . $e->getMessage() . '. Silakan hubungi administrator atau coba lagi.');
+
+        } catch (\Exception $e) {
+            \Log::error('OB Bongkar Process - General Error', [
+                'error_type' => get_class($e),
+                'error_message' => $e->getMessage(),
+                'error_line' => $e->getLine(),
+                'error_file' => $e->getFile(),
+                'bl_id' => $blId,
+                'nomor_kontainer' => $nomorKontainer,
+                'kapal' => $selectedKapal,
+                'voyage' => $selectedVoyage,
+                'user_id' => $user->id,
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', '❌ Terjadi kesalahan: ' . $e->getMessage() . '. Silakan screenshot error ini dan hubungi administrator.');
         }
     }
 }
