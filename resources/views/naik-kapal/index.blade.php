@@ -284,29 +284,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Show/hide export button based on data availability
-    function updateExportButtonVisibility() {
-        const exportBtn = document.getElementById('btnExportExcel');
-        const kapalSelect = document.getElementById('kapal_id');
-        const voyageSelect = document.getElementById('no_voyage');
-        const hasData = document.querySelectorAll('.item-checkbox').length > 0;
-        
-        if (kapalSelect.value && voyageSelect.value && hasData) {
-            exportBtn.classList.remove('hidden');
-        } else {
-            exportBtn.classList.add('hidden');
-        }
-    }
-
     // Export Excel functionality
     document.getElementById('btnExportExcel').addEventListener('click', function() {
-        const kapalId = document.getElementById('kapal_id').value;
-        const noVoyage = document.getElementById('no_voyage').value;
+        const kapalId = "{{ request('kapal_id') }}";
+        const noVoyage = "{{ request('no_voyage') }}";
+        const statusFilter = "{{ request('status_filter') }}";
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
             return;
-    // Export Excel functionality(link);
+        }
+        
+        // Change button state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengunduh...';
+        this.disabled = true;
+        
+        // Build export URL with parameters
+        let exportUrl = "{{ route('naik-kapal.export') }}?kapal_id=" + kapalId + "&no_voyage=" + noVoyage;
+        if (statusFilter) {
+            exportUrl += "&status_filter=" + statusFilter;
+        }
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = exportUrl;
+        link.download = 'naik-kapal-' + Date.now() + '.xlsx';
+        document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
@@ -321,10 +325,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnMasukkanKeBls').addEventListener('click', function() {
         const selectedIds = getSelectedIds();
         if (selectedIds.length === 0) return;
-    document.getElementById('btnExportExcel').addEventListener('click', function() {
-        const kapalId = "{{ request('kapal_id') }}";
-        const noVoyage = "{{ request('no_voyage') }}";onst selectedIds = getSelectedIds();
-        if (selectedIds.length === 0) return;
+        
+        if (confirm(`Yakin ingin memasukkan ${selectedIds.length} data ke BLS?`)) {
+            processBulkAction('masukkan_ke_bls', selectedIds);
+        }
+    });
+
+    document.getElementById('btnTidakNaikKapal').addEventListener('click', function() {
+        const selectedIds = getSelectedIds();
         
         if (confirm(`Yakin ingin menandai ${selectedIds.length} data sebagai tidak naik kapal?`)) {
             processBulkAction('tidak_naik_kapal', selectedIds);
@@ -372,25 +380,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('error', 'Terjadi kesalahan saat memproses data');
-        });
-    }
-
-    function showToast(type, message) {
-        const toast = document.createElement('div');
-        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-        
-        toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center`;
-        toast.innerHTML = `
-            <i class="fas ${icon} mr-2"></i>
-            <span>${message}</span>
-        `;
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.remove();
             showToast('error', 'Terjadi kesalahan saat memproses data');
         });
     }
