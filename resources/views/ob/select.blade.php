@@ -12,9 +12,6 @@
                 </div>
             </div>
             <div>
-                <a href="{{ route('tagihan-ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md mr-2">
-                    Ke Tagihan OB
-                </a>
                 <a href="{{ route('pranota-ob.index') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
                     Ke Pranota OB
                 </a>
@@ -44,13 +41,10 @@
             </div>
 
             <div class="mt-6 flex gap-4">
-                <button type="button" id="goToTagihanOB" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-md">
-                    <i class="fas fa-file-invoice mr-2"></i>Ke Tagihan OB
-                </button>
-                <button type="button" id="goToOBIndex" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">
-                    <i class="fas fa-arrow-right mr-2"></i>Lanjutkan ke OB
-                </button>
-            </div>
+                        <button type="button" id="goToOBIndex" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">
+                            <i class="fas fa-arrow-right mr-2"></i>Lanjutkan ke OB
+                        </button>
+                    </div>
         </form>
     </div>
 
@@ -74,7 +68,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const kapalSelect = document.getElementById('nama_kapal');
     const voyageSelect = document.getElementById('no_voyage');
-    const goToTagihanBtn = document.getElementById('goToTagihanOB');
     const goToOBIndexBtn = document.getElementById('goToOBIndex');
 
     kapalSelect.addEventListener('change', function() {
@@ -156,25 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Go to Tagihan OB with filter
-    goToTagihanBtn.addEventListener('click', function() {
-        const kapalId = kapalSelect.value;
-        const voyage = voyageSelect.value;
-
-        if (!kapalId || !voyage) {
-            alert('Silakan pilih kapal dan voyage terlebih dahulu');
-            return;
-        }
-
-        const kapalName = kapalId;
-        
-        // Redirect to Tagihan OB with filter parameters
-        const url = new URL('{{ route("tagihan-ob.index") }}', window.location.origin);
-        url.searchParams.set('nama_kapal', kapalName);
-        url.searchParams.set('no_voyage', voyage);
-        
-        window.location.href = url.toString();
-    });
+    // (Removed) "Ke Tagihan OB" button behavior - the button was removed from the UI.
 
     // Go to OB Index with filter
     goToOBIndexBtn.addEventListener('click', function() {
