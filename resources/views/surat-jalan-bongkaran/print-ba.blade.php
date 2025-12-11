@@ -18,7 +18,7 @@
         .pengirim {
             position: absolute;
             top: 6.5cm; /* 6,5cm from top */
-            left: 4cm;  /* 4cm from left */
+            left: 3.5cm;  /* moved left slightly from 4cm to 3.5cm */
             width: 12cm; /* reasonable width for address area */
             white-space: pre-wrap; /* keep new lines */
             line-height: 1.2;
@@ -28,7 +28,7 @@
         .penerima {
             position: absolute;
             top: 7.5cm; /* 7,5cm from top */
-            left: 4cm;  /* 4cm from left */
+            left: 3.5cm;  /* moved left slightly from 4cm to 3.5cm */
             width: 12cm; /* same width to align with pengirim */
             white-space: pre-wrap;
             line-height: 1.2;
