@@ -54,14 +54,28 @@
     @endif
 
     {{-- Debug Info (dapat dihapus setelah issue resolved) --}}
-    @if(config('app.debug'))
+    @if(config('app.debug') || request()->has('debug'))
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <p class="text-sm font-medium text-blue-800 mb-2"><i class="fas fa-info-circle mr-2"></i>Debug Information:</p>
         <div class="text-xs text-blue-700 space-y-1">
-            <p>• Query: Kapal = "{{ $namaKapal }}" | Voyage = "{{ $noVoyage }}"</p>
+            <p>• Query: Kapal = "{{ $namaKapal }}" (length: {{ strlen($namaKapal) }}) | Voyage = "{{ $noVoyage }}" (length: {{ strlen($noVoyage) }})</p>
+            <p>• Hex: Kapal = {{ bin2hex($namaKapal) }} | Voyage = {{ bin2hex($noVoyage) }}</p>
             <p>• Total BL Records: {{ isset($bls) ? $bls->total() : (isset($naikKapals) ? $naikKapals->total() : 0) }}</p>
             <p>• Sudah OB Count: {{ $sudahOB }}</p>
+            <p>• Belum OB Count: {{ $belumOB }}</p>
             <p>• Current Page: {{ isset($bls) ? $bls->currentPage() : (isset($naikKapals) ? $naikKapals->currentPage() : 0) }}</p>
+            @if(isset($bls))
+                @php
+                    $debugSudahOB = $bls->filter(fn($bl) => $bl->sudah_ob);
+                @endphp
+                <p>• BL dengan sudah_ob=true di page ini: {{ $debugSudahOB->count() }}</p>
+                @if($debugSudahOB->count() > 0)
+                    <p class="font-semibold mt-2">Detail BL yang Sudah OB:</p>
+                    @foreach($debugSudahOB as $debugBl)
+                        <p class="ml-4">- {{ $debugBl->nomor_kontainer }} (ID: {{ $debugBl->id }}, sudah_ob: {{ $debugBl->sudah_ob ? 'true' : 'false' }}, supir_id: {{ $debugBl->supir_id ?? 'null' }})</p>
+                    @endforeach
+                @endif
+            @endif
         </div>
     </div>
     @endif

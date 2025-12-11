@@ -67,6 +67,10 @@ class ObController extends Controller
         header('Pragma: no-cache');
         header('Expires: 0');
 
+        // Trim whitespace untuk memastikan matching yang tepat
+        $namaKapal = trim($namaKapal);
+        $noVoyage = trim($noVoyage);
+
         // Check if we have BL records for this ship/voyage
         $hasBl = Bl::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
@@ -124,12 +128,52 @@ class ObController extends Controller
                 ->where('no_voyage', $noVoyage)
                 ->count();
 
-            $sudahOB = Bl::where('nama_kapal', $namaKapal)
+            // Try multiple ways to count sudah_ob untuk debugging
+            $sudahOB_v1 = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', true)
                 ->count();
+            
+            $sudahOB_v2 = Bl::where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage)
+                ->where('sudah_ob', '=', 1)
+                ->count();
+            
+            $sudahOB_v3 = Bl::where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage)
+                ->whereNotNull('sudah_ob')
+                ->where('sudah_ob', '!=', 0)
+                ->count();
 
+            $sudahOB = $sudahOB_v1; // Use version 1 as default
             $belumOB = $totalKontainer - $sudahOB;
+
+            // Debug logging untuk investigate issue
+            \Log::info('OB Index - BL Query Debug', [
+                'nama_kapal' => $namaKapal,
+                'nama_kapal_length' => strlen($namaKapal),
+                'nama_kapal_hex' => bin2hex($namaKapal),
+                'no_voyage' => $noVoyage,
+                'no_voyage_length' => strlen($noVoyage),
+                'no_voyage_hex' => bin2hex($noVoyage),
+                'total_kontainer' => $totalKontainer,
+                'sudah_ob_v1_true' => $sudahOB_v1,
+                'sudah_ob_v2_equals_1' => $sudahOB_v2,
+                'sudah_ob_v3_not_null_not_zero' => $sudahOB_v3,
+                'belum_ob_count' => $belumOB,
+                'all_bls_sample' => Bl::where('nama_kapal', $namaKapal)
+                    ->where('no_voyage', $noVoyage)
+                    ->select('id', 'nomor_kontainer', 'sudah_ob', 'supir_id', 'tanggal_ob', 'nama_kapal', 'no_voyage')
+                    ->limit(5)
+                    ->get()
+                    ->toArray(),
+                'raw_sudah_ob_data' => Bl::where('nama_kapal', $namaKapal)
+                    ->where('no_voyage', $noVoyage)
+                    ->where('sudah_ob', true)
+                    ->select('id', 'nomor_kontainer', 'sudah_ob', 'supir_id', 'tanggal_ob')
+                    ->get()
+                    ->toArray()
+            ]);
 
             // Pre-compute pricing map and attach biaya & detected_status for each BL
             $pricelists = MasterPricelistOb::all();
