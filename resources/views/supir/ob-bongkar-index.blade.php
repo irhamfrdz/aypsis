@@ -95,6 +95,17 @@
             @endif
 
             <!-- Header Info Kapal & Voyage -->
+            @php
+                // Filter out BLs that contain 'cargo' (case-insensitive)
+                $filteredBls = $bls->filter(function($bl) {
+                    $kontainerRaw = $bl->nomor_kontainer ?? '';
+                    $isCargo = preg_match('/\bcargo\b/i', $kontainerRaw);
+                    return !$isCargo;
+                });
+                $totalFiltered = $filteredBls->count();
+                $sudahObFiltered = $filteredBls->where('sudah_ob', true)->count();
+                $belumObFiltered = $filteredBls->where('sudah_ob', false)->count();
+            @endphp
             <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -115,15 +126,15 @@
                         <div class="flex items-center space-x-4">
                             <div class="text-center">
                                 <p class="text-sm text-gray-500">Total</p>
-                                <p class="text-lg font-bold text-orange-600">{{ $bls->count() }}</p>
+                                <p class="text-lg font-bold text-orange-600">{{ $totalFiltered }}</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-500">Sudah OB</p>
-                                <p class="text-lg font-bold text-green-600">{{ $bls->where('sudah_ob', true)->count() }}</p>
+                                <p class="text-lg font-bold text-green-600">{{ $sudahObFiltered }}</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-500">Belum OB</p>
-                                <p class="text-lg font-bold text-yellow-600">{{ $bls->where('sudah_ob', false)->count() }}</p>
+                                <p class="text-lg font-bold text-yellow-600">{{ $belumObFiltered }}</p>
                             </div>
                         </div>
                     </div>
@@ -158,13 +169,13 @@
                         <div class="flex items-center space-x-2">
                             <span class="text-sm text-gray-600 font-medium">Filter:</span>
                             <button onclick="filterByStatus('all')" id="filter-all" class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-orange-600 text-white border-orange-600">
-                                Semua ({{ $bls->count() }})
+                                Semua ({{ $totalFiltered }})
                             </button>
                             <button onclick="filterByStatus('sudah')" id="filter-sudah" class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
-                                Sudah OB ({{ $bls->where('sudah_ob', true)->count() }})
+                                Sudah OB ({{ $sudahObFiltered }})
                             </button>
                             <button onclick="filterByStatus('belum')" id="filter-belum" class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
-                                Belum OB ({{ $bls->where('sudah_ob', false)->count() }})
+                                Belum OB ({{ $belumObFiltered }})
                             </button>
                         </div>
                     </div>
