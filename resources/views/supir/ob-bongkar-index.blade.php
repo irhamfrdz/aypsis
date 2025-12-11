@@ -331,12 +331,16 @@
         });
 
         // Debug info
-        console.log('OB Bongkar Index loaded');
-        console.log('Selected Kapal: {{ $selectedKapal }}');
-        console.log('Selected Voyage: {{ $selectedVoyage }}');
-        console.log('Total Containers: {{ $bls->count() }}');
+        console.log('=== OB Bongkar Index Debug Info ===');
+        console.log('Selected Kapal:', '{{ $selectedKapal }}');
+        console.log('Selected Voyage:', '{{ $selectedVoyage }}');
+        console.log('Total Containers:', {{ $bls->count() }});
         console.log('Sudah OB:', {{ $bls->where('sudah_ob', true)->count() }});
         console.log('Belum OB:', {{ $bls->where('sudah_ob', false)->count() }});
+        console.log('User:', '{{ Auth::user()->name }}');
+        console.log('User ID:', {{ Auth::user()->id }});
+        console.log('Page loaded at:', new Date().toLocaleString());
+        console.log('===================================');
     </script>
 </body>
 </html>

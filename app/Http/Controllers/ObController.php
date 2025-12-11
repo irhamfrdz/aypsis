@@ -62,6 +62,11 @@ class ObController extends Controller
      */
     private function showOBData(Request $request, $namaKapal, $noVoyage)
     {
+        // Disable browser caching for this page to ensure fresh data
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
         // Check if we have BL records for this ship/voyage
         $hasBl = Bl::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)

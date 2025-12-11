@@ -22,9 +22,13 @@
                     <h1 class="text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
                     @endif
                     <p class="text-gray-600">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
+                    <p class="text-xs text-gray-500 mt-1">Last updated: {{ now()->format('d/m/Y H:i:s') }}</p>
                 </div>
             </div>
             <div class="flex gap-2">
+                <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+                </button>
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
                 </a>
@@ -47,6 +51,19 @@
             <i class="fas fa-exclamation-circle mr-2"></i>
             {{ session('error') }}
         </div>
+    @endif
+
+    {{-- Debug Info (dapat dihapus setelah issue resolved) --}}
+    @if(config('app.debug'))
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+        <p class="text-sm font-medium text-blue-800 mb-2"><i class="fas fa-info-circle mr-2"></i>Debug Information:</p>
+        <div class="text-xs text-blue-700 space-y-1">
+            <p>• Query: Kapal = "{{ $namaKapal }}" | Voyage = "{{ $noVoyage }}"</p>
+            <p>• Total BL Records: {{ isset($bls) ? $bls->total() : (isset($naikKapals) ? $naikKapals->total() : 0) }}</p>
+            <p>• Sudah OB Count: {{ $sudahOB }}</p>
+            <p>• Current Page: {{ isset($bls) ? $bls->currentPage() : (isset($naikKapals) ? $naikKapals->currentPage() : 0) }}</p>
+        </div>
+    </div>
     @endif
 
     {{-- Statistics Cards --}}
@@ -563,7 +580,7 @@ function openSupirModal(type, id) {
     document.getElementById('record_id').value = id;
     document.getElementById('supir_id').value = '';
     document.getElementById('catatan').value = '';
-    document.getElementById('supirModal').classList.remove('hidden');
+    document.getElementById('supirModal').classList.remove('hidden');di
 }
 
 function closeSupirModal() {

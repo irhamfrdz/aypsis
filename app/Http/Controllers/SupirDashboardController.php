@@ -682,7 +682,19 @@ class SupirDashboardController extends Controller
             $bl->sudah_ob = true;
             $bl->supir_id = $user->id;
             $bl->tanggal_ob = now();
-            $bl->save();
+            $saved = $bl->save();
+
+            // Log before save untuk debugging
+            \Log::info('Updating BL Status OB', [
+                'bl_id' => $bl->id,
+                'nomor_kontainer' => $nomorKontainer,
+                'sudah_ob_before' => $bl->getOriginal('sudah_ob'),
+                'sudah_ob_after' => $bl->sudah_ob,
+                'save_result' => $saved
+            ]);
+
+            // Refresh model dari database untuk memastikan perubahan tersimpan
+            $bl->refresh();
 
             \Log::info('TagihanOb Bongkar Created', [
                 'tagihan_ob_id' => $tagihanOb->id,
@@ -692,9 +704,11 @@ class SupirDashboardController extends Controller
                 'voyage' => $selectedVoyage,
                 'kegiatan' => 'bongkar',
                 'supir' => $user->name,
+                'supir_id' => $user->id,
                 'size_kontainer' => $sizeKontainer,
                 'status_kontainer' => $statusKontainer,
-                'biaya' => $biaya
+                'biaya' => $biaya,
+                'sudah_ob_confirmed' => $bl->sudah_ob
             ]);
 
             return redirect()->route('supir.ob-bongkar.index', [
