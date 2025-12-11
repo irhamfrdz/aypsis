@@ -69,7 +69,7 @@
         /* Positioned nomor voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) */
         .no-voyage {
             position: absolute;
-            top: 5.5cm; /* 5.5cm from top */
+            top: 5.0cm; /* 5.0cm from top */
             left: 11.25cm; /* 11.25cm from left */
             white-space: nowrap;
             font-weight: bold;
@@ -90,9 +90,9 @@
         /* Positioned name 'Alex' from bottom-right */
         .alex-name {
             position: absolute;
-            bottom: 1.75cm; /* 1.75cm from bottom */
+            bottom: 2.75cm; /* 2.75cm from bottom */
             right: 3.5cm; /* 3.5cm from right */
-            font-weight: bold;
+            font-weight: 600;
             font-size: 14px;
             white-space: nowrap;
             text-align: right;
