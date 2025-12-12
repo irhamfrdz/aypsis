@@ -141,6 +141,10 @@
                                 <input type="text" id="total_tabungan_display" class="{{ $readonlyInputClasses }} font-bold text-green-600" value="Rp 0" readonly>
                             </div>
                             <div>
+                                <label for="total_bpjs_display" class="{{ $labelClasses }}">Total BPJS</label>
+                                <input type="text" id="total_bpjs_display" class="{{ $readonlyInputClasses }} font-bold text-yellow-600" value="Rp 0" readonly>
+                            </div>
+                            <div>
                                 <label for="grand_total_display" class="{{ $labelClasses }}">Grand Total</label>
                                 <input type="text" id="grand_total_display" class="{{ $readonlyInputClasses }} font-bold text-purple-600" value="Rp 0" readonly>
                             </div>
@@ -209,6 +213,9 @@
                         </div>
                         <div class="text-xs text-blue-700">
                             Total Tabungan: <span class="font-semibold text-green-600" id="totalTabunganSummary">Rp 0</span>
+                        </div>
+                        <div class="text-xs text-blue-700">
+                            Total BPJS: <span class="font-semibold text-yellow-600" id="totalBpjsSummary">Rp 0</span>
                         </div>
                         <div class="text-xs text-blue-700">
                             Grand Total: <span class="font-semibold text-purple-600" id="grandTotalSummary">Rp 0</span>
@@ -364,6 +371,14 @@
                                     Rp 0
                                 </td>
                             </tr>
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="5">
+                                    TOTAL BPJS
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-yellow-600" id="grandTotalBpjs">
+                                    Rp 0
+                                </td>
+                            </tr>
                             <tr class="font-semibold text-gray-800 bg-purple-200">
                                 <td class="px-2 py-3 text-xs font-bold" colspan="5">
                                     GRAND TOTAL BERSIH
@@ -377,8 +392,8 @@
                 </div>
                 <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
                     <p class="text-xs text-gray-600">
-                        * Pilih surat jalan dan masukkan nominal uang supir, utang, dan tabungan untuk setiap surat jalan yang dipilih.
-                        <br>* <strong>Grand Total = Uang Supir - Hutang - Tabungan</strong> (Hutang dan Tabungan mengurangi total yang diterima supir)
+                        * Pilih surat jalan dan masukkan nominal uang supir, hutang, tabungan, dan BPJS untuk setiap surat jalan yang dipilih.
+                        <br>* <strong>Grand Total = Uang Supir - Hutang - Tabungan - BPJS</strong> (Hutang, Tabungan, dan BPJS mengurangi total yang diterima supir)
                     </p>
                 </div>
 
@@ -426,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalUangRitDisplay = document.getElementById('total_uang_rit_display');
     const totalUtangDisplay = document.getElementById('total_utang_display');
     const totalTabunganDisplay = document.getElementById('total_tabungan_display');
+    const totalBpjsDisplay = document.getElementById('total_bpjs_display');
     const grandTotalDisplay = document.getElementById('grand_total_display');
     const submitBtn = document.getElementById('submitBtn');
     const selectedSummary = document.getElementById('selectedSummary');
@@ -564,6 +580,13 @@ document.addEventListener('DOMContentLoaded', function () {
                                    min="0" 
                                    step="1000"
                                    data-person="${personName}">
+                            <input type="number" 
+                                   class="person-bpjs-input w-16 px-1 py-1 text-xs border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-right"
+                                   placeholder="BPJS" 
+                                   value="0"
+                                   min="0" 
+                                   step="1000"
+                                   data-person="${personName}">
                             <div class="person-grand-total w-20 px-1 py-1 text-xs bg-purple-50 border border-purple-200 rounded text-right font-semibold text-purple-700"
                                  data-person="${personName}">
                                 Rp ${totals.uangSupir.toLocaleString('id-ID')}
@@ -585,6 +608,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function addPersonInputListeners() {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
+        const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
         
         personUtangInputs.forEach(input => {
             input.addEventListener('input', updatePersonGrandTotals);
@@ -593,11 +617,16 @@ document.addEventListener('DOMContentLoaded', function () {
         personTabunganInputs.forEach(input => {
             input.addEventListener('input', updatePersonGrandTotals);
         });
+        
+        personBpjsInputs.forEach(input => {
+            input.addEventListener('input', updatePersonGrandTotals);
+        });
     }
     
     function updatePersonGrandTotals() {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
+        const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
         const personGrandTotals = document.querySelectorAll('.person-grand-total');
         
         // Calculate grand totals for each person
@@ -607,6 +636,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Find corresponding inputs
             const utangInput = document.querySelector(`.person-utang-input[data-person="${personName}"]`);
             const tabunganInput = document.querySelector(`.person-tabungan-input[data-person="${personName}"]`);
+            const bpjsInput = document.querySelector(`.person-bpjs-input[data-person="${personName}"]`);
             
             // Get person's total uang supir from checked checkboxes
             let personUangSupir = 0;
@@ -621,9 +651,10 @@ document.addEventListener('DOMContentLoaded', function () {
             
             const utang = utangInput ? (parseFloat(utangInput.value) || 0) : 0;
             const tabungan = tabunganInput ? (parseFloat(tabunganInput.value) || 0) : 0;
+            const bpjs = bpjsInput ? (parseFloat(bpjsInput.value) || 0) : 0;
             
-            // Calculate grand total: Uang Supir - Hutang - Tabungan
-            const grandTotal = personUangSupir - utang - tabungan;
+            // Calculate grand total: Uang Supir - Hutang - Tabungan - BPJS
+            const grandTotal = personUangSupir - utang - tabungan - bpjs;
             grandTotalDiv.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
         });
         
@@ -634,9 +665,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateOverallTotals() {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
+        const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
         
         let totalUtang = 0;
         let totalTabungan = 0;
+        let totalBpjs = 0;
         let totalUangSupir = 0;
         
         // Calculate total uang supir from checked checkboxes
@@ -649,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
         
-        // Calculate total hutang and tabungan from person inputs
+        // Calculate total hutang, tabungan, and bpjs from person inputs
         personUtangInputs.forEach(input => {
             totalUtang += parseFloat(input.value) || 0;
         });
@@ -658,7 +691,11 @@ document.addEventListener('DOMContentLoaded', function () {
             totalTabungan += parseFloat(input.value) || 0;
         });
         
-        const overallGrandTotal = totalUangSupir - totalUtang - totalTabungan;
+        personBpjsInputs.forEach(input => {
+            totalBpjs += parseFloat(input.value) || 0;
+        });
+        
+        const overallGrandTotal = totalUangSupir - totalUtang - totalTabungan - totalBpjs;
         
         // Update display elements
         if (totalUtangDisplay) {
@@ -669,6 +706,10 @@ document.addEventListener('DOMContentLoaded', function () {
             totalTabunganDisplay.value = 'Rp ' + totalTabungan.toLocaleString('id-ID');
         }
         
+        if (totalBpjsDisplay) {
+            totalBpjsDisplay.value = 'Rp ' + totalBpjs.toLocaleString('id-ID');
+        }
+        
         if (grandTotalDisplay) {
             grandTotalDisplay.value = 'Rp ' + overallGrandTotal.toLocaleString('id-ID');
         }
@@ -676,6 +717,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update summary
         const totalUtangSummary = document.getElementById('totalUtangSummary');
         const totalTabunganSummary = document.getElementById('totalTabunganSummary');
+        const totalBpjsSummary = document.getElementById('totalBpjsSummary');
         const grandTotalSummary = document.getElementById('grandTotalSummary');
 
         if (totalUtangSummary) {
@@ -686,6 +728,10 @@ document.addEventListener('DOMContentLoaded', function () {
             totalTabunganSummary.textContent = 'Rp ' + totalTabungan.toLocaleString('id-ID');
         }
         
+        if (totalBpjsSummary) {
+            totalBpjsSummary.textContent = 'Rp ' + totalBpjs.toLocaleString('id-ID');
+        }
+        
         if (grandTotalSummary) {
             grandTotalSummary.textContent = 'Rp ' + overallGrandTotal.toLocaleString('id-ID');
         }
@@ -694,6 +740,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const grandTotalUangSupir = document.getElementById('grandTotalUangSupir');
         const grandTotalUtang = document.getElementById('grandTotalUtang');
         const grandTotalTabungan = document.getElementById('grandTotalTabungan');
+        const grandTotalBpjs = document.getElementById('grandTotalBpjs');
         const grandTotalKeseluruhan = document.getElementById('grandTotalKeseluruhan');
 
         if (grandTotalUangSupir) {
@@ -706,6 +753,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (grandTotalTabungan) {
             grandTotalTabungan.textContent = 'Rp ' + totalTabungan.toLocaleString('id-ID');
+        }
+        
+        if (grandTotalBpjs) {
+            grandTotalBpjs.textContent = 'Rp ' + totalBpjs.toLocaleString('id-ID');
         }
         
         if (grandTotalKeseluruhan) {
@@ -898,11 +949,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const supirDetailsContainer = document.getElementById('supirDetailsInputs');
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
+        const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
         
         // Clear existing inputs
         supirDetailsContainer.innerHTML = '';
         
-        // Create hidden inputs for each supir's hutang and tabungan
+        // Create hidden inputs for each supir's hutang, tabungan, and bpjs
         personUtangInputs.forEach(input => {
             const supirNama = input.dataset.person;
             const hutangValue = input.value || 0;
@@ -923,6 +975,17 @@ document.addEventListener('DOMContentLoaded', function () {
             tabunganInput.name = `supir_details[${supirNama}][tabungan]`;
             tabunganInput.value = tabunganValue;
             supirDetailsContainer.appendChild(tabunganInput);
+        });
+        
+        personBpjsInputs.forEach(input => {
+            const supirNama = input.dataset.person;
+            const bpjsValue = input.value || 0;
+            
+            const bpjsInput = document.createElement('input');
+            bpjsInput.type = 'hidden';
+            bpjsInput.name = `supir_details[${supirNama}][bpjs]`;
+            bpjsInput.value = bpjsValue;
+            supirDetailsContainer.appendChild(bpjsInput);
         });
     }
 
