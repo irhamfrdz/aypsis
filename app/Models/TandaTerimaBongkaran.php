@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class TandaTerimaBongkaran extends Model
+{
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+
+    protected $table = 'tanda_terima_bongkarans';
+
+    protected $fillable = [
+        'nomor_tanda_terima',
+        'tanggal_tanda_terima',
+        'surat_jalan_bongkaran_id',
+        'no_kontainer',
+        'no_seal',
+        'kegiatan',
+        'status',
+        'keterangan'
+    ];
+
+    protected $casts = [
+        'tanggal_tanda_terima' => 'date'
+    ];
+
+    /**
+     * Relationship to SuratJalanBongkaran
+     */
+    public function suratJalanBongkaran(): BelongsTo
+    {
+        return $this->belongsTo(SuratJalanBongkaran::class, 'surat_jalan_bongkaran_id');
+    }
+}
