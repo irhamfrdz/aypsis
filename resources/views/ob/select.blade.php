@@ -49,10 +49,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex gap-4">
-                <button type="button" id="goToTagihanOB" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-md">
-                    <i class="fas fa-file-invoice mr-2"></i>Ke Tagihan OB
-                </button>
+            <div class="mt-6">
                 <button type="button" id="goToOBIndex" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">
                     <i class="fas fa-arrow-right mr-2"></i>Lanjutkan ke OB
                 </button>
@@ -81,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const kegiatanSelect = document.getElementById('kegiatan');
     const kapalSelect = document.getElementById('nama_kapal');
     const voyageSelect = document.getElementById('no_voyage');
-    const goToTagihanBtn = document.getElementById('goToTagihanOB');
     const goToOBIndexBtn = document.getElementById('goToOBIndex');
 
     // Handle kegiatan selection
@@ -208,26 +204,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 700);
         }
     }
-
-    // Go to Tagihan OB with filter
-    goToTagihanBtn.addEventListener('click', function() {
-        const kegiatan = kegiatanSelect.value;
-        const kapalName = kapalSelect.value;
-        const voyage = voyageSelect.value;
-
-        if (!kegiatan || !kapalName || !voyage) {
-            alert('Silakan pilih kegiatan, kapal, dan voyage terlebih dahulu');
-            return;
-        }
-        
-        // Redirect to Tagihan OB with filter parameters
-        const url = new URL('{{ route("tagihan-ob.index") }}', window.location.origin);
-        url.searchParams.set('kegiatan', kegiatan);
-        url.searchParams.set('nama_kapal', kapalName);
-        url.searchParams.set('no_voyage', voyage);
-        
-        window.location.href = url.toString();
-    });
 
     // Go to OB Index with filter
     goToOBIndexBtn.addEventListener('click', function() {
