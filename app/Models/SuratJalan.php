@@ -474,19 +474,19 @@ class SuratJalan extends Model
     }
 
     /**
-     * Relationship dengan PembayaranPranotaUangJalan
-     * Directly from surat_jalan to pembayaran_pranota_uang_jalan
+     * Get pembayaran pranota uang jalan through complex relationship chain
+     * SuratJalan -> UangJalan -> PranotaUangJalanItems -> PembayaranPranotaUangJalanItems -> PembayaranPranotaUangJalan
+     * This is a custom relationship accessor that returns the latest payment
      */
-    public function pembayaranPranotaUangJalan()
+    public function getPembayaranPranotaUangJalanAttribute()
     {
-        return $this->hasOne(\App\Models\PembayaranPranotaUangJalan::class, 'surat_jalan_id');
-    }
-
-    /**
-     * Get all pembayaran pranota uang jalan for this surat jalan
-     */
-    public function pembayaranPranotaUangJalans()
-    {
-        return $this->hasMany(\App\Models\PembayaranPranotaUangJalan::class, 'surat_jalan_id');
+        return \App\Models\PembayaranPranotaUangJalan::query()
+            ->join('pembayaran_pranota_uang_jalan_items as ppuji', 'pembayaran_pranota_uang_jalans.id', '=', 'ppuji.pembayaran_pranota_uang_jalan_id')
+            ->join('pranota_uang_jalan_items as puji', 'ppuji.pranota_uang_jalan_id', '=', 'puji.pranota_uang_jalan_id')
+            ->join('uang_jalans as uj', 'puji.uang_jalan_id', '=', 'uj.id')
+            ->where('uj.surat_jalan_id', $this->id)
+            ->select('pembayaran_pranota_uang_jalans.*')
+            ->orderBy('pembayaran_pranota_uang_jalans.tanggal_pembayaran', 'desc')
+            ->first();
     }
 }
