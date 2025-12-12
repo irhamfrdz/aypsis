@@ -190,10 +190,22 @@
                 {{-- Asal Kontainer Input --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Asal Kontainer (Semua)</label>
-                    <input type="text"
-                           id="bulk_asal_kontainer"
-                           placeholder="Isi untuk mengubah semua"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @if(request('kegiatan') === 'muat')
+                        <select id="bulk_asal_kontainer"
+                                class="select2-gudang w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Pilih gudang...</option>
+                            @foreach($gudangs as $gudang)
+                                <option value="{{ $gudang->nama_gudang }}">
+                                    {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @else
+                        <input type="text"
+                               id="bulk_asal_kontainer"
+                               placeholder="Isi untuk mengubah semua"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @endif
                     <p class="text-xs text-gray-500 mt-1">Isi untuk mengubah semua asal kontainer</p>
                 </div>
 
@@ -822,8 +834,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const bulkKeInput = document.getElementById('bulk_ke');
 
     if (bulkAsalInput) {
-        bulkAsalInput.addEventListener('input', function(e) {
-            const value = e.target.value;
+        // Handle both SELECT and INPUT elements
+        const eventType = bulkAsalInput.tagName === 'SELECT' ? 'change' : 'input';
+        bulkAsalInput.addEventListener(eventType, function(e) {
+            const value = bulkAsalInput.tagName === 'SELECT' 
+                ? (bulkAsalInput.options[bulkAsalInput.selectedIndex]?.value || '')
+                : e.target.value;
+            
             // Determine which table is present and target the correct column
             const tables = document.querySelectorAll('tbody tr');
             tables.forEach(row => {
@@ -1147,8 +1164,14 @@ function saveAsalKe(type, id, tdElement) {
 
 // Handle Save Asal Kontainer and Ke (Bulk)
 document.getElementById('btnSaveAsalKe').addEventListener('click', function() {
-    const bulkAsalValue = document.getElementById('bulk_asal_kontainer').value.trim();
-    const bulkKeValue = document.getElementById('bulk_ke').value.trim();
+    const bulkAsalElement = document.getElementById('bulk_asal_kontainer');
+    const bulkKeElement = document.getElementById('bulk_ke');
+    
+    // Get value from SELECT or INPUT
+    const bulkAsalValue = bulkAsalElement.tagName === 'SELECT'
+        ? (bulkAsalElement.options[bulkAsalElement.selectedIndex]?.value || '').trim()
+        : bulkAsalElement.value.trim();
+    const bulkKeValue = bulkKeElement.value.trim();
     
     // Check if bulk values are provided
     if (!bulkAsalValue && !bulkKeValue) {
