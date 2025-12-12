@@ -1686,6 +1686,26 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-bongkaran.export') || (isset($userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['export']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan-bongkaran']['export']) || ($user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-export'))) checked @endif></td>
                             </tr>
 
+                            {{-- Pembayaran Uang Muka --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <span>Pembayaran Uang Muka</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-uang-muka.view') || (isset($userMatrixPermissions['pembayaran-uang-muka']['view']) && $userMatrixPermissions['pembayaran-uang-muka']['view']) || ($user && $user->can('pembayaran-uang-muka-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-uang-muka.create') || (isset($userMatrixPermissions['pembayaran-uang-muka']['create']) && $userMatrixPermissions['pembayaran-uang-muka']['create']) || ($user && $user->can('pembayaran-uang-muka-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-uang-muka.update') || (isset($userMatrixPermissions['pembayaran-uang-muka']['update']) && $userMatrixPermissions['pembayaran-uang-muka']['update']) || ($user && $user->can('pembayaran-uang-muka-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-uang-muka.delete') || (isset($userMatrixPermissions['pembayaran-uang-muka']['delete']) && $userMatrixPermissions['pembayaran-uang-muka']['delete']) || ($user && $user->can('pembayaran-uang-muka-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
                                 <td class="module-header">
