@@ -31,6 +31,7 @@
                         <input type="hidden" name="mode" value="{{ $mode ?? request('mode') }}">
                         <input type="hidden" name="search" value="{{ request('search') }}">
                         <input type="hidden" name="status" value="{{ request('status') }}">
+                        <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -45,6 +46,7 @@
                             @csrf
                             <input type="hidden" name="mode" value="missing">
                             <input type="hidden" name="search" value="{{ request('search') }}">
+                            <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -58,6 +60,7 @@
                         <input type="hidden" name="mode" value="combined">
                         <input type="hidden" name="search" value="{{ request('search') }}">
                         <input type="hidden" name="status" value="{{ request('status') }}">
+                        <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -138,26 +141,36 @@
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('tanda-terima.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari no. surat jalan, kontainer, kapal, tujuan ambil, tujuan kirim..."
+                               placeholder="Cari no. surat jalan, kontainer, kapal..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="" {{ ($mode ?? request('mode')) == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
-                            <option value="missing" {{ ($mode ?? request('mode')) == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima (Hanya yang sudah bayar uang jalan)</option>
+                            <option value="missing" {{ ($mode ?? request('mode')) == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima</option>
                             <option value="with_tanda_terima" {{ ($mode ?? request('mode')) == 'with_tanda_terima' ? 'selected' : '' }}>Surat Jalan Sudah Ada Tanda Terima</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-3">
+                        <select name="kegiatan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Kegiatan</option>
+                            @foreach($masterKegiatans as $masterKegiatan)
+                                <option value="{{ $masterKegiatan->kode_kegiatan }}" {{ request('kegiatan') == $masterKegiatan->kode_kegiatan ? 'selected' : '' }}>
+                                    {{ $masterKegiatan->nama_kegiatan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-1.5">
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
                             <i class="fas fa-search mr-2"></i> Cari
                         </button>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-1.5">
                         <a href="{{ route('tanda-terima.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
                             <i class="fas fa-redo mr-2"></i> Reset
                         </a>

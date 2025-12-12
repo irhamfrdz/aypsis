@@ -44,6 +44,10 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $query->where('status', $this->filters['status']);
             }
 
+            if (!empty($this->filters['kegiatan'])) {
+                $query->where('kegiatan', $this->filters['kegiatan']);
+            }
+
             // Only missing tanda terima
             $query->whereDoesntHave('tandaTerima');
 
@@ -80,6 +84,10 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $ttQuery->where('status', $this->filters['status']);
             }
 
+            if (!empty($this->filters['kegiatan'])) {
+                $ttQuery->where('kegiatan', $this->filters['kegiatan']);
+            }
+
             $ttRows = $ttQuery->orderBy('created_at', 'desc')->get()->map(function($t) {
                 $kegiatanName = MasterKegiatan::where('kode_kegiatan', $t->kegiatan)->value('nama_kegiatan') ?? $t->kegiatan;
                 $tanggal = data_get($t, 'suratJalan.tanggal_surat_jalan') ? \Carbon\Carbon::parse(data_get($t, 'suratJalan.tanggal_surat_jalan'))->format('d/M/Y') : ($t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/M/Y') : '-');
@@ -112,6 +120,9 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
             }
             if (!empty($this->filters['status'])) {
                 $sjQuery->where('status', $this->filters['status']);
+            }
+            if (!empty($this->filters['kegiatan'])) {
+                $sjQuery->where('kegiatan', $this->filters['kegiatan']);
             }
             $sjQuery->whereDoesntHave('tandaTerima');
             $sjQuery->whereHas('uangJalans', function($uangJalanQuery) {
@@ -157,6 +168,10 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
 
         if (!empty($this->filters['status'])) {
             $query->where('status', $this->filters['status']);
+        }
+
+        if (!empty($this->filters['kegiatan'])) {
+            $query->where('kegiatan', $this->filters['kegiatan']);
         }
 
         $rows = $query->orderBy('created_at', 'desc')->get()->map(function($t) {
