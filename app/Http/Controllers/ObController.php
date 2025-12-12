@@ -88,12 +88,8 @@ class ObController extends Controller
             $queryBl = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
-                // Exclude FCL containers with nomor_kontainer 'CARGO'
-                ->where(function($q) {
-                    $q->where('tipe_kontainer', '!=', 'FCL')
-                      ->orWhere('nomor_kontainer', '!=', 'CARGO')
-                      ->orWhereNull('nomor_kontainer');
-                });
+                // Exclude FCL containers where nomor_kontainer starts with 'CARGO'
+                ->whereRaw("NOT (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%'))");
 
             // Apply filters from request (similar to naik_kapal branch)
             if ($request->filled('status_ob')) {
@@ -142,24 +138,16 @@ class ObController extends Controller
 
             $totalKontainer = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
-                // Exclude FCL containers with nomor_kontainer 'CARGO'
-                ->where(function($q) {
-                    $q->where('tipe_kontainer', '!=', 'FCL')
-                      ->orWhere('nomor_kontainer', '!=', 'CARGO')
-                      ->orWhereNull('nomor_kontainer');
-                })
+                // Exclude FCL containers where nomor_kontainer starts with 'CARGO'
+                ->whereRaw("NOT (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%'))")
                 ->count();
 
             // Try multiple ways to count sudah_ob untuk debugging
             $sudahOB_v1 = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', true)
-                // Exclude FCL containers with nomor_kontainer 'CARGO'
-                ->where(function($q) {
-                    $q->where('tipe_kontainer', '!=', 'FCL')
-                      ->orWhere('nomor_kontainer', '!=', 'CARGO')
-                      ->orWhereNull('nomor_kontainer');
-                })
+                // Exclude FCL containers where nomor_kontainer starts with 'CARGO'
+                ->whereRaw("NOT (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%'))")
                 ->count();
             
             $sudahOB_v1_sql = \DB::getQueryLog();
@@ -279,12 +267,8 @@ class ObController extends Controller
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
             ->where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
-            // Exclude FCL containers with nomor_kontainer 'CARGO'
-            ->where(function($q) {
-                $q->where('tipe_kontainer', '!=', 'FCL')
-                  ->orWhere('nomor_kontainer', '!=', 'CARGO')
-                  ->orWhereNull('nomor_kontainer');
-            });
+            // Exclude FCL containers where nomor_kontainer starts with 'CARGO'
+            ->whereRaw("NOT (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%'))");
 
         // Additional filters
         if ($request->filled('status_ob')) {
@@ -333,23 +317,15 @@ class ObController extends Controller
         // Statistics
         $totalKontainer = NaikKapal::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
-            // Exclude FCL containers with nomor_kontainer 'CARGO'
-            ->where(function($q) {
-                $q->where('tipe_kontainer', '!=', 'FCL')
-                  ->orWhere('nomor_kontainer', '!=', 'CARGO')
-                  ->orWhereNull('nomor_kontainer');
-            })
+            // Exclude FCL containers where nomor_kontainer starts with 'CARGO'
+            ->whereRaw("NOT (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%'))")
             ->count();
 
         $sudahOB = NaikKapal::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
             ->where('sudah_ob', true)
-            // Exclude FCL containers with nomor_kontainer 'CARGO'
-            ->where(function($q) {
-                $q->where('tipe_kontainer', '!=', 'FCL')
-                  ->orWhere('nomor_kontainer', '!=', 'CARGO')
-                  ->orWhereNull('nomor_kontainer');
-            })
+            // Exclude FCL containers where nomor_kontainer starts with 'CARGO'
+            ->whereRaw("NOT (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%'))")
             ->count();
 
         $belumOB = $totalKontainer - $sudahOB;
