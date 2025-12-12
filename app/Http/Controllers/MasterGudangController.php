@@ -104,4 +104,102 @@ class MasterGudangController extends Controller
         return redirect()->route('master-gudang.index')
             ->with('success', 'Data gudang berhasil dihapus');
     }
+
+    /**
+     * Import data from Excel file
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:2048'
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            // Skip header row
+            $imported = 0;
+            $errors = [];
+
+            foreach (array_slice($rows, 1) as $index => $row) {
+                // Skip empty rows
+                if (empty($row[0]) && empty($row[1])) {
+                    continue;
+                }
+
+                try {
+                    Gudang::create([
+                        'nama_gudang' => $row[0] ?? '',
+                        'lokasi' => $row[1] ?? '',
+                        'keterangan' => $row[2] ?? null,
+                        'status' => in_array(strtolower($row[3] ?? ''), ['aktif', 'nonaktif']) 
+                                    ? strtolower($row[3]) 
+                                    : 'aktif',
+                    ]);
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+                }
+            }
+
+            if (count($errors) > 0) {
+                return redirect()->route('master-gudang.index')
+                    ->with('success', "{$imported} data berhasil diimport")
+                    ->with('error', "Beberapa data gagal: " . implode(", ", array_slice($errors, 0, 3)));
+            }
+
+            return redirect()->route('master-gudang.index')
+                ->with('success', "{$imported} data gudang berhasil diimport");
+
+        } catch (\Exception $e) {
+            return redirect()->route('master-gudang.index')
+                ->with('error', 'Gagal import data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download Excel template
+     */
+    public function template()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $sheet->setCellValue('A1', 'Nama Gudang');
+        $sheet->setCellValue('B1', 'Lokasi');
+        $sheet->setCellValue('C1', 'Keterangan');
+        $sheet->setCellValue('D1', 'Status');
+
+        // Add example data
+        $sheet->setCellValue('A2', 'Gudang A');
+        $sheet->setCellValue('B2', 'Jakarta');
+        $sheet->setCellValue('C2', 'Gudang utama');
+        $sheet->setCellValue('D2', 'aktif');
+
+        // Style headers
+        $sheet->getStyle('A1:D1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:D1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFE2EFDA');
+
+        // Auto size columns
+        foreach (range('A', 'D') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Create writer and download
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'template_master_gudang.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
 }

@@ -1029,6 +1029,15 @@ Route::middleware([
          ]);
 
     // 🏢 Master Gudang (Warehouse Master) Management with permissions
+    // Import & Template routes (must be before resource routes)
+    Route::get('master-gudang/template/download', [\App\Http\Controllers\MasterGudangController::class, 'template'])
+         ->name('master-gudang.template')
+         ->middleware('can:master-gudang-view');
+    
+    Route::post('master-gudang/import', [\App\Http\Controllers\MasterGudangController::class, 'import'])
+         ->name('master-gudang.import')
+         ->middleware('can:master-gudang-create');
+    
     Route::resource('master-gudang', \App\Http\Controllers\MasterGudangController::class)
          ->names('master-gudang')
          ->middleware([

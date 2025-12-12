@@ -12,11 +12,16 @@
                 <h1 class="text-2xl font-bold text-gray-800">Master Gudang</h1>
                 <p class="text-gray-600 mt-1">Kelola data gudang</p>
             </div>
-            @can('master-gudang-create')
-            <a href="{{ route('master-gudang.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
-                <i class="fas fa-plus mr-2"></i>Tambah Gudang
-            </a>
-            @endcan
+            <div class="flex items-center space-x-2">
+                @can('master-gudang-create')
+                <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i>Import Excel
+                </button>
+                <a href="{{ route('master-gudang.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>Tambah Gudang
+                </a>
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -145,6 +150,51 @@
                 {{ $gudangs->links() }}
             </div>
         @endif
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Import Data Gudang</h3>
+            <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form action="{{ route('master-gudang.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
+                <input type="file" name="file" accept=".xlsx,.xls" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="mt-1 text-xs text-gray-500">Format: .xlsx atau .xls</p>
+            </div>
+
+            <div class="mb-4 p-3 bg-blue-50 rounded-md">
+                <p class="text-sm text-blue-800 mb-2"><strong>Format Excel:</strong></p>
+                <ul class="text-xs text-blue-700 list-disc list-inside space-y-1">
+                    <li>Kolom 1: Nama Gudang</li>
+                    <li>Kolom 2: Lokasi</li>
+                    <li>Kolom 3: Keterangan (opsional)</li>
+                    <li>Kolom 4: Status (aktif/nonaktif)</li>
+                </ul>
+                <a href="{{ route('master-gudang.template') }}" class="text-xs text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                    <i class="fas fa-download mr-1"></i>Download Template
+                </a>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    Batal
+                </button>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-upload mr-2"></i>Import
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
