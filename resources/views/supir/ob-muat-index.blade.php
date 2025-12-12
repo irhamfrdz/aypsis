@@ -269,8 +269,7 @@
                                                     Selesai
                                                 </button>
                                             @else
-                                                <form action="{{ route('supir.ob-muat.process') }}" method="POST" class="inline" 
-                                                      onsubmit="return confirm('Yakin ingin memproses OB Muat untuk kontainer {{ $bl->nomor_kontainer }}?')">
+                                                <form action="{{ route('supir.ob-muat.process') }}" method="POST" class="inline">
                                                     @csrf
                                                     <input type="hidden" name="kapal" value="{{ $selectedKapal }}">
                                                     <input type="hidden" name="voyage" value="{{ $selectedVoyage }}">
