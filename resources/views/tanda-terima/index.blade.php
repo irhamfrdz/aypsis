@@ -235,6 +235,8 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rit</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Uang Jalan</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -248,6 +250,8 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Uang Jalan</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -265,6 +269,8 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Uang Jalan</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -300,6 +306,12 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->no_plat ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->rit ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $suratJalan->pembayaranPranotaUangJalan->no_pranota_uang_jalan ?? '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $suratJalan->pembayaranPranotaUangJalan && $suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran ? \Carbon\Carbon::parse($suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                     {{ Str::limit($suratJalan->kegiatan ?: '-', 12) }}
                                 </span>
@@ -313,7 +325,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-3 py-8 text-center">
+                            <td colspan="13" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-truck-loading text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan tanpa tanda terima</p>
@@ -347,6 +359,12 @@
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $item->no_kontainer ?: '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $item->no_pranota_uang_jalan ?? '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $item->tanggal_pembayaran_uang_jalan ? \Carbon\Carbon::parse($item->tanggal_pembayaran_uang_jalan)->format('d/m/Y') : '-' }}
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">TT-{{ $item->tanda_terima_id }}</code>
                             </td>
@@ -372,7 +390,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-3 py-8 text-center">
+                            <td colspan="13" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan dengan tanda terima</p>
@@ -433,6 +451,12 @@
                                         {{ Str::limit($tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim', 20) }}
                                     </span>
                                 </div>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $tandaTerima->suratJalan->pembayaranPranotaUangJalan->no_pranota_uang_jalan ?? '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $tandaTerima->suratJalan && $tandaTerima->suratJalan->pembayaranPranotaUangJalan && $tandaTerima->suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran ? \Carbon\Carbon::parse($tandaTerima->suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 @php
@@ -517,7 +541,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-3 py-8 text-center">
+                            <td colspan="13" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada data tanda terima</p>
