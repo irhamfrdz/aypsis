@@ -278,7 +278,7 @@
                                        class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                        data-id="{{ $bl->id }}" 
                                        data-type="bl"
-                                       value="{{ $bl->asal_kontainer ?: ($bl->kegiatan === 'bongkar' ? $namaKapal : '') }}"
+                                       value="{{ $bl->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
                                        placeholder="Asal kontainer...">
                                 <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
                                         class="text-green-600 hover:text-green-900 transition duration-150"
@@ -293,7 +293,7 @@
                                        class="editable-ke w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                        data-id="{{ $bl->id }}" 
                                        data-type="bl"
-                                       value="{{ $bl->ke ?: ($bl->kegiatan === 'muat' ? $namaKapal : '') }}"
+                                       value="{{ $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '') }}"
                                        placeholder="Tujuan...">
                                 <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
                                         class="text-green-600 hover:text-green-900 transition duration-150"
@@ -416,7 +416,7 @@
                                            class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                            data-id="{{ $naikKapal->id }}" 
                                            data-type="naik_kapal"
-                                           value="{{ $naikKapal->asal_kontainer ?: ($naikKapal->kegiatan === 'bongkar' ? $namaKapal : '') }}"
+                                           value="{{ $naikKapal->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
                                            placeholder="Asal kontainer...">
                                     <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
                                             class="text-green-600 hover:text-green-900 transition duration-150"
@@ -431,7 +431,7 @@
                                            class="editable-ke w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                            data-id="{{ $naikKapal->id }}" 
                                            data-type="naik_kapal"
-                                           value="{{ $naikKapal->ke ?: ($naikKapal->kegiatan === 'muat' ? $namaKapal : '') }}"
+                                           value="{{ $naikKapal->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '') }}"
                                            placeholder="Tujuan...">
                                     <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
                                             class="text-green-600 hover:text-green-900 transition duration-150"
@@ -1045,7 +1045,19 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             window.location.reload();
         } else {
             alert(data.message || 'Terjadi kesalahan');
-   Function to save individual Asal Kontainer and Ke
+            btnConfirm.disabled = false;
+            btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses');
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
+    });
+});
+
+// Function to save individual Asal Kontainer and Ke
 function saveAsalKe(type, id, tdElement) {
     const row = tdElement.closest('tr');
     const asalInput = row.querySelector('.editable-asal-kontainer');
@@ -1097,19 +1109,7 @@ function saveAsalKe(type, id, tdElement) {
     });
 }
 
-// Handle Save Asal Kontainer and Ke (Bulk)lse;
-            btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat memproses');
-        btnConfirm.disabled = false;
-        btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
-    });
-});
-
-// Handle Save Asal Kontainer and Ke
+// Handle Save Asal Kontainer and Ke (Bulk)
 document.getElementById('btnSaveAsalKe').addEventListener('click', function() {
     const bulkAsalValue = document.getElementById('bulk_asal_kontainer').value.trim();
     const bulkKeValue = document.getElementById('bulk_ke').value.trim();
