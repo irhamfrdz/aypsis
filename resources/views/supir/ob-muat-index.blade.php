@@ -240,7 +240,7 @@
                                             {{ $bl->asal_kontainer ?? '-' }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $bl->ke ?? '-' }}
+                                            {{ $selectedKapal }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center text-sm">
                                             @if($bl->sudah_ob ?? false)
