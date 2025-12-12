@@ -135,7 +135,7 @@ class TandaTerimaController extends Controller
 
         // If mode is 'missing' then we should list Surat Jalan that don't have Tanda Terima
         if ($mode === 'missing') {
-            $suratQuery = SuratJalan::with(['order.pengirim']);
+            $suratQuery = SuratJalan::with(['order.pengirim', 'pembayaranPranotaUangJalan']);
 
             // Apply search filter for surat jalan
             if (!empty($search)) {
@@ -177,6 +177,7 @@ class TandaTerimaController extends Controller
         if ($mode === 'with_tanda_terima') {
             $query = DB::table('surat_jalans as sj')
                 ->join('tanda_terimas as tt', 'sj.id', '=', 'tt.surat_jalan_id')
+                ->leftJoin('pembayaran_pranota_uang_jalans as ppuj', 'sj.id', '=', 'ppuj.surat_jalan_id')
                 ->select(
                     'sj.id as surat_jalan_id',
                     'sj.no_surat_jalan',
@@ -186,7 +187,9 @@ class TandaTerimaController extends Controller
                     'sj.no_plat',
                     'sj.kegiatan',
                     'tt.id as tanda_terima_id',
-                    'tt.created_at'
+                    'tt.created_at',
+                    'ppuj.no_pranota_uang_jalan',
+                    'ppuj.tanggal_pembayaran as tanggal_pembayaran_uang_jalan'
                 );
 
             // Apply search filter
@@ -205,7 +208,7 @@ class TandaTerimaController extends Controller
             return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'mode'));
         }
         // Query tanda terima with relations
-        $query = TandaTerima::with(['suratJalan.order.pengirim']);
+        $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.pembayaranPranotaUangJalan']);
 
         // Apply search filter for tanda terima
         if (!empty($search)) {

@@ -472,4 +472,21 @@ class SuratJalan extends Model
     {
         return $this->hasOne(UangJalan::class)->latestOfMany();
     }
+
+    /**
+     * Relationship dengan PembayaranPranotaUangJalan
+     * Directly from surat_jalan to pembayaran_pranota_uang_jalan
+     */
+    public function pembayaranPranotaUangJalan()
+    {
+        return $this->hasOne(\App\Models\PembayaranPranotaUangJalan::class, 'surat_jalan_id');
+    }
+
+    /**
+     * Get all pembayaran pranota uang jalan for this surat jalan
+     */
+    public function pembayaranPranotaUangJalans()
+    {
+        return $this->hasMany(\App\Models\PembayaranPranotaUangJalan::class, 'surat_jalan_id');
+    }
 }
