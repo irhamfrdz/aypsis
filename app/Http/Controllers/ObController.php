@@ -87,7 +87,16 @@ class ObController extends Controller
         if ($kegiatan !== 'muat' && $hasBl) {
             $queryBl = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
-                ->where('no_voyage', $noVoyage);
+                ->where('no_voyage', $noVoyage)
+                // Exclude FCL without container number
+                ->where(function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->whereRaw('UPPER(tipe_kontainer) = ?', ['FCL'])
+                            ->whereNotNull('nomor_kontainer')
+                            ->where('nomor_kontainer', '!=', '');
+                    })->orWhereRaw('UPPER(tipe_kontainer) != ?', ['FCL'])
+                      ->orWhereNull('tipe_kontainer');
+                });
 
             // Apply filters from request (similar to naik_kapal branch)
             if ($request->filled('status_ob')) {
@@ -260,7 +269,16 @@ class ObController extends Controller
         // Default: Get naik_kapal data for the selected ship and voyage
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
             ->where('nama_kapal', $namaKapal)
-            ->where('no_voyage', $noVoyage);
+            ->where('no_voyage', $noVoyage)
+            // Exclude FCL without container number
+            ->where(function($q) {
+                $q->where(function($subQ) {
+                    $subQ->whereRaw('UPPER(tipe_kontainer) = ?', ['FCL'])
+                        ->whereNotNull('nomor_kontainer')
+                        ->where('nomor_kontainer', '!=', '');
+                })->orWhereRaw('UPPER(tipe_kontainer) != ?', ['FCL'])
+                  ->orWhereNull('tipe_kontainer');
+            });
 
         // Additional filters
         if ($request->filled('status_ob')) {
