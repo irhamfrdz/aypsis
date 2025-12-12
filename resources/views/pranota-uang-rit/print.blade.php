@@ -129,9 +129,10 @@
                 <th style="width: 8%;">Total</th>
                 <th style="width: 5%;">Rit</th>
                 <th style="width: 12%;">Total</th>
-                <th style="width: 12%;">Hutang</th>
-                <th style="width: 12%;">Tabungan</th>
-                <th style="width: 15%;">Grand Total</th>
+                <th style="width: 10%;">Hutang</th>
+                <th style="width: 10%;">Tabungan</th>
+                <th style="width: 10%;">BPJS</th>
+                <th style="width: 12%;">Grand Total</th>
             </tr>
         </thead>
         <tbody>
@@ -152,6 +153,7 @@
                     <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($detail->bpjs, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->grand_total, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
@@ -195,6 +197,7 @@
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}</strong></td>
+                <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}</strong></td>
             </tr>
         </tfoot>
