@@ -29,6 +29,9 @@
                 <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-sync-alt mr-2"></i>Refresh Data
                 </button>
+                <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-print mr-2"></i>Print
+                </a>
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
                 </a>
@@ -183,6 +186,26 @@
                         <option value="40" {{ request('size_kontainer') == '40' ? 'selected' : '' }}>40 Feet</option>
                     </select>
                 </div>
+
+                {{-- Asal Kontainer Input --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Asal Kontainer (Semua)</label>
+                    <input type="text"
+                           id="bulk_asal_kontainer"
+                           placeholder="Isi untuk mengubah semua"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Isi untuk mengubah semua asal kontainer</p>
+                </div>
+
+                {{-- Ke Input --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ke (Semua)</label>
+                    <input type="text"
+                           id="bulk_ke"
+                           placeholder="Isi untuk mengubah semua"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Isi untuk mengubah tujuan semua kontainer</p>
+                </div>
             </div>
 
             <div class="flex justify-between items-center mt-4">
@@ -195,6 +218,12 @@
                         <i class="fas fa-times mr-2"></i>
                         Reset
                     </a>
+                </div>
+                <div>
+                    <button type="button" id="btnSaveAsalKe" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan Asal & Ke
+                    </button>
                 </div>
             </div>
         </form>
@@ -222,6 +251,8 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Kontainer</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ke</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
@@ -241,6 +272,36 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->nama_barang ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <input type="text" 
+                                       class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                       data-id="{{ $bl->id }}" 
+                                       data-type="bl"
+                                       value="{{ $bl->asal_kontainer ?: ($bl->kegiatan === 'bongkar' ? $namaKapal : '') }}"
+                                       placeholder="Asal kontainer...">
+                                <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
+                                        class="text-green-600 hover:text-green-900 transition duration-150"
+                                        title="Simpan">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div class="flex items-center gap-2">
+                                <input type="text" 
+                                       class="editable-ke w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                       data-id="{{ $bl->id }}" 
+                                       data-type="bl"
+                                       value="{{ $bl->ke ?: ($bl->kegiatan === 'muat' ? $namaKapal : '') }}"
+                                       placeholder="Tujuan...">
+                                <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
+                                        class="text-green-600 hover:text-green-900 transition duration-150"
+                                        title="Simpan">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer . ' Feet' : '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/Y') : '-' }}</td>
@@ -304,7 +365,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="11" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                        <td colspan="13" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -321,6 +382,8 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Kontainer</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ke</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Muat</th>
@@ -346,6 +409,36 @@
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div class="flex items-center gap-2">
+                                    <input type="text" 
+                                           class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           data-id="{{ $naikKapal->id }}" 
+                                           data-type="naik_kapal"
+                                           value="{{ $naikKapal->asal_kontainer ?: ($naikKapal->kegiatan === 'bongkar' ? $namaKapal : '') }}"
+                                           placeholder="Asal kontainer...">
+                                    <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
+                                            class="text-green-600 hover:text-green-900 transition duration-150"
+                                            title="Simpan">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div class="flex items-center gap-2">
+                                    <input type="text" 
+                                           class="editable-ke w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           data-id="{{ $naikKapal->id }}" 
+                                           data-type="naik_kapal"
+                                           value="{{ $naikKapal->ke ?: ($naikKapal->kegiatan === 'muat' ? $namaKapal : '') }}"
+                                           placeholder="Tujuan...">
+                                    <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
+                                            class="text-green-600 hover:text-green-900 transition duration-150"
+                                            title="Simpan">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                </div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($naikKapal->tipe_kontainer)
@@ -440,7 +533,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="12" class="px-4 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
                                     <p class="text-lg font-medium">Tidak ada data kontainer yang ditemukan</p>
@@ -688,6 +781,52 @@ document.addEventListener('DOMContentLoaded', function() {
             containerInput.value = containerInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
         }
     }
+
+    // Handle bulk Asal Kontainer and Ke update
+    const bulkAsalInput = document.getElementById('bulk_asal_kontainer');
+    const bulkKeInput = document.getElementById('bulk_ke');
+
+    if (bulkAsalInput) {
+        bulkAsalInput.addEventListener('input', function(e) {
+            const value = e.target.value;
+            // Determine which table is present and target the correct column
+            const tables = document.querySelectorAll('tbody tr');
+            tables.forEach(row => {
+                if (row.querySelector('.fa-inbox')) return; // Skip empty state row
+                
+                // Check if this is BL table (has No. BL column) or Naik Kapal table
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 13) {
+                    // BL table: Asal Kontainer is column 7 (index 6)
+                    if (cells[6]) cells[6].textContent = value || '-';
+                } else if (cells.length === 12) {
+                    // Naik Kapal table: Asal Kontainer is column 6 (index 5)
+                    if (cells[5]) cells[5].textContent = value || '-';
+                }
+            });
+        });
+    }
+
+    if (bulkKeInput) {
+        bulkKeInput.addEventListener('input', function(e) {
+            const value = e.target.value;
+            // Determine which table is present and target the correct column
+            const tables = document.querySelectorAll('tbody tr');
+            tables.forEach(row => {
+                if (row.querySelector('.fa-inbox')) return; // Skip empty state row
+                
+                // Check if this is BL table (has No. BL column) or Naik Kapal table
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 13) {
+                    // BL table: Ke is column 8 (index 7)
+                    if (cells[7]) cells[7].textContent = value || '-';
+                } else if (cells.length === 12) {
+                    // Naik Kapal table: Ke is column 7 (index 6)
+                    if (cells[6]) cells[6].textContent = value || '-';
+                }
+            });
+        });
+    }
 });
 
 // Handle form submission
@@ -906,7 +1045,59 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             window.location.reload();
         } else {
             alert(data.message || 'Terjadi kesalahan');
-            btnConfirm.disabled = false;
+   Function to save individual Asal Kontainer and Ke
+function saveAsalKe(type, id, tdElement) {
+    const row = tdElement.closest('tr');
+    const asalInput = row.querySelector('.editable-asal-kontainer');
+    const keInput = row.querySelector('.editable-ke');
+    
+    const asalValue = asalInput.value.trim();
+    const keValue = keInput.value.trim();
+    
+    // Show loading state
+    const saveBtn = tdElement.querySelector('button');
+    const originalBtnHtml = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    // Send AJAX request
+    fetch('/ob/save-asal-ke', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            type: type,
+            id: id,
+            asal_kontainer: asalValue || null,
+            ke: keValue || null
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Show success feedback
+            saveBtn.innerHTML = '<i class="fas fa-check text-green-600"></i>';
+            setTimeout(() => {
+                saveBtn.innerHTML = originalBtnHtml;
+                saveBtn.disabled = false;
+            }, 1500);
+        } else {
+            alert(result.message || 'Terjadi kesalahan saat menyimpan');
+            saveBtn.innerHTML = originalBtnHtml;
+            saveBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menyimpan data');
+        saveBtn.innerHTML = originalBtnHtml;
+        saveBtn.disabled = false;
+    });
+}
+
+// Handle Save Asal Kontainer and Ke (Bulk)lse;
             btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
         }
     })
@@ -915,6 +1106,74 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
         alert('Terjadi kesalahan saat memproses');
         btnConfirm.disabled = false;
         btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
+    });
+});
+
+// Handle Save Asal Kontainer and Ke
+document.getElementById('btnSaveAsalKe').addEventListener('click', function() {
+    const bulkAsalValue = document.getElementById('bulk_asal_kontainer').value.trim();
+    const bulkKeValue = document.getElementById('bulk_ke').value.trim();
+    
+    // Check if bulk values are provided
+    if (!bulkAsalValue && !bulkKeValue) {
+        alert('Silakan isi Asal Kontainer atau Ke terlebih dahulu');
+        return;
+    }
+    
+    const confirmMsg = `Apakah Anda yakin ingin mengubah data dengan:\n` +
+                      `Asal Kontainer: ${bulkAsalValue || '(tidak berubah)'}\n` +
+                      `Ke: ${bulkKeValue || '(tidak berubah)'}\n\n` +
+                      `Kapal: {{ $namaKapal }}\n` +
+                      `Voyage: {{ $noVoyage }}\n` +
+                      `Kegiatan: {{ request("kegiatan") ?: "Semua" }}\n\n` +
+                      `Ini akan mengubah SEMUA data yang sesuai dengan filter di atas (termasuk yang tidak terlihat karena pagination).`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    const btnSave = document.getElementById('btnSaveAsalKe');
+    btnSave.disabled = true;
+    btnSave.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+    
+    // Send bulk values along with current filters
+    const requestData = {
+        bulk_asal_kontainer: bulkAsalValue || null,
+        bulk_ke: bulkKeValue || null,
+        nama_kapal: '{{ $namaKapal }}',
+        no_voyage: '{{ $noVoyage }}',
+        kegiatan: '{{ request("kegiatan") }}',
+        status_ob: '{{ request("status_ob") }}',
+        tipe_kontainer: '{{ request("tipe_kontainer") }}',
+        size_kontainer: '{{ request("size_kontainer") }}',
+        search: '{{ request("search") }}',
+        nomor_kontainer: '{{ request("nomor_kontainer") }}'
+    };
+    
+    fetch('/ob/save-asal-ke-bulk', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(`Berhasil menyimpan ${result.updated_count} data Asal Kontainer dan Ke`);
+            window.location.reload();
+        } else {
+            alert(result.message || 'Terjadi kesalahan saat menyimpan');
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Asal & Ke';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menyimpan data');
+        btnSave.disabled = false;
+        btnSave.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Asal & Ke';
     });
 });
 </script>

@@ -2827,6 +2827,9 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob', [\App\Http\Controllers\ObController::class, 'index'])
          ->name('ob.index')
          ->middleware('can:ob-view');
+    Route::get('ob/print', [\App\Http\Controllers\ObController::class, 'print'])
+         ->name('ob.print')
+         ->middleware('can:ob-view');
     Route::get('ob/get-voyage-by-kapal', [\App\Http\Controllers\ObController::class, 'getVoyageByKapal'])
          ->name('ob.get-voyage-by-kapal')
          ->middleware('can:ob-view');
@@ -2859,6 +2862,12 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:ob-view');
     Route::post('ob/masuk-pranota', [\App\Http\Controllers\ObController::class, 'masukPranota'])
          ->name('ob.masuk-pranota')
+         ->middleware('can:ob-view');
+    Route::post('ob/save-asal-ke', [\App\Http\Controllers\ObController::class, 'saveAsalKe'])
+         ->name('ob.save-asal-ke')
+         ->middleware('can:ob-view');
+    Route::post('ob/save-asal-ke-bulk', [\App\Http\Controllers\ObController::class, 'saveAsalKeBulk'])
+         ->name('ob.save-asal-ke-bulk')
          ->middleware('can:ob-view');
 
     // Tagihan OB routes

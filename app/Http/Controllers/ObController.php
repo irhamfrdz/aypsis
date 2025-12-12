@@ -898,6 +898,265 @@ class ObController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Print OB data for a specific ship and voyage
+     */
+    public function print(Request $request)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (!$user->can('ob-view')) {
+            abort(403, 'Anda tidak memiliki akses untuk mencetak halaman OB.');
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+        $kegiatan = $request->get('kegiatan');
+        $statusFilter = $request->get('status_ob');
+        $tipeFilter = $request->get('tipe_kontainer');
+
+        if (!$namaKapal || !$noVoyage) {
+            abort(400, 'Nama kapal dan nomor voyage harus diisi');
+        }
+
+        // Trim whitespace
+        $namaKapal = trim($namaKapal);
+        $noVoyage = trim($noVoyage);
+
+        // Check if we have BL records for this ship/voyage
+        $hasBl = Bl::where('nama_kapal', $namaKapal)
+            ->where('no_voyage', $noVoyage)
+            ->exists();
+
+        // Determine which data to use based on kegiatan
+        // If kegiatan is 'bongkar' or not specified but BL exists, use BL
+        // If kegiatan is 'muat', always use naik_kapal
+        if ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl)) {
+            // Use BL data
+            $query = Bl::with(['prospek', 'supir'])
+                ->where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage);
+
+            // Apply filters
+            if ($statusFilter) {
+                if ($statusFilter === 'sudah') {
+                    $query->where('sudah_ob', true);
+                } elseif ($statusFilter === 'belum') {
+                    $query->where('sudah_ob', false);
+                }
+            }
+
+            if ($tipeFilter) {
+                $query->where('tipe_kontainer', $tipeFilter);
+            }
+
+            $bls = $query->orderBy('nomor_bl', 'asc')->get();
+
+            return view('ob.print', compact(
+                'bls',
+                'namaKapal',
+                'noVoyage',
+                'statusFilter'
+            ));
+        } else {
+            // Use naik_kapal data
+            $query = NaikKapal::with(['prospek', 'supir'])
+                ->where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage);
+
+            // Apply filters
+            if ($statusFilter) {
+                if ($statusFilter === 'sudah') {
+                    $query->where('sudah_ob', true);
+                } elseif ($statusFilter === 'belum') {
+                    $query->where('sudah_ob', false);
+                }
+            }
+
+            if ($tipeFilter) {
+                $query->where('tipe_kontainer', $tipeFilter);
+            }
+
+            $naikKapals = $query->orderBy('tanggal_muat', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return view('ob.print', compact(
+                'naikKapals',
+                'namaKapal',
+                'noVoyage',
+                'statusFilter'
+            ));
+        }
+    }
+
+    /**
+     * Save Asal Kontainer and Ke for multiple records
+     */
+    public function saveAsalKe(Request $request)
+    {
+        try {
+            $data = $request->input('data', []);
+            
+            if (empty($data)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data untuk disimpan'
+                ]);
+            }
+
+            $updatedCount = 0;
+
+            foreach ($data as $item) {
+                $id = $item['id'];
+                $type = $item['type'];
+                $asalKontainer = $item['asal_kontainer'] ?? '';
+                $ke = $item['ke'] ?? '';
+
+                if ($type === 'bl') {
+                    $record = Bl::find($id);
+                    if ($record) {
+                        $record->asal_kontainer = $asalKontainer;
+                        $record->ke = $ke;
+                        $record->save();
+                        $updatedCount++;
+                    }
+                } elseif ($type === 'naik_kapal') {
+                    $record = NaikKapal::find($id);
+                    if ($record) {
+                        $record->asal_kontainer = $asalKontainer;
+                        $record->ke = $ke;
+                        $record->save();
+                        $updatedCount++;
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menyimpan {$updatedCount} data",
+                'updated_count' => $updatedCount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Bulk update Asal Kontainer and Ke for all records matching filters
+     */
+    public function saveAsalKeBulk(Request $request)
+    {
+        try {
+            $bulkAsal = $request->input('bulk_asal_kontainer');
+            $bulkKe = $request->input('bulk_ke');
+            $namaKapal = $request->input('nama_kapal');
+            $noVoyage = $request->input('no_voyage');
+            $kegiatan = $request->input('kegiatan');
+            
+            // Validasi wajib nama_kapal dan no_voyage
+            if (!$namaKapal || !$noVoyage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nama kapal dan nomor voyage harus diisi'
+                ]);
+            }
+            
+            if (!$bulkAsal && !$bulkKe) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada nilai untuk diupdate'
+                ]);
+            }
+
+            $updatedCount = 0;
+
+            // Determine which table to update based on kegiatan
+            if ($kegiatan === 'bongkar' || $request->has('nomor_bl')) {
+                // Update BL table
+                $query = Bl::where('nama_kapal', $namaKapal)
+                    ->where('no_voyage', $noVoyage);
+
+                // Apply filters
+                if ($request->filled('status_ob')) {
+                    $query->where('sudah_ob', $request->input('status_ob') === 'sudah');
+                }
+                if ($request->filled('tipe_kontainer')) {
+                    $query->where('tipe_kontainer', $request->input('tipe_kontainer'));
+                }
+                if ($request->filled('size_kontainer')) {
+                    $query->where('size_kontainer', $request->input('size_kontainer'));
+                }
+                if ($request->filled('search')) {
+                    $search = $request->input('search');
+                    $query->where(function($q) use ($search) {
+                        $q->where('nomor_kontainer', 'like', "%{$search}%")
+                          ->orWhere('no_seal', 'like', "%{$search}%")
+                          ->orWhere('nama_barang', 'like', "%{$search}%");
+                    });
+                }
+                if ($request->filled('nomor_kontainer')) {
+                    $query->where('nomor_kontainer', 'like', '%' . $request->input('nomor_kontainer') . '%');
+                }
+
+                $updateData = [];
+                if ($bulkAsal) $updateData['asal_kontainer'] = $bulkAsal;
+                if ($bulkKe) $updateData['ke'] = $bulkKe;
+
+                $updatedCount = $query->update($updateData);
+            } else {
+                // Update NaikKapal table
+                $query = NaikKapal::where('nama_kapal', $namaKapal)
+                    ->where('no_voyage', $noVoyage);
+
+                // Apply filters
+                if ($request->filled('status_ob')) {
+                    $query->where('sudah_ob', $request->input('status_ob') === 'sudah');
+                }
+                if ($request->filled('tipe_kontainer')) {
+                    $query->where('tipe_kontainer', $request->input('tipe_kontainer'));
+                }
+                if ($request->filled('size_kontainer')) {
+                    $query->where('size_kontainer', $request->input('size_kontainer'));
+                }
+                if ($request->filled('search')) {
+                    $search = $request->input('search');
+                    $query->where(function($q) use ($search) {
+                        $q->where('nomor_kontainer', 'like', "%{$search}%")
+                          ->orWhere('no_seal', 'like', "%{$search}%")
+                          ->orWhere('jenis_barang', 'like', "%{$search}%");
+                    });
+                }
+                if ($request->filled('nomor_kontainer')) {
+                    $query->where('nomor_kontainer', 'like', '%' . $request->input('nomor_kontainer') . '%');
+                }
+
+                $updateData = [];
+                if ($bulkAsal) $updateData['asal_kontainer'] = $bulkAsal;
+                if ($bulkKe) $updateData['ke'] = $bulkKe;
+
+                $updatedCount = $query->update($updateData);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil mengupdate {$updatedCount} data",
+                'updated_count' => $updatedCount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
 

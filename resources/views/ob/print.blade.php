@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Naik Kapal - {{ $kapal->nama_kapal }} - {{ $voyage }}</title>
+    <title>Print OB - {{ $namaKapal }} - {{ $noVoyage }}</title>
     <style>
         * {
             margin: 0;
@@ -153,109 +153,132 @@
     <button class="print-button no-print" onclick="window.print()">🖨️ Print</button>
     
     <div class="header">
-        <h1>Naik Kapal</h1>
-        <p>Daftar kontainer yang naik kapal</p>
+        <h1>Data OB</h1>
+        <p>{{ isset($bls) && $bls->count() > 0 ? 'Data Bongkaran' : 'Data Naik Kapal' }}</p>
     </div>
     
     <div class="info-section">
         <div class="info-item">
             <span class="info-label">🚢 Kapal:</span>
-            <span>{{ $kapal->nama_kapal }}</span>
+            <span>{{ $namaKapal }}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Voyage:</span>
-            <span>{{ $voyage }}</span>
+            <span>{{ $noVoyage }}</span>
         </div>
         @if($statusFilter)
         <div class="info-item">
             <span class="info-label">Filter Status:</span>
-            <span>{{ $statusFilter === 'sudah_bl' ? 'Sudah BL' : 'Belum BL' }}</span>
+            <span>{{ $statusFilter === 'sudah' ? 'Sudah OB' : 'Belum OB' }}</span>
         </div>
         @endif
         <div class="info-item">
             <span class="info-label">Total:</span>
-            <span>{{ $naikKapals->count() }} kontainer</span>
+            <span>{{ isset($bls) ? $bls->count() : $naikKapals->count() }} kontainer</span>
         </div>
     </div>
     
     <table>
         <thead>
             <tr>
-                <th style="width: 4%;">No</th>
-                <th style="width: 16%;">Kontainer</th>
-                <th style="width: 20%;">Barang</th>
-                <th style="width: 16%;">Tipe</th>
-                <th style="width: 8%;">Tgl TT</th>
-                <th style="width: 16%;">Supir OB</th>
-                <th style="width: 20%;">Keterangan</th>
+                <th style="width: 3%;">No</th>
+                <th style="width: 14%;">Kontainer</th>
+                <th style="width: 16%;">Barang</th>
+                <th style="width: 10%;">Asal Kontainer</th>
+                <th style="width: 10%;">Ke</th>
+                <th style="width: 8%;">Tipe</th>
+                <th style="width: 6%;">Size</th>
+                <th style="width: 8%;">Tgl OB</th>
+                <th style="width: 13%;">Supir OB</th>
+                <th style="width: 12%;">Keterangan</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($naikKapals as $index => $naikKapal)
-            @if(strtoupper($naikKapal->tipe_kontainer) === 'CARGO')
+            @if(isset($bls))
+                @php $data = $bls; @endphp
+            @else
+                @php $data = $naikKapals; @endphp
+            @endif
+
+            @forelse($data as $index => $item)
+            @if(strtoupper($item->tipe_kontainer) === 'CARGO')
                 @continue
             @endif
             <tr>
                 <td style="text-align: center;">{{ $loop->iteration }}</td>
                 <td>
                     @php
-                        $isFcl = strtoupper($naikKapal->tipe_kontainer) === 'FCL';
-                        $isEmpty = empty($naikKapal->nomor_kontainer);
-                        $isCargo = str_starts_with(strtoupper($naikKapal->nomor_kontainer ?? ''), 'CARGO-');
+                        $isFcl = strtoupper($item->tipe_kontainer) === 'FCL';
+                        $isEmpty = empty($item->nomor_kontainer);
+                        $isCargo = str_starts_with(strtoupper($item->nomor_kontainer ?? ''), 'CARGO-');
                     @endphp
                     @if($isFcl && ($isEmpty || $isCargo))
                         <strong>-</strong>
                     @else
-                        <strong>{{ $naikKapal->nomor_kontainer }}</strong>
+                        <strong>{{ $item->nomor_kontainer }}</strong>
                     @endif
                     <br>
-                    <span style="color: #666;">{{ $naikKapal->ukuran_kontainer }}</span>
-                    @if($naikKapal->no_seal)
-                    <br><span style="color: #2563eb; font-size: 8pt;">Seal: {{ $naikKapal->no_seal }}</span>
+                    <span style="color: #666;">{{ isset($bls) ? ($item->size_kontainer ? $item->size_kontainer . ' Feet' : '-') : ($item->ukuran_kontainer ?? '-') }}</span>
+                    @if($item->no_seal)
+                    <br><span style="color: #2563eb; font-size: 8pt;">Seal: {{ $item->no_seal }}</span>
                     @endif
                 </td>
-                <td>{{ $naikKapal->jenis_barang ?? '-' }}</td>
+                <td>{{ isset($bls) ? ($item->nama_barang ?? '-') : ($item->jenis_barang ?? '-') }}</td>
                 <td>
-                    {{ $naikKapal->tipe_kontainer }}
-                    @if($naikKapal->tipe_kontainer_detail)
-                    <br><span style="color: #666; font-size: 8pt;">{{ $naikKapal->tipe_kontainer_detail }}</span>
+                    @if($item->asal_kontainer)
+                        {{ $item->asal_kontainer }}
+                    @elseif(request('kegiatan') === 'bongkar')
+                        {{ $namaKapal }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>
+                    @if($item->ke)
+                        {{ $item->ke }}
+                    @elseif(request('kegiatan') === 'muat')
+                        {{ $namaKapal }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>
+                    {{ $item->tipe_kontainer }}
+                    @if(isset($item->tipe_kontainer_detail) && $item->tipe_kontainer_detail)
+                    <br><span style="color: #666; font-size: 8pt;">{{ $item->tipe_kontainer_detail }}</span>
                     @endif
                 </td>
                 <td style="text-align: center;">
                     @php
-                        $tanggal = $naikKapal->prospek?->tandaTerima?->tanggal 
-                                   ?? $naikKapal->prospek?->tandaTerima?->tanggal_checkpoint_supir;
+                        $size = $item->size_kontainer ?? $item->ukuran_kontainer ?? null;
                     @endphp
-                    @if($tanggal)
-                        {{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}
+                    {{ $size ? $size . '"' : '-' }}
+                </td>
+                <td style="text-align: center;">
+                    @if($item->tanggal_ob)
+                        {{ \Carbon\Carbon::parse($item->tanggal_ob)->format('d/m/Y') }}
                     @else
                         <span style="color: #999;">-</span>
                     @endif
                 </td>
                 <td>
                     @php
-                        $supir = $naikKapal->prospek?->tandaTerima?->supir?->nama 
-                                ?? $naikKapal->prospek?->tandaTerima?->nama_supir;
+                        $supir = $item->supir?->nama_panggilan ?? $item->supir?->nama_lengkap;
                     @endphp
                     @if($supir)
                         {{ $supir }}
+                        @if($item->supir?->plat)
+                        <br><span style="color: #666; font-size: 8pt;">{{ $item->supir->plat }}</span>
+                        @endif
                     @else
                         <span style="color: #999;">-</span>
                     @endif
                 </td>
-                <td>
-                    <strong>{{ $naikKapal->nama_kapal }}</strong>
-                    @if($naikKapal->no_voyage)
-                    <br><span style="color: #666;">V: {{ $naikKapal->no_voyage }}</span>
-                    @endif
-                    @if($naikKapal->pelabuhan_tujuan)
-                    <br><span style="color: #16a34a; font-size: 8pt;">→ {{ $naikKapal->pelabuhan_tujuan }}</span>
-                    @endif
-                </td>
+                <td>&nbsp;</td>
             </tr>
             @empty
             <tr>
-                <td colspan="7" style="text-align: center; padding: 20px; color: #999;">
+                <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
                     Tidak ada data kontainer
                 </td>
             </tr>
