@@ -15,7 +15,7 @@ class TandaTerimaBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanBongkaran::with(['bl', 'uangJalanBongkaran']);
+        $query = SuratJalanBongkaran::with(['bl']);
 
         // Search filter
         if ($request->filled('search')) {
