@@ -1028,6 +1028,19 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    // 🏢 Master Gudang (Warehouse Master) Management with permissions
+    Route::resource('master-gudang', \App\Http\Controllers\MasterGudangController::class)
+         ->names('master-gudang')
+         ->middleware([
+             'index' => 'can:master-gudang-view',
+             'show' => 'can:master-gudang-view',
+             'create' => 'can:master-gudang-create',
+             'store' => 'can:master-gudang-create',
+             'edit' => 'can:master-gudang-edit',
+             'update' => 'can:master-gudang-edit',
+             'destroy' => 'can:master-gudang-delete'
+         ]);
+
     // 💰 Pricelist Uang Jalan Batam Management with permissions
     // Download Template & Import (must be before resource routes)
     Route::get('pricelist-uang-jalan-batam/download-template', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'downloadTemplate'])
