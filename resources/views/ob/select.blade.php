@@ -24,20 +24,26 @@
 
     <div class="bg-white rounded-lg shadow-sm p-6">
         <form id="obSelectForm" method="GET">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">Kegiatan <span class="text-red-500">*</span></label>
+                    <select id="kegiatan" name="kegiatan" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                        <option value="">--Pilih Kegiatan--</option>
+                        <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
+                        <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
+                    </select>
+                </div>
+
                 <div>
                     <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Kapal <span class="text-red-500">*</span></label>
-                    <select id="nama_kapal" name="nama_kapal" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
-                        <option value="">--Pilih Kapal--</option>
-                        @foreach($ships as $ship)
-                            <option value="{{ $ship->nama_kapal }}" {{ request('nama_kapal') == $ship->nama_kapal ? 'selected' : '' }}>{{ $ship->nama_kapal }}</option>
-                        @endforeach
+                    <select id="nama_kapal" name="nama_kapal" class="w-full px-3 py-2 border border-gray-300 rounded-md" required disabled>
+                        <option value="">--Pilih Kegiatan Terlebih Dahulu--</option>
                     </select>
                 </div>
 
                 <div>
                     <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">No Voyage <span class="text-red-500">*</span></label>
-                    <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                    <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2 border border-gray-300 rounded-md" required disabled>
                         <option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>
                     </select>
                 </div>
@@ -72,28 +78,36 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const kegiatanSelect = document.getElementById('kegiatan');
     const kapalSelect = document.getElementById('nama_kapal');
     const voyageSelect = document.getElementById('no_voyage');
     const goToTagihanBtn = document.getElementById('goToTagihanOB');
     const goToOBIndexBtn = document.getElementById('goToOBIndex');
 
-    kapalSelect.addEventListener('change', function() {
-        const kapalId = this.value;
-        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+    // Handle kegiatan selection
+    kegiatanSelect.addEventListener('change', function() {
+        const kegiatan = this.value;
+        
+        // Reset kapal and voyage
+        kapalSelect.innerHTML = '<option value="">Loading...</option>';
+        kapalSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
         voyageSelect.disabled = true;
 
-        if (!kapalId) {
-            voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
-            voyageSelect.disabled = false;
+        if (!kegiatan) {
+            kapalSelect.innerHTML = '<option value="">--Pilih Kegiatan Terlebih Dahulu--</option>';
+            kapalSelect.disabled = true;
             return;
         }
 
-        // Nama kapal (value) diambil dari option value (sudah berupa nama)
-        const kapalName = kapalId;
-        
-        console.log('Nama kapal dipilih:', kapalName);
+        console.log('Kegiatan dipilih:', kegiatan);
 
-        fetch(`{{ route('ob.get-voyage-by-kapal') }}?nama_kapal=${encodeURIComponent(kapalName)}`, {
+        // Fetch kapal berdasarkan kegiatan
+        const url = kegiatan === 'bongkar' 
+            ? '{{ route("ob.get-kapal-bongkar") }}' 
+            : '{{ route("ob.get-kapal-muat") }}';
+
+        fetch(url, {
             method: 'GET',
             headers: { 
                 'Accept': 'application/json',
@@ -101,12 +115,60 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             credentials: 'same-origin'
         })
-        .then(r => {
-            console.log('Response status:', r.status);
-            return r.json();
-        })
+        .then(r => r.json())
         .then(data => {
-            console.log('Response data:', data);
+            console.log('Kapal data:', data);
+            kapalSelect.innerHTML = '';
+            if (data.success && data.kapals && data.kapals.length) {
+                kapalSelect.innerHTML = '<option value="">--Pilih Kapal--</option>';
+                data.kapals.forEach(k => {
+                    kapalSelect.innerHTML += `<option value="${k}">${k}</option>`;
+                });
+                console.log('Kapal loaded:', data.kapals.length);
+            } else {
+                kapalSelect.innerHTML = '<option value="">Tidak ada kapal tersedia</option>';
+            }
+            kapalSelect.disabled = false;
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            kapalSelect.innerHTML = '<option value="">Error loading kapal</option>';
+            kapalSelect.disabled = false;
+        });
+    });
+
+    // Handle kapal selection
+    kapalSelect.addEventListener('change', function() {
+        const kapalName = this.value;
+        const kegiatan = kegiatanSelect.value;
+        
+        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        voyageSelect.disabled = true;
+
+        if (!kapalName || !kegiatan) {
+            voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
+            voyageSelect.disabled = false;
+            return;
+        }
+
+        console.log('Nama kapal dipilih:', kapalName);
+
+        // Fetch voyage berdasarkan kegiatan dan kapal
+        const url = kegiatan === 'bongkar'
+            ? `{{ route('ob.get-voyage-bongkar') }}?nama_kapal=${encodeURIComponent(kapalName)}`
+            : `{{ route('ob.get-voyage-muat') }}?nama_kapal=${encodeURIComponent(kapalName)}`;
+
+        fetch(url, {
+            method: 'GET',
+            headers: { 
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(r => r.json())
+        .then(data => {
+            console.log('Voyage data:', data);
             voyageSelect.innerHTML = '';
             if (data.success && data.voyages && data.voyages.length) {
                 voyageSelect.innerHTML = '<option value="">--Pilih Voyage--</option>';
@@ -114,18 +176,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     voyageSelect.innerHTML += `<option value="${v}">${v}</option>`;
                 });
                 console.log('Voyage loaded:', data.voyages.length);
-                // If there is a preselected voyage in query params, select it (helps page reload)
+                // If there is a preselected voyage in query params, select it
                 if (preselectedVoyage) {
                     voyageSelect.value = preselectedVoyage;
                 }
             } else {
                 voyageSelect.innerHTML = '<option value="">Belum ada voyage untuk kapal ini</option>';
-                console.log('No voyages found');
-                if (data.success === false && data.message) {
-                    console.warn('getVoyageByKapal: ', data.message);
-                    // Optionally show a toast or alert
-                    // alert(data.message);
-                }
             }
             voyageSelect.disabled = false;
         })
@@ -136,40 +192,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // If the page was loaded with nama_kapal and no_voyage in query params, trigger change and preselect
+    // Preselect values from query params
+    const preselectedKegiatan = '{{ request('kegiatan') }}';
     const preselectedKapal = '{{ request('nama_kapal') }}';
     const preselectedVoyage = '{{ request('no_voyage') }}';
-    if (preselectedKapal) {
-        kapalSelect.value = preselectedKapal;
-        // dispatch change to load voyages
-        kapalSelect.dispatchEvent(new Event('change'));
+    
+    if (preselectedKegiatan) {
+        kegiatanSelect.value = preselectedKegiatan;
+        kegiatanSelect.dispatchEvent(new Event('change'));
 
-        // after voyages are loaded, try to select the voyage (with a short timeout)
-        if (preselectedVoyage) {
+        if (preselectedKapal) {
             setTimeout(() => {
-                try {
-                    voyageSelect.value = preselectedVoyage;
-                } catch (e) {
-                    console.warn('Preselect voyage failed', e);
-                }
+                kapalSelect.value = preselectedKapal;
+                kapalSelect.dispatchEvent(new Event('change'));
             }, 700);
         }
     }
 
     // Go to Tagihan OB with filter
     goToTagihanBtn.addEventListener('click', function() {
-        const kapalId = kapalSelect.value;
+        const kegiatan = kegiatanSelect.value;
+        const kapalName = kapalSelect.value;
         const voyage = voyageSelect.value;
 
-        if (!kapalId || !voyage) {
-            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+        if (!kegiatan || !kapalName || !voyage) {
+            alert('Silakan pilih kegiatan, kapal, dan voyage terlebih dahulu');
             return;
         }
-
-        const kapalName = kapalId;
         
         // Redirect to Tagihan OB with filter parameters
         const url = new URL('{{ route("tagihan-ob.index") }}', window.location.origin);
+        url.searchParams.set('kegiatan', kegiatan);
         url.searchParams.set('nama_kapal', kapalName);
         url.searchParams.set('no_voyage', voyage);
         
@@ -178,18 +231,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Go to OB Index with filter
     goToOBIndexBtn.addEventListener('click', function() {
-        const kapalId = kapalSelect.value;
+        const kegiatan = kegiatanSelect.value;
+        const kapalName = kapalSelect.value;
         const voyage = voyageSelect.value;
 
-        if (!kapalId || !voyage) {
-            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+        if (!kegiatan || !kapalName || !voyage) {
+            alert('Silakan pilih kegiatan, kapal, dan voyage terlebih dahulu');
             return;
         }
-
-        const kapalName = kapalId;
         
         // Redirect to OB Index with filter parameters
         const url = new URL('{{ route("ob.index") }}', window.location.origin);
+        url.searchParams.set('kegiatan', kegiatan);
         url.searchParams.set('nama_kapal', kapalName);
         url.searchParams.set('no_voyage', voyage);
         

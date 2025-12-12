@@ -2830,6 +2830,18 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob/get-voyage-by-kapal', [\App\Http\Controllers\ObController::class, 'getVoyageByKapal'])
          ->name('ob.get-voyage-by-kapal')
          ->middleware('can:ob-view');
+    Route::get('ob/get-kapal-bongkar', [\App\Http\Controllers\ObController::class, 'getKapalBongkar'])
+         ->name('ob.get-kapal-bongkar')
+         ->middleware('can:ob-view');
+    Route::get('ob/get-kapal-muat', [\App\Http\Controllers\ObController::class, 'getKapalMuat'])
+         ->name('ob.get-kapal-muat')
+         ->middleware('can:ob-view');
+    Route::get('ob/get-voyage-bongkar', [\App\Http\Controllers\ObController::class, 'getVoyageBongkar'])
+         ->name('ob.get-voyage-bongkar')
+         ->middleware('can:ob-view');
+    Route::get('ob/get-voyage-muat', [\App\Http\Controllers\ObController::class, 'getVoyageMuat'])
+         ->name('ob.get-voyage-muat')
+         ->middleware('can:ob-view');
     Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'selectShipVoyage'])
          ->name('ob.select')
          ->middleware('can:ob-view');

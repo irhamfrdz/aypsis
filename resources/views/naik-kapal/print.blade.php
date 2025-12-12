@@ -183,13 +183,11 @@
             <tr>
                 <th style="width: 5%;">No</th>
                 <th style="width: 15%;">Kontainer</th>
-                <th style="width: 15%;">Barang</th>
-                <th style="width: 12%;">Tipe</th>
-                <th style="width: 12%;">Kapal & Voyage</th>
-                <th style="width: 13%;">Volume & Tonase</th>
-                <th style="width: 10%;">Tanggal Muat</th>
-                <th style="width: 10%;">Status</th>
-                <th style="width: 8%;">Prospek</th>
+                <th style="width: 20%;">Barang</th>
+                <th style="width: 15%;">Tipe</th>
+                <th style="width: 10%;">Tgl TT</th>
+                <th style="width: 20%;">Kapal & Voyage</th>
+                <th style="width: 15%;">Keterangan</th>
             </tr>
         </thead>
         <tbody>
@@ -210,6 +208,17 @@
                     <br><span style="color: #666; font-size: 8pt;">{{ $naikKapal->tipe_kontainer_detail }}</span>
                     @endif
                 </td>
+                <td style="text-align: center;">
+                    @php
+                        $tanggal = $naikKapal->prospek?->tandaTerima?->tanggal 
+                                   ?? $naikKapal->prospek?->tandaTerima?->tanggal_checkpoint_supir;
+                    @endphp
+                    @if($tanggal)
+                        {{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}
+                    @else
+                        <span style="color: #999;">-</span>
+                    @endif
+                </td>
                 <td>
                     <strong>{{ $naikKapal->nama_kapal }}</strong>
                     @if($naikKapal->no_voyage)
@@ -219,42 +228,11 @@
                     <br><span style="color: #16a34a; font-size: 8pt;">→ {{ $naikKapal->pelabuhan_tujuan }}</span>
                     @endif
                 </td>
-                <td>
-                    <span style="color: #2563eb;">📦 {{ $naikKapal->formatted_volume }} m³</span><br>
-                    <span style="color: #16a34a;">⚖️ {{ $naikKapal->formatted_tonase }} Ton</span>
-                    @if($naikKapal->kuantitas)
-                    <br><span style="color: #666; font-size: 8pt;">Qty: {{ number_format($naikKapal->kuantitas) }}</span>
-                    @endif
-                </td>
-                <td>
-                    @if($naikKapal->tanggal_muat)
-                        {{ $naikKapal->tanggal_muat_formatted }}
-                        @if($naikKapal->jam_muat)
-                        <br><span style="color: #666;">{{ \Carbon\Carbon::parse($naikKapal->jam_muat)->format('H:i') }}</span>
-                        @endif
-                    @else
-                        -
-                    @endif
-                </td>
-                <td>
-                    @if($naikKapal->status === 'Moved to BLS')
-                        <span class="status-badge status-sudah">✓ Sudah BL</span>
-                    @else
-                        <span class="status-badge status-belum">⏱ Belum BL</span>
-                    @endif
-                </td>
-                <td>
-                    @if($naikKapal->prospek)
-                        {{ $naikKapal->prospek->nama_supir }}
-                        <br><span style="color: #666; font-size: 8pt;">ID: {{ $naikKapal->prospek->id }}</span>
-                    @else
-                        -
-                    @endif
-                </td>
+                <td>&nbsp;</td>
             </tr>
             @empty
             <tr>
-                <td colspan="9" style="text-align: center; padding: 20px; color: #999;">
+                <td colspan="7" style="text-align: center; padding: 20px; color: #999;">
                     Tidak ada data kontainer
                 </td>
             </tr>

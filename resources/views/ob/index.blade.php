@@ -32,7 +32,7 @@
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
                 </a>
-                <a href="{{ route('tagihan-ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
+                <a href="{{ route('tagihan-ob.index', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->has('kegiatan') ? ['kegiatan' => request('kegiatan')] : [])) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-file-invoice mr-2"></i>Tagihan OB
                 </a>
             </div>
@@ -124,6 +124,9 @@
         <form method="GET" action="{{ route('ob.index') }}">
             <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
             <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+            @if(request()->has('kegiatan'))
+                <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
+            @endif
             @if(request()->has('per_page'))
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
@@ -188,7 +191,7 @@
                         <i class="fas fa-search mr-2"></i>
                         Filter
                     </button>
-                    <a href="{{ route('ob.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                    <a href="{{ route('ob.index', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->has('kegiatan') ? ['kegiatan' => request('kegiatan')] : [])) }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-times mr-2"></i>
                         Reset
                     </a>

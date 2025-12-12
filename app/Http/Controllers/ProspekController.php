@@ -362,9 +362,9 @@ class ProspekController extends Controller
             foreach ($prospeks as $prospek) {
                 \Log::info('Processing prospek ID: ' . $prospek->id);
                 
-                // Update status prospek
+                // Jangan ubah status prospek, biarkan tetap aktif
+                // Hanya update informasi tambahan terkait kapal tanpa mengubah status
                 $updateData = [
-                    'status' => 'sudah_muat',
                     'tanggal_muat' => $request->tanggal,
                     'nama_kapal' => $masterKapal->nama_kapal,
                     'kapal_id' => $masterKapal->id,
@@ -375,7 +375,7 @@ class ProspekController extends Controller
                 
                 $prospek->update($updateData);
                 
-                \Log::info('Updated prospek status for ID: ' . $prospek->id);
+                \Log::info('Updated prospek info (status tetap) for ID: ' . $prospek->id);
 
                 // Simpan data ke tabel naik_kapal
                 $naikKapalData = [

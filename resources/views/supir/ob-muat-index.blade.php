@@ -70,6 +70,31 @@
                 </div>
             @endif
 
+            <!-- Debug Info (Tambahan untuk troubleshooting) -->
+            @if(request()->has('debug'))
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded mb-4 text-xs" role="alert">
+                <div class="font-bold mb-2">Debug Information:</div>
+                <div class="space-y-1">
+                    <p><strong>Total Containers:</strong> {{ $bls->count() }}</p>
+                    <p><strong>Sudah OB Count:</strong> {{ $bls->where('sudah_ob', true)->count() }}</p>
+                    <p><strong>Belum OB Count:</strong> {{ $bls->where('sudah_ob', false)->count() }}</p>
+                    <div><strong>Container Details:</strong></div>
+                    <ul class="ml-4 space-y-1">
+                        @foreach($bls as $item)
+                        <li>
+                            ID: {{ $item->id }} | 
+                            Container: {{ $item->nomor_kontainer }} | 
+                            sudah_ob: {{ $item->sudah_ob ? 'TRUE' : 'FALSE' }} | 
+                            supir_id: {{ $item->supir_id ?? 'NULL' }} |
+                            tanggal_ob: {{ $item->tanggal_ob ?? 'NULL' }}
+                        </li>
+                        @endforeach
+                    </ul>
+                    <p class="mt-2"><strong>Current Time:</strong> {{ now()->format('Y-m-d H:i:s') }}</p>
+                </div>
+            </div>
+            @endif
+
             <!-- Header Info Kapal & Voyage -->
             <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
                 <div class="flex items-center justify-between">
@@ -109,8 +134,47 @@
             <!-- Daftar Kontainer -->
             <div class="bg-white rounded-lg shadow-sm">
                 <div class="px-4 py-3 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Daftar Nomor Kontainer</h3>
-                    <p class="text-sm text-gray-600">Pilih kontainer untuk melakukan OB Muat</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Daftar Nomor Kontainer</h3>
+                            <p class="text-sm text-gray-600">Pilih kontainer untuk melakukan OB Muat</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Bar -->
+                    <div class="mb-3">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="searchInput" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                                   placeholder="Cari nomor kontainer, seal, barang...">
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Buttons -->
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-medium text-gray-700">Filter:</span>
+                        <button onclick="filterStatus('all')" 
+                                class="filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-orange-500 text-white border-orange-500" 
+                                data-filter="all">
+                            Semua (<span id="count-all">{{ $bls->count() }}</span>)
+                        </button>
+                        <button onclick="filterStatus('sudah')" 
+                                class="filter-btn px-3 py-1 text-xs font-medium rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors" 
+                                data-filter="sudah">
+                            Sudah OB (<span id="count-sudah">{{ $bls->where('sudah_ob', true)->count() }}</span>)
+                        </button>
+                        <button onclick="filterStatus('belum')" 
+                                class="filter-btn px-3 py-1 text-xs font-medium rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors" 
+                                data-filter="belum">
+                            Belum OB (<span id="count-belum">{{ $bls->where('sudah_ob', false)->count() }}</span>)
+                        </button>
+                    </div>
                 </div>
 
                 @if($bls->count() > 0)
@@ -137,7 +201,11 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($bls as $bl)
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="hover:bg-gray-50 kontainer-row" 
+                                        data-status="{{ $bl->sudah_ob ? 'sudah' : 'belum' }}"
+                                        data-kontainer="{{ strtolower($bl->nomor_kontainer ?? '') }}"
+                                        data-seal="{{ strtolower($bl->no_seal ?? '') }}"
+                                        data-barang="{{ strtolower($bl->nama_barang ?? '') }}">
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-8 w-8">
@@ -207,6 +275,16 @@
                                         </td>
                                     </tr>
                                 @endforeach
+                                <tr id="noResultsRow" style="display: none;">
+                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <p class="text-sm font-medium">Tidak ada kontainer yang sesuai dengan pencarian</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -236,6 +314,65 @@
     </main>
 
     <script>
+        let currentFilter = 'all';
+        
+        // Filter by status
+        function filterStatus(status) {
+            currentFilter = status;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === status) {
+                    btn.className = 'filter-btn px-3 py-1 text-xs font-medium rounded-full border transition-colors bg-orange-500 text-white border-orange-500';
+                } else {
+                    btn.className = 'filter-btn px-3 py-1 text-xs font-medium rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors';
+                }
+            });
+            
+            // Apply filter
+            applyFilters();
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            applyFilters();
+        });
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const rows = document.querySelectorAll('.kontainer-row');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const status = row.dataset.status;
+                const kontainer = row.dataset.kontainer;
+                const seal = row.dataset.seal;
+                const barang = row.dataset.barang;
+                
+                // Check status filter
+                const statusMatch = currentFilter === 'all' || status === currentFilter;
+                
+                // Check search term
+                const searchMatch = searchTerm === '' || 
+                                  kontainer.includes(searchTerm) || 
+                                  seal.includes(searchTerm) || 
+                                  barang.includes(searchTerm);
+                
+                if (statusMatch && searchMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show "no results" message if needed
+            const noResultsRow = document.getElementById('noResultsRow');
+            if (noResultsRow) {
+                noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
+            }
+        }
+        
         // Auto refresh setiap 30 detik untuk update data terbaru
         setTimeout(function() {
             window.location.reload();

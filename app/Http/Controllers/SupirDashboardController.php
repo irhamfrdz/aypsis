@@ -200,12 +200,21 @@ class SupirDashboardController extends Controller
             $naikKapal->nama_barang = $naikKapal->jenis_barang ?? '-';
         });
 
-        // Log untuk debugging
+        // Log untuk debugging dengan detail status OB setiap kontainer
         \Log::info('OB Muat Index Data', [
             'selected_kapal' => $selectedKapal,
             'selected_voyage' => $selectedVoyage,
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
+            'sudah_ob_status' => $bls->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'nomor_kontainer' => $item->nomor_kontainer,
+                    'sudah_ob' => $item->sudah_ob,
+                    'supir_id' => $item->supir_id,
+                    'tanggal_ob' => $item->tanggal_ob
+                ];
+            })->toArray(),
             'user_id' => $user->id,
             'user_name' => $user->name,
             'source_table' => 'naik_kapal'
@@ -263,6 +272,15 @@ class SupirDashboardController extends Controller
         }
 
         try {
+            \DB::beginTransaction();
+            
+            // Log status sebelum update
+            \Log::info('OB Muat Process - Before Update', [
+                'naik_kapal_id' => $naikKapal->id,
+                'sudah_ob_before' => $naikKapal->sudah_ob,
+                'nomor_kontainer' => $naikKapal->nomor_kontainer
+            ]);
+            
             // Update status OB pada tabel naik_kapal dan mark driver & timestamp
             $naikKapal->sudah_ob = true;
             $naikKapal->supir_id = $user->karyawan_id; // Gunakan karyawan_id dari user
@@ -270,27 +288,123 @@ class SupirDashboardController extends Controller
             $naikKapal->catatan_ob = 'OB Muat - diproses oleh ' . $user->name . ' (Karyawan ID: ' . $user->karyawan_id . ')';
             $naikKapal->updated_by = $user->id;
             $saved = $naikKapal->save();
+            
+            // Verifikasi save berhasil
+            if (!$saved) {
+                throw new \Exception('Gagal menyimpan status OB pada naik_kapal');
+            }
+            
+            // Refresh dari database untuk memastikan data tersimpan
+            $naikKapal->refresh();
+            
+            // Log dan verifikasi status setelah save
+            \Log::info('OB Muat Process - After Update', [
+                'naik_kapal_id' => $naikKapal->id,
+                'sudah_ob_after' => $naikKapal->sudah_ob,
+                'save_result' => $saved,
+                'nomor_kontainer' => $naikKapal->nomor_kontainer
+            ]);
+            
+            // Double check - jika masih false, throw error
+            if (!$naikKapal->sudah_ob) {
+                throw new \Exception('Status sudah_ob gagal tersimpan - nilai masih false setelah refresh dari database');
+            }
 
+            // Ambil data prospek dengan relasi tanda terima dan surat jalan
+            $prospek = null;
+            $tandaTerima = null;
+            $suratJalan = null;
+            
+            if ($naikKapal->prospek_id) {
+                $prospek = \App\Models\Prospek::with(['tandaTerima', 'suratJalan'])->find($naikKapal->prospek_id);
+                
+                if ($prospek) {
+                    // Update status prospek menjadi sudah_muat
+                    $prospek->status = 'sudah_muat';
+                    $prospek->updated_by = $user->id;
+                    $prospek->save();
+                    
+                    // Ambil data tanda terima jika ada
+                    $tandaTerima = $prospek->tandaTerima;
+                    $suratJalan = $prospek->suratJalan;
+                    
+                    \Log::info('OB Muat Process - Prospek Status Updated', [
+                        'prospek_id' => $prospek->id,
+                        'old_status' => 'aktif',
+                        'new_status' => 'sudah_muat',
+                        'has_tanda_terima' => !is_null($tandaTerima),
+                        'has_surat_jalan' => !is_null($suratJalan)
+                    ]);
+                }
+            }
+
+            // Buat record di tabel bls dengan data lengkap dari prospek dan tanda terima
+            $blData = [
+                'naik_kapal_id' => $naikKapal->id,
+                'prospek_id' => $naikKapal->prospek_id,
+                'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                'no_seal' => $naikKapal->no_seal ?? ($prospek ? $prospek->no_seal : null),
+                'tipe_kontainer' => $naikKapal->tipe_kontainer ?? ($prospek ? $prospek->tipe : null),
+                'size_kontainer' => $naikKapal->ukuran_kontainer ?? ($prospek ? $prospek->ukuran : null),
+                'nama_kapal' => $naikKapal->nama_kapal,
+                'no_voyage' => $naikKapal->no_voyage,
+                'pelabuhan_asal' => $naikKapal->pelabuhan_asal,
+                'pelabuhan_tujuan' => $naikKapal->pelabuhan_tujuan,
+                'nama_barang' => $naikKapal->jenis_barang ?? ($prospek ? $prospek->barang : null),
+                'volume' => $naikKapal->total_volume ?? ($prospek ? $prospek->total_volume : null),
+                'tonnage' => $naikKapal->total_tonase ?? ($prospek ? $prospek->total_ton : null),
+                'kuantitas' => $naikKapal->kuantitas ?? ($prospek ? $prospek->kuantitas : null),
+                'supir_id' => $user->karyawan_id,
+                'supir_ob' => $prospek ? $prospek->nama_supir : null,
+                'tanggal_ob' => null,  // Belum di-OB, akan diisi saat bongkar
+                'sudah_ob' => false,  // BL baru dibuat, statusnya belum OB (akan di-mark saat bongkar)
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ];
+            
+            // Tambahkan data dari tanda terima jika ada
+            if ($tandaTerima) {
+                $blData['pengirim'] = $tandaTerima->pengirim ?? ($prospek ? $prospek->pt_pengirim : null);
+                $blData['penerima'] = $tandaTerima->penerima;
+                $blData['alamat_pengiriman'] = $tandaTerima->alamat_penerima;
+                $blData['contact_person'] = $tandaTerima->contact_person;
+                $blData['term'] = $tandaTerima->term;
+                $blData['satuan'] = $tandaTerima->satuan;
+            } else if ($prospek) {
+                // Jika tidak ada tanda terima, ambil dari prospek
+                $blData['pengirim'] = $prospek->pt_pengirim;
+            }
+            
+            $bl = \App\Models\Bl::create($blData);
+
+            \DB::commit();
+            
+            // Verifikasi final setelah commit - query langsung dari database
+            $verifikasi = \App\Models\NaikKapal::find($naikKapal->id);
+            
             // Log activity untuk debugging
-            \Log::info('OB Muat Process - NaikKapal Updated', [
+            \Log::info('OB Muat Process - Completed', [
                 'naik_kapal_id' => $naikKapal->id,
                 'nomor_kontainer' => $nomorKontainer,
+                'bl_id' => $bl->id,
+                'prospek_updated' => isset($prospek),
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
                 'supir' => $user->name,
-                'supir_id' => $user->id,
-                'tanggal_ob' => $naikKapal->tanggal_ob,
-                'sudah_ob' => $naikKapal->sudah_ob,
-                'save_result' => $saved,
+                'sudah_ob_verified' => $verifikasi->sudah_ob,
+                'supir_id_verified' => $verifikasi->supir_id,
+                'tanggal_ob_verified' => $verifikasi->tanggal_ob,
                 'timestamp' => now()
             ]);
 
             return redirect()->route('supir.ob-muat.index', [
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage
-            ])->with('success', 'OB Muat berhasil diproses untuk kontainer ' . $nomorKontainer . '!');
+            ])->with('success', 'OB Muat berhasil diproses untuk kontainer ' . $nomorKontainer . '! Data BL telah dibuat.');
 
         } catch (\Exception $e) {
+            \DB::rollBack();
+            
             \Log::error('Error processing OB Muat', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

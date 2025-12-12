@@ -87,7 +87,7 @@ class NaikKapalController extends Controller
                 ->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
         
-        $query = NaikKapal::with(['prospek', 'createdBy'])
+        $query = NaikKapal::with(['prospek.tandaTerima', 'createdBy'])
             ->where('nama_kapal', $kapal->nama_kapal)
             ->where('no_voyage', $request->no_voyage);
         
@@ -103,7 +103,35 @@ class NaikKapalController extends Controller
             }
         }
         
-        $naikKapals = $query->orderBy('created_at', 'desc')->get();
+        // Get data and sort by nomor_kontainer (ignoring first 4 digits) and tanggal_tanda_terima
+        $naikKapals = $query->get()->sort(function ($a, $b) {
+            // Sort by nomor_kontainer, ignoring first 4 characters
+            $kontainerA = substr($a->nomor_kontainer ?? '', 4);
+            $kontainerB = substr($b->nomor_kontainer ?? '', 4);
+            
+            $kontainerCompare = $kontainerA <=> $kontainerB;
+            
+            // If container numbers are different, return the comparison
+            if ($kontainerCompare !== 0) {
+                return $kontainerCompare;
+            }
+            
+            // If container numbers are the same, sort by tanggal_tanda_terima
+            // Use tanggal or fallback to tanggal_checkpoint_supir
+            $dateA = $a->prospek?->tandaTerima?->tanggal 
+                     ?? $a->prospek?->tandaTerima?->tanggal_checkpoint_supir 
+                     ?? null;
+            $dateB = $b->prospek?->tandaTerima?->tanggal 
+                     ?? $b->prospek?->tandaTerima?->tanggal_checkpoint_supir 
+                     ?? null;
+            
+            // Handle null dates - put them at the end
+            if ($dateA === null && $dateB === null) return 0;
+            if ($dateA === null) return 1;
+            if ($dateB === null) return -1;
+            
+            return $dateA <=> $dateB;
+        })->values();
         
         return view('naik-kapal.print', [
             'naikKapals' => $naikKapals,

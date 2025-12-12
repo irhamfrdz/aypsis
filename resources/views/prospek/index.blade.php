@@ -107,10 +107,6 @@
                 
                 {{-- Tombol Naik Kapal untuk prospek aktif --}}
                 <div class="flex gap-2">
-                    <a href="{{ route('prospek.proses-naik-kapal') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
-                        <i class="fas fa-anchor mr-2"></i>
-                        Prospek Naik Kapal
-                    </a>
                     <a href="{{ route('prospek.pilih-tujuan') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-ship mr-2"></i>
                         Naik Kapal

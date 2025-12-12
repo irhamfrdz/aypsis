@@ -34,6 +34,7 @@ class TandaTerima extends Model
         'nomor_ro',
         'expired_date',
         'nomor_performa',
+        'tanggal',
         'tanggal_ambil_kontainer',
         'tanggal_checkpoint_supir',
         'tanggal_terima_pelabuhan',
@@ -56,6 +57,7 @@ class TandaTerima extends Model
 
     protected $casts = [
         'tanggal_surat_jalan' => 'date',
+        'tanggal' => 'date',
         'tanggal_checkpoint_supir' => 'date',
         'tanggal_ambil_kontainer' => 'date',
         'tanggal_terima_pelabuhan' => 'date',

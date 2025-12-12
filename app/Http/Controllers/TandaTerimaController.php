@@ -383,6 +383,7 @@ class TandaTerimaController extends Controller
             // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'nomor_ro' => 'nullable|string|max:255',
+            'tanggal' => 'required|date',
             'tanggal_checkpoint_supir' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
@@ -452,6 +453,7 @@ class TandaTerimaController extends Controller
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
             $tandaTerima->nomor_ro = $request->nomor_ro;
+            $tandaTerima->tanggal = $request->tanggal;
             $tandaTerima->tanggal_checkpoint_supir = $request->tanggal_checkpoint_supir;
             $tandaTerima->supir_pengganti = $request->supir_pengganti;
             $tandaTerima->no_plat = $request->no_plat;

@@ -27,12 +27,13 @@ class ObController extends Controller
         }
 
         // Check if filters are provided (coming from select page)
+        $kegiatan = $request->get('kegiatan');
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
 
         if ($namaKapal && $noVoyage) {
-            // Show OB data table with naik_kapal data
-            return $this->showOBData($request, $namaKapal, $noVoyage);
+            // Show OB data table based on kegiatan type
+            return $this->showOBData($request, $namaKapal, $noVoyage, $kegiatan);
         }
 
         // Show ship and voyage selection if no filters
@@ -60,7 +61,7 @@ class ObController extends Controller
     /**
      * Display OB data table for selected ship and voyage
      */
-    private function showOBData(Request $request, $namaKapal, $noVoyage)
+    private function showOBData(Request $request, $namaKapal, $noVoyage, $kegiatan = null)
     {
         // Disable browser caching for this page to ensure fresh data
         header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -71,13 +72,19 @@ class ObController extends Controller
         $namaKapal = trim($namaKapal);
         $noVoyage = trim($noVoyage);
 
+        // Determine data source based on kegiatan
+        // If kegiatan is 'muat', FORCE use naik_kapal table
+        // If kegiatan is 'bongkar' or not specified, check BL first (legacy behavior)
+        $useMuatData = ($kegiatan === 'muat');
+
         // Check if we have BL records for this ship/voyage
         $hasBl = Bl::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
             ->exists();
 
-        // If BL exists for this combination, prefer displaying BL records
-        if ($hasBl) {
+        // CRITICAL: If kegiatan is explicitly 'muat', ALWAYS use naik_kapal table
+        // Only use BL if kegiatan is NOT 'muat' AND BL data exists
+        if ($kegiatan !== 'muat' && $hasBl) {
             $queryBl = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage);
@@ -239,7 +246,8 @@ class ObController extends Controller
                 'totalKontainer',
                 'sudahOB',
                 'belumOB',
-                'supirs'
+                'supirs',
+                'kegiatan'
             ));
         }
 
@@ -350,7 +358,8 @@ class ObController extends Controller
             'totalKontainer', 
             'sudahOB', 
             'belumOB',
-            'supirs'
+            'supirs',
+            'kegiatan'
         ));
     }
 
@@ -419,6 +428,168 @@ class ObController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil voyage',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get list of ships from BLS table (for bongkar)
+     */
+    public function getKapalBongkar(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $kapals = Bl::select('nama_kapal')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->distinct()
+                ->orderBy('nama_kapal', 'asc')
+                ->pluck('nama_kapal')
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'kapals' => $kapals
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getKapalBongkar error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data kapal'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get list of ships from naik_kapal table (for muat)
+     */
+    public function getKapalMuat(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $kapals = NaikKapal::select('nama_kapal')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->distinct()
+                ->orderBy('nama_kapal', 'asc')
+                ->pluck('nama_kapal')
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'kapals' => $kapals
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getKapalMuat error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data kapal'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get voyages from BLS table for specific ship (for bongkar)
+     */
+    public function getVoyageBongkar(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        
+        if (!$namaKapal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nama kapal tidak boleh kosong'
+            ]);
+        }
+
+        try {
+            $kapalClean = strtolower(str_replace('.', '', $namaKapal));
+
+            $voyages = Bl::select('no_voyage')
+                ->where(function($q) use ($namaKapal, $kapalClean) {
+                    $q->where('nama_kapal', $namaKapal)
+                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                })
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->distinct()
+                ->orderBy('no_voyage', 'desc')
+                ->pluck('no_voyage')
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'voyages' => $voyages
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getVoyageBongkar error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil voyage'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get voyages from naik_kapal table for specific ship (for muat)
+     */
+    public function getVoyageMuat(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        
+        if (!$namaKapal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nama kapal tidak boleh kosong'
+            ]);
+        }
+
+        try {
+            $kapalClean = strtolower(str_replace('.', '', $namaKapal));
+
+            $voyages = NaikKapal::select('no_voyage')
+                ->where(function($q) use ($namaKapal, $kapalClean) {
+                    $q->where('nama_kapal', $namaKapal)
+                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                })
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->groupBy('no_voyage')
+                ->orderByRaw('MAX(tanggal_muat) DESC')
+                ->pluck('no_voyage')
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'voyages' => $voyages
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getVoyageMuat error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil voyage'
             ], 500);
         }
     }
