@@ -394,6 +394,34 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
+                        <!-- Lanjut Muat -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lanjut Muat</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="lanjut_muat" value="tidak" checked
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="lanjut_muat" value="ya"
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Ya</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Nomor Surat Jalan Sebelumnya -->
+                        <div id="modal_nomor_sj_sebelumnya_wrapper" style="display: none;">
+                            <label for="modal_nomor_sj_sebelumnya" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nomor Surat Jalan Sebelumnya <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nomor_sj_sebelumnya" id="modal_nomor_sj_sebelumnya"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nomor surat jalan sebelumnya">
+                            <p class="mt-1 text-xs text-blue-600">Wajib diisi jika memilih lanjut muat</p>
+                        </div>
+
                         <!-- Term -->
                         <div>
                             <label for="modal_term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
@@ -1138,6 +1166,9 @@ function buatSuratJalan(blId) {
             
             // Setup auto-calculate uang jalan
             setupModalUangJalanCalculation(data.size_kontainer);
+            
+            // Setup toggle lanjut muat
+            setupModalLanjutMuatToggle();
         })
         .catch(error => {
             console.error('Error fetching BL data:', error);
@@ -1222,6 +1253,35 @@ function setupModalUangJalanCalculation(containerSize) {
     }
 }
 
+// Setup toggle for lanjut muat field in modal
+function setupModalLanjutMuatToggle() {
+    const lanjutMuatRadios = document.querySelectorAll('input[name="lanjut_muat"]');
+    const nomorSjSebelumnyaWrapper = document.getElementById('modal_nomor_sj_sebelumnya_wrapper');
+    const nomorSjSebelumnyaInput = document.getElementById('modal_nomor_sj_sebelumnya');
+    
+    function toggleNomorSjSebelumnya() {
+        const lanjutMuatValue = document.querySelector('input[name="lanjut_muat"]:checked')?.value;
+        
+        if (lanjutMuatValue === 'ya') {
+            nomorSjSebelumnyaWrapper.style.display = 'block';
+            nomorSjSebelumnyaInput.setAttribute('required', 'required');
+        } else {
+            nomorSjSebelumnyaWrapper.style.display = 'none';
+            nomorSjSebelumnyaInput.removeAttribute('required');
+            nomorSjSebelumnyaInput.value = '';
+        }
+    }
+    
+    // Add event listeners
+    lanjutMuatRadios.forEach(radio => {
+        radio.removeEventListener('change', toggleNomorSjSebelumnya);
+        radio.addEventListener('change', toggleNomorSjSebelumnya);
+    });
+    
+    // Initialize on load
+    toggleNomorSjSebelumnya();
+}
+
 // Handle form submit with validation and loading state
 function handleFormSubmit(event) {
     event.preventDefault();
@@ -1245,6 +1305,17 @@ function handleFormSubmit(event) {
         showModalAlert('Field Wajib Diisi!', 'Tanggal Surat Jalan harus diisi sebelum menyimpan.', 'error');
         document.getElementById('modal_tanggal_surat_jalan').focus();
         return false;
+    }
+    
+    // Validate nomor surat jalan sebelumnya if lanjut muat is 'ya'
+    const lanjutMuat = document.querySelector('input[name="lanjut_muat"]:checked')?.value;
+    if (lanjutMuat === 'ya') {
+        const nomorSjSebelumnya = document.getElementById('modal_nomor_sj_sebelumnya').value.trim();
+        if (!nomorSjSebelumnya) {
+            showModalAlert('Field Wajib Diisi!', 'Nomor Surat Jalan Sebelumnya harus diisi jika memilih lanjut muat.', 'error');
+            document.getElementById('modal_nomor_sj_sebelumnya').focus();
+            return false;
+        }
     }
     
     // Show loading state
@@ -1348,6 +1419,8 @@ function getFieldLabel(fieldName) {
         'rit': 'RIT',
         'uang_jalan_type': 'Tipe Uang Jalan',
         'uang_jalan_nominal': 'Nominal Uang Jalan',
+        'lanjut_muat': 'Lanjut Muat',
+        'nomor_sj_sebelumnya': 'Nomor Surat Jalan Sebelumnya',
         'nama_kapal': 'Nama Kapal',
         'no_voyage': 'No Voyage',
         'bl_id': 'BL ID'
@@ -1405,6 +1478,17 @@ function showModalAlert(title, message, type = 'error') {
 function closeModal() {
     document.getElementById('modalBuatSuratJalan').classList.add('hidden');
     document.getElementById('formBuatSuratJalan').reset();
+    
+    // Reset lanjut muat field
+    const nomorSjSebelumnyaWrapper = document.getElementById('modal_nomor_sj_sebelumnya_wrapper');
+    const nomorSjSebelumnyaInput = document.getElementById('modal_nomor_sj_sebelumnya');
+    if (nomorSjSebelumnyaWrapper) {
+        nomorSjSebelumnyaWrapper.style.display = 'none';
+    }
+    if (nomorSjSebelumnyaInput) {
+        nomorSjSebelumnyaInput.value = '';
+        nomorSjSebelumnyaInput.removeAttribute('required');
+    }
     
     // Reset button state
     const submitBtn = document.getElementById('btnSubmitModal');
