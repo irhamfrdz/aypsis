@@ -239,6 +239,11 @@ class ObController extends Controller
                 ->orderBy('nama_panggilan')
                 ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
 
+            // Get list of gudangs for asal kontainer dropdown
+            $gudangs = \App\Models\Gudang::where('status', 'aktif')
+                ->orderBy('nama_gudang')
+                ->get(['id', 'nama_gudang', 'lokasi']);
+
             return view('ob.index', compact(
                 'bls',
                 'namaKapal',
@@ -247,6 +252,7 @@ class ObController extends Controller
                 'sudahOB',
                 'belumOB',
                 'supirs',
+                'gudangs',
                 'kegiatan'
             ));
         }
@@ -351,6 +357,11 @@ class ObController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
 
+        // Get list of gudangs for asal kontainer dropdown
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')
+            ->orderBy('nama_gudang')
+            ->get(['id', 'nama_gudang', 'lokasi']);
+
         return view('ob.index', compact(
             'naikKapals', 
             'namaKapal', 
@@ -359,6 +370,7 @@ class ObController extends Controller
             'sudahOB', 
             'belumOB',
             'supirs',
+            'gudangs',
             'kegiatan'
         ));
     }

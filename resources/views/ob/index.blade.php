@@ -274,12 +274,25 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->nama_barang ?: '-' }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div class="flex items-center gap-2">
-                                <input type="text" 
-                                       class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                       data-id="{{ $bl->id }}" 
-                                       data-type="bl"
-                                       value="{{ $bl->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
-                                       placeholder="Asal kontainer...">
+                                @if(request('kegiatan') === 'muat')
+                                    <select class="editable-asal-kontainer select2-gudang w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                            data-id="{{ $bl->id }}" 
+                                            data-type="bl">
+                                        <option value="">Pilih gudang...</option>
+                                        @foreach($gudangs as $gudang)
+                                            <option value="{{ $gudang->nama_gudang }}" {{ $bl->asal_kontainer == $gudang->nama_gudang ? 'selected' : '' }}>
+                                                {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <input type="text" 
+                                           class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           data-id="{{ $bl->id }}" 
+                                           data-type="bl"
+                                           value="{{ $bl->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
+                                           placeholder="Asal kontainer...">
+                                @endif
                                 <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
                                         class="text-green-600 hover:text-green-900 transition duration-150"
                                         title="Simpan">
@@ -412,12 +425,25 @@
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <div class="flex items-center gap-2">
-                                    <input type="text" 
-                                           class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                           data-id="{{ $naikKapal->id }}" 
-                                           data-type="naik_kapal"
-                                           value="{{ $naikKapal->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
-                                           placeholder="Asal kontainer...">
+                                    @if(request('kegiatan') === 'muat')
+                                        <select class="editable-asal-kontainer select2-gudang w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                data-id="{{ $naikKapal->id }}" 
+                                                data-type="naik_kapal">
+                                            <option value="">Pilih gudang...</option>
+                                            @foreach($gudangs as $gudang)
+                                                <option value="{{ $gudang->nama_gudang }}" {{ $naikKapal->asal_kontainer == $gudang->nama_gudang ? 'selected' : '' }}>
+                                                    {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <input type="text" 
+                                               class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                               data-id="{{ $naikKapal->id }}" 
+                                               data-type="naik_kapal"
+                                               value="{{ $naikKapal->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
+                                               placeholder="Asal kontainer...">
+                                    @endif
                                     <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
                                             class="text-green-600 hover:text-green-900 transition duration-150"
                                             title="Simpan">
@@ -782,6 +808,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Initialize Select2 for gudang dropdown
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery('.select2-gudang').select2({
+            placeholder: 'Pilih gudang asal...',
+            allowClear: true,
+            width: '100%'
+        });
+    }
+
     // Handle bulk Asal Kontainer and Ke update
     const bulkAsalInput = document.getElementById('bulk_asal_kontainer');
     const bulkKeInput = document.getElementById('bulk_ke');
@@ -1063,8 +1098,9 @@ function saveAsalKe(type, id, tdElement) {
     const asalInput = row.querySelector('.editable-asal-kontainer');
     const keInput = row.querySelector('.editable-ke');
     
-    const asalValue = asalInput.value.trim();
-    const keValue = keInput.value.trim();
+    // Get value from input or select element
+    const asalValue = asalInput ? (asalInput.tagName === 'SELECT' ? asalInput.options[asalInput.selectedIndex]?.value : asalInput.value).trim() : '';
+    const keValue = keInput ? (keInput.tagName === 'SELECT' ? keInput.options[keInput.selectedIndex]?.value : keInput.value).trim() : '';
     
     // Show loading state
     const saveBtn = tdElement.querySelector('button');
