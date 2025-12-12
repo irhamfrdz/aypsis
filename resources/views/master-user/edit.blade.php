@@ -1224,6 +1224,23 @@
                                 <td><input type="checkbox" name="permissions[pergerakan-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kapal']['export']) && $userMatrixPermissions['pergerakan-kapal']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Master Gudang --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Gudang</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-gudang][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['view']) && $userMatrixPermissions['master-gudang']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['create']) && $userMatrixPermissions['master-gudang']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['update']) && $userMatrixPermissions['master-gudang']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['delete']) && $userMatrixPermissions['master-gudang']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-gudang][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['print']) && $userMatrixPermissions['master-gudang']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['export']) && $userMatrixPermissions['master-gudang']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Aktivitas --}}
                             <tr class="module-row" data-module="aktivitas">
                                 <td class="module-header">
