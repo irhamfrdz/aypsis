@@ -135,7 +135,7 @@ class TandaTerimaController extends Controller
 
         // If mode is 'missing' then we should list Surat Jalan that don't have Tanda Terima
         if ($mode === 'missing') {
-            $suratQuery = SuratJalan::with(['order.pengirim']);
+            $suratQuery = SuratJalan::with(['order.pengirim', 'uangJalan']);
 
             // Apply search filter for surat jalan
             if (!empty($search)) {
@@ -175,13 +175,10 @@ class TandaTerimaController extends Controller
         
         // If mode is 'with_tanda_terima' then we should list Surat Jalan that have Tanda Terima
         if ($mode === 'with_tanda_terima') {
-            // Build complex query to get pembayaran through the relationship chain
+            // Build query to get uang jalan data
             $query = DB::table('surat_jalans as sj')
                 ->join('tanda_terimas as tt', 'sj.id', '=', 'tt.surat_jalan_id')
                 ->leftJoin('uang_jalans as uj', 'sj.id', '=', 'uj.surat_jalan_id')
-                ->leftJoin('pranota_uang_jalan_items as puji', 'uj.id', '=', 'puji.uang_jalan_id')
-                ->leftJoin('pembayaran_pranota_uang_jalan_items as ppuji', 'puji.pranota_uang_jalan_id', '=', 'ppuji.pranota_uang_jalan_id')
-                ->leftJoin('pembayaran_pranota_uang_jalans as ppuj', 'ppuji.pembayaran_pranota_uang_jalan_id', '=', 'ppuj.id')
                 ->select(
                     'sj.id as surat_jalan_id',
                     'sj.no_surat_jalan',
@@ -192,10 +189,10 @@ class TandaTerimaController extends Controller
                     'sj.kegiatan',
                     'tt.id as tanda_terima_id',
                     'tt.created_at',
-                    'ppuj.nomor_pembayaran',
-                    'ppuj.tanggal_pembayaran as tanggal_pembayaran_uang_jalan'
+                    'uj.nomor_uang_jalan',
+                    'uj.tanggal_uang_jalan'
                 )
-                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.created_at', 'ppuj.nomor_pembayaran', 'ppuj.tanggal_pembayaran');
+                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
 
             // Apply search filter
             if (!empty($search)) {
@@ -213,7 +210,7 @@ class TandaTerimaController extends Controller
             return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'mode'));
         }
         // Query tanda terima with relations
-        $query = TandaTerima::with(['suratJalan.order.pengirim']);
+        $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.uangJalan']);
 
         // Apply search filter for tanda terima
         if (!empty($search)) {

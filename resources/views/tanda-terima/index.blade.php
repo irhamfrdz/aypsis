@@ -306,10 +306,10 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->no_plat ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->rit ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $suratJalan->pembayaranPranotaUangJalan->nomor_pembayaran ?? '-' }}</code>
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $suratJalan->uangJalan->nomor_uang_jalan ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $suratJalan->pembayaranPranotaUangJalan && $suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran ? \Carbon\Carbon::parse($suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') : '-' }}
+                                {{ $suratJalan->uangJalan && $suratJalan->uangJalan->tanggal_uang_jalan ? \Carbon\Carbon::parse($suratJalan->uangJalan->tanggal_uang_jalan)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -360,10 +360,10 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $item->nomor_pembayaran ?? '-' }}</code>
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $item->nomor_uang_jalan ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $item->tanggal_pembayaran_uang_jalan ? \Carbon\Carbon::parse($item->tanggal_pembayaran_uang_jalan)->format('d/m/Y') : '-' }}
+                                {{ $item->tanggal_uang_jalan ? \Carbon\Carbon::parse($item->tanggal_uang_jalan)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">TT-{{ $item->tanda_terima_id }}</code>
@@ -453,10 +453,10 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $tandaTerima->suratJalan->pembayaranPranotaUangJalan->nomor_pembayaran ?? '-' }}</code>
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $tandaTerima->suratJalan->uangJalan->nomor_uang_jalan ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $tandaTerima->suratJalan && $tandaTerima->suratJalan->pembayaranPranotaUangJalan && $tandaTerima->suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran ? \Carbon\Carbon::parse($tandaTerima->suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') : '-' }}
+                                {{ $tandaTerima->suratJalan && $tandaTerima->suratJalan->uangJalan && $tandaTerima->suratJalan->uangJalan->tanggal_uang_jalan ? \Carbon\Carbon::parse($tandaTerima->suratJalan->uangJalan->tanggal_uang_jalan)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 @php
