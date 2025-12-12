@@ -11,17 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add columns to bls table
-        Schema::table('bls', function (Blueprint $table) {
-            $table->string('asal_kontainer')->nullable()->after('nama_barang');
-            $table->string('ke')->nullable()->after('asal_kontainer');
-        });
+        // Add columns to bls table only if they don't exist
+        if (!Schema::hasColumn('bls', 'asal_kontainer')) {
+            Schema::table('bls', function (Blueprint $table) {
+                $table->string('asal_kontainer')->nullable()->after('nama_barang');
+            });
+        }
+        
+        if (!Schema::hasColumn('bls', 'ke')) {
+            Schema::table('bls', function (Blueprint $table) {
+                $table->string('ke')->nullable()->after('asal_kontainer');
+            });
+        }
 
-        // Add columns to naik_kapal table
-        Schema::table('naik_kapal', function (Blueprint $table) {
-            $table->string('asal_kontainer')->nullable()->after('jenis_barang');
-            $table->string('ke')->nullable()->after('asal_kontainer');
-        });
+        // Add columns to naik_kapal table only if they don't exist
+        if (!Schema::hasColumn('naik_kapal', 'asal_kontainer')) {
+            Schema::table('naik_kapal', function (Blueprint $table) {
+                $table->string('asal_kontainer')->nullable()->after('jenis_barang');
+            });
+        }
+        
+        if (!Schema::hasColumn('naik_kapal', 'ke')) {
+            Schema::table('naik_kapal', function (Blueprint $table) {
+                $table->string('ke')->nullable()->after('asal_kontainer');
+            });
+        }
     }
 
     /**
@@ -29,12 +43,28 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bls', function (Blueprint $table) {
-            $table->dropColumn(['asal_kontainer', 'ke']);
-        });
+        if (Schema::hasColumn('bls', 'asal_kontainer')) {
+            Schema::table('bls', function (Blueprint $table) {
+                $table->dropColumn('asal_kontainer');
+            });
+        }
 
-        Schema::table('naik_kapal', function (Blueprint $table) {
-            $table->dropColumn(['asal_kontainer', 'ke']);
-        });
+        if (Schema::hasColumn('bls', 'ke')) {
+            Schema::table('bls', function (Blueprint $table) {
+                $table->dropColumn('ke');
+            });
+        }
+
+        if (Schema::hasColumn('naik_kapal', 'asal_kontainer')) {
+            Schema::table('naik_kapal', function (Blueprint $table) {
+                $table->dropColumn('asal_kontainer');
+            });
+        }
+
+        if (Schema::hasColumn('naik_kapal', 'ke')) {
+            Schema::table('naik_kapal', function (Blueprint $table) {
+                $table->dropColumn('ke');
+            });
+        }
     }
 };
