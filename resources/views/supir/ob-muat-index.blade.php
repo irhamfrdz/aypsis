@@ -191,6 +191,12 @@
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Barang
                                     </th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Asal Kontainer
+                                    </th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ke
+                                    </th>
                                     <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status OB
                                     </th>
@@ -229,6 +235,12 @@
                                             <div class="max-w-xs truncate" title="{{ $bl->nama_barang }}">
                                                 {{ $bl->nama_barang ?? '-' }}
                                             </div>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                            {{ $bl->asal_kontainer ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                            {{ $bl->ke ?? '-' }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center text-sm">
                                             @if($bl->sudah_ob ?? false)
@@ -276,7 +288,7 @@
                                     </tr>
                                 @endforeach
                                 <tr id="noResultsRow" style="display: none;">
-                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                                         <div class="flex flex-col items-center justify-center">
                                             <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
