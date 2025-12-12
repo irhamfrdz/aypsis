@@ -15,21 +15,23 @@ class TandaTerimaBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = TandaTerimaBongkaran::with(['suratJalanBongkaran']);
+        $query = SuratJalanBongkaran::with(['bl', 'uangJalanBongkaran']);
 
         // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
+                $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
                   ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
-                  ->orWhere('no_seal', 'LIKE', "%{$search}%");
+                  ->orWhere('no_seal', 'LIKE', "%{$search}%")
+                  ->orWhere('no_bl', 'LIKE', "%{$search}%")
+                  ->orWhere('pengirim', 'LIKE', "%{$search}%");
             });
         }
 
-        // Status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        // Status Pembayaran filter
+        if ($request->filled('status_pembayaran')) {
+            $query->where('status_pembayaran', $request->status_pembayaran);
         }
 
         // Kegiatan filter
@@ -37,9 +39,9 @@ class TandaTerimaBongkaranController extends Controller
             $query->where('kegiatan', $request->kegiatan);
         }
 
-        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
+        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return view('tanda-terima-bongkaran.index', compact('tandaTerimas'));
+        return view('tanda-terima-bongkaran.index', compact('suratJalans'));
     }
 
     /**

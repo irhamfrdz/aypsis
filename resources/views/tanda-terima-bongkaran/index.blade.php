@@ -13,7 +13,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Tanda Terima Bongkaran</h1>
-                <p class="text-gray-600 mt-1">Kelola tanda terima kontainer bongkaran dari surat jalan bongkaran</p>
+                <p class="text-gray-600 mt-1">Kelola dan pantau status pembayaran surat jalan bongkaran</p>
             </div>
             <div>
                 <div class="flex items-center gap-3">
@@ -69,16 +69,16 @@
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
                 </div>
 
-                <!-- Status -->
+                <!-- Status Pembayaran -->
                 <div class="md:col-span-3">
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select name="status" 
-                            id="status"
+                    <label for="status_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
+                    <select name="status_pembayaran" 
+                            id="status_pembayaran"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
                         <option value="">Semua Status</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="belum_dibayar" {{ request('status_pembayaran') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
+                        <option value="dibayar_sebagian" {{ request('status_pembayaran') == 'dibayar_sebagian' ? 'selected' : '' }}>Dibayar Sebagian</option>
+                        <option value="lunas" {{ request('status_pembayaran') == 'lunas' ? 'selected' : '' }}>Lunas</option>
                     </select>
                 </div>
 
@@ -119,91 +119,104 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor TT</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ Bongkaran</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal TT</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No BL</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Tarif</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Terbayar</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Bayar</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($tandaTerimas ?? [] as $index => $tandaTerima)
+                    @forelse($suratJalans ?? [] as $index => $suratJalan)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $index + 1 }}
+                            {{ ($suratJalans->currentPage() - 1) * $suratJalans->perPage() + $index + 1 }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $tandaTerima->nomor_tanda_terima ?? '-' }}
+                            {{ $suratJalan->nomor_surat_jalan ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $tandaTerima->suratJalanBongkaran->nomor_surat_jalan ?? '-' }}
+                            {{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $tandaTerima->tanggal_tanda_terima ? $tandaTerima->tanggal_tanda_terima->format('d/m/Y') : '-' }}
+                            {{ $suratJalan->no_bl ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $tandaTerima->no_kontainer ?? '-' }}
+                            {{ $suratJalan->no_kontainer ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $tandaTerima->kegiatan ?? '-' }}
+                            {{ $suratJalan->pengirim ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $suratJalan->kegiatan ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-medium">
+                            Rp {{ number_format($suratJalan->total_tarif ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($suratJalan->jumlah_terbayar ?? 0, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
+                                $statusPembayaran = $suratJalan->status_pembayaran ?? 'belum_dibayar';
                                 $statusClass = [
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    'approved' => 'bg-green-100 text-green-800',
-                                    'completed' => 'bg-blue-100 text-blue-800',
+                                    'belum_dibayar' => 'bg-red-100 text-red-800',
+                                    'dibayar_sebagian' => 'bg-yellow-100 text-yellow-800',
+                                    'lunas' => 'bg-green-100 text-green-800',
                                 ];
-                                $class = $statusClass[$tandaTerima->status ?? 'pending'] ?? 'bg-gray-100 text-gray-800';
+                                $statusLabel = [
+                                    'belum_dibayar' => 'Belum Dibayar',
+                                    'dibayar_sebagian' => 'Dibayar Sebagian',
+                                    'lunas' => 'Lunas',
+                                ];
+                                $class = $statusClass[$statusPembayaran] ?? 'bg-gray-100 text-gray-800';
+                                $label = $statusLabel[$statusPembayaran] ?? 'Belum Dibayar';
                             @endphp
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $class }}">
-                                {{ ucfirst($tandaTerima->status ?? 'Pending') }}
+                                {{ $label }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex items-center justify-center space-x-2">
                                 @can('tanda-terima-bongkaran-view')
-                                <a href="{{ route('tanda-terima-bongkaran.show', $tandaTerima->id) }}" 
+                                <a href="{{ route('surat-jalan-bongkaran.show', $suratJalan->id) }}" 
                                    class="text-blue-600 hover:text-blue-900"
                                    title="Detail">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @endcan
 
-                                @can('tanda-terima-bongkaran-update')
-                                <a href="{{ route('tanda-terima-bongkaran.edit', $tandaTerima->id) }}" 
-                                   class="text-yellow-600 hover:text-yellow-900"
-                                   title="Edit">
-                                    <i class="fas fa-edit"></i>
+                                @can('tanda-terima-bongkaran-print')
+                                <a href="{{ route('surat-jalan-bongkaran.print', $suratJalan->id) }}" 
+                                   class="text-purple-600 hover:text-purple-900"
+                                   target="_blank"
+                                   title="Print">
+                                    <i class="fas fa-print"></i>
                                 </a>
                                 @endcan
 
-                                @can('tanda-terima-bongkaran-delete')
-                                <form action="{{ route('tanda-terima-bongkaran.destroy', $tandaTerima->id) }}" 
-                                      method="POST" 
-                                      class="inline"
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="text-red-600 hover:text-red-900"
-                                            title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                @can('tanda-terima-bongkaran-update')
+                                <a href="{{ route('tanda-terima-bongkaran.create') }}?surat_jalan_id={{ $suratJalan->id }}" 
+                                   class="text-teal-600 hover:text-teal-900"
+                                   title="Buat Tanda Terima">
+                                    <i class="fas fa-file-signature"></i>
+                                </a>
                                 @endcan
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-12 text-center">
+                        <td colspan="11" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-                                <p class="text-gray-500 text-lg font-medium">Tidak ada data tanda terima bongkaran</p>
-                                <p class="text-gray-400 text-sm mt-2">Silakan tambahkan tanda terima bongkaran baru</p>
+                                <p class="text-gray-500 text-lg font-medium">Tidak ada data surat jalan bongkaran</p>
+                                <p class="text-gray-400 text-sm mt-2">Data surat jalan bongkaran akan muncul di sini</p>
                             </div>
                         </td>
                     </tr>
@@ -213,22 +226,22 @@
         </div>
 
         <!-- Pagination -->
-        @if(isset($tandaTerimas) && $tandaTerimas->hasPages())
+        @if(isset($suratJalans) && $suratJalans->hasPages())
         <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
                 <div class="flex-1 flex justify-between sm:hidden">
-                    @if ($tandaTerimas->onFirstPage())
+                    @if ($suratJalans->onFirstPage())
                         <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
                             Previous
                         </span>
                     @else
-                        <a href="{{ $tandaTerimas->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ $suratJalans->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Previous
                         </a>
                     @endif
 
-                    @if ($tandaTerimas->hasMorePages())
-                        <a href="{{ $tandaTerimas->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    @if ($suratJalans->hasMorePages())
+                        <a href="{{ $suratJalans->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Next
                         </a>
                     @else
@@ -241,16 +254,16 @@
                     <div>
                         <p class="text-sm text-gray-700">
                             Menampilkan
-                            <span class="font-medium">{{ $tandaTerimas->firstItem() ?? 0 }}</span>
+                            <span class="font-medium">{{ $suratJalans->firstItem() ?? 0 }}</span>
                             sampai
-                            <span class="font-medium">{{ $tandaTerimas->lastItem() ?? 0 }}</span>
+                            <span class="font-medium">{{ $suratJalans->lastItem() ?? 0 }}</span>
                             dari
-                            <span class="font-medium">{{ $tandaTerimas->total() }}</span>
+                            <span class="font-medium">{{ $suratJalans->total() }}</span>
                             hasil
                         </p>
                     </div>
                     <div>
-                        {{ $tandaTerimas->appends(request()->query())->links() }}
+                        {{ $suratJalans->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>
@@ -263,7 +276,7 @@
 @push('scripts')
 <script>
     // Auto-submit form on filter change
-    document.getElementById('status')?.addEventListener('change', function() {
+    document.getElementById('status_pembayaran')?.addEventListener('change', function() {
         this.form.submit();
     });
     
