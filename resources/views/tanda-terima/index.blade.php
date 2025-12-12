@@ -306,7 +306,7 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->no_plat ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->rit ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $suratJalan->pembayaranPranotaUangJalan->no_pranota_uang_jalan ?? '-' }}</code>
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $suratJalan->pembayaranPranotaUangJalan->nomor_pembayaran ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $suratJalan->pembayaranPranotaUangJalan && $suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran ? \Carbon\Carbon::parse($suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') : '-' }}
@@ -360,7 +360,7 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $item->no_pranota_uang_jalan ?? '-' }}</code>
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $item->nomor_pembayaran ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $item->tanggal_pembayaran_uang_jalan ? \Carbon\Carbon::parse($item->tanggal_pembayaran_uang_jalan)->format('d/m/Y') : '-' }}
@@ -453,7 +453,7 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $tandaTerima->suratJalan->pembayaranPranotaUangJalan->no_pranota_uang_jalan ?? '-' }}</code>
+                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $tandaTerima->suratJalan->pembayaranPranotaUangJalan->nomor_pembayaran ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $tandaTerima->suratJalan && $tandaTerima->suratJalan->pembayaranPranotaUangJalan && $tandaTerima->suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran ? \Carbon\Carbon::parse($tandaTerima->suratJalan->pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') : '-' }}
