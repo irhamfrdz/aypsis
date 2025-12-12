@@ -158,9 +158,9 @@
                     <div class="md:col-span-3">
                         <select name="kegiatan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Semua Kegiatan</option>
-                            @foreach($masterKegiatans as $masterKegiatan)
-                                <option value="{{ $masterKegiatan->kode_kegiatan }}" {{ request('kegiatan') == $masterKegiatan->kode_kegiatan ? 'selected' : '' }}>
-                                    {{ $masterKegiatan->nama_kegiatan }}
+                            @foreach($kegiatanList as $kegiatanItem)
+                                <option value="{{ $kegiatanItem }}" {{ request('kegiatan') == $kegiatanItem ? 'selected' : '' }}>
+                                    {{ $kegiatanItem }}
                                 </option>
                             @endforeach
                         </select>

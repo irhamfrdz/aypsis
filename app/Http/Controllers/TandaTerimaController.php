@@ -7,7 +7,6 @@ use App\Models\Prospek;
 use App\Models\MasterKapal;
 use App\Models\MasterPengirimPenerima;
 use App\Models\SuratJalan;
-use App\Models\MasterKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -135,10 +134,24 @@ class TandaTerimaController extends Controller
         $mode = $request->input('mode', '');
         $perPage = $request->input('rows_per_page', 25);
 
-        // Get master kegiatan for filter dropdown
-        $masterKegiatans = MasterKegiatan::where('status', 'active')
-            ->orderBy('nama_kegiatan', 'asc')
-            ->get();
+        // Get distinct kegiatan for filter dropdown based on mode
+        if ($mode === 'missing' || $mode === 'with_tanda_terima') {
+            // Get distinct kegiatan from surat_jalans
+            $kegiatanList = SuratJalan::select('kegiatan')
+                ->whereNotNull('kegiatan')
+                ->where('kegiatan', '!=', '')
+                ->distinct()
+                ->orderBy('kegiatan', 'asc')
+                ->pluck('kegiatan');
+        } else {
+            // Get distinct kegiatan from tanda_terimas
+            $kegiatanList = TandaTerima::select('kegiatan')
+                ->whereNotNull('kegiatan')
+                ->where('kegiatan', '!=', '')
+                ->distinct()
+                ->orderBy('kegiatan', 'asc')
+                ->pluck('kegiatan');
+        }
 
         // If mode is 'missing' then we should list Surat Jalan that don't have Tanda Terima
         if ($mode === 'missing') {
@@ -182,7 +195,7 @@ class TandaTerimaController extends Controller
 
             $suratJalans = $suratQuery->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'masterKegiatans'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList'));
         }
         
         // If mode is 'with_tanda_terima' then we should list Surat Jalan that have Tanda Terima
@@ -224,7 +237,7 @@ class TandaTerimaController extends Controller
                 ->paginate($perPage)
                 ->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'masterKegiatans'));
+            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList'));
         }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.uangJalan']);
@@ -304,10 +317,10 @@ class TandaTerimaController extends Controller
             // Return the view with missing surat jalan results and a fallback flag
             $mode = 'missing';
             $fallback_missing = true;
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'masterKegiatans'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList'));
         }
 
-        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'masterKegiatans'));
+        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList'));
     }
 
     /**
