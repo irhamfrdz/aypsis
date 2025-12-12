@@ -1818,6 +1818,30 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-bongkaran.download')
          ->middleware('can:surat-jalan-bongkaran-view');
 
+    // ============= TANDA TERIMA BONGKARAN ROUTES =============
+    
+    // Tanda Terima Bongkaran Management with permissions
+    Route::resource('tanda-terima-bongkaran', \App\Http\Controllers\TandaTerimaBongkaranController::class)
+         ->middleware([
+              'index' => 'can:tanda-terima-bongkaran-view',
+              'create' => 'can:tanda-terima-bongkaran-create',
+              'store' => 'can:tanda-terima-bongkaran-create',
+              'show' => 'can:tanda-terima-bongkaran-view',
+              'edit' => 'can:tanda-terima-bongkaran-update',
+              'update' => 'can:tanda-terima-bongkaran-update',
+              'destroy' => 'can:tanda-terima-bongkaran-delete'
+         ]);
+
+    // Print tanda terima bongkaran
+    Route::get('/tanda-terima-bongkaran/{tandaTerimaBongkaran}/print', [\App\Http\Controllers\TandaTerimaBongkaranController::class, 'print'])
+         ->name('tanda-terima-bongkaran.print')
+         ->middleware('can:tanda-terima-bongkaran-print');
+
+    // Export tanda terima bongkaran
+    Route::get('/tanda-terima-bongkaran/export/excel', [\App\Http\Controllers\TandaTerimaBongkaranController::class, 'exportExcel'])
+         ->name('tanda-terima-bongkaran.export')
+         ->middleware('can:tanda-terima-bongkaran-export');
+
     // Update status surat jalan
     Route::post('/surat-jalan/{suratJalan}/update-status', [\App\Http\Controllers\SuratJalanController::class, 'updateStatus'])
          ->name('surat-jalan.update-status')
