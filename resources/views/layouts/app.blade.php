@@ -989,8 +989,8 @@
 
                 {{-- Surat Jalan Bongkaran Sub-Dropdown --}}
                 @php
-                    $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*');
-                    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete') || $user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete'));
+                    $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('tanda-terima-bongkaran.*');
+                    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete') || $user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete') || $user->can('tanda-terima-bongkaran-view') || $user->can('tanda-terima-bongkaran-create') || $user->can('tanda-terima-bongkaran-update') || $user->can('tanda-terima-bongkaran-delete'));
                 @endphp
 
                 @if($hasSuratJalanBongkaranPermissions)
@@ -1026,6 +1026,13 @@
                                     <span class="text-xs">Pranota Uang Jalan Bongkaran</span>
                                 </a>
                             @endif
+
+                        {{-- Tanda Terima Bongkaran --}}
+                        @if($user && ($user->can('tanda-terima-bongkaran-view') || $user->can('tanda-terima-bongkaran-create') || $user->can('tanda-terima-bongkaran-update') || $user->can('tanda-terima-bongkaran-delete')))
+                            <a href="{{ route('tanda-terima-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Tanda Terima Bongkaran</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif
