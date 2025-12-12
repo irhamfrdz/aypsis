@@ -11,11 +11,11 @@
                     <h1 class="text-2xl font-medium text-gray-900">
                         {{ $title }}
                     </h1>
-                    <p class="mt-2 text-gray-600">Form untuk membuat pembayaran Uang Muka Out Bound (OB) baru</p>
+                    <p class="mt-2 text-gray-600">Form untuk mengubah pembayaran Down Payment (DP) Out Bound (OB)</p>
                 </div>
 
                 <div class="flex space-x-3">
-                    <a href="{{ route('pembayaran-ob.index') }}"
+                    <a href="{{ route('pembayaran-ob.show', $pembayaran->id) }}"
                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-200">
                         <i class="fas fa-arrow-left mr-1"></i> Kembali
                     </a>
@@ -25,8 +25,9 @@
             <!-- Form Pembayaran DP OB -->
             <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <form action="{{ route('pembayaran-ob.store') }}" method="POST" class="space-y-6">
+                    <form action="{{ route('pembayaran-ob.update', $pembayaran->id) }}" method="POST" class="space-y-6">
                         @csrf
+                        @method('PUT')
 
                         <!-- Alert Error -->
                         @if ($errors->any())
@@ -85,29 +86,18 @@
                         @endif
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Nomor Pembayaran -->
+                            <!-- Nomor Pembayaran (Readonly) -->
                             <div>
-                                                                <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nomor Pembayaran <span class="text-red-500">*</span>
                                 </label>
-                                <div class="flex">
-                                    <input type="text"
-                                           name="nomor_pembayaran"
-                                           id="nomor_pembayaran"
-                                           value="{{ old('nomor_pembayaran') }}"
-                                           placeholder="KBJ1025000001"
-                                           required
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_pembayaran') border-red-300 @enderror">
-                                    <button type="button"
-                                            onclick="generateNomor()"
-                                            class="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <i class="fas fa-sync-alt"></i> Auto
-                                    </button>
-                                </div>
-                                @error('nomor_pembayaran')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-sm text-gray-500">Format: Kode_COA + Bulan(2) + Tahun(2) + Urutan(6). Pilih kas/bank untuk generate otomatis.</p>
+                                <input type="text"
+                                       name="nomor_pembayaran"
+                                       id="nomor_pembayaran"
+                                       value="{{ old('nomor_pembayaran', $pembayaran->nomor_pembayaran) }}"
+                                       readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                <p class="mt-1 text-sm text-gray-500">Nomor pembayaran tidak dapat diubah</p>
                             </div>
 
                             <!-- Tanggal Pembayaran -->
@@ -118,7 +108,7 @@
                                 <input type="date"
                                        name="tanggal_pembayaran"
                                        id="tanggal_pembayaran"
-                                       value="{{ old('tanggal_pembayaran', date('Y-m-d')) }}"
+                                       value="{{ old('tanggal_pembayaran', \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('Y-m-d')) }}"
                                        required
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_pembayaran') border-red-300 @enderror">
                                 @error('tanggal_pembayaran')
@@ -139,7 +129,8 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kas_bank') border-red-300 @enderror">
                                     <option value="">-- Pilih Akun Kas/Bank --</option>
                                     @foreach($kasBankList as $kasBank)
-                                        <option value="{{ $kasBank->id }}" {{ old('kas_bank') == $kasBank->id ? 'selected' : '' }}>
+                                        <option value="{{ $kasBank->id }}" 
+                                            {{ old('kas_bank', $pembayaran->kas_bank_akun_id) == $kasBank->id ? 'selected' : '' }}>
                                             {{ $kasBank->nomor_akun }} - {{ $kasBank->nama_akun }}
                                             @if($kasBank->saldo != 0)
                                                 (Saldo: Rp {{ number_format($kasBank->saldo, 0, ',', '.') }})
@@ -150,7 +141,6 @@
                                 @error('kas_bank')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <p class="mt-1 text-sm text-gray-500">Pilih akun kas atau bank untuk pembayaran ini</p>
                             </div>
 
                             <!-- Debit/Kredit Field -->
@@ -163,17 +153,17 @@
                                         required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_transaksi') border-red-300 @enderror">
                                     <option value="">-- Pilih Jenis Transaksi --</option>
-                                    <option value="debit" {{ old('jenis_transaksi') == 'debit' ? 'selected' : '' }}>
-                                        <i class="fas fa-plus-circle"></i> Debit (Menambah Saldo)
+                                    <option value="debit" {{ old('jenis_transaksi', $pembayaran->jenis_transaksi) == 'debit' ? 'selected' : '' }}>
+                                        Debit (Menambah Saldo)
                                     </option>
-                                    <option value="kredit" {{ old('jenis_transaksi', 'kredit') == 'kredit' ? 'selected' : '' }}>
-                                        <i class="fas fa-minus-circle"></i> Kredit (Mengurangi Saldo)
+                                    <option value="kredit" {{ old('jenis_transaksi', $pembayaran->jenis_transaksi) == 'kredit' ? 'selected' : '' }}>
+                                        Kredit (Mengurangi Saldo)
                                     </option>
                                 </select>
                                 @error('jenis_transaksi')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <p id="jenis-transaksi-help" class="mt-1 text-sm text-gray-500">Untuk pembayaran Uang Muka biasanya kredit (uang keluar)</p>
+                                <p id="jenis-transaksi-help" class="mt-1 text-sm text-gray-500">Untuk pembayaran DP OB biasanya kredit (uang keluar)</p>
                             </div>
                         </div>
 
@@ -189,13 +179,12 @@
                                         onchange="loadNomorVoyage()"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kegiatan') border-red-300 @enderror">
                                     <option value="">-- Pilih Kegiatan --</option>
-                                    <option value="Bongkar" {{ old('kegiatan') == 'Bongkar' ? 'selected' : '' }}>Bongkar</option>
-                                    <option value="Muat" {{ old('kegiatan') == 'Muat' ? 'selected' : '' }}>Muat</option>
+                                    <option value="Bongkar" {{ old('kegiatan', $pembayaran->kegiatan) == 'Bongkar' ? 'selected' : '' }}>Bongkar</option>
+                                    <option value="Muat" {{ old('kegiatan', $pembayaran->kegiatan) == 'Muat' ? 'selected' : '' }}>Muat</option>
                                 </select>
                                 @error('kegiatan')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <p class="mt-1 text-sm text-gray-500">Pilih jenis kegiatan untuk pembayaran uang muka ini</p>
                             </div>
 
                             <!-- Nomor Voyage Field -->
@@ -207,7 +196,7 @@
                                         id="nomor_voyage"
                                         required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_voyage') border-red-300 @enderror"
-                                        disabled>
+                                        {{ !old('kegiatan', $pembayaran->kegiatan) ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Kegiatan Terlebih Dahulu --</option>
                                 </select>
                                 @error('nomor_voyage')
@@ -246,42 +235,31 @@
                                                            name="supir[]"
                                                            value="{{ $supir->id }}"
                                                            class="supir-checkbox mr-3 text-blue-600"
-                                                           {{ in_array($supir->id, old('supir', [])) ? 'checked' : '' }}>
+                                                           {{ in_array($supir->id, old('supir', $pembayaran->supir_ids ?? [])) ? 'checked' : '' }}>
                                                     <div class="flex-1">
                                                         <div class="font-medium text-gray-900">{{ $supir->nama_lengkap }}</div>
                                                         <div class="text-sm text-gray-500">NIK: {{ $supir->nik }}</div>
                                                     </div>
                                                 </label>
                                             @endforeach
-
-                                            @if($supirList->isEmpty())
-                                                <div class="px-3 py-2 text-gray-500 text-sm">
-                                                    Tidak ada supir aktif tersedia
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
-
                                 @error('supir')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                @error('supir.*')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih supir dari daftar karyawan aktif</p>
                             </div>
 
                             <!-- Jumlah Pembayaran per Supir -->
                             <div id="jumlah-container">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Jumlah Uang Muka per Supir <span class="text-red-500">*</span>
+                                    Jumlah DP per Supir <span class="text-red-500">*</span>
                                 </label>
                                 <div id="jumlah-inputs">
                                     <!-- Dynamic inputs akan ditambahkan di sini -->
                                 </div>
                                 <div id="no-supir-message" class="text-gray-500 text-sm italic">
-                                    Pilih supir terlebih dahulu untuk mengisi jumlah Uang Muka
+                                    Pilih supir terlebih dahulu untuk mengisi jumlah DP
                                 </div>
                             </div>
                         </div>
@@ -295,7 +273,7 @@
                                       id="keterangan"
                                       rows="4"
                                       placeholder="Masukkan keterangan tambahan (opsional)"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('keterangan') border-red-300 @enderror">{{ old('keterangan') }}</textarea>
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('keterangan') border-red-300 @enderror">{{ old('keterangan', $pembayaran->keterangan) }}</textarea>
                             @error('keterangan')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -303,13 +281,13 @@
 
                         <!-- Action Buttons -->
                         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                            <a href="{{ route('pembayaran-ob.index') }}"
+                            <a href="{{ route('pembayaran-ob.show', $pembayaran->id) }}"
                                class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
                                 <i class="fas fa-times mr-1"></i> Batal
                             </a>
                             <button type="submit"
                                     class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-                                <i class="fas fa-save mr-1"></i> Simpan
+                                <i class="fas fa-save mr-1"></i> Update
                             </button>
                         </div>
                     </form>
@@ -320,75 +298,18 @@
 </div>
 
 <script>
-// Auto generate nomor pembayaran
-async function generateNomor() {
-    try {
-        // Ambil kas_bank_id yang dipilih untuk generate nomor yang sesuai
-        const kasBankId = document.getElementById('kas_bank').value;
-
-        if (!kasBankId) {
-            alert('Pilih akun Kas/Bank terlebih dahulu untuk generate nomor pembayaran');
-            return;
-        }
-
-        // Buat URL dengan parameter kas_bank_id
-        let url = '{{ route('pembayaran-ob.generate-nomor') }}';
-        url += '?kas_bank_id=' + kasBankId;
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.nomor_pembayaran) {
-            document.getElementById('nomor_pembayaran').value = data.nomor_pembayaran;
-            console.log('Nomor generated: ' + data.nomor_pembayaran);
-        } else if (data.error) {
-            console.error('Failed to generate nomor:', data.message || data.error);
-            alert('Error: ' + (data.message || data.error));
-        } else {
-            console.error('Failed to generate nomor: Unexpected response format');
-            alert('Error: Unexpected response format');
-        }
-    } catch (error) {
-        console.error('Error generating nomor:', error);
-        alert('Terjadi kesalahan saat generate nomor. Menggunakan nomor default.');
-
-        // Fallback generate nomor secara manual dengan format baru
-        const today = new Date();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = String(today.getFullYear()).slice(-2); // 2 digit tahun
-        const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-
-        // Format: UM-KBJ-MM-YY-NNNNNN (default COA KBJ)
-        document.getElementById('nomor_pembayaran').value = `UM-KBJ-${month}-${year}-${random}`;
-    }
-}
-
-
-
-// Auto focus next field on Enter
-document.querySelectorAll('input, textarea').forEach(function(input, index, inputs) {
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && e.target.type !== 'textarea') {
-            e.preventDefault();
-            let nextIndex = index + 1;
-            if (nextIndex < inputs.length) {
-                inputs[nextIndex].focus();
-            } else {
-                // Submit form if this is the last input
-                document.querySelector('form').submit();
-            }
-        }
-    });
-});
-
 // Multi-select Supir Dropdown functionality
 let selectedSupir = [];
 
-// Load previously selected supir from old input
+// Load previously selected supir from database or old input
 @if(old('supir'))
     selectedSupir = @json(old('supir'));
-    updateSupirDisplay();
+@elseif($pembayaran->supir_ids)
+    selectedSupir = @json($pembayaran->supir_ids);
 @endif
+
+// Existing jumlah per supir
+const existingJumlah = @json($pembayaran->jumlah_per_supir ?? []);
 
 function toggleSupirDropdown() {
     const menu = document.getElementById('supir-dropdown-menu');
@@ -413,7 +334,6 @@ function updateSupirDisplay() {
         toggleButton.className = 'w-full text-left text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded border border-blue-200 text-sm';
         noSupirMessage.style.display = 'none';
 
-        // Create tags for selected supir
         selectedSupir.forEach(function(supirId) {
             const checkbox = document.querySelector(`input[value="${supirId}"]`);
             if (checkbox) {
@@ -431,7 +351,6 @@ function updateSupirDisplay() {
                 `;
                 tagsContainer.appendChild(tag);
 
-                // Create input field untuk setiap supir
                 const inputDiv = document.createElement('div');
                 inputDiv.className = 'mb-3 p-3 border border-gray-200 rounded-md bg-gray-50';
                 inputDiv.innerHTML = `
@@ -445,7 +364,7 @@ function updateSupirDisplay() {
                         <input type="text"
                                name="jumlah_display[${supirId}]"
                                id="jumlah_display_${supirId}"
-                               value="${formatNumber(getOldJumlah(supirId))}"
+                               value="${formatNumber(getJumlah(supirId))}"
                                placeholder="0"
                                required
                                class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -453,7 +372,7 @@ function updateSupirDisplay() {
                         <input type="hidden"
                                name="jumlah[${supirId}]"
                                id="jumlah_${supirId}"
-                               value="${getOldJumlah(supirId)}">
+                               value="${getJumlah(supirId)}">
                     </div>
                 `;
                 jumlahInputsContainer.appendChild(inputDiv);
@@ -466,240 +385,65 @@ function removeSupir(supirId) {
     const index = selectedSupir.indexOf(supirId);
     if (index > -1) {
         selectedSupir.splice(index, 1);
-
-        // Uncheck the checkbox
         const checkbox = document.querySelector(`input[value="${supirId}"]`);
-        if (checkbox) {
-            checkbox.checked = false;
-        }
-
+        if (checkbox) checkbox.checked = false;
         updateSupirDisplay();
     }
 }
 
-// Handle supir dropdown toggle
 document.getElementById('supir-dropdown-toggle').addEventListener('click', toggleSupirDropdown);
 
-// Handle checkbox changes
 document.querySelectorAll('.supir-checkbox').forEach(function(checkbox) {
     checkbox.addEventListener('change', function() {
         const supirId = this.value;
-
         if (this.checked) {
-            if (!selectedSupir.includes(supirId)) {
-                selectedSupir.push(supirId);
-            }
+            if (!selectedSupir.includes(supirId)) selectedSupir.push(supirId);
         } else {
             const index = selectedSupir.indexOf(supirId);
-            if (index > -1) {
-                selectedSupir.splice(index, 1);
-            }
+            if (index > -1) selectedSupir.splice(index, 1);
         }
-
         updateSupirDisplay();
     });
 });
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     const dropdown = document.getElementById('supir-dropdown-menu');
-    const toggle = document.getElementById('supir-dropdown-toggle');
     const container = dropdown.closest('.relative');
-
-    if (!container.contains(e.target)) {
-        dropdown.classList.add('hidden');
-    }
+    if (!container.contains(e.target)) dropdown.classList.add('hidden');
 });
 
-// Function to get old jumlah value untuk supir tertentu
-function getOldJumlah(supirId) {
+function getJumlah(supirId) {
     @if(old('jumlah'))
         const oldJumlah = @json(old('jumlah'));
-        return oldJumlah[supirId] || '';
+        return oldJumlah[supirId] || existingJumlah[supirId] || '';
     @else
-        return '';
+        return existingJumlah[supirId] || '';
     @endif
 }
 
-// Function untuk format number dengan pemisah ribuan
 function formatNumber(num) {
     if (!num || num === '') return '';
     return new Intl.NumberFormat('id-ID').format(num);
 }
 
-// Function untuk format currency input
 function formatCurrency(input, supirId) {
-    // Ambil nilai tanpa format
     let value = input.value.replace(/[^\d]/g, '');
-
-    // Update hidden input dengan nilai asli
     const hiddenInput = document.getElementById(`jumlah_${supirId}`);
-    if (hiddenInput) {
-        hiddenInput.value = value || '0';
-    }
-
-    // Format tampilan dengan pemisah ribuan
-    if (value) {
-        input.value = formatNumber(value);
-    } else {
-        input.value = '';
-    }
+    if (hiddenInput) hiddenInput.value = value || '0';
+    if (value) input.value = formatNumber(value);
+    else input.value = '';
 }
 
-// Handle jenis transaksi selection
 document.getElementById('jenis_transaksi').addEventListener('change', function(e) {
-    const jenisTransaksi = e.target.value;
     const helpText = document.getElementById('jenis-transaksi-help');
-
     if (helpText) {
-        if (jenisTransaksi === 'debit') {
+        if (e.target.value === 'debit') {
             helpText.textContent = 'Debit: Uang masuk ke akun kas/bank (menambah saldo)';
             helpText.className = 'mt-1 text-sm text-green-600';
-        } else if (jenisTransaksi === 'kredit') {
+        } else if (e.target.value === 'kredit') {
             helpText.textContent = 'Kredit: Uang keluar dari akun kas/bank (mengurangi saldo)';
             helpText.className = 'mt-1 text-sm text-red-600';
-        } else {
-            helpText.textContent = 'Untuk pembayaran Uang Muka biasanya kredit (uang keluar)';
-            helpText.className = 'mt-1 text-sm text-gray-500';
         }
-    }
-});
-
-// Handle kas/bank selection - regenerate nomor when changed
-document.getElementById('kas_bank').addEventListener('change', function(e) {
-    if (e.target.value) {
-        // Re-generate nomor pembayaran with new COA prefix
-        generateNomor();
-    }
-});
-
-// Handle paste event untuk input jumlah
-document.addEventListener('paste', function(e) {
-    if (e.target.name && e.target.name.includes('jumlah_display')) {
-        setTimeout(function() {
-            const supirId = e.target.id.replace('jumlah_display_', '');
-            formatCurrency(e.target, supirId);
-        }, 10);
-    }
-});
-
-// Validate form before submit
-document.querySelector('form').addEventListener('submit', function(e) {
-    let errors = [];
-    
-    // Validasi nomor pembayaran
-    const nomorPembayaran = document.getElementById('nomor_pembayaran').value;
-    if (!nomorPembayaran || nomorPembayaran.trim() === '') {
-        errors.push('Nomor pembayaran harus diisi');
-    }
-    
-    // Validasi tanggal
-    const tanggalPembayaran = document.getElementById('tanggal_pembayaran').value;
-    if (!tanggalPembayaran) {
-        errors.push('Tanggal pembayaran harus diisi');
-    }
-    
-    // Validasi kas/bank
-    const kasBank = document.getElementById('kas_bank').value;
-    if (!kasBank) {
-        errors.push('Akun Kas/Bank harus dipilih');
-    }
-    
-    // Validasi jenis transaksi
-    const jenisTransaksi = document.getElementById('jenis_transaksi').value;
-    if (!jenisTransaksi) {
-        errors.push('Jenis transaksi harus dipilih');
-    }
-    
-    // Validasi kegiatan
-    const kegiatan = document.getElementById('kegiatan').value;
-    if (!kegiatan) {
-        errors.push('Kegiatan harus dipilih (Bongkar/Muat)');
-    }
-    
-    // Validasi nomor voyage
-    const nomorVoyage = document.getElementById('nomor_voyage').value;
-    if (!nomorVoyage) {
-        errors.push('Nomor Voyage harus dipilih');
-    }
-    
-    // Validasi supir
-    if (selectedSupir.length === 0) {
-        errors.push('Minimal harus memilih 1 supir');
-    }
-    
-    // Pastikan semua hidden input jumlah terisi
-    const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
-    let hasEmptyAmount = false;
-    let totalAmount = 0;
-
-    hiddenInputs.forEach(function(input) {
-        const amount = parseInt(input.value) || 0;
-        if (amount <= 0) {
-            hasEmptyAmount = true;
-        }
-        totalAmount += amount;
-    });
-
-    if (hasEmptyAmount) {
-        errors.push('Semua jumlah Uang Muka untuk setiap supir harus diisi dan lebih dari 0');
-    }
-    
-    if (totalAmount <= 0) {
-        errors.push('Total pembayaran harus lebih dari 0');
-    }
-
-    // Jika ada error, tampilkan dan cancel submit
-    if (errors.length > 0) {
-        e.preventDefault();
-        
-        let errorMessage = '⚠️ PERINGATAN: Data belum lengkap!\\n\\n';
-        errorMessage += 'Mohon perbaiki kesalahan berikut:\\n\\n';
-        errors.forEach((error, index) => {
-            errorMessage += `${index + 1}. ${error}\\n`;
-        });
-        errorMessage += '\\nSilakan lengkapi semua field yang diperlukan sebelum menyimpan.';
-        
-        alert(errorMessage);
-        
-        // Scroll ke element pertama yang error
-        if (!nomorPembayaran) {
-            document.getElementById('nomor_pembayaran').focus();
-        } else if (!tanggalPembayaran) {
-            document.getElementById('tanggal_pembayaran').focus();
-        } else if (!kasBank) {
-            document.getElementById('kas_bank').focus();
-        } else if (!jenisTransaksi) {
-            document.getElementById('jenis_transaksi').focus();
-        } else if (!kegiatan) {
-            document.getElementById('kegiatan').focus();
-        } else if (!nomorVoyage) {
-            document.getElementById('nomor_voyage').focus();
-        }
-        
-        return false;
-    }
-
-    // Konfirmasi sebelum submit
-    const confirmMessage = `Konfirmasi Pembayaran DP OB\\n\\n` +
-                          `Nomor: ${nomorPembayaran}\\n` +
-                          `Tanggal: ${tanggalPembayaran}\\n` +
-                          `Kegiatan: ${kegiatan}\\n` +
-                          `Voyage: ${nomorVoyage}\\n` +
-                          `Jumlah Supir: ${selectedSupir.length}\\n` +
-                          `Total: Rp ${formatNumber(totalAmount)}\\n\\n` +
-                          `Apakah Anda yakin ingin menyimpan data ini?`;
-    
-    if (!confirm(confirmMessage)) {
-        e.preventDefault();
-        return false;
-    }
-
-    // Debug: log form data before submit
-    console.log('Form data before submit:');
-    const formData = new FormData(this);
-    for (let [key, value] of formData.entries()) {
-        console.log(key + ': ' + value);
     }
 });
 
@@ -709,6 +453,7 @@ async function loadNomorVoyage() {
     const voyageSelect = document.getElementById('nomor_voyage');
     const helpText = document.getElementById('voyage-help-text');
     const kegiatan = kegiatanSelect.value;
+    const currentVoyage = '{{ old('nomor_voyage', $pembayaran->nomor_voyage ?? '') }}';
 
     // Reset voyage select
     voyageSelect.innerHTML = '<option value="">-- Loading... --</option>';
@@ -732,6 +477,9 @@ async function loadNomorVoyage() {
                 const option = document.createElement('option');
                 option.value = voyage.no_voyage;
                 option.textContent = `${voyage.no_voyage} - ${voyage.nama_kapal}`;
+                if (currentVoyage == voyage.no_voyage) {
+                    option.selected = true;
+                }
                 voyageSelect.appendChild(option);
             });
 
@@ -758,17 +506,10 @@ async function loadNomorVoyage() {
     }
 }
 
-// Auto generate nomor on page load if field is empty
 document.addEventListener('DOMContentLoaded', function() {
-    const nomorField = document.getElementById('nomor_pembayaran');
-    if (!nomorField.value.trim()) {
-        generateNomor();
-    }
-
-    // Initialize supir display
     updateSupirDisplay();
-
-    // Load voyage if kegiatan already selected (for old input)
+    
+    // Load voyage if kegiatan already selected (for edit mode)
     const kegiatanValue = document.getElementById('kegiatan').value;
     if (kegiatanValue) {
         loadNomorVoyage();

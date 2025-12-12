@@ -38,83 +38,9 @@ try {
         }
     }
 
-    echo "\n--- Menambahkan Permission ke User ---\n\n";
-
-    $users = DB::table('users')->get();
-
-    if ($users->isEmpty()) {
-        echo "❌ Tidak ada user di database\n";
-        exit(1);
-    }
-
-    echo "User yang tersedia:\n";
-    foreach ($users as $index => $user) {
-        $displayName = property_exists($user, 'name') ? $user->name : ($user->username ?? 'user');
-        echo ($index + 1) . ". {$displayName} ({$user->username})\n";
-    }
-
-    echo "\nPilih user (masukkan nomor, atau 'all' untuk semua user, atau 'skip' untuk tidak menambahkan): ";
-    $handle = fopen("php://stdin", "r");
-    $line = trim(fgets($handle));
-    fclose($handle);
-
-    $selectedUsers = [];
-
-    if (strtolower($line) === 'all') {
-        $selectedUsers = $users;
-        echo "\n✅ Memproses semua user...\n\n";
-    } elseif (strtolower($line) === 'skip' || $line === '') {
-        $selectedUsers = [];
-        echo "\nℹ️  Melewati penambahan kepada user. Hanya menambahkan permissions di DB.\n";
-    } else {
-        $index = intval($line) - 1;
-        if (isset($users[$index])) {
-            $selectedUsers = [$users[$index]];
-            $displayName = property_exists($users[$index], 'name') ? $users[$index]->name : ($users[$index]->username ?? 'user');
-            echo "\n✅ Memproses user: {$displayName}\n\n";
-        } else {
-            echo "❌ Pilihan tidak valid\n";
-            exit(1);
-        }
-    }
-
-    foreach ($selectedUsers as $user) {
-        $displayName = property_exists($user, 'name') ? $user->name : ($user->username ?? 'user');
-        echo "Processing user: {$displayName} (ID: {$user->id})\n";
-
-        foreach ($permissions as $permName) {
-            $permission = DB::table('permissions')->where('name', $permName)->first();
-
-            if (!$permission) {
-                echo "  ⚠️  Permission '$permName' tidak ditemukan\n";
-                continue;
-            }
-
-            $hasPermission = DB::table('model_has_permissions')
-                ->where('permission_id', $permission->id)
-                ->where('model_type', 'App\\Models\\User')
-                ->where('model_id', $user->id)
-                ->exists();
-
-            if (!$hasPermission) {
-                DB::table('model_has_permissions')->insert([
-                    'permission_id' => $permission->id,
-                    'model_type' => 'App\\Models\\User',
-                    'model_id' => $user->id,
-                ]);
-                echo "  ✅ Permission '{$permName}' ditambahkan\n";
-            } else {
-                echo "  ℹ️  Permission '{$permName}' sudah ada\n";
-            }
-        }
-        echo "\n";
-    }
-
-    echo "\n✅ SELESAI! Permission berhasil ditambahkan.\n";
-    echo "\nSilakan:\n";
-    echo "1. Logout dari aplikasi\n";
-    echo "2. Login kembali\n";
-    echo "3. Coba akses fitur pranota OB\n";
+    echo "\n✅ SELESAI! Permission berhasil ditambahkan ke database.\n";
+    echo "\nℹ️  Tidak ada user yang otomatis mendapatkan permission ini.\n";
+    echo "ℹ️  Admin dapat mengatur permission melalui halaman Edit User.\n";
 
 } catch (\Exception $e) {
     echo "\n❌ Error: " . $e->getMessage() . "\n";

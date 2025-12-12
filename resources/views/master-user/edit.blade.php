@@ -1706,6 +1706,27 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pembayaran DP OB --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>Pembayaran DP OB</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-ob.view') || (isset($userMatrixPermissions['pembayaran-ob']['view']) && $userMatrixPermissions['pembayaran-ob']['view']) || ($user && $user->can('pembayaran-ob-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-ob.create') || (isset($userMatrixPermissions['pembayaran-ob']['create']) && $userMatrixPermissions['pembayaran-ob']['create']) || ($user && $user->can('pembayaran-ob-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-ob.update') || (isset($userMatrixPermissions['pembayaran-ob']['update']) && $userMatrixPermissions['pembayaran-ob']['update']) || ($user && $user->can('pembayaran-ob-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-ob.delete') || (isset($userMatrixPermissions['pembayaran-ob']['delete']) && $userMatrixPermissions['pembayaran-ob']['delete']) || ($user && $user->can('pembayaran-ob-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][print]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-ob.print') || (isset($userMatrixPermissions['pembayaran-ob']['print']) && $userMatrixPermissions['pembayaran-ob']['print']) || ($user && $user->can('pembayaran-ob-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][export]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-ob.export') || (isset($userMatrixPermissions['pembayaran-ob']['export']) && $userMatrixPermissions['pembayaran-ob']['export']) || ($user && $user->can('pembayaran-ob-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
                                 <td class="module-header">

@@ -10,6 +10,8 @@ use App\Models\Karyawan;
 use App\Models\Coa;
 use App\Models\PembayaranOb;
 use App\Models\NomorTerakhir;
+use App\Models\NaikKapal;
+use App\Models\Bl;
 
 class PembayaranObController extends Controller
 {
@@ -33,9 +35,14 @@ class PembayaranObController extends Controller
             $query->whereJsonContains('supir_ids', $supirId);
         }
 
-        // Filter berdasarkan tanggal pembayaran
-        if ($request->filled('tanggal_pembayaran')) {
-            $query->whereDate('tanggal_pembayaran', $request->tanggal_pembayaran);
+        // Filter berdasarkan tanggal dari
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal_pembayaran', '>=', $request->tanggal_dari);
+        }
+
+        // Filter berdasarkan tanggal sampai
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal_pembayaran', '<=', $request->tanggal_sampai);
         }
 
         // Filter berdasarkan status
@@ -51,8 +58,8 @@ class PembayaranObController extends Controller
                             ->orderBy('nama_lengkap')
                             ->get();
 
-        return view('pembayaran-ob.index', [
-            'title' => 'Pembayaran OB',
+        return view('pembayaran-dp-ob.index', [
+            'title' => 'Pembayaran DP OB',
             'pembayaranList' => $pembayaranList,
             'supirList' => $supirList
         ]);
@@ -84,12 +91,78 @@ class PembayaranObController extends Controller
             $uangMuka->supir_names = $uangMuka->supirList()->pluck('nama_lengkap')->toArray();
         }
 
-        return view('pembayaran-ob.create', [
-            'title' => 'Tambah Pembayaran OB',
+        return view('pembayaran-dp-ob.create', [
+            'title' => 'Tambah Pembayaran DP OB',
             'supirList' => $supirList,
             'kasBankList' => $kasBankList,
             'uangMukaBelumTerpakaiList' => $uangMukaBelumTerpakaiList
         ]);
+    }
+
+    /**
+     * Get voyage list based on kegiatan (Muat or Bongkar)
+     */
+    public function getVoyageList(Request $request)
+    {
+        try {
+            $kegiatan = $request->input('kegiatan');
+
+            if (!$kegiatan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kegiatan harus dipilih'
+                ], 400);
+            }
+
+            $voyages = [];
+
+            if ($kegiatan === 'Muat') {
+                // Ambil dari table naik_kapal - distinct by no_voyage
+                $voyages = NaikKapal::select('no_voyage', 'nama_kapal')
+                    ->selectRaw('MIN(id) as id')
+                    ->selectRaw('MAX(tanggal_muat) as tanggal_muat')
+                    ->whereNotNull('no_voyage')
+                    ->where('no_voyage', '!=', '')
+                    ->groupBy('no_voyage', 'nama_kapal')
+                    ->orderBy('tanggal_muat', 'desc')
+                    ->get()
+                    ->map(function($item) {
+                        return [
+                            'id' => $item->no_voyage, // Gunakan no_voyage sebagai value
+                            'no_voyage' => $item->no_voyage,
+                            'nama_kapal' => $item->nama_kapal
+                        ];
+                    });
+            } elseif ($kegiatan === 'Bongkar') {
+                // Ambil dari table bls - distinct by no_voyage
+                $voyages = Bl::select('no_voyage', 'nama_kapal')
+                    ->selectRaw('MIN(id) as id')
+                    ->selectRaw('MAX(created_at) as created_at')
+                    ->whereNotNull('no_voyage')
+                    ->where('no_voyage', '!=', '')
+                    ->groupBy('no_voyage', 'nama_kapal')
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function($item) {
+                        return [
+                            'id' => $item->no_voyage, // Gunakan no_voyage sebagai value
+                            'no_voyage' => $item->no_voyage,
+                            'nama_kapal' => $item->nama_kapal
+                        ];
+                    });
+            }
+
+            return response()->json([
+                'success' => true,
+                'voyages' => $voyages,
+                'kegiatan' => $kegiatan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data voyage: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -169,6 +242,8 @@ class PembayaranObController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
+            'kegiatan' => 'nullable|string|max:255',
+            'nomor_voyage' => 'nullable|string|max:255',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
             'jumlah' => 'required|array|min:1',
@@ -202,8 +277,10 @@ class PembayaranObController extends Controller
 
             // Kurangi dengan Uang Muka jika ada yang dipilih
             $uangMukaAmount = 0;
-            if ($validated['pembayaran_uang_muka_id']) {
-                $uangMuka = \App\Models\PembayaranUangMuka::find($validated['pembayaran_uang_muka_id']);
+            $pembayaranUangMukaId = $validated['pembayaran_uang_muka_id'] ?? null;
+            
+            if ($pembayaranUangMukaId) {
+                $uangMuka = \App\Models\PembayaranUangMuka::find($pembayaranUangMukaId);
                 if ($uangMuka) {
                     $uangMukaAmount = floatval($uangMuka->total_pembayaran);
                     $totalPembayaran = $subtotalPembayaran - $uangMukaAmount;
@@ -218,13 +295,16 @@ class PembayaranObController extends Controller
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'kas_bank_id' => $validated['kas_bank'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
+                'kegiatan' => $validated['kegiatan'] ?? null,
+                'nomor_voyage' => $validated['nomor_voyage'] ?? null,
                 'supir_ids' => $validated['supir'], // JSON array
                 'jumlah_per_supir' => $jumlahPerSupirData, // JSON object dengan supir_id => jumlah
                 'subtotal_pembayaran' => $subtotalPembayaran, // Subtotal sebelum dikurangi Uang Muka
                 'uang_muka_amount' => $uangMukaAmount, // Jumlah Uang Muka yang digunakan
+                'dp_amount' => $subtotalPembayaran, // Jumlah DP sama dengan subtotal
                 'total_pembayaran' => $totalPembayaran, // Total sudah dikurangi Uang Muka
-                'keterangan' => $validated['keterangan'],
-                'pembayaran_uang_muka_id' => $validated['pembayaran_uang_muka_id'],
+                'keterangan' => $validated['keterangan'] ?? null,
+                'pembayaran_uang_muka_id' => $pembayaranUangMukaId,
                 'status' => 'approved', // Langsung approved untuk OB
                 'dibuat_oleh' => Auth::id(),
                 'disetujui_oleh' => Auth::id(),
@@ -232,8 +312,8 @@ class PembayaranObController extends Controller
             ]);
 
             // Update status Uang Muka jika ada yang dipilih
-            if ($validated['pembayaran_uang_muka_id']) {
-                $uangMuka = \App\Models\PembayaranUangMuka::find($validated['pembayaran_uang_muka_id']);
+            if ($pembayaranUangMukaId) {
+                $uangMuka = \App\Models\PembayaranUangMuka::find($pembayaranUangMukaId);
                 if ($uangMuka) {
                     $uangMuka->markAsTerpakai();
                 }
@@ -255,11 +335,62 @@ class PembayaranObController extends Controller
             return redirect()->route('pembayaran-ob.index')
                             ->with('success', $message);
 
-        } catch (\Exception $e) {
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollback();
+            
+            $errorMessage = 'Gagal menyimpan data pembayaran OB ke database. ';
+            
+            // Detect specific database errors
+            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                $errorMessage .= 'Nomor pembayaran sudah digunakan. Silakan generate nomor baru.';
+            } elseif (str_contains($e->getMessage(), 'foreign key constraint')) {
+                $errorMessage .= 'Data terkait (Kas/Bank atau Supir) tidak valid.';
+            } elseif (str_contains($e->getMessage(), 'Data too long')) {
+                $errorMessage .= 'Data yang diinput terlalu panjang.';
+            } else {
+                $errorMessage .= 'Error Database: ' . $e->getMessage();
+            }
+            
+            return redirect()->back()
+                           ->withInput()
+                           ->withErrors(['database' => $errorMessage])
+                           ->with('error', $errorMessage);
+                           
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
             return redirect()->back()
                            ->withInput()
-                           ->with('error', 'Gagal membuat pembayaran OB: ' . $e->getMessage());
+                           ->withErrors($e->errors())
+                           ->with('error', 'Validasi gagal. Periksa kembali data yang diinput.');
+                           
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            $errorMessage = 'Gagal menyimpan pembayaran OB. ';
+            
+            // Check for common errors
+            if (str_contains($e->getMessage(), 'nomor_pembayaran')) {
+                $errorMessage .= 'Terdapat masalah dengan nomor pembayaran. ';
+            } elseif (str_contains($e->getMessage(), 'supir')) {
+                $errorMessage .= 'Terdapat masalah dengan data supir. ';
+            } elseif (str_contains($e->getMessage(), 'jumlah')) {
+                $errorMessage .= 'Terdapat masalah dengan jumlah pembayaran. ';
+            } elseif (str_contains($e->getMessage(), 'voyage')) {
+                $errorMessage .= 'Terdapat masalah dengan nomor voyage. ';
+            }
+            
+            $errorMessage .= 'Detail: ' . $e->getMessage();
+            
+            \Log::error('Pembayaran OB Store Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->except(['_token'])
+            ]);
+            
+            return redirect()->back()
+                           ->withInput()
+                           ->withErrors(['general' => $errorMessage])
+                           ->with('error', $errorMessage);
         }
     }
 
@@ -268,9 +399,12 @@ class PembayaranObController extends Controller
      */
     public function show(string $id)
     {
-        return view('pembayaran-ob.show', [
-            'title' => 'Detail Pembayaran OB',
-            'id' => $id
+        $pembayaran = PembayaranOb::with(['kasBankAkun', 'creator', 'updater'])
+                                  ->findOrFail($id);
+
+        return view('pembayaran-dp-ob.show', [
+            'title' => 'Detail Pembayaran DP OB',
+            'pembayaran' => $pembayaran
         ]);
     }
 
@@ -304,6 +438,8 @@ class PembayaranObController extends Controller
      */
     public function edit(string $id)
     {
+        $pembayaran = PembayaranOb::findOrFail($id);
+
         // Ambil data karyawan yang mempunyai divisi supir
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
                             ->where('status', 'active') // hanya karyawan aktif
@@ -315,9 +451,9 @@ class PembayaranObController extends Controller
                           ->orderBy('nomor_akun')
                           ->get();
 
-        return view('pembayaran-ob.edit', [
-            'title' => 'Edit Pembayaran OB',
-            'id' => $id,
+        return view('pembayaran-dp-ob.edit', [
+            'title' => 'Edit Pembayaran DP OB',
+            'pembayaran' => $pembayaran,
             'supirList' => $supirList,
             'kasBankList' => $kasBankList
         ]);
@@ -334,6 +470,8 @@ class PembayaranObController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
+            'kegiatan' => 'nullable|string|max:255',
+            'nomor_voyage' => 'nullable|string|max:255',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
             'jumlah' => 'required|numeric|min:0',

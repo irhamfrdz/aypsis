@@ -54,6 +54,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
 // use App\Http\Controllers\PranotaSuratJalanController; // Disabled - replaced with pranota uang jalan
 use App\Http\Controllers\PranotaUangKenekController;
+use App\Http\Controllers\PranotaRitController;
+use App\Http\Controllers\PranotaRitKenekController;
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ProspekController;
@@ -1711,6 +1713,30 @@ Route::middleware(['auth'])->group(function () {
                ->name('pranota-ob.print')
                ->middleware('can:pranota-ob-view');
 
+     // Pranota Rit Management
+          Route::resource('pranota-rit', \App\Http\Controllers\PranotaRitController::class)
+               ->middleware([
+                   'index' => 'can:pranota-rit-view',
+                   'create' => 'can:pranota-rit-create',
+                   'store' => 'can:pranota-rit-create',
+                   'show' => 'can:pranota-rit-view',
+                   'edit' => 'can:pranota-rit-update',
+                   'update' => 'can:pranota-rit-update',
+                   'destroy' => 'can:pranota-rit-delete'
+               ]);
+
+     // Pranota Rit Kenek Management
+          Route::resource('pranota-rit-kenek', \App\Http\Controllers\PranotaRitKenekController::class)
+               ->middleware([
+                   'index' => 'can:pranota-rit-kenek-view',
+                   'create' => 'can:pranota-rit-kenek-create',
+                   'store' => 'can:pranota-rit-kenek-create',
+                   'show' => 'can:pranota-rit-kenek-view',
+                   'edit' => 'can:pranota-rit-kenek-update',
+                   'update' => 'can:pranota-rit-kenek-update',
+                   'destroy' => 'can:pranota-rit-kenek-delete'
+               ]);
+
      // Pranota Uang Jalan Bongkaran Management with permissions
       Route::resource('pranota-uang-jalan-bongkaran', \App\Http\Controllers\PranotaUangJalanBongkaranController::class)
              ->middleware([
@@ -3244,6 +3270,8 @@ Route::prefix('pembayaran-ob')->name('pembayaran-ob.')->middleware(['auth'])->gr
     Route::get('/create', [PembayaranObController::class, 'create'])->name('create')
          ->middleware('can:pembayaran-ob-create');
     Route::get('/generate-nomor', [PembayaranObController::class, 'generateNomorPembayaran'])->name('generate-nomor')
+         ->middleware('can:pembayaran-ob-create');
+    Route::get('/get-voyage-list', [PembayaranObController::class, 'getVoyageList'])->name('get-voyage-list')
          ->middleware('can:pembayaran-ob-create');
     Route::post('/', [PembayaranObController::class, 'store'])->name('store')
          ->middleware('can:pembayaran-ob-create');

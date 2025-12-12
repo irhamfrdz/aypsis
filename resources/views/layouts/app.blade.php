@@ -710,7 +710,7 @@
 {{-- OB Section --}}
 @php
     $isObRoute = Request::routeIs('ob.*');
-    $hasObPermissions = $user && ($user->can('ob-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view'));
+    $hasObPermissions = $user && ($user->can('ob-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view') || $user->can('pembayaran-ob-view'));
 @endphp
 
 @if($hasObPermissions)
@@ -1223,8 +1223,8 @@
 
         {{-- Aktivitas Kapal Sub-Dropdown --}}
         @php
-            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*');
-            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('prospek-view') || $user->can('bl-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view'));
+            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*');
+            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('prospek-view') || $user->can('bl-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view') || $user->can('pembayaran-ob-view'));
         @endphp
 
         @if($hasAktivitasKapalPermissions)
@@ -1268,6 +1268,13 @@
                 @if($user && $user->can('pranota-ob-view'))
                     <a href="{{ route('pranota-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pranota OB</span>
+                    </a>
+                @endif
+
+                {{-- Pembayaran DP OB --}}
+                @if($user && $user->can('pembayaran-ob-view'))
+                    <a href="{{ route('pembayaran-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pembayaran-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran DP OB</span>
                     </a>
                 @endif
 

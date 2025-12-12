@@ -19,10 +19,13 @@ class PembayaranOb extends Model
         'tanggal_pembayaran',
         'kas_bank_id',
         'jenis_transaksi',
+        'kegiatan',
+        'nomor_voyage',
         'supir_ids',
         'jumlah_per_supir',
         'subtotal_pembayaran',
         'uang_muka_amount',
+        'dp_amount',
         'total_pembayaran',
         'keterangan',
         'pembayaran_uang_muka_id',
@@ -39,6 +42,7 @@ class PembayaranOb extends Model
         'jumlah_per_supir' => 'array', // JSON object untuk jumlah per supir (supir_id => jumlah)
         'subtotal_pembayaran' => 'decimal:2',
         'uang_muka_amount' => 'decimal:2',
+        'dp_amount' => 'decimal:2',
         'total_pembayaran' => 'decimal:2',
     ];
 
@@ -56,6 +60,16 @@ class PembayaranOb extends Model
     public function penyetujuPembayaran()
     {
         return $this->belongsTo(\App\Models\User::class, 'disetujui_oleh');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'dibuat_oleh');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'updated_by');
     }
 
     public function pembayaranUangMuka()
