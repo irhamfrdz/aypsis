@@ -164,6 +164,41 @@
                         @enderror
                     </div>
 
+                    <!-- Lanjut Muat -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lanjut Muat</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="lanjut_muat" value="tidak" {{ old('lanjut_muat', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="lanjut_muat" value="ya" {{ old('lanjut_muat') == 'ya' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Ya</span>
+                            </label>
+                        </div>
+                        @error('lanjut_muat')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Nomor Surat Jalan Sebelumnya -->
+                    <div id="nomor_sj_sebelumnya_wrapper" style="display: none;">
+                        <label for="nomor_sj_sebelumnya" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nomor Surat Jalan Sebelumnya <span class="text-red-500" id="required_indicator">*</span>
+                        </label>
+                        <input type="text" name="nomor_sj_sebelumnya" id="nomor_sj_sebelumnya"
+                               value="{{ old('nomor_sj_sebelumnya') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_sj_sebelumnya') border-red-300 @enderror"
+                               placeholder="Masukkan nomor surat jalan sebelumnya">
+                        @error('nomor_sj_sebelumnya')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-blue-600">Wajib diisi jika memilih lanjut muat</p>
+                    </div>
+
                     <!-- Term -->
                     <div>
                         <label for="term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
@@ -695,6 +730,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle lanjut muat toggle
+    const lanjutMuatRadios = document.querySelectorAll('input[name="lanjut_muat"]');
+    const nomorSjSebelumnyaWrapper = document.getElementById('nomor_sj_sebelumnya_wrapper');
+    const nomorSjSebelumnyaInput = document.getElementById('nomor_sj_sebelumnya');
+    
+    function toggleNomorSjSebelumnya() {
+        const lanjutMuatValue = document.querySelector('input[name="lanjut_muat"]:checked')?.value;
+        
+        if (lanjutMuatValue === 'ya') {
+            nomorSjSebelumnyaWrapper.style.display = 'block';
+            nomorSjSebelumnyaInput.setAttribute('required', 'required');
+        } else {
+            nomorSjSebelumnyaWrapper.style.display = 'none';
+            nomorSjSebelumnyaInput.removeAttribute('required');
+            nomorSjSebelumnyaInput.value = ''; // Clear value when hidden
+        }
+    }
+    
+    // Add event listeners to radio buttons
+    lanjutMuatRadios.forEach(radio => {
+        radio.addEventListener('change', toggleNomorSjSebelumnya);
+    });
+    
+    // Initialize on page load
+    toggleNomorSjSebelumnya();
+    
     // Tujuan kegiatan utama data for uang jalan calculation
     const tujuanKegiatanData = @json($tujuanKegiatanUtamas->keyBy('ke'));
     

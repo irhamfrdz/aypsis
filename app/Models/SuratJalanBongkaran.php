@@ -16,6 +16,8 @@ class SuratJalanBongkaran extends Model
 
     protected $fillable = [
         'tanggal_surat_jalan',
+        'lanjut_muat',
+        'nomor_sj_sebelumnya',
         'nomor_surat_jalan',
         'kegiatan',
         'pengirim',

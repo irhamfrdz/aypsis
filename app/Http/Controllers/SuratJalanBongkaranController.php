@@ -488,6 +488,8 @@ class SuratJalanBongkaranController extends Controller
             'no_bl' => 'nullable|string|max:255',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
             'tanggal_surat_jalan' => 'required|date',
+            'lanjut_muat' => 'nullable|string|in:ya,tidak',
+            'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string|max:255',

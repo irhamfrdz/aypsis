@@ -71,6 +71,7 @@
                                 <i class="fas fa-search mr-1"></i> Cari
                             </button>
                             <a href="{{ route('pembayaran-ob.index') }}"
+                            
                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-200">
                                 <i class="fas fa-times mr-1"></i> Reset
                             </a>
