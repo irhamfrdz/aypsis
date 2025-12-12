@@ -848,6 +848,23 @@
                                 <td><input type="checkbox" name="permissions[pranota-uang-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-jalan-bongkaran.export') || (isset($userMatrixPermissions['pranota-uang-jalan-bongkaran']['export']) && $userMatrixPermissions['pranota-uang-jalan-bongkaran']['export']) || ($user && $user->can('pranota-uang-jalan-bongkaran-export'))) checked @endif></td>
                             </tr>
 
+                            {{-- Tanda Terima Bongkaran --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][view]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.view') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['view']) && $userMatrixPermissions['tanda-terima-bongkaran']['view']) || ($user && $user->can('tanda-terima-bongkaran-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][create]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.create') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['create']) && $userMatrixPermissions['tanda-terima-bongkaran']['create']) || ($user && $user->can('tanda-terima-bongkaran-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][update]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.update') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['update']) && $userMatrixPermissions['tanda-terima-bongkaran']['update']) || ($user && $user->can('tanda-terima-bongkaran-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][delete]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.delete') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['delete']) && $userMatrixPermissions['tanda-terima-bongkaran']['delete']) || ($user && $user->can('tanda-terima-bongkaran-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][print]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.print') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['print']) && $userMatrixPermissions['tanda-terima-bongkaran']['print']) || ($user && $user->can('tanda-terima-bongkaran-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.export') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['export']) && $userMatrixPermissions['tanda-terima-bongkaran']['export']) || ($user && $user->can('tanda-terima-bongkaran-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- User --}}
                             <tr class="module-row" data-module="user">
                                 <td class="module-header">
