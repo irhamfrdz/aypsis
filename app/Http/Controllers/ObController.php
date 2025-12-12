@@ -1010,46 +1010,40 @@ class ObController extends Controller
     public function saveAsalKe(Request $request)
     {
         try {
-            $data = $request->input('data', []);
+            $id = $request->input('id');
+            $type = $request->input('type');
+            $asalKontainer = $request->input('asal_kontainer');
+            $ke = $request->input('ke');
             
-            if (empty($data)) {
+            if (!$id || !$type) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada data untuk disimpan'
+                    'message' => 'ID dan tipe data harus diisi'
                 ]);
             }
 
-            $updatedCount = 0;
-
-            foreach ($data as $item) {
-                $id = $item['id'];
-                $type = $item['type'];
-                $asalKontainer = $item['asal_kontainer'] ?? '';
-                $ke = $item['ke'] ?? '';
-
-                if ($type === 'bl') {
-                    $record = Bl::find($id);
-                    if ($record) {
-                        $record->asal_kontainer = $asalKontainer;
-                        $record->ke = $ke;
-                        $record->save();
-                        $updatedCount++;
-                    }
-                } elseif ($type === 'naik_kapal') {
-                    $record = NaikKapal::find($id);
-                    if ($record) {
-                        $record->asal_kontainer = $asalKontainer;
-                        $record->ke = $ke;
-                        $record->save();
-                        $updatedCount++;
-                    }
-                }
+            $record = null;
+            
+            if ($type === 'bl') {
+                $record = Bl::find($id);
+            } elseif ($type === 'naik_kapal') {
+                $record = NaikKapal::find($id);
             }
+
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
+
+            $record->asal_kontainer = $asalKontainer;
+            $record->ke = $ke;
+            $record->save();
 
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil menyimpan {$updatedCount} data",
-                'updated_count' => $updatedCount
+                'message' => 'Berhasil menyimpan data'
             ]);
 
         } catch (\Exception $e) {
