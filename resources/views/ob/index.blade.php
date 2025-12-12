@@ -1116,8 +1116,33 @@ function saveAsalKe(type, id, tdElement) {
     const keInput = row.querySelector('.editable-ke');
     
     // Get value from input or select element
-    const asalValue = asalInput ? (asalInput.tagName === 'SELECT' ? asalInput.options[asalInput.selectedIndex]?.value : asalInput.value).trim() : '';
-    const keValue = keInput ? (keInput.tagName === 'SELECT' ? keInput.options[keInput.selectedIndex]?.value : keInput.value).trim() : '';
+    // For Select2 elements, use jQuery to get the value
+    let asalValue = '';
+    if (asalInput) {
+        if (asalInput.tagName === 'SELECT' && typeof jQuery !== 'undefined') {
+            // Use jQuery for Select2 elements
+            asalValue = jQuery(asalInput).val() || '';
+        } else if (asalInput.tagName === 'SELECT') {
+            // Fallback for native select
+            asalValue = asalInput.options[asalInput.selectedIndex]?.value || '';
+        } else {
+            // For input elements
+            asalValue = asalInput.value || '';
+        }
+        asalValue = asalValue.trim();
+    }
+    
+    let keValue = '';
+    if (keInput) {
+        if (keInput.tagName === 'SELECT' && typeof jQuery !== 'undefined') {
+            keValue = jQuery(keInput).val() || '';
+        } else if (keInput.tagName === 'SELECT') {
+            keValue = keInput.options[keInput.selectedIndex]?.value || '';
+        } else {
+            keValue = keInput.value || '';
+        }
+        keValue = keValue.trim();
+    }
     
     // Show loading state
     const saveBtn = tdElement.querySelector('button');
