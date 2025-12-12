@@ -402,9 +402,10 @@ class PranotaUangRitController extends Controller
             'surat_jalan_data.*.supir_nama' => 'required|string|max:255',
             'surat_jalan_data.*.kenek_nama' => 'nullable|string|max:255',
             'surat_jalan_data.*.uang_rit_supir' => 'required|numeric|min:0',
-            'supir_details' => 'sometimes|array', // Data hutang dan tabungan per supir
+            'supir_details' => 'sometimes|array', // Data hutang, tabungan, dan BPJS per supir
             'supir_details.*.hutang' => 'nullable|numeric|min:0',
             'supir_details.*.tabungan' => 'nullable|numeric|min:0',
+            'supir_details.*.bpjs' => 'nullable|numeric|min:0',
         ], [
             'surat_jalan_data.required' => 'Silakan pilih minimal satu surat jalan.',
             'surat_jalan_data.min' => 'Silakan pilih minimal satu surat jalan.',
@@ -429,6 +430,7 @@ class PranotaUangRitController extends Controller
             $totalUangSupirKeseluruhan = 0.0; // Initialize as float
             $totalHutangKeseluruhan = 0.0;
             $totalTabunganKeseluruhan = 0.0;
+            $totalBpjsKeseluruhan = 0.0;
 
             // Debug: Log the selected data
             Log::info('Selected Data for Pranota Creation:', $selectedData);
@@ -445,6 +447,7 @@ class PranotaUangRitController extends Controller
                         'total_uang_supir' => 0.0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
+                        'bpjs' => 0.0,
                     ];
                 }
                 
@@ -454,7 +457,7 @@ class PranotaUangRitController extends Controller
 
             Log::info("Total Uang Supir Keseluruhan after calculation: {$totalUangSupirKeseluruhan}");
 
-            // Ambil data hutang dan tabungan dari frontend (akan dikirim via AJAX)
+            // Ambil data hutang, tabungan, dan BPJS dari frontend
             $supirDetails = $request->input('supir_details', []);
             Log::info('Supir Details from request:', $supirDetails);
             
@@ -462,18 +465,20 @@ class PranotaUangRitController extends Controller
                 if (isset($supirTotals[$supirNama])) {
                     $supirTotals[$supirNama]['hutang'] = floatval($details['hutang'] ?? 0);
                     $supirTotals[$supirNama]['tabungan'] = floatval($details['tabungan'] ?? 0);
+                    $supirTotals[$supirNama]['bpjs'] = floatval($details['bpjs'] ?? 0);
                     
                     $totalHutangKeseluruhan += $supirTotals[$supirNama]['hutang'];
                     $totalTabunganKeseluruhan += $supirTotals[$supirNama]['tabungan'];
+                    $totalBpjsKeseluruhan += $supirTotals[$supirNama]['bpjs'];
                 }
             }
 
-            $grandTotalBersih = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan;
+            $grandTotalBersih = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
             
-            Log::info("Final calculations - Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Grand Total: {$grandTotalBersih}");
+            Log::info("Final calculations - Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalBersih}");
 
             // Buat SATU pranota untuk SEMUA surat jalan yang dipilih
-            $grandTotalValue = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan;
+            $grandTotalValue = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
             
             // Gabungkan informasi dari semua surat jalan
             $allNoSuratJalan = [];
@@ -500,7 +505,7 @@ class PranotaUangRitController extends Controller
             $combinedSupirNama = implode(', ', $allSupirNama);
             $combinedKenekNama = implode(', ', array_filter($allKenekNama));
             
-            Log::info("Creating SINGLE Pranota with values - Nomor: {$nomorPranota}, Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Grand Total: {$grandTotalValue}");
+            Log::info("Creating SINGLE Pranota with values - Nomor: {$nomorPranota}, Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalValue}");
             
             // Buat satu record pranota untuk semua surat jalan
             $pranotaUangRit = PranotaUangRit::create([
@@ -515,6 +520,7 @@ class PranotaUangRitController extends Controller
                 'total_uang' => $totalUangSupirKeseluruhan,
                 'total_hutang' => $totalHutangKeseluruhan,
                 'total_tabungan' => $totalTabunganKeseluruhan,
+                'total_bpjs' => $totalBpjsKeseluruhan,
                 'grand_total_bersih' => $grandTotalValue,
                 'keterangan' => $request->keterangan,
                 'status' => PranotaUangRit::STATUS_DRAFT,
@@ -541,6 +547,7 @@ class PranotaUangRitController extends Controller
                     'total_uang_supir' => floatval($totals['total_uang_supir']),
                     'hutang' => floatval($totals['hutang']),
                     'tabungan' => floatval($totals['tabungan']),
+                    'bpjs' => floatval($totals['bpjs']),
                     // grand_total akan dihitung otomatis di model
                 ]);
             }

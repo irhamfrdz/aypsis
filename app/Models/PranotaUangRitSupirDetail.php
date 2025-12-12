@@ -16,6 +16,7 @@ class PranotaUangRitSupirDetail extends Model
         'total_uang_supir',
         'hutang',
         'tabungan',
+        'bpjs',
         'grand_total',
     ];
 
@@ -23,6 +24,7 @@ class PranotaUangRitSupirDetail extends Model
         'total_uang_supir' => 'decimal:2',
         'hutang' => 'decimal:2',
         'tabungan' => 'decimal:2',
+        'bpjs' => 'decimal:2',
         'grand_total' => 'decimal:2',
     ];
 
@@ -34,7 +36,7 @@ class PranotaUangRitSupirDetail extends Model
         parent::boot();
 
         static::saving(function ($model) {
-            $model->grand_total = $model->total_uang_supir - $model->hutang - $model->tabungan;
+            $model->grand_total = $model->total_uang_supir - $model->hutang - $model->tabungan - $model->bpjs;
         });
     }
 
@@ -49,7 +51,7 @@ class PranotaUangRitSupirDetail extends Model
         }
         
         // Otherwise, calculate it
-        return $this->total_uang_supir - $this->hutang - $this->tabungan;
+        return $this->total_uang_supir - $this->hutang - $this->tabungan - $this->bpjs;
     }
 
     /**

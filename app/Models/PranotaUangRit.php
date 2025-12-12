@@ -24,6 +24,7 @@ class PranotaUangRit extends Model
         'total_uang',
         'total_hutang',
         'total_tabungan',
+        'total_bpjs',
         'grand_total_bersih',
         'keterangan',
         'status',
@@ -43,6 +44,7 @@ class PranotaUangRit extends Model
         'total_uang' => 'decimal:2',
         'total_hutang' => 'decimal:2',
         'total_tabungan' => 'decimal:2',
+        'total_bpjs' => 'decimal:2',
         'grand_total_bersih' => 'decimal:2',
     ];
 
