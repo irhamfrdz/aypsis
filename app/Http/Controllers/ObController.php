@@ -88,14 +88,11 @@ class ObController extends Controller
             $queryBl = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
-                // Exclude FCL without container number
+                // Exclude FCL containers with nomor_kontainer 'CARGO'
                 ->where(function($q) {
-                    $q->where(function($subQ) {
-                        $subQ->whereRaw('UPPER(tipe_kontainer) = ?', ['FCL'])
-                            ->whereNotNull('nomor_kontainer')
-                            ->where('nomor_kontainer', '!=', '');
-                    })->orWhereRaw('UPPER(tipe_kontainer) != ?', ['FCL'])
-                      ->orWhereNull('tipe_kontainer');
+                    $q->where('tipe_kontainer', '!=', 'FCL')
+                      ->orWhere('nomor_kontainer', '!=', 'CARGO')
+                      ->orWhereNull('nomor_kontainer');
                 });
 
             // Apply filters from request (similar to naik_kapal branch)
@@ -145,12 +142,24 @@ class ObController extends Controller
 
             $totalKontainer = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
+                // Exclude FCL containers with nomor_kontainer 'CARGO'
+                ->where(function($q) {
+                    $q->where('tipe_kontainer', '!=', 'FCL')
+                      ->orWhere('nomor_kontainer', '!=', 'CARGO')
+                      ->orWhereNull('nomor_kontainer');
+                })
                 ->count();
 
             // Try multiple ways to count sudah_ob untuk debugging
             $sudahOB_v1 = Bl::where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', true)
+                // Exclude FCL containers with nomor_kontainer 'CARGO'
+                ->where(function($q) {
+                    $q->where('tipe_kontainer', '!=', 'FCL')
+                      ->orWhere('nomor_kontainer', '!=', 'CARGO')
+                      ->orWhereNull('nomor_kontainer');
+                })
                 ->count();
             
             $sudahOB_v1_sql = \DB::getQueryLog();
@@ -270,14 +279,11 @@ class ObController extends Controller
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
             ->where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
-            // Exclude FCL without container number
+            // Exclude FCL containers with nomor_kontainer 'CARGO'
             ->where(function($q) {
-                $q->where(function($subQ) {
-                    $subQ->whereRaw('UPPER(tipe_kontainer) = ?', ['FCL'])
-                        ->whereNotNull('nomor_kontainer')
-                        ->where('nomor_kontainer', '!=', '');
-                })->orWhereRaw('UPPER(tipe_kontainer) != ?', ['FCL'])
-                  ->orWhereNull('tipe_kontainer');
+                $q->where('tipe_kontainer', '!=', 'FCL')
+                  ->orWhere('nomor_kontainer', '!=', 'CARGO')
+                  ->orWhereNull('nomor_kontainer');
             });
 
         // Additional filters
@@ -327,11 +333,23 @@ class ObController extends Controller
         // Statistics
         $totalKontainer = NaikKapal::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
+            // Exclude FCL containers with nomor_kontainer 'CARGO'
+            ->where(function($q) {
+                $q->where('tipe_kontainer', '!=', 'FCL')
+                  ->orWhere('nomor_kontainer', '!=', 'CARGO')
+                  ->orWhereNull('nomor_kontainer');
+            })
             ->count();
 
         $sudahOB = NaikKapal::where('nama_kapal', $namaKapal)
             ->where('no_voyage', $noVoyage)
             ->where('sudah_ob', true)
+            // Exclude FCL containers with nomor_kontainer 'CARGO'
+            ->where(function($q) {
+                $q->where('tipe_kontainer', '!=', 'FCL')
+                  ->orWhere('nomor_kontainer', '!=', 'CARGO')
+                  ->orWhereNull('nomor_kontainer');
+            })
             ->count();
 
         $belumOB = $totalKontainer - $sudahOB;
