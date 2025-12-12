@@ -618,21 +618,20 @@ class PranotaUangRitController extends Controller
                 ->with('error', 'Pranota Uang Rit dengan status ' . $pranotaUangRit->status_label . ' tidak dapat diedit.');
         }
 
-        $suratJalans = SuratJalan::where('status', 'approved')
-            ->where(function($query) use ($pranotaUangRit) {
-                $query->whereNotIn('id', function($subQuery) use ($pranotaUangRit) {
-                    $subQuery->select('surat_jalan_id')
-                        ->from('pranota_uang_rits')
-                        ->whereNotNull('surat_jalan_id')
-                        ->whereNotIn('status', ['cancelled'])
-                        ->where('id', '!=', $pranotaUangRit->id);
-                })
-                ->orWhere('id', $pranotaUangRit->surat_jalan_id);
-            })
-            ->orderBy('created_at', 'desc')
+        // Get surat jalan numbers from the combined field
+        $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
+        
+        // Get surat jalans that are part of this pranota
+        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
+            ->orderBy('tanggal_surat_jalan', 'desc')
+            ->get();
+        
+        // Get supir details for this pranota
+        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+            ->orderBy('supir_nama')
             ->get();
 
-        return view('pranota-uang-rit.edit', compact('pranotaUangRit', 'suratJalans'));
+        return view('pranota-uang-rit.edit', compact('pranotaUangRit', 'suratJalans', 'supirDetails'));
     }
 
     /**
@@ -648,21 +647,51 @@ class PranotaUangRitController extends Controller
 
         $request->validate([
             'tanggal' => 'required|date',
-            'surat_jalan_id' => 'nullable|exists:surat_jalans,id',
-            'no_surat_jalan' => 'required|string|max:255',
-            'supir_nama' => 'required|string|max:255',
-            'uang_rit' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'supir_details' => 'sometimes|array',
+            'supir_details.*.hutang' => 'nullable|numeric|min:0',
+            'supir_details.*.tabungan' => 'nullable|numeric|min:0',
+            'supir_details.*.bpjs' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
+            // Update supir details
+            $supirDetails = $request->input('supir_details', []);
+            $totalHutangKeseluruhan = 0.0;
+            $totalTabunganKeseluruhan = 0.0;
+            $totalBpjsKeseluruhan = 0.0;
+            
+            foreach ($supirDetails as $supirNama => $details) {
+                $hutang = floatval($details['hutang'] ?? 0);
+                $tabungan = floatval($details['tabungan'] ?? 0);
+                $bpjs = floatval($details['bpjs'] ?? 0);
+                
+                // Update detail per supir
+                PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+                    ->where('supir_nama', $supirNama)
+                    ->update([
+                        'hutang' => $hutang,
+                        'tabungan' => $tabungan,
+                        'bpjs' => $bpjs,
+                        // grand_total akan dihitung otomatis di model
+                    ]);
+                
+                $totalHutangKeseluruhan += $hutang;
+                $totalTabunganKeseluruhan += $tabungan;
+                $totalBpjsKeseluruhan += $bpjs;
+            }
+            
+            // Calculate new grand total
+            $grandTotalBersih = $pranotaUangRit->total_uang - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
+            
+            // Update pranota
             $pranotaUangRit->update([
                 'tanggal' => $request->tanggal,
-                'surat_jalan_id' => $request->surat_jalan_id,
-                'no_surat_jalan' => $request->no_surat_jalan,
-                'supir_nama' => $request->supir_nama,
-                'uang_rit' => $request->uang_rit,
+                'total_hutang' => $totalHutangKeseluruhan,
+                'total_tabungan' => $totalTabunganKeseluruhan,
+                'total_bpjs' => $totalBpjsKeseluruhan,
+                'grand_total_bersih' => $grandTotalBersih,
                 'keterangan' => $request->keterangan,
                 'updated_by' => Auth::id(),
             ]);

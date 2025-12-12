@@ -1,356 +1,413 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Pranota Uang Rit')
+@section('title', 'Edit Pranota Uang Supir')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="space-y-6">
-        <!-- Page Header -->
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">💰 Edit Pranota Uang Rit</h1>
-                <nav class="flex mt-2" aria-label="Breadcrumb">
-                    <ol class="flex items-center space-x-1 text-sm text-gray-500">
-                        <li><a href="{{ route('pranota-uang-rit.index') }}" class="hover:text-gray-700">Pranota Uang Rit</a></li>
-                        <li class="flex items-center">
-                            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <a href="{{ route('pranota-uang-rit.show', $pranotaUangRit) }}" class="ml-1 hover:text-gray-700">{{ $pranotaUangRit->no_pranota }}</a>
-                        </li>
-                        <li class="flex items-center">
-                            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="ml-1 text-gray-900 font-medium">Edit</span>
-                        </li>
-                    </ol>
-                </nav>
+    <div class="bg-white shadow-lg rounded-lg p-4">
+        {{-- Notifikasi --}}
+        @if($errors->any())
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4" role="alert">
+                <p class="font-bold">Peringatan</p>
+                <ul class="list-disc list-inside mt-1">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-            <div class="flex items-center space-x-3">
-                <a href="{{ route('pranota-uang-rit.show', $pranotaUangRit) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                    <i class="fas fa-eye mr-2"></i> Lihat Detail
-                </a>
-                <a href="{{ route('pranota-uang-rit.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200">
-                    <i class="fas fa-arrow-left mr-2"></i> Kembali
-                </a>
-            </div>
-        </div>
+        @endif
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4" role="alert">
+                <p class="font-bold">Peringatan</p>
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4" role="alert">
+                <p class="font-bold">Sukses</p>
+                <p>{{ session('success') }}</p>
+            </div>
+        @endif
+
+        @php
+            // Definisikan kelas Tailwind untuk input yang lebih compact
+            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm p-2 transition-colors";
+            $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm text-sm p-2";
+            $labelClasses = "block text-xs font-medium text-gray-700 mb-1";
+        @endphp
+
+        <form action="{{ route('pranota-uang-rit.update', $pranotaUangRit) }}" method="POST" id="pranotaForm" class="space-y-3">
+            @csrf
+            @method('PUT')
+
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded-md">
+                <p class="text-xs text-blue-800">
+                    Edit Pranota Uang Supir <strong>{{ $pranotaUangRit->no_pranota }}</strong>. 
+                    Anda dapat mengubah tanggal, keterangan, dan detail per supir (hutang, tabungan, BPJS).
+                </p>
+            </div>
+
+
+
+            <!-- Hidden inputs untuk data hutang dan tabungan per supir -->
+            <div id="supirDetailsInputs"></div>
+
+            <!-- Data Pranota & Total Uang dalam satu baris -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <!-- Data Pranota -->
                 <div class="lg:col-span-2">
-                    <!-- Form -->
-                    <div class="bg-white shadow-sm rounded-lg border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-gray-900">Edit Pranota Uang Rit</h3>
-                            <span class="px-3 py-1 text-sm rounded-full {{ $pranotaUangRit->status === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                {{ ucfirst($pranotaUangRit->status) }}
-                            </span>
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">💰 Data Pranota Uang Supir</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div>
+                                <label for="nomor_pranota_preview" class="{{ $labelClasses }}">Nomor Pranota</label>
+                                <input type="text"
+                                       class="{{ $readonlyInputClasses }} font-medium text-indigo-600"
+                                       id="nomor_pranota_preview"
+                                       value="{{ $pranotaUangRit->no_pranota }}"
+                                       readonly>
+                                <p class="mt-1 text-xs text-gray-500">Nomor otomatis, tidak dapat diubah</p>
+                            </div>
+                            <div>
+                                <label for="tanggal" class="{{ $labelClasses }}">
+                                    Tanggal <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date"
+                                       class="{{ $inputClasses }} @error('tanggal') border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 @enderror"
+                                       id="tanggal"
+                                       name="tanggal"
+                                       value="{{ old('tanggal', $pranotaUangRit->tanggal ? $pranotaUangRit->tanggal->format('Y-m-d') : '') }}"
+                                       required>
+                                @error('tanggal')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                        <div class="p-6">
-                            <form action="{{ route('pranota-uang-rit.update', $pranotaUangRit) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="no_pranota" class="block text-sm font-medium text-gray-700 mb-2">No. Pranota</label>
-                                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" value="{{ $pranotaUangRit->no_pranota }}" readonly>
-                                        <p class="mt-1 text-sm text-gray-500">Nomor otomatis, tidak dapat diubah</p>
-                                    </div>
-                                    <div>
-                                        <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Tanggal <span class="text-red-500">*</span>
-                                        </label>
-                                             <input type="date" 
-                                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal') border-red-500 @enderror" 
-                                                 id="tanggal" name="tanggal" value="{{ old('tanggal', $pranotaUangRit->tanggal ? $pranotaUangRit->tanggal->format('Y-m-d') : '') }}" required>
-                                        @error('tanggal')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 gap-6 mt-6">
-                                    <div>
-                                        <label for="surat_jalan_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Surat Jalan (Opsional)</label>
-                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('surat_jalan_id') border-red-500 @enderror" 
-                                                id="surat_jalan_id" name="surat_jalan_id">
-                                            <option value="">- Pilih Surat Jalan atau Input Manual -</option>
-                                            @foreach($suratJalans as $sj)
-                                            <option value="{{ $sj->id }}" 
-                                                    data-no-surat-jalan="{{ $sj->no_surat_jalan }}"
-                                                    data-supir-nama="{{ $sj->supir_nama }}"
-                                                    data-no-plat="{{ $sj->no_plat }}"
-                                                    data-uang-jalan="{{ $sj->uang_jalan }}"
-                                                    {{ old('surat_jalan_id', $pranotaUangRit->surat_jalan_id) == $sj->id ? 'selected' : '' }}>
-                                                {{ $sj->no_surat_jalan }} - {{ $sj->supir_nama }} ({{ $sj->no_plat }})
-                                            </option>
-                                            @endforeach
-                                        </select>
-                                        @error('surat_jalan_id')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <hr class="my-6 border-gray-200">
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="no_surat_jalan" class="block text-sm font-medium text-gray-700 mb-2">
-                                            No. Surat Jalan <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="text" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_surat_jalan') border-red-500 @enderror" 
-                                               id="no_surat_jalan" name="no_surat_jalan" value="{{ old('no_surat_jalan', $pranotaUangRit->no_surat_jalan) }}" required>
-                                        @error('no_surat_jalan')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label for="supir_nama" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Nama Supir <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="text" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('supir_nama') border-red-500 @enderror" 
-                                               id="supir_nama" name="supir_nama" value="{{ old('supir_nama', $pranotaUangRit->supir_nama) }}" required>
-                                        @error('supir_nama')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 gap-6 mt-6">
-                                    <div>
-                                        <label for="no_plat" class="block text-sm font-medium text-gray-700 mb-2">
-                                            No. Plat <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="text" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_plat') border-red-500 @enderror" 
-                                               id="no_plat" name="no_plat" value="{{ old('no_plat', $pranotaUangRit->no_plat) }}" required>
-                                        @error('no_plat')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <hr class="my-6 border-gray-200">
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="uang_jalan" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Uang Jalan <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2 text-gray-500 text-sm">Rp</span>
-                                            <input type="number" 
-                                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('uang_jalan') border-red-500 @enderror" 
-                                                   id="uang_jalan" name="uang_jalan" value="{{ old('uang_jalan', $pranotaUangRit->uang_jalan) }}" 
-                                                   min="0" step="1000" required>
-                                        </div>
-                                        @error('uang_jalan')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label for="uang_rit" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Uang Rit <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2 text-gray-500 text-sm">Rp</span>
-                                            <input type="number" 
-                                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('uang_rit') border-red-500 @enderror" 
-                                                   id="uang_rit" name="uang_rit" value="{{ old('uang_rit', $pranotaUangRit->uang_rit) }}" 
-                                                   min="0" step="1000" required>
-                                        </div>
-                                        @error('uang_rit')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="mt-6">
-                                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-                                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('keterangan') border-red-500 @enderror" 
-                                              id="keterangan" name="keterangan" rows="3">{{ old('keterangan', $pranotaUangRit->keterangan) }}</textarea>
-                                    @error('keterangan')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div class="mt-8">
-                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        <i class="fas fa-save mr-2"></i> Update Pranota Uang Rit
-                                    </button>
-                                    <a href="{{ route('pranota-uang-rit.show', $pranotaUangRit) }}" class="btn btn-info ml-2">
-                                        <i class="fas fa-eye"></i> Lihat Detail
-                                    </a>
-                                    <a href="{{ route('pranota-uang-rit.index') }}" class="ml-3 inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        <i class="fas fa-times mr-2"></i> Batal
-                                    </a>
-                                </div>
-                            </form>
+                        <div class="mt-2">
+                            <label for="keterangan" class="{{ $labelClasses }}">Keterangan</label>
+                            <textarea class="{{ $inputClasses }} @error('keterangan') border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 @enderror"
+                                      id="keterangan"
+                                      name="keterangan"
+                                      rows="2"
+                                      placeholder="Keterangan tambahan (opsional)">{{ old('keterangan', $pranotaUangRit->keterangan) }}</textarea>
+                            @error('keterangan')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
 
-                <div class="lg:col-span-1">
-                    <!-- Summary Card -->
-                    <div class="bg-white shadow-sm rounded-lg border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Ringkasan</h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-center mb-6">
-                                <div class="flex-1">
-                                    <div class="text-xs font-semibold text-blue-600 uppercase mb-1">
-                                        Uang Jalan
-                                    </div>
-                                    <div class="text-xl font-bold text-gray-800" id="summary-uang-jalan">
-                                        Rp {{ number_format($pranotaUangRit->uang_jalan, 0, ',', '.') }}
-                                    </div>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-road text-2xl text-gray-300"></i>
-                                </div>
+                <!-- Total Uang -->
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">📊 Total Keseluruhan</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div>
+                                <label for="jumlah_surat_jalan_display" class="{{ $labelClasses }}">Jumlah Surat Jalan</label>
+                                <input type="text" id="jumlah_surat_jalan_display" class="{{ $readonlyInputClasses }}" value="{{ $suratJalans->count() }}" readonly>
                             </div>
-
-                            <div class="flex items-center mb-6">
-                                <div class="flex-1">
-                                    <div class="text-xs font-semibold text-green-600 uppercase mb-1">
-                                        Uang Rit
-                                    </div>
-                                    <div class="text-xl font-bold text-gray-800" id="summary-uang-rit">
-                                        Rp {{ number_format($pranotaUangRit->uang_rit, 0, ',', '.') }}
-                                    </div>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-truck text-2xl text-gray-300"></i>
-                                </div>
+                            <div>
+                                <label for="jumlah_supir_display" class="{{ $labelClasses }}">Jumlah Supir</label>
+                                <input type="text" id="jumlah_supir_display" class="{{ $readonlyInputClasses }}" value="{{ $supirDetails->count() }}" readonly>
                             </div>
-
-                            <hr class="border-gray-200 mb-6">
-
-                            <div class="flex items-center">
-                                <div class="flex-1">
-                                    <div class="text-xs font-semibold text-blue-600 uppercase mb-1">
-                                        Total Uang
-                                    </div>
-                                    <div class="text-2xl font-bold text-blue-600" id="summary-total">
-                                        Rp {{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}
-                                    </div>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-money-bill-wave text-2xl text-gray-300"></i>
-                                </div>
+                            <div>
+                                <label for="total_uang_rit_display" class="{{ $labelClasses }}">Total Uang Supir</label>
+                                <input type="text" id="total_uang_rit_display" class="{{ $readonlyInputClasses }} font-bold text-indigo-600" value="Rp {{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}" readonly>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Status Card -->
-                    <div class="bg-white shadow-sm rounded-lg border border-gray-200 mt-6">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-blue-600">ℹ️ Status Informasi</h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="mb-4">
-                                <strong class="text-gray-700">Status Saat Ini:</strong><br>
-                                <span class="inline-flex px-3 py-1 text-sm rounded-full {{ $pranotaUangRit->status === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ ucfirst($pranotaUangRit->status) }}
-                                </span>
+                            <div>
+                                <label for="total_utang_display" class="{{ $labelClasses }}">Total Utang</label>
+                                <input type="text" id="total_utang_display" class="{{ $readonlyInputClasses }} font-bold text-red-600" value="Rp {{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}" readonly>
                             </div>
-                            <div class="mb-4">
-                                <strong class="text-gray-700">Dibuat:</strong><br>
-                                <span class="text-gray-600">
-                                    {{ $pranotaUangRit->created_at ? $pranotaUangRit->created_at->format('d/m/Y H:i') : '-' }}
-                                    @if($pranotaUangRit->creator)
-                                        oleh {{ $pranotaUangRit->creator->name }}
-                                    @endif
-                                </span>
+                            <div>
+                                <label for="total_tabungan_display" class="{{ $labelClasses }}">Total Tabungan</label>
+                                <input type="text" id="total_tabungan_display" class="{{ $readonlyInputClasses }} font-bold text-green-600" value="Rp {{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}" readonly>
                             </div>
-                            @if($pranotaUangRit->updated_at != $pranotaUangRit->created_at)
-                            <div class="mb-0">
-                                <strong class="text-gray-700">Terakhir Update:</strong><br>
-                                <span class="text-gray-600">{{ $pranotaUangRit->updated_at ? $pranotaUangRit->updated_at->format('d/m/Y H:i') : '-' }}</span>
+                            <div>
+                                <label for="total_bpjs_display" class="{{ $labelClasses }}">Total BPJS</label>
+                                <input type="text" id="total_bpjs_display" class="{{ $readonlyInputClasses }} font-bold text-yellow-600" value="Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}" readonly>
                             </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Help Card -->
-                    <div class="bg-white shadow-sm rounded-lg border border-gray-200 mt-6">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-yellow-600">⚠️ Perhatian</h3>
-                        </div>
-                        <div class="p-6">
-                            <ul class="space-y-3">
-                                <li class="flex items-start">
-                                    <i class="fas fa-info-circle text-blue-500 mr-2 mt-1 flex-shrink-0"></i>
-                                    <span class="text-gray-600">Hanya pranota dengan status Draft atau Submitted yang dapat diedit</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-info-circle text-blue-500 mr-2 mt-1 flex-shrink-0"></i>
-                                    <span class="text-gray-600">Perubahan akan mempertahankan status saat ini</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-info-circle text-blue-500 mr-2 mt-1 flex-shrink-0"></i>
-                                    <span class="text-gray-600">Pastikan data sudah benar sebelum menyimpan</span>
-                                </li>
-                            </ul>
+                            <div>
+                                <label for="grand_total_display" class="{{ $labelClasses }}">Grand Total</label>
+                                <input type="text" id="grand_total_display" class="{{ $readonlyInputClasses }} font-bold text-purple-600" value="Rp {{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}" readonly>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Daftar Surat Jalan -->
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800">🚚 Surat Jalan dalam Pranota Ini</h4>
+                </div>
+
+
+
+
+
+
+
+
+
+                <div class="overflow-x-auto max-h-60">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0 z-20">
+                            <tr>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Supir</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($suratJalans as $suratJalan)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $suratJalan->no_surat_jalan ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->supir ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold text-gray-700">
+                                        Rp {{ number_format($suratJalan->uang_rit_supir ?? 0, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-2 py-4 text-center text-xs text-gray-500">
+                                        <div class="flex flex-col items-center py-4">
+                                            <svg class="h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                            </svg>
+                                            <p class="font-medium">Tidak ada surat jalan dalam pranota ini</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                            <!-- Per Supir Details (editable) -->
+                            <tbody class="bg-yellow-50 border-t-2 border-yellow-300">
+                                @foreach($supirDetails as $detail)
+                                <tr class="border-b border-yellow-200" data-supir="{{ $detail->supir_nama }}">
+                                    <td colspan="4" class="px-2 py-2 text-xs">
+                                        <div class="font-semibold text-gray-800 mb-2">{{ $detail->supir_nama }}</div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="text-xs text-gray-600">Uang Supir:</label>
+                                                <div class="text-xs font-semibold text-indigo-600">Rp {{ number_format($detail->total_uang_supir, 0, ',', '.') }}</div>
+                                            </div>
+                                            <div>
+                                                <label class="text-xs text-gray-600">Hutang:</label>
+                                                <input type="number" 
+                                                       name="supir_details[{{ $detail->id }}][hutang]"
+                                                       class="person-utang-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                                                       value="{{ $detail->hutang }}"
+                                                       data-supir="{{ $detail->supir_nama }}"
+                                                       min="0">
+                                            </div>
+                                            <div>
+                                                <label class="text-xs text-gray-600">Tabungan:</label>
+                                                <input type="number" 
+                                                       name="supir_details[{{ $detail->id }}][tabungan]"
+                                                       class="person-tabungan-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                                                       value="{{ $detail->tabungan }}"
+                                                       data-supir="{{ $detail->supir_nama }}"
+                                                       min="0">
+                                            </div>
+                                            <div>
+                                                <label class="text-xs text-gray-600">BPJS:</label>
+                                                <input type="number" 
+                                                       name="supir_details[{{ $detail->id }}][bpjs]"
+                                                       class="person-bpjs-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                                                       value="{{ $detail->bpjs }}"
+                                                       data-supir="{{ $detail->supir_nama }}"
+                                                       min="0">
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="supir_details[{{ $detail->id }}][supir_nama]" value="{{ $detail->supir_nama }}">
+                                        <input type="hidden" name="supir_details[{{ $detail->id }}][total_uang_supir]" value="{{ $detail->total_uang_supir }}">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <!-- Overall Grand Total -->
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                                    TOTAL UANG SUPIR
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-indigo-600" id="grandTotalUangSupir">
+                                    Rp {{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                                    TOTAL HUTANG
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-red-600" id="grandTotalUtang">
+                                    Rp {{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                                    TOTAL TABUNGAN
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-green-600" id="grandTotalTabungan">
+                                    Rp {{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                                    TOTAL BPJS
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-yellow-600" id="grandTotalBpjs">
+                                    Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr class="font-semibold text-gray-800 bg-purple-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                                    GRAND TOTAL BERSIH
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-purple-600" id="grandTotalKeseluruhan">
+                                    Rp {{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
+                    <p class="text-xs text-gray-600">
+                        * Ubah nilai hutang, tabungan, dan BPJS untuk setiap supir sesuai kebutuhan.
+                        <br>* <strong>Grand Total = Uang Supir - Hutang - Tabungan - BPJS</strong> (Hutang, Tabungan, dan BPJS mengurangi total yang diterima supir)
+                    </p>
+                </div>
+
+                @error('supir_details')
+                    <div class="bg-red-50 px-3 py-2 border-t border-red-200">
+                        <p class="text-xs text-red-600">{{ $message }}</p>
+                    </div>
+                @enderror
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex flex-col sm:flex-row justify-end gap-2">
+                <a href="{{ route('pranota-uang-rit.index') }}"
+                   class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Batal
+                </a>
+                <button type="submit"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Update Pranota Uang Supir
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const suratJalanSelect = document.getElementById('surat_jalan_id');
-    const noSuratJalanInput = document.getElementById('no_surat_jalan');
-    const supirNamaInput = document.getElementById('supir_nama');
-    const noPlatInput = document.getElementById('no_plat');
-    const uangJalanInput = document.getElementById('uang_jalan');
-    const uangRitInput = document.getElementById('uang_rit');
+document.addEventListener('DOMContentLoaded', function () {
+    // Add event listeners to all supir detail inputs
+    function addInputListeners() {
+        const personUtangInputs = document.querySelectorAll('.person-utang-input');
+        const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
+        const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
+        
+        personUtangInputs.forEach(input => {
+            input.addEventListener('input', updateOverallTotals);
+        });
+        
+        personTabunganInputs.forEach(input => {
+            input.addEventListener('input', updateOverallTotals);
+        });
+        
+        personBpjsInputs.forEach(input => {
+            input.addEventListener('input', updateOverallTotals);
+        });
+    }
+    
+    function updateOverallTotals() {
+        const personUtangInputs = document.querySelectorAll('.person-utang-input');
+        const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
+        const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
+        
+        let totalUtang = 0;
+        let totalTabungan = 0;
+        let totalBpjs = 0;
+        
+        // Get total uang supir from pranota data (fixed value)
+        const totalUangSupir = parseFloat('{{ $pranotaUangRit->total_uang }}') || 0;
+        
+        // Calculate totals from inputs
+        personUtangInputs.forEach(input => {
+            totalUtang += parseFloat(input.value) || 0;
+        });
+        
+        personTabunganInputs.forEach(input => {
+            totalTabungan += parseFloat(input.value) || 0;
+        });
+        
+        personBpjsInputs.forEach(input => {
+            totalBpjs += parseFloat(input.value) || 0;
+        });
+        
+        // Calculate grand total bersih
+        const grandTotalBersih = totalUangSupir - totalUtang - totalTabungan - totalBpjs;
+        
+        // Update footer totals
+        const grandTotalUtang = document.getElementById('grandTotalUtang');
+        const grandTotalTabungan = document.getElementById('grandTotalTabungan');
+        const grandTotalBpjs = document.getElementById('grandTotalBpjs');
+        const grandTotalKeseluruhan = document.getElementById('grandTotalKeseluruhan');
 
-    // Auto-fill when surat jalan is selected
-    suratJalanSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        if (selectedOption.value) {
-            noSuratJalanInput.value = selectedOption.dataset.noSuratJalan || '';
-            supirNamaInput.value = selectedOption.dataset.supirNama || '';
-            noPlatInput.value = selectedOption.dataset.noPlat || '';
-            uangJalanInput.value = selectedOption.dataset.uangJalan || 0;
-            
-            // Update summary
-            updateSummary();
+        if (grandTotalUtang) {
+            grandTotalUtang.textContent = 'Rp ' + totalUtang.toLocaleString('id-ID');
         }
-    });
 
-    // Update summary when amounts change
-    uangJalanInput.addEventListener('input', updateSummary);
-    uangRitInput.addEventListener('input', updateSummary);
-
-    function updateSummary() {
-        const uangJalan = parseInt(uangJalanInput.value) || 0;
-        const uangRit = parseInt(uangRitInput.value) || 0;
-        const total = uangJalan + uangRit;
-
-        document.getElementById('summary-uang-jalan').textContent = 'Rp ' + numberFormat(uangJalan);
-        document.getElementById('summary-uang-rit').textContent = 'Rp ' + numberFormat(uangRit);
-        document.getElementById('summary-total').textContent = 'Rp ' + numberFormat(total);
+        if (grandTotalTabungan) {
+            grandTotalTabungan.textContent = 'Rp ' + totalTabungan.toLocaleString('id-ID');
+        }
+        
+        if (grandTotalBpjs) {
+            grandTotalBpjs.textContent = 'Rp ' + totalBpjs.toLocaleString('id-ID');
+        }
+        
+        if (grandTotalKeseluruhan) {
+            grandTotalKeseluruhan.textContent = 'Rp ' + grandTotalBersih.toLocaleString('id-ID');
+        }
+        
+        // Update top section displays
+        const totalUtangDisplay = document.getElementById('total_utang_display');
+        const totalTabunganDisplay = document.getElementById('total_tabungan_display');
+        const totalBpjsDisplay = document.getElementById('total_bpjs_display');
+        const grandTotalDisplay = document.getElementById('grand_total_display');
+        
+        if (totalUtangDisplay) {
+            totalUtangDisplay.value = 'Rp ' + totalUtang.toLocaleString('id-ID');
+        }
+        
+        if (totalTabunganDisplay) {
+            totalTabunganDisplay.value = 'Rp ' + totalTabungan.toLocaleString('id-ID');
+        }
+        
+        if (totalBpjsDisplay) {
+            totalBpjsDisplay.value = 'Rp ' + totalBpjs.toLocaleString('id-ID');
+        }
+        
+        if (grandTotalDisplay) {
+            grandTotalDisplay.value = 'Rp ' + grandTotalBersih.toLocaleString('id-ID');
+        }
     }
 
-    function numberFormat(number) {
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
-
-    // Initial summary update
-    updateSummary();
+    // Initialize
+    addInputListeners();
+    updateOverallTotals(); // Initial calculation
 });
 </script>
 @endpush
