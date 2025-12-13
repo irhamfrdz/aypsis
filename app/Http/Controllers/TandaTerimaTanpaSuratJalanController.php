@@ -109,7 +109,25 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $isLclData = false;
         }
 
-        return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats', 'isLclData'));
+        // Ambil data kontainer dari stock_kontainers dan kontainers
+        // Langsung pluck nomor_seri_gabungan tanpa alias untuk menghindari konflik dengan accessor
+        $stockKontainers = StockKontainer::whereNotNull('nomor_seri_gabungan')
+            ->where('nomor_seri_gabungan', '!=', '')
+            ->distinct()
+            ->orderBy('nomor_seri_gabungan')
+            ->pluck('nomor_seri_gabungan');
+            
+        // Table kontainers juga menggunakan nomor_seri_gabungan
+        $kontainers = Kontainer::whereNotNull('nomor_seri_gabungan')
+            ->where('nomor_seri_gabungan', '!=', '')
+            ->distinct()
+            ->orderBy('nomor_seri_gabungan')
+            ->pluck('nomor_seri_gabungan');
+            
+        // Gabungkan dan hilangkan duplikat
+        $availableKontainers = $stockKontainers->merge($kontainers)->unique()->sort()->values();
+
+        return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats', 'isLclData', 'availableKontainers'));
     }
 
     /**

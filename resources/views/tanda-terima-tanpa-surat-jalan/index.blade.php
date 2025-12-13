@@ -4,6 +4,51 @@
 @section('page_title', 'Tanda Terima Tanpa Surat Jalan')
 
 @section('content')
+<style>
+    /* Custom Select2 styling to match application theme */
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 26px;
+        color: #374151;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #14b8a6;
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+    }
+    
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #14b8a6;
+    }
+    
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #14b8a6;
+        outline: none;
+    }
+</style>
+
 <div class="container mx-auto px-4 py-4">
     <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
         <!-- Header -->
@@ -116,18 +161,31 @@
             @if($tandaTerimas->count() > 0)
                 <!-- Action Buttons for Selected Items (Only for LCL) -->
                 @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
-                    <div id="selectedActions" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg" style="display: none;">
-                        <div class="flex items-center justify-between">
-                            <div class="text-sm text-blue-800">
-                                <span id="selectedCount">0</span> item terpilih
+                    <div id="selectedActions" class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-teal-50 border-2 border-blue-300 rounded-lg shadow-sm" style="display: none;">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="flex items-center text-sm font-medium text-blue-900">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span id="selectedCount">0</span> item LCL terpilih
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex flex-wrap gap-2">
+                                <!-- Tombol Isi Kontainer & Seal (Primary Action) -->
+                                <button type="button" onclick="bulkAction('assign-container')" 
+                                        class="inline-flex items-center px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 text-sm font-semibold shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Isi Nomor Kontainer & Seal
+                                </button>
+                                
+                                <!-- Tombol Export -->
                                 <button type="button" onclick="bulkAction('export')" 
-                                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm font-medium shadow-sm hover:shadow-md transition-all">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
-                                    Export Selected
+                                    Export
                                 </button>
                                 <button type="button" onclick="bulkAction('seal')" 
                                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
@@ -141,7 +199,7 @@
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                                     </svg>
-                                    Pecah Kontainer\4
+                                    Pecah Kontainer
                                 </button>
                                 @can('tanda-terima-tanpa-surat-jalan-delete')
                                     <button type="button" onclick="bulkAction('delete')" 
@@ -196,6 +254,9 @@
                                 @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Size
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Volume & Tonase
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         No. Seal
@@ -300,6 +361,35 @@
                                                 <span class="text-sm text-gray-500">-</span>
                                             @endif
                                         </td>
+                                        <!-- Volume & Tonase Status -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @php
+                                                $hasVolumeData = $tandaTerima->items && $tandaTerima->items->where('meter_kubik', '>', 0)->count() > 0;
+                                                $hasTonaseData = $tandaTerima->items && $tandaTerima->items->where('tonase', '>', 0)->count() > 0;
+                                            @endphp
+                                            @if($hasVolumeData && $hasTonaseData)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    Lengkap
+                                                </span>
+                                            @elseif($hasVolumeData || $hasTonaseData)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    Sebagian
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    Belum Input
+                                                </span>
+                                            @endif
+                                        </td>
                                         <!-- Nomor Seal -->
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($tandaTerima->nomor_seal)
@@ -336,7 +426,7 @@
                                                     </svg>
                                                 </a>
                                                 @can('tanda-terima-tanpa-surat-jalan-update')
-                                                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.edit', $tandaTerima) }}?tipe=lcl"
+                                                    <a href="{{ route('tanda-terima-lcl.edit', $tandaTerima) }}"
                                                        class="text-yellow-600 hover:text-yellow-900" title="Edit">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -649,6 +739,118 @@
     </div>
 </div>
 
+<!-- Assign Container & Seal Modal -->
+<div id="assignContainerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-lg bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <h3 class="text-lg font-medium text-gray-900">Isi Nomor Kontainer & Seal</h3>
+                <button type="button" onclick="closeAssignContainerModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="assignContainerForm" method="POST" action="{{ route('tanda-terima-tanpa-surat-jalan.assign-container') }}">
+                @csrf
+                <input type="hidden" name="selected_ids" id="assign_selected_ids">
+
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p class="text-sm text-blue-800">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span id="assignContainerCount">0</span> item akan dimasukkan ke kontainer yang sama
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Nomor Kontainer -->
+                    <div>
+                        <label for="assign_nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nomor Kontainer <span class="text-red-500">*</span>
+                        </label>
+                        <select name="nomor_kontainer" id="assign_nomor_kontainer" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 select2-kontainer">
+                            <option value="">Pilih Nomor Kontainer</option>
+                            @if(isset($availableKontainers) && $availableKontainers->count() > 0)
+                                @foreach($availableKontainers as $kontainer)
+                                    <option value="{{ $kontainer }}">{{ $kontainer }}</option>
+                                @endforeach
+                            @endif
+                            <option value="__manual__">+ Input Manual</option>
+                        </select>
+                        <input type="text" id="assign_nomor_kontainer_manual" 
+                               class="hidden w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                               placeholder="Ketik nomor kontainer baru">
+                        <p class="mt-1 text-xs text-gray-500">Pilih dari daftar atau input manual</p>
+                    </div>
+
+                    <!-- Size Kontainer -->
+                    <div>
+                        <label for="assign_size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                            Size Kontainer <span class="text-red-500">*</span>
+                        </label>
+                        <select name="size_kontainer" id="assign_size_kontainer" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            <option value="">Pilih Size Kontainer</option>
+                            <option value="20ft">20 Feet</option>
+                            <option value="40ft">40 Feet</option>
+                            <option value="40hc">40 Feet High Cube</option>
+                            <option value="45ft">45 Feet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Nomor Seal -->
+                    <div>
+                        <label for="assign_nomor_seal" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nomor Seal
+                        </label>
+                        <input type="text" name="nomor_seal" id="assign_nomor_seal"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                               placeholder="Opsional - masukkan nomor seal">
+                        <p class="mt-1 text-xs text-gray-500">Jika diisi, item akan langsung masuk ke prospek</p>
+                    </div>
+
+                    <!-- Tipe Kontainer -->
+                    <div>
+                        <label for="assign_tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tipe Kontainer
+                        </label>
+                        <select name="tipe_kontainer" id="assign_tipe_kontainer"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            <option value="">Pilih Tipe Kontainer</option>
+                            <option value="HC">HC (High Cube)</option>
+                            <option value="STD">STD (Standard)</option>
+                            <option value="RF">RF (Reefer)</option>
+                            <option value="OT">OT (Open Top)</option>
+                            <option value="FR">FR (Flat Rack)</option>
+                            <option value="Dry Container">Dry Container</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeAssignContainerModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Simpan & Assign
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -656,7 +858,63 @@
         if (document.getElementById('selectAll')) {
             initializeCheckboxes();
         }
+        
+        // Initialize Select2 for container dropdown
+        initializeContainerSelect();
+        
+        // Handle manual input toggle
+        handleContainerManualInput();
     });
+    
+    function initializeContainerSelect() {
+        // Check if Select2 is available
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.select2-kontainer').select2({
+                placeholder: 'Pilih atau cari nomor kontainer',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#assignContainerModal'),
+                language: {
+                    noResults: function() {
+                        return "Tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+        }
+    }
+    
+    function handleContainerManualInput() {
+        const containerSelect = document.getElementById('assign_nomor_kontainer');
+        const manualInput = document.getElementById('assign_nomor_kontainer_manual');
+        
+        if (containerSelect && manualInput) {
+            // Listen for change on select
+            $(containerSelect).on('change', function() {
+                if (this.value === '__manual__') {
+                    // Show manual input
+                    manualInput.classList.remove('hidden');
+                    manualInput.setAttribute('name', 'nomor_kontainer');
+                    manualInput.required = true;
+                    containerSelect.removeAttribute('name');
+                    containerSelect.required = false;
+                    
+                    // Focus on manual input
+                    setTimeout(() => manualInput.focus(), 100);
+                } else {
+                    // Hide manual input
+                    manualInput.classList.add('hidden');
+                    manualInput.removeAttribute('name');
+                    manualInput.required = false;
+                    manualInput.value = '';
+                    containerSelect.setAttribute('name', 'nomor_kontainer');
+                    containerSelect.required = true;
+                }
+            });
+        }
+    }
 
     function initializeCheckboxes() {
         const selectAllCheckbox = document.getElementById('selectAll');
@@ -720,6 +978,11 @@
         }
 
         switch(action) {
+            case 'assign-container':
+                // Open assign container modal
+                openAssignContainerModal(selectedIds);
+                break;
+                
             case 'export':
                 // Redirect to export route with selected IDs
                 const exportUrl = new URL('{{ route("tanda-terima-lcl.export") }}', window.location.origin);
@@ -876,6 +1139,54 @@
         form.reset();
         // Show container fields again when modal is closed
         toggleContainerFields();
+    }
+
+    function openAssignContainerModal(selectedIds) {
+        document.getElementById('assign_selected_ids').value = JSON.stringify(selectedIds);
+        document.getElementById('assignContainerCount').textContent = selectedIds.length;
+        document.getElementById('assignContainerModal').classList.remove('hidden');
+        
+        // Reset select2 and manual input
+        const containerSelect = $('#assign_nomor_kontainer');
+        const manualInput = document.getElementById('assign_nomor_kontainer_manual');
+        
+        if (containerSelect.length && typeof containerSelect.select2 !== 'undefined') {
+            containerSelect.val('').trigger('change');
+        }
+        
+        if (manualInput) {
+            manualInput.classList.add('hidden');
+            manualInput.value = '';
+            manualInput.removeAttribute('name');
+            manualInput.required = false;
+        }
+        
+        // Ensure select has name attribute
+        document.getElementById('assign_nomor_kontainer').setAttribute('name', 'nomor_kontainer');
+        document.getElementById('assign_nomor_kontainer').required = true;
+    }
+
+    function closeAssignContainerModal() {
+        document.getElementById('assignContainerModal').classList.add('hidden');
+        
+        // Reset form
+        const form = document.getElementById('assignContainerForm');
+        form.reset();
+        
+        // Reset Select2
+        const containerSelect = $('#assign_nomor_kontainer');
+        if (containerSelect.length && typeof containerSelect.select2 !== 'undefined') {
+            containerSelect.val('').trigger('change');
+        }
+        
+        // Reset manual input
+        const manualInput = document.getElementById('assign_nomor_kontainer_manual');
+        if (manualInput) {
+            manualInput.classList.add('hidden');
+            manualInput.value = '';
+            manualInput.removeAttribute('name');
+            manualInput.required = false;
+        }
     }
 
     function toggleContainerFields() {
