@@ -204,11 +204,43 @@ try {
 
     // 6. Verifikasi tabel pivot
     echo "5. Verifikasi tabel tanda_terima_lcl_kontainer_pivot...\n";
-    if (Schema::hasTable('tanda_terima_lcl_kontainer_pivot')) {
-        echo "   ✓ Tabel tanda_terima_lcl_kontainer_pivot ada\n";
+    if (!Schema::hasTable('tanda_terima_lcl_kontainer_pivot')) {
+        echo "   ✗ Tabel tanda_terima_lcl_kontainer_pivot TIDAK ADA, membuat tabel...\n";
+        try {
+            DB::statement("
+                CREATE TABLE `tanda_terima_lcl_kontainer_pivot` (
+                    `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+                    `tanda_terima_lcl_id` bigint unsigned NOT NULL,
+                    `nomor_kontainer` varchar(255) DEFAULT NULL,
+                    `size_kontainer` varchar(255) DEFAULT NULL,
+                    `tipe_kontainer` varchar(255) DEFAULT NULL,
+                    `nomor_seal` varchar(255) DEFAULT NULL,
+                    `tanggal_seal` date DEFAULT NULL,
+                    `assigned_at` timestamp NULL DEFAULT NULL,
+                    `assigned_by` bigint unsigned DEFAULT NULL,
+                    `created_at` timestamp NULL DEFAULT NULL,
+                    `updated_at` timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (`id`),
+                    KEY `tanda_terima_lcl_kontainer_pivot_tanda_terima_lcl_id_foreign` (`tanda_terima_lcl_id`),
+                    KEY `tanda_terima_lcl_kontainer_pivot_assigned_by_foreign` (`assigned_by`),
+                    KEY `idx_lcl_pivot_kontainer` (`nomor_kontainer`),
+                    KEY `idx_lcl_pivot_kontainer_tt` (`nomor_kontainer`,`tanda_terima_lcl_id`),
+                    CONSTRAINT `tanda_terima_lcl_kontainer_pivot_tanda_terima_lcl_id_foreign` 
+                        FOREIGN KEY (`tanda_terima_lcl_id`) 
+                        REFERENCES `tanda_terimas_lcl` (`id`) 
+                        ON DELETE CASCADE,
+                    CONSTRAINT `tanda_terima_lcl_kontainer_pivot_assigned_by_foreign` 
+                        FOREIGN KEY (`assigned_by`) 
+                        REFERENCES `users` (`id`) 
+                        ON DELETE SET NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+            echo "   ✓ Tabel tanda_terima_lcl_kontainer_pivot berhasil dibuat\n";
+        } catch (\Exception $e) {
+            echo "   ✗ Gagal membuat tabel: " . $e->getMessage() . "\n";
+        }
     } else {
-        echo "   ✗ Tabel tanda_terima_lcl_kontainer_pivot TIDAK ADA\n";
-        echo "   → Perlu jalankan: php artisan migrate\n";
+        echo "   ✓ Tabel tanda_terima_lcl_kontainer_pivot ada\n";
     }
     echo "\n";
 
