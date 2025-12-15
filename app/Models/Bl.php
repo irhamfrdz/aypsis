@@ -21,6 +21,7 @@ class Bl extends Model
         'size_kontainer',
         'no_voyage',
         'nama_kapal',
+        'tanggal_berangkat',
         'pelabuhan_asal',
         'pelabuhan_tujuan',
         'nama_barang',
