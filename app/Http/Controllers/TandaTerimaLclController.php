@@ -1231,15 +1231,21 @@ class TandaTerimaLclController extends Controller
         
         $tandaTerimaIds = $request->tanda_terima_ids;
         
-        // Check if container is already sealed
-        $sealedContainer = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+        // Check if container is already sealed - prevent adding to sealed containers
+        // If user wants to use the same container number, they should create a new stuffing session
+        $sealedContainer = TandaTerimaLclKontainerPivot::where('nomor_kontainer', trim($request->nomor_kontainer))
             ->whereNotNull('nomor_seal')
             ->first();
         
         if ($sealedContainer) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', "Kontainer {$request->nomor_kontainer} sudah di-seal dan tidak dapat ditambahkan LCL baru. Silakan pilih kontainer lain atau buat kontainer baru.");
+                ->with('error', "❌ Kontainer {$request->nomor_kontainer} sudah di-seal pada tanggal " . 
+                    ($sealedContainer->tanggal_seal ? date('d/m/Y', strtotime($sealedContainer->tanggal_seal)) : '-') . 
+                    " dan tidak dapat ditambahkan LCL baru.\n\n" .
+                    "📦 Untuk menggunakan nomor kontainer yang sama, silakan:\n" .
+                    "1. Gunakan nomor kontainer lain yang belum sealed, atau\n" .
+                    "2. Tambahkan suffix/nomor urut pada nomor kontainer (contoh: {$request->nomor_kontainer}-2)");
         }
         
         DB::beginTransaction();
