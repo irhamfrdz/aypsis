@@ -346,6 +346,7 @@
                                     <input type="checkbox" id="selectAllUnstuffed" class="rounded border-gray-300 text-teal-600">
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Tanda Terima</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penerima</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengirim</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volume</th>
@@ -359,6 +360,22 @@
                                         <input type="checkbox" class="unstuffed-checkbox rounded border-gray-300 text-teal-600" value="{{ $lcl->id }}">
                                     </td>
                                     <td class="px-4 py-3 text-sm">{{ $lcl->nomor_tanda_terima ?? 'TT-LCL-' . $lcl->id }}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        @if($lcl->items->isNotEmpty())
+                                            <div class="max-w-xs">
+                                                @foreach($lcl->items as $item)
+                                                    <div class="text-xs {{ !$loop->last ? 'mb-1 pb-1 border-b border-gray-200' : '' }}">
+                                                        <span class="font-medium text-gray-700">{{ $item->nama_barang }}</span>
+                                                        @if($item->jumlah)
+                                                            <span class="text-gray-500">({{ $item->jumlah }} {{ $item->satuan ?? 'pcs' }})</span>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm">{{ $lcl->nama_penerima ?? '-' }}</td>
                                     <td class="px-4 py-3 text-sm">{{ $lcl->nama_pengirim ?? '-' }}</td>
                                     <td class="px-4 py-3 text-sm">{{ number_format($lcl->items->sum('meter_kubik'), 3) }} m³</td>
@@ -366,7 +383,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm">
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500 text-sm">
                                         Semua LCL sudah di-stuffing
                                     </td>
                                 </tr>

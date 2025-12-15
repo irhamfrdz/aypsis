@@ -1129,15 +1129,21 @@ class TandaTerimaLclController extends Controller
                 ];
             });
         
-        // Get available containers for new stuffing
+        // Get available containers for new stuffing (exclude sealed containers)
         $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
         $stockKontainers = StockKontainer::active()->get();
         
+        // Get sealed containers to exclude
+        $sealedContainers = TandaTerimaLclKontainerPivot::whereNotNull('nomor_seal')
+            ->distinct()
+            ->pluck('nomor_kontainer')
+            ->toArray();
+        
         $availableKontainers = collect();
         
-        // Merge kontainers
+        // Merge kontainers (exclude sealed ones)
         foreach ($kontainers as $k) {
-            if ($k->nomor_kontainer) {
+            if ($k->nomor_kontainer && !in_array($k->nomor_kontainer, $sealedContainers)) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $k->nomor_kontainer,
                     'ukuran' => $k->ukuran ?? $k->size ?? null,
@@ -1147,7 +1153,9 @@ class TandaTerimaLclController extends Controller
         }
         
         foreach ($stockKontainers as $s) {
-            if ($s->nomor_kontainer && !$availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
+            if ($s->nomor_kontainer 
+                && !in_array($s->nomor_kontainer, $sealedContainers)
+                && !$availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $s->nomor_kontainer,
                     'ukuran' => $s->ukuran ?? null,
@@ -1222,6 +1230,17 @@ class TandaTerimaLclController extends Controller
         }
         
         $tandaTerimaIds = $request->tanda_terima_ids;
+        
+        // Check if container is already sealed
+        $sealedContainer = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+            ->whereNotNull('nomor_seal')
+            ->first();
+        
+        if ($sealedContainer) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Kontainer {$request->nomor_kontainer} sudah di-seal dan tidak dapat ditambahkan LCL baru. Silakan pilih kontainer lain atau buat kontainer baru.");
+        }
         
         DB::beginTransaction();
         try {
