@@ -134,7 +134,75 @@ try {
     }
     echo "\n";
 
-    // 5. Verifikasi tabel pivot
+    // 5. Verifikasi/Buat tabel tanda_terima_lcl_items
+    echo "5. Verifikasi tabel tanda_terima_lcl_items...\n";
+    if (!Schema::hasTable('tanda_terima_lcl_items')) {
+        echo "   ✗ Tabel tanda_terima_lcl_items TIDAK ADA, membuat tabel...\n";
+        try {
+            DB::statement("
+                CREATE TABLE `tanda_terima_lcl_items` (
+                    `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+                    `tanda_terima_lcl_id` bigint unsigned NOT NULL,
+                    `item_number` int NOT NULL DEFAULT '1',
+                    `nama_barang` varchar(255) DEFAULT NULL,
+                    `keterangan_barang` text,
+                    `jumlah` int DEFAULT NULL,
+                    `satuan` varchar(50) DEFAULT NULL,
+                    `panjang` decimal(10,3) DEFAULT NULL COMMENT 'Length in meters',
+                    `lebar` decimal(10,3) DEFAULT NULL COMMENT 'Width in meters',
+                    `tinggi` decimal(10,3) DEFAULT NULL COMMENT 'Height in meters',
+                    `meter_kubik` decimal(12,3) DEFAULT NULL COMMENT 'Volume in m³',
+                    `tonase` decimal(10,3) DEFAULT NULL COMMENT 'Weight in tons',
+                    `created_at` timestamp NULL DEFAULT NULL,
+                    `updated_at` timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (`id`),
+                    KEY `tanda_terima_lcl_items_tanda_terima_lcl_id_foreign` (`tanda_terima_lcl_id`),
+                    CONSTRAINT `tanda_terima_lcl_items_tanda_terima_lcl_id_foreign` 
+                        FOREIGN KEY (`tanda_terima_lcl_id`) 
+                        REFERENCES `tanda_terimas_lcl` (`id`) 
+                        ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+            echo "   ✓ Tabel tanda_terima_lcl_items berhasil dibuat\n";
+        } catch (\Exception $e) {
+            echo "   ✗ Gagal membuat tabel: " . $e->getMessage() . "\n";
+        }
+    } else {
+        echo "   ✓ Tabel tanda_terima_lcl_items sudah ada\n";
+        
+        // Cek kolom item_number, jumlah, satuan
+        if (!Schema::hasColumn('tanda_terima_lcl_items', 'item_number')) {
+            try {
+                DB::statement("ALTER TABLE tanda_terima_lcl_items ADD COLUMN item_number INT NOT NULL DEFAULT 1 AFTER tanda_terima_lcl_id");
+                echo "   ✓ Kolom item_number ditambahkan\n";
+            } catch (\Exception $e) {
+                echo "   ✗ Gagal tambah item_number: " . $e->getMessage() . "\n";
+            }
+        }
+        
+        // Rename jumlah_koli ke jumlah jika ada
+        if (Schema::hasColumn('tanda_terima_lcl_items', 'jumlah_koli') && 
+            !Schema::hasColumn('tanda_terima_lcl_items', 'jumlah')) {
+            try {
+                DB::statement("ALTER TABLE tanda_terima_lcl_items CHANGE COLUMN jumlah_koli jumlah INT NULL");
+                echo "   ✓ Kolom jumlah_koli di-rename ke jumlah\n";
+            } catch (\Exception $e) {
+                echo "   ✗ Gagal rename jumlah_koli: " . $e->getMessage() . "\n";
+            }
+        }
+        
+        if (!Schema::hasColumn('tanda_terima_lcl_items', 'satuan')) {
+            try {
+                DB::statement("ALTER TABLE tanda_terima_lcl_items ADD COLUMN satuan VARCHAR(50) NULL AFTER jumlah");
+                echo "   ✓ Kolom satuan ditambahkan\n";
+            } catch (\Exception $e) {
+                echo "   ✗ Gagal tambah satuan: " . $e->getMessage() . "\n";
+            }
+        }
+    }
+    echo "\n";
+
+    // 6. Verifikasi tabel pivot
     echo "5. Verifikasi tabel tanda_terima_lcl_kontainer_pivot...\n";
     if (Schema::hasTable('tanda_terima_lcl_kontainer_pivot')) {
         echo "   ✓ Tabel tanda_terima_lcl_kontainer_pivot ada\n";
@@ -144,7 +212,7 @@ try {
     }
     echo "\n";
 
-    // 6. Summary
+    // 7. Summary
     echo "==============================================\n";
     echo "SELESAI!\n";
     echo "==============================================\n";
