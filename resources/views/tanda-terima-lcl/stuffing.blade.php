@@ -49,6 +49,9 @@
                         <div class="text-gray-500 text-xs">LCL Belum Stuffing</div>
                     </div>
                     <a href="{{ route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl']) }}" 
+                       style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #4b5563; color: #ffffff; border-radius: 0.5rem; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                       onmouseover="this.style.backgroundColor='#374151'" 
+                       onmouseout="this.style.backgroundColor='#4b5563'"
                        class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -138,13 +141,21 @@
                             </select>
                         </div>
                         <div class="flex items-end gap-2">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                            <button type="submit" 
+                                    style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #2563eb; color: #ffffff; border-radius: 0.375rem; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                                    onmouseover="this.style.backgroundColor='#1d4ed8'" 
+                                    onmouseout="this.style.backgroundColor='#2563eb'"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
                                 <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                                 Cari
                             </button>
-                            <a href="{{ route('tanda-terima-lcl.stuffing') }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
+                            <a href="{{ route('tanda-terima-lcl.stuffing') }}" 
+                               style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #4b5563; color: #ffffff; border-radius: 0.375rem; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                               onmouseover="this.style.backgroundColor='#374151'" 
+                               onmouseout="this.style.backgroundColor='#4b5563'"
+                               class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
                                 Reset
                             </a>
                             <button type="button" onclick="showUnstuffedModal()" 
@@ -420,10 +431,16 @@
 
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" onclick="closeStuffingModal()" 
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #d1d5db; color: #374151; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#9ca3af'" 
+                            onmouseout="this.style.backgroundColor='#d1d5db'"
                             class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                         Batal
                     </button>
                     <button type="submit"
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #0d9488; color: #ffffff; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#0f766e'" 
+                            onmouseout="this.style.backgroundColor='#0d9488'"
                             class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -489,10 +506,16 @@
 
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" onclick="closeSealModal()" 
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #d1d5db; color: #374151; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#9ca3af'" 
+                            onmouseout="this.style.backgroundColor='#d1d5db'"
                             class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                         Batal
                     </button>
                     <button type="submit"
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #d97706; color: #ffffff; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#b45309'" 
+                            onmouseout="this.style.backgroundColor='#d97706'"
                             class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
