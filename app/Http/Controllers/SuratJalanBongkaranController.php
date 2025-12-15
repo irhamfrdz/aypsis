@@ -667,8 +667,13 @@ class SuratJalanBongkaranController extends Controller
     {
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|exists:master_kapals,id',
+            'nama_kapal' => 'nullable|string|max:255',
+            'no_voyage' => 'nullable|string|max:255',
+            'no_bl' => 'nullable|string|max:255',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,nomor_surat_jalan,' . $suratJalanBongkaran->id,
             'tanggal_surat_jalan' => 'required|date',
+            'lanjut_muat' => 'nullable|string|in:ya,tidak',
+            'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string|max:255',
