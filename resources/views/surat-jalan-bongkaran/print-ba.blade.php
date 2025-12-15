@@ -59,7 +59,7 @@
         /* Positioned unit text */
         .unit-text {
             position: absolute;
-            top: 10cm; /* 10cm from top */
+            top: 11cm; /* aligned with container number: 11cm */
             left: 5cm; /* 5cm from left */
             white-space: nowrap;
             font-size: 14px;
@@ -68,7 +68,7 @@
         /* Positioned nama kapal */
         .nama-kapal {
             position: absolute;
-            top: 7.0cm; /* 1cm lower: 7.0cm */
+            top: 7.5cm; /* aligned with pengirim: 7.5cm */
             left: 20.25cm; /* 2cm more to the right: 20.25cm */
             white-space: nowrap;
             font-weight: bold;
