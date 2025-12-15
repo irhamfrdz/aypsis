@@ -17,8 +17,8 @@
         /* Positioned pengirim data */
         .pengirim {
             position: absolute;
-            top: 6.5cm; /* 6,5cm from top */
-            left: 3.5cm;  /* moved left slightly from 4cm to 3.5cm */
+            top: 7.5cm; /* 1cm lower: 7.5cm */
+            left: 4.5cm;  /* 1cm more to the right: 4.5cm */
             width: 12cm; /* reasonable width for address area */
             white-space: pre-wrap; /* keep new lines */
             line-height: 1.2;
@@ -28,8 +28,8 @@
         /* Positioned penerima data */
         .penerima {
             position: absolute;
-            top: 7.5cm; /* 7,5cm from top */
-            left: 3.5cm;  /* moved left slightly from 4cm to 3.5cm */
+            top: 8.5cm; /* 1cm lower: 8.5cm */
+            left: 4.5cm;  /* 1cm more to the right: 4.5cm */
             width: 12cm; /* same width to align with pengirim */
             white-space: pre-wrap;
             line-height: 1.2;
@@ -40,7 +40,7 @@
         .no-kontainer {
             position: absolute;
             top: 11cm; /* 11cm from top */
-            left: 0cm;  /* 0cm from left */
+            left: 1cm;  /* 1cm from left */
             white-space: nowrap; /* container number single-line */
             font-weight: bold;
             font-size: 16px; /* larger to highlight container number */
@@ -49,28 +49,37 @@
         .nama-barang {
             position: absolute;
             top: 11cm; /* 11cm from top */
-            left: 8cm; /* 8cm from left */
+            left: 9cm; /* 1cm more to the right: 9cm */
             max-width: 11cm;
             white-space: pre-wrap;
             font-size: 14px;
             font-weight: bold;
             line-height: 1.2;
         }
+        /* Positioned unit text */
+        .unit-text {
+            position: absolute;
+            top: 10cm; /* 10cm from top */
+            left: 5cm; /* 5cm from left */
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: bold;
+        }
         /* Positioned nama kapal */
         .nama-kapal {
             position: absolute;
-            top: 6.0cm; /* moved up slightly: 6.0cm */
-            left: 18.25cm; /* moved left slightly: 18.25cm */
+            top: 7.0cm; /* 1cm lower: 7.0cm */
+            left: 20.25cm; /* 2cm more to the right: 20.25cm */
             white-space: nowrap;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px; /* smaller font */
             text-align: left;
         }
         /* Positioned nomor voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) */
         .no-voyage {
             position: absolute;
-            top: 5.0cm; /* 5.0cm from top */
-            left: 11.25cm; /* 11.25cm from left */
+            top: 6.0cm; /* 1cm lower: 6.0cm */
+            left: 12.75cm; /* 1.5cm more to the right: 12.75cm */
             white-space: nowrap;
             font-weight: bold;
             font-size: 14px;
@@ -79,11 +88,11 @@
         /* Positioned pelabuhan route (asal - tujuan) */
         .pelabuhan-route {
             position: absolute;
-            top: 8cm; /* 8cm from top */
-            left: 18.5cm; /* 18.5cm from left */
+            top: 9cm; /* 1cm lower: 9cm */
+            left: 20cm; /* 1.5cm more to the right: 20cm */
             max-width: 11.5cm;
             white-space: nowrap;
-            font-size: 14px;
+            font-size: 12px; /* smaller font */
             font-weight: bold;
             text-align: left;
         }
@@ -128,6 +137,8 @@
     @else
         <div class="nama-barang">&nbsp;</div>
     @endif
+    {{-- Unit Text (static: 1 unit) --}}
+    <div class="unit-text">1 unit</div>
     {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}
     @if(isset($baData) && !empty($baData->nama_kapal))
         <div class="nama-kapal">{{ e($baData->nama_kapal) }}</div>
