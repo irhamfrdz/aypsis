@@ -80,6 +80,7 @@ class SuratJalanBongkaran extends Model
         'input_date' => 'datetime',
         'waktu_berangkat' => 'datetime',
         'uang_jalan' => 'decimal:2',
+        'uang_jalan_nominal' => 'decimal:2',
         'total_tarif' => 'decimal:2',
         'jumlah_terbayar' => 'decimal:2',
         'jumlah_retur' => 'integer',

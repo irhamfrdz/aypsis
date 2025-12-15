@@ -73,13 +73,25 @@
                         <div>
                             <span class="font-medium">Uang Jalan:</span>
                             @php
-                                $nilaiUangJalan = $suratJalan->uang_jalan ?? 0;
-                                // Untuk surat jalan bongkaran, jika uang_jalan kosong/0, gunakan uang_jalan_nominal
-                                if ((isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran') && (!$nilaiUangJalan || $nilaiUangJalan == 0)) {
-                                    $nilaiUangJalan = $suratJalan->uang_jalan_nominal ?? 0;
+                                // Cek tipe model untuk menentukan field yang digunakan
+                                $isBongkaranModel = get_class($suratJalan) === 'App\\Models\\SuratJalanBongkaran';
+                                
+                                if ($isBongkaranModel) {
+                                    // Untuk surat jalan bongkaran, prioritas: uang_jalan_nominal > uang_jalan
+                                    // Cast to float to ensure proper conversion
+                                    $nilaiUangJalan = floatval($suratJalan->uang_jalan_nominal ?? $suratJalan->uang_jalan ?? 0);
+                                } else {
+                                    // Untuk surat jalan biasa
+                                    $nilaiUangJalan = floatval($suratJalan->uang_jalan ?? 0);
                                 }
                             @endphp
                             <div class="text-sm font-semibold">Rp {{ number_format($nilaiUangJalan, 0, ',', '.') }}</div>
+                            @if($isBongkaranModel && config('app.debug'))
+                                <div class="text-xs text-gray-500 mt-1">
+                                    Debug: nominal={{ $suratJalan->uang_jalan_nominal ?? 'null' }}, 
+                                    uang_jalan={{ $suratJalan->uang_jalan ?? 'null' }}
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -203,16 +215,22 @@
                         <div class="relative">
                             <span class="absolute left-2 top-2 text-xs text-gray-500">Rp</span>
                             @php
-                                $defaultUangJalan = $suratJalan->uang_jalan ?? 0;
-                                // Untuk surat jalan bongkaran, jika uang_jalan kosong/0, gunakan uang_jalan_nominal
-                                if ((isset($jenisSuratJalan) && $jenisSuratJalan == 'bongkaran') && (!$defaultUangJalan || $defaultUangJalan == 0)) {
-                                    $defaultUangJalan = $suratJalan->uang_jalan_nominal ?? 0;
+                                // Cek tipe model untuk menentukan field yang digunakan
+                                $isBongkaranModel = get_class($suratJalan) === 'App\\Models\\SuratJalanBongkaran';
+                                
+                                if ($isBongkaranModel) {
+                                    // Untuk surat jalan bongkaran, prioritas: uang_jalan_nominal > uang_jalan
+                                    // Cast to int to remove decimal places
+                                    $defaultUangJalan = intval($suratJalan->uang_jalan_nominal ?? $suratJalan->uang_jalan ?? 0);
+                                } else {
+                                    // Untuk surat jalan biasa
+                                    $defaultUangJalan = intval($suratJalan->uang_jalan ?? 0);
                                 }
                             @endphp
                             <input type="number"
                                    name="jumlah_uang_jalan"
                                    id="jumlah_uang_jalan"
-                                   value="{{ old('jumlah_uang_jalan', intval($defaultUangJalan)) }}"
+                                   value="{{ old('jumlah_uang_jalan', $defaultUangJalan) }}"
                                    min="0"
                                    step="1"
                                    required
