@@ -130,23 +130,35 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $isLclData = false;
         }
 
-        // Ambil data kontainer dari stock_kontainers dan kontainers
-        // Langsung pluck nomor_seri_gabungan tanpa alias untuk menghindari konflik dengan accessor
+        // Ambil data kontainer dari stock_kontainers dan kontainers dengan size
+        // Ambil semua nomor kontainer unik dengan ukurannya
         $stockKontainers = StockKontainer::whereNotNull('nomor_seri_gabungan')
             ->where('nomor_seri_gabungan', '!=', '')
-            ->distinct()
-            ->orderBy('nomor_seri_gabungan')
-            ->pluck('nomor_seri_gabungan');
+            ->select('nomor_seri_gabungan', 'ukuran')
+            ->get()
+            ->map(function($item) {
+                return (object)[
+                    'nomor_seri_gabungan' => $item->nomor_seri_gabungan,
+                    'ukuran' => $item->ukuran
+                ];
+            });
             
-        // Table kontainers juga menggunakan nomor_seri_gabungan
         $kontainers = Kontainer::whereNotNull('nomor_seri_gabungan')
             ->where('nomor_seri_gabungan', '!=', '')
-            ->distinct()
-            ->orderBy('nomor_seri_gabungan')
-            ->pluck('nomor_seri_gabungan');
+            ->select('nomor_seri_gabungan', 'ukuran')
+            ->get()
+            ->map(function($item) {
+                return (object)[
+                    'nomor_seri_gabungan' => $item->nomor_seri_gabungan,
+                    'ukuran' => $item->ukuran
+                ];
+            });
             
-        // Gabungkan dan hilangkan duplikat
-        $availableKontainers = $stockKontainers->merge($kontainers)->unique()->sort()->values();
+        // Gabungkan dengan concat (tidak overwrite key) lalu unique
+        $availableKontainers = $stockKontainers->concat($kontainers)
+            ->unique('nomor_seri_gabungan')
+            ->sortBy('nomor_seri_gabungan')
+            ->values();
 
         return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats', 'isLclData', 'availableKontainers'));
     }

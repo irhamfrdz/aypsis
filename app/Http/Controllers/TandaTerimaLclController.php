@@ -578,22 +578,60 @@ class TandaTerimaLclController extends Controller
         $prospekCreated = false;
         $prospekMessage = '';
         $shouldCreateProspek = !empty($request->nomor_seal);
+        $nomorSeal = $request->nomor_seal;
 
-        DB::transaction(function () use ($ids, $request, $shouldCreateProspek, &$prospekCreated, &$prospekMessage) {
-            // Update container and seal information for selected items
-            TandaTerimaLcl::whereIn('id', $ids)->update([
-                'nomor_kontainer' => $request->nomor_kontainer,
-                'size_kontainer' => $request->size_kontainer,
-                'nomor_seal' => $request->nomor_seal,
-                'jenis_kontainer' => $request->tipe_kontainer,
-                'tanggal_seal' => $shouldCreateProspek ? now() : null,
-                'updated_by' => Auth::id(),
-                'updated_at' => now()
-            ]);
+        DB::transaction(function () use ($ids, $request, $shouldCreateProspek, $nomorSeal, &$prospekCreated, &$prospekMessage) {
+            // Get current max urutan for this container
+            $maxUrutan = \App\Models\KontainerTandaTerimaLcl::where('nomor_kontainer', $request->nomor_kontainer)
+                ->max('urutan_dalam_kontainer') ?? 0;
+
+            foreach ($ids as $index => $id) {
+                $tandaTerima = TandaTerimaLcl::find($id);
+                
+                if (!$tandaTerima) continue;
+
+                // Check if already has container assignment
+                $existingKontainer = $tandaTerima->kontainerPivot()->first();
+                
+                if ($existingKontainer) {
+                    // Update existing container pivot
+                    $existingKontainer->update([
+                        'nomor_kontainer' => $request->nomor_kontainer,
+                        'urutan_dalam_kontainer' => $maxUrutan + $index + 1,
+                        'catatan' => $request->tipe_kontainer ? "Tipe: {$request->tipe_kontainer}, Size: {$request->size_kontainer}" : "Size: {$request->size_kontainer}",
+                    ]);
+                } else {
+                    // Create new container pivot
+                    \App\Models\KontainerTandaTerimaLcl::create([
+                        'tanda_terima_lcl_id' => $id,
+                        'nomor_kontainer' => $request->nomor_kontainer,
+                        'urutan_dalam_kontainer' => $maxUrutan + $index + 1,
+                        'persentase_volume' => null, // Will be calculated later if needed
+                        'catatan' => $request->tipe_kontainer ? "Tipe: {$request->tipe_kontainer}, Size: {$request->size_kontainer}" : "Size: {$request->size_kontainer}",
+                    ]);
+                }
+
+                // Update main tanda terima record
+                $tandaTerima->update([
+                    'updated_by' => Auth::id(),
+                    'updated_at' => now()
+                ]);
+            }
 
             // If seal is filled, automatically create prospek
             if ($shouldCreateProspek) {
                 $this->createProspekFromLcl($ids, $prospekCreated, $prospekMessage);
+                
+                // Update prospek with seal number if created
+                if ($prospekCreated && $nomorSeal) {
+                    $prospek = Prospek::where('nomor_kontainer', $request->nomor_kontainer)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+                    
+                    if ($prospek) {
+                        $prospek->update(['no_seal' => $nomorSeal]);
+                    }
+                }
             }
         });
 
@@ -974,30 +1012,71 @@ class TandaTerimaLclController extends Controller
     private function createProspekFromLcl($ids, &$prospekCreated, &$prospekMessage)
     {
         try {
-            // Get the LCL data
-            $tandaTerimas = TandaTerimaLcl::with(['tujuanPengiriman'])->whereIn('id', $ids)->get();
+            // Get the LCL data with all pivot relationships
+            $tandaTerimas = TandaTerimaLcl::with([
+                'tujuanKirim', 
+                'items', 
+                'pengirimPivot', 
+                'penerimaPivot', 
+                'kontainerPivot'
+            ])->whereIn('id', $ids)->get();
             
             if ($tandaTerimas->isEmpty()) {
                 $prospekMessage = "Tidak ada data LCL yang ditemukan.";
                 return;
             }
 
-            // Get container information (should be same for all items due to validation)
+            // Get container information from pivot table (should be same for all items)
             $firstTandaTerima = $tandaTerimas->first();
-            $nomorKontainer = $firstTandaTerima->nomor_kontainer;
-            $nomorSeal = $firstTandaTerima->nomor_seal;
+            $kontainerPivot = $firstTandaTerima->kontainerPivot()->first();
+            
+            if (!$kontainerPivot || !$kontainerPivot->nomor_kontainer) {
+                $prospekMessage = "Nomor kontainer tidak ditemukan. Pastikan sudah assign kontainer terlebih dahulu.";
+                return;
+            }
+            
+            $nomorKontainer = $kontainerPivot->nomor_kontainer;
+            
+            // Extract size from catatan in kontainer pivot (format: "Size: 20ft" or "Tipe: HC, Size: 40ft")
+            $sizeKontainer = '20'; // default
+            if ($kontainerPivot->catatan) {
+                if (preg_match('/Size:\s*(\d+)/', $kontainerPivot->catatan, $matches)) {
+                    $sizeKontainer = $matches[1];
+                }
+            }
+            
+            // Collect all barang names from items pivot
+            $allBarang = collect();
+            foreach ($tandaTerimas as $tt) {
+                $barangNames = $tt->items->pluck('nama_barang');
+                $allBarang = $allBarang->merge($barangNames);
+            }
+            
+            // Collect all pengirim names from pengirim pivot
+            $allPengirim = collect();
+            foreach ($tandaTerimas as $tt) {
+                $pengirimNames = $tt->pengirimPivot->pluck('nama_pengirim');
+                $allPengirim = $allPengirim->merge($pengirimNames);
+            }
+            
+            // Collect all penerima for tujuan
+            $allPenerima = collect();
+            foreach ($tandaTerimas as $tt) {
+                $penerimaNames = $tt->penerimaPivot->pluck('nama_penerima');
+                $allPenerima = $allPenerima->merge($penerimaNames);
+            }
             
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => now()->format('Y-m-d'),
                 'nama_supir' => $firstTandaTerima->supir ?? '',
-                'barang' => $tandaTerimas->pluck('nama_barang')->unique()->implode(', '),
-                'pt_pengirim' => $tandaTerimas->pluck('nama_pengirim')->unique()->implode(', '),
-                'ukuran' => $firstTandaTerima->size_kontainer ? str_replace('ft', '', $firstTandaTerima->size_kontainer) : '20',
+                'barang' => $allBarang->unique()->implode(', '),
+                'pt_pengirim' => $allPengirim->unique()->implode(', '),
+                'ukuran' => $sizeKontainer,
                 'tipe' => 'LCL',
                 'nomor_kontainer' => $nomorKontainer,
-                'no_seal' => $nomorSeal,
-                'tujuan_pengiriman' => $tandaTerimas->first()->tujuanPengiriman->nama_tujuan ?? $tandaTerimas->first()->alamat_penerima ?? '',
+                'no_seal' => '', // Will be filled by assignContainer if seal is provided
+                'tujuan_pengiriman' => $firstTandaTerima->tujuanKirim->nama_tujuan ?? $allPenerima->first() ?? '',
                 'nama_kapal' => '', // Will be filled later in prospek
                 'keterangan' => 'Transfer dari Tanda Terima LCL - Total: ' . $tandaTerimas->count() . ' items',
                 'status' => 'aktif',

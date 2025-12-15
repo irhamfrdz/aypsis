@@ -172,6 +172,7 @@
                             <div class="flex flex-wrap gap-2">
                                 <!-- Tombol Isi Kontainer & Seal (Primary Action) -->
                                 <button type="button" onclick="bulkAction('assign-container')" 
+                                        style="display: inline-flex !important; align-items: center !important; padding: 10px 16px !important; background-color: #0d9488 !important; color: #ffffff !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 8px !important; border: none !important; cursor: pointer !important; min-height: 42px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;"
                                         class="inline-flex items-center px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 text-sm font-semibold shadow-md hover:shadow-lg transition-all transform hover:scale-105">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -181,6 +182,7 @@
                                 
                                 <!-- Tombol Export -->
                                 <button type="button" onclick="bulkAction('export')" 
+                                        style="display: inline-flex !important; align-items: center !important; padding: 8px 16px !important; background-color: #16a34a !important; color: #ffffff !important; font-weight: 500 !important; font-size: 14px !important; border-radius: 8px !important; border: none !important; cursor: pointer !important; min-height: 40px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;"
                                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm font-medium shadow-sm hover:shadow-md transition-all">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -188,6 +190,7 @@
                                     Export
                                 </button>
                                 <button type="button" onclick="bulkAction('seal')" 
+                                        style="display: inline-flex !important; align-items: center !important; padding: 8px 16px !important; background-color: #2563eb !important; color: #ffffff !important; font-weight: 500 !important; font-size: 14px !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; min-height: 40px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;"
                                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.012-3H12l-.318-2.262a1 1 0 00-.996-.738H8.334a1 1 0 00-.996.738L7 9H4.988A.988.988 0 004 9.988v8.024c0 .546.442.988.988.988h14.024A.988.988 0 0020 18.012V9.988A.988.988 0 0019.012 9z"></path>
@@ -195,6 +198,7 @@
                                     Tambah Seal & Kirim ke Prospek
                                 </button>
                                 <button type="button" onclick="bulkAction('split')" 
+                                        style="display: inline-flex !important; align-items: center !important; padding: 8px 16px !important; background-color: #ea580c !important; color: #ffffff !important; font-weight: 500 !important; font-size: 14px !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; min-height: 40px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;"
                                         class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
@@ -203,6 +207,7 @@
                                 </button>
                                 @can('tanda-terima-tanpa-surat-jalan-delete')
                                     <button type="button" onclick="bulkAction('delete')" 
+                                            style="display: inline-flex !important; align-items: center !important; padding: 8px 16px !important; background-color: #dc2626 !important; color: #ffffff !important; font-weight: 500 !important; font-size: 14px !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; min-height: 40px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;"
                                             class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
                                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -789,9 +794,15 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 select2-kontainer">
                             <option value="">Pilih Nomor Kontainer</option>
                             @if(isset($availableKontainers) && $availableKontainers->count() > 0)
+                                {{-- Debug: Total {{ $availableKontainers->count() }} kontainer --}}
                                 @foreach($availableKontainers as $kontainer)
-                                    <option value="{{ $kontainer }}">{{ $kontainer }}</option>
+                                    <option value="{{ is_object($kontainer) ? $kontainer->nomor_seri_gabungan : $kontainer }}" 
+                                            data-size="{{ is_object($kontainer) ? $kontainer->ukuran : '' }}">
+                                        {{ is_object($kontainer) ? $kontainer->nomor_seri_gabungan : $kontainer }}
+                                    </option>
                                 @endforeach
+                            @else
+                                {{-- Debug: No kontainers available --}}
                             @endif
                             <option value="__manual__">+ Input Manual</option>
                         </select>
@@ -814,6 +825,7 @@
                             <option value="40hc">40 Feet High Cube</option>
                             <option value="45ft">45 Feet</option>
                         </select>
+                        <p class="mt-1 text-xs text-gray-500">Akan terisi otomatis jika memilih kontainer dari daftar</p>
                     </div>
                 </div>
 
@@ -908,6 +920,7 @@
     function handleContainerManualInput() {
         const containerSelect = document.getElementById('assign_nomor_kontainer');
         const manualInput = document.getElementById('assign_nomor_kontainer_manual');
+        const sizeSelect = document.getElementById('assign_size_kontainer');
         
         if (containerSelect && manualInput) {
             // Listen for change on select
@@ -920,8 +933,48 @@
                     containerSelect.removeAttribute('name');
                     containerSelect.required = false;
                     
+                    // Reset size select when manual input
+                    if (sizeSelect) {
+                        sizeSelect.value = '';
+                    }
+                    
                     // Focus on manual input
                     setTimeout(() => manualInput.focus(), 100);
+                } else if (this.value !== '') {
+                    // Hide manual input
+                    manualInput.classList.add('hidden');
+                    manualInput.removeAttribute('name');
+                    manualInput.required = false;
+                    manualInput.value = '';
+                    containerSelect.setAttribute('name', 'nomor_kontainer');
+                    containerSelect.required = true;
+                    
+                    // Auto-fill size from data attribute
+                    const selectedOption = this.options[this.selectedIndex];
+                    const size = selectedOption.getAttribute('data-size');
+                    
+                    if (size && sizeSelect) {
+                        // Map size values to match select options
+                        const sizeMapping = {
+                            '20': '20ft',
+                            '20ft': '20ft',
+                            '40': '40ft',
+                            '40ft': '40ft',
+                            '40hc': '40hc',
+                            '40HC': '40hc',
+                            '45': '45ft',
+                            '45ft': '45ft'
+                        };
+                        
+                        const mappedSize = sizeMapping[size] || size;
+                        sizeSelect.value = mappedSize;
+                        
+                        // Highlight that it was auto-filled
+                        sizeSelect.style.backgroundColor = '#d1fae5';
+                        setTimeout(() => {
+                            sizeSelect.style.backgroundColor = '';
+                        }, 1000);
+                    }
                 } else {
                     // Hide manual input
                     manualInput.classList.add('hidden');
