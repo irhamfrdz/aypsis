@@ -1625,7 +1625,19 @@ function openEditModal(suratJalanId) {
         .catch(error => {
             console.error('Error fetching Surat Jalan data:', error);
             closeEditModal();
-            alert('Gagal mengambil data Surat Jalan. ' + (error.message || 'Silakan coba lagi atau hubungi administrator.') + '\n\nID: ' + suratJalanId);
+            
+            // Show more detailed error message
+            let errorMsg = 'Gagal mengambil data Surat Jalan. ';
+            if (error.message) {
+                errorMsg += error.message;
+            } else if (error.error) {
+                errorMsg += error.error;
+            } else {
+                errorMsg += 'Silakan coba lagi atau hubungi administrator.';
+            }
+            errorMsg += '\n\nID: ' + suratJalanId;
+            
+            alert(errorMsg);
         });
 }
 
