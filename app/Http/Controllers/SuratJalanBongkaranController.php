@@ -884,41 +884,52 @@ class SuratJalanBongkaranController extends Controller
      */
     public function getSuratJalanById($id)
     {
-        $suratJalan = SuratJalanBongkaran::find($id);
-        
-        if (!$suratJalan) {
-            return response()->json(['error' => 'Surat Jalan not found'], 404);
-        }
+        try {
+            $suratJalan = SuratJalanBongkaran::find($id);
+            
+            if (!$suratJalan) {
+                return response()->json(['error' => 'Surat Jalan not found'], 404);
+            }
 
-        return response()->json([
-            'id' => $suratJalan->id,
-            'bl_id' => $suratJalan->bl_id,
-            'nomor_surat_jalan' => $suratJalan->nomor_surat_jalan,
-            'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('Y-m-d') : null,
-            'term' => $suratJalan->term ?? '',
-            'aktifitas' => $suratJalan->aktifitas ?? '',
-            'pengirim' => $suratJalan->pengirim ?? '',
-            'jenis_barang' => $suratJalan->jenis_barang ?? '',
-            'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
-            'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
-            'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',
-            'jenis_pengiriman' => $suratJalan->jenis_pengiriman ?? '',
-            'tanggal_ambil_barang' => $suratJalan->tanggal_ambil_barang ? $suratJalan->tanggal_ambil_barang->format('Y-m-d') : null,
-            'supir' => $suratJalan->supir ?? '',
-            'no_plat' => $suratJalan->no_plat ?? '',
-            'kenek' => $suratJalan->kenek ?? '',
-            'krani' => $suratJalan->krani ?? '',
-            'no_kontainer' => $suratJalan->no_kontainer ?? '',
-            'no_seal' => $suratJalan->no_seal ?? '',
-            'no_bl' => $suratJalan->no_bl ?? '',
-            'size' => $suratJalan->size ?? '',
-            'karton' => $suratJalan->karton ?? 'tidak',
-            'plastik' => $suratJalan->plastik ?? 'tidak',
-            'terpal' => $suratJalan->terpal ?? 'tidak',
-            'rit' => $suratJalan->rit ?? 'menggunakan_rit',
-            'uang_jalan_type' => $suratJalan->uang_jalan_type ?? 'full',
-            'uang_jalan_nominal' => $suratJalan->uang_jalan_nominal ?? 0,
-        ]);
+            return response()->json([
+                'id' => $suratJalan->id,
+                'bl_id' => $suratJalan->bl_id,
+                'nomor_surat_jalan' => $suratJalan->nomor_surat_jalan,
+                'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('Y-m-d') : null,
+                'term' => $suratJalan->term ?? '',
+                'aktifitas' => $suratJalan->aktifitas ?? '',
+                'pengirim' => $suratJalan->pengirim ?? '',
+                'jenis_barang' => $suratJalan->jenis_barang ?? '',
+                'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
+                'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
+                'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',
+                'jenis_pengiriman' => $suratJalan->jenis_pengiriman ?? '',
+                'tanggal_ambil_barang' => $suratJalan->tanggal_ambil_barang ? $suratJalan->tanggal_ambil_barang->format('Y-m-d') : null,
+                'supir' => $suratJalan->supir ?? '',
+                'no_plat' => $suratJalan->no_plat ?? '',
+                'kenek' => $suratJalan->kenek ?? '',
+                'krani' => $suratJalan->krani ?? '',
+                'no_kontainer' => $suratJalan->no_kontainer ?? '',
+                'no_seal' => $suratJalan->no_seal ?? '',
+                'no_bl' => $suratJalan->no_bl ?? '',
+                'size' => $suratJalan->size ?? '',
+                'karton' => $suratJalan->karton ?? 'tidak',
+                'plastik' => $suratJalan->plastik ?? 'tidak',
+                'terpal' => $suratJalan->terpal ?? 'tidak',
+                'rit' => $suratJalan->rit ?? 'menggunakan_rit',
+                'uang_jalan_type' => $suratJalan->uang_jalan_type ?? 'full',
+                'uang_jalan_nominal' => $suratJalan->uang_jalan_nominal ?? 0,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching Surat Jalan by ID: ' . $e->getMessage(), [
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to fetch Surat Jalan data',
+                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
     }
 
     /**
@@ -926,32 +937,43 @@ class SuratJalanBongkaranController extends Controller
      */
     public function getBlById($id)
     {
-        $bl = Bl::find($id);
-        
-        if (!$bl) {
-            return response()->json(['error' => 'BL not found'], 404);
-        }
+        try {
+            $bl = Bl::find($id);
+            
+            if (!$bl) {
+                return response()->json(['error' => 'BL not found'], 404);
+            }
 
-        return response()->json([
-            'id' => $bl->id,
-            'nomor_bl' => $bl->nomor_bl,
-            'nama_kapal' => $bl->nama_kapal,
-            'no_voyage' => $bl->no_voyage,
-            'nomor_kontainer' => $bl->nomor_kontainer,
-            'no_seal' => $bl->no_seal,
-            'tipe_kontainer' => $bl->tipe_kontainer,
-            'size_kontainer' => $bl->size_kontainer,
-            'nama_barang' => $bl->nama_barang,
-            'tonnage' => $bl->tonnage,
-            'volume' => $bl->volume,
-            'status_bongkar' => $bl->status_bongkar,
-            'term' => $bl->term ?? '',
-            'pengirim' => $bl->pengirim ?? '',
-            'penerima' => $bl->penerima ?? '',
-            'alamat_pengiriman' => $bl->alamat_pengiriman ?? '',
-            'pelabuhan_tujuan' => $bl->pelabuhan_tujuan ?? '',
-            'jenis_pengiriman' => $bl->jenis_pengiriman ?? '',
-        ]);
+            return response()->json([
+                'id' => $bl->id,
+                'nomor_bl' => $bl->nomor_bl,
+                'nama_kapal' => $bl->nama_kapal,
+                'no_voyage' => $bl->no_voyage,
+                'nomor_kontainer' => $bl->nomor_kontainer,
+                'no_seal' => $bl->no_seal,
+                'tipe_kontainer' => $bl->tipe_kontainer,
+                'size_kontainer' => $bl->size_kontainer,
+                'nama_barang' => $bl->nama_barang,
+                'tonnage' => $bl->tonnage,
+                'volume' => $bl->volume,
+                'status_bongkar' => $bl->status_bongkar,
+                'term' => $bl->term ?? '',
+                'pengirim' => $bl->pengirim ?? '',
+                'penerima' => $bl->penerima ?? '',
+                'alamat_pengiriman' => $bl->alamat_pengiriman ?? '',
+                'pelabuhan_tujuan' => $bl->pelabuhan_tujuan ?? '',
+                'jenis_pengiriman' => $bl->jenis_pengiriman ?? '',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching BL by ID: ' . $e->getMessage(), [
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to fetch BL data',
+                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
     }
 }
 

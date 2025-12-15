@@ -88,8 +88,12 @@ class TandaTerimaLclController extends Controller
             'tanggal_tanda_terima' => 'required|date',
             'term_id' => 'required|exists:terms,id',
             'nama_penerima' => 'required|string|max:255',
+            'pic_penerima' => 'nullable|string|max:255',
+            'telepon_penerima' => 'nullable|string|max:50',
             'alamat_penerima' => 'required|string',
-            'nama_pengirim' => 'required|string|max:255', 
+            'nama_pengirim' => 'required|string|max:255',
+            'pic_pengirim' => 'nullable|string|max:255',
+            'telepon_pengirim' => 'nullable|string|max:50',
             'alamat_pengirim' => 'required|string',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
@@ -292,7 +296,13 @@ class TandaTerimaLclController extends Controller
             'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima,' . $id,
             'tanggal_tanda_terima' => 'required|date',
             'nama_penerima' => 'required|string|max:255',
+            'pic_penerima' => 'nullable|string|max:255',
+            'telepon_penerima' => 'nullable|string|max:50',
+            'alamat_penerima' => 'required|string',
             'nama_pengirim' => 'required|string|max:255',
+            'pic_pengirim' => 'nullable|string|max:255',
+            'telepon_pengirim' => 'nullable|string|max:50',
+            'alamat_pengirim' => 'required|string',
             'nama_barang' => 'required|string|max:255',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
@@ -544,6 +554,58 @@ class TandaTerimaLclController extends Controller
             'container_info' => $containerInfo,
             'unique_containers' => $uniqueContainers->values()
         ]);
+    }
+
+    /**
+     * Assign container number and seal to selected LCL items
+     */
+    public function assignContainer(Request $request)
+    {
+        $request->validate([
+            'nomor_kontainer' => 'required|string|max:255',
+            'size_kontainer' => 'required|in:20ft,40ft,40hc,45ft',
+            'nomor_seal' => 'nullable|string|max:255',
+            'tipe_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
+            'selected_ids' => 'required|string',
+        ]);
+
+        $ids = json_decode($request->input('selected_ids'), true);
+        
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
+        }
+
+        $prospekCreated = false;
+        $prospekMessage = '';
+        $shouldCreateProspek = !empty($request->nomor_seal);
+
+        DB::transaction(function () use ($ids, $request, $shouldCreateProspek, &$prospekCreated, &$prospekMessage) {
+            // Update container and seal information for selected items
+            TandaTerimaLcl::whereIn('id', $ids)->update([
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'size_kontainer' => $request->size_kontainer,
+                'nomor_seal' => $request->nomor_seal,
+                'jenis_kontainer' => $request->tipe_kontainer,
+                'tanggal_seal' => $shouldCreateProspek ? now() : null,
+                'updated_by' => Auth::id(),
+                'updated_at' => now()
+            ]);
+
+            // If seal is filled, automatically create prospek
+            if ($shouldCreateProspek) {
+                $this->createProspekFromLcl($ids, $prospekCreated, $prospekMessage);
+            }
+        });
+
+        $count = count($ids);
+        $successMessage = "{$count} item berhasil dimasukkan ke kontainer {$request->nomor_kontainer}.";
+        
+        if ($prospekCreated) {
+            $successMessage .= " " . $prospekMessage;
+        }
+        
+        return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
+                        ->with('success', $successMessage);
     }
 
     /**

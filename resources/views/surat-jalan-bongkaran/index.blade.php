@@ -1126,7 +1126,16 @@ function buatSuratJalan(blId) {
     
     // Fetch BL data
     fetch(`/api/bl/${blId}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Response was not JSON');
+            }
+            return response.json();
+        })
         .then(data => {
             // Populate hidden BL ID
             document.getElementById('modal_bl_id').value = blId;
@@ -1172,7 +1181,8 @@ function buatSuratJalan(blId) {
         })
         .catch(error => {
             console.error('Error fetching BL data:', error);
-            alert('Gagal mengambil data BL. Silakan coba lagi.');
+            closeModal();
+            alert('Gagal mengambil data BL. ' + (error.message || 'Silakan coba lagi atau hubungi administrator.'));
         });
 }
 
@@ -1545,7 +1555,16 @@ function openEditModal(suratJalanId) {
     
     // Fetch Surat Jalan data
     fetch(`/api/surat-jalan-bongkaran/${suratJalanId}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Response was not JSON');
+            }
+            return response.json();
+        })
         .then(data => {
             // Populate hidden ID
             document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
@@ -1605,8 +1624,8 @@ function openEditModal(suratJalanId) {
         })
         .catch(error => {
             console.error('Error fetching Surat Jalan data:', error);
-            alert('Gagal mengambil data Surat Jalan. Silakan coba lagi.');
             closeEditModal();
+            alert('Gagal mengambil data Surat Jalan. ' + (error.message || 'Silakan coba lagi atau hubungi administrator.') + '\n\nID: ' + suratJalanId);
         });
 }
 

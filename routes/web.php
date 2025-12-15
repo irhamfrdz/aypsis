@@ -33,6 +33,7 @@ use App\Http\Controllers\TagihanCatController;
 use App\Http\Controllers\PranotaTagihanKontainerSewaController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\PembayaranPranotaCatController;
+use App\Http\Controllers\PembayaranPranotaObController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
@@ -2089,6 +2090,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-lcl.bulk-seal')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
 
+    Route::post('tanda-terima-lcl/assign-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'assignContainer'])
+         ->name('tanda-terima-tanpa-surat-jalan.assign-container')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     Route::post('tanda-terima-lcl/bulk-split', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkSplit'])
          ->name('tanda-terima-lcl.bulk-split')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
@@ -3168,6 +3173,29 @@ Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->middle
 Route::get('pembayaran-pranota-cat/{id}/print', [PembayaranPranotaCatController::class, 'print'])
      ->name('pembayaran-pranota-cat.print')
      ->middleware(['auth', 'can:pembayaran-pranota-cat-view']);
+
+// Pembayaran Pranota OB routes
+Route::prefix('pembayaran-pranota-ob')->name('pembayaran-pranota-ob.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PembayaranPranotaObController::class, 'index'])->name('index')
+         ->middleware('can:pembayaran-pranota-ob-view');
+    Route::get('/create', [PembayaranPranotaObController::class, 'create'])->name('create')
+         ->middleware('can:pembayaran-pranota-ob-create');
+    Route::post('/', [PembayaranPranotaObController::class, 'store'])->name('store')
+         ->middleware('can:pembayaran-pranota-ob-create');
+    Route::get('/{id}', [PembayaranPranotaObController::class, 'show'])->name('show')
+         ->middleware('can:pembayaran-pranota-ob-view');
+    Route::get('/{id}/edit', [PembayaranPranotaObController::class, 'edit'])->name('edit')
+         ->middleware('can:pembayaran-pranota-ob-update');
+    Route::put('/{id}', [PembayaranPranotaObController::class, 'update'])->name('update')
+         ->middleware('can:pembayaran-pranota-ob-update');
+    Route::delete('/{id}', [PembayaranPranotaObController::class, 'destroy'])->name('destroy')
+         ->middleware('can:pembayaran-pranota-ob-delete');
+});
+
+// Additional route for pembayaran-pranota-ob print
+Route::get('pembayaran-pranota-ob/{id}/print', [PembayaranPranotaObController::class, 'print'])
+     ->name('pembayaran-pranota-ob.print')
+     ->middleware(['auth', 'can:pembayaran-pranota-ob-view']);
 
 // Aktivitas Lain-lain routes
 Route::prefix('aktivitas-lainnya')->name('aktivitas-lainnya.')->middleware(['auth'])->group(function () {

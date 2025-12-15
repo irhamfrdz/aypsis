@@ -1042,6 +1042,12 @@ class UserController extends Controller
                         $module = 'pembayaran-pranota-cat';
                     }
 
+                    // Special handling for pembayaran-pranota-ob-* permissions
+                    if ($module === 'pembayaran' && strpos($action, 'pranota-ob-') === 0) {
+                        $action = str_replace('pranota-ob-', '', $action);
+                        $module = 'pembayaran-pranota-ob';
+                    }
+
                     // Special handling for pembayaran-pranota-surat-jalan-* permissions
                     if ($module === 'pembayaran' && strpos($action, 'pranota-surat-jalan-') === 0) {
                         $action = str_replace('pranota-surat-jalan-', '', $action);
@@ -1082,6 +1088,12 @@ class UserController extends Controller
                     if (strpos($permissionName, 'pembayaran-ob-') === 0) {
                         $module = 'pembayaran-ob';
                         $action = str_replace('pembayaran-ob-', '', $permissionName);
+                    }
+
+                    // Special handling for pembayaran-pranota-ob-* permissions
+                    if (strpos($permissionName, 'pembayaran-pranota-ob-') === 0) {
+                        $module = 'pembayaran-pranota-ob';
+                        $action = str_replace('pembayaran-pranota-ob-', '', $permissionName);
                     }
 
                     // Special handling for pembayaran-pranota-surat-jalan-* permissions
