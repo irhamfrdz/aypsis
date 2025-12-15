@@ -21,18 +21,11 @@ class TandaTerimaLcl extends Model
         'tanggal_tanda_terima', 
         'no_surat_jalan_customer',
         'term_id',
-        'nomor_kontainer',
-        'size_kontainer',
-        'tipe_kontainer',
-        'nama_barang',
-        'keterangan_barang',
         'supir',
         'no_plat',
         'tujuan_pengiriman',
-        'master_tujuan_kirim_id',
         'gambar_surat_jalan',
         'status',
-        'kegiatan',
         'created_by',
         'updated_by'
     ];
@@ -48,9 +41,9 @@ class TandaTerimaLcl extends Model
         return $this->belongsTo(Term::class);
     }
     
-    public function masterTujuanKirim(): BelongsTo
+    public function tujuanKirim(): BelongsTo
     {
-        return $this->belongsTo(MasterTujuanKirim::class, 'master_tujuan_kirim_id');
+        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman');
     }
     
     // Items/Dimensi relationship
@@ -77,17 +70,24 @@ class TandaTerimaLcl extends Model
         return $this->hasMany(KontainerTandaTerimaLcl::class, 'tanda_terima_lcl_id');
     }
     
-    // Get all tanda terima with same kontainer
-    public function tandaTerimaSeKontainer()
+    // Get all tanda terima with same kontainer via pivot table
+    public function tandaTerimaSeKontainer($nomorKontainer = null)
     {
-        if (!$this->nomor_kontainer) {
-            return collect([]);
+        // If no kontainer number provided, try to get from pivot
+        if (!$nomorKontainer) {
+            $pivot = $this->kontainerPivot->first();
+            if (!$pivot) {
+                return collect([]);
+            }
+            $nomorKontainer = $pivot->nomor_kontainer;
         }
         
-        return static::where('nomor_kontainer', $this->nomor_kontainer)
-            ->where('id', '!=', $this->id)
-            ->with(['penerimaPivot', 'pengirimPivot', 'items'])
-            ->get();
+        // Get all tanda terima that share the same kontainer
+        return KontainerTandaTerimaLcl::where('nomor_kontainer', $nomorKontainer)
+            ->where('tanda_terima_lcl_id', '!=', $this->id)
+            ->with(['tandaTerima.penerimaPivot', 'tandaTerima.pengirimPivot', 'tandaTerima.items'])
+            ->get()
+            ->pluck('tandaTerima');
     }
     
     public function createdBy(): BelongsTo
@@ -142,15 +142,5 @@ class TandaTerimaLcl extends Model
     public function scopeByDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-    }
-    
-    public function scopeLcl($query)
-    {
-        return $query->where('tipe_kontainer', 'lcl');
-    }
-    
-    public function scopeByKontainer($query, $nomorKontainer)
-    {
-        return $query->where('nomor_kontainer', $nomorKontainer);
     }
 }
