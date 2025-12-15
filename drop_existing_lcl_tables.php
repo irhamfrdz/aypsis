@@ -8,11 +8,11 @@ $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 echo "⚠️  WARNING: This will drop existing LCL tables!\n";
 echo "This should ONLY be run if you're sure the tables are from incomplete migration.\n\n";
 echo "Tables to be dropped:\n";
+echo "- kontainer_tanda_terima_lcl\n";
 echo "- tanda_terima_lcl_items\n";
 echo "- tanda_terima_lcl_penerima\n";
 echo "- tanda_terima_lcl_pengirim\n";
-echo "- kontainer_tanda_terima_lcl\n";
-echo "- tanda_terimas_lcl (if exists from partial migration)\n\n";
+echo "- tanda_terimas_lcl (main table)\n\n";
 
 echo "Type 'YES' to proceed: ";
 $handle = fopen("php://stdin", "r");
@@ -29,11 +29,13 @@ echo "\n🔧 Dropping tables...\n\n";
 try {
     DB::statement('SET FOREIGN_KEY_CHECKS=0;');
     
+    // Drop in reverse order to avoid foreign key issues
     $tables = [
+        'kontainer_tanda_terima_lcl',
         'tanda_terima_lcl_items',
         'tanda_terima_lcl_penerima', 
         'tanda_terima_lcl_pengirim',
-        'kontainer_tanda_terima_lcl',
+        'tanda_terimas_lcl', // Main table last
     ];
     
     foreach ($tables as $table) {
