@@ -226,8 +226,9 @@
                                 onchange="updateTableDisplay()">
                             <option value="10">10</option>
                             <option value="25">25</option>
-                            <option value="50">50</option>
+                            <option value="50" selected>50</option>
                             <option value="100">100</option>
+                            <option value="999999">All</option>
                         </select>
                     </div>
                 </div>
@@ -330,7 +331,7 @@
                 <!-- Pagination Info -->
                 <div class="mt-2 flex justify-between items-center text-xs text-gray-500">
                     <div id="tableInfo">
-                        Showing <span id="showingFrom">1</span> to <span id="showingTo">{{ min(10, $suratJalans->count()) }}</span> of <span id="totalEntries">{{ $suratJalans->count() }}</span> entries
+                        Showing <span id="showingFrom">1</span> to <span id="showingTo">{{ min(50, $suratJalans->count()) }}</span> of <span id="totalEntries">{{ $suratJalans->count() }}</span> entries
                     </div>
                 </div>
             </div>
@@ -369,7 +370,7 @@ allSuratJalans = allSuratJalans.filter(item => !item.is_supir_customer);
 let filteredSuratJalans = [...allSuratJalans];
 let currentSort = { column: '', direction: 'asc' };
 let currentPage = 1;
-let itemsPerPage = 10;
+let itemsPerPage = 50;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Debug: Check if data is loaded
@@ -440,10 +441,10 @@ function openSuratJalanModal() {
     
     // Reset filter dan update display
     document.getElementById('modal-search').value = '';
-    document.getElementById('modal-show').value = '10';
+    document.getElementById('modal-show').value = '50';
     filteredSuratJalans = [...allSuratJalans];
     currentPage = 1;
-    itemsPerPage = 10;
+    itemsPerPage = 50;
     updateTableDisplay();
 }
 
