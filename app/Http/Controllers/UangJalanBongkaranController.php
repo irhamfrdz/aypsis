@@ -237,7 +237,7 @@ class UangJalanBongkaranController extends Controller
         $existingUangJalanIds = UangJalanBongkaran::pluck('surat_jalan_bongkaran_id')->toArray();
         $query->whereNotIn('id', $existingUangJalanIds);
 
-        $suratJalanBongkarans = $query->orderBy('created_at', 'desc')->paginate(15);
+        $suratJalanBongkarans = $query->orderBy('created_at', 'desc')->paginate(9999);
 
         return view('uang-jalan-bongkaran.select-surat-jalan-bongkaran', compact(
             'suratJalanBongkarans',

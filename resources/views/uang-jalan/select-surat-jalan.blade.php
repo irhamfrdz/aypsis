@@ -226,9 +226,9 @@
                                 onchange="updateTableDisplay()">
                             <option value="10">10</option>
                             <option value="25">25</option>
-                            <option value="50" selected>50</option>
+                            <option value="50">50</option>
                             <option value="100">100</option>
-                            <option value="999999">All</option>
+                            <option value="999999" selected>All</option>
                         </select>
                     </div>
                 </div>
@@ -370,7 +370,7 @@ allSuratJalans = allSuratJalans.filter(item => !item.is_supir_customer);
 let filteredSuratJalans = [...allSuratJalans];
 let currentSort = { column: '', direction: 'asc' };
 let currentPage = 1;
-let itemsPerPage = 50;
+let itemsPerPage = 999999;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Debug: Check if data is loaded
@@ -441,10 +441,10 @@ function openSuratJalanModal() {
     
     // Reset filter dan update display
     document.getElementById('modal-search').value = '';
-    document.getElementById('modal-show').value = '50';
+    document.getElementById('modal-show').value = '999999';
     filteredSuratJalans = [...allSuratJalans];
     currentPage = 1;
-    itemsPerPage = 50;
+    itemsPerPage = 999999;
     updateTableDisplay();
 }
 
@@ -567,10 +567,22 @@ function sortTable(column) {
 }
 
 function updateTableDisplay() {
-    itemsPerPage = parseInt(document.getElementById('modal-show').value);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedData = filteredSuratJalans.slice(startIndex, endIndex);
+    const showValue = document.getElementById('modal-show').value;
+    itemsPerPage = parseInt(showValue);
+    
+    // If "All" is selected, show all items
+    let paginatedData;
+    let startIndex, endIndex;
+    
+    if (showValue === '999999' || itemsPerPage >= filteredSuratJalans.length) {
+        paginatedData = filteredSuratJalans;
+        startIndex = 0;
+        endIndex = filteredSuratJalans.length;
+    } else {
+        startIndex = (currentPage - 1) * itemsPerPage;
+        endIndex = Math.min(startIndex + itemsPerPage, filteredSuratJalans.length);
+        paginatedData = filteredSuratJalans.slice(startIndex, endIndex);
+    }
     
     const tbody = document.getElementById('suratJalanTableBody');
     tbody.innerHTML = '';
@@ -629,8 +641,8 @@ function updateTableDisplay() {
     });
     
     // Update pagination info
-    const showingFrom = Math.min(startIndex + 1, filteredSuratJalans.length);
-    const showingTo = Math.min(endIndex, filteredSuratJalans.length);
+    const showingFrom = filteredSuratJalans.length > 0 ? startIndex + 1 : 0;
+    const showingTo = endIndex;
     
     document.getElementById('showingFrom').textContent = showingFrom;
     document.getElementById('showingTo').textContent = showingTo;

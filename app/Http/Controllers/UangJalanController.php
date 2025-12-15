@@ -169,8 +169,8 @@ class UangJalanController extends Controller
                                               return $item->tanggal_surat_jalan ?? $item->created_at;
                                           });
         
-        // Manual pagination
-        $perPage = 15;
+        // Manual pagination - ambil semua data untuk modal
+        $perPage = 9999; // Set large number to get all items
         $currentPage = $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
         
