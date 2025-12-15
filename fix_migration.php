@@ -112,6 +112,28 @@ try {
     }
     echo "\n";
 
+    // 4b. Fix kolom tujuan_pengiriman_id
+    echo "4b. Memperbaiki kolom tujuan_pengiriman...\n";
+    if (Schema::hasColumn('tanda_terimas_lcl', 'tujuan_pengiriman') && 
+        !Schema::hasColumn('tanda_terimas_lcl', 'tujuan_pengiriman_id')) {
+        try {
+            DB::statement("ALTER TABLE tanda_terimas_lcl CHANGE COLUMN tujuan_pengiriman tujuan_pengiriman_id BIGINT UNSIGNED NULL");
+            echo "   ✓ Kolom tujuan_pengiriman di-rename ke tujuan_pengiriman_id\n";
+        } catch (\Exception $e) {
+            echo "   ✗ Gagal rename tujuan_pengiriman: " . $e->getMessage() . "\n";
+        }
+    } elseif (!Schema::hasColumn('tanda_terimas_lcl', 'tujuan_pengiriman_id')) {
+        try {
+            DB::statement("ALTER TABLE tanda_terimas_lcl ADD COLUMN tujuan_pengiriman_id BIGINT UNSIGNED NULL");
+            echo "   ✓ Kolom tujuan_pengiriman_id ditambahkan\n";
+        } catch (\Exception $e) {
+            echo "   ✗ Gagal tambah tujuan_pengiriman_id: " . $e->getMessage() . "\n";
+        }
+    } else {
+        echo "   - Kolom tujuan_pengiriman_id sudah ada\n";
+    }
+    echo "\n";
+
     // 5. Verifikasi tabel pivot
     echo "5. Verifikasi tabel tanda_terima_lcl_kontainer_pivot...\n";
     if (Schema::hasTable('tanda_terima_lcl_kontainer_pivot')) {
