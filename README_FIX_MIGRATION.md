@@ -48,6 +48,7 @@ SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'tanda_terimas_lc
 SET @next_batch = (SELECT MAX(batch) + 1 FROM migrations);
 
 INSERT INTO migrations (migration, batch) VALUES 
+('2025_12_15_090852_create_tanda_terima_lcl_tables', @next_batch),
 ('2025_12_15_091741_remove_unused_columns_from_tanda_terimas_lcl_table', @next_batch),
 ('2025_12_15_144001_drop_unused_pivot_tables_tanda_terima_lcl', @next_batch),
 ('2025_12_15_144324_add_container_fields_to_tanda_terimas_lcl_table', @next_batch),

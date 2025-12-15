@@ -27,6 +27,7 @@ try {
 
     // 2. List migration yang perlu ditambahkan
     $migrations = [
+        '2025_12_15_090852_create_tanda_terima_lcl_tables',
         '2025_12_15_091741_remove_unused_columns_from_tanda_terimas_lcl_table',
         '2025_12_15_144001_drop_unused_pivot_tables_tanda_terima_lcl',
         '2025_12_15_144324_add_container_fields_to_tanda_terimas_lcl_table',
