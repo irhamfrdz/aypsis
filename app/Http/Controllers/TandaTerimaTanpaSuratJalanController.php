@@ -43,28 +43,23 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         if ($tipe == 'lcl') {
             $query = \App\Models\TandaTerimaLcl::query();
             
-            // Search functionality untuk LCL menggunakan pivot tables
+            // Search functionality untuk LCL
             if ($request->filled('search')) {
                 $searchTerm = $request->search;
                 $query->where(function($q) use ($searchTerm) {
                     $q->where('nomor_tanda_terima', 'LIKE', '%' . $searchTerm . '%')
                       ->orWhere('supir', 'LIKE', '%' . $searchTerm . '%')
                       ->orWhere('no_plat', 'LIKE', '%' . $searchTerm . '%')
-                      // Search di tabel penerima pivot
-                      ->orWhereHas('penerimaPivot', function($pq) use ($searchTerm) {
-                          $pq->where('nama_penerima', 'LIKE', '%' . $searchTerm . '%');
-                      })
-                      // Search di tabel pengirim pivot
-                      ->orWhereHas('pengirimPivot', function($pq) use ($searchTerm) {
-                          $pq->where('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
+                      ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%')
+                      // Search di pivot kontainer
+                      ->orWhereHas('kontainerPivot', function($kq) use ($searchTerm) {
+                          $kq->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                             ->orWhere('nomor_seal', 'LIKE', '%' . $searchTerm . '%');
                       })
                       // Search di tabel items (nama barang)
                       ->orWhereHas('items', function($iq) use ($searchTerm) {
                           $iq->where('nama_barang', 'LIKE', '%' . $searchTerm . '%');
-                      })
-                      // Search di tabel kontainer pivot
-                      ->orWhereHas('kontainerPivot', function($kq) use ($searchTerm) {
-                          $kq->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%');
                       });
                 });
             }
@@ -74,13 +69,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $query->whereBetween('tanggal_tanda_terima', [$request->start_date, $request->end_date]);
             }
 
-            // Eager load semua relasi termasuk pivot tables
+            // Eager load semua relasi
             $tandaTerimas = $query->with([
                     'term', 
+                    'tujuanPengiriman',
                     'tujuanKirim', 
                     'createdBy',
-                    'penerimaPivot',
-                    'pengirimPivot',
                     'items',
                     'kontainerPivot'
                 ])

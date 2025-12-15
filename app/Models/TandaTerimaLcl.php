@@ -21,11 +21,26 @@ class TandaTerimaLcl extends Model
         'tanggal_tanda_terima', 
         'no_surat_jalan_customer',
         'term_id',
+        // Single Penerima
+        'nama_penerima',
+        'pic_penerima',
+        'telepon_penerima',
+        'alamat_penerima',
+        // Single Pengirim
+        'nama_pengirim',
+        'pic_pengirim',
+        'telepon_pengirim',
+        'alamat_pengirim',
+        // Supir & Pengiriman
         'supir',
         'no_plat',
-        'tujuan_pengiriman',
+        'tujuan_pengiriman_id',
+        // Upload
         'gambar_surat_jalan',
+        // Status
         'status',
+        'kegiatan',
+        // Audit
         'created_by',
         'updated_by'
     ];
@@ -41,9 +56,15 @@ class TandaTerimaLcl extends Model
         return $this->belongsTo(Term::class);
     }
     
+    public function tujuanPengiriman(): BelongsTo
+    {
+        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman_id');
+    }
+    
+    // Alias for backward compatibility
     public function tujuanKirim(): BelongsTo
     {
-        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman');
+        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman_id');
     }
     
     // Items/Dimensi relationship
@@ -52,42 +73,10 @@ class TandaTerimaLcl extends Model
         return $this->hasMany(TandaTerimaLclItem::class, 'tanda_terima_lcl_id');
     }
     
-    // Penerima relationship (multiple)
-    public function penerimaPivot(): HasMany
-    {
-        return $this->hasMany(TandaTerimaLclPenerima::class, 'tanda_terima_lcl_id')->orderBy('urutan');
-    }
-    
-    // Pengirim relationship (multiple)
-    public function pengirimPivot(): HasMany
-    {
-        return $this->hasMany(TandaTerimaLclPengirim::class, 'tanda_terima_lcl_id')->orderBy('urutan');
-    }
-    
-    // Kontainer pivot relationship (untuk track kontainer yang sama)
+    // Kontainer pivot relationship
     public function kontainerPivot(): HasMany
     {
-        return $this->hasMany(KontainerTandaTerimaLcl::class, 'tanda_terima_lcl_id');
-    }
-    
-    // Get all tanda terima with same kontainer via pivot table
-    public function tandaTerimaSeKontainer($nomorKontainer = null)
-    {
-        // If no kontainer number provided, try to get from pivot
-        if (!$nomorKontainer) {
-            $pivot = $this->kontainerPivot->first();
-            if (!$pivot) {
-                return collect([]);
-            }
-            $nomorKontainer = $pivot->nomor_kontainer;
-        }
-        
-        // Get all tanda terima that share the same kontainer
-        return KontainerTandaTerimaLcl::where('nomor_kontainer', $nomorKontainer)
-            ->where('tanda_terima_lcl_id', '!=', $this->id)
-            ->with(['tandaTerima.penerimaPivot', 'tandaTerima.pengirimPivot', 'tandaTerima.items'])
-            ->get()
-            ->pluck('tandaTerima');
+        return $this->hasMany(TandaTerimaLclKontainerPivot::class, 'tanda_terima_lcl_id');
     }
     
     public function createdBy(): BelongsTo
@@ -121,16 +110,65 @@ class TandaTerimaLcl extends Model
         return $this->nomor_tanda_terima ?? 'TT-LCL-' . $this->id;
     }
     
-    // Get first penerima (for backward compatibility)
-    public function getNamaPenerimaAttribute(): ?string
+    /**
+     * Get nomor kontainer from pivot (latest assignment)
+     */
+    public function getNomorKontainerAttribute()
     {
-        return $this->penerimaPivot->first()?->nama_penerima;
+        return $this->kontainerPivot()->latest()->first()?->nomor_kontainer;
     }
     
-    // Get first pengirim (for backward compatibility)
-    public function getNamaPengirimAttribute(): ?string
+    /**
+     * Get all tanda terima that share the same container
+     * Mendukung 1 kontainer bisa memiliki banyak tanda terima LCL
+     */
+    public function getTandaTerimaSeKontainerAttribute()
     {
-        return $this->pengirimPivot->first()?->nama_pengirim;
+        $pivot = $this->kontainerPivot()->latest()->first();
+        if (!$pivot || !$pivot->nomor_kontainer) {
+            return collect([]);
+        }
+        
+        // Get all tanda terima IDs with same container number
+        $tandaTerimaIds = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $pivot->nomor_kontainer)
+            ->where('tanda_terima_lcl_id', '!=', $this->id)
+            ->pluck('tanda_terima_lcl_id');
+        
+        return static::whereIn('id', $tandaTerimaIds)
+            ->with(['items', 'tujuanPengiriman', 'kontainerPivot'])
+            ->get();
+    }
+    
+    /**
+     * Get grouped statistics for container
+     */
+    public function getKontainerStatsAttribute()
+    {
+        $pivot = $this->kontainerPivot()->latest()->first();
+        if (!$pivot || !$pivot->nomor_kontainer) {
+            return null;
+        }
+        
+        // Get all tanda terima IDs with same container
+        $tandaTerimaIds = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $pivot->nomor_kontainer)
+            ->pluck('tanda_terima_lcl_id');
+        
+        $allInContainer = static::whereIn('id', $tandaTerimaIds)
+            ->with('items')
+            ->get();
+        
+        return [
+            'total_tanda_terima' => $allInContainer->count(),
+            'total_volume' => $allInContainer->sum(function($tt) {
+                return $tt->items->sum('meter_kubik');
+            }),
+            'total_berat' => $allInContainer->sum(function($tt) {
+                return $tt->items->sum('tonase');
+            }),
+            'total_koli' => $allInContainer->sum(function($tt) {
+                return $tt->items->sum('jumlah_koli');
+            }),
+        ];
     }
     
     // Scopes
@@ -142,5 +180,29 @@ class TandaTerimaLcl extends Model
     public function scopeByDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
+    }
+    
+    public function scopeByKontainer($query, $nomorKontainer)
+    {
+        return $query->whereHas('kontainerPivot', function($q) use ($nomorKontainer) {
+            $q->where('nomor_kontainer', $nomorKontainer);
+        });
+    }
+    
+    public function scopeHasKontainer($query)
+    {
+        return $query->whereHas('kontainerPivot', function($q) {
+            $q->whereNotNull('nomor_kontainer')
+              ->where('nomor_kontainer', '!=', '');
+        });
+    }
+    
+    public function scopeNoKontainer($query)
+    {
+        return $query->whereDoesntHave('kontainerPivot')
+                     ->orWhereHas('kontainerPivot', function($q) {
+                         $q->whereNull('nomor_kontainer')
+                           ->orWhere('nomor_kontainer', '');
+                     });
     }
 }

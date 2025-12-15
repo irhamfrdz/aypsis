@@ -595,6 +595,113 @@ class PembayaranObController extends Controller
     }
 
     /**
+     * Export data pembayaran OB ke Excel
+     */
+    public function export(Request $request)
+    {
+        // Query pembayaran OB dengan relationships
+        $query = PembayaranOb::with(['kasBankAkun', 'pembuatPembayaran', 'penyetujuPembayaran'])
+                             ->orderBy('tanggal_pembayaran', 'desc');
+
+        // Apply same filters as index
+        if ($request->filled('nomor_pembayaran')) {
+            $query->where('nomor_pembayaran', 'like', '%' . $request->nomor_pembayaran . '%');
+        }
+
+        if ($request->filled('supir_id')) {
+            $supirId = $request->supir_id;
+            $query->whereJsonContains('supir_ids', $supirId);
+        }
+
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal_pembayaran', '>=', $request->tanggal_dari);
+        }
+
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal_pembayaran', '<=', $request->tanggal_sampai);
+        }
+
+        $pembayaranList = $query->get();
+
+        // Generate CSV
+        $filename = 'pembayaran_dp_ob_' . date('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $callback = function() use ($pembayaranList) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for Excel UTF-8 support
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // CSV Headers
+            fputcsv($file, [
+                'No',
+                'Nomor Pembayaran',
+                'Tanggal Pembayaran',
+                'Kas/Bank',
+                'Jumlah DP',
+                'Jumlah Supir',
+                'Nama Supir',
+                'Total Realisasi',
+                'Status',
+                'Keterangan',
+                'Dibuat Oleh',
+                'Disetujui Oleh',
+                'Tanggal Dibuat'
+            ]);
+
+            // Data rows
+            foreach ($pembayaranList as $index => $pembayaran) {
+                // Get supir names
+                $supirIds = $pembayaran->supir_ids ?? [];
+                $supirList = Karyawan::whereIn('id', $supirIds)->get();
+                $supirNames = $supirList->pluck('nama_lengkap')->join(', ');
+                
+                // Calculate total realisasi
+                $jumlahPerSupirArray = is_array($pembayaran->jumlah_per_supir) ? $pembayaran->jumlah_per_supir : [];
+                $totalRealisasi = array_sum($jumlahPerSupirArray);
+                $dpAmount = $pembayaran->dp_amount ?? $pembayaran->total_pembayaran;
+                
+                // Determine status
+                if ($totalRealisasi >= $dpAmount) {
+                    $statusText = 'Selesai';
+                } elseif ($totalRealisasi > 0) {
+                    $statusText = 'Sebagian';
+                } else {
+                    $statusText = 'Belum Direalisasi';
+                }
+
+                fputcsv($file, [
+                    $index + 1,
+                    $pembayaran->nomor_pembayaran,
+                    \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y'),
+                    $pembayaran->kasBankAkun->nama_akun ?? '-',
+                    $dpAmount,
+                    count($supirIds),
+                    $supirNames ?: '-',
+                    $totalRealisasi,
+                    $statusText,
+                    $pembayaran->keterangan ?: '-',
+                    $pembayaran->pembuatPembayaran->name ?? '-',
+                    $pembayaran->penyetujuPembayaran->name ?? '-',
+                    \Carbon\Carbon::parse($pembayaran->created_at)->format('d/m/Y H:i')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Reject pembayaran OB
      */
     public function reject(Request $request, string $id)

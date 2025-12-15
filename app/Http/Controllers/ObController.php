@@ -89,7 +89,8 @@ class ObController extends Controller
                 ->where('nama_kapal', $namaKapal)
                 ->where('no_voyage', $noVoyage)
                 // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
-                ->whereRaw("NOT (tipe_kontainer = 'CARGO' OR (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%')))");
+                // IMPORTANT: Use COALESCE to handle NULL tipe_kontainer properly
+                ->whereRaw("NOT (COALESCE(tipe_kontainer, '') = 'CARGO' OR (COALESCE(tipe_kontainer, '') = 'FCL' AND (COALESCE(nomor_kontainer, '') = 'CARGO' OR COALESCE(nomor_kontainer, '') LIKE 'CARGO%')))");
 
             // Apply filters from request (similar to naik_kapal branch)
             if ($request->filled('status_ob')) {

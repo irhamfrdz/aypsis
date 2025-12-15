@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
+use App\Models\TandaTerimaLclKontainerPivot;
 use App\Models\Term;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
@@ -148,18 +149,10 @@ class TandaTerimaLclController extends Controller
                 'pic_pengirim' => $request->pic_pengirim,
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
-                'nama_barang' => is_array($request->nama_barang) ? implode(', ', array_filter($request->nama_barang)) : '',
-                'kuantitas' => is_array($request->jumlah) ? array_sum(array_filter($request->jumlah)) : 0,
-                'keterangan_barang' => $request->keterangan_barang,
                 'gambar_surat_jalan' => !empty($gambarPaths) ? $gambarPaths : null,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
                 'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
-                'tipe_kontainer' => 'lcl',
-                'nomor_kontainer' => $request->nomor_kontainer,
-                'size_kontainer' => $request->size_kontainer,
-                'nomor_seal' => $request->nomor_seal,
-                'jenis_kontainer' => $request->tipe_kontainer,
                 'status' => 'draft',
                 'created_by' => Auth::id(),
             ]);
@@ -211,19 +204,11 @@ class TandaTerimaLclController extends Controller
                 }
             }
 
-            // Auto-create prospek if nomor_seal is provided
-            if (!empty($request->nomor_seal)) {
-                $this->createProspekFromNewLcl($tandaTerima);
-            }
+            // Removed auto-create prospek logic - will be handled separately when seal is assigned
         });
 
-        $successMessage = 'Tanda Terima LCL berhasil dibuat.';
-        if (!empty($request->nomor_seal)) {
-            $successMessage .= ' Data otomatis ditambahkan ke prospek karena nomor seal telah diisi.';
-        }
-
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', $successMessage);
+                        ->with('success', 'Tanda Terima LCL berhasil dibuat. Silakan assign barang ke kontainer dan input nomor seal.');
     }
 
     /**
@@ -1014,7 +999,7 @@ class TandaTerimaLclController extends Controller
         try {
             // Get the LCL data with all pivot relationships
             $tandaTerimas = TandaTerimaLcl::with([
-                'tujuanKirim', 
+                'tujuanPengiriman', 
                 'items', 
                 'pengirimPivot', 
                 'penerimaPivot', 
@@ -1076,7 +1061,7 @@ class TandaTerimaLclController extends Controller
                 'tipe' => 'LCL',
                 'nomor_kontainer' => $nomorKontainer,
                 'no_seal' => '', // Will be filled by assignContainer if seal is provided
-                'tujuan_pengiriman' => $firstTandaTerima->tujuanKirim->nama_tujuan ?? $allPenerima->first() ?? '',
+                'tujuan_pengiriman' => $firstTandaTerima->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? '',
                 'nama_kapal' => '', // Will be filled later in prospek
                 'keterangan' => 'Transfer dari Tanda Terima LCL - Total: ' . $tandaTerimas->count() . ' items',
                 'status' => 'aktif',
@@ -1093,6 +1078,359 @@ class TandaTerimaLclController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error creating prospek from LCL: ' . $e->getMessage());
             $prospekMessage = "Terjadi error saat menambahkan ke prospek: " . $e->getMessage();
+        }
+    }
+    
+    /**
+     * Show stuffing page for LCL - Display pivot table data grouped by container
+     */
+    public function stuffing(Request $request)
+    {
+        // Query pivot table with relationships
+        $query = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
+        
+        // Filter pencarian
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhereHas('tandaTerima', function($sq) use ($searchTerm) {
+                      $sq->where('nomor_tanda_terima', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+        
+        // Filter by container
+        if ($request->filled('kontainer')) {
+            $query->where('nomor_kontainer', $request->kontainer);
+        }
+        
+        $pivotData = $query->orderBy('nomor_kontainer')->orderBy('assigned_at', 'desc')->paginate(20);
+        
+        // Group data by container for statistics
+        $groupedByContainer = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser'])
+            ->get()
+            ->groupBy('nomor_kontainer')
+            ->map(function($items) {
+                return [
+                    'nomor_kontainer' => $items->first()->nomor_kontainer,
+                    'size_kontainer' => $items->first()->size_kontainer,
+                    'tipe_kontainer' => $items->first()->tipe_kontainer,
+                    'total_lcl' => $items->count(),
+                    'total_volume' => $items->sum(function($item) {
+                        return $item->tandaTerima ? $item->tandaTerima->items->sum('meter_kubik') : 0;
+                    }),
+                    'total_berat' => $items->sum(function($item) {
+                        return $item->tandaTerima ? $item->tandaTerima->items->sum('tonase') : 0;
+                    }),
+                    'items' => $items, // Add the actual pivot items
+                ];
+            });
+        
+        // Get available containers for new stuffing
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
+        $stockKontainers = StockKontainer::active()->get();
+        
+        $availableKontainers = collect();
+        
+        // Merge kontainers
+        foreach ($kontainers as $k) {
+            if ($k->nomor_kontainer) {
+                $availableKontainers->push([
+                    'nomor_kontainer' => $k->nomor_kontainer,
+                    'ukuran' => $k->ukuran ?? $k->size ?? null,
+                    'source' => 'kontainer'
+                ]);
+            }
+        }
+        
+        foreach ($stockKontainers as $s) {
+            if ($s->nomor_kontainer && !$availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
+                $availableKontainers->push([
+                    'nomor_kontainer' => $s->nomor_kontainer,
+                    'ukuran' => $s->ukuran ?? null,
+                    'source' => 'stock'
+                ]);
+            }
+        }
+        
+        // Get LCL yang belum di-stuffing untuk add new functionality
+        $unstuffedLcl = TandaTerimaLcl::with('items')
+            ->doesntHave('kontainerPivot')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Get unique containers for filter
+        $uniqueContainers = TandaTerimaLclKontainerPivot::select('nomor_kontainer')
+            ->distinct()
+            ->orderBy('nomor_kontainer')
+            ->pluck('nomor_kontainer');
+        
+        // Get statistics
+        $stats = [
+            'total_containers' => $groupedByContainer->count(),
+            'total_lcl_stuffed' => TandaTerimaLclKontainerPivot::count(),
+            'total_lcl_unstuffed' => $unstuffedLcl->count(),
+        ];
+        
+        return view('tanda-terima-lcl.stuffing', compact(
+            'pivotData', 
+            'groupedByContainer', 
+            'availableKontainers', 
+            'unstuffedLcl',
+            'uniqueContainers',
+            'stats'
+        ));
+    }
+    
+    /**
+     * Process stuffing - assign containers to LCL tanda terima
+     */
+    public function processStuffing(Request $request)
+    {
+        // Validasi input
+        try {
+            $request->validate([
+                'tanda_terima_ids' => 'required|array|min:1',
+                'tanda_terima_ids.*' => 'required|exists:tanda_terimas_lcl,id',
+                'nomor_kontainer' => 'required|string|max:255',
+                'size_kontainer' => 'nullable|string|max:50',
+                'tipe_kontainer' => 'nullable|string|max:50',
+            ], [
+                'tanda_terima_ids.required' => 'Pilih minimal satu tanda terima LCL untuk di-stuffing',
+                'tanda_terima_ids.array' => 'Data tanda terima tidak valid',
+                'tanda_terima_ids.min' => 'Pilih minimal satu tanda terima LCL untuk di-stuffing',
+                'tanda_terima_ids.*.required' => 'ID tanda terima tidak boleh kosong',
+                'tanda_terima_ids.*.exists' => 'Terdapat tanda terima yang tidak ditemukan di database',
+                'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
+                'nomor_kontainer.max' => 'Nomor kontainer terlalu panjang (maksimal 255 karakter)',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                           ->withErrors($e->errors())
+                           ->withInput()
+                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+        }
+        
+        // Validasi nomor kontainer tidak kosong
+        if (empty(trim($request->nomor_kontainer))) {
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Nomor kontainer tidak boleh kosong. Silakan pilih atau input nomor kontainer.');
+        }
+        
+        $tandaTerimaIds = $request->tanda_terima_ids;
+        
+        DB::beginTransaction();
+        try {
+            $stuffedCount = 0;
+            $alreadyStuffed = [];
+            $notFound = [];
+            
+            foreach ($tandaTerimaIds as $id) {
+                $tandaTerima = TandaTerimaLcl::find($id);
+                
+                if (!$tandaTerima) {
+                    $notFound[] = "ID-{$id}";
+                    continue;
+                }
+                
+                // Cek apakah LCL sudah di-stuffing sebelumnya
+                $existingPivot = $tandaTerima->kontainerPivot()->first();
+                if ($existingPivot) {
+                    $alreadyStuffed[] = ($tandaTerima->nomor_tanda_terima ?? "TT-LCL-{$id}") . " (sudah di kontainer {$existingPivot->nomor_kontainer})";
+                    continue;
+                }
+                
+                // Create pivot entry
+                $tandaTerima->kontainerPivot()->create([
+                    'nomor_kontainer' => $request->nomor_kontainer,
+                    'size_kontainer' => $request->size_kontainer,
+                    'tipe_kontainer' => $request->tipe_kontainer,
+                    'assigned_at' => now(),
+                    'assigned_by' => Auth::id(),
+                ]);
+                
+                $stuffedCount++;
+            }
+            
+            DB::commit();
+            
+            // Build response message
+            $messages = [];
+            
+            if ($stuffedCount > 0) {
+                $messages[] = "✓ Berhasil stuffing {$stuffedCount} tanda terima LCL ke kontainer {$request->nomor_kontainer}";
+            }
+            
+            if (count($alreadyStuffed) > 0) {
+                $messages[] = "⚠ " . count($alreadyStuffed) . " tanda terima sudah di-stuffing sebelumnya: " . implode(', ', array_slice($alreadyStuffed, 0, 3)) . (count($alreadyStuffed) > 3 ? '...' : '');
+            }
+            
+            if (count($notFound) > 0) {
+                $messages[] = "⚠ " . count($notFound) . " tanda terima tidak ditemukan: " . implode(', ', $notFound);
+            }
+            
+            if ($stuffedCount === 0) {
+                return redirect()->route('tanda-terima-lcl.stuffing')
+                               ->with('error', 'Tidak ada tanda terima yang berhasil di-stuffing. ' . implode(' ', $messages));
+            }
+            
+            $messageType = (count($alreadyStuffed) > 0 || count($notFound) > 0) ? 'warning' : 'success';
+            
+            return redirect()->route('tanda-terima-lcl.stuffing')
+                           ->with($messageType, implode(' | ', $messages));
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error processing stuffing: ' . $e->getMessage(), [
+                'tanda_terima_ids' => $tandaTerimaIds,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Provide more specific error messages
+            $errorMessage = 'Gagal melakukan proses stuffing ke kontainer ' . $request->nomor_kontainer . '. ';
+            
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                $errorMessage .= 'Terdapat data duplikat. Beberapa LCL mungkin sudah di-stuffing ke kontainer ini.';
+            } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                $errorMessage .= 'Terdapat masalah dengan relasi data. Pastikan semua data valid.';
+            } elseif (strpos($e->getMessage(), 'Connection') !== false) {
+                $errorMessage .= 'Koneksi database bermasalah. Silakan coba lagi.';
+            } else {
+                $errorMessage .= 'Detail error: ' . $e->getMessage();
+            }
+            
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', $errorMessage);
+        }
+    }
+
+    /**
+     * Seal kontainer - update nomor seal untuk semua pivot records dengan kontainer yang sama
+     */
+    public function sealKontainer(Request $request)
+    {
+        try {
+            $request->validate([
+                'nomor_kontainer' => 'required|string|max:255',
+                'nomor_seal' => 'required|string|max:255',
+                'tanggal_seal' => 'required|date',
+            ], [
+                'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
+                'nomor_seal.required' => 'Nomor seal wajib diisi',
+                'tanggal_seal.required' => 'Tanggal seal wajib diisi',
+                'tanggal_seal.date' => 'Format tanggal seal tidak valid',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                           ->withErrors($e->errors())
+                           ->withInput()
+                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+        }
+
+        DB::beginTransaction();
+        try {
+            // Cek apakah kontainer ini sudah di-seal sebelumnya
+            $existingSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->whereNotNull('nomor_seal')
+                ->first();
+
+            if ($existingSeal) {
+                DB::rollBack();
+                return redirect()->back()
+                               ->with('error', "Kontainer {$request->nomor_kontainer} sudah di-seal sebelumnya dengan nomor seal: {$existingSeal->nomor_seal}");
+            }
+
+            // Update semua pivot records dengan kontainer yang sama
+            $pivotRecords = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->with(['tandaTerima.items', 'tandaTerima.tujuanPengiriman'])
+                ->get();
+
+            if ($pivotRecords->isEmpty()) {
+                DB::rollBack();
+                return redirect()->back()
+                               ->with('error', "Kontainer {$request->nomor_kontainer} tidak ditemukan atau belum ada LCL yang di-stuffing.");
+            }
+
+            // Update pivot records dengan nomor seal
+            $updated = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->update([
+                    'nomor_seal' => $request->nomor_seal,
+                    'tanggal_seal' => $request->tanggal_seal,
+                ]);
+
+            // Ambil data pertama untuk informasi kontainer
+            $firstPivot = $pivotRecords->first();
+            
+            // Hitung total volume dan berat
+            $totalVolume = $pivotRecords->sum(function($pivot) {
+                return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('meter_kubik') : 0;
+            });
+            
+            $totalTon = $pivotRecords->sum(function($pivot) {
+                return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('tonase') : 0;
+            });
+
+            // Kumpulkan informasi PT Pengirim dan barang
+            $ptPengirimList = $pivotRecords->map(function($pivot) {
+                return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
+            })->filter()->unique()->implode(', ');
+
+            $barangList = $pivotRecords->map(function($pivot) {
+                if (!$pivot->tandaTerima || !$pivot->tandaTerima->items) return null;
+                return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
+            })->filter()->unique()->implode(', ');
+
+            // Insert ke tabel prospek
+            $prospek = Prospek::create([
+                'tanggal' => $request->tanggal_seal,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'no_seal' => $request->nomor_seal,
+                'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
+                'tipe' => $firstPivot->tipe_kontainer,
+                'pt_pengirim' => $ptPengirimList ?: null,
+                'barang' => $barangList ?: 'LCL',
+                'total_volume' => $totalVolume,
+                'total_ton' => $totalTon,
+                'kuantitas' => $pivotRecords->count(),
+                'tujuan_pengiriman' => $firstPivot->tandaTerima && $firstPivot->tandaTerima->tujuanPengiriman 
+                    ? $firstPivot->tandaTerima->tujuanPengiriman->nama_tujuan 
+                    : null,
+                'status' => Prospek::STATUS_AKTIF,
+                'keterangan' => "Kontainer LCL dengan {$pivotRecords->count()} tanda terima",
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update status kontainer menjadi selesai (jika ada di tabel kontainer)
+            Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
+                ->update([
+                    'status' => 'selesai',
+                    'updated_at' => now()
+                ]);
+
+            DB::commit();
+
+            return redirect()->route('tanda-terima-lcl.stuffing')
+                           ->with('success', "✓ Berhasil seal kontainer {$request->nomor_kontainer} dengan nomor seal: {$request->nomor_seal}. Total {$updated} LCL telah di-seal dan data telah dikirim ke prospek (ID: {$prospek->id}).");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error sealing container: ' . $e->getMessage(), [
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'nomor_seal' => $request->nomor_seal,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Gagal melakukan seal kontainer: ' . $e->getMessage());
         }
     }
 }

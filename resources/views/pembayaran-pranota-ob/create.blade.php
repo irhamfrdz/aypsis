@@ -5,11 +5,9 @@
 
 @section('content')
     @php
-        use App\Models\PembayaranPranota;
+        use App\Models\PembayaranPranotaOb;
         // Hitung counter untuk pembayaran pranota OB
-        $obPaymentCounter = PembayaranPranota::whereHas('pranotas', function($query) {
-            $query->whereHas('tagihanOb');
-        })->count() + 1;
+        $obPaymentCounter = PembayaranPranotaOb::count() + 1;
     @endphp
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
         @php

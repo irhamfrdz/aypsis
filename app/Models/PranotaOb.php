@@ -11,6 +11,7 @@ class PranotaOb extends Model
         'nama_kapal',
         'no_voyage',
         'items',
+        'status',
         'created_by',
     ];
 
@@ -162,5 +163,35 @@ class PranotaOb extends Model
         }
 
         return $enrichedItems;
+    }
+
+    /**
+     * Calculate total amount from all items
+     */
+    public function calculateTotalAmount()
+    {
+        $total = 0;
+        
+        // Try pivot items first
+        try {
+            $pivotRows = $this->itemsPivot()->get();
+            if ($pivotRows && $pivotRows->count() > 0) {
+                foreach ($pivotRows as $item) {
+                    $total += floatval($item->biaya ?? 0);
+                }
+                return $total;
+            }
+        } catch (\Throwable $e) {
+            // Continue to items array
+        }
+        
+        // Fallback to items array
+        if (is_array($this->items)) {
+            foreach ($this->items as $item) {
+                $total += floatval($item['biaya'] ?? 0);
+            }
+        }
+        
+        return $total;
     }
 }

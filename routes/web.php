@@ -2090,6 +2090,18 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-lcl.bulk-seal')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
 
+    Route::get('tanda-terima-lcl/stuffing', [\App\Http\Controllers\TandaTerimaLclController::class, 'stuffing'])
+         ->name('tanda-terima-lcl.stuffing')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
+    Route::post('tanda-terima-lcl/stuffing/process', [\App\Http\Controllers\TandaTerimaLclController::class, 'processStuffing'])
+         ->name('tanda-terima-lcl.stuffing.process')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
+    Route::post('tanda-terima-lcl/seal', [\App\Http\Controllers\TandaTerimaLclController::class, 'sealKontainer'])
+         ->name('tanda-terima-lcl.seal')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     Route::post('tanda-terima-lcl/assign-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'assignContainer'])
          ->name('tanda-terima-tanpa-surat-jalan.assign-container')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
@@ -3295,6 +3307,8 @@ Route::prefix('pembayaran-uang-muka')->name('pembayaran-uang-muka.')->middleware
 Route::prefix('pembayaran-ob')->name('pembayaran-ob.')->middleware(['auth'])->group(function () {
     Route::get('/', [PembayaranObController::class, 'index'])->name('index')
          ->middleware('can:pembayaran-ob-view');
+    Route::get('/export', [PembayaranObController::class, 'export'])->name('export')
+         ->middleware('can:pembayaran-ob-export');
     Route::get('/create', [PembayaranObController::class, 'create'])->name('create')
          ->middleware('can:pembayaran-ob-create');
     Route::get('/generate-nomor', [PembayaranObController::class, 'generateNomorPembayaran'])->name('generate-nomor')

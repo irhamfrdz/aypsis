@@ -154,6 +154,20 @@
                                 Tambah Baru
                             </a>
                         @endcan
+                        @if(request('tipe') == 'lcl')
+                            @can('tanda-terima-tanpa-surat-jalan-view')
+                                <a href="{{ route('tanda-terima-lcl.stuffing') }}" 
+                                   style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #0d9488; color: #ffffff; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                   onmouseover="this.style.backgroundColor='#0f766e'" 
+                                   onmouseout="this.style.backgroundColor='#0d9488'"
+                                   class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm shadow transition">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    Stuffing Kontainer
+                                </a>
+                            @endcan
+                        @endif
                     </div>
                 </form>
             </div>
@@ -323,32 +337,18 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
-                                            @if($tandaTerima->penerimaPivot && $tandaTerima->penerimaPivot->count() > 0)
-                                                <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->penerimaPivot->first()->nama_penerima }}">
-                                                    {{ $tandaTerima->penerimaPivot->first()->nama_penerima }}
-                                                    @if($tandaTerima->penerimaPivot->count() > 1)
-                                                        <span class="ml-1 text-xs text-blue-600" title="{{ $tandaTerima->penerimaPivot->count() }} penerima">+{{ $tandaTerima->penerimaPivot->count() - 1 }}</span>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-sm text-gray-500">-</span>
-                                            @endif
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->nama_penerima ?? '-' }}">
+                                                {{ $tandaTerima->nama_penerima ?? '-' }}
+                                            </div>
                                         @else
                                             <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->penerima }}">{{ $tandaTerima->penerima }}</div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
-                                            @if($tandaTerima->pengirimPivot && $tandaTerima->pengirimPivot->count() > 0)
-                                                <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->pengirimPivot->first()->nama_pengirim }}">
-                                                    {{ $tandaTerima->pengirimPivot->first()->nama_pengirim }}
-                                                    @if($tandaTerima->pengirimPivot->count() > 1)
-                                                        <span class="ml-1 text-xs text-blue-600" title="{{ $tandaTerima->pengirimPivot->count() }} pengirim">+{{ $tandaTerima->pengirimPivot->count() - 1 }}</span>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-sm text-gray-500">-</span>
-                                            @endif
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->nama_pengirim ?? '-' }}">
+                                                {{ $tandaTerima->nama_pengirim ?? '-' }}
+                                            </div>
                                         @else
                                             <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->pengirim }}">{{ $tandaTerima->pengirim }}</div>
                                         @endif
@@ -374,13 +374,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
-                                            @if($tandaTerima->pengirimPivot && $tandaTerima->pengirimPivot->count() > 0)
-                                                <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->pengirimPivot->first()->alamat_pengirim }}">
-                                                    {{ Str::limit($tandaTerima->pengirimPivot->first()->alamat_pengirim, 30) }}
-                                                </div>
-                                            @else
-                                                <span class="text-sm text-gray-500">-</span>
-                                            @endif
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->alamat_pengirim ?? '-' }}">
+                                                {{ Str::limit($tandaTerima->alamat_pengirim ?? '-', 30) }}
+                                            </div>
                                         @else
                                             <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengambilan }}">{{ $tandaTerima->tujuan_pengambilan }}</div>
                                         @endif
