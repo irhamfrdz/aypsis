@@ -869,8 +869,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Only initialize if LCL checkboxes exist
-        if (document.getElementById('selectAll')) {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        console.log('Initializing checkboxes...', selectAllCheckbox ? 'Found selectAll' : 'selectAll not found');
+        
+        if (selectAllCheckbox) {
             initializeCheckboxes();
+        } else {
+            console.warn('SelectAll checkbox not found - bulk actions will not work');
         }
         
         // Initialize Select2 for container dropdown
@@ -936,8 +941,21 @@
         const selectedActions = document.getElementById('selectedActions');
         const selectedCount = document.getElementById('selectedCount');
 
+        console.log('Checkbox initialization:', {
+            selectAllCheckbox: !!selectAllCheckbox,
+            rowCheckboxesCount: rowCheckboxes.length,
+            selectedActions: !!selectedActions,
+            selectedCount: !!selectedCount
+        });
+
+        if (!selectAllCheckbox || !selectedActions || !selectedCount) {
+            console.error('Required elements not found for checkbox functionality');
+            return;
+        }
+
         // Select All functionality
         selectAllCheckbox.addEventListener('change', function() {
+            console.log('Select all clicked:', this.checked);
             rowCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
@@ -947,6 +965,7 @@
         // Individual checkbox functionality
         rowCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
+                console.log('Checkbox changed:', this.value, this.checked);
                 updateSelectAllState();
                 updateSelectedActions();
             });
@@ -972,11 +991,15 @@
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             const count = checkedBoxes.length;
             
+            console.log('Updating selected actions. Count:', count);
+            
             selectedCount.textContent = count;
             
             if (count > 0) {
+                console.log('Showing selectedActions');
                 selectedActions.style.display = 'block';
             } else {
+                console.log('Hiding selectedActions');
                 selectedActions.style.display = 'none';
             }
         }
