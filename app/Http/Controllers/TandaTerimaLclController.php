@@ -1111,8 +1111,18 @@ class TandaTerimaLclController extends Controller
         
         // Group data by container AND seal status for display
         // This allows same container number to be used multiple times (different batches)
-        $groupedByContainer = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser'])
-            ->get()
+        $groupedQuery = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
+        
+        // Apply seal status filter before grouping
+        if ($request->filled('seal_status')) {
+            if ($request->seal_status === 'sealed') {
+                $groupedQuery->whereNotNull('nomor_seal');
+            } elseif ($request->seal_status === 'unsealed') {
+                $groupedQuery->whereNull('nomor_seal');
+            }
+        }
+        
+        $groupedByContainer = $groupedQuery->get()
             ->groupBy(function($item) {
                 // Group by container number and seal status
                 // Sealed containers are grouped separately from unsealed ones with same number

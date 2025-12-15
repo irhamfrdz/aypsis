@@ -122,7 +122,7 @@
 
                 <!-- Filter Form -->
                 <form method="GET" action="{{ route('tanda-terima-lcl.stuffing') }}" class="mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
                             <input type="text" name="search" value="{{ request('search') }}"
@@ -138,6 +138,14 @@
                                         {{ $kontainer }}
                                     </option>
                                 @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Seal</label>
+                            <select name="seal_status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="" {{ request('seal_status') === null ? 'selected' : '' }}>Semua Status</option>
+                                <option value="sealed" {{ request('seal_status') == 'sealed' ? 'selected' : '' }}>Sudah Di-Seal</option>
+                                <option value="unsealed" {{ request('seal_status') == 'unsealed' ? 'selected' : '' }}>Belum Di-Seal</option>
                             </select>
                         </div>
                         <div class="flex items-end gap-2">
