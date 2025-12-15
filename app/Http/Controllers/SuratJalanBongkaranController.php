@@ -691,6 +691,7 @@ class SuratJalanBongkaranController extends Controller
             'terpal' => 'nullable|string|in:ya,tidak',
             'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
             'uang_jalan_type' => 'nullable|string|in:full,setengah',
+            'uang_jalan_nominal' => 'nullable|numeric|min:0',
             'tagihan_ayp' => 'nullable|boolean',
             'tagihan_atb' => 'nullable|boolean',
             'tagihan_pb' => 'nullable|boolean',
