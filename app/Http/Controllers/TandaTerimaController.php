@@ -80,6 +80,13 @@ class TandaTerimaController extends Controller
         // Query surat jalan
         $query = SuratJalan::with(['order.pengirim']);
 
+        // Exclude bongkaran
+        $query->where(function($q) {
+            $q->whereNull('kegiatan')
+              ->orWhere('kegiatan', '')
+              ->orWhere('kegiatan', 'NOT LIKE', '%bongkar%');
+        });
+
         // Apply status filter
         if ($status === 'belum_ada_tanda_terima') {
             $query->whereDoesntHave('tandaTerima');
@@ -157,6 +164,13 @@ class TandaTerimaController extends Controller
         if ($mode === 'missing') {
             $suratQuery = SuratJalan::with(['order.pengirim', 'uangJalan']);
 
+            // Exclude bongkaran
+            $suratQuery->where(function($q) {
+                $q->whereNull('kegiatan')
+                  ->orWhere('kegiatan', '')
+                  ->orWhere('kegiatan', 'NOT LIKE', '%bongkar%');
+            });
+
             // Apply search filter for surat jalan
             if (!empty($search)) {
                 $suratQuery->where(function($q) use ($search) {
@@ -217,6 +231,11 @@ class TandaTerimaController extends Controller
                     'uj.nomor_uang_jalan',
                     'uj.tanggal_uang_jalan'
                 )
+                ->where(function($q) {
+                    $q->whereNull('sj.kegiatan')
+                      ->orWhere('sj.kegiatan', '')
+                      ->orWhere('sj.kegiatan', 'NOT LIKE', '%bongkar%');
+                })
                 ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
 
             // Apply search filter
@@ -241,6 +260,13 @@ class TandaTerimaController extends Controller
         }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.uangJalan']);
+
+        // Exclude bongkaran - filter by kegiatan field
+        $query->where(function($q) {
+            $q->whereNull('kegiatan')
+              ->orWhere('kegiatan', '')
+              ->orWhere('kegiatan', 'NOT LIKE', '%bongkar%');
+        });
 
         // Apply search filter for tanda terima
         if (!empty($search)) {
@@ -276,6 +302,13 @@ class TandaTerimaController extends Controller
         if (!empty($search) && $tandaTerimas->total() === 0) {
             // Build missing surat jalan query similar to above
             $suratQuery = SuratJalan::with(['order.pengirim']);
+
+            // Exclude bongkaran
+            $suratQuery->where(function($q) {
+                $q->whereNull('kegiatan')
+                  ->orWhere('kegiatan', '')
+                  ->orWhere('kegiatan', 'NOT LIKE', '%bongkar%');
+            });
 
             // Apply search filter for surat jalan
             $suratQuery->where(function($q) use ($search) {
