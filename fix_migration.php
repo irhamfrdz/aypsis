@@ -85,8 +85,35 @@ try {
     }
     echo "\n";
 
-    // 4. Verifikasi tabel pivot
-    echo "4. Verifikasi tabel tanda_terima_lcl_kontainer_pivot...\n";
+    // 4. Tambahkan kolom yang missing (penerima & pengirim)
+    echo "4. Menambahkan kolom penerima & pengirim jika belum ada...\n";
+    $columnsToAdd = [
+        'nama_penerima' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN nama_penerima VARCHAR(255) NULL AFTER term_id",
+        'pic_penerima' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN pic_penerima VARCHAR(255) NULL AFTER nama_penerima",
+        'telepon_penerima' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN telepon_penerima VARCHAR(255) NULL AFTER pic_penerima",
+        'alamat_penerima' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN alamat_penerima TEXT NULL AFTER telepon_penerima",
+        'nama_pengirim' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN nama_pengirim VARCHAR(255) NULL AFTER alamat_penerima",
+        'pic_pengirim' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN pic_pengirim VARCHAR(255) NULL AFTER nama_pengirim",
+        'telepon_pengirim' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN telepon_pengirim VARCHAR(255) NULL AFTER pic_pengirim",
+        'alamat_pengirim' => "ALTER TABLE tanda_terimas_lcl ADD COLUMN alamat_pengirim TEXT NULL AFTER telepon_pengirim",
+    ];
+    
+    foreach ($columnsToAdd as $column => $sql) {
+        if (!Schema::hasColumn('tanda_terimas_lcl', $column)) {
+            try {
+                DB::statement($sql);
+                echo "   ✓ Kolom {$column} ditambahkan\n";
+            } catch (\Exception $e) {
+                echo "   ✗ Gagal tambah {$column}: " . $e->getMessage() . "\n";
+            }
+        } else {
+            echo "   - Kolom {$column} sudah ada\n";
+        }
+    }
+    echo "\n";
+
+    // 5. Verifikasi tabel pivot
+    echo "5. Verifikasi tabel tanda_terima_lcl_kontainer_pivot...\n";
     if (Schema::hasTable('tanda_terima_lcl_kontainer_pivot')) {
         echo "   ✓ Tabel tanda_terima_lcl_kontainer_pivot ada\n";
     } else {
@@ -95,7 +122,7 @@ try {
     }
     echo "\n";
 
-    // 5. Summary
+    // 6. Summary
     echo "==============================================\n";
     echo "SELESAI!\n";
     echo "==============================================\n";
