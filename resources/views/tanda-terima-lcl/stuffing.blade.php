@@ -419,10 +419,7 @@
                         </select>
                         <input type="text" id="stuffing_nomor_kontainer_manual" 
                                class="hidden w-full mt-2 px-3 py-2 border border-gray-300 rounded-md"
-                               placeholder="Ketik nomor kontainer baru (pastikan belum pernah di-seal)">
-                        <p class="hidden text-xs text-amber-600 mt-1" id="manual_input_warning">
-                            ⚠️ Pastikan nomor kontainer yang Anda masukkan belum pernah di-seal sebelumnya
-                        </p>
+                               placeholder="Ketik nomor kontainer">
                     </div>
 
                     <!-- Size Kontainer -->
@@ -564,12 +561,10 @@ jQuery(document).ready(function($) {
     // Handle manual input toggle
     $('#stuffing_nomor_kontainer').on('change', function() {
         const manualInput = $('#stuffing_nomor_kontainer_manual');
-        const manualWarning = $('#manual_input_warning');
         const sizeSelect = $('#stuffing_size_kontainer');
         
         if (this.value === '__manual__') {
             manualInput.removeClass('hidden');
-            manualWarning.removeClass('hidden');
             manualInput.attr('name', 'nomor_kontainer');
             manualInput.prop('required', true);
             $(this).removeAttr('name');
@@ -577,7 +572,6 @@ jQuery(document).ready(function($) {
             sizeSelect.val('');
         } else if (this.value !== '') {
             manualInput.addClass('hidden');
-            manualWarning.addClass('hidden');
             manualInput.removeAttr('name');
             manualInput.prop('required', false);
             manualInput.val('');

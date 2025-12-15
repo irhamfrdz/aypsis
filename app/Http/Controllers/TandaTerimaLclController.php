@@ -1109,10 +1109,15 @@ class TandaTerimaLclController extends Controller
         
         $pivotData = $query->orderBy('nomor_kontainer')->orderBy('assigned_at', 'desc')->paginate(20);
         
-        // Group data by container for statistics
+        // Group data by container AND seal status for display
+        // This allows same container number to be used multiple times (different batches)
         $groupedByContainer = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser'])
             ->get()
-            ->groupBy('nomor_kontainer')
+            ->groupBy(function($item) {
+                // Group by container number and seal status
+                // Sealed containers are grouped separately from unsealed ones with same number
+                return $item->nomor_kontainer . '|' . ($item->nomor_seal ?? 'unsealed');
+            })
             ->map(function($items) {
                 return [
                     'nomor_kontainer' => $items->first()->nomor_kontainer,
@@ -1129,21 +1134,16 @@ class TandaTerimaLclController extends Controller
                 ];
             });
         
-        // Get available containers for new stuffing (exclude sealed containers)
+        // Get available containers for new stuffing (include all containers, sealed or not)
+        // Containers can be reused - if sealed, new stuffing will create new batch
         $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
         $stockKontainers = StockKontainer::active()->get();
         
-        // Get sealed containers to exclude
-        $sealedContainers = TandaTerimaLclKontainerPivot::whereNotNull('nomor_seal')
-            ->distinct()
-            ->pluck('nomor_kontainer')
-            ->toArray();
-        
         $availableKontainers = collect();
         
-        // Merge kontainers (exclude sealed ones)
+        // Merge all kontainers (don't exclude sealed ones - they can be reused)
         foreach ($kontainers as $k) {
-            if ($k->nomor_kontainer && !in_array($k->nomor_kontainer, $sealedContainers)) {
+            if ($k->nomor_kontainer) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $k->nomor_kontainer,
                     'ukuran' => $k->ukuran ?? $k->size ?? null,
@@ -1154,7 +1154,6 @@ class TandaTerimaLclController extends Controller
         
         foreach ($stockKontainers as $s) {
             if ($s->nomor_kontainer 
-                && !in_array($s->nomor_kontainer, $sealedContainers)
                 && !$availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $s->nomor_kontainer,
@@ -1230,23 +1229,6 @@ class TandaTerimaLclController extends Controller
         }
         
         $tandaTerimaIds = $request->tanda_terima_ids;
-        
-        // Check if container is already sealed - prevent adding to sealed containers
-        // If user wants to use the same container number, they should create a new stuffing session
-        $sealedContainer = TandaTerimaLclKontainerPivot::where('nomor_kontainer', trim($request->nomor_kontainer))
-            ->whereNotNull('nomor_seal')
-            ->first();
-        
-        if ($sealedContainer) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "❌ Kontainer {$request->nomor_kontainer} sudah di-seal pada tanggal " . 
-                    ($sealedContainer->tanggal_seal ? date('d/m/Y', strtotime($sealedContainer->tanggal_seal)) : '-') . 
-                    " dan tidak dapat ditambahkan LCL baru.\n\n" .
-                    "📦 Untuk menggunakan nomor kontainer yang sama, silakan:\n" .
-                    "1. Gunakan nomor kontainer lain yang belum sealed, atau\n" .
-                    "2. Tambahkan suffix/nomor urut pada nomor kontainer (contoh: {$request->nomor_kontainer}-2)");
-        }
         
         DB::beginTransaction();
         try {
