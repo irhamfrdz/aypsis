@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\SuratJalan;
 use App\Models\Term;
 use App\Models\Pengirim;
+use App\Models\MasterPengirimPenerima;
 use App\Models\JenisBarang;
 use App\Models\MasterTujuanKirim;
 use App\Models\TujuanKegiatanUtama;
@@ -50,6 +51,7 @@ class OrderController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
+        $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
         $jenisBarangs = JenisBarang::where('status', 'active')->get();
         $tujuanKirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::where('aktif', true)->orderBy('ke')->get();
@@ -66,7 +68,7 @@ class OrderController extends Controller
         // Generate next order number
         $nextOrderNumber = $this->generateNextOrderNumber();
 
-        return view('orders.create', compact('terms', 'pengirims', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'nextOrderNumber'));
+        return view('orders.create', compact('terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'nextOrderNumber'));
     }
 
     /**
@@ -81,6 +83,7 @@ class OrderController extends Controller
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'penerima' => 'nullable|string|max:255',
+            'penerima_id' => 'nullable|exists:master_pengirim_penerima,id',
             'alamat_penerima' => 'nullable|string',
             'kontak_penerima' => 'nullable|string|max:255',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
@@ -268,6 +271,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
+        $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
         $jenisBarangs = JenisBarang::where('status', 'active')->get();
         $tujuanKirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::where('aktif', true)->orderBy('ke')->get();
@@ -281,7 +285,7 @@ class OrderController extends Controller
             ->pluck('ukuran')
             ->toArray();
 
-        return view('orders.edit', compact('order', 'terms', 'pengirims', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers'));
+        return view('orders.edit', compact('order', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers'));
     }
 
     /**
@@ -297,6 +301,7 @@ class OrderController extends Controller
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'penerima' => 'nullable|string|max:255',
+            'penerima_id' => 'nullable|exists:master_pengirim_penerima,id',
             'alamat_penerima' => 'nullable|string',
             'kontak_penerima' => 'nullable|string|max:255',
             'size_kontainer' => 'required|string|max:255',

@@ -1182,6 +1182,12 @@ Route::middleware([
     Route::post('order/pengirim/store', [PengirimController::class, 'storeForOrder'])
          ->name('order.pengirim.store');
 
+    // 📥 Penerima - Special routes for Order form (no permission required, using MasterPengirimPenerimaController)
+    Route::get('order/penerima/create', [MasterPengirimPenerimaController::class, 'createForOrder'])
+         ->name('order.penerima.create');
+    Route::post('order/penerima/store', [MasterPengirimPenerimaController::class, 'storeForOrder'])
+         ->name('order.penerima.store');
+
     // 🎯 Tujuan Kirim - Special routes for Order form (no permission required)
     Route::get('order/tujuan-kirim/create', [MasterTujuanKirimController::class, 'createForOrder'])
          ->name('order.tujuan-kirim.create');

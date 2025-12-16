@@ -226,4 +226,46 @@ class MasterPengirimPenerimaController extends Controller
             return redirect()->route('master-pengirim-penerima.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Show the form for creating from Order form (popup mode)
+     */
+    public function createForOrder(Request $request)
+    {
+        $nextKode = MasterPengirimPenerima::generateKode();
+        $search = $request->get('search', '');
+        $isPopup = $request->has('popup');
+        
+        return view('master-pengirim-penerima.create-for-order', compact('nextKode', 'search', 'isPopup'));
+    }
+
+    /**
+     * Store for Order form (popup mode)
+     */
+    public function storeForOrder(Request $request)
+    {
+        $validated = $request->validate([
+            'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode',
+            'nama' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string|max:20',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $validated['created_by'] = Auth::id();
+        
+        $penerima = MasterPengirimPenerima::create($validated);
+
+        if ($request->has('popup')) {
+            // Return HTML with postMessage script for popup mode
+            return view('master-pengirim-penerima.popup-success', [
+                'penerima' => $penerima,
+                'message' => 'Penerima berhasil ditambahkan!'
+            ]);
+        }
+
+        return redirect()->route('master-pengirim-penerima.index')
+            ->with('success', 'Penerima berhasil ditambahkan!');
+    }
 }
+

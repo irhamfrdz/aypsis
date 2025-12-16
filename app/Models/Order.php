@@ -17,6 +17,7 @@ class Order extends Model
         'tujuan_ambil',
         'tujuan_ambil_id',
         'penerima',
+        'penerima_id',
         'alamat_penerima',
         'kontak_penerima',
         'size_kontainer',
@@ -89,6 +90,11 @@ class Order extends Model
     public function tujuanAmbil(): BelongsTo
     {
         return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_ambil_id');
+    }
+
+    public function penerima(): BelongsTo
+    {
+        return $this->belongsTo(MasterPengirimPenerima::class, 'penerima_id');
     }
 
     public function suratJalans()
