@@ -671,7 +671,7 @@
                                 <input type="text" id="supirSearch" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                                        placeholder="Cari atau ketik nama supir..." autocomplete="off" required 
-                                       value="{{ old('supir', $tandaTerima->supir) }}">
+                                       value="{{ old('supir', $tandaTerima->supir ?? 'Supir Customer') }}">
                                 <div id="supirDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                                     @if(isset($supirs) && count($supirs) > 0)
                                         @foreach($supirs as $supir)
@@ -685,7 +685,7 @@
                                         @endforeach
                                     @endif
                                 </div>
-                                <input type="hidden" name="supir" id="supir" required value="{{ old('supir', $tandaTerima->supir) }}">
+                                <input type="hidden" name="supir" id="supir" required value="{{ old('supir', $tandaTerima->supir ?? 'Supir Customer') }}">
                             </div>
                             @error('supir')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -699,7 +699,7 @@
                             </label>
                             <input type="text" name="no_plat" id="no_plat"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
-                                   value="{{ old('no_plat', $tandaTerima->no_plat) }}" required
+                                   value="{{ old('no_plat', $tandaTerima->no_plat ?? 'Plat Customer') }}" required
                                    placeholder="B 1234 XYZ">
                             @error('no_plat')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -1545,6 +1545,9 @@ function removeExistingImage(button, path) {
     jQuery(document).ready(function($) {
         console.log('✓ jQuery loaded, version:', $.fn.jquery);
         
+        // Initialize supir dropdown (non-Select2)
+        initializeSupirDropdown();
+        
         // Wait for Select2 to be fully loaded with retry mechanism
         function waitForSelect2(callback, attempts) {
             attempts = attempts || 0;
@@ -1654,6 +1657,66 @@ function removeExistingImage(button, path) {
         
         const totalInitialized = $('.select2-hidden-accessible').length;
         console.log('✓ Select2 berhasil diinisialisasi pada', totalInitialized, 'dropdown');
+    }
+    
+    // Initialize supir dropdown
+    function initializeSupirDropdown() {
+        const searchInput = document.getElementById('supirSearch');
+        const dropdown = document.getElementById('supirDropdown');
+        const hiddenInput = document.getElementById('supir');
+        const platInput = document.getElementById('no_plat');
+        const options = document.querySelectorAll('.supir-option');
+
+        if (!searchInput || !dropdown || !hiddenInput || !platInput) {
+            console.error('Required elements not found for supir dropdown');
+            return;
+        }
+
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            hiddenInput.value = this.value;
+
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            dropdown.classList.remove('hidden');
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+                const plat = this.getAttribute('data-plat');
+
+                hiddenInput.value = value;
+                searchInput.value = text;
+
+                if (plat) {
+                    platInput.value = plat;
+                }
+
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#supirSearch') && !e.target.closest('#supirDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
     }
     
     // Function to open popup for adding new penerima
