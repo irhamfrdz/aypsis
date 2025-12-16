@@ -377,20 +377,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Nama Barang Section -->
-                    <div class="mt-4">
-                        <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">
-                            Nama Barang <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="nama_barang" id="nama_barang" 
-                               value="{{ old('nama_barang', $tandaTerima->nama_barang) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Masukkan nama barang" required>
-                        @error('nama_barang')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
                 </div>
 
                 <!-- 3. Dimensi dan Volume -->
@@ -748,91 +734,6 @@
                         @enderror
                     </div>
                 </div>
-
-                <!-- Dimensi dan Volume -->
-                @if($tandaTerima->items && $tandaTerima->items->count() > 0)
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="border-b border-gray-200 p-4">
-                            <h2 class="text-lg font-semibold text-gray-800">Dimensi dan Volume</h2>
-                        </div>
-                        <div class="p-6">
-                            <div id="dimensi-container">
-                                @foreach($tandaTerima->items as $index => $item)
-                                    <div class="dimensi-row border border-gray-200 rounded-lg p-4 mb-4">
-                                        <div class="flex justify-between items-center mb-4">
-                                            <h3 class="text-md font-medium text-gray-700">Item {{ $index + 1 }}</h3>
-                                            @if($loop->count > 1)
-                                                <button type="button" class="text-red-600 hover:text-red-800" onclick="removeDimensiRow(this)">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                    </svg>
-                                                </button>
-                                            @endif
-                                        </div>
-                                        
-                                        <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
-                                        
-                                        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">Panjang (m)</label>
-                                                <input type="number" 
-                                                       name="items[{{ $index }}][panjang]" 
-                                                       value="{{ old('items.'.$index.'.panjang', $item->panjang) }}"
-                                                       step="0.01" 
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                                                       onchange="calculateVolume(this)">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">Lebar (m)</label>
-                                                <input type="number" 
-                                                       name="items[{{ $index }}][lebar]" 
-                                                       value="{{ old('items.'.$index.'.lebar', $item->lebar) }}"
-                                                       step="0.01" 
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                                                       onchange="calculateVolume(this)">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">Tinggi (m)</label>
-                                                <input type="number" 
-                                                       name="items[{{ $index }}][tinggi]" 
-                                                       value="{{ old('items.'.$index.'.tinggi', $item->tinggi) }}"
-                                                       step="0.01" 
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                                                       onchange="calculateVolume(this)">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">Volume (m³)</label>
-                                                <input type="number" 
-                                                       name="items[{{ $index }}][meter_kubik]" 
-                                                       value="{{ old('items.'.$index.'.meter_kubik', $item->meter_kubik) }}"
-                                                       step="0.001" 
-                                                       class="volume-input w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                                                       readonly>
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">Berat (Ton)</label>
-                                                <input type="number" 
-                                                       name="items[{{ $index }}][tonase]" 
-                                                       value="{{ old('items.'.$index.'.tonase', $item->tonase) }}"
-                                                       step="0.01" 
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <button type="button" 
-                                    onclick="addDimensiRow()" 
-                                    class="inline-flex items-center px-4 py-2 border border-green-300 rounded-md text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Tambah Item
-                            </button>
-                        </div>
-                    </div>
-                @endif
 
                 <!-- Upload Gambar Surat Jalan -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
