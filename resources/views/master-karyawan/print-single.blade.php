@@ -21,8 +21,8 @@
             /* headings */
             h2 { margin-bottom:4px !important; font-size:15px !important; }
             .signature-block { margin-top:6px !important; }
-            /* reduce page margins slightly to get more vertical space */
-            @page { margin: 6mm; }
+            /* reduce page margins slightly to get more vertical space; top set to 0 */
+            @page { margin: 0mm 6mm 6mm 6mm; }
         }
     </style>
     <h2 style="text-align:center;margin-bottom:4px;font-size:15px;">FORM DATA KARYAWAN</h2>
