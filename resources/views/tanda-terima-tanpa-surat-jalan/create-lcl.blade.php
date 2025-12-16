@@ -415,7 +415,7 @@
                                     <input type="number"
                                            name="jumlah[]"
                                            id="jumlah_0"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                            placeholder="0"
                                            value="{{ old('jumlah.0') }}"
                                            min="0"
@@ -1207,14 +1207,16 @@
         const panjangInput = rowElement ? rowElement.querySelector('[name^="panjang"]') : document.getElementById('panjang_0');
         const lebarInput = rowElement ? rowElement.querySelector('[name^="lebar"]') : document.getElementById('lebar_0');
         const tinggiInput = rowElement ? rowElement.querySelector('[name^="tinggi"]') : document.getElementById('tinggi_0');
+        const jumlahInput = rowElement ? rowElement.querySelector('[name^="jumlah"]') : document.getElementById('jumlah_0');
         const volumeInput = rowElement ? rowElement.querySelector('[name^="meter_kubik"]') : document.getElementById('meter_kubik_0');
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
 
-        if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            const volume = panjang * lebar * tinggi;
+        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
+            const volume = panjang * lebar * tinggi * jumlah;
             volumeInput.value = volume.toFixed(3);
         } else {
             volumeInput.value = '';
@@ -1243,7 +1245,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
-                            <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="0" step="1">
+                            <input type="number" name="jumlah[]" class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="0" step="1">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Satuan</label>
@@ -1510,132 +1512,9 @@
         });
     }
 
-    // Initialize nomor kontainer dropdown
-    function initializeNomorKontainerDropdown() {
-        const searchInput = document.getElementById('nomorKontainerSearch');
-        const dropdown = document.getElementById('nomorKontainerDropdown');
-        const hiddenInput = document.getElementById('nomor_kontainer');
-        const manualField = document.getElementById('nomor_kontainer_manual');
-        const options = document.querySelectorAll('.nomor-kontainer-option');
 
-        if (!searchInput || !dropdown || !hiddenInput) {
-            console.error('Required elements not found for nomor kontainer dropdown');
-            return;
-        }
 
-        // Show dropdown when search input is focused
-        searchInput.addEventListener('focus', function() {
-            dropdown.classList.remove('hidden');
-        });
 
-        // Filter options based on search
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            let hasVisibleOptions = false;
-
-            options.forEach(option => {
-                const text = option.getAttribute('data-text').toLowerCase();
-                if (text.includes(searchTerm)) {
-                    option.style.display = 'block';
-                    hasVisibleOptions = true;
-                } else {
-                    option.style.display = 'none';
-                }
-            });
-
-            dropdown.classList.remove('hidden');
-        });
-
-        // Handle option selection
-        options.forEach(option => {
-            option.addEventListener('click', function() {
-                const value = this.getAttribute('data-value');
-                const text = this.getAttribute('data-text');
-                const size = this.getAttribute('data-size');
-
-                // Set the hidden input value
-                hiddenInput.value = value;
-
-                // Update search input
-                searchInput.value = text;
-
-                // Auto-fill size_kontainer
-                setSizeKontainerValue(size);
-
-                // Handle manual field
-                if (value === '__manual__') {
-                    manualField.classList.remove('hidden');
-                    manualField.focus();
-                } else {
-                    manualField.classList.add('hidden');
-                }
-
-                // Hide dropdown
-                dropdown.classList.add('hidden');
-            });
-        });
-
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#nomorKontainerSearch') && !e.target.closest('#nomorKontainerDropdown')) {
-                dropdown.classList.add('hidden');
-            }
-        });
-
-        // Handle keyboard navigation
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                dropdown.classList.add('hidden');
-            }
-        });
-
-        // Set initial value if exists
-        if (hiddenInput.value) {
-            const selectedOption = document.querySelector(`.nomor-kontainer-option[data-value="${hiddenInput.value}"]`);
-            if (selectedOption) {
-                searchInput.value = selectedOption.getAttribute('data-text');
-                const size = selectedOption.getAttribute('data-size');
-                setSizeKontainerValue(size);
-            } else if (hiddenInput.value === '__manual__' && manualField.value) {
-                searchInput.value = manualField.value;
-                manualField.classList.remove('hidden');
-            }
-        }
-    }
-
-    function setSizeKontainerValue(size) {
-        const sizeSelect = document.getElementById('size_kontainer');
-        if (!sizeSelect) return;
-        
-        // Normalize for LCL formats if needed
-        function normalizeLclSize(s) {
-            if (!s) return '';
-            s = String(s).toLowerCase();
-            if (s.match(/40hc|40 hc/)) return '40hc';
-            if (s.match(/40/)) return '40ft';
-            if (s.match(/20/)) return '20ft';
-            if (s.match(/45/)) return '45ft';
-            return s;
-        }
-        
-        size = normalizeLclSize(size);
-        let matched = false;
-        for (let i = 0; i < sizeSelect.options.length; i++) {
-            const opt = sizeSelect.options[i];
-            if (!size) {
-                opt.selected = false;
-                continue;
-            }
-            if (opt.value === size || (opt.text && opt.text.toLowerCase().includes(String(size).toLowerCase())) || opt.value.replace(/\s|-/g, '').toLowerCase() === String(size).replace(/\s|-/g, '').toLowerCase()) {
-                opt.selected = true;
-                matched = true;
-                break;
-            }
-        }
-        if (!matched) {
-            sizeSelect.value = size;
-        }
-    }
 
     // Image Upload Functions
     function previewImages(input) {
@@ -1730,8 +1609,7 @@
 
     // DOM Ready initialization
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize nomor kontainer dropdown
-        initializeNomorKontainerDropdown();
+
         
         // Handle manual nomor kontainer submission (optional)
         const createLclForm = document.querySelector('form');
