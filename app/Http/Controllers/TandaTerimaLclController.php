@@ -235,6 +235,7 @@ class TandaTerimaLclController extends Controller
         $tandaTerima = TandaTerimaLcl::with('items')->findOrFail($id);
         $terms = Term::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
+        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
@@ -267,7 +268,7 @@ class TandaTerimaLclController extends Controller
         }
         $containerOptions = array_values($merged);
 
-        return view('tanda-terima-tanpa-surat-jalan.edit-lcl', compact('tandaTerima', 'containerOptions'));
+        return view('tanda-terima-tanpa-surat-jalan.edit-lcl', compact('tandaTerima', 'containerOptions', 'masterPengirimPenerima', 'terms', 'masterTujuanKirims', 'supirs'));
     }
 
     /**
