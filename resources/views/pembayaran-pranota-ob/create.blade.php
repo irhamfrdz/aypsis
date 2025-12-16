@@ -166,6 +166,7 @@
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal / Voyage</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
@@ -176,10 +177,30 @@
                             @forelse ($pranotaList as $pranota)
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked>
+                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked data-pranota-id="{{ $pranota->id }}">
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranota->nama_kapal }} / {{ $pranota->no_voyage }}</td>
+                                    <td class="px-2 py-2 text-xs">
+                                        @php
+                                            $enrichedItems = $pranota->getEnrichedItems();
+                                            $supirList = array_unique(array_filter(array_column($enrichedItems, 'supir'), function($supir) {
+                                                return $supir && $supir !== '-';
+                                            }));
+                                        @endphp
+                                        <div class="flex flex-wrap gap-1" data-supir-data='@json($supirList)'>
+                                            @if(count($supirList) > 0)
+                                                @foreach(array_slice($supirList, 0, 2) as $supir)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">{{ $supir }}</span>
+                                                @endforeach
+                                                @if(count($supirList) > 2)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">+{{ count($supirList) - 2 }}</span>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-400 italic">-</span>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
                                         @php
                                             $itemsCount = ($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0);
@@ -198,7 +219,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-2 py-4 text-center text-xs text-gray-500">
+                                    <td colspan="8" class="px-2 py-4 text-center text-xs text-gray-500">
                                         Tidak ada pranota OB yang tersedia.
                                     </td>
                                 </tr>
@@ -210,6 +231,18 @@
                     <p class="text-xs text-gray-600">
                         * Pilih satu atau lebih pranota OB untuk dibayar.
                     </p>
+                </div>
+            </div>
+
+            {{-- Daftar Supir dari Pranota yang Dipilih --}}
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800">Daftar Supir dari Pranota yang Dipilih</h4>
+                </div>
+                <div class="p-3" id="supir-list-container">
+                    <div class="flex flex-wrap gap-2" id="supir-badges">
+                        <span class="text-xs text-gray-500 italic">Pilih pranota untuk melihat daftar supir</span>
+                    </div>
                 </div>
             </div>
 
@@ -311,8 +344,50 @@
                 const allChecked = Array.from(pranotaCheckboxes).every(cb => cb.checked);
                 selectAllCheckbox.checked = allChecked;
                 calculateTotal();
+                updateSupirList();
             });
         });
+
+        // Function to update supir list
+        function updateSupirList() {
+            const supirBadges = document.getElementById('supir-badges');
+            const allSupir = new Set();
+
+            pranotaCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const row = checkbox.closest('tr');
+                    const supirCell = row.querySelector('[data-supir-data]');
+                    if (supirCell) {
+                        try {
+                            const supirData = JSON.parse(supirCell.getAttribute('data-supir-data'));
+                            supirData.forEach(supir => allSupir.add(supir));
+                        } catch (e) {
+                            console.error('Error parsing supir data:', e);
+                        }
+                    }
+                }
+            });
+
+            supirBadges.innerHTML = '';
+
+            if (allSupir.size === 0) {
+                supirBadges.innerHTML = '<span class="text-xs text-gray-500 italic">Tidak ada supir dalam pranota yang dipilih</span>';
+            } else {
+                const supirArray = Array.from(allSupir).sort();
+                supirArray.forEach(supir => {
+                    const badge = document.createElement('span');
+                    badge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800';
+                    badge.innerHTML = `<i class="fas fa-user mr-1"></i>${supir}`;
+                    supirBadges.appendChild(badge);
+                });
+
+                // Add count summary
+                const summary = document.createElement('span');
+                summary.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800';
+                summary.textContent = `Total: ${supirArray.length} supir`;
+                supirBadges.appendChild(summary);
+            }
+        }
 
         // Bank change
         document.getElementById('bank').addEventListener('change', function() {
@@ -377,6 +452,7 @@
 
         // Initial calculation
         calculateTotal();
+        updateSupirList();
         penyesuaianInput.value = '0';
 
         // Generate initial nomor pembayaran if bank is selected
