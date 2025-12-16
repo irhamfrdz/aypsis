@@ -130,6 +130,9 @@
             <form action="{{ route('tanda-terima-lcl.update', $tandaTerima) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 @method('PUT')
+                <!-- Hidden field for tipe_kontainer -->
+                <input type="hidden" name="tipe_kontainer" value="lcl">
+                
                 <!-- 1. Informasi Dasar -->
                 <div class="bg-green-50 p-4 rounded-lg border border-green-200">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -142,15 +145,15 @@
                         <!-- Nomor Tanda Terima -->
                         <div>
                             <label for="nomor_tanda_terima" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nomor Tanda Terima
+                                Nomor Tanda Terima <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="nomor_tanda_terima" id="nomor_tanda_terima"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                    value="{{ old('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima) }}"
-                                   placeholder="TTR-LCL-001 (boleh dikosongkan)">
+                                   placeholder="TTR-LCL-001" required>
                             <p class="mt-1 text-xs text-gray-500">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Input manual, boleh dikosongkan jika belum ada nomor
+                                Nomor tanda terima wajib diisi
                             </p>
                             @error('nomor_tanda_terima')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -227,167 +230,135 @@
                         Informasi Penerima dan Pengirim
                     </h3>
                     
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Kolom Penerima -->
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <h4 class="font-medium text-blue-800 border-b border-blue-200 pb-2 flex-1">Data Penerima</h4>
-                                <button type="button"
-                                        onclick="addPenerimaRow()"
-                                        class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition duration-200 flex items-center">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Tambah Penerima
+                    <!-- Baris 1: Nama Penerima dan Pengirim -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="penerima" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Penerima <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select name="nama_penerima" id="penerima" class="select2-penerima flex-1" required>
+                                    <option value="">-- Pilih Penerima --</option>
+                                    @foreach($masterPengirimPenerima as $item)
+                                        <option value="{{ $item->nama }}" 
+                                                data-alamat="{{ $item->alamat ?? '' }}"
+                                                {{ old('nama_penerima', $tandaTerima->nama_penerima) == $item->nama ? 'selected' : '' }}>
+                                            {{ $item->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" onclick="openPenerimaPopup()" 
+                                        class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            
-                            <div id="penerima-container">
-                                <div class="penerima-row space-y-3 p-3 bg-white rounded border border-blue-200 mb-3">
-                                    <!-- Nama Penerima -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Nama Penerima <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="flex gap-2">
-                                            <select name="nama_penerima[]" required
-                                                    class="select2-penerima flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
-                                                <option value="">-- Pilih Penerima --</option>
-                                                @if(isset($masterPengirimPenerima))
-                                                    @foreach($masterPengirimPenerima as $item)
-                                                        <option value="{{ $item->nama }}" 
-                                                                data-alamat="{{ $item->alamat }}"
-                                                                {{ old('nama_penerima.0', $tandaTerima->nama_penerima) == $item->nama ? 'selected' : '' }}>
-                                                            {{ $item->nama }}
-                                                        </option>
-                                                    @endforeach
-                                                @endif
-                                            </select>
-                                            <button type="button" 
-                                                    onclick="openPenerimaPopup()"
-                                                    class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center"
-                                                    title="Tambah Penerima Baru">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- PIC Penerima -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            PIC Penerima
-                                        </label>
-                                        <input type="text" name="pic_penerima[]"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                               value="{{ old('pic_penerima.0', $tandaTerima->pic_penerima) }}"
-                                               placeholder="Nama PIC Penerima">
-                                    </div>
-
-                                    <!-- Telepon Penerima -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Telepon Penerima
-                                        </label>
-                                        <input type="text" name="telepon_penerima[]"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                               value="{{ old('telepon_penerima.0', $tandaTerima->telepon_penerima) }}"
-                                               placeholder="08123456789">
-                                    </div>
-
-                                    <!-- Alamat Penerima -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Alamat Penerima <span class="text-red-500">*</span>
-                                        </label>
-                                        <textarea name="alamat_penerima[]" rows="2" required
-                                                  class="penerima-alamat w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                                  placeholder="Alamat lengkap penerima...">{{ old('alamat_penerima.0', $tandaTerima->alamat_penerima) }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
+                            @error('nama_penerima')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-
-                        <!-- Kolom Pengirim -->
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <h4 class="font-medium text-blue-800 border-b border-blue-200 pb-2 flex-1">Data Pengirim</h4>
-                                <button type="button"
-                                        onclick="addPengirimRow()"
-                                        class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition duration-200 flex items-center">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Tambah Pengirim
+                        <div>
+                            <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Pengirim <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select name="nama_pengirim" id="pengirim" class="select2-pengirim flex-1" required>
+                                    <option value="">-- Pilih Pengirim --</option>
+                                    @foreach($masterPengirimPenerima as $item)
+                                        <option value="{{ $item->nama }}" 
+                                                data-alamat="{{ $item->alamat ?? '' }}"
+                                                {{ old('nama_pengirim', $tandaTerima->nama_pengirim) == $item->nama ? 'selected' : '' }}>
+                                            {{ $item->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" onclick="openPengirimPopup()" 
+                                        class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            
-                            <div id="pengirim-container">
-                                <div class="pengirim-row space-y-3 p-3 bg-white rounded border border-blue-200 mb-3">
-                                    <!-- Nama Pengirim -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Nama Pengirim <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="flex gap-2">
-                                            <select name="nama_pengirim[]" required
-                                                    class="select2-pengirim flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
-                                                <option value="">-- Pilih Pengirim --</option>
-                                                @if(isset($masterPengirimPenerima))
-                                                    @foreach($masterPengirimPenerima as $item)
-                                                        <option value="{{ $item->nama }}"
-                                                                data-alamat="{{ $item->alamat }}"
-                                                                {{ old('nama_pengirim.0', $tandaTerima->nama_pengirim) == $item->nama ? 'selected' : '' }}>
-                                                            {{ $item->nama }}
-                                                        </option>
-                                                    @endforeach
-                                                @endif
-                                            </select>
-                                            <button type="button" 
-                                                    onclick="openPengirimPopup()"
-                                                    class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center"
-                                                    title="Tambah Pengirim Baru">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
+                            @error('nama_pengirim')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
 
-                                    <!-- PIC Pengirim -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            PIC Pengirim
-                                        </label>
-                                        <input type="text" name="pic_pengirim[]"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                               value="{{ old('pic_pengirim.0', $tandaTerima->pic_pengirim) }}"
-                                               placeholder="Nama PIC Pengirim">
-                                    </div>
+                    <!-- Baris 2: PIC dan Telepon -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="pic_penerima" class="block text-sm font-medium text-gray-700 mb-1">
+                                PIC Penerima
+                            </label>
+                            <input type="text" name="pic_penerima" id="pic_penerima" 
+                                   value="{{ old('pic_penerima', $tandaTerima->pic_penerima) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Nama PIC Penerima">
+                        </div>
+                        <div>
+                            <label for="pic_pengirim" class="block text-sm font-medium text-gray-700 mb-1">
+                                PIC Pengirim
+                            </label>
+                            <input type="text" name="pic_pengirim" id="pic_pengirim" 
+                                   value="{{ old('pic_pengirim', $tandaTerima->pic_pengirim) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Nama PIC Pengirim">
+                        </div>
+                    </div>
 
-                                    <!-- Telepon Pengirim -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Telepon Pengirim
-                                        </label>
-                                        <input type="text" name="telepon_pengirim[]"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                               value="{{ old('telepon_pengirim.0', $tandaTerima->telepon_pengirim) }}"
-                                               placeholder="08123456789">
-                                    </div>
+                    <!-- Baris 3: Telepon -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="telepon_penerima" class="block text-sm font-medium text-gray-700 mb-1">
+                                Telepon Penerima
+                            </label>
+                            <input type="text" name="telepon_penerima" id="telepon_penerima" 
+                                   value="{{ old('telepon_penerima', $tandaTerima->telepon_penerima) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Nomor telepon penerima">
+                        </div>
+                        <div>
+                            <label for="telepon_pengirim" class="block text-sm font-medium text-gray-700 mb-1">
+                                Telepon Pengirim
+                            </label>
+                            <input type="text" name="telepon_pengirim" id="telepon_pengirim" 
+                                   value="{{ old('telepon_pengirim', $tandaTerima->telepon_pengirim) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Nomor telepon pengirim">
+                        </div>
+                    </div>
 
-                                    <!-- Alamat Pengirim -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Alamat Pengirim <span class="text-red-500">*</span>
-                                        </label>
-                                        <textarea name="alamat_pengirim[]" rows="2" required
-                                                  class="pengirim-alamat w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                                  placeholder="Alamat lengkap pengirim...">{{ old('alamat_pengirim.0', $tandaTerima->alamat_pengirim) }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Baris 4: Alamat -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="alamat_penerima" class="block text-sm font-medium text-gray-700 mb-1">
+                                Alamat Penerima <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="alamat_penerima" id="alamat_penerima" rows="2" required
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                      placeholder="Alamat lengkap penerima">{{ old('alamat_penerima', $tandaTerima->alamat_penerima) }}</textarea>
+                        </div>
+                        <div>
+                            <label for="alamat_pengirim" class="block text-sm font-medium text-gray-700 mb-1">
+                                Alamat Pengirim <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="alamat_pengirim" id="alamat_pengirim" rows="2" required
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                      placeholder="Alamat lengkap pengirim">{{ old('alamat_pengirim', $tandaTerima->alamat_pengirim) }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Baris 5: Nama Barang -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Barang <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama_barang" id="nama_barang" 
+                                   value="{{ old('nama_barang', $tandaTerima->nama_barang) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama barang" required>
+                            @error('nama_barang')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -1550,224 +1521,156 @@ function removeExistingImage(button, path) {
         }
     }); // End of jQuery ready
     
+    // Function to open penerima popup window
+    function openPenerimaPopup() {
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create") }}',
+            'TambahPenerima',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
+    // Function to open pengirim popup window
+    function openPengirimPopup() {
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create") }}',
+            'TambahPengirim',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
     // Initialize Select2 for all penerima and pengirim dropdowns
     function initializeSelect2Dropdowns() {
-        // Initialize all penerima Select2 dropdowns
-        jQuery('.select2-penerima').each(function() {
-            if (!jQuery(this).hasClass('select2-hidden-accessible')) {
-                jQuery(this).select2({
-                    placeholder: '-- Pilih Penerima --',
-                    allowClear: true,
-                    width: '100%',
-                    dropdownAutoWidth: false,
-                    language: {
-                        noResults: function() {
-                            return "Tidak ada hasil ditemukan";
-                        },
-                        searching: function() {
-                            return "Mencari...";
-                        }
-                    }
-                });
+        // Initialize penerima Select2 dropdown
+        if (!jQuery('.select2-penerima').hasClass('select2-hidden-accessible')) {
+            jQuery('.select2-penerima').select2({
+                placeholder: '-- Pilih Penerima --',
+                allowClear: true,
+                width: '100%'
+            });
 
-                // Auto-fill alamat when selected
-                jQuery(this).on('select2:select', function(e) {
-                    var selectedOption = e.params.data.element;
-                    var alamat = jQuery(selectedOption).data('alamat');
-                    var row = jQuery(this).closest('.penerima-row');
-                    
-                    if (alamat && row.length) {
-                        row.find('.penerima-alamat').val(alamat);
-                    }
-                });
+            // Auto-fill alamat when penerima selected
+            jQuery('.select2-penerima').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = jQuery(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    jQuery('#alamat_penerima').val(alamat);
+                }
+            });
 
-                // Clear alamat when cleared
-                jQuery(this).on('select2:clear', function(e) {
-                    var row = jQuery(this).closest('.penerima-row');
-                    if (row.length) {
-                        row.find('.penerima-alamat').val('');
-                    }
-                });
-            }
-        });
+            // Clear alamat when cleared
+            jQuery('.select2-penerima').on('select2:clear', function(e) {
+                jQuery('#alamat_penerima').val('');
+            });
+        }
 
-        // Initialize all pengirim Select2 dropdowns
-        jQuery('.select2-pengirim').each(function() {
-            if (!jQuery(this).hasClass('select2-hidden-accessible')) {
-                jQuery(this).select2({
-                    placeholder: '-- Pilih Pengirim --',
-                    allowClear: true,
-                    width: '100%',
-                    dropdownAutoWidth: false,
-                    language: {
-                        noResults: function() {
-                            return "Tidak ada hasil ditemukan";
-                        },
-                        searching: function() {
-                            return "Mencari...";
-                        }
-                    }
-                });
+        // Initialize pengirim Select2 dropdown
+        if (!jQuery('.select2-pengirim').hasClass('select2-hidden-accessible')) {
+            jQuery('.select2-pengirim').select2({
+                placeholder: '-- Pilih Pengirim --',
+                allowClear: true,
+                width: '100%'
+            });
 
-                // Auto-fill alamat when selected
-                jQuery(this).on('select2:select', function(e) {
-                    var selectedOption = e.params.data.element;
-                    var alamat = jQuery(selectedOption).data('alamat');
-                    var row = jQuery(this).closest('.pengirim-row');
-                    
-                    if (alamat && row.length) {
-                        row.find('.pengirim-alamat').val(alamat);
-                    }
-                });
+            // Auto-fill alamat when pengirim selected
+            jQuery('.select2-pengirim').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = jQuery(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    jQuery('#alamat_pengirim').val(alamat);
+                }
+            });
 
-                // Clear alamat when cleared
-                jQuery(this).on('select2:clear', function(e) {
-                    var row = jQuery(this).closest('.pengirim-row');
-                    if (row.length) {
-                        row.find('.pengirim-alamat').val('');
-                    }
-                });
-            }
-        });
-    }
-
-    // Add new penerima row
-    function addPenerimaRow() {
-        const container = document.getElementById('penerima-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'penerima-row space-y-3 p-3 bg-white rounded border border-blue-200 mb-3 relative';
-        
-        newRow.innerHTML = `
-            <button type="button" onclick="removePenerimaRow(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Nama Penerima <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2">
-                    <select name="nama_penerima[]" required class="select2-penerima flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
-                        <option value="">-- Pilih Penerima --</option>
-                        @if(isset($masterPengirimPenerima))
-                            @foreach($masterPengirimPenerima as $item)
-                                <option value="{{ $item->nama }}" data-alamat="{{ $item->alamat }}">{{ $item->nama }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                    <button type="button" onclick="openPenerimaPopup()" class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center" title="Tambah Penerima Baru">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">PIC Penerima</label>
-                <input type="text" name="pic_penerima[]" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Nama PIC Penerima">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Telepon Penerima</label>
-                <input type="text" name="telepon_penerima[]" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="08123456789">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Alamat Penerima <span class="text-red-500">*</span>
-                </label>
-                <textarea name="alamat_penerima[]" rows="2" required class="penerima-alamat w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Alamat lengkap penerima..."></textarea>
-            </div>
-        `;
-        
-        container.appendChild(newRow);
-        initializeSelect2Dropdowns();
-    }
-
-    // Remove penerima row
-    function removePenerimaRow(button) {
-        const row = button.closest('.penerima-row');
-        const container = document.getElementById('penerima-container');
-        
-        // Prevent removing the last row
-        if (container.querySelectorAll('.penerima-row').length > 1) {
-            row.remove();
-        } else {
-            alert('Minimal harus ada 1 penerima!');
+            // Clear alamat when cleared
+            jQuery('.select2-pengirim').on('select2:clear', function(e) {
+                jQuery('#alamat_pengirim').val('');
+            });
         }
     }
 
-    // Add new pengirim row
-    function addPengirimRow() {
-        const container = document.getElementById('pengirim-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'pengirim-row space-y-3 p-3 bg-white rounded border border-blue-200 mb-3 relative';
+    // Listen for message from popup when new penerima/pengirim is added
+    window.addEventListener('message', function(event) {
+        // Verify origin for security
+        if (event.origin !== window.location.origin) return;
         
-        newRow.innerHTML = `
-            <button type="button" onclick="removePengirimRow(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
+        if (event.data.type === 'penerimaAdded') {
+            const newData = event.data.penerima;
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Nama Pengirim <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2">
-                    <select name="nama_pengirim[]" required class="select2-pengirim flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
-                        <option value="">-- Pilih Pengirim --</option>
-                        @if(isset($masterPengirimPenerima))
-                            @foreach($masterPengirimPenerima as $item)
-                                <option value="{{ $item->nama }}" data-alamat="{{ $item->alamat }}">{{ $item->nama }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                    <button type="button" onclick="openPengirimPopup()" class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center" title="Tambah Pengirim Baru">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            // Add to both penerima and pengirim select (same data source)
+            const penerimaSelect = jQuery('.select2-penerima');
+            const pengirimSelect = jQuery('.select2-pengirim');
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">PIC Pengirim</label>
-                <input type="text" name="pic_pengirim[]" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Nama PIC Pengirim">
-            </div>
+            // Add new option to penerima
+            const penerimaOption = new Option(newData.nama, newData.nama, true, true);
+            jQuery(penerimaOption).attr('data-alamat', newData.alamat || '');
+            penerimaSelect.append(penerimaOption);
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Telepon Pengirim</label>
-                <input type="text" name="telepon_pengirim[]" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="08123456789">
-            </div>
+            // Add new option to pengirim  
+            const pengirimOption = new Option(newData.nama, newData.nama, false, false);
+            jQuery(pengirimOption).attr('data-alamat', newData.alamat || '');
+            pengirimSelect.append(pengirimOption);
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Alamat Pengirim <span class="text-red-500">*</span>
-                </label>
-                <textarea name="alamat_pengirim[]" rows="2" required class="pengirim-alamat w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Alamat lengkap pengirim..."></textarea>
-            </div>
-        `;
-        
-        container.appendChild(newRow);
-        initializeSelect2Dropdowns();
-    }
-
-    // Remove pengirim row
-    function removePengirimRow(button) {
-        const row = button.closest('.pengirim-row');
-        const container = document.getElementById('pengirim-container');
-        
-        // Prevent removing the last row
-        if (container.querySelectorAll('.pengirim-row').length > 1) {
-            row.remove();
-        } else {
-            alert('Minimal harus ada 1 pengirim!');
+            // Trigger select2 change and auto-fill alamat for penerima
+            penerimaSelect.trigger('change');
+            jQuery('#alamat_penerima').val(newData.alamat || '');
+            
+            console.log('✓ New penerima/pengirim added:', newData.nama);
         }
-    }
+    });
+
+    // Listen for message from popup when new penerima/pengirim is added
+    window.addEventListener('message', function(event) {
+        // Verify origin for security
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data.type === 'penerimaAdded') {
+            const newData = event.data.penerima;
+            
+            // Add to both penerima and pengirim select (same data source)
+            const penerimaSelect = jQuery('.select2-penerima');
+            const pengirimSelect = jQuery('.select2-pengirim');
+            
+            // Add new option to penerima
+            const penerimaOption = new Option(newData.nama, newData.nama, true, true);
+            jQuery(penerimaOption).attr('data-alamat', newData.alamat || '');
+            penerimaSelect.append(penerimaOption);
+            
+            // Add new option to pengirim  
+            const pengirimOption = new Option(newData.nama, newData.nama, false, false);
+            jQuery(pengirimOption).attr('data-alamat', newData.alamat || '');
+            pengirimSelect.append(pengirimOption);
+            
+            // Trigger select2 change and auto-fill alamat for penerima
+            penerimaSelect.trigger('change');
+            jQuery('#alamat_penerima').val(newData.alamat || '');
+            
+            console.log('✓ New penerima/pengirim added:', newData.nama);
+        }
+    });
 </script>
 @endpush
 @endsection
