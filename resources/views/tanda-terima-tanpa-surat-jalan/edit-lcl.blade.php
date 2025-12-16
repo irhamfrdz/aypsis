@@ -708,111 +708,7 @@
                     </div>
                 </div>
 
-                <!-- 6. Informasi Kontainer -->
-                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        Informasi Kontainer
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <!-- Nomor Kontainer -->
-                        <div>
-                            <label for="nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nomor Kontainer
-                            </label>
-                            <div class="relative">
-                                <input type="text" id="nomorKontainerSearch" placeholder="Cari nomor kontainer..." autocomplete="off"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                                       value="{{ old('nomor_kontainer', $tandaTerima->nomor_kontainer) != '__manual__' ? old('nomor_kontainer', $tandaTerima->nomor_kontainer) : '' }}">
-                                <div id="nomorKontainerDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto hidden">
-                                    @if(isset($containerOptions) && count($containerOptions))
-                                        @foreach($containerOptions as $opt)
-                                            <div class="nomor-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer" data-value="{{ $opt['value'] }}" data-text="{{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif" data-size="{{ $opt['size'] }}" data-source="{{ $opt['source'] }}">
-                                                {{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                    <div class="nomor-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600" data-value="__manual__" data-text="&raquo; Ketik manual / Lainnya">
-                                        &raquo; Ketik manual / Lainnya
-                                    </div>
-                                </div>
-                                <input type="hidden" name="nomor_kontainer" id="nomor_kontainer" value="{{ old('nomor_kontainer', $tandaTerima->nomor_kontainer) }}">
-                            </div>
-                            <input type="text" name="nomor_kontainer_manual" id="nomor_kontainer_manual" value="{{ old('nomor_kontainer_manual') }}" placeholder="Masukkan nomor kontainer jika memilih Lainnya" class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm hidden" />
-                            <p class="mt-1 text-xs text-gray-500">Isi jika sudah ditentukan kontainernya, kosongkan jika belum</p>
-                            @error('nomor_kontainer')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Size Kontainer -->
-                        <div>
-                            <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
-                                Size Kontainer
-                            </label>
-                            <select name="size_kontainer" id="size_kontainer"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                                <option value="">Pilih Size Kontainer</option>
-                                <option value="20ft" {{ old('size_kontainer', $tandaTerima->size_kontainer) == '20ft' ? 'selected' : '' }}>20 Feet</option>
-                                <option value="40ft" {{ old('size_kontainer', $tandaTerima->size_kontainer) == '40ft' ? 'selected' : '' }}>40 Feet</option>
-                                <option value="40hc" {{ old('size_kontainer', $tandaTerima->size_kontainer) == '40hc' ? 'selected' : '' }}>40 Feet High Cube</option>
-                                <option value="45ft" {{ old('size_kontainer', $tandaTerima->size_kontainer) == '45ft' ? 'selected' : '' }}>45 Feet</option>
-                            </select>
-                            <p class="mt-1 text-xs text-gray-500">Ukuran kontainer yang akan digunakan</p>
-                            @error('size_kontainer')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Nomor Seal -->
-                        <div>
-                            <label for="nomor_seal" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nomor Seal
-                            </label>
-                            <input type="text" name="nomor_seal" id="nomor_seal"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                                   value="{{ old('nomor_seal', $tandaTerima->nomor_seal) }}"
-                                   placeholder="Masukkan nomor seal">
-                            <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Jika diisi, data akan langsung bisa masuk ke prospek
-                            </p>
-                            @error('nomor_seal')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Tipe Kontainer -->
-                        <div>
-                            <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
-                                Tipe Kontainer
-                            </label>
-                            <select name="tipe_kontainer" id="tipe_kontainer"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                                <option value="">Pilih Tipe Kontainer</option>
-                                <option value="HC" {{ old('tipe_kontainer', $tandaTerima->tipe_kontainer) == 'HC' ? 'selected' : '' }}>HC (High Cube)</option>
-                                <option value="STD" {{ old('tipe_kontainer', $tandaTerima->tipe_kontainer) == 'STD' ? 'selected' : '' }}>STD (Standard)</option>
-                                <option value="RF" {{ old('tipe_kontainer', $tandaTerima->tipe_kontainer) == 'RF' ? 'selected' : '' }}>RF (Reefer)</option>
-                                <option value="OT" {{ old('tipe_kontainer', $tandaTerima->tipe_kontainer) == 'OT' ? 'selected' : '' }}>OT (Open Top)</option>
-                                <option value="FR" {{ old('tipe_kontainer', $tandaTerima->tipe_kontainer) == 'FR' ? 'selected' : '' }}>FR (Flat Rack)</option>
-                                <option value="Dry Container" {{ old('tipe_kontainer', $tandaTerima->tipe_kontainer) == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
-                            </select>
-                            <p class="mt-1 text-xs text-gray-500">Jenis kontainer yang akan digunakan</p>
-                            @error('tipe_kontainer')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-
-
-                </div>
-
-                <!-- 7. Tujuan Pengiriman -->
+                <!-- 6. Tujuan Pengiriman -->
                 <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -822,20 +718,32 @@
                         Tujuan Pengiriman
                     </h3>
                     <div>
-                        <label for="master_tujuan_kirim_id" class="block text-sm font-medium text-gray-700 mb-1">
-                            Pilih Tujuan <span class="text-red-500">*</span>
+                        <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tujuan Pengiriman <span class="text-red-500">*</span>
                         </label>
-                        <select name="master_tujuan_kirim_id" id="master_tujuan_kirim_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Pilih Tujuan Pengiriman</option>
-                            @foreach(App\Models\MasterTujuanKirim::all() as $tujuan)
-                                <option value="{{ $tujuan->id }}" {{ old('master_tujuan_kirim_id', $tandaTerima->tujuan_pengiriman_id) == $tujuan->id ? 'selected' : '' }}>
-                                    {{ $tujuan->nama_tujuan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500">Pilih tujuan pengiriman barang</p>
-                        @error('master_tujuan_kirim_id')
+                        <div class="relative">
+                            <input type="text" id="tujuanPengirimanSearch" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                   placeholder="Cari tujuan pengiriman..." autocomplete="off" required
+                                   value="{{ old('tujuan_pengiriman') ? App\Models\MasterTujuanKirim::find(old('tujuan_pengiriman'))->nama_tujuan ?? '' : ($tandaTerima->tujuanPengiriman ? $tandaTerima->tujuanPengiriman->nama_tujuan : '') }}">
+                            <div id="tujuanPengirimanDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                                @foreach(App\Models\MasterTujuanKirim::all() as $tujuan)
+                                    <div class="tujuan-pengiriman-option px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100"
+                                         data-value="{{ $tujuan->id }}" data-text="{{ $tujuan->nama_tujuan }}">
+                                        {{ $tujuan->nama_tujuan }}
+                                    </div>
+                                @endforeach
+                            </div>
+                            <select name="tujuan_pengiriman" id="tujuan_pengiriman" class="hidden">
+                                <option value="">Pilih Tujuan Pengiriman</option>
+                                @foreach(App\Models\MasterTujuanKirim::all() as $tujuan)
+                                    <option value="{{ $tujuan->id }}" {{ old('tujuan_pengiriman', $tandaTerima->tujuan_pengiriman_id) == $tujuan->id ? 'selected' : '' }}>
+                                        {{ $tujuan->nama_tujuan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('tujuan_pengiriman')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -1032,161 +940,6 @@
 </div>
 
 <script>
-function toggleKontainerFields() {
-    const cargo = document.querySelector('input[name="tipe_kontainer"]:checked').value === 'cargo';
-    const kontainerFields = document.getElementById('kontainer-fields');
-    
-    if (cargo) {
-        kontainerFields.style.display = 'none';
-        // Clear kontainer fields when cargo is selected
-        document.getElementById('nomor_kontainer').value = '';
-        document.getElementById('size_kontainer').value = '';
-    } else {
-        kontainerFields.style.display = 'grid';
-    }
-}
-    // Initialize nomor kontainer dropdown
-    initializeNomorKontainerDropdown();
-
-function setSizeKontainerValue(size) {
-    const sizeSelect = document.getElementById('size_kontainer');
-    if (!sizeSelect) return;
-    // Normalize for LCL formats
-    function normalizeLclSize(s) {
-        if (!s) return '';
-        s = String(s).toLowerCase();
-        if (s.match(/40hc|40 hc/)) return '40hc';
-        if (s.match(/40/)) return '40ft';
-        if (s.match(/20/)) return '20ft';
-        if (s.match(/45/)) return '45ft';
-        return s;
-    }
-    size = normalizeLclSize(size);
-    let matched = false;
-    for (let i = 0; i < sizeSelect.options.length; i++) {
-        const opt = sizeSelect.options[i];
-        if (!size) { opt.selected = false; continue; }
-        if (opt.value === size || (opt.text && opt.text.toLowerCase().includes(String(size).toLowerCase())) || opt.value.replace(/\s|-/g, '').toLowerCase() === String(size).replace(/\s|-/g, '').toLowerCase()) {
-            opt.selected = true;
-            matched = true;
-            break;
-        }
-    }
-    if (!matched) {
-        sizeSelect.value = size;
-    }
-}
-
-function initializeNomorKontainerDropdown() {
-    const searchInput = document.getElementById('nomorKontainerSearch');
-    const dropdown = document.getElementById('nomorKontainerDropdown');
-    const hiddenInput = document.getElementById('nomor_kontainer');
-    const manualField = document.getElementById('nomor_kontainer_manual');
-    const options = document.querySelectorAll('.nomor-kontainer-option');
-
-    if (!searchInput || !dropdown || !hiddenInput) {
-        console.error('Required elements not found for nomor kontainer dropdown');
-        return;
-    }
-
-    // Show dropdown when search input is focused
-    searchInput.addEventListener('focus', function() {
-        dropdown.classList.remove('hidden');
-    });
-
-    // Filter options based on search
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        let hasVisibleOptions = false;
-
-        options.forEach(option => {
-            const text = option.getAttribute('data-text').toLowerCase();
-            if (text.includes(searchTerm)) {
-                option.style.display = 'block';
-                hasVisibleOptions = true;
-            } else {
-                option.style.display = 'none';
-            }
-        });
-
-        dropdown.classList.remove('hidden');
-    });
-
-    // Handle option selection
-    options.forEach(option => {
-        option.addEventListener('click', function() {
-            const value = this.getAttribute('data-value');
-            const text = this.getAttribute('data-text');
-            const size = this.getAttribute('data-size');
-
-            // Set the hidden input value
-            hiddenInput.value = value;
-
-            // Update search input
-            searchInput.value = text;
-
-            // Auto-fill size_kontainer
-            setSizeKontainerValue(size);
-
-            // Handle manual field
-            if (value === '__manual__') {
-                manualField.classList.remove('hidden');
-                manualField.focus();
-            } else {
-                manualField.classList.add('hidden');
-            }
-
-            // Hide dropdown
-            dropdown.classList.add('hidden');
-        });
-    });
-
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('#nomorKontainerSearch') && !e.target.closest('#nomorKontainerDropdown')) {
-            dropdown.classList.add('hidden');
-        }
-    });
-
-    // Handle keyboard navigation
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            dropdown.classList.add('hidden');
-        }
-    });
-
-    // Set initial value if exists
-    if (hiddenInput.value) {
-        const selectedOption = document.querySelector(`.nomor-kontainer-option[data-value="${hiddenInput.value}"]`);
-        if (selectedOption) {
-            searchInput.value = selectedOption.getAttribute('data-text');
-            const size = selectedOption.getAttribute('data-size');
-            setSizeKontainerValue(size);
-        } else if (hiddenInput.value === '__manual__' && manualField.value) {
-            searchInput.value = manualField.value;
-            manualField.classList.remove('hidden');
-        }
-    }
-}
-// Ensure manual value is submitted if manual option chosen (edit-lcl)
-const editLclForm = document.querySelector('form');
-if (editLclForm) {
-    editLclForm.addEventListener('submit', function(e) {
-        const hiddenInput = document.getElementById('nomor_kontainer');
-        const manualField = document.getElementById('nomor_kontainer_manual');
-        if (hiddenInput && hiddenInput.value === '__manual__') {
-            if (!manualField || !manualField.value.trim()) {
-                e.preventDefault();
-                alert('Silakan isi nomor kontainer pada input manual.');
-                (manualField || document.getElementById('nomorKontainerSearch')).focus();
-                return false;
-            }
-            // Set hidden input to manual value
-            hiddenInput.value = manualField.value.trim();
-        }
-    });
-}
-
 function calculateVolume(element) {
     const row = element.closest('.dimensi-row');
     const panjang = parseFloat(row.querySelector('input[name*="[panjang]"]').value) || 0;
@@ -1351,8 +1104,6 @@ function removeDimensiRow(button) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    toggleKontainerFields();
-    
     // Format input values on blur for smart decimal display
     document.addEventListener('blur', function(e) {
         if (e.target.matches('input[name*="[panjang]"], input[name*="[lebar]"], input[name*="[tinggi]"], input[name*="[tonase]"]')) {
@@ -1548,6 +1299,9 @@ function removeExistingImage(button, path) {
         // Initialize supir dropdown (non-Select2)
         initializeSupirDropdown();
         
+        // Initialize tujuan pengiriman dropdown
+        initializeTujuanPengirimanDropdown();
+        
         // Wait for Select2 to be fully loaded with retry mechanism
         function waitForSelect2(callback, attempts) {
             attempts = attempts || 0;
@@ -1715,6 +1469,85 @@ function removeExistingImage(button, path) {
         document.addEventListener('click', function(e) {
             if (!e.target.closest('#supirSearch') && !e.target.closest('#supirDropdown')) {
                 dropdown.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Initialize tujuan pengiriman dropdown
+    function initializeTujuanPengirimanDropdown() {
+        const searchInput = document.getElementById('tujuanPengirimanSearch');
+        const dropdown = document.getElementById('tujuanPengirimanDropdown');
+        const hiddenSelect = document.getElementById('tujuan_pengiriman');
+        const options = document.querySelectorAll('.tujuan-pengiriman-option');
+
+        if (!searchInput || !dropdown || !hiddenSelect) {
+            console.error('Required elements not found for tujuan pengiriman dropdown');
+            return;
+        }
+
+        // Remove required from hidden select and add to search input
+        if (hiddenSelect) {
+            hiddenSelect.removeAttribute('required');
+        }
+        if (searchInput) {
+            searchInput.setAttribute('required', 'required');
+        }
+
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+
+            // Clear validation state when user types
+            this.setCustomValidity('');
+
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            dropdown.classList.remove('hidden');
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+
+                hiddenSelect.value = value;
+                searchInput.value = text;
+                searchInput.setCustomValidity('');
+
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#tujuanPengirimanSearch') && !e.target.closest('#tujuanPengirimanDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Custom validation
+        searchInput.addEventListener('invalid', function() {
+            if (!hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu tujuan pengiriman dari daftar yang tersedia.');
+            }
+        });
+
+        searchInput.addEventListener('blur', function() {
+            if (this.value && !hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu tujuan pengiriman dari daftar yang tersedia.');
+            } else if (!this.value) {
+                this.setCustomValidity('Tujuan pengiriman wajib diisi.');
             }
         });
     }
