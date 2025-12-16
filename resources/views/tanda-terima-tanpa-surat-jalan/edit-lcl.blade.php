@@ -864,7 +864,7 @@ function calculateVolume(rowElement) {
     const jumlah = jumlahInput ? (parseInt(jumlahInput.value, 10) || 1) : 1;
     
     // Calculate volume in cubic meters including jumlah
-    const volume = panjang * lebar * tinggi * jumlah;
+    const volume = panjang * tinggi * lebar * jumlah;
     
     volumeInput.value = formatVolumeForDatabase(volume);
 }

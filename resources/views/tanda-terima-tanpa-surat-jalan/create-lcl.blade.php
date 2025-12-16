@@ -1216,7 +1216,7 @@
         const jumlah = parseFloat(jumlahInput.value) || 0;
 
         if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
-            const volume = panjang * lebar * tinggi * jumlah;
+            const volume = panjang * tinggi * lebar * jumlah;
             volumeInput.value = volume.toFixed(3);
         } else {
             volumeInput.value = '';

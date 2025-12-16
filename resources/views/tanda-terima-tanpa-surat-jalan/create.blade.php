@@ -1087,8 +1087,8 @@
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            // Kalkulasi volume termasuk jumlah: panjang × lebar × tinggi × jumlah
-            volume = panjang * lebar * tinggi * jumlah;
+            // Kalkulasi volume termasuk jumlah: panjang × tinggi × lebar × jumlah
+            volume = panjang * tinggi * lebar * jumlah;
         }
 
         const volumeInput = row.querySelector('.item-meter-kubik');
@@ -1121,7 +1121,7 @@
                 const jumlah = jumlahEl ? (parseInt(jumlahEl.value, 10) || 1) : 1;
 
                 if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                    volume = panjang * lebar * tinggi * jumlah;
+                    volume = panjang * tinggi * lebar * jumlah;
                 }
 
                 const volumeInput = row.querySelector('.item-meter-kubik');
@@ -1928,7 +1928,7 @@
 
         if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
             // Calculate volume in cubic meters (m³) including jumlah
-            const volume = panjang * lebar * tinggi * jumlah;
+            const volume = panjang * tinggi * lebar * jumlah;
             
             // Validate: check for unrealistic values (> 100000 m³ likely means user entered cm instead of m)
             if (volume > 100000) {

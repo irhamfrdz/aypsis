@@ -369,7 +369,7 @@
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label>
-                                            <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="{{ old('jumlah.'.$idx, 1) }}" required>
+                                            <input type="number" name="jumlah[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="{{ old('jumlah.'.$idx, 1) }}" required oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label>
@@ -415,7 +415,7 @@
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label>
-                                            <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="{{ old('jumlah', $item['jumlah'] ?? $item->jumlah ?? 1) }}" required>
+                                            <input type="number" name="jumlah[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="{{ old('jumlah', $item['jumlah'] ?? $item->jumlah ?? 1) }}" required oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label>
@@ -456,7 +456,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label>
-                                        <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="1" required>
+                                        <input type="number" name="jumlah[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="1" required oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label>
@@ -1450,14 +1450,16 @@
             const panjangInput = rowElement.querySelector('input[name="panjang[]"]');
             const lebarInput = rowElement.querySelector('input[name="lebar[]"]');
             const tinggiInput = rowElement.querySelector('input[name="tinggi[]"]');
+            const jumlahInput = rowElement.querySelector('input[name="jumlah[]"]');
             const volumeInput = rowElement.querySelector('input[name="meter_kubik[]"]');
 
             const panjang = parseFloat(panjangInput?.value) || 0;
             const lebar = parseFloat(lebarInput?.value) || 0;
             const tinggi = parseFloat(tinggiInput?.value) || 0;
+            const jumlah = jumlahInput ? (parseInt(jumlahInput.value, 10) || 1) : 1;
 
             if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                const volume = panjang * lebar * tinggi;
+                const volume = panjang * tinggi * lebar * jumlah;
                 
                 // Validate: check for unrealistic values (> 100000 m³ likely means user entered cm instead of m)
                 if (volume > 100000) {
@@ -1493,7 +1495,7 @@
                     </button>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div><label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label><input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label><input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="1" required></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label><input type="number" name="jumlah[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="1" required oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
                         <div><label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label><input type="text" name="satuan[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Pcs, Kg, Box" value="unit" required></div>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -1563,7 +1565,13 @@
                 });
                 // When tonase/jumlah/satuan/nama input change update hidden fields
                 container.querySelectorAll('input[name="tonase[]"], input[name="jumlah[]"], input[name="satuan[]"], input[name="nama_barang[]"]').forEach(inp => {
-                    inp.addEventListener('input', updateHiddenBarangFields);
+                    inp.addEventListener('input', function() {
+                        updateHiddenBarangFields();
+                        if (this.name === 'jumlah[]') {
+                            const row = this.closest('.dimensi-row-edit');
+                            if (row) calculateVolumeEdit(row);
+                        }
+                    });
                 });
             }
         });
@@ -1572,6 +1580,11 @@
         document.addEventListener('input', function(e) {
             if (e.target && (e.target.matches('input[name="nama_barang[]"]') || e.target.matches('input[name="jumlah[]"]') || e.target.matches('input[name="satuan[]"]') || e.target.matches('input[name="tonase[]"]'))) {
                 updateHiddenBarangFields();
+            }
+            // If jumlah changed, recalculate volume for that row (handles dynamically added rows)
+            if (e.target && e.target.matches && e.target.matches('input[name="jumlah[]"]')) {
+                const row = e.target.closest('.dimensi-row-edit');
+                if (row) calculateVolumeEdit(row);
             }
         });
 
