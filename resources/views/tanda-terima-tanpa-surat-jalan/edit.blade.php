@@ -841,6 +841,28 @@
     const editForm = document.querySelector('form');
     if (editForm) {
         editForm.addEventListener('submit', function (e) {
+            // Validate volumes before submission
+            const volumeInputs = document.querySelectorAll('input[name="meter_kubik[]"]');
+            let hasInvalidVolume = false;
+            let maxVolume = 0;
+            
+            volumeInputs.forEach(input => {
+                const vol = parseFloat(input.value) || 0;
+                if (vol > maxVolume) maxVolume = vol;
+                if (vol > 100000) {
+                    hasInvalidVolume = true;
+                }
+            });
+            
+            if (hasInvalidVolume) {
+                e.preventDefault();
+                alert('❌ ERROR: Volume terlalu besar (' + maxVolume.toFixed(2) + ' m³)!\n\n' +
+                      'Pastikan Anda memasukkan dimensi dalam METER, bukan centimeter.\n' +
+                      'Contoh: Masukkan 1.5 untuk 1.5 meter (bukan 150).\n\n' +
+                      'Silakan perbaiki input dimensi Anda.');
+                return false;
+            }
+            
             const hiddenInput = document.getElementById('no_kontainer');
             const manualField = document.getElementById('no_kontainer_manual');
             if (hiddenInput && hiddenInput.value === '__manual__') {
@@ -1466,6 +1488,19 @@
 
             if (panjang > 0 && lebar > 0 && tinggi > 0) {
                 const volume = panjang * lebar * tinggi;
+                
+                // Validate: check for unrealistic values (> 100000 m³ likely means user entered cm instead of m)
+                if (volume > 100000) {
+                    alert('⚠️ PERINGATAN: Volume yang dihitung sangat besar (' + volume.toFixed(2) + ' m³).\n\n' +
+                          'Pastikan Anda memasukkan dimensi dalam METER, bukan centimeter!\n' +
+                          'Contoh: 1.5 meter (bukan 150 cm)');
+                    panjangInput.value = '';
+                    lebarInput.value = '';
+                    tinggiInput.value = '';
+                    volumeInput.value = '';
+                    return;
+                }
+                
                 volumeInput.value = volume.toFixed(3);
             } else {
                 volumeInput.value = '';
