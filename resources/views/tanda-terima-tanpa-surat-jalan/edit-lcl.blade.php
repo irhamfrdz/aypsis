@@ -841,16 +841,28 @@
 </div>
 
 <script>
-function calculateVolume(element) {
-    const row = element.closest('.dimensi-row');
-    const panjang = parseFloat(row.querySelector('input[name*="[panjang]"]').value) || 0;
-    const lebar = parseFloat(row.querySelector('input[name*="[lebar]"]').value) || 0;
-    const tinggi = parseFloat(row.querySelector('input[name*="[tinggi]"]').value) || 0;
+function calculateVolume(rowElement) {
+    if (!rowElement) return;
+    
+    // Try to find inputs - handle both array format (panjang[]) and object format (items[x][panjang])
+    const panjangInput = rowElement.querySelector('input[name*="panjang"]');
+    const lebarInput = rowElement.querySelector('input[name*="lebar"]');
+    const tinggiInput = rowElement.querySelector('input[name*="tinggi"]');
+    const volumeInput = rowElement.querySelector('input[name*="meter_kubik"]');
+    
+    // Check if all required inputs exist
+    if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) {
+        console.warn('Cannot calculate volume: missing input elements');
+        return;
+    }
+    
+    const panjang = parseFloat(panjangInput.value) || 0;
+    const lebar = parseFloat(lebarInput.value) || 0;
+    const tinggi = parseFloat(tinggiInput.value) || 0;
     
     // Calculate volume in cubic meters (m × m × m = m³)
     const volume = panjang * lebar * tinggi;
     
-    const volumeInput = row.querySelector('.volume-input');
     volumeInput.value = formatVolumeForDatabase(volume);
 }
 
@@ -967,24 +979,24 @@ function addDimensiRow() {
                 <label class="block text-sm font-medium text-gray-700 mb-1">Panjang (m)</label>
                 <input type="number" name="items[${itemIndex}][panjang]" step="0.01" 
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                       onchange="calculateVolume(this)">
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Lebar (m)</label>
                 <input type="number" name="items[${itemIndex}][lebar]" step="0.01" 
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                       onchange="calculateVolume(this)">
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tinggi (m)</label>
                 <input type="number" name="items[${itemIndex}][tinggi]" step="0.01" 
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                       onchange="calculateVolume(this)">
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Volume (m³)</label>
                 <input type="text" name="items[${itemIndex}][meter_kubik]" 
-                       class="volume-input w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                        readonly>
             </div>
             <div>
