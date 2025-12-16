@@ -13,22 +13,24 @@
 
         /* Print-specific rules */
         @media print {
-            /* make table rows more readable in print */
-            .form-table td, .form-table th { padding: 3px 6px !important; font-size: 9px !important; line-height: 1.2 !important; }
-            /* family table comfortable spacing */
-            .family-table { font-size: 9px !important; }
-            .family-table th, .family-table td { padding: 6px 6px !important; line-height: 1.2 !important; }
+            /* Aggressive compact rules to fit single F4 page */
+            .form-table td, .form-table th { padding: 1px 4px !important; font-size: 8px !important; line-height: 1.05 !important; }
+            /* family table compact */
+            .family-table { font-size: 8px !important; }
+            .family-table th, .family-table td { padding: 3px 4px !important; line-height: 1.05 !important; }
             /* headings */
-            h2 { margin-bottom:6px !important; font-size:16px !important; }
-            .signature-block { margin-top:8px !important; }
-            /* top margin set to 0, keep others small */
-            @page { margin: 0mm 6mm 6mm 6mm; }
+            h2 { margin-bottom:3px !important; font-size:14px !important; }
+            .signature-block { margin-top:4px !important; }
+            .signature-line { height:16px !important; }
+            /* reduce page margins to maximize vertical space */
+            @page { margin: 0mm 4mm 4mm 4mm; }
         }
     </style>
     <h2 style="text-align:center;margin-bottom:4px;font-size:15px;">FORM DATA KARYAWAN</h2>
     <div style="display:flex;justify-content:flex-start;margin-bottom:6px;font-size:11px;gap:16px;">
         <div><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }}</div>
     </div>
+    @php $fmCount = min($karyawan->familyMembers->count(), 6); @endphp
 
     <table class="form-table" style="width:100%;border-collapse:collapse;font-size:9px;">
         <!-- Requested fields in specific order -->
@@ -208,29 +210,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($karyawan->familyMembers as $index => $familyMember)
+                    @foreach($karyawan->familyMembers->take(6) as $index => $familyMember)
                         <tr>
-                            <td style="padding:6px;border:1px solid #ddd;text-align:center;">{{ $index + 1 }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;">{{ $familyMember->hubungan ?? '-' }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;">{{ $familyMember->nama ?? '-' }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;text-align:center;">{{ $familyMember->tanggal_lahir ? Carbon::parse($familyMember->tanggal_lahir)->format('d/m/Y') : '-' }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;">{{ $familyMember->alamat ?? '-' }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;">{{ $familyMember->no_telepon ?? '-' }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;">{{ $familyMember->nik_ktp ?? '-' }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;text-align:center;">{{ $index + 1 }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;">{{ $familyMember->hubungan ?? '-' }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;">{{ $familyMember->nama ?? '-' }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;text-align:center;">{{ $familyMember->tanggal_lahir ? Carbon::parse($familyMember->tanggal_lahir)->format('d/m/Y') : '-' }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;">{{ $familyMember->alamat ?? '-' }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;">{{ $familyMember->no_telepon ?? '-' }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;">{{ $familyMember->nik_ktp ?? '-' }}</td>
                         </tr>
                     @endforeach
-                    {{-- Add empty rows if less than 10 family members for consistent layout --}}
-                    @for($i = $karyawan->familyMembers->count(); $i < 10; $i++)
+                    {{-- Ensure table shows exactly 6 rows for consistent layout --}}
+                    @for($i = $fmCount; $i < 6; $i++)
                         <tr>
-                            <td style="padding:6px;border:1px solid #ddd;text-align:center;">{{ $i + 1 }}</td>
-                            <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
-                            <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
-                            <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
-                            <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
-                            <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
-                            <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
+                            <td style="padding:3px;border:1px solid #ddd;text-align:center;">{{ $i + 1 }}</td>
+                            <td style="padding:3px;border:1px solid #ddd;">&nbsp;</td>
+                            <td style="padding:3px;border:1px solid #ddd;">&nbsp;</td>
+                            <td style="padding:3px;border:1px solid #ddd;">&nbsp;</td>
+                            <td style="padding:3px;border:1px solid #ddd;">&nbsp;</td>
+                            <td style="padding:3px;border:1px solid #ddd;">&nbsp;</td>
+                            <td style="padding:3px;border:1px solid #ddd;">&nbsp;</td>
                         </tr>
                     @endfor
+                    @if($karyawan->familyMembers->count() > 6)
+                        <tr>
+                            <td colspan="7" style="padding:4px;border:1px solid #ddd;font-size:8px;text-align:left;">Menampilkan 6 dari {{ $karyawan->familyMembers->count() }} anggota keluarga. Lihat detail untuk lengkapnya.</td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         @else
