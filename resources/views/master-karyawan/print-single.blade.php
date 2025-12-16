@@ -14,7 +14,7 @@
         /* Print-specific rules */
         @media print {
             /* Balanced spacing to fit single F4 page with better readability */
-            .form-table td, .form-table th { padding: 3px 6px !important; font-size: 8.5px !important; line-height: 1.15 !important; }
+            .form-table td, .form-table th { padding: 2.5px 5.5px !important; font-size: 8.25px !important; line-height: 1.12 !important; }
             /* family table compact */
             .family-table { font-size: 8px !important; }
             .family-table th, .family-table td { padding: 3px 5px !important; line-height: 1.1 !important; }
