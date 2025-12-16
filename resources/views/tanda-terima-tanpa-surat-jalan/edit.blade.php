@@ -144,9 +144,9 @@
                                 <!-- Hidden select for form submission -->
                                 <select name="penerima" id="penerima" class="hidden @error('penerima') border-red-500 @enderror" required>
                                     <option value="">Pilih Penerima</option>
-                                    @foreach($penerimas as $penerimaNama)
-                                        <option value="{{ $penerimaNama }}" {{ old('penerima', $tandaTerimaTanpaSuratJalan->penerima) == $penerimaNama ? 'selected' : '' }}>
-                                            {{ $penerimaNama }}
+                                    @foreach($masterPengirimPenerima as $item)
+                                        <option value="{{ $item->nama }}" {{ old('penerima', $tandaTerimaTanpaSuratJalan->penerima) == $item->nama ? 'selected' : '' }}>
+                                            {{ $item->nama }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -161,11 +161,11 @@
                                     <div class="p-2 border-b border-gray-200">
                                         <input type="text" id="penerimaFilterInput" placeholder="Filter penerima..." class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
                                     </div>
-                                    @foreach($penerimas as $penerimaNama)
+                                    @foreach($masterPengirimPenerima as $item)
                                         <div class="penerima-option px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm"
-                                             data-value="{{ $penerimaNama }}"
-                                             data-text="{{ $penerimaNama }}">
-                                            {{ $penerimaNama }}
+                                             data-value="{{ $item->nama }}"
+                                             data-text="{{ $item->nama }}">
+                                            {{ $item->nama }}
                                         </div>
                                     @endforeach
                                 </div>
@@ -182,9 +182,9 @@
                                 <!-- Hidden select for form submission -->
                                 <select name="pengirim" id="pengirim" class="hidden @error('pengirim') border-red-500 @enderror" required>
                                     <option value="">Pilih Pengirim</option>
-                                    @foreach($pengirims as $pengirimNama)
-                                        <option value="{{ $pengirimNama }}" {{ old('pengirim', $tandaTerimaTanpaSuratJalan->pengirim) == $pengirimNama ? 'selected' : '' }}>
-                                            {{ $pengirimNama }}
+                                    @foreach($masterPengirimPenerima as $item)
+                                        <option value="{{ $item->nama }}" {{ old('pengirim', $tandaTerimaTanpaSuratJalan->pengirim) == $item->nama ? 'selected' : '' }}>
+                                            {{ $item->nama }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -199,11 +199,11 @@
                                     <div class="p-2 border-b border-gray-200">
                                         <input type="text" id="pengirimFilterInput" placeholder="Filter pengirim..." class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
                                     </div>
-                                    @foreach($pengirims as $pengirimNama)
+                                    @foreach($masterPengirimPenerima as $item)
                                         <div class="pengirim-option px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm"
-                                             data-value="{{ $pengirimNama }}"
-                                             data-text="{{ $pengirimNama }}">
-                                            {{ $pengirimNama }}
+                                             data-value="{{ $item->nama }}"
+                                             data-text="{{ $item->nama }}">
+                                            {{ $item->nama }}
                                         </div>
                                     @endforeach
                                 </div>

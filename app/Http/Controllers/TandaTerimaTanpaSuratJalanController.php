@@ -708,6 +708,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
+        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);
@@ -745,7 +746,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         // Eager load dimensiItems for edit view
         $tandaTerimaTanpaSuratJalan->load('dimensiItems');
-        return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'containerOptions'));
+        return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'masterPengirimPenerima', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'containerOptions'));
     }
 
     /**
