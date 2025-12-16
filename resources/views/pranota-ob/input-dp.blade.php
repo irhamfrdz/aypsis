@@ -60,9 +60,8 @@
                     @forelse($pembayaranDps as $dp)
                         @php
                             $supirIds = is_string($dp->supir_ids) ? json_decode($dp->supir_ids, true) : $dp->supir_ids;
-                            $jumlahPerSupir = is_string($dp->jumlah_per_supir) ? json_decode($dp->jumlah_per_supir, true) : $dp->jumlah_per_supir;
+                            $jumlahPerSupir = $dp->jumlah_per_supir;
                             if (!is_array($supirIds)) $supirIds = [];
-                            if (!is_array($jumlahPerSupir)) $jumlahPerSupir = [];
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-3 py-2 text-sm text-gray-900">{{ $dp->nomor_pembayaran }}</td>
@@ -86,18 +85,11 @@
                                 @endif
                             </td>
                             <td class="px-3 py-2 text-sm text-gray-900 font-semibold">
-                                Rp {{ number_format($dp->dp_amount ?? 0, 0, ',', '.') }}
+                                Rp {{ number_format($dp->total_pembayaran ?? 0, 0, ',', '.') }}
                             </td>
                             <td class="px-3 py-2 text-sm text-gray-900">
-                                @if(count($jumlahPerSupir) > 0)
-                                    <div class="space-y-1">
-                                        @foreach($jumlahPerSupir as $jumlah)
-                                            <div class="text-xs">Rp {{ number_format($jumlah ?? 0, 0, ',', '.') }}</div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <span class="text-gray-500 text-xs italic">-</span>
-                                @endif
+                                <div class="text-xs">Rp {{ number_format($dp->jumlah_per_supir ?? 0, 0, ',', '.') }} per supir</div>
+                                <div class="text-xs text-gray-500">{{ count($supirIds) }} supir x Rp {{ number_format($dp->jumlah_per_supir ?? 0, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-3 py-2 text-sm text-gray-600">{{ $dp->keterangan ?? '-' }}</td>
                             <td class="px-3 py-2 text-center">

@@ -160,7 +160,7 @@ class PranotaObController extends Controller
 
         // Get pembayaran DP data from pembayaran_obs table
         $pembayaranDps = \DB::table('pembayaran_obs')
-            ->select('id', 'nomor_pembayaran', 'tanggal_pembayaran', 'supir_ids', 'dp_amount', 'jumlah_per_supir', 'keterangan', 'kas_bank_akun_id')
+            ->select('id', 'nomor_pembayaran', 'tanggal_pembayaran', 'supir_ids', 'total_pembayaran', 'jumlah_per_supir', 'keterangan', 'kas_bank_id')
             ->orderBy('tanggal_pembayaran', 'desc')
             ->get();
 
