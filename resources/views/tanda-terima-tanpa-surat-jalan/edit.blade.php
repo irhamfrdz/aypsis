@@ -312,20 +312,20 @@
                                     </div>
                                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label>
-                                            <input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('panjang.'.$idx) }}">
+                                            <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                            <input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.5" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('panjang.'.$idx) }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label>
-                                            <input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('lebar.'.$idx) }}">
+                                            <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                            <input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.2" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('lebar.'.$idx) }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label>
-                                            <input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('tinggi.'.$idx) }}">
+                                            <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                            <input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 2.0" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('tinggi.'.$idx) }}">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label>
-                                            <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="0.000" min="0" step="0.001" readonly value="{{ old('meter_kubik.'.$idx) }}">
+                                            <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="Auto" min="0" step="0.001" readonly value="{{ old('meter_kubik.'.$idx) }}">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Tonase (Ton)</label>
@@ -358,20 +358,20 @@
                                     </div>
                                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label>
-                                            <input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('panjang', $item['panjang'] ?? $item->panjang ?? '') }}">
+                                            <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                            <input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.5" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('panjang', $item['panjang'] ?? $item->panjang ?? '') }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label>
-                                            <input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('lebar', $item['lebar'] ?? $item->lebar ?? '') }}">
+                                            <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                            <input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.2" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('lebar', $item['lebar'] ?? $item->lebar ?? '') }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label>
-                                            <input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('tinggi', $item['tinggi'] ?? $item->tinggi ?? '') }}">
+                                            <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                            <input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 2.0" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))" value="{{ old('tinggi', $item['tinggi'] ?? $item->tinggi ?? '') }}">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label>
-                                            <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="0.000" min="0" step="0.001" readonly value="{{ old('meter_kubik', $item['meter_kubik'] ?? $item->meter_kubik ?? '') }}">
+                                            <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="Auto" min="0" step="0.001" readonly value="{{ old('meter_kubik', $item['meter_kubik'] ?? $item->meter_kubik ?? '') }}">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Tonase (Ton)</label>
@@ -399,20 +399,20 @@
                                 </div>
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label>
-                                        <input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                        <input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.5" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label>
-                                        <input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                        <input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.2" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label>
-                                        <input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m) <span class="text-xs text-gray-400">*dalam meter</span></label>
+                                        <input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 2.0" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label>
-                                        <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="0.000" min="0" step="0.001" readonly>
+                                        <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="Auto" min="0" step="0.001" readonly>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Tonase (Ton)</label>
@@ -1527,10 +1527,10 @@
                         <div><label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label><input type="text" name="satuan[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Pcs, Kg, Box" value="unit" required></div>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label><input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label><input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label><input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label><input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="0.000" min="0" step="0.001" readonly></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m) <span class="text-xs text-gray-400">*dalam meter</span></label><input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.5" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m) <span class="text-xs text-gray-400">*dalam meter</span></label><input type="number" name="lebar[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.2" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m) <span class="text-xs text-gray-400">*dalam meter</span></label><input type="number" name="tinggi[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 2.0" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label><input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm" placeholder="Auto" min="0" step="0.001" readonly></div>
                         <div><label class="block text-xs font-medium text-gray-500 mb-2">Tonase (Ton)</label><input type="number" name="tonase[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0.000" min="0" step="0.001"></div>
                     </div>
                 `;
