@@ -497,7 +497,7 @@
                             </div>
                             <p class="text-xs text-gray-500 mt-2">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Volume akan dihitung otomatis dari panjang × lebar × tinggi
+                                Volume akan dihitung otomatis dari panjang × lebar × tinggi × jumlah
                             </p>
                         </div>
                     </div>
@@ -1078,15 +1078,17 @@
         const panjangEl = row.querySelector('.dimensi-panjang');
         const lebarEl = row.querySelector('.dimensi-lebar');
         const tinggiEl = row.querySelector('.dimensi-tinggi');
+        const jumlahEl = row.querySelector('[name^="jumlah"], input[name*="jumlah"]');
         
         const panjang = panjangEl ? parseFloat(panjangEl.value) || 0 : 0;
         const lebar = lebarEl ? parseFloat(lebarEl.value) || 0 : 0;
         const tinggi = tinggiEl ? parseFloat(tinggiEl.value) || 0 : 0;
+        const jumlah = jumlahEl ? (parseInt(jumlahEl.value, 10) || 1) : 1;
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
-            volume = panjang * lebar * tinggi;
+            // Kalkulasi volume termasuk jumlah: panjang × lebar × tinggi × jumlah
+            volume = panjang * lebar * tinggi * jumlah;
         }
 
         const volumeInput = row.querySelector('.item-meter-kubik');
@@ -1114,8 +1116,12 @@
                 const tinggi = tinggiEl ? parseFloat(tinggiEl.value) || 0 : 0;
 
                 let volume = 0;
+                // Try to read jumlah if available; default to 1
+                const jumlahEl = row.querySelector('[name^="jumlah"], input[name*="jumlah"]');
+                const jumlah = jumlahEl ? (parseInt(jumlahEl.value, 10) || 1) : 1;
+
                 if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                    volume = panjang * lebar * tinggi;
+                    volume = panjang * lebar * tinggi * jumlah;
                 }
 
                 const volumeInput = row.querySelector('.item-meter-kubik');
@@ -1907,19 +1913,22 @@
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlahInput = rowElement.querySelector('input[name="jumlah[]"]');
+        const jumlah = jumlahInput ? (parseInt(jumlahInput.value, 10) || 1) : 1;
 
         console.log('📐 calculateVolumeNew input values:', { 
             panjang: panjang, 
             lebar: lebar, 
             tinggi: tinggi,
+            jumlah: jumlah,
             panjangRaw: panjangInput.value,
             lebarRaw: lebarInput.value,
             tinggiRaw: tinggiInput.value
         });
 
-        if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            // Calculate volume in cubic meters (m³)
-            const volume = panjang * lebar * tinggi;
+        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
+            // Calculate volume in cubic meters (m³) including jumlah
+            const volume = panjang * lebar * tinggi * jumlah;
             
             // Validate: check for unrealistic values (> 100000 m³ likely means user entered cm instead of m)
             if (volume > 100000) {
@@ -1936,7 +1945,7 @@
             const volumeFormatted = volume.toFixed(3);
             
             console.log('✅ Volume calculation:', {
-                formula: `${panjang} × ${lebar} × ${tinggi}`,
+                formula: `${panjang} × ${lebar} × ${tinggi} × ${jumlah}`,
                 result: volume,
                 formatted: volumeFormatted,
                 previousValue: volumeInput.value
@@ -1951,7 +1960,7 @@
             // update totals after a single row value change
             calculateTotals();
         } else {
-            console.log('⚪ Volume cleared (insufficient values - need all 3 dimensions > 0)');
+            console.log('⚪ Volume cleared (insufficient values - need all 3 dimensions > 0 and jumlah > 0)');
             volumeInput.value = '';
         }
     }
@@ -2214,6 +2223,7 @@
                 const panjangVals = formData.getAll('panjang[]');
                 const lebarVals = formData.getAll('lebar[]');
                 const tinggiVals = formData.getAll('tinggi[]');
+                const jumlahVals = formData.getAll('jumlah[]');
                 const volumeVals = formData.getAll('meter_kubik[]');
                 const tonaseVals = formData.getAll('tonase[]');
                 const namaVals = formData.getAll('nama_barang[]');
@@ -2221,6 +2231,7 @@
                 console.log('panjang[]:', panjangVals);
                 console.log('lebar[]:', lebarVals);
                 console.log('tinggi[]:', tinggiVals);
+                console.log('jumlah[]:', jumlahVals);
                 console.log('meter_kubik[]:', volumeVals);
                 console.log('tonase[]:', tonaseVals);
                 console.log('nama_barang[]:', namaVals);
@@ -2231,13 +2242,15 @@
                     const p = parseFloat(panjangVals[i]);
                     const l = parseFloat(lebarVals[i]);
                     const t = parseFloat(tinggiVals[i]);
+                    const j = parseInt(jumlahVals[i], 10) || 1;
                     const v = parseFloat(volumeVals[i]);
-                    const expectedVolume = p * l * t;
+                    const expectedVolume = p * l * t * j;
                     
                     console.log(`Item ${i + 1}:`, {
                         panjang: p,
                         lebar: l,
                         tinggi: t,
+                        jumlah: j,
                         volumeFromForm: v,
                         volumeCalculated: expectedVolume,
                         match: Math.abs(v - expectedVolume) < 0.001 ? '✅ MATCH' : '❌ MISMATCH'
