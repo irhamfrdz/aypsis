@@ -13,11 +13,11 @@
 
         /* Print-specific rules */
         @media print {
-            /* Aggressive compact rules to fit single F4 page */
-            .form-table td, .form-table th { padding: 1px 4px !important; font-size: 8px !important; line-height: 1.05 !important; }
+            /* Compact rules to fit single F4 page with better spacing */
+            .form-table td, .form-table th { padding: 2px 5px !important; font-size: 8px !important; line-height: 1.1 !important; }
             /* family table compact */
             .family-table { font-size: 8px !important; }
-            .family-table th, .family-table td { padding: 3px 4px !important; line-height: 1.05 !important; }
+            .family-table th, .family-table td { padding: 3px 5px !important; line-height: 1.1 !important; }
             /* headings */
             h2 { margin-bottom:3px !important; font-size:14px !important; }
             .signature-block { margin-top:4px !important; }
