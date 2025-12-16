@@ -239,9 +239,26 @@
 
                                     <!-- Dropdown menu -->
                                     <div id="supir-dropdown-menu" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden">
-                                        <div class="max-h-48 overflow-y-auto">
+                                        <!-- Search box -->
+                                        <div class="p-2 border-b border-gray-200 bg-gray-50">
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <i class="fas fa-search text-gray-400"></i>
+                                                </div>
+                                                <input type="text"
+                                                       id="supir-search-input"
+                                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                                       placeholder="Cari nama atau NIK supir..."
+                                                       autocomplete="off">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Supir list -->
+                                        <div class="max-h-48 overflow-y-auto" id="supir-list-container">
                                             @foreach($supirList as $supir)
-                                                <label class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                                                <label class="supir-item flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                       data-nama="{{ strtolower($supir->nama_lengkap) }}"
+                                                       data-nik="{{ strtolower($supir->nik) }}">
                                                     <input type="checkbox"
                                                            name="supir[]"
                                                            value="{{ $supir->id }}"
@@ -259,6 +276,12 @@
                                                     Tidak ada supir aktif tersedia
                                                 </div>
                                             @endif
+                                        </div>
+                                        
+                                        <!-- No results message -->
+                                        <div id="no-supir-results" class="hidden px-3 py-4 text-center text-gray-500 text-sm">
+                                            <i class="fas fa-search mb-2 text-gray-400 text-lg"></i>
+                                            <div>Tidak ada supir yang cocok dengan pencarian</div>
                                         </div>
                                     </div>
                                 </div>
@@ -480,6 +503,52 @@ function removeSupir(supirId) {
 // Handle supir dropdown toggle
 document.getElementById('supir-dropdown-toggle').addEventListener('click', toggleSupirDropdown);
 
+// Handle supir search
+document.getElementById('supir-search-input').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const supirItems = document.querySelectorAll('.supir-item');
+    const noResultsMessage = document.getElementById('no-supir-results');
+    let hasVisibleItems = false;
+
+    supirItems.forEach(function(item) {
+        const nama = item.getAttribute('data-nama');
+        const nik = item.getAttribute('data-nik');
+        
+        if (nama.includes(searchTerm) || nik.includes(searchTerm)) {
+            item.style.display = 'flex';
+            hasVisibleItems = true;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // Show/hide no results message
+    if (hasVisibleItems || searchTerm === '') {
+        noResultsMessage.classList.add('hidden');
+    } else {
+        noResultsMessage.classList.remove('hidden');
+    }
+});
+
+// Clear search when dropdown opens
+document.getElementById('supir-dropdown-toggle').addEventListener('click', function() {
+    const searchInput = document.getElementById('supir-search-input');
+    searchInput.value = '';
+    
+    // Show all items
+    document.querySelectorAll('.supir-item').forEach(function(item) {
+        item.style.display = 'flex';
+    });
+    document.getElementById('no-supir-results').classList.add('hidden');
+    
+    // Focus search input when dropdown opens
+    setTimeout(function() {
+        if (!document.getElementById('supir-dropdown-menu').classList.contains('hidden')) {
+            searchInput.focus();
+        }
+    }, 100);
+});
+
 // Handle checkbox changes
 document.querySelectorAll('.supir-checkbox').forEach(function(checkbox) {
     checkbox.addEventListener('change', function() {
@@ -505,10 +574,16 @@ document.addEventListener('click', function(e) {
     const dropdown = document.getElementById('supir-dropdown-menu');
     const toggle = document.getElementById('supir-dropdown-toggle');
     const container = dropdown.closest('.relative');
+    const searchInput = document.getElementById('supir-search-input');
 
     if (!container.contains(e.target)) {
         dropdown.classList.add('hidden');
     }
+});
+
+// Prevent dropdown close when clicking inside (including search input)
+document.getElementById('supir-dropdown-menu').addEventListener('click', function(e) {
+    e.stopPropagation();
 });
 
 // Function to get old jumlah value untuk supir tertentu
