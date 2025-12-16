@@ -29,10 +29,11 @@
 
         /* Print-specific rules */
         @media print {
-            @page { size: A4 landscape; margin: 8mm; }
+            /* F4 paper in portrait orientation (210mm x 330mm) */
+            @page { size: 210mm 330mm portrait; margin: 8mm; }
             body { padding: 0; }
             .no-print { display: none !important; }
-            /* Slightly smaller font for print so more fits horizontally */
+            /* Slightly smaller font for print so content fits well on F4 portrait */
             table { font-size: 10px; }
             th, td { padding: 4px 6px; }
             /* Remove focus outlines on print */
