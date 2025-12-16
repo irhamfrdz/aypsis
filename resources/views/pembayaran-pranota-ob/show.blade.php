@@ -41,6 +41,12 @@
                             <dt class="text-sm font-medium text-gray-500">Jenis Transaksi</dt>
                             <dd class="text-sm text-gray-900">{{ ucfirst($pembayaran->jenis_transaksi) }}</dd>
                         </div>
+                        @if($pembayaran->kapal)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Kapal / Voyage</dt>
+                            <dd class="text-sm text-gray-900">{{ $pembayaran->kapal }} / {{ $pembayaran->voyage }}</dd>
+                        </div>
+                        @endif
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Status</dt>
                             <dd class="text-sm">
@@ -59,19 +65,31 @@
                 <div>
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Total Pembayaran</h3>
                     <dl class="space-y-3">
+                        @if($pembayaran->pembayaranOb)
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Total Pembayaran</dt>
+                            <dt class="text-sm font-medium text-gray-500">DP ({{ $pembayaran->pembayaranOb->nomor_pembayaran }})</dt>
+                            <dd class="text-sm font-semibold text-green-600">Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}</dd>
+                        </div>
+                        @endif
+                        @if($pembayaran->total_biaya_pranota)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Total Biaya Pranota</dt>
+                            <dd class="text-sm text-gray-900">Rp {{ number_format($pembayaran->total_biaya_pranota, 0, ',', '.') }}</dd>
+                        </div>
+                        @endif
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Total Pembayaran (Sisa)</dt>
                             <dd class="text-lg font-semibold text-gray-900">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</dd>
                         </div>
                         @if($pembayaran->penyesuaian != 0)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Penyesuaian</dt>
-                            <dd class="text-sm text-gray-900">{{ $pembayaran->penyesuaian > 0 ? '+' : '' }}{{ number_format($pembayaran->penyesuaian, 0, ',', '.') }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $pembayaran->penyesuaian > 0 ? '+' : '' }}Rp {{ number_format($pembayaran->penyesuaian, 0, ',', '.') }}</dd>
                         </div>
                         @endif
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Total Setelah Penyesuaian</dt>
-                            <dd class="text-lg font-semibold text-green-600">Rp {{ number_format($pembayaran->total_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}</dd>
+                            <dd class="text-lg font-semibold text-blue-600">Rp {{ number_format($pembayaran->total_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}</dd>
                         </div>
                         @if($pembayaran->alasan_penyesuaian)
                         <div>
@@ -89,6 +107,72 @@
                 </div>
             </div>
         </div>
+
+        <!-- Breakdown Per Supir -->
+        @if($pembayaran->breakdown_supir && count($pembayaran->breakdown_supir) > 0)
+        <div class="px-6 py-4 border-t border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Breakdown Per Supir</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">DP</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa Dibayar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($pembayaran->breakdown_supir as $breakdown)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user text-purple-500 mr-2"></i>
+                                        <span class="text-sm font-medium text-gray-900">{{ $breakdown['nama_supir'] }}</span>
+                                        @if($breakdown['dp'] > 0)
+                                            <span class="ml-2 text-xs text-green-600">(Ada DP)</span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ $breakdown['jumlah_item'] }} item
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                    Rp {{ number_format($breakdown['total_biaya'], 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ $breakdown['dp'] > 0 ? 'text-green-700' : 'text-gray-400' }}">
+                                    Rp {{ number_format($breakdown['dp'], 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ $breakdown['sisa'] > 0 ? 'text-red-700' : 'text-gray-500' }}">
+                                    Rp {{ number_format($breakdown['sisa'], 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-gray-50">
+                        <tr>
+                            <td class="px-6 py-3 text-left text-xs font-bold text-gray-800">Total</td>
+                            <td class="px-6 py-3 text-center text-xs font-bold text-gray-800">
+                                {{ array_sum(array_column($pembayaran->breakdown_supir, 'jumlah_item')) }} item
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-gray-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'total_biaya')), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-green-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'dp')), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-red-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'sisa')), 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        @endif
 
         <!-- Pranota Items -->
         <div class="px-6 py-4 border-t border-gray-200">

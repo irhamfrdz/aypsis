@@ -33,7 +33,7 @@ class PembayaranPranotaObController extends Controller
 
     public function show($id)
     {
-        $pembayaran = PembayaranPranotaOb::with(['pranotaObs'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaOb::with(['pranotaObs', 'pembayaranOb'])->findOrFail($id);
 
         return view('pembayaran-pranota-ob.show', compact('pembayaran'));
     }
@@ -157,7 +157,11 @@ class PembayaranPranotaObController extends Controller
                 'pranota_ids.*' => 'exists:pranota_ob,id',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
                 'alasan_penyesuaian' => 'nullable|string',
-                'keterangan' => 'nullable|string'
+                'keterangan' => 'nullable|string',
+                'kapal' => 'nullable|string',
+                'voyage' => 'nullable|string',
+                'dp_id' => 'nullable|exists:pembayaran_obs,id',
+                'breakdown_supir' => 'nullable|json'
             ]);
 
             $pranotaIds = $request->input('pranota_ids');
@@ -173,14 +177,42 @@ class PembayaranPranotaObController extends Controller
                 }
             }
 
-            $totalPembayaran = $pranotas->sum('total_amount');
-            Log::info('Calculated total pembayaran', ['total' => $totalPembayaran]);
+            // Calculate total biaya pranota (total sebelum dikurangi DP)
+            $totalBiayaPranota = $pranotas->sum('total_amount');
+            Log::info('Calculated total biaya pranota', ['total' => $totalBiayaPranota]);
+
+            // Get DP data
+            $dpId = $request->input('dp_id');
+            $dpAmount = 0;
+            $selectedDp = null;
+            
+            if ($dpId) {
+                $selectedDp = \App\Models\PembayaranOb::find($dpId);
+                if ($selectedDp) {
+                    $dpAmount = $selectedDp->dp_amount ?? 0;
+                    Log::info('DP found', ['dp_id' => $dpId, 'dp_amount' => $dpAmount]);
+                }
+            }
+
+            // Total pembayaran = Total Biaya - DP (SISA yang harus dibayar)
+            $totalPembayaran = $totalBiayaPranota - $dpAmount;
+            Log::info('Calculated total pembayaran (after DP)', [
+                'total_biaya' => $totalBiayaPranota,
+                'dp_amount' => $dpAmount,
+                'total_pembayaran' => $totalPembayaran
+            ]);
 
             // Check for duplicate nomor_pembayaran
             $existingPayment = PembayaranPranotaOb::where('nomor_pembayaran', $request->nomor_pembayaran)->first();
             if ($existingPayment) {
                 // If duplicate found, generate a new number
                 $request->merge(['nomor_pembayaran' => PembayaranPranotaOb::generateNomorPembayaran()]);
+            }
+
+            // Decode breakdown supir from JSON string
+            $breakdownSupir = null;
+            if ($request->filled('breakdown_supir')) {
+                $breakdownSupir = json_decode($request->input('breakdown_supir'), true);
             }
 
             // Create pembayaran record
@@ -196,7 +228,13 @@ class PembayaranPranotaObController extends Controller
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
-                'pranota_ob_ids' => json_encode($pranotaIds)
+                'pranota_ob_ids' => json_encode($pranotaIds),
+                'pembayaran_ob_id' => $dpId,
+                'kapal' => $request->kapal,
+                'voyage' => $request->voyage,
+                'dp_amount' => $dpAmount,
+                'total_biaya_pranota' => $totalBiayaPranota,
+                'breakdown_supir' => $breakdownSupir
             ]);
             Log::info('Pembayaran record created', ['id' => $pembayaran->id]);
 

@@ -45,6 +45,20 @@
                                 <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">
                                     @if($selectedDp)
                                         {{ $selectedDp->nomor_pembayaran }} - Rp {{ number_format($selectedDp->dp_amount, 0, ',', '.') }}
+                                        @php
+                                            // Get supir data from DP
+                                            $dpSupirIds = $selectedDp->supir_ids ?? [];
+                                            $dpJumlahPerSupir = $selectedDp->jumlah_per_supir ?? [];
+                                            $dpSupirData = [];
+                                            if (!empty($dpSupirIds)) {
+                                                foreach ($dpSupirIds as $supirId) {
+                                                    $supir = \App\Models\Karyawan::find($supirId);
+                                                    if ($supir) {
+                                                        $dpSupirData[$supir->nama_lengkap] = $dpJumlahPerSupir[$supirId] ?? 0;
+                                                    }
+                                                }
+                                            }
+                                        @endphp
                                     @else
                                         -
                                     @endif
@@ -95,6 +109,10 @@
             {{-- Hidden inputs for additional data --}}
             <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="">
             <input type="hidden" name="tanggal_kas" value="{{ now()->toDateString() }}">
+            <input type="hidden" name="kapal" value="{{ request('kapal') }}">
+            <input type="hidden" name="voyage" value="{{ request('voyage') }}">
+            <input type="hidden" name="dp_id" value="{{ request('dp') }}">
+            <input type="hidden" name="breakdown_supir" id="breakdown_supir_hidden" value="">
 
             <!-- Data Pembayaran & Bank -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -332,18 +350,32 @@
         const selectAllCheckbox = document.getElementById('select-all');
         const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
-        // Function to calculate total
+        // Function to calculate total (should be SISA, not total biaya)
         function calculateTotal() {
-            let total = 0;
+            let totalBiaya = 0;
+            let totalDp = 0;
+            
+            // Get DP supir data
+            const dpSupirData = @json($selectedDp && isset($dpSupirData) ? $dpSupirData : []);
+            
             pranotaCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('tr');
                     const amountText = row.querySelector('td:nth-child(7)').textContent;
                     const amount = parseFloat(amountText.replace(/Rp\s|,|\./g, '')) || 0;
-                    total += amount;
+                    totalBiaya += amount;
                 }
             });
-            document.getElementById('total_pembayaran').value = total.toLocaleString('id-ID');
+            
+            // Calculate total DP from DP data
+            Object.values(dpSupirData).forEach(dpAmount => {
+                totalDp += parseFloat(dpAmount) || 0;
+            });
+            
+            // Total tagihan = total biaya - total DP (SISA yang harus dibayar)
+            const totalSisa = totalBiaya - totalDp;
+            
+            document.getElementById('total_pembayaran').value = totalSisa.toLocaleString('id-ID');
             updateTotalAkhir();
         }
 
@@ -380,7 +412,8 @@
             let totalItems = 0;
             let totalBiaya = 0;
             
-            // Get DP amount from selected DP
+            // Get DP supir data from PHP
+            const dpSupirData = @json($selectedDp && isset($dpSupirData) ? $dpSupirData : []);
             const dpAmount = {{ $selectedDp ? $selectedDp->dp_amount : 0 }};
             let totalDp = 0;
 
@@ -442,15 +475,26 @@
                     </tr>
                 `;
                 supirBreakdownFooter.style.display = 'none';
+                // Clear breakdown hidden input
+                document.getElementById('breakdown_supir_hidden').value = '';
             } else {
                 const sortedSupir = Object.entries(supirData).sort((a, b) => a[0].localeCompare(b[0]));
-                const supirCount = sortedSupir.length;
+                const breakdownArray = [];
                 
                 sortedSupir.forEach(([supir, data]) => {
-                    // Calculate DP and Sisa per supir
-                    const dpPerSupir = dpAmount / supirCount;
+                    // Get DP for this specific supir from DP data
+                    const dpPerSupir = dpSupirData[supir] || 0;
                     const sisaPerSupir = data.biaya - dpPerSupir;
                     totalDp += dpPerSupir;
+                    
+                    // Store breakdown data for backend
+                    breakdownArray.push({
+                        nama_supir: supir,
+                        jumlah_item: Math.round(data.items * 10) / 10,
+                        total_biaya: data.biaya,
+                        dp: dpPerSupir,
+                        sisa: sisaPerSupir
+                    });
                     
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-gray-50';
@@ -459,6 +503,7 @@
                             <div class="flex items-center">
                                 <i class="fas fa-user text-purple-500 mr-2"></i>
                                 <span class="font-medium text-gray-900">${supir}</span>
+                                ${dpPerSupir > 0 ? '<span class="ml-2 text-xs text-green-600">(Ada DP)</span>' : '<span class="ml-2 text-xs text-gray-400">(Tanpa DP)</span>'}
                             </div>
                         </td>
                         <td class="px-3 py-3 text-center text-xs">
@@ -469,7 +514,7 @@
                         <td class="px-3 py-3 text-right text-xs font-semibold text-gray-900">
                             Rp ${data.biaya.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
                         </td>
-                        <td class="px-3 py-3 text-right text-xs font-semibold text-green-700">
+                        <td class="px-3 py-3 text-right text-xs font-semibold ${dpPerSupir > 0 ? 'text-green-700' : 'text-gray-400'}">
                             Rp ${dpPerSupir.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
                         </td>
                         <td class="px-3 py-3 text-right text-xs font-semibold ${sisaPerSupir > 0 ? 'text-red-700' : 'text-gray-500'}">
@@ -489,6 +534,9 @@
                 document.getElementById('total-dp').textContent = `Rp ${totalDp.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                 document.getElementById('total-sisa').textContent = `Rp ${totalSisa.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                 supirBreakdownFooter.style.display = 'table-footer-group';
+                
+                // Save breakdown to hidden input
+                document.getElementById('breakdown_supir_hidden').value = JSON.stringify(breakdownArray);
             }
         }
 
