@@ -1386,14 +1386,16 @@
         const panjangInput = rowElement ? rowElement.querySelector('[name^="panjang"]') : document.getElementById('panjang_0');
         const lebarInput = rowElement ? rowElement.querySelector('[name^="lebar"]') : document.getElementById('lebar_0');
         const tinggiInput = rowElement ? rowElement.querySelector('[name^="tinggi"]') : document.getElementById('tinggi_0');
+        const jumlahInput = rowElement ? rowElement.querySelector('[name^="jumlah"]') : document.getElementById('jumlah_0');
         const volumeInput = rowElement ? rowElement.querySelector('[name^="meter_kubik"]') : document.getElementById('meter_kubik_0');
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
 
-        if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            const volume = panjang * lebar * tinggi;
+        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
+            const volume = panjang * lebar * tinggi * jumlah;
             volumeInput.value = volume.toFixed(3);
         } else {
             volumeInput.value = '';

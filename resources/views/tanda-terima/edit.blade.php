@@ -576,7 +576,7 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-2">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Volume akan dihitung otomatis dari panjang × lebar × tinggi
+                        Volume akan dihitung otomatis dari panjang × lebar × tinggi × jumlah
                     </p>
                 </div>
 
@@ -701,14 +701,16 @@
         const panjangInput = rowElement.querySelector('[name^="panjang"]');
         const lebarInput = rowElement.querySelector('[name^="lebar"]');
         const tinggiInput = rowElement.querySelector('[name^="tinggi"]');
+        const jumlahInput = rowElement.querySelector('[name^="jumlah"]');
         const volumeInput = rowElement.querySelector('[name^="meter_kubik"]');
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
 
-        if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            const volume = panjang * lebar * tinggi;
+        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
+            const volume = panjang * lebar * tinggi * jumlah;
             volumeInput.value = volume.toFixed(3);
         } else {
             volumeInput.value = '';
@@ -739,14 +741,16 @@
         const panjangInput = rowElement.querySelector('[name^="panjang"]');
         const lebarInput = rowElement.querySelector('[name^="lebar"]');
         const tinggiInput = rowElement.querySelector('[name^="tinggi"]');
+        const jumlahInput = rowElement.querySelector('[name^="jumlah"]');
         const volumeInput = rowElement.querySelector('[name^="meter_kubik"]');
 
         const panjang = parseFloat(panjangInput.value) || 0;
         const lebar = parseFloat(lebarInput.value) || 0;
         const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
 
-        if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            const volume = panjang * lebar * tinggi;
+        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
+            const volume = panjang * lebar * tinggi * jumlah;
             volumeInput.value = volume.toFixed(3);
         } else {
             volumeInput.value = '';

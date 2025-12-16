@@ -423,11 +423,12 @@
                                             <input type="number"
                                                    name="jumlah[]"
                                                    id="jumlah_{{ $index }}"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                   class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                                    placeholder="0"
                                                    value="{{ old('jumlah.'.$index, $item->jumlah) }}"
                                                    min="0"
-                                                   step="1">
+                                                   step="1"
+                                                   onchange="calculateVolume(this.closest('.dimensi-row'))">
                                         </div>
                                         <div>
                                             <label for="satuan_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
@@ -515,7 +516,7 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mt-2">
                                         <i class="fas fa-info-circle mr-1"></i>
-                                        Volume akan dihitung otomatis dari panjang × lebar × tinggi
+                                        Volume akan dihitung otomatis dari panjang × lebar × tinggi × jumlah
                                     </p>
                                 </div>
                             @endforeach
@@ -848,6 +849,7 @@ function calculateVolume(rowElement) {
     const panjangInput = rowElement.querySelector('input[name*="panjang"]');
     const lebarInput = rowElement.querySelector('input[name*="lebar"]');
     const tinggiInput = rowElement.querySelector('input[name*="tinggi"]');
+    const jumlahInput = rowElement.querySelector('input[name*="jumlah"]');
     const volumeInput = rowElement.querySelector('input[name*="meter_kubik"]');
     
     // Check if all required inputs exist
@@ -859,9 +861,10 @@ function calculateVolume(rowElement) {
     const panjang = parseFloat(panjangInput.value) || 0;
     const lebar = parseFloat(lebarInput.value) || 0;
     const tinggi = parseFloat(tinggiInput.value) || 0;
+    const jumlah = jumlahInput ? (parseInt(jumlahInput.value, 10) || 1) : 1;
     
-    // Calculate volume in cubic meters (m × m × m = m³)
-    const volume = panjang * lebar * tinggi;
+    // Calculate volume in cubic meters including jumlah
+    const volume = panjang * lebar * tinggi * jumlah;
     
     volumeInput.value = formatVolumeForDatabase(volume);
 }
@@ -984,8 +987,9 @@ function addDimensiRow() {
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
                 <input type="number" name="jumlah[]" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
-                       placeholder="0" min="0" step="1">
+                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="0" min="0" step="1"
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-2">Satuan</label>
