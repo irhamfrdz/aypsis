@@ -70,9 +70,6 @@
                             <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900" title="Cetak">
                                 <i class="fas fa-print"></i>
                             </a>
-                            <a href="{{ route('pranota-ob.input-dp', $pranota->id) }}" class="text-green-600 hover:text-green-900" title="Masukkan DP">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </a>
                         </td>
                     </tr>
                     @empty
