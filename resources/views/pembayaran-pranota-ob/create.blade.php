@@ -234,15 +234,35 @@
                 </div>
             </div>
 
-            {{-- Daftar Supir dari Pranota yang Dipilih --}}
+            {{-- Breakdown Per Supir dari Pranota yang Dipilih --}}
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800">Daftar Supir dari Pranota yang Dipilih</h4>
+                    <h4 class="text-sm font-semibold text-gray-800">Breakdown Per Supir dari Pranota yang Dipilih</h4>
                 </div>
-                <div class="p-3" id="supir-list-container">
-                    <div class="flex flex-wrap gap-2" id="supir-badges">
-                        <span class="text-xs text-gray-500 italic">Pilih pranota untuk melihat daftar supir</span>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200" id="supir-breakdown-table">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir</th>
+                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="supir-breakdown-body">
+                            <tr>
+                                <td colspan="3" class="px-3 py-4 text-center text-xs text-gray-500 italic">
+                                    Pilih pranota untuk melihat breakdown per supir
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-gray-50" id="supir-breakdown-footer" style="display: none;">
+                            <tr>
+                                <td class="px-3 py-2 text-left text-xs font-bold text-gray-800">Total</td>
+                                <td class="px-3 py-2 text-center text-xs font-bold text-gray-800" id="total-items">0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-gray-800" id="total-biaya">Rp 0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
 
@@ -314,7 +334,7 @@
             pranotaCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('tr');
-                    const amountText = row.querySelector('td:nth-child(6)').textContent;
+                    const amountText = row.querySelector('td:nth-child(7)').textContent;
                     const amount = parseFloat(amountText.replace(/Rp\s|,|\./g, '')) || 0;
                     total += amount;
                 }
@@ -350,17 +370,52 @@
 
         // Function to update supir list
         function updateSupirList() {
-            const supirBadges = document.getElementById('supir-badges');
-            const allSupir = new Set();
+            const supirBreakdownBody = document.getElementById('supir-breakdown-body');
+            const supirBreakdownFooter = document.getElementById('supir-breakdown-footer');
+            const supirData = {};
+            let totalItems = 0;
+            let totalBiaya = 0;
 
             pranotaCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('tr');
                     const supirCell = row.querySelector('[data-supir-data]');
-                    if (supirCell) {
+                    const pranotaId = checkbox.getAttribute('data-pranota-id');
+                    
+                    if (supirCell && pranotaId) {
                         try {
-                            const supirData = JSON.parse(supirCell.getAttribute('data-supir-data'));
-                            supirData.forEach(supir => allSupir.add(supir));
+                            const supirList = JSON.parse(supirCell.getAttribute('data-supir-data'));
+                            const biayaText = row.querySelector('td:nth-child(7)').textContent;
+                            const biaya = parseFloat(biayaText.replace(/Rp\s|,|\./g, '')) || 0;
+                            const itemCountText = row.querySelector('td:nth-child(5) span').textContent;
+                            const itemCount = parseInt(itemCountText) || 0;
+                            
+                            // If there are supir in this pranota
+                            if (supirList.length > 0) {
+                                const biayaPerSupir = biaya / supirList.length;
+                                const itemPerSupir = itemCount / supirList.length;
+                                
+                                supirList.forEach(supir => {
+                                    if (!supirData[supir]) {
+                                        supirData[supir] = {
+                                            items: 0,
+                                            biaya: 0
+                                        };
+                                    }
+                                    supirData[supir].items += itemPerSupir;
+                                    supirData[supir].biaya += biayaPerSupir;
+                                });
+                            } else {
+                                // If no supir, count as "Belum Ditentukan"
+                                if (!supirData['Belum Ditentukan']) {
+                                    supirData['Belum Ditentukan'] = {
+                                        items: 0,
+                                        biaya: 0
+                                    };
+                                }
+                                supirData['Belum Ditentukan'].items += itemCount;
+                                supirData['Belum Ditentukan'].biaya += biaya;
+                            }
                         } catch (e) {
                             console.error('Error parsing supir data:', e);
                         }
@@ -368,24 +423,49 @@
                 }
             });
 
-            supirBadges.innerHTML = '';
+            supirBreakdownBody.innerHTML = '';
 
-            if (allSupir.size === 0) {
-                supirBadges.innerHTML = '<span class="text-xs text-gray-500 italic">Tidak ada supir dalam pranota yang dipilih</span>';
+            if (Object.keys(supirData).length === 0) {
+                supirBreakdownBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="px-3 py-4 text-center text-xs text-gray-500 italic">
+                            Tidak ada supir dalam pranota yang dipilih
+                        </td>
+                    </tr>
+                `;
+                supirBreakdownFooter.style.display = 'none';
             } else {
-                const supirArray = Array.from(allSupir).sort();
-                supirArray.forEach(supir => {
-                    const badge = document.createElement('span');
-                    badge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800';
-                    badge.innerHTML = `<i class="fas fa-user mr-1"></i>${supir}`;
-                    supirBadges.appendChild(badge);
+                const sortedSupir = Object.entries(supirData).sort((a, b) => a[0].localeCompare(b[0]));
+                
+                sortedSupir.forEach(([supir, data]) => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-3 py-3 text-xs">
+                            <div class="flex items-center">
+                                <i class="fas fa-user text-purple-500 mr-2"></i>
+                                <span class="font-medium text-gray-900">${supir}</span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 text-center text-xs">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                ${Math.round(data.items * 10) / 10} item
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 text-right text-xs font-semibold text-gray-900">
+                            Rp ${data.biaya.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                        </td>
+                    `;
+                    supirBreakdownBody.appendChild(row);
+                    
+                    totalItems += data.items;
+                    totalBiaya += data.biaya;
                 });
 
-                // Add count summary
-                const summary = document.createElement('span');
-                summary.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800';
-                summary.textContent = `Total: ${supirArray.length} supir`;
-                supirBadges.appendChild(summary);
+                // Update footer
+                document.getElementById('total-items').textContent = `${Math.round(totalItems * 10) / 10} item`;
+                document.getElementById('total-biaya').textContent = `Rp ${totalBiaya.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                supirBreakdownFooter.style.display = 'table-footer-group';
             }
         }
 
