@@ -66,6 +66,7 @@
                         <td class="px-3 py-2 text-center text-sm space-x-2">
                             <a href="{{ route('pranota-ob.show', $pranota) }}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
                             <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900">Cetak</a>
+                            <a href="{{ route('pranota-ob.input-dp', $pranota->id) }}" class="text-green-600 hover:text-green-900">Input DP</a>
                         </td>
                     </tr>
                     @empty
