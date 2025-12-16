@@ -1920,6 +1920,19 @@
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
             // Calculate volume in cubic meters (m³)
             const volume = panjang * lebar * tinggi;
+            
+            // Validate: check for unrealistic values (> 100000 m³ likely means user entered cm instead of m)
+            if (volume > 100000) {
+                alert('⚠️ PERINGATAN: Volume yang dihitung sangat besar (' + volume.toFixed(2) + ' m³).\n\n' +
+                      'Pastikan Anda memasukkan dimensi dalam METER, bukan centimeter!\n' +
+                      'Contoh: 1.5 meter (bukan 150 cm)');
+                panjangInput.value = '';
+                lebarInput.value = '';
+                tinggiInput.value = '';
+                volumeInput.value = '';
+                return;
+            }
+            
             const volumeFormatted = volume.toFixed(3);
             
             console.log('✅ Volume calculation:', {
@@ -2131,6 +2144,28 @@
                 // First, ensure all calculations are up to date
                 calculateAllVolumesAndTotals();
                 updateHiddenBarangFields();
+                
+                // Validate volumes before submission
+                const volumeInputs = document.querySelectorAll('input[name="meter_kubik[]"]');
+                let hasInvalidVolume = false;
+                let maxVolume = 0;
+                
+                volumeInputs.forEach(input => {
+                    const vol = parseFloat(input.value) || 0;
+                    if (vol > maxVolume) maxVolume = vol;
+                    if (vol > 100000) {
+                        hasInvalidVolume = true;
+                    }
+                });
+                
+                if (hasInvalidVolume) {
+                    e.preventDefault();
+                    alert('❌ ERROR: Volume terlalu besar (' + maxVolume.toFixed(2) + ' m³)!\n\n' +
+                          'Pastikan Anda memasukkan dimensi dalam METER, bukan centimeter.\n' +
+                          'Contoh: Masukkan 1.5 untuk 1.5 meter (bukan 150).\n\n' +
+                          'Silakan perbaiki input dimensi Anda.');
+                    return false;
+                }
                 
                 console.log('=== FORM SUBMISSION DEBUG ===');
                 
