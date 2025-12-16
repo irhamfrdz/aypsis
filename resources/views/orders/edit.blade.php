@@ -266,6 +266,29 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Penerima -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="penerima_id" class="text-sm font-medium text-gray-700">Penerima</label>
+                                <a href="{{ route('order.penerima.create') }}" id="add_penerima_link" target="_blank"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah">Tambah</a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-penerima">
+                                    <input type="text" id="search_penerima" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="penerima_id" id="penerima_id" class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                                        <option value="">Pilih Penerima</option>
+                                        @foreach($penerimas as $penerima)
+                                            <option value="{{ $penerima->id }}" {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
+                                                {{ $penerima->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_penerima" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -556,6 +579,14 @@ document.addEventListener('DOMContentLoaded', function() {
         containerClass: 'dropdown-container-jenis-barang'
     });
 
+    // Initialize Penerima dropdown
+    createSearchableDropdown({
+        selectId: 'penerima_id',
+        searchId: 'search_penerima',
+        dropdownId: 'dropdown_options_penerima',
+        containerClass: 'dropdown-container-penerima'
+    });
+
     // Handle popup add events and update selects in-place (don't reload page)
     window.addEventListener('message', function(event) {
         try {
@@ -632,6 +663,41 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     pengirimSelect.dispatchEvent(new Event('change'));
                     showNotification('Pengirim "' + event.data.data.nama_pengirim + '" berhasil ditambahkan dan dipilih!', 'success');
+                }
+            } else if (event.data.type === 'penerima-added') {
+                const penerimaSelect = document.getElementById('penerima_id');
+                const searchPenerimaInput = document.getElementById('search_penerima');
+                const dropdownOptionsPenerima = document.getElementById('dropdown_options_penerima');
+                if (penerimaSelect && event.data.data) {
+                    const newOption = document.createElement('option');
+                    newOption.value = event.data.data.id;
+                    newOption.textContent = event.data.data.nama;
+                    penerimaSelect.appendChild(newOption);
+                    penerimaSelect.value = event.data.data.id;
+                    if (searchPenerimaInput) searchPenerimaInput.value = event.data.data.nama;
+                    if (dropdownOptionsPenerima) {
+                        const newOptionDiv = document.createElement('div');
+                        newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        newOptionDiv.textContent = event.data.data.nama;
+                        newOptionDiv.setAttribute('data-value', event.data.data.id);
+                        newOptionDiv.addEventListener('click', function() {
+                            penerimaSelect.value = this.getAttribute('data-value');
+                            searchPenerimaInput.value = this.textContent;
+                            dropdownOptionsPenerima.classList.add('hidden');
+                            penerimaSelect.dispatchEvent(new Event('change'));
+                        });
+                        if (dropdownOptionsPenerima.children.length > 1) {
+                            dropdownOptionsPenerima.insertBefore(newOptionDiv, dropdownOptionsPenerima.children[1]);
+                        } else {
+                            dropdownOptionsPenerima.appendChild(newOptionDiv);
+                        }
+                    }
+                    if (dropdownOptionsPenerima) dropdownOptionsPenerima.classList.add('hidden');
+                    if (window['refresh_penerima_id_options']) {
+                        window['refresh_penerima_id_options']();
+                    }
+                    penerimaSelect.dispatchEvent(new Event('change'));
+                    showNotification('Penerima "' + event.data.data.nama + '" berhasil ditambahkan dan dipilih!', 'success');
                 }
             } else if (event.data.type === 'jenis-barang-added') {
                 const jenisBarangSelect = document.getElementById('jenis_barang_id');
@@ -809,6 +875,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (searchValue) params.append('search', searchValue);
             url += '?' + params.toString();
             const popup = window.open(url, 'addPengirim', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+            if (popup) popup.focus();
+        });
+    }
+
+    // Add handler for Penerima popup
+    const addPenerimaLink = document.getElementById('add_penerima_link');
+    const searchPenerimaInput = document.getElementById('search_penerima');
+    if (addPenerimaLink && searchPenerimaInput) {
+        addPenerimaLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchPenerimaInput.value.trim();
+            let url = "{{ route('order.penerima.create') }}";
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+            if (searchValue) params.append('search', searchValue);
+            url += '?' + params.toString();
+            const popup = window.open(url, 'addPenerima', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
             if (popup) popup.focus();
         });
     }

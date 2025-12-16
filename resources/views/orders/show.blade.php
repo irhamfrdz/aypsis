@@ -85,6 +85,10 @@
                             <p class="mt-1 text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</p>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Penerima</label>
+                            <p class="mt-1 text-sm text-gray-900">{{ $order->penerima->nama ?? ($order->penerima ?? '-') }}</p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Jenis Barang</label>
                             <p class="mt-1 text-sm text-gray-900">{{ $order->jenisBarang->nama_barang ?? '-' }}</p>
                         </div>
