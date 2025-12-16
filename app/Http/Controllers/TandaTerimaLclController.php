@@ -283,7 +283,7 @@ class TandaTerimaLclController extends Controller
         $tandaTerima = TandaTerimaLcl::findOrFail($id);
         
         $request->validate([
-            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima,' . $id,
+            'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima,' . $id,
             'tanggal_tanda_terima' => 'required|date',
             'nama_penerima' => 'required|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
@@ -293,22 +293,31 @@ class TandaTerimaLclController extends Controller
             'pic_pengirim' => 'nullable|string|max:255',
             'telepon_pengirim' => 'nullable|string|max:50',
             'alamat_pengirim' => 'required|string',
-            'nama_barang' => 'required|string|max:255',
+            'nama_barang' => 'nullable|array',
+            'nama_barang.*' => 'nullable|string|max:255',
+            'jumlah' => 'nullable|array',
+            'jumlah.*' => 'nullable|numeric|min:0',
+            'satuan' => 'nullable|array',
+            'satuan.*' => 'nullable|string|max:50',
+            'panjang' => 'nullable|array',
+            'panjang.*' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|array',
+            'lebar.*' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|array',
+            'tinggi.*' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|array',
+            'meter_kubik.*' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|array',
+            'tonase.*' => 'nullable|numeric|min:0',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
             'tipe_kontainer' => 'required|in:cargo,lcl',
             'nomor_seal' => 'nullable|string|max:255',
             'jenis_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
-            'items' => 'array',
-            'items.*.panjang' => 'nullable|numeric|min:0',
-            'items.*.lebar' => 'nullable|numeric|min:0',
-            'items.*.tinggi' => 'nullable|numeric|min:0',
-            'items.*.meter_kubik' => 'nullable|numeric|min:0',
-            'items.*.tonase' => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request, $tandaTerima) {
-            // Update main record
+            // Update main record (without nama_barang - it's now handled in items)
             $tandaTerima->update([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
                 'tanggal_tanda_terima' => $request->tanggal_tanda_terima,
@@ -322,7 +331,6 @@ class TandaTerimaLclController extends Controller
                 'pic_pengirim' => $request->pic_pengirim,
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
-                'nama_barang' => $request->nama_barang,
                 'kuantitas' => $request->kuantitas,
                 'keterangan_barang' => $request->keterangan_barang,
                 'tipe_kontainer' => $request->tipe_kontainer,
@@ -336,57 +344,60 @@ class TandaTerimaLclController extends Controller
                 'updated_by' => Auth::id(),
             ]);
 
-            // Update items if provided
-            if ($request->has('items')) {
-                // Handle existing items
+            // Update items - handle flat array format
+            if ($request->has('nama_barang') && is_array($request->nama_barang)) {
+                $namaBarangs = $request->nama_barang;
+                $jumlahs = $request->jumlah ?? [];
+                $satuans = $request->satuan ?? [];
+                $panjangs = $request->panjang ?? [];
+                $lebars = $request->lebar ?? [];
+                $tinggis = $request->tinggi ?? [];
+                $tonases = $request->tonase ?? [];
+                $itemIds = $request->item_ids ?? [];
+                
                 $existingIds = [];
-                foreach ($request->items as $index => $item) {
-                    // Check if at least one field has value (nama_barang, jumlah, satuan, dimensions, or tonase)
-                    $hasData = !empty($item['nama_barang']) || !empty($item['jumlah']) || !empty($item['satuan']) 
-                            || !empty($item['panjang']) || !empty($item['lebar']) || !empty($item['tinggi']) || !empty($item['tonase']);
+                
+                foreach ($namaBarangs as $index => $namaBarang) {
+                    // Check if at least one field has value
+                    $hasData = !empty($namaBarang) || !empty($jumlahs[$index]) || !empty($satuans[$index]) 
+                            || !empty($panjangs[$index]) || !empty($lebars[$index]) || !empty($tinggis[$index]) || !empty($tonases[$index]);
                     
                     if ($hasData) {
-                        if (isset($item['id']) && $item['id']) {
+                        // Calculate volume if dimensions are provided
+                        $volume = null;
+                        if (!empty($panjangs[$index]) && !empty($lebars[$index]) && !empty($tinggis[$index])) {
+                            $volume = $panjangs[$index] * $lebars[$index] * $tinggis[$index];
+                        }
+                        
+                        if (isset($itemIds[$index]) && $itemIds[$index]) {
                             // Update existing item
-                            $existingItem = TandaTerimaLclItem::find($item['id']);
+                            $existingItem = TandaTerimaLclItem::find($itemIds[$index]);
                             if ($existingItem) {
-                                // Calculate volume if dimensions are provided
-                                $volume = null;
-                                if (!empty($item['panjang']) && !empty($item['lebar']) && !empty($item['tinggi'])) {
-                                    $volume = $item['panjang'] * $item['lebar'] * $item['tinggi'];
-                                }
-
                                 $existingItem->update([
-                                    'nama_barang' => $item['nama_barang'] ?? null,
-                                    'jumlah' => $item['jumlah'] ?? null,
-                                    'satuan' => $item['satuan'] ?? null,
-                                    'panjang' => $item['panjang'] ?? null,
-                                    'lebar' => $item['lebar'] ?? null,
-                                    'tinggi' => $item['tinggi'] ?? null,
+                                    'nama_barang' => $namaBarang ?: null,
+                                    'jumlah' => $jumlahs[$index] ?? null,
+                                    'satuan' => $satuans[$index] ?? null,
+                                    'panjang' => $panjangs[$index] ?? null,
+                                    'lebar' => $lebars[$index] ?? null,
+                                    'tinggi' => $tinggis[$index] ?? null,
                                     'meter_kubik' => $volume,
-                                    'tonase' => $item['tonase'] ?? null,
+                                    'tonase' => $tonases[$index] ?? null,
                                 ]);
                                 $existingIds[] = $existingItem->id;
                             }
                         } else {
                             // Create new item
-                            // Calculate volume if dimensions are provided
-                            $volume = null;
-                            if (!empty($item['panjang']) && !empty($item['lebar']) && !empty($item['tinggi'])) {
-                                $volume = $item['panjang'] * $item['lebar'] * $item['tinggi'];
-                            }
-
                             $newItem = TandaTerimaLclItem::create([
                                 'tanda_terima_lcl_id' => $tandaTerima->id,
                                 'item_number' => $index + 1,
-                                'nama_barang' => $item['nama_barang'] ?? null,
-                                'jumlah' => $item['jumlah'] ?? null,
-                                'satuan' => $item['satuan'] ?? null,
-                                'panjang' => $item['panjang'] ?? null,
-                                'lebar' => $item['lebar'] ?? null,
-                                'tinggi' => $item['tinggi'] ?? null,
+                                'nama_barang' => $namaBarang ?: null,
+                                'jumlah' => $jumlahs[$index] ?? null,
+                                'satuan' => $satuans[$index] ?? null,
+                                'panjang' => $panjangs[$index] ?? null,
+                                'lebar' => $lebars[$index] ?? null,
+                                'tinggi' => $tinggis[$index] ?? null,
                                 'meter_kubik' => $volume,
-                                'tonase' => $item['tonase'] ?? null,
+                                'tonase' => $tonases[$index] ?? null,
                             ]);
                             $existingIds[] = $newItem->id;
                         }
@@ -394,7 +405,12 @@ class TandaTerimaLclController extends Controller
                 }
                 
                 // Delete items that are no longer present
-                $tandaTerima->items()->whereNotIn('id', $existingIds)->delete();
+                if (!empty($existingIds)) {
+                    $tandaTerima->items()->whereNotIn('id', $existingIds)->delete();
+                } else {
+                    // If no items, delete all
+                    $tandaTerima->items()->delete();
+                }
             }
         });
 

@@ -1045,6 +1045,12 @@ function removeDimensiRow(button) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener for "Tambah Dimensi" button
+    const addDimensiBtn = document.getElementById('add-dimensi-btn');
+    if (addDimensiBtn) {
+        addDimensiBtn.addEventListener('click', addDimensiRow);
+    }
+
     // Format input values on blur for smart decimal display
     document.addEventListener('blur', function(e) {
         if (e.target.matches('input[name*="[panjang]"], input[name*="[lebar]"], input[name*="[tinggi]"], input[name*="[tonase]"]')) {
