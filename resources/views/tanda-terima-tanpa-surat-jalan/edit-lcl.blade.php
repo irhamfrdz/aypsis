@@ -828,7 +828,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Pilih Tujuan Pengiriman</option>
                             @foreach(App\Models\MasterTujuanKirim::all() as $tujuan)
-                                <option value="{{ $tujuan->id }}" {{ old('master_tujuan_kirim_id', $tandaTerima->master_tujuan_kirim_id) == $tujuan->id ? 'selected' : '' }}>
+                                <option value="{{ $tujuan->id }}" {{ old('master_tujuan_kirim_id', $tandaTerima->tujuan_pengiriman_id) == $tujuan->id ? 'selected' : '' }}>
                                     {{ $tujuan->nama_tujuan }}
                                 </option>
                             @endforeach
