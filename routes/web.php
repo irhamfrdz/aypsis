@@ -3578,6 +3578,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::patch('prospek/{prospek}/update-seal', [ProspekController::class, 'updateSeal'])->name('prospek.update-seal')
          ->middleware('can:prospek-edit');
 
+    // Route untuk delete prospek
+    Route::delete('prospek/{prospek}', [ProspekController::class, 'destroy'])->name('prospek.destroy')
+         ->middleware('can:prospek-delete');
+
           // 🚢 Naik Kapal Management
           Route::get('naik-kapal/select', [NaikKapalController::class, 'select'])
                ->name('naik-kapal.select')

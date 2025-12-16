@@ -524,6 +524,65 @@ class ProspekController extends Controller
         }
     }
 
+    /**
+     * Remove the specified prospek from storage.
+     */
+    public function destroy(Prospek $prospek)
+    {
+        try {
+            $user = Auth::user();
+            
+            // Check permission
+            if (!$this->hasProspekPermission($user, 'prospek-delete')) {
+                return response()->json([
+                    'error' => 'Anda tidak memiliki izin untuk menghapus prospek'
+                ], 403);
+            }
+
+            // Store data for audit log before deletion
+            $prospekData = [
+                'id' => $prospek->id,
+                'no_surat_jalan' => $prospek->no_surat_jalan,
+                'tanggal' => $prospek->tanggal,
+                'nama_supir' => $prospek->nama_supir,
+                'barang' => $prospek->barang,
+                'pt_pengirim' => $prospek->pt_pengirim,
+                'tipe' => $prospek->tipe,
+                'ukuran' => $prospek->ukuran,
+                'nomor_kontainer' => $prospek->nomor_kontainer,
+                'no_seal' => $prospek->no_seal,
+                'tujuan_pengiriman' => $prospek->tujuan_pengiriman,
+                'status' => $prospek->status,
+            ];
+
+            // Delete the prospek
+            $prospek->delete();
+
+            // Log the deletion
+            \Log::info('Prospek deleted', [
+                'prospek_data' => $prospekData,
+                'deleted_by' => $user->username,
+                'deleted_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Prospek berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting prospek', [
+                'prospek_id' => $prospek->id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Terjadi kesalahan saat menghapus prospek: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function hasProspekPermission($user, $permission)
     {
         // Admin and user_admin always have access

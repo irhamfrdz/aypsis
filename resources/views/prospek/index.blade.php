@@ -267,6 +267,15 @@
                                        title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    @can('prospek-delete')
+                                        <button type="button"
+                                                class="delete-prospek text-red-600 hover:text-red-900 transition duration-150"
+                                                data-prospek-id="{{ $prospek->id }}"
+                                                data-no-surat-jalan="{{ $prospek->no_surat_jalan }}"
+                                                title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -490,6 +499,64 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 3000);
     }
+    
+    // Handle delete prospek
+    document.querySelectorAll('.delete-prospek').forEach(button => {
+        button.addEventListener('click', function() {
+            const prospekId = this.dataset.prospekId;
+            const noSuratJalan = this.dataset.noSuratJalan;
+            
+            if (confirm(`Apakah Anda yakin ingin menghapus prospek dengan No. Surat Jalan: ${noSuratJalan}?\n\nData yang dihapus tidak dapat dikembalikan.`)) {
+                // Show loading
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                this.disabled = true;
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                formData.append('_method', 'DELETE');
+                
+                fetch(`/prospek/${prospekId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', data.message || 'Prospek berhasil dihapus');
+                        
+                        // Remove row from table with animation
+                        const row = this.closest('tr');
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            row.remove();
+                            
+                            // Reload page if no more data
+                            const tbody = document.querySelector('tbody');
+                            const dataRows = tbody.querySelectorAll('tr:not(:has(td[colspan]))');
+                            if (dataRows.length === 0) {
+                                window.location.reload();
+                            }
+                        }, 300);
+                    } else {
+                        throw new Error(data.error || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', error.message || 'Terjadi kesalahan saat menghapus prospek');
+                    
+                    // Reset button
+                    this.innerHTML = '<i class="fas fa-trash"></i>';
+                    this.disabled = false;
+                });
+            }
+        });
+    });
 });
 </script>
 
