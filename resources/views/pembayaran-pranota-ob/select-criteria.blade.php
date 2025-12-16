@@ -50,16 +50,19 @@
             {{-- Pilih DP --}}
             <div>
                 <label for="dp" class="block text-sm font-medium text-gray-700 mb-2">
-                    Tipe Pembayaran <span class="text-red-500">*</span>
+                    Pilih DP <span class="text-red-500">*</span>
                 </label>
                 <select name="dp" id="dp" 
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         required>
-                    <option value="">-- Pilih Tipe Pembayaran --</option>
-                    <option value="1" {{ request('dp') == '1' ? 'selected' : '' }}>DP (Down Payment)</option>
-                    <option value="0" {{ request('dp') == '0' ? 'selected' : '' }}>Pelunasan</option>
+                    <option value="">-- Pilih DP --</option>
+                    @foreach($dpList as $dp)
+                        <option value="{{ $dp->id }}" {{ request('dp') == $dp->id ? 'selected' : '' }}>
+                            {{ $dp->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }} - Rp {{ number_format($dp->dp_amount, 0, ',', '.') }}
+                        </option>
+                    @endforeach
                 </select>
-                <p class="mt-1 text-xs text-gray-500">Pilih apakah ini pembayaran DP atau pelunasan</p>
+                <p class="mt-1 text-xs text-gray-500">Pilih DP yang sudah dibuat dari menu Pembayaran DP OB</p>
             </div>
 
             {{-- Info Box --}}

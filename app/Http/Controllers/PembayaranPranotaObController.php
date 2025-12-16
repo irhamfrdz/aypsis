@@ -64,7 +64,12 @@ class PembayaranPranotaObController extends Controller
             ->sort()
             ->values();
 
-        return view('pembayaran-pranota-ob.select-criteria', compact('kapalList', 'voyageList'));
+        // Get DP list from pembayaran_obs where dp_amount > 0
+        $dpList = \App\Models\PembayaranOb::where('dp_amount', '>', 0)
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->get();
+
+        return view('pembayaran-pranota-ob.select-criteria', compact('kapalList', 'voyageList', 'dpList'));
     }
 
     /**
@@ -89,7 +94,13 @@ class PembayaranPranotaObController extends Controller
             session()->forget('errors');
         }
 
-        // Get pranota OB filtered by kapal, voyage, and dp status
+        // Get the selected DP
+        $selectedDp = null;
+        if ($request->filled('dp')) {
+            $selectedDp = \App\Models\PembayaranOb::find($request->dp);
+        }
+
+        // Get pranota OB filtered by kapal, voyage
         $query = PranotaOb::where('status', 'unpaid');
 
         if ($request->filled('kapal')) {
@@ -99,11 +110,6 @@ class PembayaranPranotaObController extends Controller
         if ($request->filled('voyage')) {
             $query->where('no_voyage', $request->voyage);
         }
-
-        // Filter by DP status if needed
-        // Assuming pranota has a 'dp_status' field or similar
-        // If you need to filter by DP, add the logic here
-        // For example: if ($request->dp == '1') { $query->where('has_dp', true); }
 
         $pranotaList = $query->orderBy('created_at', 'desc')->get();
 

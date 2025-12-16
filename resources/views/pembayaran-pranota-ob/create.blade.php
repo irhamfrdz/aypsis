@@ -37,10 +37,17 @@
                                 <span class="font-semibold">Voyage:</span>
                                 <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">{{ request('voyage', '-') }}</span>
                             </div>
+                            @php
+                                $selectedDp = request('dp') ? \App\Models\PembayaranOb::find(request('dp')) : null;
+                            @endphp
                             <div>
-                                <span class="font-semibold">Tipe:</span>
+                                <span class="font-semibold">DP:</span>
                                 <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">
-                                    {{ request('dp') == '1' ? 'DP (Down Payment)' : 'Pelunasan' }}
+                                    @if($selectedDp)
+                                        {{ $selectedDp->nomor_pembayaran }} - Rp {{ number_format($selectedDp->dp_amount, 0, ',', '.') }}
+                                    @else
+                                        -
+                                    @endif
                                 </span>
                             </div>
                         </div>
