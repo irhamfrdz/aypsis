@@ -54,15 +54,18 @@
                 </label>
                 <select name="dp" id="dp" 
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        required>
-                    <option value="">-- Pilih DP --</option>
+                        required
+                        disabled>
+                    <option value="">-- Pilih Voyage Terlebih Dahulu --</option>
                     @foreach($dpList as $dp)
-                        <option value="{{ $dp->id }}" {{ request('dp') == $dp->id ? 'selected' : '' }}>
+                        <option value="{{ $dp->id }}" 
+                                data-voyage="{{ $dp->nomor_voyage }}"
+                                {{ request('dp') == $dp->id ? 'selected' : '' }}>
                             {{ $dp->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }} - Rp {{ number_format($dp->dp_amount, 0, ',', '.') }}
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-gray-500">Pilih DP yang sudah dibuat dari menu Pembayaran DP OB</p>
+                <p class="mt-1 text-xs text-gray-500" id="dp-help-text">Pilih voyage terlebih dahulu untuk melihat DP yang tersedia</p>
             </div>
 
             {{-- Info Box --}}
@@ -107,9 +110,62 @@
         document.addEventListener('DOMContentLoaded', function() {
             const kapalSelect = document.getElementById('kapal');
             const voyageSelect = document.getElementById('voyage');
+            const dpSelect = document.getElementById('dp');
+            const dpHelpText = document.getElementById('dp-help-text');
 
-            // You can add dynamic filtering logic here if needed
-            // For example, updating voyage options based on selected kapal
+            // Store all DP options
+            const allDpOptions = [];
+            Array.from(dpSelect.options).forEach(option => {
+                if (option.value) { // Skip the default option
+                    allDpOptions.push({
+                        value: option.value,
+                        text: option.textContent,
+                        voyage: option.getAttribute('data-voyage')
+                    });
+                }
+            });
+
+            // Filter DP based on selected voyage
+            voyageSelect.addEventListener('change', function() {
+                const selectedVoyage = this.value;
+                
+                // Clear current options except the first one
+                dpSelect.innerHTML = '<option value="">-- Pilih DP --</option>';
+                
+                if (!selectedVoyage) {
+                    dpSelect.disabled = true;
+                    dpSelect.innerHTML = '<option value="">-- Pilih Voyage Terlebih Dahulu --</option>';
+                    dpHelpText.textContent = 'Pilih voyage terlebih dahulu untuk melihat DP yang tersedia';
+                    dpHelpText.className = 'mt-1 text-xs text-gray-500';
+                    return;
+                }
+                
+                // Filter and add matching DP options
+                const matchingDps = allDpOptions.filter(dp => dp.voyage === selectedVoyage);
+                
+                if (matchingDps.length === 0) {
+                    dpSelect.disabled = true;
+                    dpSelect.innerHTML = '<option value="">-- Tidak Ada DP untuk Voyage Ini --</option>';
+                    dpHelpText.textContent = 'Belum ada DP yang dibuat untuk voyage ini';
+                    dpHelpText.className = 'mt-1 text-xs text-red-600';
+                } else {
+                    dpSelect.disabled = false;
+                    matchingDps.forEach(dp => {
+                        const option = document.createElement('option');
+                        option.value = dp.value;
+                        option.textContent = dp.text;
+                        option.setAttribute('data-voyage', dp.voyage);
+                        dpSelect.appendChild(option);
+                    });
+                    dpHelpText.textContent = `Ditemukan ${matchingDps.length} DP untuk voyage ${selectedVoyage}`;
+                    dpHelpText.className = 'mt-1 text-xs text-green-600';
+                }
+            });
+
+            // Initialize on page load if voyage is already selected
+            if (voyageSelect.value) {
+                voyageSelect.dispatchEvent(new Event('change'));
+            }
         });
     </script>
 @endsection
