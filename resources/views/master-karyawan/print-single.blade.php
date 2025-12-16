@@ -178,7 +178,7 @@
             <div style="width:220px;text-align:center;">
                 <div class="signature-name" style="font-size:8.5px;margin-bottom:6px;"><strong>{{ $karyawan->nama_lengkap ?? '____________________________' }}</strong></div>
                 <div class="signature-line" style="height:28px;border-bottom:1px solid #ddd;width:220px;margin:0 auto;"></div>
-                <div style="margin-top:6px;font-size:9px;"><strong>TTD Karyawan</strong></div>
+                <div style="margin-top:6px;font-size:9px;"><strong>{{ $karyawan->nama_lengkap ?? '____________________________' }}</strong></div>
             </div>
             <div style="width:220px;text-align:center;">
                 <div class="signature-name" style="font-size:8.5px;margin-bottom:6px;">&nbsp;</div>
