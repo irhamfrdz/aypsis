@@ -4,24 +4,24 @@
 <div style="padding:12px;max-width:800px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#111;">
     @php use Carbon\Carbon; @endphp
     <style>
-        /* Reduce spacing to help signature fit on page */
-        .form-table td, .form-table th { padding: 1px !important; }
+        /* Adjust spacing for readability */
+        .form-table td, .form-table th { padding: 4px 6px !important; line-height: 1.2; }
         /* Slightly smaller signature fonts and reduced spacing */
         .signature-block { font-size: 9px; }
         .signature-block .signature-name { font-size: 8px; margin-top:4px; }
         .signature-line { height: 20px; }
 
-        /* Print-specific tighter rules to fit on single F4 page */
+        /* Print-specific rules */
         @media print {
-            /* shrink form table further */
-            .form-table td, .form-table th { padding: 1px !important; font-size: 8px !important; line-height: 1 !important; }
-            /* family table tighter */
+            /* make table rows more readable in print */
+            .form-table td, .form-table th { padding: 3px 6px !important; font-size: 9px !important; line-height: 1.2 !important; }
+            /* family table comfortable spacing */
             .family-table { font-size: 9px !important; }
-            .family-table th, .family-table td { padding: 3px !important; line-height: 1 !important; }
+            .family-table th, .family-table td { padding: 6px 6px !important; line-height: 1.2 !important; }
             /* headings */
-            h2 { margin-bottom:4px !important; font-size:15px !important; }
-            .signature-block { margin-top:6px !important; }
-            /* reduce page margins slightly to get more vertical space; top set to 0 */
+            h2 { margin-bottom:6px !important; font-size:16px !important; }
+            .signature-block { margin-top:8px !important; }
+            /* top margin set to 0, keep others small */
             @page { margin: 0mm 6mm 6mm 6mm; }
         }
     </style>
@@ -30,7 +30,7 @@
         <div><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }}</div>
     </div>
 
-    <table class="form-table" style="width:100%;border-collapse:collapse;font-size:8px;">
+    <table class="form-table" style="width:100%;border-collapse:collapse;font-size:9px;">
         <!-- Requested fields in specific order -->
         <tr>
             <td style="width:40%;padding:1px;border:1px solid #ddd;background:#f7fafc;"><strong>1. NIK Karyawan</strong></td>
