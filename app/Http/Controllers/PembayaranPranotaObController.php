@@ -39,6 +39,35 @@ class PembayaranPranotaObController extends Controller
     }
 
     /**
+     * Show page to select criteria (kapal, voyage, dp)
+     */
+    public function selectCriteria()
+    {
+        // Check permission manually to provide better error message
+        if (!Gate::allows('pembayaran-pranota-ob-create')) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota OB. Silakan hubungi administrator.');
+        }
+
+        // Get distinct kapal and voyage from unpaid pranota OB
+        $kapalList = PranotaOb::where('status', 'unpaid')
+            ->distinct()
+            ->pluck('nama_kapal')
+            ->filter()
+            ->sort()
+            ->values();
+
+        $voyageList = PranotaOb::where('status', 'unpaid')
+            ->distinct()
+            ->pluck('no_voyage')
+            ->filter()
+            ->sort()
+            ->values();
+
+        return view('pembayaran-pranota-ob.select-criteria', compact('kapalList', 'voyageList'));
+    }
+
+    /**
      * Show form to select pranota OB for payment
      */
     public function create(Request $request)
@@ -49,15 +78,40 @@ class PembayaranPranotaObController extends Controller
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota OB. Silakan hubungi administrator.');
         }
 
+        // If no criteria provided, redirect to select criteria page
+        if (!$request->has('kapal') || !$request->has('voyage') || !$request->has('dp')) {
+            return redirect()->route('pembayaran-pranota-ob.select-criteria')
+                ->with('error', 'Silakan pilih kriteria terlebih dahulu.');
+        }
+
         // Clear any old validation errors from session for fresh form load
         if ($request->isMethod('get')) {
             session()->forget('errors');
         }
 
-        // Get all pranota OB that are unpaid
-        $pranotaList = PranotaOb::where('status', 'unpaid')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get pranota OB filtered by kapal, voyage, and dp status
+        $query = PranotaOb::where('status', 'unpaid');
+
+        if ($request->filled('kapal')) {
+            $query->where('nama_kapal', $request->kapal);
+        }
+
+        if ($request->filled('voyage')) {
+            $query->where('no_voyage', $request->voyage);
+        }
+
+        // Filter by DP status if needed
+        // Assuming pranota has a 'dp_status' field or similar
+        // If you need to filter by DP, add the logic here
+        // For example: if ($request->dp == '1') { $query->where('has_dp', true); }
+
+        $pranotaList = $query->orderBy('created_at', 'desc')->get();
+
+        // Check if any pranota found
+        if ($pranotaList->isEmpty()) {
+            return redirect()->route('pembayaran-pranota-ob.select-criteria')
+                ->with('error', 'Tidak ada pranota OB yang sesuai dengan kriteria yang dipilih.');
+        }
 
         // Get Bank/Kas accounts only, sorted by account number
         $akunCoa = Coa::where(function($query) {

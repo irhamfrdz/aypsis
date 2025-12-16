@@ -17,6 +17,43 @@
             $labelClasses = "block text-xs font-medium text-gray-700 mb-1";
         @endphp
 
+        {{-- Display selected criteria --}}
+        <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-sm font-medium text-blue-800">Kriteria yang Dipilih</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <div class="flex flex-wrap gap-3">
+                            <div>
+                                <span class="font-semibold">Kapal:</span>
+                                <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">{{ request('kapal', '-') }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold">Voyage:</span>
+                                <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">{{ request('voyage', '-') }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold">Tipe:</span>
+                                <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">
+                                    {{ request('dp') == '1' ? 'DP (Down Payment)' : 'Pelunasan' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{{ route('pembayaran-pranota-ob.select-criteria') }}" class="text-blue-600 hover:text-blue-800 text-xs underline">
+                                Ubah Kriteria
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @if(session('success'))
             <div class="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
                 {{ session('success') }}

@@ -10,7 +10,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <h1 class="text-2xl font-bold text-gray-900">Pembayaran Pranota OB</h1>
                 <div class="mt-4 sm:mt-0 flex space-x-3">
-                    <a href="{{ route('pembayaran-pranota-ob.create') }}"
+                    <a href="{{ route('pembayaran-pranota-ob.select-criteria') }}"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-plus mr-2"></i>
                         Buat Pembayaran Baru

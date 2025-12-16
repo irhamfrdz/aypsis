@@ -3195,6 +3195,8 @@ Route::get('pembayaran-pranota-cat/{id}/print', [PembayaranPranotaCatController:
 Route::prefix('pembayaran-pranota-ob')->name('pembayaran-pranota-ob.')->middleware(['auth'])->group(function () {
     Route::get('/', [PembayaranPranotaObController::class, 'index'])->name('index')
          ->middleware('can:pembayaran-pranota-ob-view');
+    Route::get('/select-criteria', [PembayaranPranotaObController::class, 'selectCriteria'])->name('select-criteria')
+         ->middleware('can:pembayaran-pranota-ob-create');
     Route::get('/create', [PembayaranPranotaObController::class, 'create'])->name('create')
          ->middleware('can:pembayaran-pranota-ob-create');
     Route::post('/', [PembayaranPranotaObController::class, 'store'])->name('store')
