@@ -1714,6 +1714,11 @@ Route::middleware(['auth'])->group(function () {
                ->name('pranota-ob.print')
                ->middleware('can:pranota-ob-view');
 
+     // Pranota OB Input DP route
+          Route::get('pranota-ob/{pranota}/input-dp', [\App\Http\Controllers\PranotaObController::class, 'inputDp'])
+               ->name('pranota-ob.input-dp')
+               ->middleware('can:pranota-ob-view');
+
      // Pranota Rit Management
           Route::resource('pranota-rit', \App\Http\Controllers\PranotaRitController::class)
                ->middleware([

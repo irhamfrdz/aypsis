@@ -149,4 +149,36 @@ class PranotaObController extends Controller
 
         return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts'));
     }
+
+    public function inputDp($id)
+    {
+        $pranota = PranotaOb::with(['creator', 'itemsPivot'])->findOrFail($id);
+        $user = Auth::user();
+        if (!$user || !$user->can('pranota-ob-view')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat pranota OB.');
+        }
+
+        // Get pembayaran DP data from pembayaran_obs table
+        $pembayaranDps = \DB::table('pembayaran_obs')
+            ->select('id', 'nomor_pembayaran', 'tanggal_pembayaran', 'supir_ids', 'dp_amount', 'jumlah_per_supir', 'keterangan', 'kas_bank_akun_id')
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->get();
+
+        // Get unique supir list from pranota items
+        $displayItems = $pranota->itemsPivot && $pranota->itemsPivot->count() > 0 
+            ? $pranota->itemsPivot->map(function($pivot) {
+                return json_decode($pivot->item_data, true);
+            })->toArray()
+            : (is_array($pranota->items) ? $pranota->items : []);
+
+        $supirList = [];
+        foreach ($displayItems as $item) {
+            $supir = $item['supir'] ?? null;
+            if ($supir && !in_array($supir, $supirList)) {
+                $supirList[] = $supir;
+            }
+        }
+
+        return view('pranota-ob.input-dp', compact('pranota', 'pembayaranDps', 'supirList'));
+    }
 }
