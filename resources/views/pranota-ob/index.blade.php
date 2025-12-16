@@ -64,9 +64,15 @@
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->creator?->nama_lengkap ?? $pranota->creator?->name ?? '-' }}</td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->created_at->format('d/m/Y H:i') }}</td>
                         <td class="px-3 py-2 text-center text-sm space-x-2">
-                            <a href="{{ route('pranota-ob.show', $pranota) }}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
-                            <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900">Cetak</a>
-                            <a href="{{ route('pranota-ob.input-dp', $pranota->id) }}" class="text-green-600 hover:text-green-900">Input DP</a>
+                            <a href="{{ route('pranota-ob.show', $pranota) }}" class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900" title="Cetak">
+                                <i class="fas fa-print"></i>
+                            </a>
+                            <a href="{{ route('pranota-ob.input-dp', $pranota->id) }}" class="text-green-600 hover:text-green-900" title="Masukkan DP">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </a>
                         </td>
                     </tr>
                     @empty
