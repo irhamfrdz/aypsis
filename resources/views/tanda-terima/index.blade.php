@@ -275,14 +275,13 @@
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
                             </th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -427,11 +426,6 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
-                                    <code class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">TT-{{ $tandaTerima->id }}</code>
-                                </div>
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap">
-                                <div class="flex items-center gap-1">
                                     <span class="text-xs font-semibold text-gray-900">{{ $tandaTerima->no_surat_jalan }}</span>
                                     @if(!$tandaTerima->surat_jalan_id)
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
@@ -447,16 +441,40 @@
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    {{ Str::limit($tandaTerima->pengirim ?: '-', 20) }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                     {{ Str::limit($tandaTerima->jenis_barang ?: '-', 12) }}
                                 </span>
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
-                                <div class="max-w-[150px] truncate" title="{{ $tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil' }}">
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ Str::limit($tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil', 20) }}
-                                    </span>
-                                </div>
+                                @php
+                                    $namaBarang = $tandaTerima->nama_barang;
+                                    
+                                    // Coba ambil dari dimensi_items atau dimensi_details jika nama_barang kosong
+                                    if (!$namaBarang) {
+                                        $dimensiItems = [];
+                                        
+                                        if ($tandaTerima->dimensi_items) {
+                                            $dimensiItems = is_string($tandaTerima->dimensi_items) ? json_decode($tandaTerima->dimensi_items, true) : $tandaTerima->dimensi_items;
+                                        } elseif ($tandaTerima->dimensi_details) {
+                                            $dimensiItems = is_string($tandaTerima->dimensi_details) ? json_decode($tandaTerima->dimensi_details, true) : $tandaTerima->dimensi_details;
+                                        }
+                                        
+                                        if (is_array($dimensiItems) && count($dimensiItems) > 0 && isset($dimensiItems[0]['nama_barang'])) {
+                                            $namaBarang = $dimensiItems[0]['nama_barang'];
+                                            if (count($dimensiItems) > 1) {
+                                                $namaBarang .= ' (+' . (count($dimensiItems) - 1) . ' lainnya)';
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                                    {{ Str::limit($namaBarang ?: '-', 20) }}
+                                </span>
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <div class="max-w-[150px] truncate" title="{{ $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim' }}">
@@ -464,9 +482,6 @@
                                         {{ Str::limit($tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim', 20) }}
                                     </span>
                                 </div>
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $tandaTerima->suratJalan->uangJalan->nomor_uang_jalan ?? '-' }}</code>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $tandaTerima->suratJalan && $tandaTerima->suratJalan->uangJalan && $tandaTerima->suratJalan->uangJalan->tanggal_uang_jalan ? \Carbon\Carbon::parse($tandaTerima->suratJalan->uangJalan->tanggal_uang_jalan)->format('d/M/Y') : '-' }}
@@ -554,7 +569,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="px-3 py-8 text-center">
+                            <td colspan="12" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada data tanda terima</p>

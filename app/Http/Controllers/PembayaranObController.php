@@ -66,51 +66,10 @@ class PembayaranObController extends Controller
     }
 
     /**
-     * Show the form for selecting kapal, voyage, and DP before create.
-     */
-    public function selectPranota()
-    {
-        // Get list of pranota OB dengan kapal dan voyage
-        $pranotas = \App\Models\PranotaOb::with(['creator'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Get list of pembayaran DP (from pembayaran_obs table)
-        $pembayaranDps = DB::table('pembayaran_obs')
-            ->select('id', 'nomor_pembayaran', 'tanggal_pembayaran', 'supir_ids', 'total_pembayaran', 'jumlah_per_supir', 'keterangan')
-            ->orderBy('tanggal_pembayaran', 'desc')
-            ->get();
-
-        return view('pembayaran-dp-ob.select-pranota', [
-            'title' => 'Pilih Pranota & DP - Pembayaran OB',
-            'pranotas' => $pranotas,
-            'pembayaranDps' => $pembayaranDps
-        ]);
-    }
-
-    /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create()
     {
-        // Get pranota_id and dp_ids from request if coming from select page
-        $pranotaId = $request->get('pranota_id');
-        $dpIds = $request->get('dp_ids', []);
-
-        // Get pranota details if pranota_id is provided
-        $pranota = null;
-        if ($pranotaId) {
-            $pranota = \App\Models\PranotaOb::with(['creator', 'items.supir'])->find($pranotaId);
-        }
-
-        // Get selected DP data if dp_ids are provided
-        $selectedDps = [];
-        if (!empty($dpIds)) {
-            $selectedDps = DB::table('pembayaran_obs')
-                ->whereIn('id', $dpIds)
-                ->get();
-        }
-
         // Ambil data karyawan yang mempunyai divisi supir
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
                             ->where('status', 'active') // hanya karyawan aktif
@@ -136,9 +95,7 @@ class PembayaranObController extends Controller
             'title' => 'Tambah Pembayaran DP OB',
             'supirList' => $supirList,
             'kasBankList' => $kasBankList,
-            'uangMukaBelumTerpakaiList' => $uangMukaBelumTerpakaiList,
-            'pranota' => $pranota,
-            'selectedDps' => $selectedDps
+            'uangMukaBelumTerpakaiList' => $uangMukaBelumTerpakaiList
         ]);
     }
 

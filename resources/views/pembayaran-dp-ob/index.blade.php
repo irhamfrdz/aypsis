@@ -16,7 +16,7 @@
 
                 <div class="flex space-x-3">
                     @can('pembayaran-ob-create')
-                    <a href="{{ route('pembayaran-ob.select-pranota') }}"
+                    <a href="{{ route('pembayaran-ob.create') }}"
                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
                         <i class="fas fa-plus mr-1"></i> Tambah Pembayaran DP OB
                     </a>
@@ -259,7 +259,7 @@
                                             <h3 class="text-lg font-medium text-gray-900 mb-2">Belum Ada Data</h3>
                                             <p class="text-gray-500 mb-4">Belum ada data pembayaran DP OB yang tersedia.</p>
                                             @can('pembayaran-ob-create')
-                                            <a href="{{ route('pembayaran-ob.select-pranota') }}"
+                                            <a href="{{ route('pembayaran-ob.create') }}"
                                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
                                                 <i class="fas fa-plus mr-1"></i> Tambah Pembayaran DP OB Pertama
                                             </a>

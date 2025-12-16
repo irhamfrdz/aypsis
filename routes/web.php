@@ -3314,8 +3314,6 @@ Route::prefix('pembayaran-ob')->name('pembayaran-ob.')->middleware(['auth'])->gr
          ->middleware('can:pembayaran-ob-view');
     Route::get('/export', [PembayaranObController::class, 'export'])->name('export')
          ->middleware('can:pembayaran-ob-export');
-    Route::get('/select-pranota', [PembayaranObController::class, 'selectPranota'])->name('select-pranota')
-         ->middleware('can:pembayaran-ob-create');
     Route::get('/create', [PembayaranObController::class, 'create'])->name('create')
          ->middleware('can:pembayaran-ob-create');
     Route::get('/generate-nomor', [PembayaranObController::class, 'generateNomorPembayaran'])->name('generate-nomor')
