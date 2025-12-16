@@ -177,7 +177,7 @@
                 <!-- Master Data Relations -->
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Data Master</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Term -->
                         <div>
                             <div class="flex items-center justify-between mb-2">
@@ -279,82 +279,6 @@
                                 </div>
                             </div>
                             @error('penerima_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional Master Data -->
-                <div class="border-b border-gray-200 pb-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Tambahan</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Term -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label for="term_id" class="text-sm font-medium text-gray-700">
-                                    Term
-                                </label>
-                                <a href="{{ route('order.term.create') }}" id="add_term_link"
-                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                   title="Tambah">
-                                    Tambah
-                                </a>
-                            </div>
-                            <div class="relative">
-                                <div class="dropdown-container-term">
-                                    <input type="text" id="search_term" placeholder="Search..." autocomplete="off"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
-                                    <select name="term_id" id="term_id"
-                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('term_id') border-red-500 @enderror">
-                                        <option value="">Select an option</option>
-                                        @foreach($terms as $term)
-                                            <option value="{{ $term->id }}" {{ old('term_id') == $term->id ? 'selected' : '' }}>
-                                                {{ $term->nama_status }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div id="dropdown_options_term" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
-                                        <!-- Options will be populated by JavaScript -->
-                                    </div>
-                                </div>
-                            </div>
-                            @error('term_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Pengirim -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label for="pengirim_id" class="text-sm font-medium text-gray-700">
-                                    Pengirim
-                                </label>
-                                <a href="{{ route('order.pengirim.create') }}" id="add_pengirim_link"
-                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                   title="Tambah">
-                                    Tambah
-                                </a>
-                            </div>
-                            <div class="relative">
-                                <div class="dropdown-container-pengirim">
-                                    <input type="text" id="search_pengirim" placeholder="Search..." autocomplete="off"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
-                                    <select name="pengirim_id" id="pengirim_id"
-                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('pengirim_id') border-red-500 @enderror">
-                                        <option value="">Select an option</option>
-                                        @foreach($pengirims as $pengirim)
-                                            <option value="{{ $pengirim->id }}" {{ old('pengirim_id') == $pengirim->id ? 'selected' : '' }}>
-                                                {{ $pengirim->nama_pengirim }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div id="dropdown_options_pengirim" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
-                                        <!-- Options will be populated by JavaScript -->
-                                    </div>
-                                </div>
-                            </div>
-                            @error('pengirim_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
