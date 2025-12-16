@@ -246,11 +246,13 @@
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir</th>
                                 <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
                                 <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">DP</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="supir-breakdown-body">
                             <tr>
-                                <td colspan="3" class="px-3 py-4 text-center text-xs text-gray-500 italic">
+                                <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-500 italic">
                                     Pilih pranota untuk melihat breakdown per supir
                                 </td>
                             </tr>
@@ -260,6 +262,8 @@
                                 <td class="px-3 py-2 text-left text-xs font-bold text-gray-800">Total</td>
                                 <td class="px-3 py-2 text-center text-xs font-bold text-gray-800" id="total-items">0</td>
                                 <td class="px-3 py-2 text-right text-xs font-bold text-gray-800" id="total-biaya">Rp 0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-green-800" id="total-dp">Rp 0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-red-800" id="total-sisa">Rp 0</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -375,6 +379,10 @@
             const supirData = {};
             let totalItems = 0;
             let totalBiaya = 0;
+            
+            // Get DP amount from selected DP
+            const dpAmount = {{ $selectedDp ? $selectedDp->dp_amount : 0 }};
+            let totalDp = 0;
 
             pranotaCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
@@ -428,7 +436,7 @@
             if (Object.keys(supirData).length === 0) {
                 supirBreakdownBody.innerHTML = `
                     <tr>
-                        <td colspan="3" class="px-3 py-4 text-center text-xs text-gray-500 italic">
+                        <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-500 italic">
                             Tidak ada supir dalam pranota yang dipilih
                         </td>
                     </tr>
@@ -436,8 +444,14 @@
                 supirBreakdownFooter.style.display = 'none';
             } else {
                 const sortedSupir = Object.entries(supirData).sort((a, b) => a[0].localeCompare(b[0]));
+                const supirCount = sortedSupir.length;
                 
                 sortedSupir.forEach(([supir, data]) => {
+                    // Calculate DP and Sisa per supir
+                    const dpPerSupir = dpAmount / supirCount;
+                    const sisaPerSupir = data.biaya - dpPerSupir;
+                    totalDp += dpPerSupir;
+                    
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-gray-50';
                     row.innerHTML = `
@@ -455,6 +469,12 @@
                         <td class="px-3 py-3 text-right text-xs font-semibold text-gray-900">
                             Rp ${data.biaya.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
                         </td>
+                        <td class="px-3 py-3 text-right text-xs font-semibold text-green-700">
+                            Rp ${dpPerSupir.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                        </td>
+                        <td class="px-3 py-3 text-right text-xs font-semibold ${sisaPerSupir > 0 ? 'text-red-700' : 'text-gray-500'}">
+                            Rp ${sisaPerSupir.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                        </td>
                     `;
                     supirBreakdownBody.appendChild(row);
                     
@@ -463,8 +483,11 @@
                 });
 
                 // Update footer
+                const totalSisa = totalBiaya - totalDp;
                 document.getElementById('total-items').textContent = `${Math.round(totalItems * 10) / 10} item`;
                 document.getElementById('total-biaya').textContent = `Rp ${totalBiaya.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                document.getElementById('total-dp').textContent = `Rp ${totalDp.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                document.getElementById('total-sisa').textContent = `Rp ${totalSisa.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                 supirBreakdownFooter.style.display = 'table-footer-group';
             }
         }
