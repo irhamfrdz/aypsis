@@ -9,7 +9,21 @@
         /* Slightly smaller signature fonts and reduced spacing */
         .signature-block { font-size: 9px; }
         .signature-block .signature-name { font-size: 8px; margin-top:4px; }
-        .signature-line { height: 28px; }
+        .signature-line { height: 20px; }
+
+        /* Print-specific tighter rules to fit on single F4 page */
+        @media print {
+            /* shrink form table further */
+            .form-table td, .form-table th { padding: 1px !important; font-size: 8px !important; line-height: 1 !important; }
+            /* family table tighter */
+            .family-table { font-size: 9px !important; }
+            .family-table th, .family-table td { padding: 3px !important; line-height: 1 !important; }
+            /* headings */
+            h2 { margin-bottom:4px !important; font-size:15px !important; }
+            .signature-block { margin-top:6px !important; }
+            /* reduce page margins slightly to get more vertical space */
+            @page { margin: 6mm; }
+        }
     </style>
     <h2 style="text-align:center;margin-bottom:4px;font-size:15px;">FORM DATA KARYAWAN</h2>
     <div style="display:flex;justify-content:flex-start;margin-bottom:6px;font-size:11px;gap:16px;">
@@ -19,8 +33,8 @@
     <table class="form-table" style="width:100%;border-collapse:collapse;font-size:8px;">
         <!-- Requested fields in specific order -->
         <tr>
-            <td style="width:40%;padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>1. NIK Karyawan</strong></td>
-            <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->nik ?? '-' }}</td>
+            <td style="width:40%;padding:1px;border:1px solid #ddd;background:#f7fafc;"><strong>1. NIK Karyawan</strong></td>
+            <td style="padding:1px;border:1px solid #ddd;">{{ $karyawan->nik ?? '-' }}</td>
         </tr>
         <tr>
             <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>2. Nama Lengkap</strong></td>
@@ -175,14 +189,14 @@
     </div>
 
     {{-- Halaman 2: Susunan Keluarga --}}
-    <h2 style="text-align:center;margin-bottom:8px; page-break-before:always;">SUSUNAN KELUARGA</h2>
+    <h2 style="text-align:center;margin-bottom:8px;">SUSUNAN KELUARGA</h2>
     <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:13px;">
         <div><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }}</div>
         <div><strong>Nama:</strong> {{ $karyawan->nama_lengkap ?? '-' }}</div>
     </div>
 
         @if($karyawan->familyMembers && $karyawan->familyMembers->count() > 0)
-            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <table class="family-table" style="width:100%;border-collapse:collapse;font-size:9px;">
                 <thead>
                     <tr style="background:#f7fafc;">
                         <th style="padding:6px;border:1px solid #ddd;text-align:center;width:8%;"><strong>NO.</strong></th>
