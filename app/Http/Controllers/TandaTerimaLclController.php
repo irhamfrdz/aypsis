@@ -186,14 +186,18 @@ class TandaTerimaLclController extends Controller
                         $volume = $panjang * $lebar * $tinggi;
                     }
 
-                    // Only create item if at least one value is provided
-                    if ($panjang || $lebar || $tinggi || $volume || $tonase) {
+                    $namaBarang = isset($namaBarangArray[$i]) ? $namaBarangArray[$i] : null;
+                    $jumlah = isset($jumlahArray[$i]) ? intval($jumlahArray[$i]) : null;
+                    $satuan = isset($satuanArray[$i]) ? $satuanArray[$i] : null;
+
+                    // Create item if at least one value is provided (including nama_barang, jumlah, or satuan)
+                    if ($namaBarang || $jumlah || $satuan || $panjang || $lebar || $tinggi || $volume || $tonase) {
                         TandaTerimaLclItem::create([
                             'tanda_terima_lcl_id' => $tandaTerima->id,
                             'item_number' => $i + 1,
-                            'nama_barang' => isset($namaBarangArray[$i]) ? $namaBarangArray[$i] : null,
-                            'jumlah' => isset($jumlahArray[$i]) ? intval($jumlahArray[$i]) : null,
-                            'satuan' => isset($satuanArray[$i]) ? $satuanArray[$i] : null,
+                            'nama_barang' => $namaBarang,
+                            'jumlah' => $jumlah,
+                            'satuan' => $satuan,
                             'panjang' => $panjang,
                             'lebar' => $lebar,
                             'tinggi' => $tinggi,
@@ -337,7 +341,11 @@ class TandaTerimaLclController extends Controller
                 // Handle existing items
                 $existingIds = [];
                 foreach ($request->items as $index => $item) {
-                    if (!empty($item['panjang']) || !empty($item['lebar']) || !empty($item['tinggi']) || !empty($item['tonase'])) {
+                    // Check if at least one field has value (nama_barang, jumlah, satuan, dimensions, or tonase)
+                    $hasData = !empty($item['nama_barang']) || !empty($item['jumlah']) || !empty($item['satuan']) 
+                            || !empty($item['panjang']) || !empty($item['lebar']) || !empty($item['tinggi']) || !empty($item['tonase']);
+                    
+                    if ($hasData) {
                         if (isset($item['id']) && $item['id']) {
                             // Update existing item
                             $existingItem = TandaTerimaLclItem::find($item['id']);
@@ -349,6 +357,9 @@ class TandaTerimaLclController extends Controller
                                 }
 
                                 $existingItem->update([
+                                    'nama_barang' => $item['nama_barang'] ?? null,
+                                    'jumlah' => $item['jumlah'] ?? null,
+                                    'satuan' => $item['satuan'] ?? null,
                                     'panjang' => $item['panjang'] ?? null,
                                     'lebar' => $item['lebar'] ?? null,
                                     'tinggi' => $item['tinggi'] ?? null,
@@ -368,6 +379,9 @@ class TandaTerimaLclController extends Controller
                             $newItem = TandaTerimaLclItem::create([
                                 'tanda_terima_lcl_id' => $tandaTerima->id,
                                 'item_number' => $index + 1,
+                                'nama_barang' => $item['nama_barang'] ?? null,
+                                'jumlah' => $item['jumlah'] ?? null,
+                                'satuan' => $item['satuan'] ?? null,
                                 'panjang' => $item['panjang'] ?? null,
                                 'lebar' => $item['lebar'] ?? null,
                                 'tinggi' => $item['tinggi'] ?? null,
