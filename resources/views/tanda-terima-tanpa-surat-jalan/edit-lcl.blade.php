@@ -149,7 +149,7 @@
                             </label>
                             <input type="text" name="nomor_tanda_terima" id="nomor_tanda_terima"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                   value="{{ old('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima) }}"
+                                   value="{{ old('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima ?? '') }}"
                                    placeholder="TTR-LCL-001">
                             <p class="mt-1 text-xs text-gray-500">
                                 <i class="fas fa-info-circle mr-1"></i>
@@ -974,37 +974,65 @@ function addDimensiRow() {
                 </svg>
             </button>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Panjang (m)</label>
-                <input type="number" name="items[${itemIndex}][panjang]" step="0.01" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
+                <input type="text" name="nama_barang[]" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="Nama barang">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Lebar (m)</label>
-                <input type="number" name="items[${itemIndex}][lebar]" step="0.01" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
+                <input type="number" name="jumlah[]" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="0" min="0" step="1">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tinggi (m)</label>
-                <input type="number" name="items[${itemIndex}][tinggi]" step="0.01" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                       onchange="calculateVolume(this.closest('.dimensi-row'))">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Volume (m³)</label>
-                <input type="text" name="items[${itemIndex}][meter_kubik]" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                       readonly>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Berat (Ton)</label>
-                <input type="number" name="items[${itemIndex}][tonase]" step="0.01" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-xs font-medium text-gray-500 mb-2">Satuan</label>
+                <input type="text" name="satuan[]" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="Pcs, Kg, Box">
             </div>
         </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m)</label>
+                <input type="number" name="panjang[]" step="0.001" min="0"
+                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="0.000"
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-2">Lebar (m)</label>
+                <input type="number" name="lebar[]" step="0.001" min="0"
+                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="0.000"
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-2">Tinggi (m)</label>
+                <input type="number" name="tinggi[]" step="0.001" min="0"
+                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="0.000"
+                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-2">Volume (m³)</label>
+                <input type="number" name="meter_kubik[]" step="0.001" min="0"
+                       class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                       placeholder="0.000" readonly>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-2">Tonase (Ton)</label>
+                <input type="number" name="tonase[]" step="0.001" min="0"
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="0.000">
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>
+            Volume akan dihitung otomatis dari panjang × lebar × tinggi
+        </p>
     `;
     
     container.appendChild(newRow);
