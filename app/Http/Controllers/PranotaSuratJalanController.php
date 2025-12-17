@@ -98,8 +98,13 @@ class PranotaSuratJalanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota uang jalan.');
         }
 
-        // Get uang jalan yang belum ada pranota
-        $availableUangJalans = UangJalan::with(['suratJalan.supirKaryawan', 'suratJalan.kenekKaryawan'])
+        // Get uang jalan yang belum ada pranota (termasuk bongkaran)
+        $availableUangJalans = UangJalan::with([
+                'suratJalan.supirKaryawan', 
+                'suratJalan.kenekKaryawan',
+                'suratJalanBongkaran.supirKaryawan',
+                'suratJalanBongkaran.kenekKaryawan'
+            ])
             ->whereDoesntHave('pranotaUangJalan')
             ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
             ->orderBy('tanggal_uang_jalan', 'desc')

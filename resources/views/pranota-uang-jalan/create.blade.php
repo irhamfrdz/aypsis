@@ -142,23 +142,29 @@
                                             @if($uangJalan->suratJalan)
                                                 <div class="text-sm text-gray-900">{{ $uangJalan->suratJalan->no_surat_jalan }}</div>
                                                 <div class="text-xs text-gray-500">{{ $uangJalan->suratJalan->kegiatan }}</div>
+                                            @elseif($uangJalan->suratJalanBongkaran)
+                                                <div class="text-sm text-gray-900">{{ $uangJalan->suratJalanBongkaran->nomor_surat_jalan }}</div>
+                                                <div class="text-xs text-gray-500">{{ $uangJalan->suratJalanBongkaran->kegiatan ?? 'Bongkar' }}</div>
                                             @else
                                                 <div class="text-sm text-gray-500">-</div>
                                             @endif
                                         </td>
                                         <td class="px-3 py-2">
-                                            @if($uangJalan->suratJalan)
+                                            @php
+                                                $surat = $uangJalan->suratJalan ?? $uangJalan->suratJalanBongkaran;
+                                            @endphp
+                                            @if($surat)
                                                 <div class="text-xs text-gray-900">
                                                     <div>
-                                                        <span class="font-medium">Supir:</span> {{ $uangJalan->suratJalan->supir ?? '-' }}
-                                                        @if($uangJalan->suratJalan->supir_nik)
-                                                            <span class="text-gray-500">({{ $uangJalan->suratJalan->supir_nik }})</span>
+                                                        <span class="font-medium">Supir:</span> {{ $surat->supir ?? '-' }}
+                                                        @if($surat->supir_nik)
+                                                            <span class="text-gray-500">({{ $surat->supir_nik }})</span>
                                                         @endif
                                                     </div>
                                                     <div>
-                                                        <span class="font-medium">Kenek:</span> {{ $uangJalan->suratJalan->kenek ?? '-' }}
-                                                        @if($uangJalan->suratJalan->kenek_nik)
-                                                            <span class="text-gray-500">({{ $uangJalan->suratJalan->kenek_nik }})</span>
+                                                        <span class="font-medium">Kenek:</span> {{ $surat->kenek ?? '-' }}
+                                                        @if($surat->kenek_nik)
+                                                            <span class="text-gray-500">({{ $surat->kenek_nik }})</span>
                                                         @endif
                                                     </div>
                                                 </div>
