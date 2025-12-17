@@ -900,6 +900,8 @@ class SuratJalanBongkaranController extends Controller
             return response()->json([
                 'id' => $suratJalan->id,
                 'bl_id' => $suratJalan->bl_id,
+                'nama_kapal' => $suratJalan->nama_kapal ?? '',
+                'no_voyage' => $suratJalan->no_voyage ?? '',
                 'nomor_surat_jalan' => $suratJalan->nomor_surat_jalan,
                 'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan && is_object($suratJalan->tanggal_surat_jalan) ? $suratJalan->tanggal_surat_jalan->format('Y-m-d') : $suratJalan->tanggal_surat_jalan,
                 'term' => $suratJalan->term ?? '',

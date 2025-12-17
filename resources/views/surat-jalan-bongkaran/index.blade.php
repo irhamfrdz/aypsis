@@ -365,8 +365,8 @@
             <form id="formBuatSuratJalan" action="{{ route('surat-jalan-bongkaran.store') }}" method="POST" class="mt-4" onsubmit="return handleFormSubmit(event)">
                 @csrf
                 <input type="hidden" name="bl_id" id="modal_bl_id">
-                <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
-                <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
+                <input type="hidden" name="nama_kapal" id="modal_nama_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="no_voyage" id="modal_no_voyage" value="{{ $selectedVoyage }}">
                 
                 <div class="max-h-[70vh] overflow-y-auto px-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -751,8 +751,8 @@
                 @method('PUT')
                 <input type="hidden" name="surat_jalan_id" id="edit_modal_surat_jalan_id">
                 <input type="hidden" name="bl_id" id="edit_modal_bl_id">
-                <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
-                <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
+                <input type="hidden" name="nama_kapal" id="edit_modal_nama_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="no_voyage" id="edit_modal_no_voyage" value="{{ $selectedVoyage }}">
                 
                 <div class="max-h-[70vh] overflow-y-auto px-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1139,6 +1139,14 @@ function buatSuratJalan(blId) {
         .then(data => {
             // Populate hidden BL ID
             document.getElementById('modal_bl_id').value = blId;
+            
+            // Populate nama kapal and no voyage from BL data
+            if (data.nama_kapal) {
+                document.getElementById('modal_nama_kapal').value = data.nama_kapal;
+            }
+            if (data.no_voyage) {
+                document.getElementById('modal_no_voyage').value = data.no_voyage;
+            }
             
             // Auto-generate nomor surat jalan
             const today = new Date();
@@ -1569,6 +1577,14 @@ function openEditModal(suratJalanId) {
             // Populate hidden ID
             document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
             document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
+            
+            // Populate nama kapal and no voyage from surat jalan data
+            if (data.nama_kapal) {
+                document.getElementById('edit_modal_nama_kapal').value = data.nama_kapal;
+            }
+            if (data.no_voyage) {
+                document.getElementById('edit_modal_no_voyage').value = data.no_voyage;
+            }
             
             // Set form action URL
             document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran/${suratJalanId}`;
