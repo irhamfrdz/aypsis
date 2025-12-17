@@ -79,7 +79,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     'kontainerPivot'
                 ])
                 ->orderBy('created_at', 'desc')
-                ->paginate(15);
+                ->paginate(request('per_page', 15))
+                ->appends(request()->query());
 
             // Statistics untuk LCL
             $stats = [
@@ -111,7 +112,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $query->byDateRange($request->start_date, $request->end_date);
             }
 
-            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(15);
+            $tandaTerimas = $query->orderBy('created_at', 'desc')
+                ->paginate(request('per_page', 15))
+                ->appends(request()->query());
 
             // Statistics
             $stats = [
