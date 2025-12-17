@@ -648,6 +648,10 @@
             document.getElementById('total-pot-tabungan').textContent = `Rp ${totalPotTabungan.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
             document.getElementById('total-pot-bpjs').textContent = `Rp ${totalPotBpjs.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
             document.getElementById('total-grand-total').textContent = `Rp ${totalGrandTotal.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            
+            // Update Total Pembayaran dengan Grand Total (setelah potongan)
+            document.getElementById('total_pembayaran').value = totalGrandTotal.toLocaleString('id-ID');
+            updateTotalAkhir();
         }
         
         // Function to update breakdown data with potongan values
