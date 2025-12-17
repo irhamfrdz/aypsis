@@ -286,12 +286,8 @@ class UangJalanController extends Controller
             }
         }
         
-        // Generate nomor uang jalan untuk preview berdasarkan jenis
-        if ($jenisSuratJalan === 'bongkaran') {
-            $nomorUangJalan = \App\Models\UangJalanBongkaran::generateNomorUangJalan();
-        } else {
-            $nomorUangJalan = UangJalan::generateNomorUangJalan();
-        }
+        // Generate nomor uang jalan untuk preview - gunakan format yang sama untuk semua jenis
+        $nomorUangJalan = UangJalan::generateNomorUangJalan();
         
         return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'jenisSuratJalan'));
     }
@@ -352,8 +348,8 @@ class UangJalanController extends Controller
             }
             
             try {
-                // Generate nomor uang jalan otomatis dengan prefix UJB untuk bongkaran
-                $nomorUangJalan = $request->nomor_uang_jalan ?: \App\Models\UangJalanBongkaran::generateNomorUangJalan();
+                // Generate nomor uang jalan otomatis - gunakan format yang sama untuk semua jenis
+                $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
                 
                 // Buat record uang jalan baru dengan surat_jalan_bongkaran_id
                 $uangJalan = UangJalan::create([

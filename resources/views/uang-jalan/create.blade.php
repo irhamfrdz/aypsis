@@ -143,7 +143,7 @@
                         @error('nomor_uang_jalan')
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-0.5 text-xs text-gray-500">Format: UJ + BulanTahun + Running Number (tidak reset per bulan)</p>
+                        <p class="mt-0.5 text-xs text-gray-500">Format: UJ + BulanTahun + Running Number (sama untuk muat & bongkar)</p>
                     </div>
 
                     <!-- Tanggal Uang Jalan -->
