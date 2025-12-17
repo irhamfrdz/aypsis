@@ -102,8 +102,7 @@ class PranotaSuratJalanController extends Controller
         $availableUangJalans = UangJalan::with([
                 'suratJalan.supirKaryawan', 
                 'suratJalan.kenekKaryawan',
-                'suratJalanBongkaran.supirKaryawan',
-                'suratJalanBongkaran.kenekKaryawan'
+                'suratJalanBongkaran'
             ])
             ->whereDoesntHave('pranotaUangJalan')
             ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
