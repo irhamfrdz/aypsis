@@ -283,96 +283,176 @@ class UangJalanController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'surat_jalan_id' => 'required|exists:surat_jalans,id',
-            'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalans,nomor_uang_jalan',
-            'tanggal_uang_jalan' => 'required|date',
-            'kegiatan_bongkar_muat' => 'required|in:bongkar,muat',
-            'jumlah_uang_jalan' => 'required|numeric|min:0',
-            'jumlah_mel' => 'nullable|numeric|min:0',
-            'jumlah_pelancar' => 'nullable|numeric|min:0',
-            'jumlah_kawalan' => 'nullable|numeric|min:0',
-            'jumlah_parkir' => 'nullable|numeric|min:0',
-            'subtotal' => 'required|numeric|min:0',
-            'alasan_penyesuaian' => 'nullable|string|max:255',
-            'jumlah_penyesuaian' => 'nullable|numeric',
-            'jumlah_total' => 'required|numeric|min:0',
-            'memo' => 'nullable|string|max:1000',
-            'jumlah_uang_supir' => 'nullable|numeric|min:0',
-            'jumlah_uang_kenek' => 'nullable|numeric|min:0',
-            'total_uang_jalan' => 'nullable|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
-        ]);
+        // Tentukan jenis surat jalan
+        $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
         
-        // Cek apakah sudah ada uang jalan untuk surat jalan ini
-        $existingUangJalan = UangJalan::where('surat_jalan_id', $request->surat_jalan_id)->first();
-        
-        if ($existingUangJalan) {
-            Log::warning('Attempt to store UangJalan but existing record present', [
-                'surat_jalan_id' => $request->surat_jalan_id,
-                'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
-                'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
-                'input' => $request->all()
-            ]);
-
-            $msg = 'Uang jalan untuk surat jalan ini sudah dibuat' . (
-                ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
-            );
-
-            return redirect()->back()
-                           ->with('error', $msg)
-                           ->withInput();
-        }
-        
-        // Double-check: ensure surat jalan is not supir customer
-        $sj = SuratJalan::find($request->surat_jalan_id);
-        if ($sj && $sj->is_supir_customer) {
-            return redirect()->back()
-                           ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan yang menggunakan Supir Customer.')
-                           ->withInput();
-        }
-
-        try {
-            // Generate nomor uang jalan otomatis jika tidak diisi
-            $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
-            
-            // Buat record uang jalan baru
-            $uangJalan = UangJalan::create([
-                'nomor_uang_jalan' => $nomorUangJalan,
-                'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
-                'surat_jalan_id' => $request->surat_jalan_id,
-                'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
-                'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
-                'jumlah_mel' => $request->jumlah_mel ?? 0,
-                'jumlah_pelancar' => $request->jumlah_pelancar ?? 0,
-                'jumlah_kawalan' => $request->jumlah_kawalan ?? 0,
-                'jumlah_parkir' => $request->jumlah_parkir ?? 0,
-                'subtotal' => $request->subtotal,
-                'alasan_penyesuaian' => $request->alasan_penyesuaian,
-                'jumlah_penyesuaian' => $request->jumlah_penyesuaian ?? 0,
-                'jumlah_total' => $request->jumlah_total,
-                'memo' => $request->memo,
-                'jumlah_uang_supir' => $request->jumlah_uang_supir ?? 0,
-                'jumlah_uang_kenek' => $request->jumlah_uang_kenek ?? 0,
-                'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
-                'keterangan' => $request->keterangan ?? $request->memo,
-                'status' => 'belum_masuk_pranota',
-                'created_by' => Auth::id()
+        // Validasi berbeda berdasarkan jenis surat jalan
+        if ($jenisSuratJalan === 'bongkaran') {
+            $request->validate([
+                'surat_jalan_id' => 'required|exists:surat_jalan_bongkarans,id',
+                'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalan_bongkarans,nomor_uang_jalan',
+                'tanggal_uang_jalan' => 'required|date',
+                'kegiatan_bongkar_muat' => 'required|in:bongkar,muat',
+                'jumlah_uang_jalan' => 'required|numeric|min:0',
+                'jumlah_mel' => 'nullable|numeric|min:0',
+                'jumlah_pelancar' => 'nullable|numeric|min:0',
+                'jumlah_kawalan' => 'nullable|numeric|min:0',
+                'jumlah_parkir' => 'nullable|numeric|min:0',
+                'subtotal' => 'required|numeric|min:0',
+                'alasan_penyesuaian' => 'nullable|string|max:255',
+                'jumlah_penyesuaian' => 'nullable|numeric',
+                'jumlah_total' => 'required|numeric|min:0',
+                'memo' => 'nullable|string|max:1000',
             ]);
             
-            // Update status pembayaran uang jalan di surat jalan
-            $suratJalan = SuratJalan::find($request->surat_jalan_id);
-            $suratJalan->update([
-                'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan'
+            // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini
+            $existingUangJalan = \App\Models\UangJalanBongkaran::where('surat_jalan_bongkaran_id', $request->surat_jalan_id)->first();
+            
+            if ($existingUangJalan) {
+                Log::warning('Attempt to store UangJalanBongkaran but existing record present', [
+                    'surat_jalan_bongkaran_id' => $request->surat_jalan_id,
+                    'existing_uang_jalan_bongkaran_id' => $existingUangJalan->id ?? null,
+                    'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
+                    'input' => $request->all()
+                ]);
+
+                $msg = 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat' . (
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                );
+
+                return redirect()->back()
+                               ->with('error', $msg)
+                               ->withInput();
+            }
+            
+            try {
+                // Generate nomor uang jalan otomatis jika tidak diisi
+                $nomorUangJalan = $request->nomor_uang_jalan ?: \App\Models\UangJalanBongkaran::generateNomorUangJalan();
+                
+                // Buat record uang jalan bongkaran baru
+                $uangJalan = \App\Models\UangJalanBongkaran::create([
+                    'nomor_uang_jalan' => $nomorUangJalan,
+                    'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
+                    'surat_jalan_bongkaran_id' => $request->surat_jalan_id,
+                    'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
+                    'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
+                    'jumlah_mel' => $request->jumlah_mel ?? 0,
+                    'jumlah_pelancar' => $request->jumlah_pelancar ?? 0,
+                    'jumlah_kawalan' => $request->jumlah_kawalan ?? 0,
+                    'jumlah_parkir' => $request->jumlah_parkir ?? 0,
+                    'subtotal' => $request->subtotal,
+                    'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                    'jumlah_penyesuaian' => $request->jumlah_penyesuaian ?? 0,
+                    'jumlah_total' => $request->jumlah_total,
+                    'memo' => $request->memo,
+                    'status' => 'belum_masuk_pranota',
+                    'created_by' => Auth::id()
+                ]);
+                
+                // Get surat jalan untuk pesan sukses
+                $suratJalan = \App\Models\SuratJalanBongkaran::find($request->surat_jalan_id);
+                
+                return redirect()->route('uang-jalan.index')
+                               ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan bongkaran ' . ($suratJalan->nomor_surat_jalan ?? ''));
+                
+            } catch (\Exception $e) {
+                return redirect()->back()
+                               ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan bongkaran: ' . $e->getMessage())
+                               ->withInput();
+            }
+        } else {
+            // Validasi untuk surat jalan biasa
+            $request->validate([
+                'surat_jalan_id' => 'required|exists:surat_jalans,id',
+                'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalans,nomor_uang_jalan',
+                'tanggal_uang_jalan' => 'required|date',
+                'kegiatan_bongkar_muat' => 'required|in:bongkar,muat',
+                'jumlah_uang_jalan' => 'required|numeric|min:0',
+                'jumlah_mel' => 'nullable|numeric|min:0',
+                'jumlah_pelancar' => 'nullable|numeric|min:0',
+                'jumlah_kawalan' => 'nullable|numeric|min:0',
+                'jumlah_parkir' => 'nullable|numeric|min:0',
+                'subtotal' => 'required|numeric|min:0',
+                'alasan_penyesuaian' => 'nullable|string|max:255',
+                'jumlah_penyesuaian' => 'nullable|numeric',
+                'jumlah_total' => 'required|numeric|min:0',
+                'memo' => 'nullable|string|max:1000',
+                'jumlah_uang_supir' => 'nullable|numeric|min:0',
+                'jumlah_uang_kenek' => 'nullable|numeric|min:0',
+                'total_uang_jalan' => 'nullable|numeric|min:0',
+                'keterangan' => 'nullable|string|max:1000'
             ]);
             
-            return redirect()->route('uang-jalan.index')
-                           ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan ' . $suratJalan->no_surat_jalan);
+            // Cek apakah sudah ada uang jalan untuk surat jalan ini
+            $existingUangJalan = UangJalan::where('surat_jalan_id', $request->surat_jalan_id)->first();
             
-        } catch (\Exception $e) {
-            return redirect()->back()
-                           ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan: ' . $e->getMessage())
-                           ->withInput();
+            if ($existingUangJalan) {
+                Log::warning('Attempt to store UangJalan but existing record present', [
+                    'surat_jalan_id' => $request->surat_jalan_id,
+                    'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
+                    'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
+                    'input' => $request->all()
+                ]);
+
+                $msg = 'Uang jalan untuk surat jalan ini sudah dibuat' . (
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                );
+
+                return redirect()->back()
+                               ->with('error', $msg)
+                               ->withInput();
+            }
+            
+            // Double-check: ensure surat jalan is not supir customer
+            $sj = SuratJalan::find($request->surat_jalan_id);
+            if ($sj && $sj->is_supir_customer) {
+                return redirect()->back()
+                               ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan yang menggunakan Supir Customer.')
+                               ->withInput();
+            }
+
+            try {
+                // Generate nomor uang jalan otomatis jika tidak diisi
+                $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
+                
+                // Buat record uang jalan baru
+                $uangJalan = UangJalan::create([
+                    'nomor_uang_jalan' => $nomorUangJalan,
+                    'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
+                    'surat_jalan_id' => $request->surat_jalan_id,
+                    'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
+                    'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
+                    'jumlah_mel' => $request->jumlah_mel ?? 0,
+                    'jumlah_pelancar' => $request->jumlah_pelancar ?? 0,
+                    'jumlah_kawalan' => $request->jumlah_kawalan ?? 0,
+                    'jumlah_parkir' => $request->jumlah_parkir ?? 0,
+                    'subtotal' => $request->subtotal,
+                    'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                    'jumlah_penyesuaian' => $request->jumlah_penyesuaian ?? 0,
+                    'jumlah_total' => $request->jumlah_total,
+                    'memo' => $request->memo,
+                    'jumlah_uang_supir' => $request->jumlah_uang_supir ?? 0,
+                    'jumlah_uang_kenek' => $request->jumlah_uang_kenek ?? 0,
+                    'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
+                    'keterangan' => $request->keterangan ?? $request->memo,
+                    'status' => 'belum_masuk_pranota',
+                    'created_by' => Auth::id()
+                ]);
+                
+                // Update status pembayaran uang jalan di surat jalan
+                $suratJalan = SuratJalan::find($request->surat_jalan_id);
+                $suratJalan->update([
+                    'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan'
+                ]);
+                
+                return redirect()->route('uang-jalan.index')
+                               ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan ' . $suratJalan->no_surat_jalan);
+                
+            } catch (\Exception $e) {
+                return redirect()->back()
+                               ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan: ' . $e->getMessage())
+                               ->withInput();
+            }
         }
     }
 

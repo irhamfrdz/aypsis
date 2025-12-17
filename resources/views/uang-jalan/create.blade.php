@@ -102,6 +102,9 @@
         <form action="{{ route('uang-jalan.store') }}" method="POST" class="p-3">
             @csrf
             <input type="hidden" name="surat_jalan_id" value="{{ $suratJalan->id }}">
+            @if(isset($jenisSuratJalan))
+            <input type="hidden" name="jenis_surat_jalan" value="{{ $jenisSuratJalan }}">
+            @endif
 
             @if(session('error'))
                 <div class="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-xs mb-3">
