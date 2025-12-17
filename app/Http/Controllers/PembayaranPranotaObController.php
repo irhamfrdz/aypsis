@@ -154,7 +154,7 @@ class PembayaranPranotaObController extends Controller
                 'jenis_transaksi' => 'required|in:debit,credit',
                 'tanggal_kas' => 'required|date',
                 'pranota_ids' => 'required|array|min:1',
-                'pranota_ids.*' => 'exists:pranota_ob,id',
+                'pranota_ids.*' => 'exists:pranota_obs,id',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
                 'alasan_penyesuaian' => 'nullable|string',
                 'keterangan' => 'nullable|string',
