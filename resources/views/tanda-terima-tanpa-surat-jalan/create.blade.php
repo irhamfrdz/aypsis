@@ -638,7 +638,7 @@
                             </label>
                             <div class="relative">
                                 <!-- Hidden select for form submission -->
-                                <select name="tujuan_pengiriman" id="tujuan_pengiriman" class="hidden @error('tujuan_pengiriman') border-red-500 @enderror" required>
+                                <select name="tujuan_pengiriman" id="tujuan_pengiriman" class="hidden @error('tujuan_pengiriman') border-red-500 @enderror">
                                     <option value="">Pilih Tujuan Pengiriman</option>
                                     @foreach($tujuan_kirims as $tujuan)
                                         <option value="{{ $tujuan->nama_tujuan }}" {{ old('tujuan_pengiriman') == $tujuan->nama_tujuan ? 'selected' : '' }}>
@@ -1363,6 +1363,19 @@
     const tandaTerimaForm = document.querySelector('form');
     if (tandaTerimaForm) {
         tandaTerimaForm.addEventListener('submit', function (e) {
+            // Validate tujuan_pengiriman (custom validation for hidden required field)
+            const tujuanPengirimanField = document.getElementById('tujuan_pengiriman');
+            const tujuanPengirimanSearch = document.getElementById('tujuanPengirimanSearch');
+            if (tujuanPengirimanField && (!tujuanPengirimanField.value || tujuanPengirimanField.value === '')) {
+                e.preventDefault();
+                alert('Tujuan Pengiriman wajib diisi!');
+                if (tujuanPengirimanSearch) {
+                    tujuanPengirimanSearch.focus();
+                    tujuanPengirimanSearch.classList.add('border-red-500');
+                }
+                return false;
+            }
+            
             // Ensure latest volume/totals/calculations are up-to-date
             calculateAllVolumesAndTotals();
             // Update hidden legacy fields from new LCL inputs before submit

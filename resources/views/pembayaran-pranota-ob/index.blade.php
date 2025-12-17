@@ -100,8 +100,26 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    // Get grand total from breakdown_supir
+                                    $breakdownSupir = $pembayaran->breakdown_supir;
+                                    if (is_string($breakdownSupir)) {
+                                        $breakdownSupir = json_decode($breakdownSupir, true) ?? [];
+                                    }
+                                    $breakdownSupir = is_array($breakdownSupir) ? $breakdownSupir : [];
+                                    
+                                    $grandTotal = 0;
+                                    if (!empty($breakdownSupir)) {
+                                        foreach ($breakdownSupir as $breakdown) {
+                                            $grandTotal += (float)($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
+                                        }
+                                    } else {
+                                        // Fallback to total_setelah_penyesuaian if no breakdown
+                                        $grandTotal = $pembayaran->total_setelah_penyesuaian ?? $pembayaran->total_pembayaran;
+                                    }
+                                @endphp
                                 <div class="text-sm font-medium text-gray-900">
-                                    Rp {{ number_format($pembayaran->total_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}
+                                    Rp {{ number_format($grandTotal, 0, ',', '.') }}
                                 </div>
                                 @if($pembayaran->penyesuaian != 0)
                                     <div class="text-sm text-gray-500">

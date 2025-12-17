@@ -180,28 +180,52 @@
                         <tr>
                             <td class="px-6 py-3 text-left text-xs font-bold text-gray-800">Total</td>
                             <td class="px-6 py-3 text-center text-xs font-bold text-gray-800">
-                                {{ array_sum(array_column($breakdownSupir, 'jumlah_item')) }} item
+                                @php
+                                    $totalJumlahItem = array_sum(array_map(fn($v) => (int)($v ?? 0), array_column($breakdownSupir, 'jumlah_item')));
+                                @endphp
+                                {{ $totalJumlahItem }} item
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-gray-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'total_biaya')), 0, ',', '.') }}
+                                @php
+                                    $totalBiaya = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'total_biaya')));
+                                @endphp
+                                Rp {{ number_format($totalBiaya, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-green-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'dp')), 0, ',', '.') }}
+                                @php
+                                    $totalDp = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'dp')));
+                                @endphp
+                                Rp {{ number_format($totalDp, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-red-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'sisa')), 0, ',', '.') }}
+                                @php
+                                    $totalSisa = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'sisa')));
+                                @endphp
+                                Rp {{ number_format($totalSisa, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_utang')), 0, ',', '.') }}
+                                @php
+                                    $totalPotUtang = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'potongan_utang')));
+                                @endphp
+                                Rp {{ number_format($totalPotUtang, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_tabungan')), 0, ',', '.') }}
+                                @php
+                                    $totalPotTabungan = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'potongan_tabungan')));
+                                @endphp
+                                Rp {{ number_format($totalPotTabungan, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_bpjs')), 0, ',', '.') }}
+                                @php
+                                    $totalPotBpjs = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'potongan_bpjs')));
+                                @endphp
+                                Rp {{ number_format($totalPotBpjs, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-blue-800">
-                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'grand_total')), 0, ',', '.') }}
+                                @php
+                                    $totalGrandTotal = array_sum(array_map(fn($v) => (float)($v ?? 0), array_column($breakdownSupir, 'grand_total')));
+                                @endphp
+                                Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}
                             </td>
                         </tr>
                     </tfoot>
@@ -253,7 +277,20 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                     @php
-                                        $itemsCount = ($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0);
+                                        $itemsCount = 0;
+                                        try {
+                                            if (isset($pranota->itemsPivot) && is_countable($pranota->itemsPivot)) {
+                                                $itemsCount = count($pranota->itemsPivot);
+                                            } elseif (isset($pranota->items)) {
+                                                $items = $pranota->items;
+                                                if (is_string($items)) {
+                                                    $items = json_decode($items, true) ?? [];
+                                                }
+                                                $itemsCount = is_array($items) ? count($items) : 0;
+                                            }
+                                        } catch (\Exception $e) {
+                                            $itemsCount = 0;
+                                        }
                                     @endphp
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ $itemsCount }}</span>
                                 </td>
@@ -264,7 +301,16 @@
                                     Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}
+                                    @php
+                                        // Calculate actual payment from breakdown_supir grand_total
+                                        $totalGrandTotalPranota = 0;
+                                        if (!empty($breakdownSupir)) {
+                                            foreach ($breakdownSupir as $breakdown) {
+                                                $totalGrandTotalPranota += (float)($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
+                                            }
+                                        }
+                                    @endphp
+                                    Rp {{ number_format($totalGrandTotalPranota, 0, ',', '.') }}
                                 </td>
                             </tr>
                         @empty

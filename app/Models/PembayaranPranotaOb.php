@@ -53,9 +53,16 @@ class PembayaranPranotaOb extends Model
     public function getPranotaObsAttribute()
     {
         $ids = $this->pranota_ob_ids ?? [];
-        if (empty($ids)) {
+        
+        // Ensure it's an array
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true) ?? [];
+        }
+        
+        if (empty($ids) || !is_array($ids)) {
             return collect([]);
         }
+        
         return PranotaOb::whereIn('id', $ids)->get();
     }
 

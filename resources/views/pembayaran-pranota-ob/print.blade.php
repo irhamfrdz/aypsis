@@ -221,28 +221,31 @@
         <!-- Informasi Pranota & Pembayaran -->
         <div class="content-section">
             <div class="section-title">Informasi Pranota & Pembayaran</div>
+            @php
+                $pranotaObsInfo = $pembayaran->pranota_obs ?? collect([]);
+            @endphp
             <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
                 <tr>
                     <td style="width: 20%; padding: 3px; font-weight: bold;">Nomor Pranota:</td>
-                    <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaObs->first()?->nomor_pranota ?? '-' }}</td>
+                    <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pranotaObsInfo->first()?->nomor_pranota ?? '-' }}</td>
                     <td style="width: 20%; padding: 3px; font-weight: bold;">Nomor Pembayaran:</td>
                     <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->nomor_pembayaran }}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Kapal / Voyage:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaObs->first()?->nama_kapal ?? '-' }} / {{ $pembayaran->pranotaObs->first()?->no_voyage ?? '-' }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pranotaObsInfo->first()?->nama_kapal ?? '-' }} / {{ $pranotaObsInfo->first()?->no_voyage ?? '-' }}</td>
                     <td style="padding: 3px; font-weight: bold;">Tanggal Pembayaran:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->tanggal_kas ? \Carbon\Carbon::parse($pembayaran->tanggal_kas)->format('d/m/Y') : '-' }}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Tanggal Dibuat:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaObs->first()?->created_at ? \Carbon\Carbon::parse($pembayaran->pranotaObs->first()?->created_at)->format('d/m/Y') : '-' }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pranotaObsInfo->first()?->created_at ? \Carbon\Carbon::parse($pranotaObsInfo->first()?->created_at)->format('d/m/Y') : '-' }}</td>
                     <td style="padding: 3px; font-weight: bold;">Bank:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->bank ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Total Tagihan:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaObs->sum(fn($p) => $p->calculateTotalAmount()) ?? 0, 0, ',', '.') }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pranotaObsInfo->sum(fn($p) => $p->calculateTotalAmount()) ?? 0, 0, ',', '.') }}</td>
                     <td style="padding: 3px; font-weight: bold;">Nominal Bayar:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</td>
                 </tr>
@@ -259,7 +262,10 @@
         <div class="content-section">
             <div class="section-title">Daftar Pranota OB</div>
 
-            @if($pembayaran->pranotaObs->count() > 0)
+            @php
+                $pranotaObs = $pembayaran->pranota_obs ?? collect([]);
+            @endphp
+            @if($pranotaObs->count() > 0)
                 <table class="ob-table compact-table">
                     <thead>
                         <tr>
@@ -273,7 +279,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($pembayaran->pranotaObs as $index => $pranota)
+                        @foreach($pranotaObs as $index => $pranota)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $pranota->nomor_pranota }}</td>
@@ -300,7 +306,7 @@
                 <div class="total-section">
                     <div class="total-row">
                         <span>Total Tagihan:</span>
-                        <span>Rp {{ number_format($pembayaran->pranotaObs->sum(fn($p) => $p->calculateTotalAmount()), 0, ',', '.') }}</span>
+                        <span>Rp {{ number_format($pranotaObs->sum(fn($p) => $p->calculateTotalAmount()), 0, ',', '.') }}</span>
                     </div>
                     @if($pembayaran->penyesuaian != 0)
                     <div class="total-row">
