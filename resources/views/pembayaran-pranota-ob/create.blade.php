@@ -266,11 +266,15 @@
                                 <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
                                 <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">DP</th>
                                 <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pot. Utang</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pot. Tabungan</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pot. BPJS</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Grand Total</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="supir-breakdown-body">
                             <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-500 italic">
+                                <td colspan="9" class="px-3 py-4 text-center text-xs text-gray-500 italic">
                                     Pilih pranota untuk melihat breakdown per supir
                                 </td>
                             </tr>
@@ -282,6 +286,10 @@
                                 <td class="px-3 py-2 text-right text-xs font-bold text-gray-800" id="total-biaya">Rp 0</td>
                                 <td class="px-3 py-2 text-right text-xs font-bold text-green-800" id="total-dp">Rp 0</td>
                                 <td class="px-3 py-2 text-right text-xs font-bold text-red-800" id="total-sisa">Rp 0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-orange-800" id="total-pot-utang">Rp 0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-orange-800" id="total-pot-tabungan">Rp 0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-orange-800" id="total-pot-bpjs">Rp 0</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-blue-800" id="total-grand-total">Rp 0</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -469,7 +477,7 @@
             if (Object.keys(supirData).length === 0) {
                 supirBreakdownBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-500 italic">
+                        <td colspan="9" class="px-3 py-4 text-center text-xs text-gray-500 italic">
                             Tidak ada supir dalam pranota yang dipilih
                         </td>
                     </tr>
@@ -487,13 +495,19 @@
                     const sisaPerSupir = data.biaya - dpPerSupir;
                     totalDp += dpPerSupir;
                     
+                    const supirSlug = supir.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    
                     // Store breakdown data for backend
                     breakdownArray.push({
                         nama_supir: supir,
                         jumlah_item: Math.round(data.items * 10) / 10,
                         total_biaya: data.biaya,
                         dp: dpPerSupir,
-                        sisa: sisaPerSupir
+                        sisa: sisaPerSupir,
+                        potongan_utang: 0,
+                        potongan_tabungan: 0,
+                        potongan_bpjs: 0,
+                        grand_total: sisaPerSupir
                     });
                     
                     const row = document.createElement('tr');
@@ -520,6 +534,33 @@
                         <td class="px-3 py-3 text-right text-xs font-semibold ${sisaPerSupir > 0 ? 'text-red-700' : 'text-gray-500'}">
                             Rp ${sisaPerSupir.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
                         </td>
+                        <td class="px-2 py-2">
+                            <input type="number" 
+                                class="potongan-utang w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                data-supir="${supirSlug}"
+                                placeholder="0" 
+                                min="0" 
+                                value="0">
+                        </td>
+                        <td class="px-2 py-2">
+                            <input type="number" 
+                                class="potongan-tabungan w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                data-supir="${supirSlug}"
+                                placeholder="0" 
+                                min="0" 
+                                value="0">
+                        </td>
+                        <td class="px-2 py-2">
+                            <input type="number" 
+                                class="potongan-bpjs w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                data-supir="${supirSlug}"
+                                placeholder="0" 
+                                min="0" 
+                                value="0">
+                        </td>
+                        <td class="px-3 py-3 text-right text-xs font-bold text-blue-700">
+                            <span class="grand-total-${supirSlug}">Rp ${sisaPerSupir.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                        </td>
                     `;
                     supirBreakdownBody.appendChild(row);
                     
@@ -533,10 +574,103 @@
                 document.getElementById('total-biaya').textContent = `Rp ${totalBiaya.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                 document.getElementById('total-dp').textContent = `Rp ${totalDp.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                 document.getElementById('total-sisa').textContent = `Rp ${totalSisa.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                document.getElementById('total-pot-utang').textContent = 'Rp 0';
+                document.getElementById('total-pot-tabungan').textContent = 'Rp 0';
+                document.getElementById('total-pot-bpjs').textContent = 'Rp 0';
+                document.getElementById('total-grand-total').textContent = `Rp ${totalSisa.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                 supirBreakdownFooter.style.display = 'table-footer-group';
                 
                 // Save breakdown to hidden input
                 document.getElementById('breakdown_supir_hidden').value = JSON.stringify(breakdownArray);
+                
+                // Add event listeners to potongan inputs
+                addPotonganEventListeners();
+            }
+        }
+        
+        // Function to add event listeners to potongan inputs
+        function addPotonganEventListeners() {
+            const potonganInputs = document.querySelectorAll('.potongan-utang, .potongan-tabungan, .potongan-bpjs');
+            
+            potonganInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    calculateGrandTotal(this.dataset.supir);
+                    updateTotalFooter();
+                    updateBreakdownData();
+                });
+            });
+        }
+        
+        // Function to calculate grand total for a specific supir
+        function calculateGrandTotal(supirSlug) {
+            const sisaElement = document.querySelector(`[data-supir="${supirSlug}"]`).closest('tr').querySelector('td:nth-child(5)');
+            const sisaText = sisaElement.textContent.replace(/Rp\s|,|\./g, '');
+            const sisa = parseFloat(sisaText) || 0;
+            
+            const potUtang = parseFloat(document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`).value) || 0;
+            const potTabungan = parseFloat(document.querySelector(`.potongan-tabungan[data-supir="${supirSlug}"]`).value) || 0;
+            const potBpjs = parseFloat(document.querySelector(`.potongan-bpjs[data-supir="${supirSlug}"]`).value) || 0;
+            
+            const grandTotal = sisa - potUtang - potTabungan - potBpjs;
+            
+            const grandTotalElement = document.querySelector(`.grand-total-${supirSlug}`);
+            if (grandTotalElement) {
+                grandTotalElement.textContent = `Rp ${grandTotal.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            }
+        }
+        
+        // Function to update total footer
+        function updateTotalFooter() {
+            let totalPotUtang = 0;
+            let totalPotTabungan = 0;
+            let totalPotBpjs = 0;
+            let totalGrandTotal = 0;
+            
+            document.querySelectorAll('.potongan-utang').forEach(input => {
+                totalPotUtang += parseFloat(input.value) || 0;
+            });
+            
+            document.querySelectorAll('.potongan-tabungan').forEach(input => {
+                totalPotTabungan += parseFloat(input.value) || 0;
+            });
+            
+            document.querySelectorAll('.potongan-bpjs').forEach(input => {
+                totalPotBpjs += parseFloat(input.value) || 0;
+            });
+            
+            // Calculate total grand total from all grand total cells
+            document.querySelectorAll('[class^="grand-total-"]').forEach(cell => {
+                const value = cell.textContent.replace(/Rp\s|,|\./g, '');
+                totalGrandTotal += parseFloat(value) || 0;
+            });
+            
+            document.getElementById('total-pot-utang').textContent = `Rp ${totalPotUtang.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('total-pot-tabungan').textContent = `Rp ${totalPotTabungan.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('total-pot-bpjs').textContent = `Rp ${totalPotBpjs.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('total-grand-total').textContent = `Rp ${totalGrandTotal.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        }
+        
+        // Function to update breakdown data with potongan values
+        function updateBreakdownData() {
+            try {
+                const currentBreakdown = JSON.parse(document.getElementById('breakdown_supir_hidden').value || '[]');
+                
+                currentBreakdown.forEach(item => {
+                    const supirSlug = item.nama_supir.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    
+                    const potUtang = parseFloat(document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`)?.value) || 0;
+                    const potTabungan = parseFloat(document.querySelector(`.potongan-tabungan[data-supir="${supirSlug}"]`)?.value) || 0;
+                    const potBpjs = parseFloat(document.querySelector(`.potongan-bpjs[data-supir="${supirSlug}"]`)?.value) || 0;
+                    
+                    item.potongan_utang = potUtang;
+                    item.potongan_tabungan = potTabungan;
+                    item.potongan_bpjs = potBpjs;
+                    item.grand_total = item.sisa - potUtang - potTabungan - potBpjs;
+                });
+                
+                document.getElementById('breakdown_supir_hidden').value = JSON.stringify(currentBreakdown);
+            } catch (e) {
+                console.error('Error updating breakdown data:', e);
             }
         }
 
