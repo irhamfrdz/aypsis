@@ -223,8 +223,19 @@ class UangJalanController extends Controller
             $existingUangJalan = \App\Models\UangJalanBongkaran::where('surat_jalan_bongkaran_id', $suratJalanId)->first();
             
             if ($existingUangJalan) {
+                // Log for debugging which existing record caused this
+                Log::warning('Existing UangJalanBongkaran found when trying to create', [
+                    'surat_jalan_bongkaran_id' => $suratJalanId,
+                    'existing_uang_jalan_bongkaran_id' => $existingUangJalan->id ?? null,
+                    'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
+                ]);
+
+                $msg = 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat' . (
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                );
+
                 return redirect()->route('uang-jalan.select-surat-jalan')
-                               ->with('error', 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat.');
+                               ->with('error', $msg);
             }
             
             // Normalisasi field untuk konsistensi dengan surat jalan biasa
@@ -245,8 +256,19 @@ class UangJalanController extends Controller
             $existingUangJalan = UangJalan::where('surat_jalan_id', $suratJalanId)->first();
             
             if ($existingUangJalan) {
+                // Log for debugging which existing record caused this
+                Log::warning('Existing UangJalan found when trying to create', [
+                    'surat_jalan_id' => $suratJalanId,
+                    'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
+                    'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
+                ]);
+
+                $msg = 'Uang jalan untuk surat jalan ini sudah dibuat' . (
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                );
+
                 return redirect()->route('uang-jalan.select-surat-jalan')
-                               ->with('error', 'Uang jalan untuk surat jalan ini sudah dibuat.');
+                               ->with('error', $msg);
             }
         }
         
@@ -286,8 +308,19 @@ class UangJalanController extends Controller
         $existingUangJalan = UangJalan::where('surat_jalan_id', $request->surat_jalan_id)->first();
         
         if ($existingUangJalan) {
+            Log::warning('Attempt to store UangJalan but existing record present', [
+                'surat_jalan_id' => $request->surat_jalan_id,
+                'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
+                'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
+                'input' => $request->all()
+            ]);
+
+            $msg = 'Uang jalan untuk surat jalan ini sudah dibuat' . (
+                ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+            );
+
             return redirect()->back()
-                           ->with('error', 'Uang jalan untuk surat jalan ini sudah dibuat.')
+                           ->with('error', $msg)
                            ->withInput();
         }
         
