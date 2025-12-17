@@ -109,7 +109,7 @@
         </div>
 
         <!-- Breakdown Per Supir -->
-        @if($pembayaran->breakdown_supir && count($pembayaran->breakdown_supir) > 0)
+        @if($pembayaran->breakdown_supir && is_array($pembayaran->breakdown_supir) && count($pembayaran->breakdown_supir) > 0)
         <div class="px-6 py-4 border-t border-gray-200">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Breakdown Per Supir</h3>
             <div class="overflow-x-auto">
@@ -230,7 +230,10 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($pembayaran->pranotaObs as $pranota)
+                        @php
+                            $pranotaObs = $pembayaran->pranota_obs ?? collect([]);
+                        @endphp
+                        @forelse($pranotaObs as $pranota)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">
@@ -253,10 +256,16 @@
                                     Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    Rp {{ number_format($pranota->pivot->amount ?? $pranota->calculateTotalAmount(), 0, ',', '.') }}
+                                    Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    Tidak ada pranota OB
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
