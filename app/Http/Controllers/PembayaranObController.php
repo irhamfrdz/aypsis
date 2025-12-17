@@ -487,8 +487,41 @@ class PembayaranObController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->route('pembayaran-ob.index')
-                        ->with('success', 'Pembayaran OB berhasil dihapus.');
+        try {
+            $pembayaran = PembayaranOb::findOrFail($id);
+            
+            // Check if user has permission
+            if (!auth()->user()->can('pembayaran-ob-delete')) {
+                return redirect()->route('pembayaran-ob.index')
+                    ->with('error', 'Anda tidak memiliki izin untuk menghapus pembayaran DP OB.');
+            }
+            
+            // Check if already has realization
+            $jumlahPerSupirArray = is_array($pembayaran->jumlah_per_supir) ? $pembayaran->jumlah_per_supir : [];
+            $totalRealisasi = array_sum($jumlahPerSupirArray);
+            
+            if ($totalRealisasi > 0) {
+                return redirect()->route('pembayaran-ob.index')
+                    ->with('error', 'Tidak dapat menghapus pembayaran DP OB yang sudah memiliki realisasi. Total realisasi: Rp ' . number_format($totalRealisasi, 0, ',', '.'));
+            }
+            
+            // Store nomor for success message
+            $nomorPembayaran = $pembayaran->nomor_pembayaran;
+            
+            // Delete the pembayaran
+            $pembayaran->delete();
+            
+            return redirect()->route('pembayaran-ob.index')
+                ->with('success', "Pembayaran DP OB {$nomorPembayaran} berhasil dihapus.");
+                
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('pembayaran-ob.index')
+                ->with('error', 'Data pembayaran DP OB tidak ditemukan.');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting Pembayaran OB: ' . $e->getMessage());
+            return redirect()->route('pembayaran-ob.index')
+                ->with('error', 'Gagal menghapus pembayaran DP OB: ' . $e->getMessage());
+        }
     }
 
     /**
