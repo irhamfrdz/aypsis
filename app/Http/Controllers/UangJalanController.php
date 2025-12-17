@@ -32,14 +32,19 @@ class UangJalanController extends Controller
         $tanggal_dari = $request->get('tanggal_dari', '');
         $tanggal_sampai = $request->get('tanggal_sampai', '');
         
-        // Query uang jalan dengan relasi
-        $query = UangJalan::with(['suratJalan.order.pengirim', 'createdBy']);
+        // Query uang jalan dengan relasi (termasuk surat jalan bongkaran)
+        $query = UangJalan::with([
+            'suratJalan.order.pengirim', 
+            'suratJalanBongkaran',
+            'createdBy'
+        ]);
         
         // Filter berdasarkan pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_uang_jalan', 'like', "%{$search}%")
                   ->orWhere('memo', 'like', "%{$search}%")
+                  // Search di surat jalan biasa
                   ->orWhereHas('suratJalan', function ($suratJalanQuery) use ($search) {
                       $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
                                       ->orWhere('supir', 'like', "%{$search}%")
@@ -50,6 +55,13 @@ class UangJalanController extends Controller
                                  ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
                                      $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
                                  });
+                  })
+                  // Search di surat jalan bongkaran
+                  ->orWhereHas('suratJalanBongkaran', function ($suratJalanBongkaranQuery) use ($search) {
+                      $suratJalanBongkaranQuery->where('nomor_surat_jalan', 'like', "%{$search}%")
+                                               ->orWhere('supir', 'like', "%{$search}%")
+                                               ->orWhere('no_plat', 'like', "%{$search}%")
+                                               ->orWhere('pengirim', 'like', "%{$search}%");
                   });
             });
         }

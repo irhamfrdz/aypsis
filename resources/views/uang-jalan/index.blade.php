@@ -156,13 +156,21 @@
                                         {{ $uangJalan->nomor_uang_jalan ?? '-' }}
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900 w-32">
-                                        {{ $uangJalan->suratJalan->no_surat_jalan ?? '-' }}
+                                        @php
+                                            $noSuratJalan = $uangJalan->suratJalan->no_surat_jalan ?? 
+                                                           $uangJalan->suratJalanBongkaran->nomor_surat_jalan ?? '-';
+                                        @endphp
+                                        {{ $noSuratJalan }}
                                     </td>
                                     <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 w-20">
                                         {{ $uangJalan->tanggal_uang_jalan ? $uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap text-xs text-gray-900 w-24">
-                                        {{ Str::limit($uangJalan->suratJalan->supir ?? '-', 15) }}
+                                        @php
+                                            $supir = $uangJalan->suratJalan->supir ?? 
+                                                    $uangJalan->suratJalanBongkaran->supir ?? '-';
+                                        @endphp
+                                        {{ Str::limit($supir, 15) }}
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap text-right text-xs font-semibold text-blue-600 w-20">
                                         {{ number_format($uangJalan->jumlah_total ?? 0, 0, ',', '.') }}
@@ -212,7 +220,7 @@
                                             <button type="button" 
                                                     class="inline-flex items-center p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                                                     title="Hapus"
-                                                    onclick="confirmDelete('{{ $uangJalan->id }}', '{{ $uangJalan->nomor_uang_jalan ?? $uangJalan->suratJalan->no_surat_jalan ?? '' }}')">
+                                                    onclick="confirmDelete('{{ $uangJalan->id }}', '{{ $uangJalan->nomor_uang_jalan ?? ($uangJalan->suratJalan->no_surat_jalan ?? $uangJalan->suratJalanBongkaran->nomor_surat_jalan ?? '') }}')">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
