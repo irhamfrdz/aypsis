@@ -181,4 +181,30 @@ class PranotaObController extends Controller
 
         return view('pranota-ob.input-dp', compact('pranota', 'pembayaranDps', 'supirList'));
     }
+
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->can('pranota-ob-delete')) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus pranota OB.');
+        }
+
+        $pranota = PranotaOb::findOrFail($id);
+        
+        try {
+            // Delete related pivot items first
+            if ($pranota->itemsPivot) {
+                $pranota->itemsPivot()->delete();
+            }
+            
+            // Delete the pranota
+            $pranota->delete();
+            
+            return redirect()->route('pranota-ob.index')
+                ->with('success', 'Pranota OB berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('pranota-ob.index')
+                ->with('error', 'Gagal menghapus pranota OB: ' . $e->getMessage());
+        }
+    }
 }

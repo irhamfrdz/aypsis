@@ -70,6 +70,15 @@
                             <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900" title="Cetak">
                                 <i class="fas fa-print"></i>
                             </a>
+                            @can('pranota-ob-delete')
+                                <form action="{{ route('pranota-ob.destroy', $pranota) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota {{ $pranota->nomor_pranota }}?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @endcan
                         </td>
                     </tr>
                     @empty

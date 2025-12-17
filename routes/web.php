@@ -1709,10 +1709,11 @@ Route::middleware(['auth'])->group(function () {
 
      // Pranota OB Management
           Route::resource('pranota-ob', \App\Http\Controllers\PranotaObController::class)
-               ->only(['index','show'])
+               ->only(['index','show','destroy'])
                ->middleware([
                    'index' => 'can:pranota-ob-view',
                    'show' => 'can:pranota-ob-view',
+                   'destroy' => 'can:pranota-ob-delete',
                ]);
 
      // Pranota OB Print route
