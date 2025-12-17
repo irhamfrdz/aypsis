@@ -120,7 +120,11 @@
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">DP</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa Dibayar</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pot. Utang</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pot. Tabungan</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pot. BPJS</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Grand Total</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -149,6 +153,18 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ $breakdown['sisa'] > 0 ? 'text-red-700' : 'text-gray-500' }}">
                                     Rp {{ number_format($breakdown['sisa'], 0, ',', '.') }}
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right {{ isset($breakdown['potongan_utang']) && $breakdown['potongan_utang'] > 0 ? 'text-orange-700' : 'text-gray-400' }}">
+                                    Rp {{ number_format($breakdown['potongan_utang'] ?? 0, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right {{ isset($breakdown['potongan_tabungan']) && $breakdown['potongan_tabungan'] > 0 ? 'text-orange-700' : 'text-gray-400' }}">
+                                    Rp {{ number_format($breakdown['potongan_tabungan'] ?? 0, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right {{ isset($breakdown['potongan_bpjs']) && $breakdown['potongan_bpjs'] > 0 ? 'text-orange-700' : 'text-gray-400' }}">
+                                    Rp {{ number_format($breakdown['potongan_bpjs'] ?? 0, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-blue-700">
+                                    Rp {{ number_format($breakdown['grand_total'] ?? $breakdown['sisa'], 0, ',', '.') }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -166,6 +182,18 @@
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-red-800">
                                 Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'sisa')), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'potongan_utang')), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'potongan_tabungan')), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'potongan_bpjs')), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3 text-right text-xs font-bold text-blue-800">
+                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'grand_total')), 0, ',', '.') }}
                             </td>
                         </tr>
                     </tfoot>
