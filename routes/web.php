@@ -3268,9 +3268,9 @@ Route::prefix('pembayaran-aktivitas-lain')->name('pembayaran-aktivitas-lain.')->
          ->middleware('can:pembayaran-aktivitas-lain-approve');
     // Print routes
     Route::get('/print', [PembayaranAktivitasLainController::class, 'printIndex'])->name('print.index')
-         ->middleware('can:pembayaran-aktivitas-lain-print');
+         ->middleware('can:pembayaran-aktivitas-lain-view');
     Route::get('/{pembayaranAktivitasLain}/print', [PembayaranAktivitasLainController::class, 'print'])->name('print')
-         ->middleware('can:pembayaran-aktivitas-lain-print');
+         ->middleware('can:pembayaran-aktivitas-lain-view');
 });
 
 // Pembayaran Aktivitas Lainnya routes

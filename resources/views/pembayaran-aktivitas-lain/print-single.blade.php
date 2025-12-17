@@ -1,53 +1,397 @@
-@extends('layouts.print')
+<!DOCTYPE html>
+<html lang="id">
+@php
+    $paperSize = request('paper_size', 'Half-A4');
+    $paperMap = [
+        'Folio' => [
+            'size' => '215.9mm 330.2mm',
+            'width' => '215.9mm',
+            'height' => '330.2mm',
+            'containerWidth' => '215.9mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+        ],
+        'A4' => [
+            'size' => 'A4',
+            'width' => '210mm',
+            'height' => '297mm',
+            'containerWidth' => '210mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+        ],
+        'Half-A4' => [
+            'size' => '210mm 148.5mm',
+            'width' => '210mm',
+            'height' => '148.5mm',
+            'containerWidth' => '210mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '7px',
+        ]
+    ];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
+@endphp
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
+    <title>Pembayaran Aktivitas Lain - {{ $pembayaranAktivitasLain->nomor }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-@section('content')
-<div class="print-wrapper">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <div>
-            <strong>Pembayaran Aktivitas Lain - {{ $pembayaranAktivitasLain->nomor }}</strong>
+        @page {
+            size: {{ $currentPaper['size'] }} portrait;
+            margin: 10mm;
+        }
+
+        html, body {
+            width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
+            font-family: Arial, sans-serif;
+            font-size: {{ $currentPaper['fontSize'] }};
+            line-height: 1.2;
+            color: #333;
+            background: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
+            padding: 10mm 10mm 18mm 10mm;
+            margin: 0 auto;
+            box-sizing: border-box;
+            min-height: calc({{ $currentPaper['height'] }} - 20mm);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: {{ $currentPaper['headerH1'] }};
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+
+        .header-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+
+        .info-section {
+            margin-bottom: 12px;
+            font-size: 9px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .info-table td {
+            padding: 4px 8px;
+            font-size: {{ $currentPaper['tableFont'] }};
+            vertical-align: top;
+        }
+
+        .info-table td:first-child {
+            width: 30%;
+            font-weight: bold;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12mm;
+            table-layout: fixed;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #333;
+            padding: 2mm 3mm;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+            font-size: {{ $currentPaper['tableFont'] }};
+            text-align: center;
+            border: 2px solid #333;
+        }
+
+        .table td {
+            font-size: {{ $currentPaper['tableFont'] }};
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total-row td {
+            background-color: #e9ecef !important;
+            font-weight: bold !important;
+            border: 2px solid #333 !important;
+        }
+
+        .signature-section {
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #333;
+        }
+
+        .signature-table td {
+            width: 33.33%;
+            border: 1px solid #333;
+            padding: 12px 8px;
+            text-align: center;
+            vertical-align: top;
+            height: 60px;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        .no-print {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Paper Size Selector (hidden when printing) -->
+    <div class="no-print" style="min-width: 160px; display: flex; gap: 8px; align-items: flex-end;">
+        @include('components.paper-selector', ['selectedSize' => $paperSize ?? 'Half-A4'])
+        <div style="margin-top: 6px; font-size: 12px; color: #444;">
+            <strong>Current: {{ $paperSize }}</strong><br>
+            <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
         </div>
-        <div class="small">{{ \Carbon\Carbon::parse($pembayaranAktivitasLain->tanggal)->format('d F Y') }}</div>
+        <div style="margin-left: 6px;">
+            <button id="startPrint" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Print</button>
+        </div>
     </div>
 
-    <table class="compact" style="width:100%;">
-        <tbody>
-            <tr>
-                <th style="width:30%; text-align:left;">Nomor</th>
-                <td>{{ $pembayaranAktivitasLain->nomor }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Nomor Accurate</th>
-                <td>{{ $pembayaranAktivitasLain->nomor_accurate ?? '-' }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Jenis Aktivitas</th>
-                <td>{{ $pembayaranAktivitasLain->jenis_aktivitas }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Penerima</th>
-                <td>{{ $pembayaranAktivitasLain->penerima }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Akun Biaya</th>
-                <td>{{ $akunCoas[$pembayaranAktivitasLain->akun_coa_id]->kode_nomor ?? '-' }} - {{ $akunCoas[$pembayaranAktivitasLain->akun_coa_id]->nama_akun ?? '-' }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Akun Bank</th>
-                <td>{{ $akunCoas[$pembayaranAktivitasLain->akun_bank_id]->kode_nomor ?? '-' }} - {{ $akunCoas[$pembayaranAktivitasLain->akun_bank_id]->nama_akun ?? '-' }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Jumlah</th>
-                <td class="numeric">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Keterangan</th>
-                <td>{{ $pembayaranAktivitasLain->keterangan }}</td>
-            </tr>
-            <tr>
-                <th style="text-align:left;">Status</th>
-                <td>{{ ucfirst($pembayaranAktivitasLain->status) }}</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-@endsection
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-info">
+                <div>
+                    <strong>PT. ALEXINDO YAKINPRIMA</strong><br>
+                    <span>Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
+                </div>
+            </div>
+            <div class="header-meta">
+                <span><strong>Tanggal: {{ \Carbon\Carbon::parse($pembayaranAktivitasLain->tanggal)->format('d-M-Y') }}</strong></span>
+            </div>
+            <h1>PEMBAYARAN AKTIVITAS LAIN</h1>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <table class="info-table">
+                <tr>
+                    <td>Nomor</td>
+                    <td>: {{ $pembayaranAktivitasLain->nomor }}</td>
+                </tr>
+                <tr>
+                    <td>Nomor Accurate</td>
+                    <td>: {{ $pembayaranAktivitasLain->nomor_accurate ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td>Jenis Aktivitas</td>
+                    <td>: {{ $pembayaranAktivitasLain->jenis_aktivitas }}</td>
+                </tr>
+                @if($pembayaranAktivitasLain->sub_jenis_kendaraan)
+                <tr>
+                    <td>Sub Jenis</td>
+                    <td>: {{ $pembayaranAktivitasLain->sub_jenis_kendaraan }}</td>
+                </tr>
+                @endif
+                @if($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Adjusment Uang Jalan' && $pembayaranAktivitasLain->jenis_penyesuaian)
+                <tr>
+                    <td>Jenis Penyesuaian</td>
+                    <td>: {{ ucfirst($pembayaranAktivitasLain->jenis_penyesuaian) }}</td>
+                </tr>
+                @endif
+                @if($pembayaranAktivitasLain->nomor_polisi)
+                <tr>
+                    <td>Nomor Polisi</td>
+                    <td>: {{ $pembayaranAktivitasLain->nomor_polisi }}</td>
+                </tr>
+                @endif
+                @if($pembayaranAktivitasLain->nomor_voyage)
+                <tr>
+                    <td>Nomor Voyage</td>
+                    <td>: {{ $pembayaranAktivitasLain->nomor_voyage }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td>Penerima</td>
+                    <td>: {{ $pembayaranAktivitasLain->penerima }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Tipe Penyesuaian Detail (jika ada) -->
+        @if($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Adjusment Uang Jalan' && 
+            $pembayaranAktivitasLain->tipe_penyesuaian_detail && 
+            is_array($pembayaranAktivitasLain->tipe_penyesuaian_detail) && 
+            count($pembayaranAktivitasLain->tipe_penyesuaian_detail) > 0)
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Rincian Tipe Penyesuaian:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">No</th>
+                        <th style="width: 50%;">Keterangan</th>
+                        <th style="width: 40%;">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $totalPenyesuaian = 0;
+                    @endphp
+                    @foreach($pembayaranAktivitasLain->tipe_penyesuaian_detail as $index => $item)
+                        @php
+                            $nominal = is_array($item) ? ($item['nominal'] ?? 0) : 0;
+                            $tipe = is_array($item) ? ($item['tipe'] ?? '-') : '-';
+                            $totalPenyesuaian += $nominal;
+                        @endphp
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ ucfirst($tipe) }}</td>
+                            <td class="text-right">Rp {{ number_format($nominal, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="2" class="text-right"><strong>TOTAL PENYESUAIAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalPenyesuaian, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @endif
+
+        <!-- Detail Table -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Akun COA</th>
+                    <th style="width: 40%;">Akun Bank</th>
+                    <th style="width: 20%;">Jumlah</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        @if($pembayaranAktivitasLain->akun_coa_id && isset($akunCoas[$pembayaranAktivitasLain->akun_coa_id]))
+                            {{ $akunCoas[$pembayaranAktivitasLain->akun_coa_id]->kode_nomor }}<br>
+                            <small>{{ $akunCoas[$pembayaranAktivitasLain->akun_coa_id]->nama_akun }}</small>
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td>
+                        @if($pembayaranAktivitasLain->akun_bank_id && isset($akunCoas[$pembayaranAktivitasLain->akun_bank_id]))
+                            {{ $akunCoas[$pembayaranAktivitasLain->akun_bank_id]->kode_nomor }}<br>
+                            <small>{{ $akunCoas[$pembayaranAktivitasLain->akun_bank_id]->nama_akun }}</small>
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td class="text-right">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="2" class="text-right"><strong>TOTAL</strong></td>
+                    <td class="text-right"><strong>Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Keterangan -->
+        @if($pembayaranAktivitasLain->keterangan)
+        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
+            <strong>Keterangan:</strong><br>
+            {{ $pembayaranAktivitasLain->keterangan }}
+        </div>
+        @endif
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Dibuat Oleh:</strong></div>
+                        <div>{{ $pembayaranAktivitasLain->creator->name ?? '-' }}</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Disetujui Oleh:</strong></div>
+                        <div>{{ $pembayaranAktivitasLain->approver->name ?? '___________' }}</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Penerima:</strong></div>
+                        <div>{{ $pembayaranAktivitasLain->penerima }}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('startPrint')?.addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Auto print on load (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>
