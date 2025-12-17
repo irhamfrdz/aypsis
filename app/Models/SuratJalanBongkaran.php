@@ -116,7 +116,15 @@ class SuratJalanBongkaran extends Model
     }
 
     /**
-     * Relationship dengan Uang Jalan Bongkaran (bisa ada lebih dari satu)
+     * Relationship dengan Uang Jalan (unified table)
+     */
+    public function uangJalan()
+    {
+        return $this->hasOne(\App\Models\UangJalan::class, 'surat_jalan_bongkaran_id');
+    }
+
+    /**
+     * Relationship dengan Uang Jalan Bongkaran (deprecated - for backward compatibility)
      */
     public function uangJalanBongkarans()
     {
