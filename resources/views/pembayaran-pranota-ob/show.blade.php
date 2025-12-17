@@ -109,7 +109,15 @@
         </div>
 
         <!-- Breakdown Per Supir -->
-        @if($pembayaran->breakdown_supir && is_array($pembayaran->breakdown_supir) && count($pembayaran->breakdown_supir) > 0)
+        @php
+            // Decode breakdown_supir jika masih berupa string
+            $breakdownSupir = $pembayaran->breakdown_supir;
+            if (is_string($breakdownSupir)) {
+                $breakdownSupir = json_decode($breakdownSupir, true) ?? [];
+            }
+            $breakdownSupir = is_array($breakdownSupir) ? $breakdownSupir : [];
+        @endphp
+        @if(!empty($breakdownSupir))
         <div class="px-6 py-4 border-t border-gray-200">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Breakdown Per Supir</h3>
             <div class="overflow-x-auto">
@@ -128,30 +136,30 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($pembayaran->breakdown_supir as $breakdown)
+                        @foreach($breakdownSupir as $breakdown)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <i class="fas fa-user text-purple-500 mr-2"></i>
-                                        <span class="text-sm font-medium text-gray-900">{{ $breakdown['nama_supir'] }}</span>
-                                        @if($breakdown['dp'] > 0)
+                                        <span class="text-sm font-medium text-gray-900">{{ $breakdown['nama_supir'] ?? '-' }}</span>
+                                        @if(($breakdown['dp'] ?? 0) > 0)
                                             <span class="ml-2 text-xs text-green-600">(Ada DP)</span>
                                         @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ $breakdown['jumlah_item'] }} item
+                                        {{ $breakdown['jumlah_item'] ?? 0 }} item
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                    Rp {{ number_format($breakdown['total_biaya'], 0, ',', '.') }}
+                                    Rp {{ number_format($breakdown['total_biaya'] ?? 0, 0, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ $breakdown['dp'] > 0 ? 'text-green-700' : 'text-gray-400' }}">
-                                    Rp {{ number_format($breakdown['dp'], 0, ',', '.') }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ ($breakdown['dp'] ?? 0) > 0 ? 'text-green-700' : 'text-gray-400' }}">
+                                    Rp {{ number_format($breakdown['dp'] ?? 0, 0, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ $breakdown['sisa'] > 0 ? 'text-red-700' : 'text-gray-500' }}">
-                                    Rp {{ number_format($breakdown['sisa'], 0, ',', '.') }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right {{ ($breakdown['sisa'] ?? 0) > 0 ? 'text-red-700' : 'text-gray-500' }}">
+                                    Rp {{ number_format($breakdown['sisa'] ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right {{ isset($breakdown['potongan_utang']) && $breakdown['potongan_utang'] > 0 ? 'text-orange-700' : 'text-gray-400' }}">
                                     Rp {{ number_format($breakdown['potongan_utang'] ?? 0, 0, ',', '.') }}
@@ -163,7 +171,7 @@
                                     Rp {{ number_format($breakdown['potongan_bpjs'] ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-blue-700">
-                                    Rp {{ number_format($breakdown['grand_total'] ?? $breakdown['sisa'], 0, ',', '.') }}
+                                    Rp {{ number_format($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0, 0, ',', '.') }}
                                 </td>
                             </tr>
                         @endforeach
@@ -172,28 +180,28 @@
                         <tr>
                             <td class="px-6 py-3 text-left text-xs font-bold text-gray-800">Total</td>
                             <td class="px-6 py-3 text-center text-xs font-bold text-gray-800">
-                                {{ array_sum(array_column($pembayaran->breakdown_supir, 'jumlah_item')) }} item
+                                {{ array_sum(array_column($breakdownSupir, 'jumlah_item')) }} item
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-gray-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'total_biaya')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'total_biaya')), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-green-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'dp')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'dp')), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-red-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'sisa')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'sisa')), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'potongan_utang')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_utang')), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'potongan_tabungan')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_tabungan')), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-orange-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'potongan_bpjs')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_bpjs')), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-3 text-right text-xs font-bold text-blue-800">
-                                Rp {{ number_format(array_sum(array_column($pembayaran->breakdown_supir, 'grand_total')), 0, ',', '.') }}
+                                Rp {{ number_format(array_sum(array_column($breakdownSupir, 'grand_total')), 0, ',', '.') }}
                             </td>
                         </tr>
                     </tfoot>
