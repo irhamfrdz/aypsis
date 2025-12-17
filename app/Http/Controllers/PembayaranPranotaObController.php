@@ -24,8 +24,7 @@ class PembayaranPranotaObController extends Controller
     public function index()
     {
         // Get all pembayaran_pranota_ob
-        $pembayaranList = PembayaranPranotaOb::with(['pranotaObs'])
-            ->orderBy('created_at', 'desc')
+        $pembayaranList = PembayaranPranotaOb::orderBy('created_at', 'desc')
             ->paginate(15);
 
         return view('pembayaran-pranota-ob.index', compact('pembayaranList'));
@@ -33,7 +32,7 @@ class PembayaranPranotaObController extends Controller
 
     public function show($id)
     {
-        $pembayaran = PembayaranPranotaOb::with(['pranotaObs', 'pembayaranOb'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaOb::with('pembayaranOb')->findOrFail($id);
 
         return view('pembayaran-pranota-ob.show', compact('pembayaran'));
     }

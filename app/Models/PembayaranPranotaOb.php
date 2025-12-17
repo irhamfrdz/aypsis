@@ -48,8 +48,9 @@ class PembayaranPranotaOb extends Model
 
     /**
      * Get the pranota OBs associated with this payment
+     * This is an accessor method, not a relationship
      */
-    public function pranotaObs()
+    public function getPranotaObsAttribute()
     {
         $ids = $this->pranota_ob_ids ?? [];
         if (empty($ids)) {
