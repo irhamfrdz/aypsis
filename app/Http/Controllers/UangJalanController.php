@@ -106,8 +106,10 @@ class UangJalanController extends Controller
         // Query surat jalan bongkaran dengan filter
         $querySuratJalanBongkaran = \App\Models\SuratJalanBongkaran::query();
         
-        // Exclude surat jalan bongkaran yang sudah memiliki uang jalan
-        $existingUangJalanBongkaranIds = \App\Models\UangJalanBongkaran::pluck('surat_jalan_bongkaran_id')->toArray();
+        // Exclude surat jalan bongkaran yang sudah memiliki uang jalan di tabel uang_jalans
+        $existingUangJalanBongkaranIds = UangJalan::whereNotNull('surat_jalan_bongkaran_id')
+                                                   ->pluck('surat_jalan_bongkaran_id')
+                                                   ->toArray();
         $querySuratJalanBongkaran->whereNotIn('id', $existingUangJalanBongkaranIds);
         
         // Filter berdasarkan status untuk surat jalan biasa
@@ -219,14 +221,14 @@ class UangJalanController extends Controller
             // Ambil data surat jalan bongkaran
             $suratJalan = \App\Models\SuratJalanBongkaran::findOrFail($suratJalanId);
             
-            // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini
-            $existingUangJalan = \App\Models\UangJalanBongkaran::where('surat_jalan_bongkaran_id', $suratJalanId)->first();
+            // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini di tabel uang_jalans
+            $existingUangJalan = UangJalan::where('surat_jalan_bongkaran_id', $suratJalanId)->first();
             
             if ($existingUangJalan) {
                 // Log for debugging which existing record caused this
-                Log::warning('Existing UangJalanBongkaran found when trying to create', [
+                Log::warning('Existing UangJalan found when trying to create', [
                     'surat_jalan_bongkaran_id' => $suratJalanId,
-                    'existing_uang_jalan_bongkaran_id' => $existingUangJalan->id ?? null,
+                    'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
                     'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
                 ]);
 
@@ -272,8 +274,12 @@ class UangJalanController extends Controller
             }
         }
         
-        // Generate nomor uang jalan untuk preview
-        $nomorUangJalan = UangJalan::generateNomorUangJalan();
+        // Generate nomor uang jalan untuk preview berdasarkan jenis
+        if ($jenisSuratJalan === 'bongkaran') {
+            $nomorUangJalan = \App\Models\UangJalanBongkaran::generateNomorUangJalan();
+        } else {
+            $nomorUangJalan = UangJalan::generateNomorUangJalan();
+        }
         
         return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'jenisSuratJalan'));
     }
@@ -286,11 +292,19 @@ class UangJalanController extends Controller
         // Tentukan jenis surat jalan
         $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
         
+        // Log untuk debugging
+        \Log::info('UangJalan Store - Request Data', [
+            'jenis_surat_jalan' => $jenisSuratJalan,
+            'surat_jalan_id' => $request->get('surat_jalan_id'),
+            'kegiatan_bongkar_muat' => $request->get('kegiatan_bongkar_muat'),
+            'all_input' => $request->all()
+        ]);
+        
         // Validasi berbeda berdasarkan jenis surat jalan
         if ($jenisSuratJalan === 'bongkaran') {
             $request->validate([
                 'surat_jalan_id' => 'required|exists:surat_jalan_bongkarans,id',
-                'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalan_bongkarans,nomor_uang_jalan',
+                'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalans,nomor_uang_jalan',
                 'tanggal_uang_jalan' => 'required|date',
                 'kegiatan_bongkar_muat' => 'required|in:bongkar,muat',
                 'jumlah_uang_jalan' => 'required|numeric|min:0',
@@ -306,12 +320,12 @@ class UangJalanController extends Controller
             ]);
             
             // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini
-            $existingUangJalan = \App\Models\UangJalanBongkaran::where('surat_jalan_bongkaran_id', $request->surat_jalan_id)->first();
+            $existingUangJalan = UangJalan::where('surat_jalan_bongkaran_id', $request->surat_jalan_id)->first();
             
             if ($existingUangJalan) {
-                Log::warning('Attempt to store UangJalanBongkaran but existing record present', [
+                Log::warning('Attempt to store UangJalan for bongkaran but existing record present', [
                     'surat_jalan_bongkaran_id' => $request->surat_jalan_id,
-                    'existing_uang_jalan_bongkaran_id' => $existingUangJalan->id ?? null,
+                    'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
                     'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
                     'input' => $request->all()
                 ]);
@@ -326,13 +340,14 @@ class UangJalanController extends Controller
             }
             
             try {
-                // Generate nomor uang jalan otomatis jika tidak diisi
+                // Generate nomor uang jalan otomatis dengan prefix UJB untuk bongkaran
                 $nomorUangJalan = $request->nomor_uang_jalan ?: \App\Models\UangJalanBongkaran::generateNomorUangJalan();
                 
-                // Buat record uang jalan bongkaran baru
-                $uangJalan = \App\Models\UangJalanBongkaran::create([
+                // Buat record uang jalan baru dengan surat_jalan_bongkaran_id
+                $uangJalan = UangJalan::create([
                     'nomor_uang_jalan' => $nomorUangJalan,
                     'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
+                    'surat_jalan_id' => null,
                     'surat_jalan_bongkaran_id' => $request->surat_jalan_id,
                     'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
                     'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
