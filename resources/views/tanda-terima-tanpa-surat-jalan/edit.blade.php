@@ -838,35 +838,44 @@
         @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Select2 for penerima and pengirim
-        $('.select2-penerima').select2({
-            placeholder: '-- Pilih Penerima --',
-            allowClear: true,
-            width: '100%'
-        });
+    // Wrap everything in jQuery ready to ensure jQuery and Select2 are loaded
+    jQuery(document).ready(function($) {
+        console.log('jQuery loaded:', typeof $ !== 'undefined');
+        console.log('Select2 loaded:', typeof $.fn.select2 !== 'undefined');
+        
+        // Initialize Select2 only if library is available
+        if (typeof $.fn.select2 !== 'undefined') {
+            // Initialize Select2 for penerima and pengirim
+            $('.select2-penerima').select2({
+                placeholder: '-- Pilih Penerima --',
+                allowClear: true,
+                width: '100%'
+            });
 
-        $('.select2-pengirim').select2({
-            placeholder: '-- Pilih Pengirim --',
-            allowClear: true,
-            width: '100%'
-        });
+            $('.select2-pengirim').select2({
+                placeholder: '-- Pilih Pengirim --',
+                allowClear: true,
+                width: '100%'
+            });
 
-        // Auto-fill alamat when penerima is selected
-        $('.select2-penerima').on('select2:select', function (e) {
-            const alamat = $(this).find(':selected').data('alamat');
-            if (alamat) {
-                $('#alamat_penerima').val(alamat);
-            }
-        });
+            // Auto-fill alamat when penerima is selected
+            $('.select2-penerima').on('select2:select', function (e) {
+                const alamat = $(this).find(':selected').data('alamat');
+                if (alamat) {
+                    $('#alamat_penerima').val(alamat);
+                }
+            });
 
-        // Auto-fill alamat when pengirim is selected
-        $('.select2-pengirim').on('select2:select', function (e) {
-            const alamat = $(this).find(':selected').data('alamat');
-            if (alamat) {
-                $('#alamat_pengirim').val(alamat);
-            }
-        });
+            // Auto-fill alamat when pengirim is selected
+            $('.select2-pengirim').on('select2:select', function (e) {
+                const alamat = $(this).find(':selected').data('alamat');
+                if (alamat) {
+                    $('#alamat_pengirim').val(alamat);
+                }
+            });
+        } else {
+            console.error('Select2 library not loaded!');
+        }
 
         // Calculate meter kubik on page load if values exist
         calculateMeterKubik();
@@ -885,7 +894,7 @@
         // Initialize per-row volume calculation for existing dimensi rows
         const initialDimensiRows = document.querySelectorAll('#dimensi-container-edit .dimensi-row-edit');
         initialDimensiRows.forEach(row => calculateVolumeEdit(row));
-    });
+    }); // End of jQuery ready
 
     function handleTipeKontainerChange() {
         const tipeKontainerEl = document.getElementById('tipe_kontainer');
@@ -1280,22 +1289,22 @@
             const newData = event.data.penerima;
             
             // Add to both penerima and pengirim select (same data source)
-            const penerimaSelect = $('.select2-penerima');
-            const pengirimSelect = $('.select2-pengirim');
+            const penerimaSelect = jQuery('.select2-penerima');
+            const pengirimSelect = jQuery('.select2-pengirim');
             
             // Add new option to penerima
             const penerimaOption = new Option(newData.nama, newData.nama, true, true);
-            $(penerimaOption).attr('data-alamat', newData.alamat || '');
+            jQuery(penerimaOption).attr('data-alamat', newData.alamat || '');
             penerimaSelect.append(penerimaOption);
             
             // Add new option to pengirim  
             const pengirimOption = new Option(newData.nama, newData.nama, false, false);
-            $(pengirimOption).attr('data-alamat', newData.alamat || '');
+            jQuery(pengirimOption).attr('data-alamat', newData.alamat || '');
             pengirimSelect.append(pengirimOption);
             
             // Trigger select2 change and auto-fill alamat for penerima
             penerimaSelect.trigger('change');
-            $('#alamat_penerima').val(newData.alamat || '');
+            jQuery('#alamat_penerima').val(newData.alamat || '');
             
             console.log('✓ New penerima/pengirim added:', newData.nama);
         }
