@@ -15,7 +15,7 @@
         /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
         .date-header {
             position: fixed; /* anchor to the page so it doesn't get cropped */
-            top: 0.2cm; /* safe positive offset near top of page */
+            top: 2cm; /* 2cm dari atas */
             left: 10.5cm;  /* 10.5cm dari kiri */
             z-index: 1000; /* ensure visibility */
             color: #000; /* force black color on print */
@@ -74,6 +74,22 @@
             font-size: 16px;
             font-weight: bold;
         }
+        /* Tipe Kontainer: posisi absolute */
+        .tipe-kontainer-abs {
+            position: absolute;
+            top: 9.5cm; /* 9.5cm dari atas */
+            left: 6cm; /* 6cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        /* Ukuran Kontainer: posisi absolute dibawah tipe kontainer */
+        .ukuran-kontainer-abs {
+            position: absolute;
+            top: 10.2cm; /* 10.2cm dari atas - lebih kebawah agar tidak overlap */
+            left: 6cm; /* 6cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
         /* Nama Barang: posisi absolute sesuai permintaan */
         .nama-barang-abs {
             position: absolute;
@@ -98,11 +114,11 @@
             font-size: 16px;
             font-weight: bold;
         }
-        /* Pengirim: posisi absolute (atas 11cm, kiri 10.5cm) */
+        /* Pengirim: posisi absolute (atas 3.5cm, kiri 11cm) */
         .pengirim-abs {
             position: absolute;
-            top: 11cm; /* 11cm dari atas */
-            left: 10.5cm; /* 10.5cm dari kiri */
+            top: 3.5cm; /* 3.5cm dari atas */
+            left: 11cm; /* 11cm dari kiri */
             font-size: 14px;
             font-weight: bold;
         }
@@ -164,12 +180,38 @@
             {{ $printData->jenis_pengiriman ? strtoupper($printData->jenis_pengiriman) : '' }}
         </div>
         
+        <!-- Tipe Kontainer (posisi top 9.5cm, left 6cm) -->
+        @php
+            $tipeKontainerText = 'FCL'; // Default
+            if (!empty($printData->tipe_kontainer)) {
+                $tipeKontainerText = strtoupper($printData->tipe_kontainer);
+            }
+        @endphp
+        <div class="tipe-kontainer-abs">
+            {{ $tipeKontainerText }}
+        </div>
+        
+        <!-- Ukuran Kontainer: CONT 1x + ukuran (posisi top 10cm, left 6cm) -->
+        @php
+            $sizeKontainer = $printData->size_kontainer ?? $printData->size ?? '';
+            // Format ukuran: jika hanya angka, tambahkan 'ft'
+            if (!empty($sizeKontainer)) {
+                if (!str_contains(strtolower($sizeKontainer), 'ft') && !str_contains(strtoupper($sizeKontainer), 'HC')) {
+                    $sizeKontainer = $sizeKontainer . 'ft';
+                }
+            }
+            $ukuranText = 'CONT 1x' . (!empty($sizeKontainer) ? ' ' . strtoupper($sizeKontainer) : '');
+        @endphp
+        <div class="ukuran-kontainer-abs">
+            {{ $ukuranText }}
+        </div>
+        
         <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
         <div class="nama-barang-abs">
             {{ strtoupper($printData->jenis_barang ?? '') }}
         </div>
         
-        <!-- Pengirim (posisi top 11cm, left 10.5cm) -->
+        <!-- Pengirim (posisi top 3.5cm, left 11cm) -->
         <div class="pengirim-abs">
             {{ strtoupper($printData->pengirim ?? '') }}
         </div>

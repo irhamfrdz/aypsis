@@ -56,6 +56,15 @@
             font-weight: bold;
             line-height: 1.2;
         }
+        /* Positioned kontainer info (1 kontainer + size) below nama barang */
+        .kontainer-info {
+            position: absolute;
+            top: 12cm; /* below nama barang */
+            left: 9cm; /* aligned with nama barang */
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: bold;
+        }
         /* Positioned unit text */
         .unit-text {
             position: absolute;
@@ -137,6 +146,19 @@
     @else
         <div class="nama-barang">&nbsp;</div>
     @endif
+    {{-- Kontainer Info: 1 kontainer + size kontainer --}}
+    @php
+        $sizeKontainer = $baData->size_kontainer ?? $baData->size ?? '';
+        // Format size kontainer: jika hanya angka, tambahkan 'ft'
+        if (!empty($sizeKontainer)) {
+            // Check if already has 'ft' or 'HC'
+            if (!str_contains(strtolower($sizeKontainer), 'ft') && !str_contains(strtoupper($sizeKontainer), 'HC')) {
+                $sizeKontainer = $sizeKontainer . 'ft';
+            }
+        }
+        $kontainerText = '1 kontainer' . (!empty($sizeKontainer) ? ' ' . $sizeKontainer : '');
+    @endphp
+    <div class="kontainer-info">{{ e($kontainerText) }}</div>
     {{-- Unit Text (static: 1 unit) --}}
     <div class="unit-text">1 unit</div>
     {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}

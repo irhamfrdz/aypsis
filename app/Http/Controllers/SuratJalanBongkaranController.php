@@ -830,6 +830,8 @@ class SuratJalanBongkaranController extends Controller
         $printData->no_seal = $bl->no_seal;
         $printData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
         $printData->tujuan_pengiriman = $bl->pelabuhan_tujuan ?? '';
+        $printData->size_kontainer = $bl->size_kontainer ?? '';
+        $printData->tipe_kontainer = $bl->tipe_kontainer ?? '';
         
         // Create fake bl relation for compatibility with existing print view
         $printData->bl = $bl;
@@ -863,6 +865,7 @@ class SuratJalanBongkaranController extends Controller
         $baData->no_kontainer = $bl->nomor_kontainer;
         $baData->no_seal = $bl->no_seal;
         $baData->size = $bl->size_kontainer;
+        $baData->size_kontainer = $bl->size_kontainer; // Add this for compatibility
         
         // Cargo data
         $baData->jenis_barang = $bl->nama_barang;
