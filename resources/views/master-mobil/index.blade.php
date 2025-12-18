@@ -9,30 +9,75 @@
 
     <!-- Search Form -->
     <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <form method="GET" action="{{ route('master.mobil.index') }}" class="flex flex-col sm:flex-row gap-3">
-            <div class="flex-1">
-                <input type="text" 
-                       name="search" 
-                       value="{{ request('search') }}" 
-                       placeholder="Cari kode aktiva, nomor polisi, nomor KIR, merek, jenis, atau nama karyawan..." 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       autocomplete="off">
-            </div>
-            <div class="flex gap-2">
-                <button type="submit" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    Cari
-                </button>
-                @if(request('search'))
-                    <a href="{{ route('master.mobil.index') }}" class="inline-flex items-center bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200">
+        <form method="GET" action="{{ route('master.mobil.index') }}" class="space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}" 
+                           placeholder="Cari kode aktiva, nomor polisi, nomor KIR, merek, jenis, atau nama karyawan..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                           autocomplete="off">
+                </div>
+                <div class="w-full sm:w-48">
+                    <select name="lokasi" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Semua Lokasi</option>
+                        @foreach($locations as $location)
+                            <option value="{{ $location }}" {{ request('lokasi') == $location ? 'selected' : '' }}>
+                                {{ $location }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6m0 0l6-6m-6 6l6 6"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
-                        Reset
-                    </a>
-                @endif
+                        Cari
+                    </button>
+                    @if(request('search') || request('lokasi') || request('jenis_tanggal') || request('tanggal_dari') || request('tanggal_sampai'))
+                        <a href="{{ route('master.mobil.index') }}" class="inline-flex items-center bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6m0 0l6-6m-6 6l6 6"/>
+                            </svg>
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </div>
+            
+            <!-- Filter Tanggal Jatuh Tempo -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-3 border-t border-gray-200">
+                <div class="w-full sm:w-56">
+                    <label for="jenis_tanggal" class="block text-xs font-medium text-gray-700 mb-1">Jenis Tanggal Jatuh Tempo</label>
+                    <select name="jenis_tanggal" 
+                            id="jenis_tanggal"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Jenis Tanggal</option>
+                        <option value="asuransi" {{ request('jenis_tanggal') == 'asuransi' ? 'selected' : '' }}>Asuransi</option>
+                        <option value="pajak_stnk" {{ request('jenis_tanggal') == 'pajak_stnk' ? 'selected' : '' }}>Pajak STNK</option>
+                        <option value="pajak_kir" {{ request('jenis_tanggal') == 'pajak_kir' ? 'selected' : '' }}>Pajak KIR</option>
+                        <option value="pajak_plat" {{ request('jenis_tanggal') == 'pajak_plat' ? 'selected' : '' }}>Pajak Plat</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="tanggal_dari" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                    <input type="date" 
+                           name="tanggal_dari" 
+                           id="tanggal_dari"
+                           value="{{ request('tanggal_dari') }}"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="flex-1">
+                    <label for="tanggal_sampai" class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                    <input type="date" 
+                           name="tanggal_sampai" 
+                           id="tanggal_sampai"
+                           value="{{ request('tanggal_sampai') }}"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
             </div>
         </form>
     </div>
@@ -191,14 +236,36 @@
     @endif
 
     <!-- Search Result Info & Data Summary -->
-    @if(request('search'))
+    @if(request('search') || request('jenis_tanggal'))
         <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
             <div class="flex items-center">
                 <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span class="text-blue-800 text-sm">
-                    Menampilkan <strong>{{ $mobils->total() }}</strong> hasil pencarian untuk "<strong>{{ request('search') }}</strong>"
+                    Menampilkan <strong>{{ $mobils->total() }}</strong> hasil
+                    @if(request('search'))
+                        pencarian untuk "<strong>{{ request('search') }}</strong>"
+                    @endif
+                    @if(request('jenis_tanggal'))
+                        @php
+                            $jenisLabel = [
+                                'asuransi' => 'Asuransi',
+                                'pajak_stnk' => 'Pajak STNK',
+                                'pajak_kir' => 'Pajak KIR',
+                                'pajak_plat' => 'Pajak Plat'
+                            ];
+                        @endphp
+                        dengan filter <strong>{{ $jenisLabel[request('jenis_tanggal')] ?? request('jenis_tanggal') }}</strong>
+                        @if(request('tanggal_dari') && request('tanggal_sampai'))
+                            dari <strong>{{ date('d M Y', strtotime(request('tanggal_dari'))) }}</strong> 
+                            sampai <strong>{{ date('d M Y', strtotime(request('tanggal_sampai'))) }}</strong>
+                        @elseif(request('tanggal_dari'))
+                            mulai <strong>{{ date('d M Y', strtotime(request('tanggal_dari'))) }}</strong>
+                        @elseif(request('tanggal_sampai'))
+                            sampai <strong>{{ date('d M Y', strtotime(request('tanggal_sampai'))) }}</strong>
+                        @endif
+                    @endif
                 </span>
             </div>
         </div>

@@ -291,6 +291,33 @@ class MasterMobilImportController extends Controller
                 $query->where('lokasi', 'BTM');
             }
 
+            // Apply location filter if exists
+            if ($request->filled('lokasi')) {
+                $query->where('lokasi', $request->lokasi);
+            }
+
+            // Date range filter for jatuh tempo
+            if ($request->filled('jenis_tanggal')) {
+                $fieldMap = [
+                    'asuransi' => 'tanggal_jatuh_tempo_asuransi',
+                    'pajak_stnk' => 'pajak_stnk',
+                    'pajak_kir' => 'pajak_kir',
+                    'pajak_plat' => 'pajak_plat'
+                ];
+                
+                $field = $fieldMap[$request->jenis_tanggal] ?? null;
+                
+                if ($field) {
+                    if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
+                        $query->whereBetween($field, [$request->tanggal_dari, $request->tanggal_sampai]);
+                    } elseif ($request->filled('tanggal_dari')) {
+                        $query->where($field, '>=', $request->tanggal_dari);
+                    } elseif ($request->filled('tanggal_sampai')) {
+                        $query->where($field, '<=', $request->tanggal_sampai);
+                    }
+                }
+            }
+
             // Apply search filter if exists
             if ($request->filled('search')) {
                 $search = $request->search;

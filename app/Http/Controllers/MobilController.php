@@ -22,6 +22,33 @@ class MobilController extends Controller
             $query->where('lokasi', 'BTM');
         }
 
+        // Location filter
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi', $request->lokasi);
+        }
+
+        // Date range filter for jatuh tempo
+        if ($request->filled('jenis_tanggal')) {
+            $fieldMap = [
+                'asuransi' => 'tanggal_jatuh_tempo_asuransi',
+                'pajak_stnk' => 'pajak_stnk',
+                'pajak_kir' => 'pajak_kir',
+                'pajak_plat' => 'pajak_plat'
+            ];
+            
+            $field = $fieldMap[$request->jenis_tanggal] ?? null;
+            
+            if ($field) {
+                if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
+                    $query->whereBetween($field, [$request->tanggal_dari, $request->tanggal_sampai]);
+                } elseif ($request->filled('tanggal_dari')) {
+                    $query->where($field, '>=', $request->tanggal_dari);
+                } elseif ($request->filled('tanggal_sampai')) {
+                    $query->where($field, '<=', $request->tanggal_sampai);
+                }
+            }
+        }
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
@@ -53,7 +80,14 @@ class MobilController extends Controller
         // Preserve all query parameters in pagination links
         $mobils->appends($request->query());
 
-        return view('master-mobil.index', compact('mobils'));
+        // Get distinct locations for filter dropdown
+        $locations = Mobil::whereNotNull('lokasi')
+                          ->where('lokasi', '!=', '')
+                          ->distinct()
+                          ->orderBy('lokasi')
+                          ->pluck('lokasi');
+
+        return view('master-mobil.index', compact('mobils', 'locations'));
     }
 
     /**
