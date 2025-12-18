@@ -60,7 +60,7 @@
                 <!-- Data Pembayaran -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pemsbayaran</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="flex items-end gap-1">
                                 <div class="flex-1">

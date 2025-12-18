@@ -132,7 +132,7 @@
             <div class="table-container overflow-x-auto max-h-screen">
                 <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pranotaTable">
                     <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-                        <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Jumlah Tagihan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Total Biaya<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pembayaran<div class="resize-handle"></div></th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th></tr>
+                        <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Jumlah Tagihan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Total Biaya<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Accurate<div class="resize-handle"></div></th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th></tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 table-body-text">
                         @forelse($pranotaList as $index => $pranota)
@@ -164,11 +164,21 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($pranota->status === 'paid' && $pranota->getPaymentDate())
-                                    {{ $pranota->getPaymentDate()->format('d/M/Y') }}
+                                    {{ \Carbon\Carbon::parse($pranota->getPaymentDate())->format('d/M/Y') }}
                                 @elseif($pranota->status === 'paid')
                                     <span class="text-green-600">Dibayar</span>
                                 @else
                                     <span class="text-gray-500">Belum dibayar</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @php
+                                    $payment = $pranota->payment();
+                                @endphp
+                                @if($payment && $payment->nomor_accurate)
+                                    <span class="font-medium text-blue-600">{{ $payment->nomor_accurate }}</span>
+                                @else
+                                    <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -232,7 +242,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-12 text-center">
+                            <td colspan="9" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     @if(request('search') || request('status'))
                                         <!-- No Search Results -->

@@ -110,8 +110,30 @@ class PranotaTagihanKontainerSewa extends Model
 
     public function getPaymentDate()
     {
-        // For now, return null since payment system is not yet integrated
-        // TODO: Implement payment relationship when payment system is extended
+        $paymentItem = $this->paymentItem()->first();
+        if ($paymentItem && $paymentItem->pembayaran) {
+            return $paymentItem->pembayaran->tanggal_pembayaran;
+        }
+        return null;
+    }
+
+    /**
+     * Get payment item relationship
+     */
+    public function paymentItem()
+    {
+        return $this->hasOne(\App\Models\PembayaranPranotaKontainerItem::class, 'pranota_id');
+    }
+
+    /**
+     * Get payment information
+     */
+    public function payment()
+    {
+        $paymentItem = $this->paymentItem()->first();
+        if ($paymentItem) {
+            return $paymentItem->pembayaran;
+        }
         return null;
     }
 }
