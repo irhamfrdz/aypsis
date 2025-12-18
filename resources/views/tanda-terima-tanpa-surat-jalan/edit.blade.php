@@ -660,34 +660,8 @@
                     </div>
 
                     <!-- Kontainer Details -->
-                    <div id="kontainer_fields" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                        <div>
-                            <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
-                                No. Kontainer
-                            </label>
-                            <div class="relative">
-                                <input type="text" id="noKontainerSearch" placeholder="Cari nomor kontainer..." autocomplete="off"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror">
-                                <div id="noKontainerDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto hidden">
-                                    @if(isset($containerOptions) && count($containerOptions))
-                                        @foreach($containerOptions as $opt)
-                                            <div class="no-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer" data-value="{{ $opt['value'] }}" data-text="{{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif" data-size="{{ $opt['size'] }}" data-source="{{ $opt['source'] }}">
-                                                {{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                    <div class="no-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600" data-value="__manual__" data-text="&raquo; Ketik manual / Lainnya">
-                                        &raquo; Ketik manual / Lainnya
-                                    </div>
-                                </div>
-                                <input type="hidden" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer', $tandaTerimaTanpaSuratJalan->no_kontainer) }}">
-                            </div>
-                            <input type="text" name="no_kontainer_manual" id="no_kontainer_manual" value="{{ old('no_kontainer_manual') }}" placeholder="Masukkan nomor kontainer jika memilih Lainnya" class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm hidden" />
-                            @error('no_kontainer')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div id="size_kontainer_field">
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
                                 Size Kontainer
                             </label>
@@ -705,11 +679,39 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div id="seal_field">
-                            <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">
-                                No. Seal
+
+                        <div id="no_kontainer_field">
+                            <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                No. Kontainer <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="no_seal" id="no_seal" value="{{ old('no_seal', $tandaTerimaTanpaSuratJalan->no_seal) }}"
+                            <div class="relative">
+                                <input type="text" id="noKontainerSearch" placeholder="Cari nomor kontainer..." autocomplete="off"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror">
+                                <div id="noKontainerDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto hidden">
+                                    @if(isset($containerOptions) && count($containerOptions))
+                                        @foreach($containerOptions as $opt)
+                                            <div class="no-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer" data-value="{{ $opt['value'] }}" data-text="{{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif" data-size="{{ $opt['size'] }}" data-source="{{ $opt['source'] }}">
+                                                {{ $opt['label'] }}@if(!empty($opt['size'])) - {{ $opt['size'] }}@endif
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                    <div class="no-kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600" data-value="__manual__" data-text="&raquo; Ketik manual / Lainnya">
+                                        &raquo; Ketik manual / Lainnya
+                                    </div>
+                                </div>
+                                <input type="hidden" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer', $tandaTerimaTanpaSuratJalan->no_kontainer) }}" required>
+                            </div>
+                            <input type="text" name="no_kontainer_manual" id="no_kontainer_manual" value="{{ old('no_kontainer_manual') }}" placeholder="Masukkan nomor kontainer jika memilih Lainnya" class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm hidden" />
+                            @error('no_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div id="no_seal_field">
+                            <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">
+                                No. Seal <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="no_seal" id="no_seal" value="{{ old('no_seal', $tandaTerimaTanpaSuratJalan->no_seal) }}" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror"
                                    placeholder="Nomor seal">
                             @error('no_seal')
@@ -719,7 +721,8 @@
                     </div>
 
                     <!-- Baris 3: Tanggal Seal -->
-                    <div id="tanggal_seal_field" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                        <div id="tanggal_seal_field">
                         <div>
                             <label for="tanggal_seal" class="block text-sm font-medium text-gray-700 mb-1">
                                 Tanggal Seal
