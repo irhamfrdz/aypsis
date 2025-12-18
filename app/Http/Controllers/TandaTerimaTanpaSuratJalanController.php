@@ -945,19 +945,46 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 // Update scalar fallback values
                 if (!empty($namaBarangArray)) {
                     $validated['nama_barang'] = $namaBarangArray[0] ?? $validated['nama_barang'] ?? null;
+                } else {
+                    unset($validated['nama_barang']); // Remove array field if not used
                 }
+
                 if (!empty($jumlahClean)) {
                     $validated['jumlah_barang'] = array_sum(array_filter($jumlahClean, 'is_numeric')) ?: ($validated['jumlah_barang'] ?? 1);
                 }
+                unset($validated['jumlah']); // Always remove array field
+
                 if (!empty($satuanClean)) {
                     $validated['satuan_barang'] = $satuanClean[0] ?? ($validated['satuan_barang'] ?? 'unit');
                 }
+                unset($validated['satuan']); // Always remove array field
+
+                // Always remove dimension array fields and use aggregated values
+                unset($validated['panjang']);
+                unset($validated['lebar']);
+                unset($validated['tinggi']);
+
                 if (!empty($meterClean)) {
                     $validated['meter_kubik'] = array_sum(array_filter($meterClean, 'is_numeric'));
+                } else {
+                    unset($validated['meter_kubik']); // Remove if no array input
                 }
+
                 if (!empty($tonaseClean)) {
                     $validated['tonase'] = array_sum(array_filter($tonaseClean, 'is_numeric'));
+                } else {
+                    unset($validated['tonase']); // Remove if no array input
                 }
+            } else {
+                // If no arrays provided, ensure array fields are removed
+                unset($validated['nama_barang']);
+                unset($validated['jumlah']);
+                unset($validated['satuan']);
+                unset($validated['panjang']);
+                unset($validated['lebar']);
+                unset($validated['tinggi']);
+                unset($validated['meter_kubik']);
+                unset($validated['tonase']);
             }
 
             $tandaTerimaTanpaSuratJalan->update($validated);
