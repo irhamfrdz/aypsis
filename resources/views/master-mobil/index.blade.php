@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Master Asset')
-@section('page_title', 'Master Asset')
+@section('title', 'Master Kendaraan')
+@section('page_title', 'Master Kendaraan')
 
 @section('content')
 <div class="bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Asset</h2>
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Kendaraan</h2>
 
     <!-- Search Form -->
     <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -241,7 +241,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode No</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kendaraan</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
@@ -341,7 +341,7 @@
                                 @endcan
                                 <span class="text-gray-300 text-xs">|</span>
                                 <!-- Tombol Hapus -->
-                                <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus asset ini?');" class="inline">
+                                <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kendaraan ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-500 text-white py-1 px-2 rounded text-xs hover:bg-red-600 transition-colors duration-200">
@@ -359,14 +359,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                                 @if(request('search'))
-                                    <p class="text-base font-medium text-gray-600">Tidak ada asset ditemukan</p>
+                                    <p class="text-base font-medium text-gray-600">Tidak ada kendaraan ditemukan</p>
                                     <p class="text-xs text-gray-500 mt-1">Tidak ada hasil untuk pencarian "<strong>{{ request('search') }}</strong>"</p>
                                     <a href="{{ route('master.mobil.index') }}" class="mt-2 text-indigo-600 hover:text-indigo-800 text-xs font-medium">
-                                        Lihat semua asset
+                                        Lihat semua kendaraan
                                     </a>
                                 @else
-                                    <p class="text-base font-medium text-gray-600">Belum ada data asset</p>
-                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah asset baru atau import data Excel</p>
+                                    <p class="text-base font-medium text-gray-600">Belum ada data kendaraan</p>
+                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah kendaraan baru atau import data Excel</p>
                                 @endif
                             </div>
                         </td>
@@ -390,7 +390,7 @@
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Import Master Asset</h3>
+                <h3 class="text-lg font-medium text-gray-900">Import Master Kendaraan</h3>
                 <button type="button" onclick="document.getElementById('import-modal').style.display = 'none'"
                         class="text-gray-400 hover:text-gray-600">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

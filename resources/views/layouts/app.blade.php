@@ -686,11 +686,11 @@
         </div>
         @endif
 
-        {{-- Master Asset --}}
+        {{-- Master Kendaraan --}}
         @if($user && $user->can('master-mobil-view'))
         <div class="mx-2 mb-3">
             <a href="{{ route('master.mobil.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Asset</span>
+                <span class="text-xs font-medium">Master Kendaraan</span>
             </a>
         </div>
         @endif

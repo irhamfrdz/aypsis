@@ -15,7 +15,7 @@ use Exception;
 class MasterMobilImportController extends Controller
 {
     /**
-     * Download template Excel untuk import master asset
+     * Download template Excel untuk import master kendaraan
      */
     public function downloadTemplate()
     {
@@ -32,7 +32,7 @@ class MasterMobilImportController extends Controller
 
 
     /**
-     * Import data master asset dari Excel
+     * Import data master kendaraan dari Excel
      */
     public function import(Request $request)
     {
