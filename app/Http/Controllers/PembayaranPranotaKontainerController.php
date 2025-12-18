@@ -113,7 +113,7 @@ class PembayaranPranotaKontainerController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'bank' => 'required|string|max:255',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
-            'tanggal_kas' => 'required|date_format:d/m/Y',
+            'tanggal_kas' => 'required|date_format:Y-m-d',
             'pranota_ids' => 'required|array|min:1',
             'pranota_ids.*' => 'exists:pranota_tagihan_kontainer_sewa,id',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
@@ -156,7 +156,7 @@ class PembayaranPranotaKontainerController extends Controller
                 'nomor_accurate' => $request->nomor_accurate,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'tanggal_kas' => \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d'),
+                'tanggal_kas' => $request->tanggal_kas,
                 'tanggal_pembayaran' => now()->toDateString(),
                 'total_pembayaran' => $totalPembayaran,
                 'total_tagihan_penyesuaian' => $penyesuaian,
@@ -192,7 +192,7 @@ class PembayaranPranotaKontainerController extends Controller
 
             // Catat transaksi ke akun bank yang dipilih
             $totalAkhir = ($totalPembayaran + $penyesuaian) - $dpAmount;
-            $tanggalTransaksi = \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d');
+            $tanggalTransaksi = $request->tanggal_kas;
 
             $keterangan = "Pembayaran Pranota Kontainer - " . $request->nomor_pembayaran;
             if ($request->keterangan) {

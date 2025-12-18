@@ -74,14 +74,56 @@
                     <label for="jenis_aktivitas" class="block text-sm font-medium text-gray-700 mb-2">
                         Jenis Aktivitas <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" 
-                           name="jenis_aktivitas" 
-                           id="jenis_aktivitas" 
-                           value="{{ old('jenis_aktivitas') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_aktivitas') border-red-500 @enderror"
-                           placeholder="Masukkan jenis aktivitas"
-                           required>
+                    <select name="jenis_aktivitas" 
+                            id="jenis_aktivitas" 
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_aktivitas') border-red-500 @enderror"
+                            required>
+                        <option value="">Pilih Jenis Aktivitas</option>
+                        <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas') == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
+                        <option value="Pembayaran Kapal" {{ old('jenis_aktivitas') == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
+                        <option value="Pembayaran Adjustment Uang Jalan" {{ old('jenis_aktivitas') == 'Pembayaran Adjustment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjustment Uang Jalan</option>
+                        <option value="Pembayaran Lain-lain" {{ old('jenis_aktivitas') == 'Pembayaran Lain-lain' ? 'selected' : '' }}>Pembayaran Lain-lain</option>
+                    </select>
                     @error('jenis_aktivitas')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Sub Jenis Kendaraan (conditional) -->
+                <div id="sub_jenis_kendaraan_wrapper" class="hidden">
+                    <label for="sub_jenis_kendaraan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Sub Jenis Kendaraan <span class="text-red-500">*</span>
+                    </label>
+                    <select name="sub_jenis_kendaraan" 
+                            id="sub_jenis_kendaraan" 
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('sub_jenis_kendaraan') border-red-500 @enderror">
+                        <option value="">Pilih Sub Jenis Kendaraan</option>
+                        <option value="STNK" {{ old('sub_jenis_kendaraan') == 'STNK' ? 'selected' : '' }}>STNK</option>
+                        <option value="KIR" {{ old('sub_jenis_kendaraan') == 'KIR' ? 'selected' : '' }}>KIR</option>
+                        <option value="PLAT" {{ old('sub_jenis_kendaraan') == 'PLAT' ? 'selected' : '' }}>PLAT</option>
+                        <option value="Lain-lain" {{ old('sub_jenis_kendaraan') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                    </select>
+                    @error('sub_jenis_kendaraan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Nomor Polisi (conditional) -->
+                <div id="nomor_polisi_wrapper" class="hidden">
+                    <label for="nomor_polisi" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Polisi <span class="text-red-500">*</span>
+                    </label>
+                    <select name="nomor_polisi" 
+                            id="nomor_polisi" 
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nomor_polisi') border-red-500 @enderror">
+                        <option value="">Pilih Nomor Polisi</option>
+                        @foreach($mobils as $mobil)
+                            <option value="{{ $mobil->nomor_polisi }}" {{ old('nomor_polisi') == $mobil->nomor_polisi ? 'selected' : '' }}>
+                                {{ $mobil->nomor_polisi }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('nomor_polisi')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -91,13 +133,17 @@
                     <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
                         Penerima <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" 
-                           name="penerima" 
-                           id="penerima" 
-                           value="{{ old('penerima') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('penerima') border-red-500 @enderror"
-                           placeholder="Masukkan nama penerima"
-                           required>
+                    <select name="penerima" 
+                            id="penerima" 
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('penerima') border-red-500 @enderror"
+                            required>
+                        <option value="">Pilih Penerima</option>
+                        @foreach($karyawans as $karyawan)
+                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima') == $karyawan->nama_lengkap ? 'selected' : '' }}>
+                                {{ $karyawan->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
                     @error('penerima')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -219,6 +265,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusSelect = document.getElementById('status');
     if (statusSelect && !statusSelect.value) {
         statusSelect.value = 'draft';
+    }
+
+    // Show/hide sub jenis kendaraan based on jenis aktivitas
+    const jenisAktivitasSelect = document.getElementById('jenis_aktivitas');
+    const subJenisKendaraanWrapper = document.getElementById('sub_jenis_kendaraan_wrapper');
+    const subJenisKendaraanSelect = document.getElementById('sub_jenis_kendaraan');
+    const nomorPolisiWrapper = document.getElementById('nomor_polisi_wrapper');
+    const nomorPolisiSelect = document.getElementById('nomor_polisi');
+
+    function toggleSubJenisKendaraan() {
+        if (jenisAktivitasSelect.value === 'Pembayaran Kendaraan') {
+            subJenisKendaraanWrapper.classList.remove('hidden');
+            subJenisKendaraanSelect.setAttribute('required', 'required');
+            nomorPolisiWrapper.classList.remove('hidden');
+            nomorPolisiSelect.setAttribute('required', 'required');
+        } else {
+            subJenisKendaraanWrapper.classList.add('hidden');
+            subJenisKendaraanSelect.removeAttribute('required');
+            subJenisKendaraanSelect.value = '';
+            nomorPolisiWrapper.classList.add('hidden');
+            nomorPolisiSelect.removeAttribute('required');
+            nomorPolisiSelect.value = '';
+        }
+    }
+
+    if (jenisAktivitasSelect) {
+        jenisAktivitasSelect.addEventListener('change', toggleSubJenisKendaraan);
+        // Check on page load in case of old input
+        toggleSubJenisKendaraan();
     }
 });
 </script>

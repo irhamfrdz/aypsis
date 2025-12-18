@@ -18,8 +18,20 @@
             </div>
         @endif
         @if(session('error'))
-            <div class="mb-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
-                <strong>Peringatan:</strong> {{ session('error') }}
+            <div class="mb-3 p-4 rounded-lg bg-red-50 border-2 border-red-300 text-red-800 text-sm shadow-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-sm font-bold text-red-800">Gagal Menyimpan Data Pembayaran!</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <strong>Peringatan:</strong> {{ session('error') }}
+                        </div>
+                    </div>
+                </div>
             </div>
         @endif
         {{-- Only show validation errors if this is a POST request (form submission) --}}
@@ -48,7 +60,7 @@
                 <!-- Data Pembayaran -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pemsbayaran</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="flex items-end gap-1">
                                 <div class="flex-1">
@@ -347,6 +359,65 @@
         </div>
     </div>
 
+    <!-- Modal Error -->
+    <div id="errorModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-0 border w-11/12 max-w-md shadow-2xl rounded-lg bg-white animate-bounce-in">
+            <!-- Header -->
+            <div class="bg-red-600 text-white px-6 py-4 rounded-t-lg">
+                <div class="flex items-center">
+                    <svg class="h-8 w-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold">Gagal Menyimpan Data!</h3>
+                </div>
+            </div>
+            
+            <!-- Body -->
+            <div class="px-6 py-6">
+                <div class="mb-4">
+                    <p class="text-gray-700 text-sm font-medium mb-2">Terjadi kesalahan saat menyimpan data pembayaran:</p>
+                    <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                        <p id="errorMessage" class="text-red-800 text-sm"></p>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                    <p class="text-yellow-800 text-xs">
+                        <strong>Saran:</strong> Periksa kembali data yang Anda masukkan dan pastikan semua field yang wajib telah diisi dengan benar.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end">
+                <button type="button" id="closeErrorModal" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes bounce-in {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .animate-bounce-in {
+            animation: bounce-in 0.5s ease-out;
+        }
+    </style>
+
 {{-- Script --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -532,10 +603,29 @@
         @endif
 
         @if(session('error'))
+            // Show detailed error modal
             setTimeout(function() {
-                alert('⚠️ Gagal Membuat Pembayaran!\n\n{{ session('error') }}');
-            }, 500);
+                showErrorModal('{{ session('error') }}');
+            }, 300);
         @endif
+
+        // Function to show error modal
+        function showErrorModal(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorModal').classList.remove('hidden');
+        }
+
+        // Close error modal
+        document.getElementById('closeErrorModal').addEventListener('click', function() {
+            document.getElementById('errorModal').classList.add('hidden');
+        });
+
+        // Close error modal when clicking outside
+        document.getElementById('errorModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
 
         // ==================== DP MODAL FUNCTIONALITY ====================
         let dpData = [];

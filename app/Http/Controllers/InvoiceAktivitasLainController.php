@@ -3,16 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\InvoiceAktivitasLain;
+use App\Models\Karyawan;
+use App\Models\Mobil;
 
 class InvoiceAktivitasLainController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Untuk saat ini, tampilkan halaman kosong dengan informasi bahwa fitur sedang dikembangkan
-        return view('invoice-aktivitas-lain.index');
+        $query = InvoiceAktivitasLain::query();
+
+        // Filter by nomor_invoice
+        if ($request->filled('nomor_invoice')) {
+            $query->where('nomor_invoice', 'like', '%' . $request->nomor_invoice . '%');
+        }
+
+        // Filter by jenis_aktivitas
+        if ($request->filled('jenis_aktivitas')) {
+            $query->where('jenis_aktivitas', 'like', '%' . $request->jenis_aktivitas . '%');
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Order by latest
+        $query->orderBy('created_at', 'desc');
+
+        // Paginate results
+        $invoices = $query->paginate(20)->withQueryString();
+
+        return view('invoice-aktivitas-lain.index', compact('invoices'));
     }
 
     /**
@@ -20,7 +45,9 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function create()
     {
-        return view('invoice-aktivitas-lain.create');
+        $karyawans = Karyawan::orderBy('nama_lengkap', 'asc')->get();
+        $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils'));
     }
 
     /**
