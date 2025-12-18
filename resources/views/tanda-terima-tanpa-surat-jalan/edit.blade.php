@@ -886,24 +886,40 @@
     });
 
     function handleTipeKontainerChange() {
-        const tipeKontainer = document.getElementById('tipe_kontainer').value;
-        const kontainerFields = document.getElementById('kontainer_fields');
-        const sealField = document.getElementById('seal_field');
+        const tipeKontainerEl = document.getElementById('tipe_kontainer');
+        if (!tipeKontainerEl) return; // nothing to do if element doesn't exist
+        const tipeKontainer = tipeKontainerEl.value;
+        const sizeKontainerField = document.getElementById('size_kontainer_field');
+        const noKontainerField = document.getElementById('no_kontainer_field');
+        const noSealField = document.getElementById('no_seal_field');
         const tanggalSealField = document.getElementById('tanggal_seal_field');
+        const noKontainerInput = document.getElementById('no_kontainer');
+        const noSealInput = document.getElementById('no_seal');
         
         if (tipeKontainer === 'cargo') {
-            kontainerFields.style.display = 'none';
-            if (sealField) sealField.style.display = 'none';
+            // Hide kontainer fields for cargo
+            if (sizeKontainerField) sizeKontainerField.style.display = 'none';
+            if (noKontainerField) noKontainerField.style.display = 'none';
+            if (noSealField) noSealField.style.display = 'none';
             if (tanggalSealField) tanggalSealField.style.display = 'none';
-            // Clear kontainer fields when cargo is selected
-            document.getElementById('no_kontainer').value = '';
-            document.getElementById('size_kontainer').value = '';
-            document.getElementById('no_seal').value = '';
-            document.getElementById('tanggal_seal').value = '';
+            // Clear kontainer fields when cargo is selected and remove required attribute
+            if (noKontainerInput) noKontainerInput.value = '';
+            const sizeKontainerInput = document.getElementById('size_kontainer');
+            if (sizeKontainerInput) sizeKontainerInput.value = '';
+            if (noSealInput) noSealInput.value = '';
+            const tanggalSealInput = document.getElementById('tanggal_seal');
+            if (tanggalSealInput) tanggalSealInput.value = '';
+            if (noKontainerInput) noKontainerInput.removeAttribute('required');
+            if (noSealInput) noSealInput.removeAttribute('required');
         } else {
-            kontainerFields.style.display = 'grid';
-            if (sealField) sealField.style.display = 'block';
-            if (tanggalSealField) tanggalSealField.style.display = 'grid';
+            // Show kontainer fields for FCL and LCL
+            if (sizeKontainerField) sizeKontainerField.style.display = 'block';
+            if (noKontainerField) noKontainerField.style.display = 'block';
+            if (noSealField) noSealField.style.display = 'block';
+            if (tanggalSealField) tanggalSealField.style.display = 'block';
+            // Add required attribute back for FCL and LCL
+            if (noKontainerInput) noKontainerInput.setAttribute('required', 'required');
+            if (noSealInput) noSealInput.setAttribute('required', 'required');
         }
     }
 
