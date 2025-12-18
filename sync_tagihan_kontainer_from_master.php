@@ -79,31 +79,6 @@ foreach ($kontainers as $kontainer) {
         ? Carbon::parse($kontainer->tanggal_selesai_sewa) 
         : Carbon::now();
     
-    // Cari harga sewa dari data existing
-    $existingTagihan = DB::table('daftar_tagihan_kontainer_sewa')
-        ->where('nomor_kontainer', $kontainer->nomor_seri_gabungan)
-        ->whereNotNull('dpp')
-        ->where('dpp', '>', 0)
-        ->orderBy('id', 'desc')
-        ->first();
-    
-    $hargaSewa = $existingTagihan ? $existingTagihan->dpp : 0;
-    
-    // Jika tidak ada harga, coba cek dari master pricelist
-    if ($hargaSewa == 0) {
-        $pricelist = DB::table('master_pricelist_sewa_kontainers')
-            ->where('vendor', $kontainer->vendor)
-            ->where('ukuran_kontainer', $kontainer->ukuran)
-            ->where('tarif', 'Bulanan')
-            ->first();
-        
-        if ($pricelist) {
-            $hargaSewa = $pricelist->harga;
-        }
-    }
-    
-    echo "  Harga Sewa: Rp " . number_format($hargaSewa, 0, ',', '.') . "\n";
-    
     // Clean invalid periods if --clean flag is set
     if ($cleanInvalid) {
         $invalidQuery = DB::table('daftar_tagihan_kontainer_sewa')
@@ -157,6 +132,28 @@ foreach ($kontainers as $kontainer) {
         // Jika currentEnd melewati tanggal_selesai_sewa, potong
         if ($kontainer->tanggal_selesai_sewa && $currentEnd->gt($tanggalSelesai)) {
             $currentEnd = $tanggalSelesai->copy();
+        }
+        
+        // Ambil harga dari master pricelist berdasarkan tanggal periode
+        $hargaSewa = 0;
+        $pricelist = DB::table('master_pricelist_sewa_kontainers')
+            ->where('vendor', $kontainer->vendor)
+            ->where('ukuran_kontainer', $kontainer->ukuran)
+            ->where('tarif', 'Bulanan')
+            ->where('tanggal_harga_awal', '<=', $currentStart->format('Y-m-d'))
+            ->where(function($q) use ($currentStart) {
+                $q->whereNull('tanggal_harga_akhir')
+                  ->orWhere('tanggal_harga_akhir', '>=', $currentStart->format('Y-m-d'));
+            })
+            ->orderBy('tanggal_harga_awal', 'desc')
+            ->first();
+        
+        if ($pricelist) {
+            $hargaSewa = $pricelist->harga;
+        }
+        
+        if ($verbose && $periodeNum == 1) {
+            echo "  Harga Sewa Periode {$periodeNum}: Rp " . number_format($hargaSewa, 0, ',', '.') . "\n";
         }
         
         // Cek apakah tagihan periode ini sudah ada

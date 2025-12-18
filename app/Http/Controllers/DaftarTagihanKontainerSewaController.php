@@ -26,8 +26,10 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         // Re-enable automatic periode creation with proper logic
         // This will create periods based on container duration like in CSV
+        // DISABLED IN DEVELOPMENT for performance - run manually via scheduled task instead
         try {
-            if (!Cache::has('tagihan:create-next-periode:lock')) {
+            // Only run in production environment to avoid slow local server loading
+            if (app()->environment('production') && !Cache::has('tagihan:create-next-periode:lock')) {
                 // dispatch a queued job so the work runs asynchronously
                 RunCreateNextPeriode::dispatch();
                 // prevent re-dispatch for 60 minutes
