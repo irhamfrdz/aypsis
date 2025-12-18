@@ -723,7 +723,6 @@
                     <!-- Baris 3: Tanggal Seal -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                         <div id="tanggal_seal_field">
-                        <div>
                             <label for="tanggal_seal" class="block text-sm font-medium text-gray-700 mb-1">
                                 Tanggal Seal
                             </label>
@@ -892,6 +891,9 @@
         const tipeKontainerEl = document.getElementById('tipe_kontainer');
         if (!tipeKontainerEl) return; // nothing to do if element doesn't exist
         const tipeKontainer = tipeKontainerEl.value;
+        
+        console.log('Tipe Kontainer:', tipeKontainer);
+        
         const sizeKontainerField = document.getElementById('size_kontainer_field');
         const noKontainerField = document.getElementById('no_kontainer_field');
         const noSealField = document.getElementById('no_seal_field');
@@ -899,7 +901,15 @@
         const noKontainerInput = document.getElementById('no_kontainer');
         const noSealInput = document.getElementById('no_seal');
         
+        console.log('Elements found:', {
+            sizeKontainerField: !!sizeKontainerField,
+            noKontainerField: !!noKontainerField,
+            noSealField: !!noSealField,
+            tanggalSealField: !!tanggalSealField
+        });
+        
         if (tipeKontainer === 'cargo') {
+            console.log('Hiding kontainer fields for cargo');
             // Hide kontainer fields for cargo
             if (sizeKontainerField) sizeKontainerField.style.display = 'none';
             if (noKontainerField) noKontainerField.style.display = 'none';
@@ -915,6 +925,7 @@
             if (noKontainerInput) noKontainerInput.removeAttribute('required');
             if (noSealInput) noSealInput.removeAttribute('required');
         } else {
+            console.log('Showing kontainer fields for FCL/LCL');
             // Show kontainer fields for FCL and LCL
             if (sizeKontainerField) sizeKontainerField.style.display = 'block';
             if (noKontainerField) noKontainerField.style.display = 'block';
