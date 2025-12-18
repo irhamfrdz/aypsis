@@ -3296,6 +3296,26 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
          ->middleware('can:pembayaran-aktivitas-lainnya-approve');
 });
 
+// Invoice Aktivitas Lain routes
+Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middleware(['auth'])->group(function () {
+    Route::get('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'index'])->name('index')
+         ->middleware('can:invoice-aktivitas-lain-view');
+    Route::get('/create', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'create'])->name('create')
+         ->middleware('can:invoice-aktivitas-lain-create');
+    Route::post('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'store'])->name('store')
+         ->middleware('can:invoice-aktivitas-lain-create');
+    Route::get('/{invoiceAktivitasLain}', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'show'])->name('show')
+         ->middleware('can:invoice-aktivitas-lain-view');
+    Route::get('/{invoiceAktivitasLain}/edit', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'edit'])->name('edit')
+         ->middleware('can:invoice-aktivitas-lain-update');
+    Route::put('/{invoiceAktivitasLain}', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'update'])->name('update')
+         ->middleware('can:invoice-aktivitas-lain-update');
+    Route::delete('/{invoiceAktivitasLain}', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'destroy'])->name('destroy')
+         ->middleware('can:invoice-aktivitas-lain-delete');
+    Route::get('/{invoiceAktivitasLain}/print', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'print'])->name('print')
+         ->middleware('can:invoice-aktivitas-lain-view');
+});
+
 // Pembayaran Uang Muka routes
 Route::prefix('pembayaran-uang-muka')->name('pembayaran-uang-muka.')->middleware(['auth'])->group(function () {
     Route::get('/', [PembayaranUangMukaController::class, 'index'])->name('index')
