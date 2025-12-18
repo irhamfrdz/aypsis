@@ -61,10 +61,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    {{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y') }}
+                                    {{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/M/Y') }}
                                 </div>
                                 <div class="text-sm text-gray-500">
-                                    Kas: {{ \Carbon\Carbon::parse($pembayaran->tanggal_kas)->format('d/m/Y') }}
+                                    Kas: {{ \Carbon\Carbon::parse($pembayaran->tanggal_kas)->format('d/M/Y') }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
