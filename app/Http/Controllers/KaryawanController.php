@@ -515,7 +515,7 @@ class KaryawanController extends Controller
     public function downloadExcelTemplate()
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
 
         $instructionData = [
@@ -546,7 +546,8 @@ class KaryawanController extends Controller
             'Format: DD/MM/YYYY atau DD/MMM/YYYY (kosong jika aktif)', // tanggal_berhenti
             'Format: DD/MM/YYYY atau DD/MMM/YYYY atau YYYY-MM-DD', // tanggal_masuk_sebelumnya
             'Format: DD/MM/YYYY atau DD/MMM/YYYY atau YYYY-MM-DD', // tanggal_berhenti_sebelumnya
-            'Catatan tambahan', // catatan
+            'Catatan umum', // catatan
+            'Catatan terkait pekerjaan', // catatan_pekerjaan
             'Status pajak (TK0/TK1/K0/K1/K2/K3/K/0/K/1)', // status_pajak
             'Nama bank', // nama_bank
             'Cabang bank', // bank_cabang
@@ -598,7 +599,7 @@ class KaryawanController extends Controller
     public function downloadSimpleExcelTemplate()
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
 
         // Create simple Excel-compatible CSV file with headers only
@@ -643,7 +644,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
         
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
 
         $fileName = 'karyawans_excel_indonesia_' . date('Ymd_His') . '.csv';
@@ -1333,7 +1334,7 @@ class KaryawanController extends Controller
                     'nik','nama_lengkap','nama_panggilan','email','tempat_lahir','tanggal_lahir','jenis_kelamin','agama','status_perkawinan','no_hp',
                     'ktp','kk','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','nik_supervisor','supervisor','cabang','plat',
                     'alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap',
-                    'nama_bank','bank_cabang','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','tanggungan_anak','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan'
+                    'nama_bank','bank_cabang','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan'
                 ];
                 $payload = [];
                 // Build payload using case-insensitive header names

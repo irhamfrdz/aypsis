@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Form Pembayaran Pranota Kontainer')
-@section('page_title', 'Form Pembayaran Pranota Kontainer')
+@section('title', 'Form Pembayaran Pranota Kontainer Sewa')
+@section('page_title', 'Form Pembayaran Pranota Kontainer Sewa')
 
 @section('content')
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
@@ -65,9 +65,9 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" name="tanggal_kas" id="tanggal_kas"
-                                    value="{{ now()->format('d/m/Y') }}"
-                                    class="{{ $readonlyInputClasses }}" readonly required>
+                                <input type="date" name="tanggal_kas" id="tanggal_kas"
+                                    value="{{ now()->toDateString() }}"
+                                    class="{{ $inputClasses }}" required>
                                 <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
                             </div>
                         </div>
@@ -435,12 +435,19 @@
         updateTotalPembayaran();
     });
 
-    // Keep tanggal_pembayaran hidden field synced with current date
+    // Sync tanggal_kas with tanggal_pembayaran when user changes it
     document.addEventListener('DOMContentLoaded', function () {
+        const tanggalKas = document.getElementById('tanggal_kas');
         const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
-        if (tanggalPembayaran) {
-            // Keep hidden field with today's date for validation
-            tanggalPembayaran.value = new Date().toISOString().split('T')[0];
+        
+        if (tanggalKas && tanggalPembayaran) {
+            // Sync tanggal_pembayaran when tanggal_kas changes
+            tanggalKas.addEventListener('change', function() {
+                tanggalPembayaran.value = this.value;
+            });
+            
+            // Initialize tanggal_pembayaran with tanggal_kas value
+            tanggalPembayaran.value = tanggalKas.value;
         }
     });
 </script>

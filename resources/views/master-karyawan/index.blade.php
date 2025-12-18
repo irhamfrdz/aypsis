@@ -93,14 +93,24 @@
                                             <div class="text-xs text-gray-500">Format CSV standar</div>
                                         </div>
                                     </a>
+                                    <a href="{{ route('master.karyawan.excel-template') }}"
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <div>
+                                            <div class="font-medium">Template Excel + Instruksi</div>
+                                            <div class="text-xs text-gray-500">Excel dengan panduan lengkap</div>
+                                        </div>
+                                    </a>
                                     <a href="{{ route('master.karyawan.simple-excel-template') }}"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                                         <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
                                         <div>
-                                            <div class="font-medium">Template Excel</div>
-                                            <div class="text-xs text-gray-500">Kompatibel dengan Excel</div>
+                                            <div class="font-medium">Template Excel Sederhana</div>
+                                            <div class="text-xs text-gray-500">Header saja tanpa instruksi</div>
                                         </div>
                                     </a>
                                 </div>
@@ -280,7 +290,7 @@
                         <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium mr-2">1</span>
                         <a href="{{ route('master.karyawan.template') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Download Template CSV</a>
                         atau
-                        <a href="{{ route('master.karyawan.excel-template') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Template Excel</a>
+                        <a href="{{ route('master.karyawan.simple-excel-template') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Template Excel</a>
                         <span class="mx-2">→</span>
                         <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium mr-2">2</span>
                         Isi data karyawan
