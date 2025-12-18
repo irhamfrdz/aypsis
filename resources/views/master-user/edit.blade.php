@@ -1863,6 +1863,21 @@
                                 <td><input type="checkbox" name="permissions[aktivitas-lainnya][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['export']) && $userMatrixPermissions['aktivitas-lainnya']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Invoice Aktivitas Lain --}}
+                            <tr class="submodule-row" data-parent="aktivitas-lainnya">
+                                <td class="submodule">
+                                    <span class="module-icon">🧾</span>
+                                    Invoice Aktivitas Lain
+                                </td>
+                                <td><input type="checkbox" name="permissions[invoice-aktivitas-lain][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-aktivitas-lain']['view']) && $userMatrixPermissions['invoice-aktivitas-lain']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-aktivitas-lain][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-aktivitas-lain']['create']) && $userMatrixPermissions['invoice-aktivitas-lain']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-aktivitas-lain][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-aktivitas-lain']['update']) && $userMatrixPermissions['invoice-aktivitas-lain']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-aktivitas-lain][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-aktivitas-lain']['delete']) && $userMatrixPermissions['invoice-aktivitas-lain']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="aktivitas-lainnya">
                                 <td class="submodule">
                                     <span class="module-icon">💰</span>
