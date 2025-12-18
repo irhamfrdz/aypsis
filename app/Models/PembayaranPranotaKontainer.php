@@ -16,6 +16,7 @@ class PembayaranPranotaKontainer extends Model
 
     protected $fillable = [
         'nomor_pembayaran',
+        'nomor_accurate',
         'bank',
         'jenis_transaksi',
         'tanggal_kas',

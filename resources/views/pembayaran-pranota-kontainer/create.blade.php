@@ -64,6 +64,14 @@
                                 </div>
                             </div>
                             <div>
+                                <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                                <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                    value="{{ old('nomor_accurate') }}"
+                                    class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate...">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
                                 <input type="date" name="tanggal_kas" id="tanggal_kas"
                                     value="{{ now()->toDateString() }}"

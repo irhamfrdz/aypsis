@@ -110,6 +110,7 @@ class PembayaranPranotaKontainerController extends Controller
     {
         $request->validate([
             'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_kontainer',
+            'nomor_accurate' => 'nullable|string|max:255',
             'bank' => 'required|string|max:255',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
             'tanggal_kas' => 'required|date_format:d/m/Y',
@@ -152,6 +153,7 @@ class PembayaranPranotaKontainerController extends Controller
             // Create pembayaran record
             $pembayaran = PembayaranPranotaKontainer::create([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
+                'nomor_accurate' => $request->nomor_accurate,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'tanggal_kas' => \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d'),
