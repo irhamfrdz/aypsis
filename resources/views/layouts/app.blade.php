@@ -1431,24 +1431,17 @@
                 </svg>
             </button>
             <div id="aktivitas-lain-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasLainRoute) style="display: block;" @endif>
-                {{-- Pembayaran Aktivitas Lain --}}
-                @if($isAdmin || ($user && $user->can('pembayaran-aktivitas-lain-view')))
-                    <a href="{{ route('pembayaran-aktivitas-lain.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lain.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Pembayaran Aktivitas Lain</span>
-                    </a>
-                @endif
-
-                {{-- Pembayaran Aktivitas Lainnya --}}
-                @if($isAdmin || ($user && $user->can('pembayaran-aktivitas-lainnya-view')))
-                    <a href="{{ route('pembayaran-aktivitas-lainnya.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lainnya.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Pembayaran Aktivitas Lainnya</span>
-                    </a>
-                @endif
-
                 {{-- Invoice Aktivitas Lain --}}
                 @if($isAdmin || ($user && $user->can('invoice-aktivitas-lain-view')))
                     <a href="{{ route('invoice-aktivitas-lain.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('invoice-aktivitas-lain.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Invoice Aktivitas Lain</span>
+                    </a>
+                @endif
+
+                {{-- Pembayaran Aktivitas Lain --}}
+                @if($isAdmin || ($user && $user->can('pembayaran-aktivitas-lain-view')))
+                    <a href="{{ route('pembayaran-aktivitas-lain.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lain.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran Aktivitas Lain</span>
                     </a>
                 @endif
                 
