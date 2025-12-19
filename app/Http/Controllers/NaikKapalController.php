@@ -104,31 +104,21 @@ class NaikKapalController extends Controller
     }
 
     /**
-     * Get voyages by kapal ID from naik_kapal table.
+     * Get voyages by kapal name from naik_kapal table.
      */
     public function getVoyagesByKapal(Request $request)
     {
-        $kapalId = $request->kapal_id;
+        $namaKapal = $request->nama_kapal;
         
-        if (!$kapalId) {
+        if (!$namaKapal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kapal ID is required'
+                'message' => 'Nama kapal is required'
             ], 400);
         }
         
-        // Get kapal info
-        $kapal = \App\Models\MasterKapal::find($kapalId);
-        
-        if (!$kapal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kapal not found'
-            ], 404);
-        }
-        
         // Get distinct voyages from naik_kapal table for this kapal
-        $voyages = NaikKapal::where('nama_kapal', $kapal->nama_kapal)
+        $voyages = NaikKapal::where('nama_kapal', $namaKapal)
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
             ->distinct()
@@ -140,8 +130,7 @@ class NaikKapalController extends Controller
             'success' => true,
             'voyages' => $voyages,
             'kapal' => [
-                'id' => $kapal->id,
-                'nama' => $kapal->nama_kapal
+                'nama' => $namaKapal
             ]
         ]);
     }

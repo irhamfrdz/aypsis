@@ -57,19 +57,16 @@
                         <select id="kapal_id" name="kapal_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" required>
                             <option value="">--Pilih Kapal--</option>
                             @php
-                                // Ambil kapal yang ada di table naik_kapal
-                                $kapalsWithData = \App\Models\NaikKapal::select('kapal_id')
-                                    ->with('masterKapal')
+                                // Ambil kapal yang ada di table naik_kapal (berdasarkan nama_kapal)
+                                $kapalsWithData = \App\Models\NaikKapal::select('nama_kapal')
                                     ->distinct()
-                                    ->get()
-                                    ->pluck('masterKapal')
-                                    ->filter()
-                                    ->unique('id')
-                                    ->sortBy('nama_kapal');
+                                    ->orderBy('nama_kapal')
+                                    ->pluck('nama_kapal')
+                                    ->filter();
                             @endphp
-                            @foreach($kapalsWithData as $kapal)
-                                <option value="{{ $kapal->id }}">
-                                    {{ $kapal->nama_kapal }} {{ $kapal->nickname ? '('.$kapal->nickname.')' : '' }}
+                            @foreach($kapalsWithData as $namaKapal)
+                                <option value="{{ $namaKapal }}">
+                                    {{ $namaKapal }}
                                 </option>
                             @endforeach
                         </select>
@@ -126,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch(`{{ route('naik-kapal.get-voyages') }}?kapal_id=${kapalId}`, {
+        fetch(`{{ route('naik-kapal.get-voyages') }}?nama_kapal=${encodeURIComponent(kapalId)}`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
             credentials: 'same-origin'
