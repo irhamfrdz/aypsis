@@ -525,14 +525,12 @@
                                        title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
-                                    @if(strtoupper($tandaTerima->no_kontainer) === 'CARGO')
-                                        <button type="button"
-                                                onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}')"
-                                                class="inline-flex items-center px-2 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded transition duration-150"
-                                                title="Masukan ke Prospek">
-                                            <i class="fas fa-plus text-xs"></i>
-                                        </button>
-                                    @endif
+                                    <button type="button"
+                                            onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}')"
+                                            class="inline-flex items-center px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded transition duration-150"
+                                            title="Masukan ke Prospek">
+                                        <i class="fas fa-ship text-xs"></i>
+                                    </button>
                                     
                                     <!-- Dropdown for additional actions -->
                                     <div class="relative inline-block text-left">
@@ -545,6 +543,11 @@
                                         <div id="dropdown-{{ $tandaTerima->id }}" 
                                              class="hidden absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                             <div class="py-1">
+                                                <button type="button"
+                                                        onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}')"
+                                                        class="block w-full px-4 py-2 text-left text-xs text-emerald-600 hover:bg-emerald-50">
+                                                    <i class="fas fa-ship mr-2"></i>Ke Prospek
+                                                </button>
                                                 <button type="button"
                                                         onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', 'TT-{{ $tandaTerima->id }}')"
                                                         class="block w-full px-4 py-2 text-left text-xs text-purple-600 hover:bg-purple-50">
@@ -913,8 +916,22 @@
     });
 
     // Function to add cargo container to prospek
-    function addToProspek(tandaTerimaId, noSuratJalan) {
-        if (confirm(`Apakah Anda yakin ingin memasukkan kontainer CARGO dari surat jalan ${noSuratJalan} ke dalam prospek?`)) {
+    function addToProspek(tandaTerimaId, noSuratJalan, noKontainer) {
+        // Build confirmation message
+        let message = `Apakah Anda yakin ingin memasukkan data dari surat jalan ${noSuratJalan}`;
+        if (noKontainer && noKontainer !== '-') {
+            message += ` (Kontainer: ${noKontainer})`;
+        }
+        message += ` ke dalam prospek?`;
+        
+        if (confirm(message)) {
+            // Show loading indicator
+            const button = event.target.closest('button');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i>';
+            }
+            
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
