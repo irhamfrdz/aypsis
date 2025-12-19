@@ -52,4 +52,18 @@ class InvoiceAktivitasLain extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+
+    /**
+     * Relationship dengan Pembayaran Invoice (many-to-many)
+     */
+    public function pembayarans()
+    {
+        return $this->belongsToMany(
+            PembayaranInvoiceAktivitasLain::class,
+            'invoice_aktivitas_lain_pembayaran',
+            'invoice_aktivitas_lain_id',
+            'pembayaran_invoice_aktivitas_lain_id'
+        )->withPivot('jumlah_dibayar')
+          ->withTimestamps();
+    }
 }

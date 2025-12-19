@@ -6,12 +6,12 @@
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h1 class="text-xl font-semibold text-gray-800">Pembayaran Aktivitas Lain</h1>
             @can('pembayaran-aktivitas-lain-create')
-                <a href="{{ route('pembayaran-aktivitas-lain.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition duration-150 ease-in-out">
+                <button onclick="openPaymentMethodModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition duration-150 ease-in-out">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Tambah Baru
-                </a>
+                </button>
             @endcan
             @can('pembayaran-aktivitas-lain-print')
                 <button onclick="openPrintWindow()" class="ml-3 inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white font-medium text-sm rounded-md transition duration-150 ease-in-out">
@@ -27,7 +27,15 @@
 
         <!-- Filter Section -->
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <form method="GET" action="{{ route('pembayaran-aktivitas-lain.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <form method="GET" action="{{ route('pembayaran-aktivitas-lain.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Tipe Pembayaran</label>
+                    <select name="tipe_pembayaran" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                        <option value="semua" {{ request('tipe_pembayaran', 'semua') == 'semua' ? 'selected' : '' }}>Semua</option>
+                        <option value="langsung" {{ request('tipe_pembayaran') == 'langsung' ? 'selected' : '' }}>Bayar Langsung</option>
+                        <option value="invoice" {{ request('tipe_pembayaran') == 'invoice' ? 'selected' : '' }}>Dari Invoice</option>
+                    </select>
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Dari</label>
                     <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
@@ -58,6 +66,7 @@
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Accurate</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -75,6 +84,13 @@
                     @forelse($pembayarans as $index => $item)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pembayarans->firstItem() + $index }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if($item->tipe_pembayaran === 'invoice')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Invoice</span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Langsung</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nomor }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->nomor_accurate ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
@@ -139,7 +155,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="13" class="px-6 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
@@ -156,6 +172,39 @@
         <!-- Pagination -->
         <div class="px-6 py-4 border-t border-gray-200">
             {{ $pembayarans->links() }}
+        </div>
+    </div>
+</div>
+
+<!-- Payment Method Selection Modal -->
+<div id="paymentMethodModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4 text-center">Pilih Metode Pembayaran</h3>
+            <div class="mt-4 px-4 py-3 space-y-3">
+                <button onclick="navigateToPaymentMethod('invoice')" class="w-full px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Bayar Menggunakan Invoice
+                </button>
+                <button onclick="navigateToPaymentMethod('direct')" class="w-full px-4 py-3 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Bayar Langsung
+                </button>
+            </div>
+            <div class="px-4 py-3 mt-2">
+                <button onclick="closePaymentMethodModal()" class="w-full px-4 py-2 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400 transition">
+                    Batal
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -188,6 +237,22 @@
 @push('scripts')
 <script>
 let deleteId = null;
+
+function openPaymentMethodModal() {
+    document.getElementById('paymentMethodModal').classList.remove('hidden');
+}
+
+function closePaymentMethodModal() {
+    document.getElementById('paymentMethodModal').classList.add('hidden');
+}
+
+function navigateToPaymentMethod(method) {
+    if (method === 'invoice') {
+        window.location.href = '{{ route('pembayaran-aktivitas-lain.create') }}?method=invoice';
+    } else if (method === 'direct') {
+        window.location.href = '{{ route('pembayaran-aktivitas-lain.create') }}?method=direct';
+    }
+}
 
 function confirmDelete(id) {
     deleteId = id;

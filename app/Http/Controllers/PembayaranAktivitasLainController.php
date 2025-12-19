@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\PembayaranAktivitasLain;
+use App\Models\PembayaranInvoiceAktivitasLain;
+use App\Models\InvoiceAktivitasLain;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
 use Illuminate\Http\Request;
@@ -14,33 +16,129 @@ class PembayaranAktivitasLainController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PembayaranAktivitasLain::with(['creator', 'approver']);
+        $tipePembayaran = $request->get('tipe_pembayaran', 'semua');
+        
+        if ($tipePembayaran === 'invoice') {
+            // Only show invoice payments
+            $query = PembayaranInvoiceAktivitasLain::with(['creator', 'approver']);
+            
+            // Filter by date range
+            if ($request->filled('tanggal_dari')) {
+                $query->whereDate('tanggal', '>=', $request->tanggal_dari);
+            }
+            if ($request->filled('tanggal_sampai')) {
+                $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
+            }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+            // Search
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor', 'like', "%{$search}%")
+                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
+                });
+            }
 
-        // Filter by date range
-        if ($request->filled('tanggal_dari')) {
-            $query->whereDate('tanggal', '>=', $request->tanggal_dari);
-        }
-        if ($request->filled('tanggal_sampai')) {
-            $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor', 'like', "%{$search}%")
-                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                  ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+            $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20)->through(function($item) {
+                $item->tipe_pembayaran = 'invoice';
+                return $item;
             });
-        }
+            
+        } elseif ($tipePembayaran === 'langsung') {
+            // Only show direct payments
+            $query = PembayaranAktivitasLain::with(['creator', 'approver']);
 
-        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20);
+            // Filter by status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Filter by date range
+            if ($request->filled('tanggal_dari')) {
+                $query->whereDate('tanggal', '>=', $request->tanggal_dari);
+            }
+            if ($request->filled('tanggal_sampai')) {
+                $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
+            }
+
+            // Search
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor', 'like', "%{$search}%")
+                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
+                });
+            }
+
+            $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20)->through(function($item) {
+                $item->tipe_pembayaran = 'langsung';
+                return $item;
+            });
+        } else {
+            // Show both types - merge collections
+            $directQuery = PembayaranAktivitasLain::with(['creator', 'approver']);
+            $invoiceQuery = PembayaranInvoiceAktivitasLain::with(['creator', 'approver']);
+
+            // Apply filters to both queries
+            if ($request->filled('tanggal_dari')) {
+                $directQuery->whereDate('tanggal', '>=', $request->tanggal_dari);
+                $invoiceQuery->whereDate('tanggal', '>=', $request->tanggal_dari);
+            }
+            if ($request->filled('tanggal_sampai')) {
+                $directQuery->whereDate('tanggal', '<=', $request->tanggal_sampai);
+                $invoiceQuery->whereDate('tanggal', '<=', $request->tanggal_sampai);
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $directQuery->where(function($q) use ($search) {
+                    $q->where('nomor', 'like', "%{$search}%")
+                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
+                });
+                $invoiceQuery->where(function($q) use ($search) {
+                    $q->where('nomor', 'like', "%{$search}%")
+                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
+                });
+            }
+
+            $directPayments = $directQuery->get()->map(function($item) {
+                $item->tipe_pembayaran = 'langsung';
+                return $item;
+            });
+            
+            $invoicePayments = $invoiceQuery->get()->map(function($item) {
+                $item->tipe_pembayaran = 'invoice';
+                $item->jumlah = $item->jumlah_dibayar; // Normalize field name
+                return $item;
+            });
+
+            $allPayments = $directPayments->merge($invoicePayments)
+                ->sortByDesc('created_at')
+                ->values();
+
+            // Manual pagination
+            $perPage = 20;
+            $currentPage = $request->get('page', 1);
+            $offset = ($currentPage - 1) * $perPage;
+            
+            $paginatedItems = $allPayments->slice($offset, $perPage)->values();
+            
+            $pembayarans = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginatedItems,
+                $allPayments->count(),
+                $perPage,
+                $currentPage,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        }
 
         // Get all unique akun_coa_ids and akun_bank_ids from the results
         $akunCoaIds = $pembayarans->pluck('akun_coa_id')->filter()->unique();
@@ -55,8 +153,14 @@ class PembayaranAktivitasLainController extends Controller
         return view('pembayaran-aktivitas-lain.index', compact('pembayarans', 'akunCoas'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        // Check if method parameter is 'invoice'
+        if ($request->get('method') === 'invoice') {
+            return $this->createFromInvoice();
+        }
+
+        // Default: Direct payment form
         $nomor = PembayaranAktivitasLain::generateNomor();
         $akunBiaya = DB::table('akun_coa')
             ->orderBy('kode_nomor')
@@ -133,6 +237,107 @@ class PembayaranAktivitasLainController extends Controller
         return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
     }
 
+    /**
+     * Create payment from invoice selection
+     */
+    public function createFromInvoice()
+    {
+        // Get all invoices except paid ones
+        $invoices = InvoiceAktivitasLain::where('status', '!=', 'paid')
+            ->orderBy('tanggal_invoice', 'desc')
+            ->get();
+
+        // Get akun COA options
+        $akunCoas = DB::table('akun_coa')
+            ->orderBy('kode_nomor')
+            ->get();
+
+        // Get bank accounts
+        $akunBanks = DB::table('akun_coa')
+            ->where(function($q) {
+                $q->where('tipe_akun', 'like', '%kas%')
+                  ->orWhere('tipe_akun', 'like', '%bank%');
+            })
+            ->orderBy('kode_nomor')
+            ->get();
+
+        return view('pembayaran-aktivitas-lain.create-invoice', compact('invoices', 'akunCoas', 'akunBanks'));
+    }
+
+    /**
+     * Store payment from invoice
+     */
+    public function storeInvoice(Request $request)
+    {
+        $validated = $request->validate([
+            'selected_invoices' => 'required|array|min:1',
+            'selected_invoices.*' => 'exists:invoice_aktivitas_lain,id',
+            'tanggal' => 'required|date',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_bank_id' => 'required|exists:akun_coa,id',
+            'debit_kredit' => 'required|in:debit,kredit',
+            'jumlah' => 'required|numeric|min:0',
+            'invoice_ids' => 'required|string',
+            'jenis_aktivitas' => 'nullable|string',
+            'penerima' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Generate nomor pembayaran
+            $nomor = PembayaranInvoiceAktivitasLain::generateNomor();
+
+            // Get selected invoices
+            $invoiceIds = $request->selected_invoices;
+            $invoices = InvoiceAktivitasLain::whereIn('id', $invoiceIds)->get();
+            
+            // Calculate total from selected invoices
+            $totalInvoice = $invoices->sum('total');
+
+            // Create payment record
+            $pembayaran = PembayaranInvoiceAktivitasLain::create([
+                'nomor' => $nomor,
+                'tanggal' => $validated['tanggal'],
+                'jenis_aktivitas' => $validated['jenis_aktivitas'] ?? 'Multiple',
+                'penerima' => $validated['penerima'] ?? 'Multiple',
+                'total_invoice' => $totalInvoice,
+                'jumlah_dibayar' => $validated['jumlah'],
+                'debit_kredit' => $validated['debit_kredit'],
+                'akun_coa_id' => $validated['akun_coa_id'],
+                'akun_bank_id' => $validated['akun_bank_id'],
+                'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari ' . count($invoiceIds) . ' invoice',
+                'created_by' => Auth::id(),
+                'status' => 'pending',
+            ]);
+
+            // Attach invoices to payment with amount
+            foreach ($invoices as $invoice) {
+                $pembayaran->invoices()->attach($invoice->id, [
+                    'jumlah_dibayar' => $invoice->total,
+                ]);
+
+                // Update invoice status
+                $invoice->update([
+                    'status' => 'paid',
+                ]);
+            }
+
+            // Create double book journal using the new model
+            $this->createDoubleBookJournalInvoice($pembayaran, $validated);
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-aktivitas-lain.index')
+                ->with('success', 'Pembayaran dari ' . count($invoiceIds) . ' invoice berhasil disimpan');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+        }
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -178,6 +383,92 @@ class PembayaranAktivitasLainController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create Double Book Accounting Journal Entries for Invoice Payment
+     */
+    private function createDoubleBookJournalInvoice($pembayaran, $validated)
+    {
+        // Get account information
+        $akunCoa = Coa::find($validated['akun_coa_id']);
+        $akunBank = Coa::find($validated['akun_bank_id']);
+        
+        $tanggal = $validated['tanggal'];
+        $jumlah = $validated['jumlah'];
+        $jenisTransaksi = $validated['debit_kredit'];
+        $nomorReferensi = $pembayaran->nomor;
+        $keterangan = "Pembayaran Invoice Aktivitas Lain - {$pembayaran->jenis_aktivitas}";
+        $jenisTransaksiDesc = 'Pembayaran Invoice Aktivitas Lain';
+
+        // Create journal entries based on debit/credit selection
+        if ($jenisTransaksi === 'debit') {
+            // DEBIT: Increase expense/cost account, decrease bank account
+            // Dr. Expense Account (+)
+            $this->createCoaTransaction([
+                'coa_id' => $akunCoa->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'debit' => $jumlah,
+                'kredit' => 0,
+                'saldo' => $akunCoa->saldo + $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunCoa->update(['saldo' => $akunCoa->saldo + $jumlah]);
+
+            // Cr. Bank Account (-)
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'debit' => 0,
+                'kredit' => $jumlah,
+                'saldo' => $akunBank->saldo - $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunBank->update(['saldo' => $akunBank->saldo - $jumlah]);
+        } else {
+            // KREDIT: Increase bank account, decrease expense/cost account
+            // Dr. Bank Account (+)
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'debit' => $jumlah,
+                'kredit' => 0,
+                'saldo' => $akunBank->saldo + $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunBank->update(['saldo' => $akunBank->saldo + $jumlah]);
+
+            // Cr. Expense Account (-)
+            $this->createCoaTransaction([
+                'coa_id' => $akunCoa->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'debit' => 0,
+                'kredit' => $jumlah,
+                'saldo' => $akunCoa->saldo - $jumlah,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update account balance
+            $akunCoa->update(['saldo' => $akunCoa->saldo - $jumlah]);
         }
     }
 

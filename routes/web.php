@@ -3255,6 +3255,9 @@ Route::prefix('pembayaran-aktivitas-lain')->name('pembayaran-aktivitas-lain.')->
          ->middleware('can:pembayaran-aktivitas-lain-create');
     Route::post('/', [PembayaranAktivitasLainController::class, 'store'])->name('store')
          ->middleware('can:pembayaran-aktivitas-lain-create');
+    // Invoice payment routes
+    Route::post('/store-invoice', [PembayaranAktivitasLainController::class, 'storeInvoice'])->name('store-invoice')
+         ->middleware('can:pembayaran-aktivitas-lain-create');
     Route::get('/{pembayaranAktivitasLain}', [PembayaranAktivitasLainController::class, 'show'])->name('show')
          ->middleware('can:pembayaran-aktivitas-lain-view');
     Route::get('/{pembayaranAktivitasLain}/edit', [PembayaranAktivitasLainController::class, 'edit'])->name('edit')
