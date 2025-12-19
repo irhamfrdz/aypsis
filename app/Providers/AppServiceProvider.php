@@ -10,8 +10,10 @@ use Illuminate\Pagination\Paginator;
 use App\Models\User;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
+use App\Models\UangJalan;
 use App\Observers\KontainerObserver;
 use App\Observers\StockKontainerObserver;
+use App\Observers\UangJalanObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         // Register observers
         Kontainer::observe(KontainerObserver::class);
         StockKontainer::observe(StockKontainerObserver::class);
+        UangJalan::observe(UangJalanObserver::class);
 
         // Gunakan try-catch atau cek Schema untuk menghindari error saat migrasi awal
         try {
