@@ -571,6 +571,27 @@ class UangJalanController extends Controller
                 'updated_by' => Auth::id()
             ]);
             
+            // Jika uang jalan sudah masuk pranota, update total pranota
+            if ($uangJalan->status === 'sudah_masuk_pranota') {
+                $pranotaUangJalan = $uangJalan->pranotaUangJalan;
+                if ($pranotaUangJalan) {
+                    // Recalculate total pranota
+                    $totalUangJalan = $pranotaUangJalan->uangJalans()->sum('jumlah_total');
+                    $pranotaUangJalan->update([
+                        'total_uang_jalan' => $totalUangJalan,
+                        'total' => $totalUangJalan,
+                        'updated_by' => Auth::id()
+                    ]);
+                    
+                    Log::info('Pranota total updated after uang jalan edit', [
+                        'pranota_id' => $pranotaUangJalan->id,
+                        'old_total' => $pranotaUangJalan->total,
+                        'new_total' => $totalUangJalan,
+                        'uang_jalan_id' => $uangJalan->id
+                    ]);
+                }
+            }
+            
             $identifier = $uangJalan->nomor_uang_jalan ?? 'ID: ' . $uangJalan->id;
             
             return redirect()->route('uang-jalan.index')
