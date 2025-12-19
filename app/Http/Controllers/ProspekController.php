@@ -33,7 +33,7 @@ class ProspekController extends Controller
                 abort(403, "Tidak memiliki akses ke halaman prospek");
             }
 
-            $query = Prospek::with(['createdBy', 'updatedBy'])->orderBy('created_at', 'desc');
+            $query = Prospek::with(['createdBy', 'updatedBy', 'bls'])->orderBy('created_at', 'desc');
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
