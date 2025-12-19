@@ -31,12 +31,40 @@ class NaikKapalController extends Controller
                   ->where('no_voyage', $request->no_voyage);
         }
         
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('no_seal', 'like', "%{$search}%")
+                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by status BL
+        if ($request->filled('status_bl')) {
+            if ($request->status_bl === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($request->status_bl === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+        
+        // Filter by tipe kontainer
+        if ($request->filled('tipe_kontainer')) {
+            $query->where('tipe_kontainer', $request->tipe_kontainer);
+        }
+        
         // Additional filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
         
-        // Filter by status BL
+        // Filter by status BL (legacy support)
         if ($request->filled('status_filter')) {
             if ($request->status_filter === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
@@ -91,7 +119,35 @@ class NaikKapalController extends Controller
             ->where('nama_kapal', $kapal->nama_kapal)
             ->where('no_voyage', $request->no_voyage);
         
-        // Filter by status BL if provided
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('no_seal', 'like', "%{$search}%")
+                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by status BL
+        if ($request->filled('status_bl')) {
+            if ($request->status_bl === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($request->status_bl === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+        
+        // Filter by tipe kontainer
+        if ($request->filled('tipe_kontainer')) {
+            $query->where('tipe_kontainer', $request->tipe_kontainer);
+        }
+        
+        // Filter by status BL if provided (legacy support)
         if ($request->filled('status_filter')) {
             if ($request->status_filter === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
@@ -586,10 +642,51 @@ class NaikKapalController extends Controller
         $noVoyage = $request->no_voyage;
 
         // Get naik kapal data
-        $naikKapals = NaikKapal::with(['prospek.tandaTerima'])
+        $query = NaikKapal::with(['prospek.tandaTerima'])
             ->where('nama_kapal', $kapal->nama_kapal)
-            ->where('no_voyage', $noVoyage)
-            ->get();
+            ->where('no_voyage', $noVoyage);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('no_seal', 'like', "%{$search}%")
+                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by status BL
+        if ($request->filled('status_bl')) {
+            if ($request->status_bl === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($request->status_bl === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+        
+        // Filter by tipe kontainer
+        if ($request->filled('tipe_kontainer')) {
+            $query->where('tipe_kontainer', $request->tipe_kontainer);
+        }
+        
+        // Legacy status filter support
+        if ($request->filled('status_filter')) {
+            if ($request->status_filter === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($request->status_filter === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+
+        $naikKapals = $query->get();
 
         if ($naikKapals->isEmpty()) {
             return response()->json([

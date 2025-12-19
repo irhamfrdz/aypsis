@@ -75,6 +75,67 @@
         </div>
     @endif
 
+    {{-- Search & Filter --}}
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <form method="GET" action="{{ route('naik-kapal.index') }}" class="space-y-4">
+            <input type="hidden" name="kapal_id" value="{{ request('kapal_id') }}">
+            <input type="hidden" name="no_voyage" value="{{ request('no_voyage') }}">
+            @if(request('status_filter'))
+                <input type="hidden" name="status_filter" value="{{ request('status_filter') }}">
+            @endif
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <!-- Search -->
+                <div class="md:col-span-4">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Cari Kontainer</label>
+                    <input type="text" 
+                           name="search" 
+                           id="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Cari nomor kontainer, barang, seal..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+
+                <!-- Status BL Filter -->
+                <div class="md:col-span-3">
+                    <label for="status_bl" class="block text-sm font-medium text-gray-700 mb-2">Status BL</label>
+                    <select name="status_bl" 
+                            id="status_bl"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <option value="">Semua Status</option>
+                        <option value="sudah_bl" {{ request('status_bl') == 'sudah_bl' ? 'selected' : '' }}>Sudah BL</option>
+                        <option value="belum_bl" {{ request('status_bl') == 'belum_bl' ? 'selected' : '' }}>Belum BL</option>
+                    </select>
+                </div>
+
+                <!-- Tipe Kontainer -->
+                <div class="md:col-span-3">
+                    <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
+                    <select name="tipe_kontainer" 
+                            id="tipe_kontainer"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <option value="">Semua Tipe</option>
+                        <option value="FCL" {{ request('tipe_kontainer') == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="LCL" {{ request('tipe_kontainer') == 'LCL' ? 'selected' : '' }}>LCL</option>
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="md:col-span-2 flex items-end gap-2">
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition duration-200">
+                        <i class="fas fa-search mr-2"></i>
+                        Cari
+                    </button>
+                    <a href="{{ route('naik-kapal.index') }}?kapal_id={{ request('kapal_id') }}&no_voyage={{ request('no_voyage') }}{{ request('status_filter') ? '&status_filter=' . request('status_filter') : '' }}" 
+                       class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition duration-200">
+                        <i class="fas fa-redo"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     {{-- Bulk Actions --}}
     <div id="bulkActionsPanel" class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4 hidden">
         <div class="flex items-center justify-between">
@@ -296,6 +357,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const kapalId = "{{ request('kapal_id') }}";
         const noVoyage = "{{ request('no_voyage') }}";
         const statusFilter = "{{ request('status_filter') }}";
+        const search = "{{ request('search') }}";
+        const statusBl = "{{ request('status_bl') }}";
+        const tipeKontainer = "{{ request('tipe_kontainer') }}";
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
@@ -307,6 +371,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (statusFilter) {
             printUrl += "&status_filter=" + statusFilter;
         }
+        if (search) {
+            printUrl += "&search=" + encodeURIComponent(search);
+        }
+        if (statusBl) {
+            printUrl += "&status_bl=" + statusBl;
+        }
+        if (tipeKontainer) {
+            printUrl += "&tipe_kontainer=" + tipeKontainer;
+        }
         
         // Open print page in new tab
         window.open(printUrl, '_blank');
@@ -317,6 +390,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const kapalId = "{{ request('kapal_id') }}";
         const noVoyage = "{{ request('no_voyage') }}";
         const statusFilter = "{{ request('status_filter') }}";
+        const search = "{{ request('search') }}";
+        const statusBl = "{{ request('status_bl') }}";
+        const tipeKontainer = "{{ request('tipe_kontainer') }}";
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
@@ -332,6 +408,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let exportUrl = "{{ route('naik-kapal.export') }}?kapal_id=" + kapalId + "&no_voyage=" + noVoyage;
         if (statusFilter) {
             exportUrl += "&status_filter=" + statusFilter;
+        }
+        if (search) {
+            exportUrl += "&search=" + encodeURIComponent(search);
+        }
+        if (statusBl) {
+            exportUrl += "&status_bl=" + statusBl;
+        }
+        if (tipeKontainer) {
+            exportUrl += "&tipe_kontainer=" + tipeKontainer;
         }
         
         // Create temporary link and trigger download
