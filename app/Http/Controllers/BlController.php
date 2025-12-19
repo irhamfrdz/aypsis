@@ -964,6 +964,16 @@ class BlController extends Controller
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
+                        // Update status prospek jika kontainer ada di prospek
+                        if (!empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
+                            Prospek::where('nomor_kontainer', $nomorKontainer)
+                                ->where('status', '!=', Prospek::STATUS_SUDAH_MUAT)
+                                ->update([
+                                    'status' => Prospek::STATUS_SUDAH_MUAT,
+                                    'updated_by' => Auth::id()
+                                ]);
+                        }
+
                         $importedCount++;
                     } catch (\Exception $e) {
                         $errors[] = "Baris {$rowNumber}: " . $e->getMessage() . " ({$rowPreview})";
@@ -1203,6 +1213,16 @@ class BlController extends Controller
                             'supir_ob' => (isset($xlsHeaderMap['supir ob']) ? ($worksheet->getCell("{$xlsHeaderMap['supir ob']}{$row}")->getValue() ?: null) : ($worksheet->getCell("V{$row}")->getValue() ?: null)),
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
+
+                        // Update status prospek jika kontainer ada di prospek
+                        if (!empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
+                            Prospek::where('nomor_kontainer', $nomorKontainer)
+                                ->where('status', '!=', Prospek::STATUS_SUDAH_MUAT)
+                                ->update([
+                                    'status' => Prospek::STATUS_SUDAH_MUAT,
+                                    'updated_by' => Auth::id()
+                                ]);
+                        }
 
                         $importedCount++;
                     } catch (\Exception $e) {
