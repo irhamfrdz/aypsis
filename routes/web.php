@@ -3628,6 +3628,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('naik-kapal.select')
                ->middleware('can:prospek-view');
                
+          Route::get('naik-kapal/get-voyages', [NaikKapalController::class, 'getVoyagesByKapal'])
+               ->name('naik-kapal.get-voyages')
+               ->middleware('can:prospek-view');
+               
           Route::get('naik-kapal/print', [NaikKapalController::class, 'print'])
                ->name('naik-kapal.print')
                ->middleware('can:prospek-view');

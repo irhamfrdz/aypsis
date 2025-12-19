@@ -1114,6 +1114,24 @@ class UserController extends Controller
                         $action = str_replace('pembayaran-pranota-uang-jalan-', '', $permissionName);
                     }
 
+                    // Special handling for pembayaran-pranota-uang-jalan-bongkaran-* permissions
+                    if (strpos($permissionName, 'pembayaran-pranota-uang-jalan-bongkaran-') === 0) {
+                        $module = 'pembayaran-pranota-uang-jalan-bongkaran';
+                        $action = str_replace('pembayaran-pranota-uang-jalan-bongkaran-', '', $permissionName);
+                    }
+
+                    // Special handling for pranota-uang-rit-* permissions
+                    if (strpos($permissionName, 'pranota-uang-rit-') === 0) {
+                        $module = 'pranota-uang-rit';
+                        $action = str_replace('pranota-uang-rit-', '', $permissionName);
+                    }
+
+                    // Special handling for pranota-ob-* permissions
+                    if (strpos($permissionName, 'pranota-ob-') === 0) {
+                        $module = 'pranota-ob';
+                        $action = str_replace('pranota-ob-', '', $permissionName);
+                    }
+
                     // Special handling for pranota-perbaikan-kontainer-* permissions
                     if ($module === 'pranota' && strpos($action, 'perbaikan-kontainer-') === 0) {
                         $action = str_replace('perbaikan-kontainer-', '', $action);
@@ -2825,6 +2843,71 @@ class UserController extends Controller
                             'create' => 'invoice-aktivitas-lain-create',
                             'update' => 'invoice-aktivitas-lain-update',
                             'delete' => 'invoice-aktivitas-lain-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-uang-rit module
+                    if ($module === 'pranota-uang-rit') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pranota-uang-rit-view',
+                            'create' => 'pranota-uang-rit-create',
+                            'update' => 'pranota-uang-rit-update',
+                            'delete' => 'pranota-uang-rit-delete',
+                            'approve' => 'pranota-uang-rit-approve',
+                            'print' => 'pranota-uang-rit-print',
+                            'export' => 'pranota-uang-rit-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-ob module
+                    if ($module === 'pranota-ob') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pranota-ob-view',
+                            'create' => 'pranota-ob-create',
+                            'update' => 'pranota-ob-update',
+                            'delete' => 'pranota-ob-delete',
+                            'approve' => 'pranota-ob-approve',
+                            'print' => 'pranota-ob-print',
+                            'export' => 'pranota-ob-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-pranota-uang-jalan-bongkaran module
+                    if ($module === 'pembayaran-pranota-uang-jalan-bongkaran') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pembayaran-pranota-uang-jalan-bongkaran-view',
+                            'create' => 'pembayaran-pranota-uang-jalan-bongkaran-create',
+                            'update' => 'pembayaran-pranota-uang-jalan-bongkaran-update',
+                            'delete' => 'pembayaran-pranota-uang-jalan-bongkaran-delete',
+                            'approve' => 'pembayaran-pranota-uang-jalan-bongkaran-approve',
+                            'mark-paid' => 'pembayaran-pranota-uang-jalan-bongkaran-mark-paid'
                         ];
 
                         if (isset($actionMap[$action])) {

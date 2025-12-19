@@ -57,9 +57,17 @@
                         <select id="kapal_id" name="kapal_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" required>
                             <option value="">--Pilih Kapal--</option>
                             @php
-                                $masterKapals = \App\Models\MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
+                                // Ambil kapal yang ada di table naik_kapal
+                                $kapalsWithData = \App\Models\NaikKapal::select('kapal_id')
+                                    ->with('masterKapal')
+                                    ->distinct()
+                                    ->get()
+                                    ->pluck('masterKapal')
+                                    ->filter()
+                                    ->unique('id')
+                                    ->sortBy('nama_kapal');
                             @endphp
-                            @foreach($masterKapals as $kapal)
+                            @foreach($kapalsWithData as $kapal)
                                 <option value="{{ $kapal->id }}">
                                     {{ $kapal->nama_kapal }} {{ $kapal->nickname ? '('.$kapal->nickname.')' : '' }}
                                 </option>
@@ -118,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch(`{{ route('prospek.get-voyage-by-kapal') }}?kapal_id=${kapalId}`, {
+        fetch(`{{ route('naik-kapal.get-voyages') }}?kapal_id=${kapalId}`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
             credentials: 'same-origin'
