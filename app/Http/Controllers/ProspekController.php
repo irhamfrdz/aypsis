@@ -525,6 +525,63 @@ class ProspekController extends Controller
     }
 
     /**
+     * Update status of a prospek via AJAX
+     */
+    public function updateStatus(Request $request, Prospek $prospek)
+    {
+        try {
+            $user = Auth::user();
+            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+                return response()->json(['error' => 'Tidak memiliki akses untuk mengubah status prospek'], 403);
+            }
+
+            $request->validate([
+                'status' => 'required|string|in:aktif,sudah_muat,batal'
+            ]);
+
+            $oldStatus = $prospek->status;
+            
+            $prospek->update([
+                'status' => $request->status,
+                'updated_by' => Auth::id()
+            ]);
+
+            // Log the update
+            \Log::info('Status updated for prospek', [
+                'prospek_id' => $prospek->id,
+                'no_surat_jalan' => $prospek->no_surat_jalan,
+                'old_status' => $oldStatus,
+                'new_status' => $request->status,
+                'updated_by' => Auth::user()->name,
+                'supir' => $prospek->nama_supir
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui',
+                'data' => [
+                    'id' => $prospek->id,
+                    'status' => $prospek->status,
+                    'old_status' => $oldStatus
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating status', [
+                'prospek_id' => $prospek->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json(['error' => 'Terjadi kesalahan saat memperbarui status'], 500);
+        }
+    }
+
+    /**
      * Remove the specified prospek from storage.
      */
     public function destroy(Prospek $prospek)

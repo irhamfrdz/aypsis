@@ -15,6 +15,7 @@ class TandaTerimaBongkaran extends Model
         'nomor_tanda_terima',
         'tanggal_tanda_terima',
         'surat_jalan_bongkaran_id',
+        'gudang_id',
         'no_kontainer',
         'no_seal',
         'kegiatan',
@@ -32,5 +33,13 @@ class TandaTerimaBongkaran extends Model
     public function suratJalanBongkaran(): BelongsTo
     {
         return $this->belongsTo(SuratJalanBongkaran::class, 'surat_jalan_bongkaran_id');
+    }
+
+    /**
+     * Relationship to Gudang
+     */
+    public function gudang(): BelongsTo
+    {
+        return $this->belongsTo(Gudang::class, 'gudang_id');
     }
 }

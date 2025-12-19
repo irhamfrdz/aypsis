@@ -3615,6 +3615,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::patch('prospek/{prospek}/update-seal', [ProspekController::class, 'updateSeal'])->name('prospek.update-seal')
          ->middleware('can:prospek-edit');
 
+    // Route untuk update status
+    Route::patch('prospek/{prospek}/update-status', [ProspekController::class, 'updateStatus'])->name('prospek.update-status')
+         ->middleware('can:prospek-edit');
+
     // Route untuk delete prospek
     Route::delete('prospek/{prospek}', [ProspekController::class, 'destroy'])->name('prospek.destroy')
          ->middleware('can:prospek-delete');

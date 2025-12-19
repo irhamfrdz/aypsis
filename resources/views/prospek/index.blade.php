@@ -177,7 +177,7 @@
                                             'CARGO' => ['color' => 'bg-blue-100 text-blue-800', 'icon' => 'fa-truck']
                                         ];
                                         $config = $tipeConfig[$tipeUpper] ?? ['color' => 'bg-gray-100 text-gray-800', 'icon' => 'fa-shipping-fast'];
-                                    @endphp
+                                    @endphp 
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['color'] }}">
                                         <i class="fas {{ $config['icon'] }} mr-1"></i>
                                         {{ $tipeUpper }}
@@ -267,6 +267,30 @@
                                        title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    @can('prospek-edit')
+                                        <div class="relative status-dropdown-container">
+                                            <button type="button"
+                                                    class="text-green-600 hover:text-green-900 transition duration-150 status-dropdown-btn"
+                                                    data-prospek-id="{{ $prospek->id }}"
+                                                    data-current-status="{{ $prospek->status }}"
+                                                    title="Ubah Status">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <div class="status-dropdown hidden absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                                                <div class="py-1">
+                                                    <button type="button" class="change-status w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition duration-150" data-status="aktif">
+                                                        <i class="fas fa-check-circle text-green-600 mr-2"></i>Aktif
+                                                    </button>
+                                                    <button type="button" class="change-status w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition duration-150" data-status="sudah_muat">
+                                                        <i class="fas fa-ship text-blue-600 mr-2"></i>Sudah Muat
+                                                    </button>
+                                                    <button type="button" class="change-status w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 transition duration-150" data-status="batal">
+                                                        <i class="fas fa-times-circle text-red-600 mr-2"></i>Batal
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endcan
                                     @can('prospek-delete')
                                         <button type="button"
                                                 class="delete-prospek text-red-600 hover:text-red-900 transition duration-150"
@@ -553,6 +577,140 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Reset button
                     this.innerHTML = '<i class="fas fa-trash"></i>';
                     this.disabled = false;
+                });
+            }
+        });
+    });
+    
+    // Handle status dropdown
+    document.querySelectorAll('.status-dropdown-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const container = this.closest('.status-dropdown-container');
+            const dropdown = container.querySelector('.status-dropdown');
+            const currentStatus = this.dataset.currentStatus;
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.status-dropdown').forEach(d => {
+                if (d !== dropdown) d.classList.add('hidden');
+            });
+            
+            // Toggle current dropdown
+            dropdown.classList.toggle('hidden');
+            
+            // Disable current status option
+            dropdown.querySelectorAll('.change-status').forEach(btn => {
+                if (btn.dataset.status === currentStatus) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            });
+        });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.status-dropdown-container')) {
+            document.querySelectorAll('.status-dropdown').forEach(d => d.classList.add('hidden'));
+        }
+    });
+    
+    // Handle status change
+    document.querySelectorAll('.change-status').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            const container = this.closest('.status-dropdown-container');
+            const statusBtn = container.querySelector('.status-dropdown-btn');
+            const prospekId = statusBtn.dataset.prospekId;
+            const newStatus = this.dataset.status;
+            const currentStatus = statusBtn.dataset.currentStatus;
+            
+            const statusLabels = {
+                'aktif': 'Aktif',
+                'sudah_muat': 'Sudah Muat',
+                'batal': 'Batal'
+            };
+            
+            if (confirm(`Apakah Anda yakin ingin mengubah status menjadi "${statusLabels[newStatus]}"?`)) {
+                // Show loading on button
+                const originalIcon = statusBtn.innerHTML;
+                statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                statusBtn.disabled = true;
+                
+                // Hide dropdown
+                container.querySelector('.status-dropdown').classList.add('hidden');
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('status', newStatus);
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                formData.append('_method', 'PATCH');
+                
+                fetch(`/prospek/${prospekId}/update-status`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', `Status berhasil diubah menjadi ${statusLabels[newStatus]}`);
+                        
+                        // Update status display in table
+                        const row = statusBtn.closest('tr');
+                        const statusCell = row.querySelector('td:nth-last-child(2)');
+                        
+                        const statusConfig = {
+                            'aktif': {
+                                color: 'bg-green-100 text-green-800 border-green-200',
+                                icon: 'fa-check-circle',
+                                label: 'Aktif'
+                            },
+                            'sudah_muat': {
+                                color: 'bg-blue-100 text-blue-800 border-blue-200',
+                                icon: 'fa-ship',
+                                label: 'Sudah Muat'
+                            },
+                            'batal': {
+                                color: 'bg-red-100 text-red-800 border-red-200',
+                                icon: 'fa-times-circle',
+                                label: 'Batal'
+                            }
+                        };
+                        
+                        const config = statusConfig[newStatus];
+                        statusCell.innerHTML = `
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.color}">
+                                <i class="fas ${config.icon} mr-1"></i>
+                                ${config.label}
+                            </span>
+                        `;
+                        
+                        // Update button's current status
+                        statusBtn.dataset.currentStatus = newStatus;
+                        
+                        // Reload after delay to update summary cards
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error(data.error || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', error.message || 'Terjadi kesalahan saat mengubah status');
+                })
+                .finally(() => {
+                    // Reset button
+                    statusBtn.innerHTML = originalIcon;
+                    statusBtn.disabled = false;
                 });
             }
         });

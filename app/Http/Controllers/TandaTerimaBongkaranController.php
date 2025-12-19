@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TandaTerimaBongkaran;
 use App\Models\SuratJalanBongkaran;
+use App\Models\Gudang;
 use Illuminate\Support\Facades\DB;
 
 class TandaTerimaBongkaranController extends Controller
@@ -15,33 +16,62 @@ class TandaTerimaBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanBongkaran::with(['bl']);
+        $tipe = $request->get('tipe', 'surat_jalan'); // default: surat_jalan
+        
+        if ($tipe === 'tanda_terima') {
+            // Query for Tanda Terima Bongkaran
+            $query = TandaTerimaBongkaran::with(['suratJalanBongkaran', 'gudang']);
 
-        // Search filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
-                  ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
-                  ->orWhere('no_seal', 'LIKE', "%{$search}%")
-                  ->orWhere('no_bl', 'LIKE', "%{$search}%")
-                  ->orWhere('pengirim', 'LIKE', "%{$search}%");
-            });
+            // Search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
+                      ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                      ->orWhereHas('suratJalanBongkaran', function($q) use ($search) {
+                          $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%");
+                      });
+                });
+            }
+
+            // Kegiatan filter
+            if ($request->filled('kegiatan')) {
+                $query->where('kegiatan', $request->kegiatan);
+            }
+
+            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
+            
+            return view('tanda-terima-bongkaran.index', compact('tandaTerimas'));
+        } else {
+            // Query for Surat Jalan Bongkaran
+            $query = SuratJalanBongkaran::with(['bl']);
+
+            // Search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
+                      ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                      ->orWhere('no_seal', 'LIKE', "%{$search}%")
+                      ->orWhere('no_bl', 'LIKE', "%{$search}%")
+                      ->orWhere('pengirim', 'LIKE', "%{$search}%");
+                });
+            }
+
+            // Kegiatan filter
+            if ($request->filled('kegiatan')) {
+                $query->where('kegiatan', $request->kegiatan);
+            }
+
+            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
+
+            // Get gudangs for modal dropdown
+            $gudangs = Gudang::where('status', 'aktif')
+                ->orderBy('nama_gudang')
+                ->get();
+
+            return view('tanda-terima-bongkaran.index', compact('suratJalans', 'gudangs'));
         }
-
-        // Status Pembayaran filter
-        if ($request->filled('status_pembayaran')) {
-            $query->where('status_pembayaran', $request->status_pembayaran);
-        }
-
-        // Kegiatan filter
-        if ($request->filled('kegiatan')) {
-            $query->where('kegiatan', $request->kegiatan);
-        }
-
-        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        return view('tanda-terima-bongkaran.index', compact('suratJalans'));
     }
 
     /**
@@ -65,15 +95,20 @@ class TandaTerimaBongkaranController extends Controller
             'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_bongkarans,nomor_tanda_terima',
             'tanggal_tanda_terima' => 'required|date',
             'surat_jalan_bongkaran_id' => 'required|exists:surat_jalan_bongkarans,id',
-            'no_kontainer' => 'nullable|string|max:255',
-            'no_seal' => 'nullable|string|max:255',
-            'kegiatan' => 'required|string|in:muat,bongkar,stuffing,stripping',
-            'status' => 'required|string|in:pending,approved,completed',
+            'gudang_id' => 'required|exists:gudangs,id',
             'keterangan' => 'nullable|string'
         ]);
 
         try {
             DB::beginTransaction();
+
+            // Get additional data from surat jalan
+            $suratJalan = SuratJalanBongkaran::findOrFail($validated['surat_jalan_bongkaran_id']);
+            
+            $validated['no_kontainer'] = $suratJalan->no_kontainer;
+            $validated['no_seal'] = $suratJalan->no_seal;
+            $validated['kegiatan'] = $suratJalan->kegiatan ?? 'bongkar'; // default to 'bongkar' if null
+            $validated['status'] = 'completed';
 
             $tandaTerima = TandaTerimaBongkaran::create($validated);
 

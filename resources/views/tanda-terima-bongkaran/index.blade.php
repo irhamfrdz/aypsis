@@ -58,6 +58,17 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <form method="GET" action="{{ route('tanda-terima-bongkaran.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <!-- Tipe -->
+                <div class="md:col-span-3">
+                    <label for="tipe" class="block text-sm font-medium text-gray-700 mb-2">Tampilkan</label>
+                    <select name="tipe" 
+                            id="tipe"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="surat_jalan" {{ request('tipe', 'surat_jalan') == 'surat_jalan' ? 'selected' : '' }}>Surat Jalan Bongkar</option>
+                        <option value="tanda_terima" {{ request('tipe') == 'tanda_terima' ? 'selected' : '' }}>Tanda Terima Bongkar</option>
+                    </select>
+                </div>
+
                 <!-- Search -->
                 <div class="md:col-span-3">
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
@@ -65,21 +76,8 @@
                            name="search" 
                            id="search" 
                            value="{{ request('search') }}"
-                           placeholder="Cari nomor TT, kontainer..."
+                           placeholder="Cari nomor, kontainer..."
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                </div>
-
-                <!-- Status Pembayaran -->
-                <div class="md:col-span-3">
-                    <label for="status_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
-                    <select name="status_pembayaran" 
-                            id="status_pembayaran"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                        <option value="">Semua Status</option>
-                        <option value="belum_dibayar" {{ request('status_pembayaran') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
-                        <option value="dibayar_sebagian" {{ request('status_pembayaran') == 'dibayar_sebagian' ? 'selected' : '' }}>Dibayar Sebagian</option>
-                        <option value="lunas" {{ request('status_pembayaran') == 'lunas' ? 'selected' : '' }}>Lunas</option>
-                    </select>
                 </div>
 
                 <!-- Kegiatan -->
@@ -89,9 +87,10 @@
                             id="kegiatan"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
                         <option value="">Semua Kegiatan</option>
-                        <option value="Bongkar" {{ request('kegiatan') == 'Bongkar' ? 'selected' : '' }}>Bongkar</option>
-                        <option value="Delivery" {{ request('kegiatan') == 'Delivery' ? 'selected' : '' }}>Delivery</option>
-                        <option value="Stripping" {{ request('kegiatan') == 'Stripping' ? 'selected' : '' }}>Stripping</option>
+                        <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
+                        <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
+                        <option value="stuffing" {{ request('kegiatan') == 'stuffing' ? 'selected' : '' }}>Stuffing</option>
+                        <option value="stripping" {{ request('kegiatan') == 'stripping' ? 'selected' : '' }}>Stripping</option>
                     </select>
                 </div>
 
@@ -115,125 +114,171 @@
     <!-- Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No BL</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Bayar</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($suratJalans ?? [] as $index => $suratJalan)
-                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ ($suratJalans->currentPage() - 1) * $suratJalans->perPage() + $index + 1 }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $suratJalan->nomor_surat_jalan ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $suratJalan->no_bl ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $suratJalan->no_kontainer ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $suratJalan->pengirim ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $suratJalan->kegiatan ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusPembayaran = $suratJalan->status_pembayaran ?? 'belum_dibayar';
-                                $statusClass = [
-                                    'belum_dibayar' => 'bg-red-100 text-red-800',
-                                    'dibayar_sebagian' => 'bg-yellow-100 text-yellow-800',
-                                    'lunas' => 'bg-green-100 text-green-800',
-                                ];
-                                $statusLabel = [
-                                    'belum_dibayar' => 'Belum Dibayar',
-                                    'dibayar_sebagian' => 'Dibayar Sebagian',
-                                    'lunas' => 'Lunas',
-                                ];
-                                $class = $statusClass[$statusPembayaran] ?? 'bg-gray-100 text-gray-800';
-                                $label = $statusLabel[$statusPembayaran] ?? 'Belum Dibayar';
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $class }}">
-                                {{ $label }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                            <div class="flex items-center justify-center space-x-2">
+            @if(request('tipe', 'surat_jalan') == 'tanda_terima')
+                <!-- Table Tanda Terima Bongkaran -->
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor TT</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal TT</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($tandaTerimas ?? [] as $index => $tandaTerima)
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $index + 1 }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $tandaTerima->nomor_tanda_terima ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $tandaTerima->tanggal_tanda_terima ? $tandaTerima->tanggal_tanda_terima->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $tandaTerima->suratJalanBongkaran->nomor_surat_jalan ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $tandaTerima->no_kontainer ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $tandaTerima->gudang->nama_gudang ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                <span class="capitalize">{{ $tandaTerima->kegiatan ?? '-' }}</span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                @if($tandaTerima->status == 'pending')
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                @elseif($tandaTerima->status == 'approved')
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Approved</span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Completed</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
                                 @can('tanda-terima-bongkaran-view')
-                                <a href="{{ route('surat-jalan-bongkaran.show', $suratJalan->id) }}" 
-                                   class="text-blue-600 hover:text-blue-900"
-                                   title="Detail">
+                                <a href="{{ route('tanda-terima-bongkaran.show', $tandaTerima->id) }}"
+                                   class="inline-flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition duration-200">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @endcan
-
-                                @can('tanda-terima-bongkaran-print')
-                                <a href="{{ route('surat-jalan-bongkaran.print', $suratJalan->id) }}" 
-                                   class="text-purple-600 hover:text-purple-900"
-                                   target="_blank"
-                                   title="Print">
-                                    <i class="fas fa-print"></i>
-                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" class="px-3 py-8 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
+                                    <p class="text-gray-500 font-medium">Tidak ada data tanda terima bongkaran</p>
+                                    <p class="text-gray-400 text-sm mt-1">Data tanda terima bongkaran akan muncul di sini</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @else
+                <!-- Table Surat Jalan Bongkaran -->
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No BL</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($suratJalans ?? [] as $index => $suratJalan)
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ ($suratJalans->currentPage() - 1) * $suratJalans->perPage() + $index + 1 }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $suratJalan->nomor_surat_jalan ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $suratJalan->no_bl ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $suratJalan->no_kontainer ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $suratJalan->pengirim ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 text-sm text-gray-900">
+                                <div>{{ $suratJalan->supir ?? '-' }}</div>
+                                @if($suratJalan->supir2)
+                                    <div class="text-xs text-gray-500 mt-0.5">{{ $suratJalan->supir2 }}</div>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {{ $suratJalan->kegiatan ?? '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
+                                @can('tanda-terima-bongkaran-create')
+                                <button type="button" 
+                                        onclick="openTerimaBarangModal({{ $suratJalan->id }}, '{{ $suratJalan->nomor_surat_jalan }}', '{{ $suratJalan->no_kontainer }}')"
+                                        class="inline-flex items-center px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded transition duration-200"
+                                        style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2); border: none; cursor: pointer;">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Terima Barang
+                                </button>
                                 @endcan
-
-                                @can('tanda-terima-bongkaran-update')
-                                <a href="{{ route('tanda-terima-bongkaran.create') }}?surat_jalan_id={{ $suratJalan->id }}" 
-                                   class="text-teal-600 hover:text-teal-900"
-                                   title="Buat Tanda Terima">
-                                    <i class="fas fa-file-signature"></i>
-                                </a>
-                                @endcan
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-                                <p class="text-gray-500 text-lg font-medium">Tidak ada data surat jalan bongkaran</p>
-                                <p class="text-gray-400 text-sm mt-2">Data surat jalan bongkaran akan muncul di sini</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" class="px-3 py-8 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
+                                    <p class="text-gray-500 font-medium">Tidak ada data surat jalan bongkaran</p>
+                                    <p class="text-gray-400 text-sm mt-1">Data surat jalan bongkaran akan muncul di sini</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @endif
         </div>
 
         <!-- Pagination -->
-        @if(isset($suratJalans) && $suratJalans->hasPages())
+        @php
+            $paginationData = request('tipe', 'surat_jalan') == 'tanda_terima' ? ($tandaTerimas ?? null) : ($suratJalans ?? null);
+        @endphp
+        @if($paginationData && $paginationData->hasPages())
         <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
                 <div class="flex-1 flex justify-between sm:hidden">
-                    @if ($suratJalans->onFirstPage())
+                    @if ($paginationData->onFirstPage())
                         <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
                             Previous
                         </span>
                     @else
-                        <a href="{{ $suratJalans->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ $paginationData->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Previous
                         </a>
                     @endif
 
-                    @if ($suratJalans->hasMorePages())
-                        <a href="{{ $suratJalans->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    @if ($paginationData->hasMorePages())
+                        <a href="{{ $paginationData->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Next
                         </a>
                     @else
@@ -246,16 +291,16 @@
                     <div>
                         <p class="text-sm text-gray-700">
                             Menampilkan
-                            <span class="font-medium">{{ $suratJalans->firstItem() ?? 0 }}</span>
+                            <span class="font-medium">{{ $paginationData->firstItem() ?? 0 }}</span>
                             sampai
-                            <span class="font-medium">{{ $suratJalans->lastItem() ?? 0 }}</span>
+                            <span class="font-medium">{{ $paginationData->lastItem() ?? 0 }}</span>
                             dari
-                            <span class="font-medium">{{ $suratJalans->total() }}</span>
+                            <span class="font-medium">{{ $paginationData->total() }}</span>
                             hasil
                         </p>
                     </div>
                     <div>
-                        {{ $suratJalans->appends(request()->query())->links() }}
+                        {{ $paginationData->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>
@@ -263,17 +308,146 @@
         @endif
     </div>
 </div>
+
+<!-- Modal Terima Barang -->
+<div id="terimaBarangModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="flex items-center justify-between pb-3 border-b">
+            <h3 class="text-xl font-semibold text-gray-900">Terima Barang</h3>
+            <button type="button" onclick="closeTerimaBarangModal()" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="terimaBarangForm" method="POST" action="{{ route('tanda-terima-bongkaran.store') }}">
+            @csrf
+            <input type="hidden" name="surat_jalan_bongkaran_id" id="modal_surat_jalan_id">
+            
+            <div class="mt-4 space-y-4">
+                <!-- Info SJ -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <span class="text-gray-600">Nomor SJ:</span>
+                            <span class="font-medium text-gray-900 ml-2" id="modal_nomor_sj">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">No Kontainer:</span>
+                            <span class="font-medium text-gray-900 ml-2" id="modal_no_kontainer">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nomor Tanda Terima -->
+                <div>
+                    <label for="nomor_tanda_terima" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Tanda Terima <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="nomor_tanda_terima" 
+                           id="nomor_tanda_terima"
+                           required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                </div>
+
+                <!-- Tanggal Terima -->
+                <div>
+                    <label for="tanggal_tanda_terima" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal Terima <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" 
+                           name="tanggal_tanda_terima" 
+                           id="tanggal_tanda_terima"
+                           required
+                           value="{{ date('Y-m-d') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                </div>
+
+                <!-- Lokasi Gudang -->
+                <div>
+                    <label for="gudang_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Lokasi <span class="text-red-500">*</span>
+                    </label>
+                    <select name="gudang_id" 
+                            id="gudang_id"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Pilih Lokasi</option>
+                        @foreach($gudangs ?? [] as $gudang)
+                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Keterangan -->
+                <div>
+                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Keterangan
+                    </label>
+                    <textarea name="keterangan" 
+                              id="keterangan"
+                              rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 pt-3 border-t">
+                <button type="button" 
+                        onclick="closeTerimaBarangModal()"
+                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition duration-200">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition duration-200"
+                        style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2); border: none; cursor: pointer;">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
     // Auto-submit form on filter change
-    document.getElementById('status_pembayaran')?.addEventListener('change', function() {
+    document.getElementById('tipe')?.addEventListener('change', function() {
         this.form.submit();
     });
     
     document.getElementById('kegiatan')?.addEventListener('change', function() {
         this.form.submit();
+    });
+
+    // Modal functions
+    function openTerimaBarangModal(suratJalanId, nomorSj, noKontainer) {
+        document.getElementById('modal_surat_jalan_id').value = suratJalanId;
+        document.getElementById('modal_nomor_sj').textContent = nomorSj || '-';
+        document.getElementById('modal_no_kontainer').textContent = noKontainer || '-';
+        document.getElementById('terimaBarangModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeTerimaBarangModal() {
+        document.getElementById('terimaBarangModal').classList.add('hidden');
+        document.getElementById('terimaBarangForm').reset();
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('terimaBarangModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeTerimaBarangModal();
+        }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeTerimaBarangModal();
+        }
     });
 </script>
 @endpush
