@@ -491,6 +491,105 @@ class UangJalanController extends Controller
     }
 
     /**
+     * Show the form for editing the specified uang jalan.
+     */
+    public function edit($id)
+    {
+        $uangJalan = UangJalan::with([
+            'suratJalan.order.pengirim', 
+            'suratJalanBongkaran',
+            'createdBy'
+        ])->findOrFail($id);
+        
+        // Determine jenis surat jalan
+        $jenisSuratJalan = $uangJalan->surat_jalan_bongkaran_id ? 'bongkaran' : 'biasa';
+        
+        // Get surat jalan data
+        if ($jenisSuratJalan === 'bongkaran') {
+            $suratJalan = $uangJalan->suratJalanBongkaran;
+            // Normalisasi field untuk konsistensi
+            if ($suratJalan) {
+                $suratJalan->no_surat_jalan = $suratJalan->nomor_surat_jalan;
+                $suratJalan->no_kontainer = $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer;
+            }
+        } else {
+            $suratJalan = $uangJalan->suratJalan;
+        }
+        
+        return view('uang-jalan.edit', compact('uangJalan', 'suratJalan', 'jenisSuratJalan'));
+    }
+
+    /**
+     * Update the specified uang jalan in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $uangJalan = UangJalan::findOrFail($id);
+        
+        // Tentukan jenis surat jalan
+        $jenisSuratJalan = $uangJalan->surat_jalan_bongkaran_id ? 'bongkaran' : 'biasa';
+        
+        // Validasi
+        $request->validate([
+            'tanggal_uang_jalan' => 'required|date',
+            'kegiatan_bongkar_muat' => 'required|in:bongkar,muat',
+            'jumlah_uang_jalan' => 'required|numeric|min:0',
+            'jumlah_mel' => 'nullable|numeric|min:0',
+            'jumlah_pelancar' => 'nullable|numeric|min:0',
+            'jumlah_kawalan' => 'nullable|numeric|min:0',
+            'jumlah_parkir' => 'nullable|numeric|min:0',
+            'subtotal' => 'required|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string|max:255',
+            'jumlah_penyesuaian' => 'nullable|numeric',
+            'jumlah_total' => 'required|numeric|min:0',
+            'memo' => 'nullable|string|max:1000',
+            'jumlah_uang_supir' => 'nullable|numeric|min:0',
+            'jumlah_uang_kenek' => 'nullable|numeric|min:0',
+            'total_uang_jalan' => 'nullable|numeric|min:0',
+            'keterangan' => 'nullable|string|max:1000'
+        ]);
+        
+        try {
+            // Update uang jalan
+            $uangJalan->update([
+                'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
+                'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
+                'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
+                'jumlah_mel' => $request->jumlah_mel ?? 0,
+                'jumlah_pelancar' => $request->jumlah_pelancar ?? 0,
+                'jumlah_kawalan' => $request->jumlah_kawalan ?? 0,
+                'jumlah_parkir' => $request->jumlah_parkir ?? 0,
+                'subtotal' => $request->subtotal,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                'jumlah_penyesuaian' => $request->jumlah_penyesuaian ?? 0,
+                'jumlah_total' => $request->jumlah_total,
+                'memo' => $request->memo,
+                'jumlah_uang_supir' => $request->jumlah_uang_supir ?? 0,
+                'jumlah_uang_kenek' => $request->jumlah_uang_kenek ?? 0,
+                'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
+                'keterangan' => $request->keterangan ?? $request->memo,
+                'updated_by' => Auth::id()
+            ]);
+            
+            $identifier = $uangJalan->nomor_uang_jalan ?? 'ID: ' . $uangJalan->id;
+            
+            return redirect()->route('uang-jalan.index')
+                           ->with('success', 'Uang jalan "' . $identifier . '" berhasil diperbarui.');
+            
+        } catch (\Exception $e) {
+            Log::error('Error updating uang jalan', [
+                'uang_jalan_id' => $id,
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+            
+            return redirect()->back()
+                           ->with('error', 'Terjadi kesalahan saat memperbarui data uang jalan: ' . $e->getMessage())
+                           ->withInput();
+        }
+    }
+
+    /**
      * Remove the specified uang jalan from storage.
      */
     public function destroy($id)
