@@ -230,8 +230,12 @@ class PranotaSuratJalanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mencetak pranota uang jalan.');
         }
 
-        // Load relationships
-        $pranotaUangJalan->load(['uangJalans.suratJalan.supirKaryawan', 'uangJalans.suratJalan.kenekKaryawan', 'creator']);
+        // Refresh pranota data to get latest values
+        $pranotaUangJalan = PranotaUangJalan::with([
+            'uangJalans.suratJalan.supirKaryawan', 
+            'uangJalans.suratJalan.kenekKaryawan', 
+            'creator'
+        ])->findOrFail($pranotaUangJalan->id);
 
         return view('pranota-uang-jalan.print', compact('pranotaUangJalan'));
     }
