@@ -1452,16 +1452,11 @@ class TandaTerimaController extends Controller
     }
 
     /**
-     * Add cargo container to prospek
+     * Add container to prospek
      */
     public function addToProspek(TandaTerima $tandaTerima)
     {
         try {
-            // Validasi no kontainer harus CARGO
-            if (strtoupper($tandaTerima->no_kontainer) !== 'CARGO') {
-                return back()->with('error', 'Hanya kontainer dengan no. kontainer CARGO yang dapat dimasukkan ke prospek!');
-            }
-
             // Tentukan ukuran kontainer yang valid (hanya 20 atau 40)
             $ukuran = null;
             if ($tandaTerima->size) {
