@@ -1072,6 +1072,12 @@ class UserController extends Controller
                         $action = str_replace('pembayaran-aktivitas-lain-', '', $permissionName);
                     }
 
+                    // Special handling for invoice-aktivitas-lain-* permissions
+                    if (strpos($permissionName, 'invoice-aktivitas-lain-') === 0) {
+                        $module = 'invoice-aktivitas-lain';
+                        $action = str_replace('invoice-aktivitas-lain-', '', $permissionName);
+                    }
+
                     // Special handling for pembayaran-uang-muka-* permissions
                     if (strpos($permissionName, 'pembayaran-uang-muka-') === 0) {
                         $module = 'pembayaran-uang-muka';
@@ -2800,6 +2806,25 @@ class UserController extends Controller
                             'update' => 'pembayaran-aktivitas-lain-update',
                             'delete' => 'pembayaran-aktivitas-lain-delete',
                             'approve' => 'pembayaran-aktivitas-lain-approve'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for invoice-aktivitas-lain module
+                    if ($module === 'invoice-aktivitas-lain') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'invoice-aktivitas-lain-view',
+                            'create' => 'invoice-aktivitas-lain-create',
+                            'update' => 'invoice-aktivitas-lain-update',
+                            'delete' => 'invoice-aktivitas-lain-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
