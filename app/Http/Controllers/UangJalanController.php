@@ -578,14 +578,14 @@ class UangJalanController extends Controller
                     // Recalculate total pranota
                     $totalUangJalan = $pranotaUangJalan->uangJalans()->sum('jumlah_total');
                     $pranotaUangJalan->update([
-                        'total_uang_jalan' => $totalUangJalan,
-                        'total' => $totalUangJalan,
+                        'jumlah_uang_jalan' => $totalUangJalan,
+                        'total_amount' => $totalUangJalan,
                         'updated_by' => Auth::id()
                     ]);
                     
                     Log::info('Pranota total updated after uang jalan edit', [
                         'pranota_id' => $pranotaUangJalan->id,
-                        'old_total' => $pranotaUangJalan->total,
+                        'old_total' => $pranotaUangJalan->total_amount,
                         'new_total' => $totalUangJalan,
                         'uang_jalan_id' => $uangJalan->id
                     ]);
