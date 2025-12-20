@@ -1341,17 +1341,28 @@ class TandaTerimaController extends Controller
         DB::beginTransaction();
         try {
             $noSuratJalan = $tandaTerima->no_surat_jalan;
+            
+            // Hapus prospek terkait
+            $deletedProspekCount = \App\Models\Prospek::where('tanda_terima_id', $tandaTerima->id)->delete();
+            
             $tandaTerima->delete();
 
             Log::info('Tanda terima deleted', [
                 'tanda_terima_id' => $tandaTerima->id,
                 'no_surat_jalan' => $noSuratJalan,
+                'deleted_prospek_count' => $deletedProspekCount,
                 'deleted_by' => Auth::user()->name,
             ]);
 
             DB::commit();
+            
+            $successMessage = 'Tanda terima berhasil dihapus!';
+            if ($deletedProspekCount > 0) {
+                $successMessage .= " ({$deletedProspekCount} prospek terkait juga dihapus)";
+            }
+            
             return redirect()->route('tanda-terima.index')
-                ->with('success', 'Tanda terima berhasil dihapus!');
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1379,23 +1390,35 @@ class TandaTerimaController extends Controller
 
             $tandaTerimas = TandaTerima::whereIn('id', $tandaTerimaIds)->get();
             $deletedCount = 0;
+            $deletedProspekCount = 0;
             $noSuratJalans = [];
 
             foreach ($tandaTerimas as $tandaTerima) {
                 $noSuratJalans[] = $tandaTerima->no_surat_jalan;
+                
+                // Hapus prospek terkait
+                $deletedProspekCount += \App\Models\Prospek::where('tanda_terima_id', $tandaTerima->id)->delete();
+                
                 $tandaTerima->delete();
                 $deletedCount++;
             }
 
             Log::info('Bulk delete tanda terimas', [
                 'count' => $deletedCount,
+                'deleted_prospek_count' => $deletedProspekCount,
                 'no_surat_jalans' => implode(', ', $noSuratJalans),
                 'deleted_by' => Auth::user()->name,
             ]);
 
             DB::commit();
+            
+            $successMessage = "Berhasil menghapus {$deletedCount} tanda terima!";
+            if ($deletedProspekCount > 0) {
+                $successMessage .= " ({$deletedProspekCount} prospek terkait juga dihapus)";
+            }
+            
             return redirect()->route('tanda-terima.index')
-                ->with('success', "Berhasil menghapus {$deletedCount} tanda terima!");
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
