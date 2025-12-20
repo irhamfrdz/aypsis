@@ -190,9 +190,9 @@
                                             <span class="inline-flex px-1.5 py-0.5 text-xs font-medium rounded {{ $config[0] }} {{ $config[1] }}">
                                                 {{ $config[2] }}
                                             </span>
-                                            @if($uangJalan->status == 'sudah_masuk_pranota' && $uangJalan->pranotaSuratJalan)
+                                            @if($uangJalan->status == 'sudah_masuk_pranota' && $uangJalan->pranotaUangJalan->count() > 0)
                                                 <div class="text-xs text-gray-600">
-                                                    {{ $uangJalan->pranotaSuratJalan->nomor_pranota }}
+                                                    {{ $uangJalan->pranotaUangJalan->first()->nomor_pranota }}
                                                 </div>
                                             @endif
                                         </div>

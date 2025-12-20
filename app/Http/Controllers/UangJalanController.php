@@ -37,7 +37,7 @@ class UangJalanController extends Controller
             'suratJalan.order.pengirim', 
             'suratJalanBongkaran',
             'createdBy',
-            'pranotaSuratJalan'
+            'pranotaUangJalan'
         ]);
         
         // Filter berdasarkan pencarian
