@@ -166,16 +166,9 @@
                                 </div>
                             </td>
                             <td class="px-2 py-2.5 whitespace-nowrap text-center">
-                                <div class="space-y-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $pranota->status_badge }}">
-                                        {{ $pranota->status_text }}
-                                    </span>
-                                    @if($pranota->status_pembayaran == 'paid' && $pranota->pembayaranPranotaUangJalan)
-                                        <div class="text-xs text-gray-600 font-medium">
-                                            {{ $pranota->pembayaranPranotaUangJalan->nomor_pembayaran }}
-                                        </div>
-                                    @endif
-                                </div>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $pranota->status_badge }}">
+                                    {{ $pranota->status_text }}
+                                </span>
                             </td>
                             <td class="px-2 py-2.5 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-1">
