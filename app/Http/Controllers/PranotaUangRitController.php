@@ -146,19 +146,42 @@ class PranotaUangRitController extends Controller
                   });
             });
 
-        // Apply date range filter to base query BEFORE any cloning - use where with DATE() function for explicit filtering
+        // Apply date range filter to base query BEFORE any cloning - filter by tanggal tanda terima
         if ($startDateObj && $endDateObj) {
-            $baseQuery->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDateObj->toDateString())
-                      ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDateObj->toDateString());
+            $baseQuery->where(function($q) use ($startDateObj, $endDateObj) {
+                // Filter berdasarkan tanggal tanda terima dari berbagai sumber
+                $q->where(function($subQ) use ($startDateObj, $endDateObj) {
+                    // 1. Tanggal dari relasi tandaTerima
+                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
+                        $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
+                                ->where(\DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                    });
+                })
+                ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
+                    // 2. Tanggal tanda terima untuk bongkaran (kolom di surat_jalan)
+                    $subQ->where('kegiatan', 'bongkaran')
+                         ->whereNotNull('tanggal_tanda_terima')
+                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                })
+                ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
+                    // 3. Fallback ke tanggal checkpoint jika tidak ada tanda terima
+                    $subQ->whereDoesntHave('tandaTerima')
+                         ->whereNull('tanggal_tanda_terima')
+                         ->whereNotNull('tanggal_checkpoint')
+                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                });
+            });
             
             // Log the actual SQL query for debugging
             $sqlQuery = $baseQuery->toSql();
             $bindings = $baseQuery->getBindings();
             
-            Log::info('Applied date filter to base query', [
+            Log::info('Applied date filter to base query (tanggal tanda terima)', [
                 'start_filter' => $startDateObj->toDateString(),
                 'end_filter' => $endDateObj->toDateString(),
-                'using_where_with_DATE_function' => true,
+                'filter_type' => 'tanggal_tanda_terima (with fallback to checkpoint)',
                 'sql_query_preview' => str_replace('?', "'%s'", $sqlQuery),
                 'bindings_count' => count($bindings)
             ]);
