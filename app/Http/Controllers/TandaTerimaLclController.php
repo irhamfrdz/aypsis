@@ -1533,14 +1533,10 @@ class TandaTerimaLclController extends Controller
                     'updated_at' => now()
                 ]);
 
-            // Update status prospek terkait menjadi dibatalkan atau tambahkan keterangan
-            Prospek::where('nomor_kontainer', $request->nomor_kontainer)
+            // Hapus prospek terkait
+            $deletedProspek = Prospek::where('nomor_kontainer', $request->nomor_kontainer)
                 ->where('no_seal', $oldSealNumber)
-                ->update([
-                    'status' => Prospek::STATUS_DIBATALKAN,
-                    'keterangan' => DB::raw("CONCAT(COALESCE(keterangan, ''), '\n[UNSEAL] Seal dilepas pada " . now()->format('Y-m-d H:i:s') . " oleh " . Auth::user()->name . ". Alasan: " . $request->alasan_unseal . "')"),
-                    'updated_at' => now()
-                ]);
+                ->delete();
 
             // Log aktivitas
             \Log::info('Container unsealed', [
