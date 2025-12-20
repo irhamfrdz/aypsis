@@ -113,7 +113,10 @@
                                 @endif
                                 @if($pranota->pembayaranPranotaUangJalans->count() > 0)
                                     @foreach($pranota->pembayaranPranotaUangJalans as $pembayaran)
-                                        <a href="{{ route('pembayaran-pranota-uang-jalan.show', $pembayaran->id) }}" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded">Detail Pembayaran</a>
+                                        <a href="{{ route('pembayaran-pranota-uang-jalan.show', $pembayaran->id) }}" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded">Detail</a>
+                                        @can('pembayaran-pranota-uang-jalan-edit')
+                                        <a href="{{ route('pembayaran-pranota-uang-jalan.edit', $pembayaran->id) }}" class="text-yellow-600 hover:text-yellow-800 text-xs bg-yellow-50 hover:bg-yellow-100 px-2 py-1 rounded">Edit</a>
+                                        @endcan
                                     @endforeach
                                 @endif
                             </div>

@@ -313,7 +313,21 @@ class PembayaranPranotaUangJalanController extends Controller
                 ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diubah.');
         }
 
-        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan'));
+        // Load pranota uang jalan with relations
+        $pembayaranPranotaUangJalan->load([
+            'pranotaUangJalan.uangJalans.suratJalan.supirKaryawan',
+            'pranotaUangJalan.uangJalans.suratJalan.tujuanPengambilanRelation',
+            'pranotaUangJalan.uangJalans.suratJalan.tujuanPengirimanRelation'
+        ]);
+
+        // Get akun COA for bank selection
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%kas%')
+                      ->orderBy('nama_akun')
+                      ->get();
+
+        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'akunCoa'));
     }
 
     /**
@@ -327,10 +341,14 @@ class PembayaranPranotaUangJalanController extends Controller
         }
 
         $request->validate([
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
-            'jenis_transaksi' => ['required', Rule::in(['cash', 'transfer', 'check', 'giro'])],
+            'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'total_pembayaran' => 'required|numeric|min:0',
-            'bank' => 'nullable|string|max:255',
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
+            'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
+            'bank' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'bukti_pembayaran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048'
         ]);
@@ -338,16 +356,14 @@ class PembayaranPranotaUangJalanController extends Controller
         DB::beginTransaction();
 
         try {
-            // Calculate adjustment
-            $totalTagihanSetelahPenyesuaian = $request->total_pembayaran;
-            $totalTagihanPenyesuaian = $totalTagihanSetelahPenyesuaian - $pembayaranPranotaUangJalan->pranotaUangJalan->total_amount;
-
             $data = [
+                'nomor_accurate' => $request->nomor_accurate,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'total_pembayaran' => $request->total_pembayaran,
-                'total_tagihan_penyesuaian' => $totalTagihanPenyesuaian,
-                'total_tagihan_setelah_penyesuaian' => $totalTagihanSetelahPenyesuaian,
+                'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian,
+                'total_tagihan_setelah_penyesuaian' => $request->total_tagihan_setelah_penyesuaian,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'bank' => $request->bank,
                 'keterangan' => $request->keterangan,
                 'updated_by' => Auth::id(),
