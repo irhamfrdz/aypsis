@@ -1236,10 +1236,10 @@
                 </svg>
             </button>
             <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKapalRoute) style="display: block;" @endif>
-                {{-- Prospek --}}
+                {{-- Gudang Kontainer --}}
                 @if($user && $user->can('prospek-view'))
                     <a href="{{ route('prospek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Prospek</span>
+                        <span class="text-xs">Gudang Kontainer</span>
                     </a>
                 @endif
 
@@ -1327,10 +1327,10 @@
                     </a>
                 @endif
 
-                {{-- Prospek --}}
+                {{-- Gudang Kontainer --}}
                 @if($user && $user->can('prospek-view'))
                     <a href="{{ route('prospek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Prospek</span>
+                        <span class="text-xs">Gudang Kontainer</span>
                     </a>
                 @endif
             </div>
