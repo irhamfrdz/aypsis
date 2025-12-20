@@ -151,21 +151,23 @@ class PranotaUangRitController extends Controller
             $baseQuery->where(function($q) use ($startDateObj, $endDateObj) {
                 // Filter berdasarkan tanggal tanda terima dari berbagai sumber
                 $q->where(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 1. Tanggal dari relasi tandaTerima
+                    // 1. Tanggal dari relasi tandaTerima (untuk surat jalan non-bongkaran seperti pengiriman, muat, dll)
                     $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
                         $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
                                 ->where(\DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
                     });
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 2. Tanggal tanda terima untuk bongkaran (kolom di surat_jalan)
+                    // 2. Tanggal tanda terima untuk kegiatan bongkaran (kolom langsung di tabel surat_jalans)
+                    // Bongkaran menyimpan tanggal_tanda_terima langsung di kolom surat_jalan, bukan relasi
                     $subQ->where('kegiatan', 'bongkaran')
                          ->whereNotNull('tanggal_tanda_terima')
                          ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
                          ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 3. Fallback ke tanggal checkpoint jika tidak ada tanda terima
+                    // 3. Fallback ke tanggal checkpoint jika tidak ada tanda terima sama sekali
+                    // Untuk surat jalan yang sudah checkpoint tapi belum ada tanda terima
                     $subQ->whereDoesntHave('tandaTerima')
                          ->whereNull('tanggal_tanda_terima')
                          ->whereNotNull('tanggal_checkpoint')
@@ -181,7 +183,7 @@ class PranotaUangRitController extends Controller
             Log::info('Applied date filter to base query (tanggal tanda terima)', [
                 'start_filter' => $startDateObj->toDateString(),
                 'end_filter' => $endDateObj->toDateString(),
-                'filter_type' => 'tanggal_tanda_terima (with fallback to checkpoint)',
+                'filter_type' => 'tanggal_tanda_terima (relasi + kolom bongkaran + fallback checkpoint)',
                 'sql_query_preview' => str_replace('?', "'%s'", $sqlQuery),
                 'bindings_count' => count($bindings)
             ]);
