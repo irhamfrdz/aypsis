@@ -136,11 +136,9 @@
                         <option value="">Pilih Kegiatan</option>
                         @if(isset($kegiatanSuratJalan))
                             @foreach($kegiatanSuratJalan as $kegiatan)
-                                @if(strtolower($kegiatan->nama_kegiatan) !== 'tarik isi')
-                                    <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
-                                        {{ $kegiatan->nama_kegiatan }}
-                                    </option>
-                                @endif
+                                <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                    {{ $kegiatan->nama_kegiatan }}
+                                </option>
                             @endforeach
                         @endif
                     </select>
