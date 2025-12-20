@@ -57,34 +57,84 @@
             @csrf
             @method('PUT')
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
-                <!-- Info Pembayaran -->
-                <div class="lg:col-span-1">
-                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Info Pembayaran</h4>
-                        <div class="grid grid-cols-1 gap-2">
-                            <div>
-                                <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
-                                <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                    value="{{ $pembayaranPranotaUangJalan->nomor_pembayaran }}"
-                                    class="{{ $readonlyInputClasses }}" readonly>
-                            </div>
-                            <div>
-                                <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
-                                <input type="text" name="nomor_accurate" id="nomor_accurate"
-                                    value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
-                                    class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
-                            </div>
-                            <div>
-                                <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas <span class="text-red-500">*</span></label>
-                                <input type="date" name="tanggal_kas" id="tanggal_kas"
-                                    value="{{ old('tanggal_kas', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
-                                    class="{{ $inputClasses }}" required>
-                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}">
-                            </div>
+            @if($pembayaranPranotaUangJalan->isPaid())
+                <!-- Alert for paid payment - only nomor accurate can be edited -->
+                <div class="mb-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <strong>Pembayaran Sudah Dibayar</strong><br>
+                            Hanya nomor accurate yang dapat diubah untuk pembayaran yang sudah lunas.
                         </div>
                     </div>
                 </div>
+
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Edit Nomor Accurate</h4>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div>
+                            <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                            <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
+                                class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pranota Info (Read Only) -->
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Informasi Pembayaran (Read Only)</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Nomor Pembayaran:</span>
+                            <p class="font-medium">{{ $pembayaranPranotaUangJalan->nomor_pembayaran }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Tanggal Pembayaran:</span>
+                            <p class="font-medium">{{ optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Bank:</span>
+                            <p class="font-medium">{{ $pembayaranPranotaUangJalan->bank }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Total Pembayaran:</span>
+                            <p class="font-medium">Rp {{ number_format($pembayaranPranotaUangJalan->total_pembayaran, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <!-- Full Edit Form for Unpaid Payments -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+                    <!-- Info Pembayaran -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Info Pembayaran</h4>
+                            <div class="grid grid-cols-1 gap-2">
+                                <div>
+                                    <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
+                                    <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
+                                        value="{{ $pembayaranPranotaUangJalan->nomor_pembayaran }}"
+                                        class="{{ $readonlyInputClasses }}" readonly>
+                                </div>
+                                <div>
+                                    <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                                    <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                        value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
+                                        class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
+                                </div>
+                                <div>
+                                    <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_kas" id="tanggal_kas"
+                                        value="{{ old('tanggal_kas', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
+                                        class="{{ $inputClasses }}" required>
+                                    <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 <!-- Bank & Transaksi -->
                 <div class="lg:col-span-2">
@@ -198,6 +248,24 @@
                                 value="{{ old('total_tagihan_setelah_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian) }}"
                                 class="{{ $readonlyInputClasses }}" readonly>
                         </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Penyesuaian (Opsional)</h4>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div>
+                            <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Total Penyesuaian</label>
+                            <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian" step="0.01"
+                                value="{{ old('total_tagihan_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_penyesuaian ?? 0) }}"
+                                class="{{ $inputClasses }}" placeholder="0">
+                        </div>
+                        <div>
+                            <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Setelah Penyesuaian</label>
+                            <input type="number" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian" step="0.01"
+                                value="{{ old('total_tagihan_setelah_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian) }}"
+                                class="{{ $readonlyInputClasses }}" readonly>
+                        </div>
                         <div>
                             <label for="alasan_penyesuaian" class="{{ $labelClasses }}">Alasan Penyesuaian</label>
                             <textarea name="alasan_penyesuaian" id="alasan_penyesuaian" rows="2"
@@ -223,6 +291,7 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             <!-- Action Buttons -->
             <div class="flex justify-between items-center pt-3 border-t border-gray-200">
@@ -244,27 +313,31 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Bank search functionality
-            const bankSearch = document.getElementById('bankSearch');
-            const bankSelect = document.getElementById('bank');
-            const bankDropdown = document.getElementById('bankDropdown');
-            const bankOptions = document.getElementById('bankOptions');
-            const noBankResults = document.getElementById('noBankResults');
+            const isPaid = {{ $pembayaranPranotaUangJalan->isPaid() ? 'true' : 'false' }};
+            
+            // Only initialize bank search for unpaid payments
+            if (!isPaid) {
+                // Bank search functionality
+                const bankSearch = document.getElementById('bankSearch');
+                const bankSelect = document.getElementById('bank');
+                const bankDropdown = document.getElementById('bankDropdown');
+                const bankOptions = document.getElementById('bankOptions');
+                const noBankResults = document.getElementById('noBankResults');
 
-            function populateBankOptions(searchTerm = '') {
-                const options = Array.from(bankSelect.options).filter(opt => opt.value !== '');
-                const filtered = options.filter(opt => 
-                    opt.text.toLowerCase().includes(searchTerm.toLowerCase())
-                );
+                function populateBankOptions(searchTerm = '') {
+                    const options = Array.from(bankSelect.options).filter(opt => opt.value !== '');
+                    const filtered = options.filter(opt => 
+                        opt.text.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
 
-                bankOptions.innerHTML = '';
-                
-                if (filtered.length === 0) {
-                    noBankResults.classList.remove('hidden');
-                    bankOptions.classList.add('hidden');
-                } else {
-                    noBankResults.classList.add('hidden');
-                    bankOptions.classList.remove('hidden');
+                    bankOptions.innerHTML = '';
+                    
+                    if (filtered.length === 0) {
+                        noBankResults.classList.remove('hidden');
+                        bankOptions.classList.add('hidden');
+                    } else {
+                        noBankResults.classList.add('hidden');
+                        bankOptions.classList.remove('hidden');
                     
                     filtered.forEach(opt => {
                         const div = document.createElement('div');
@@ -285,52 +358,54 @@
                 bankDropdown.classList.remove('hidden');
             }
 
-            bankSearch.addEventListener('focus', function() {
-                populateBankOptions(this.value);
-            });
+                bankSearch.addEventListener('focus', function() {
+                    populateBankOptions(this.value);
+                });
 
-            bankSearch.addEventListener('input', function() {
-                populateBankOptions(this.value);
-            });
+                bankSearch.addEventListener('input', function() {
+                    populateBankOptions(this.value);
+                });
 
-            document.addEventListener('click', function(e) {
-                if (!bankSearch.contains(e.target) && !bankDropdown.contains(e.target)) {
-                    bankDropdown.classList.add('hidden');
+                document.addEventListener('click', function(e) {
+                    if (!bankSearch.contains(e.target) && !bankDropdown.contains(e.target)) {
+                        bankDropdown.classList.add('hidden');
+                    }
+                });
+
+                // Set initial bank search value
+                if (bankSelect.value) {
+                    const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+                    if (selectedOption) {
+                        bankSearch.value = selectedOption.text;
+                    }
                 }
-            });
 
-            // Set initial bank search value
-            if (bankSelect.value) {
-                const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-                if (selectedOption) {
-                    bankSearch.value = selectedOption.text;
+                // Sync tanggal_kas with tanggal_pembayaran
+                const tanggalKas = document.getElementById('tanggal_kas');
+                const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
+                
+                tanggalKas.addEventListener('change', function() {
+                    tanggalPembayaran.value = this.value;
+                });
+
+                // Calculate total after adjustment
+                const totalPembayaran = document.getElementById('total_pembayaran');
+                const totalPenyesuaian = document.getElementById('total_tagihan_penyesuaian');
+                const totalSetelah = document.getElementById('total_tagihan_setelah_penyesuaian');
+
+                function updateTotalSetelah() {
+                    const pembayaran = parseFloat(totalPembayaran.value) || 0;
+                    const penyesuaian = parseFloat(totalPenyesuaian.value) || 0;
+                    totalSetelah.value = pembayaran + penyesuaian;
                 }
+
+                totalPembayaran.addEventListener('input', updateTotalSetelah);
+                totalPenyesuaian.addEventListener('input', updateTotalSetelah);
+                
+                // Initial calculation
+                updateTotalSetelah();
             }
-
-            // Sync tanggal_kas with tanggal_pembayaran
-            const tanggalKas = document.getElementById('tanggal_kas');
-            const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
-            
-            tanggalKas.addEventListener('change', function() {
-                tanggalPembayaran.value = this.value;
-            });
-
-            // Calculate total after adjustment
-            const totalPembayaran = document.getElementById('total_pembayaran');
-            const totalPenyesuaian = document.getElementById('total_tagihan_penyesuaian');
-            const totalSetelah = document.getElementById('total_tagihan_setelah_penyesuaian');
-
-            function updateTotalSetelah() {
-                const pembayaran = parseFloat(totalPembayaran.value) || 0;
-                const penyesuaian = parseFloat(totalPenyesuaian.value) || 0;
-                totalSetelah.value = pembayaran + penyesuaian;
-            }
-
-            totalPembayaran.addEventListener('input', updateTotalSetelah);
-            totalPenyesuaian.addEventListener('input', updateTotalSetelah);
-            
-            // Initial calculation
-            updateTotalSetelah();
+        });
         });
     </script>
 @endsection

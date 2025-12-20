@@ -308,9 +308,10 @@ class PembayaranPranotaUangJalanController extends Controller
      */
     public function edit(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
     {
-        if ($pembayaranPranotaUangJalan->isPaid() || $pembayaranPranotaUangJalan->isCancelled()) {
+        // Cancelled payments cannot be edited at all
+        if ($pembayaranPranotaUangJalan->isCancelled()) {
             return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diubah.');
+                ->with('error', 'Pembayaran yang dibatalkan tidak dapat diubah.');
         }
 
         // Load pranota uang jalan with relations
@@ -320,7 +321,7 @@ class PembayaranPranotaUangJalanController extends Controller
             'pranotaUangJalan.uangJalans.suratJalan.tujuanPengirimanRelation'
         ]);
 
-        // Get akun COA for bank selection
+        // Get akun COA for bank selection (only needed for unpaid payments)
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
                       ->orWhere('nama_akun', 'LIKE', '%bank%')
                       ->orWhere('nama_akun', 'LIKE', '%kas%')
@@ -335,11 +336,41 @@ class PembayaranPranotaUangJalanController extends Controller
      */
     public function update(Request $request, PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
     {
-        if ($pembayaranPranotaUangJalan->isPaid() || $pembayaranPranotaUangJalan->isCancelled()) {
+        // Cancelled payments cannot be edited
+        if ($pembayaranPranotaUangJalan->isCancelled()) {
             return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diubah.');
+                ->with('error', 'Pembayaran yang dibatalkan tidak dapat diubah.');
         }
 
+        // If payment is already paid, only allow updating nomor_accurate
+        if ($pembayaranPranotaUangJalan->isPaid()) {
+            $request->validate([
+                'nomor_accurate' => 'nullable|string|max:255',
+            ]);
+
+            DB::beginTransaction();
+
+            try {
+                $pembayaranPranotaUangJalan->update([
+                    'nomor_accurate' => $request->nomor_accurate,
+                    'updated_by' => Auth::id(),
+                ]);
+
+                DB::commit();
+
+                return redirect()->route('pembayaran-pranota-uang-jalan.index')
+                    ->with('success', 'Nomor Accurate berhasil diperbarui.');
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error updating nomor accurate: ' . $e->getMessage());
+                
+                return back()->with('error', 'Gagal memperbarui nomor accurate: ' . $e->getMessage())
+                    ->withInput();
+            }
+        }
+
+        // For unpaid payments, allow full edit
         $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
