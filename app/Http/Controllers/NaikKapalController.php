@@ -80,7 +80,9 @@ class NaikKapalController extends Controller
             $query->whereDate('tanggal_muat', $request->tanggal_muat);
         }
         
-        $naikKapals = $query->orderBy('created_at', 'desc')->paginate(15);
+        $naikKapals = $query->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->appends($request->query());
         
         // Get selected kapal info for display
         $selectedKapal = null;
