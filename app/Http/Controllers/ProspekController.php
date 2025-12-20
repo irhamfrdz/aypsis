@@ -665,10 +665,10 @@ class ProspekController extends Controller
             
             // Update data prospek dari surat jalan
             $prospek->nomor_kontainer = $suratJalan->no_kontainer;
-            $prospek->nama_supir = $suratJalan->nama_supir;
+            $prospek->nama_supir = $suratJalan->supir;
             $prospek->barang = $suratJalan->jenis_barang;
-            $prospek->pt_pengirim = $suratJalan->nama_pt;
-            $prospek->tujuan_pengiriman = $suratJalan->tujuan;
+            $prospek->pt_pengirim = $suratJalan->pengirim;
+            $prospek->tujuan_pengiriman = $suratJalan->tujuan_pengiriman;
             $prospek->updated_by = $user->id;
             $prospek->save();
 
