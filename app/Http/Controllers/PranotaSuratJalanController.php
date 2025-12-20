@@ -99,9 +99,9 @@ class PranotaSuratJalanController extends Controller
         }
 
         // Get uang jalan yang belum ada pranota (termasuk bongkaran)
+        // Load both regular surat jalan and surat jalan bongkaran relations
         $availableUangJalans = UangJalan::with([
-                'suratJalan.supirKaryawan', 
-                'suratJalan.kenekKaryawan',
+                'suratJalan', 
                 'suratJalanBongkaran'
             ])
             ->whereDoesntHave('pranotaUangJalan')
@@ -212,8 +212,8 @@ class PranotaSuratJalanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota uang jalan.');
         }
 
-        // Load relationships
-        $pranotaUangJalan->load(['uangJalans.suratJalan', 'creator']);
+        // Load relationships including both suratJalan and suratJalanBongkaran
+        $pranotaUangJalan->load(['uangJalans.suratJalan', 'uangJalans.suratJalanBongkaran', 'creator']);
 
         return view('pranota-uang-jalan.show', compact('pranotaUangJalan'));
     }
@@ -230,10 +230,10 @@ class PranotaSuratJalanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mencetak pranota uang jalan.');
         }
 
-        // Refresh pranota data to get latest values
+        // Refresh pranota data to get latest values, including both surat jalan types
         $pranotaUangJalan = PranotaUangJalan::with([
-            'uangJalans.suratJalan.supirKaryawan', 
-            'uangJalans.suratJalan.kenekKaryawan', 
+            'uangJalans.suratJalan', 
+            'uangJalans.suratJalanBongkaran', 
             'creator'
         ])->findOrFail($pranotaUangJalan->id);
 

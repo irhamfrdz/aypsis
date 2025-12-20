@@ -133,12 +133,15 @@
                                         <div class="text-xs text-gray-500">{{ $uangJalan->nomor_kas_bank }}</div>
                                     </td>
                                     <td class="px-3 py-2 text-sm text-gray-900">
-                                        {{ $uangJalan->tanggal_pemberian ? $uangJalan->tanggal_pemberian->format('d/m/Y') : '-' }}
+                                        {{ $uangJalan->tanggal_uang_jalan ? $uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                                     </td>
                                     <td class="px-3 py-2">
-                                        @if($uangJalan->suratJalan)
-                                            <div class="text-sm text-gray-900">{{ $uangJalan->suratJalan->no_surat_jalan }}</div>
-                                            <div class="text-xs text-gray-500">{{ $uangJalan->suratJalan->tanggal_surat_jalan ? $uangJalan->suratJalan->tanggal_surat_jalan->format('d/m/Y') : '' }}</div>
+                                        @php
+                                            $surat = $uangJalan->suratJalan ?? $uangJalan->suratJalanBongkaran;
+                                        @endphp
+                                        @if($surat)
+                                            <div class="text-sm text-gray-900">{{ $surat->no_surat_jalan ?? $surat->nomor_surat_jalan ?? '-' }}</div>
+                                            <div class="text-xs text-gray-500">{{ $surat->tanggal_surat_jalan ? $surat->tanggal_surat_jalan->format('d/m/Y') : '' }}</div>
                                         @else
                                             <div class="text-sm text-gray-500">-</div>
                                         @endif
@@ -148,11 +151,14 @@
                                         <div class="text-xs text-gray-500">{{ $uangJalan->kategori_uang_jalan }}</div>
                                     </td>
                                     <td class="px-3 py-2">
-                                        @if($uangJalan->suratJalan)
+                                        @php
+                                            $surat = $uangJalan->suratJalan ?? $uangJalan->suratJalanBongkaran;
+                                        @endphp
+                                        @if($surat)
                                             <div class="text-xs text-gray-900">
-                                                <div><strong>Supir:</strong> {{ $uangJalan->suratJalan->supir ?? '-' }}</div>
-                                                <div><strong>Kenek:</strong> {{ $uangJalan->suratJalan->kenek ?? '-' }}</div>
-                                                <div><strong>Plat:</strong> {{ $uangJalan->suratJalan->no_plat ?? '-' }}</div>
+                                                <div><strong>Supir:</strong> {{ $surat->supir ?? '-' }}</div>
+                                                <div><strong>Kenek:</strong> {{ $surat->kenek ?? '-' }}</div>
+                                                <div><strong>Plat:</strong> {{ $surat->no_plat ?? '-' }}</div>
                                             </div>
                                         @else
                                             <div class="text-xs text-gray-500">-</div>
