@@ -292,23 +292,48 @@ class PranotaUangRitController extends Controller
         // TAMBAHAN: Ambil juga data dari SuratJalanBongkaran yang sudah ada tanda terima
         $suratJalanBongkarans = collect();
         if ($startDateObj && $endDateObj) {
-            $suratJalanBongkarans = SuratJalanBongkaran::with(['tandaTerima'])
+            $queryBongkaran = SuratJalanBongkaran::with(['tandaTerima'])
                 ->whereHas('tandaTerima', function($query) use ($startDateObj, $endDateObj) {
                     $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
                           ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                 })
-                ->where('rit', 'menggunakan_rit')
-                ->where('status_pembayaran_uang_rit', 'belum_dibayar')
+                ->where(function($q) {
+                    // Filter: rit = menggunakan_rit ATAU rit is NULL (default dianggap menggunakan rit)
+                    $q->where('rit', 'menggunakan_rit')
+                      ->orWhereNull('rit');
+                })
+                ->where(function($q) {
+                    // Filter: status_pembayaran_uang_rit = belum_bayar ATAU NULL (belum ada pembayaran)
+                    $q->where('status_pembayaran_uang_rit', 'belum_bayar')
+                      ->orWhereNull('status_pembayaran_uang_rit');
+                })
                 ->whereNotIn('id', function($query) {
                     $query->select('surat_jalan_bongkaran_id')
                         ->from('pranota_uang_rits')
                         ->whereNotNull('surat_jalan_bongkaran_id')
                         ->whereNotIn('status', ['cancelled']);
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
+                });
 
-            Log::info('Surat Jalan Bongkaran with Tanda Terima: ' . $suratJalanBongkarans->count());
+            $suratJalanBongkarans = $queryBongkaran->orderBy('created_at', 'desc')->get();
+
+            Log::info('Surat Jalan Bongkaran Query', [
+                'date_range' => $startDateObj->toDateString() . ' to ' . $endDateObj->toDateString(),
+                'count' => $suratJalanBongkarans->count(),
+                'sql' => $queryBongkaran->toSql(),
+            ]);
+            
+            if ($suratJalanBongkarans->count() > 0) {
+                Log::info('Sample Bongkaran Data:', [
+                    'first' => [
+                        'id' => $suratJalanBongkarans->first()->id,
+                        'nomor' => $suratJalanBongkarans->first()->nomor_surat_jalan,
+                        'rit' => $suratJalanBongkarans->first()->rit,
+                        'status_pembayaran' => $suratJalanBongkarans->first()->status_pembayaran_uang_rit,
+                        'has_tanda_terima' => $suratJalanBongkarans->first()->tandaTerima ? 'yes' : 'no',
+                        'tanggal_tt' => $suratJalanBongkarans->first()->tandaTerima ? $suratJalanBongkarans->first()->tandaTerima->tanggal_tanda_terima : null,
+                    ]
+                ]);
+            }
         }
 
         return view('pranota-uang-rit.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate'));
@@ -650,7 +675,7 @@ class PranotaUangRitController extends Controller
                 $suratJalanBongkaran = SuratJalanBongkaran::find($suratJalanBongkaranId);
                 if ($suratJalanBongkaran) {
                     $suratJalanBongkaran->update([
-                        'status_pembayaran_uang_rit' => 'sudah_masuk_pranota'
+                        'status_pembayaran_uang_rit' => 'lunas' // Gunakan nilai enum yang sesuai dengan tabel bongkaran
                     ]);
                 }
             }
