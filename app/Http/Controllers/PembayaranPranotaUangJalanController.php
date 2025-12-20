@@ -322,9 +322,11 @@ class PembayaranPranotaUangJalanController extends Controller
         ]);
 
         // Get akun COA for bank selection (only needed for unpaid payments)
-        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
+        $akunCoa = Coa::where(function($query) {
+                          $query->where('tipe_akun', 'LIKE', '%bank%')
+                                ->orWhere('nama_akun', 'LIKE', '%bank%')
+                                ->orWhere('nama_akun', 'LIKE', '%kas%');
+                      })
                       ->orderBy('nama_akun')
                       ->get();
 
