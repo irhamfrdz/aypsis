@@ -198,6 +198,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -231,6 +232,13 @@
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                                 {{ $suratJalan->kegiatan ?? '-' }}
                             </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                @if($suratJalan->tandaTerima)
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Sudah Tanda Terima</span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Belum Tanda Terima</span>
+                                @endif
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
                                 @can('tanda-terima-bongkaran-create')
                                 <button type="button" 
@@ -245,7 +253,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-3 py-8 text-center">
+                            <td colspan="10" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 font-medium">Tidak ada data surat jalan bongkaran</p>
