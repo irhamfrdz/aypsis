@@ -18,7 +18,10 @@
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-gray-200">
             <div>
-                <h1 class="text-xl font-semibold text-gray-900">Tambah Surat Jalan</h1>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-semibold text-gray-900">Tambah Surat Jalan</h1>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Surat Jalan Muat</span>
+                </div>
                 <p class="text-xs text-gray-600 mt-1">Buat surat jalan baru untuk pengiriman barang</p>
             </div>
             <a href="{{ route('surat-jalan.index') }}"
@@ -133,9 +136,11 @@
                         <option value="">Pilih Kegiatan</option>
                         @if(isset($kegiatanSuratJalan))
                             @foreach($kegiatanSuratJalan as $kegiatan)
-                                <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
-                                    {{ $kegiatan->nama_kegiatan }}
-                                </option>
+                                @if(strtolower($kegiatan->nama_kegiatan) !== 'tarik isi')
+                                    <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                        {{ $kegiatan->nama_kegiatan }}
+                                    </option>
+                                @endif
                             @endforeach
                         @endif
                     </select>
