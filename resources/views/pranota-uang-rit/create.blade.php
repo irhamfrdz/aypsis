@@ -302,7 +302,7 @@
                                         'tanggal_checkpoint' => $sj->tanggal_checkpoint,
                                         'tandaTerima' => $sj->tandaTerima,
                                         'kegiatan' => $sj->kegiatan,
-                                        'tanggal_tanda_terima' => $sj->tandaTerima ? $sj->tandaTerima->tanggal_tanda_terima : null,
+                                        'tanggal_tanda_terima' => $sj->tandaTerima ? $sj->tandaTerima->tanggal : null,
                                         'approvals' => $sj->approvals,
                                         'data' => $sj
                                     ]);
