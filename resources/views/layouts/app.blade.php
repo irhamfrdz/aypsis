@@ -1220,13 +1220,6 @@
                 </svg>
             </button>
             <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKapalRoute) style="display: block;" @endif>
-                {{-- OB --}}
-                @if($user && ($user->can('ob-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view') || $user->can('pembayaran-ob-view')))
-                    <a href="{{ route('ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('ob.*') && !Request::routeIs('tagihan-ob.*') && !Request::routeIs('pranota-ob.*') && !Request::routeIs('pembayaran-ob.*') && !Request::routeIs('pembayaran-pranota-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">OB</span>
-                    </a>
-                @endif
-
                 {{-- Gudang Kontainer --}}
                 @if($user && $user->can('prospek-view'))
                     <a href="{{ route('prospek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
@@ -1241,17 +1234,17 @@
                     </a>
                 @endif
 
-                {{-- BL (Bill of Lading) --}}
-                @if($user && $user->can('bl-view'))
-                    <a href="{{ route('bl.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">BL (Bill of Lading)</span>
+                {{-- Pembayaran DP OB --}}
+                @if($user && $user->can('pembayaran-ob-view'))
+                    <a href="{{ route('pembayaran-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pembayaran-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran DP OB</span>
                     </a>
                 @endif
 
-                {{-- Tagihan OB --}}
-                @if($user && $user->can('tagihan-ob-view'))
-                    <a href="{{ route('tagihan-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('tagihan-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Tagihan OB</span>
+                {{-- OB --}}
+                @if($user && ($user->can('ob-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view') || $user->can('pembayaran-ob-view')))
+                    <a href="{{ route('ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('ob.*') && !Request::routeIs('tagihan-ob.*') && !Request::routeIs('pranota-ob.*') && !Request::routeIs('pembayaran-ob.*') && !Request::routeIs('pembayaran-pranota-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">OB</span>
                     </a>
                 @endif
 
@@ -1269,10 +1262,10 @@
                     </a>
                 @endif
 
-                {{-- Pembayaran DP OB --}}
-                @if($user && $user->can('pembayaran-ob-view'))
-                    <a href="{{ route('pembayaran-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pembayaran-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Pembayaran DP OB</span>
+                {{-- BL (Bill of Lading) --}}
+                @if($user && $user->can('bl-view'))
+                    <a href="{{ route('bl.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">BL (Bill of Lading)</span>
                     </a>
                 @endif
 
