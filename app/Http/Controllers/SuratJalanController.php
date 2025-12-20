@@ -558,7 +558,7 @@ class SuratJalanController extends Controller
             'no_plat' => 'nullable|string|max:20',
             'kenek' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|string|max:50',
-            'nomor_kontainer' => 'nullable|array',
+            'nomor_kontainer' => 'nullable', // Accept both string and array
             'nomor_kontainer.*' => 'nullable|string|max:255',
             'kontainer_id' => 'nullable|integer|min:1',
             'no_seal' => 'nullable|string|max:255',
