@@ -433,48 +433,51 @@
                 </thead>
                 <tbody>
                     @foreach($pranotaUangJalan->uangJalans as $index => $uangJalan)
+                        @php
+                            $surat = $uangJalan->suratJalan ?? $uangJalan->suratJalanBongkaran;
+                        @endphp
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td class="text-center">
-                                @if($uangJalan->suratJalan)
-                                    {{ $uangJalan->suratJalan->no_surat_jalan }}
+                                @if($surat)
+                                    {{ $surat->no_surat_jalan ?? $surat->nomor_surat_jalan ?? $uangJalan->nomor_uang_jalan }}
                                 @else
                                     {{ $uangJalan->nomor_uang_jalan }}
                                 @endif
                             </td>
                             <td>
-                                @if($uangJalan->suratJalan)
-                                    {{ $uangJalan->suratJalan->jenis_barang ?? 'PRODUK MINUMAN' }}
+                                @if($surat)
+                                    {{ $surat->jenis_barang ?? 'PRODUK MINUMAN' }}
                                 @else
                                     PRODUK MINUMAN
                                 @endif
                             </td>
                             <td class="text-center">
-                                @if($uangJalan->suratJalan && $uangJalan->suratJalan->supir_nik)
-                                    {{ $uangJalan->suratJalan->supir_nik }}
-                                @elseif($uangJalan->suratJalan && $uangJalan->suratJalan->kenek_nik)
-                                    {{ $uangJalan->suratJalan->kenek_nik }}
+                                @if($surat && isset($surat->supir_nik) && $surat->supir_nik)
+                                    {{ $surat->supir_nik }}
+                                @elseif($surat && isset($surat->kenek_nik) && $surat->kenek_nik)
+                                    {{ $surat->kenek_nik }}
                                 @else
                                     1280
                                 @endif
                             </td>
                             <td>
-                                @if($uangJalan->suratJalan)
-                                    {{ $uangJalan->suratJalan->supir ?? 'Jokaria' }}
+                                @if($surat)
+                                    {{ $surat->supir ?? 'Jokaria' }}
                                 @else
                                     Jokaria
                                 @endif
                             </td>
                             <td>
-                                @if($uangJalan->suratJalan)
-                                    {{ $uangJalan->suratJalan->pengirim ?? 'PT CS2 POLA SEHAT' }}
+                                @if($surat)
+                                    {{ $surat->pengirim ?? 'PT CS2 POLA SEHAT' }}
                                 @else
                                     PT CS2 POLA SEHAT
                                 @endif
                             </td>
                             <td>
-                                @if($uangJalan->suratJalan)
-                                    {{ $uangJalan->suratJalan->tujuan_pengambilan ?? 'TATUNG' }}
+                                @if($surat)
+                                    {{ $surat->tujuan_pengambilan ?? $surat->tujuan_pengiriman ?? 'TATUNG' }}
                                 @else
                                     TATUNG
                                 @endif
