@@ -198,7 +198,20 @@
                                 @endif
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                {{ $prospek->nomor_kontainer ?? '-' }}
+                                @if($prospek->suratJalan && $prospek->suratJalan->no_kontainer != $prospek->nomor_kontainer)
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-red-600" title="Data tidak sinkron dengan surat jalan">
+                                            {{ $prospek->nomor_kontainer ?? '-' }}
+                                        </span>
+                                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xs" 
+                                           title="Data berbeda dengan surat jalan: {{ $prospek->suratJalan->no_kontainer }}"></i>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Surat Jalan: {{ $prospek->suratJalan->no_kontainer }}
+                                    </div>
+                                @else
+                                    {{ $prospek->nomor_kontainer ?? '-' }}
+                                @endif
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                                 {{ $prospek->no_seal ?? '-' }}
@@ -288,6 +301,14 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @can('prospek-edit')
+                                        @if($prospek->suratJalan)
+                                            <button type="button"
+                                                    class="sync-prospek text-purple-600 hover:text-purple-900 transition duration-150"
+                                                    data-prospek-id="{{ $prospek->id }}"
+                                                    title="Sinkronkan dari Surat Jalan">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                        @endif
                                         <div class="relative status-dropdown-container">
                                             <button type="button"
                                                     class="text-green-600 hover:text-green-900 transition duration-150 status-dropdown-btn"
@@ -543,6 +564,53 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 3000);
     }
+    
+    // Handle sync prospek from surat jalan
+    document.querySelectorAll('.sync-prospek').forEach(button => {
+        button.addEventListener('click', function() {
+            const prospekId = this.dataset.prospekId;
+            
+            if (confirm('Sinkronkan data prospek dari surat jalan?\n\nData nomor kontainer, supir, barang, pengirim, dan tujuan akan diperbarui sesuai dengan data di surat jalan.')) {
+                // Show loading
+                const originalIcon = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                this.disabled = true;
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                
+                fetch(`/prospek/${prospekId}/sync-from-surat-jalan`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', data.message || 'Data prospek berhasil disinkronkan');
+                        
+                        // Reload page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        throw new Error(data.error || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', error.message || 'Terjadi kesalahan saat sinkronisasi');
+                    
+                    // Reset button
+                    this.innerHTML = originalIcon;
+                    this.disabled = false;
+                });
+            }
+        });
+    });
     
     // Handle delete prospek
     document.querySelectorAll('.delete-prospek').forEach(button => {

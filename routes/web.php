@@ -3619,6 +3619,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::patch('prospek/{prospek}/update-status', [ProspekController::class, 'updateStatus'])->name('prospek.update-status')
          ->middleware('can:prospek-edit');
 
+    // Route untuk sinkronisasi prospek dari surat jalan
+    Route::post('prospek/{prospek}/sync-from-surat-jalan', [ProspekController::class, 'syncFromSuratJalan'])->name('prospek.sync-from-surat-jalan')
+         ->middleware('can:prospek-edit');
+
     // Route untuk delete prospek
     Route::delete('prospek/{prospek}', [ProspekController::class, 'destroy'])->name('prospek.destroy')
          ->middleware('can:prospek-delete');

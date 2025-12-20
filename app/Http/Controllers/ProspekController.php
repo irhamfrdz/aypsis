@@ -33,7 +33,7 @@ class ProspekController extends Controller
                 abort(403, "Tidak memiliki akses ke halaman prospek");
             }
 
-            $query = Prospek::with(['createdBy', 'updatedBy', 'bls'])->orderBy('created_at', 'desc');
+            $query = Prospek::with(['createdBy', 'updatedBy', 'bls', 'suratJalan'])->orderBy('created_at', 'desc');
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
@@ -636,6 +636,63 @@ class ProspekController extends Controller
             
             return response()->json([
                 'error' => 'Terjadi kesalahan saat menghapus prospek: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sync prospek data from surat jalan
+     */
+    public function syncFromSuratJalan($id)
+    {
+        try {
+            $user = Auth::user();
+            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+                return response()->json([
+                    'error' => 'Tidak memiliki akses untuk mengubah prospek'
+                ], 403);
+            }
+
+            $prospek = Prospek::with('suratJalan')->findOrFail($id);
+            
+            if (!$prospek->suratJalan) {
+                return response()->json([
+                    'error' => 'Prospek tidak memiliki surat jalan terkait'
+                ], 400);
+            }
+
+            $suratJalan = $prospek->suratJalan;
+            
+            // Update data prospek dari surat jalan
+            $prospek->nomor_kontainer = $suratJalan->no_kontainer;
+            $prospek->nama_supir = $suratJalan->nama_supir;
+            $prospek->barang = $suratJalan->jenis_barang;
+            $prospek->pt_pengirim = $suratJalan->nama_pt;
+            $prospek->tujuan_pengiriman = $suratJalan->tujuan;
+            $prospek->updated_by = $user->id;
+            $prospek->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data prospek berhasil disinkronkan dari surat jalan',
+                'data' => [
+                    'nomor_kontainer' => $prospek->nomor_kontainer,
+                    'nama_supir' => $prospek->nama_supir,
+                    'barang' => $prospek->barang,
+                    'pt_pengirim' => $prospek->pt_pengirim,
+                    'tujuan_pengiriman' => $prospek->tujuan_pengiriman
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error syncing prospek from surat jalan', [
+                'prospek_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Terjadi kesalahan saat sinkronisasi: ' . $e->getMessage()
             ], 500);
         }
     }
