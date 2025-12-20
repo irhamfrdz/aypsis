@@ -36,7 +36,8 @@ class UangJalanController extends Controller
         $query = UangJalan::with([
             'suratJalan.order.pengirim', 
             'suratJalanBongkaran',
-            'createdBy'
+            'createdBy',
+            'pranotaSuratJalan'
         ]);
         
         // Filter berdasarkan pencarian

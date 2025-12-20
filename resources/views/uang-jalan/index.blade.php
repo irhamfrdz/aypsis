@@ -186,9 +186,16 @@
                                             ];
                                             $config = $statusConfig[$uangJalan->status] ?? ['bg-gray-100', 'text-gray-800', ucfirst($uangJalan->status)];
                                         @endphp
-                                        <span class="inline-flex px-1.5 py-0.5 text-xs font-medium rounded {{ $config[0] }} {{ $config[1] }}">
-                                            {{ $config[2] }}
-                                        </span>
+                                        <div class="space-y-1">
+                                            <span class="inline-flex px-1.5 py-0.5 text-xs font-medium rounded {{ $config[0] }} {{ $config[1] }}">
+                                                {{ $config[2] }}
+                                            </span>
+                                            @if($uangJalan->status == 'sudah_masuk_pranota' && $uangJalan->pranotaSuratJalan)
+                                                <div class="text-xs text-gray-600">
+                                                    {{ $uangJalan->pranotaSuratJalan->nomor_pranota }}
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-1 py-1 whitespace-nowrap text-center w-20">
                                         <div class="flex justify-center space-x-0.5">
