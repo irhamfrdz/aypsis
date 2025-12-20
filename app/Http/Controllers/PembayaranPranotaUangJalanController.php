@@ -316,9 +316,9 @@ class PembayaranPranotaUangJalanController extends Controller
 
         // Load pranota uang jalan with relations
         $pembayaranPranotaUangJalan->load([
-            'pranotaUangJalan.uangJalans.suratJalan.supirKaryawan',
-            'pranotaUangJalan.uangJalans.suratJalan.tujuanPengambilanRelation',
-            'pranotaUangJalan.uangJalans.suratJalan.tujuanPengirimanRelation'
+            'pranotaUangJalans.uangJalans.suratJalan.supirKaryawan',
+            'pranotaUangJalans.uangJalans.suratJalan.tujuanPengambilanRelation',
+            'pranotaUangJalans.uangJalans.suratJalan.tujuanPengirimanRelation'
         ]);
 
         // Get akun COA for bank selection (only needed for unpaid payments)

@@ -248,24 +248,6 @@
                                 value="{{ old('total_tagihan_setelah_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian) }}"
                                 class="{{ $readonlyInputClasses }}" readonly>
                         </div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Penyesuaian (Opsional)</h4>
-                    <div class="grid grid-cols-1 gap-2">
-                        <div>
-                            <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Total Penyesuaian</label>
-                            <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian" step="0.01"
-                                value="{{ old('total_tagihan_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_penyesuaian ?? 0) }}"
-                                class="{{ $inputClasses }}" placeholder="0">
-                        </div>
-                        <div>
-                            <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Setelah Penyesuaian</label>
-                            <input type="number" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian" step="0.01"
-                                value="{{ old('total_tagihan_setelah_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian) }}"
-                                class="{{ $readonlyInputClasses }}" readonly>
-                        </div>
                         <div>
                             <label for="alasan_penyesuaian" class="{{ $labelClasses }}">Alasan Penyesuaian</label>
                             <textarea name="alasan_penyesuaian" id="alasan_penyesuaian" rows="2"
@@ -339,24 +321,24 @@
                         noBankResults.classList.add('hidden');
                         bankOptions.classList.remove('hidden');
                     
-                    filtered.forEach(opt => {
-                        const div = document.createElement('div');
-                        div.className = 'px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm';
-                        div.textContent = opt.text;
-                        div.dataset.value = opt.value;
-                        
-                        div.addEventListener('click', function() {
-                            bankSelect.value = this.dataset.value;
-                            bankSearch.value = this.textContent;
-                            bankDropdown.classList.add('hidden');
+                        filtered.forEach(opt => {
+                            const div = document.createElement('div');
+                            div.className = 'px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm';
+                            div.textContent = opt.text;
+                            div.dataset.value = opt.value;
+                            
+                            div.addEventListener('click', function() {
+                                bankSelect.value = this.dataset.value;
+                                bankSearch.value = this.textContent;
+                                bankDropdown.classList.add('hidden');
+                            });
+                            
+                            bankOptions.appendChild(div);
                         });
-                        
-                        bankOptions.appendChild(div);
-                    });
+                    }
+                    
+                    bankDropdown.classList.remove('hidden');
                 }
-                
-                bankDropdown.classList.remove('hidden');
-            }
 
                 bankSearch.addEventListener('focus', function() {
                     populateBankOptions(this.value);
@@ -405,7 +387,6 @@
                 // Initial calculation
                 updateTotalSetelah();
             }
-        });
         });
     </script>
 @endsection

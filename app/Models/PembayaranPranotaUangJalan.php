@@ -75,12 +75,28 @@ class PembayaranPranotaUangJalan extends Model
     }
 
     /**
-     * Backward compatibility - get first pranota (deprecated, use pranotaUangJalans instead)
-     * @deprecated
+     * Backward compatibility - get first pranota relationship (deprecated, use pranotaUangJalans instead)
+     * This returns a relationship for eager loading purposes
      */
     public function pranotaUangJalan()
     {
-        return $this->pranotaUangJalans()->first();
+        return $this->belongsToMany(
+            PranotaUangJalan::class,
+            'pembayaran_pranota_uang_jalan_items',
+            'pembayaran_pranota_uang_jalan_id',
+            'pranota_uang_jalan_id'
+        )->withPivot('subtotal')->withTimestamps()->limit(1);
+    }
+    
+    /**
+     * Get first pranota as model instance (for attributes access)
+     */
+    public function getPranotaUangJalanAttribute()
+    {
+        if (!isset($this->relations['pranotaUangJalan'])) {
+            $this->load('pranotaUangJalan');
+        }
+        return $this->pranotaUangJalan->first();
     }
 
     /**
