@@ -1689,4 +1689,80 @@ class TandaTerimaLclController extends Controller
                 ->with('error', 'Terjadi error saat memuat detail kontainer: ' . $e->getMessage());
         }
     }
+    
+    /**
+     * Get barang data from selected containers by nomor kontainer
+     */
+    public function getBarangFromContainersByNomor(Request $request)
+    {
+        try {
+            $containers = $request->containers;
+            
+            if (empty($containers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada kontainer yang dipilih'
+                ]);
+            }
+            
+            // Get all pivot records for these containers
+            $pivots = TandaTerimaLclKontainerPivot::with('tandaTerima.items')
+                ->whereIn('nomor_kontainer', $containers)
+                ->get();
+            
+            if ($pivots->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data kontainer ditemukan'
+                ]);
+            }
+            
+            // Collect all unique barang from items
+            $barangData = [];
+            $barangNames = [];
+            
+            foreach ($pivots as $pivot) {
+                if ($pivot->tandaTerima && $pivot->tandaTerima->items) {
+                    foreach ($pivot->tandaTerima->items as $item) {
+                        $namaBarang = $item->nama_barang;
+                        
+                        // Skip if we already have this barang
+                        if (in_array($namaBarang, $barangNames)) {
+                            continue;
+                        }
+                        
+                        $barangNames[] = $namaBarang;
+                        
+                        $barangData[] = [
+                            'nama_barang' => $namaBarang,
+                            'satuan' => $item->satuan,
+                            'panjang' => $item->panjang,
+                            'lebar' => $item->lebar,
+                            'tinggi' => $item->tinggi,
+                            'jumlah' => $item->jumlah,
+                            'meter_kubik' => $item->meter_kubik,
+                            'tonase' => $item->tonase
+                        ];
+                    }
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'barang' => $barangData,
+                'message' => 'Data barang berhasil dimuat'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting barang from containers by nomor: ' . $e->getMessage(), [
+                'containers' => $request->containers ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

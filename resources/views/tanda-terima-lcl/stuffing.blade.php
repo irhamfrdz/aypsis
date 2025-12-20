@@ -179,6 +179,32 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- Action Buttons for Selected Containers -->
+                <div id="selectedContainerActions" class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-teal-50 border-2 border-blue-300 rounded-lg shadow-sm" style="display: none;">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">
+                                <span id="selectedContainerCount" class="font-bold text-blue-600">0</span> kontainer dipilih
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="bulkContainerAction('split')" 
+                                    style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #8b5cf6; color: #ffffff; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                    onmouseover="this.style.backgroundColor='#7c3aed'" 
+                                    onmouseout="this.style.backgroundColor='#8b5cf6'"
+                                    class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm font-medium transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                </svg>
+                                Pecah Kontainer
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -188,6 +214,9 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th scope="col" class="px-4 py-3 text-left">
+                                <input type="checkbox" id="selectAllContainers" class="rounded border-gray-300 text-blue-600">
+                            </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size / Tipe</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total LCL</th>
@@ -201,6 +230,9 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($groupedByContainer as $container)
                             <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-4">
+                                    <input type="checkbox" class="container-checkbox rounded border-gray-300 text-blue-600" value="{{ $container['nomor_kontainer'] }}">
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-gray-900">{{ $container['nomor_kontainer'] }}</div>
                                 </td>
@@ -291,7 +323,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                                <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                                     <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                     </svg>
@@ -603,12 +635,211 @@
         </div>
     </div>
 </div>
+
+<!-- Modal untuk pecah kontainer -->
+<div id="splitModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-3/4 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Pecah Kontainer</h3>
+                <button type="button" onclick="closeSplitModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">Informasi Pecah Kontainer</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Fitur ini akan membuat tanda terima baru dengan data barang yang dipisahkan dari kontainer yang dipilih</li>
+                                <li>Data asli akan tetap ada, dan data baru akan dibuat dengan dimensi yang Anda tentukan</li>
+                                <li>Pastikan volume dan berat yang dimasukkan sudah benar</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="splitForm" method="POST" action="{{ route('tanda-terima-lcl.bulk-split') }}">
+                @csrf
+                
+                <!-- Hidden input untuk nomor kontainer yang dipilih -->
+                <input type="hidden" id="splitSelectedContainersInput" name="containers" value="">
+                
+                <div class="mb-6">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Detail Kontainer Baru</h4>
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div id="containerFieldsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <!-- Tipe Kontainer -->
+                            <div>
+                                <label for="split_tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Tipe Kontainer <span class="text-red-500">*</span>
+                                </label>
+                                <select name="tipe_kontainer" id="split_tipe_kontainer" required onchange="toggleSplitContainerFields()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Pilih Tipe</option>
+                                    <option value="lcl">LCL</option>
+                                    <option value="cargo">Cargo</option>
+                                </select>
+                            </div>
+
+                            <!-- Nomor Kontainer -->
+                            <div id="splitNomorKontainerField">
+                                <label for="split_nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Nomor Kontainer
+                                </label>
+                                <input type="text" name="nomor_kontainer" id="split_nomor_kontainer"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       placeholder="Masukkan nomor kontainer">
+                            </div>
+
+                            <!-- Size Kontainer -->
+                            <div id="splitSizeKontainerField">
+                                <label for="split_size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Size Kontainer
+                                </label>
+                                <select name="size_kontainer" id="split_size_kontainer"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Pilih Size</option>
+                                    <option value="20ft">20 Feet</option>
+                                    <option value="40ft">40 Feet</option>
+                                    <option value="40hc">40 Feet High Cube</option>
+                                    <option value="45ft">45 Feet</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Nama Barang -->
+                            <div>
+                                <label for="split_nama_barang" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Nama Barang <span class="text-red-500">*</span>
+                                </label>
+                                <select name="nama_barang" id="split_nama_barang" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Memuat data barang...</option>
+                                </select>
+                            </div>
+
+                            <!-- Jumlah -->
+                            <div>
+                                <label for="split_jumlah" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Jumlah <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" name="jumlah" id="split_jumlah" required min="1" step="1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 split-dimensi-input"
+                                       placeholder="0" onchange="calculateSplitVolume()">
+                            </div>
+
+                            <!-- Satuan -->
+                            <div>
+                                <label for="split_satuan" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Satuan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="satuan" id="split_satuan" required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       placeholder="pcs, unit, dll">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <!-- Panjang -->
+                            <div>
+                                <label for="split_panjang" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Panjang (m) <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" name="panjang" id="split_panjang" required min="0" step="0.01"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 split-dimensi-input"
+                                       placeholder="0.00" onchange="calculateSplitVolume()">
+                            </div>
+
+                            <!-- Lebar -->
+                            <div>
+                                <label for="split_lebar" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Lebar (m) <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" name="lebar" id="split_lebar" required min="0" step="0.01"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 split-dimensi-input"
+                                       placeholder="0.00" onchange="calculateSplitVolume()">
+                            </div>
+
+                            <!-- Tinggi -->
+                            <div>
+                                <label for="split_tinggi" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Tinggi (m) <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" name="tinggi" id="split_tinggi" required min="0" step="0.01"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 split-dimensi-input"
+                                       placeholder="0.00" onchange="calculateSplitVolume()">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <!-- Volume (Auto-calculated) -->
+                            <div>
+                                <label for="split_volume" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Volume (m³) <span class="text-red-500">*</span>
+                                    <span class="text-xs text-gray-500">(otomatis dihitung)</span>
+                                </label>
+                                <input type="number" name="meter_kubik" id="split_volume" required min="0" step="0.001" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 focus:outline-none"
+                                       placeholder="0.000">
+                            </div>
+
+                            <!-- Tonase -->
+                            <div>
+                                <label for="split_tonase" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Tonase (ton) <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" name="tonase" id="split_tonase" required min="0" step="0.001"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       placeholder="0.000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeSplitModal()" 
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #d1d5db; color: #374151; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#9ca3af'" 
+                            onmouseout="this.style.backgroundColor='#d1d5db'"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #8b5cf6; color: #ffffff; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#7c3aed'" 
+                            onmouseout="this.style.backgroundColor='#8b5cf6'"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        </svg>
+                        Proses Pecah
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script>
 jQuery(document).ready(function($) {
+    // Initialize container checkboxes
+    initializeContainerCheckboxes();
+    
     // Initialize Select2
     $('.select2-kontainer').select2({
         placeholder: 'Pilih atau cari nomor kontainer',
@@ -796,6 +1027,245 @@ document.getElementById('unsealForm').addEventListener('submit', function(e) {
         e.preventDefault();
         alert('Nomor seal wajib diisi');
         return false;
+    }
+});
+
+function initializeContainerCheckboxes() {
+    const selectAllCheckbox = $('#selectAllContainers');
+    const containerCheckboxes = $('.container-checkbox');
+    const selectedActions = $('#selectedContainerActions');
+    const selectedCount = $('#selectedContainerCount');
+
+    if (!selectAllCheckbox.length || !selectedActions.length) {
+        return;
+    }
+
+    // Select All functionality
+    selectAllCheckbox.on('change', function() {
+        containerCheckboxes.prop('checked', this.checked);
+        updateContainerSelectedActions();
+    });
+
+    // Individual checkbox functionality
+    containerCheckboxes.on('change', function() {
+        updateSelectAllContainerState();
+        updateContainerSelectedActions();
+    });
+
+    function updateSelectAllContainerState() {
+        const checkedBoxes = $('.container-checkbox:checked');
+        const totalBoxes = containerCheckboxes.length;
+        
+        if (checkedBoxes.length === 0) {
+            selectAllCheckbox.prop('indeterminate', false);
+            selectAllCheckbox.prop('checked', false);
+        } else if (checkedBoxes.length === totalBoxes) {
+            selectAllCheckbox.prop('indeterminate', false);
+            selectAllCheckbox.prop('checked', true);
+        } else {
+            selectAllCheckbox.prop('indeterminate', true);
+        }
+    }
+
+    function updateContainerSelectedActions() {
+        const checkedBoxes = $('.container-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        selectedCount.text(count);
+        
+        if (count > 0) {
+            selectedActions.show();
+        } else {
+            selectedActions.hide();
+        }
+    }
+}
+
+function bulkContainerAction(action) {
+    const checkedBoxes = document.querySelectorAll('.container-checkbox:checked');
+    const selectedContainers = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (selectedContainers.length === 0) {
+        alert('Pilih minimal satu kontainer untuk melakukan aksi ini.');
+        return;
+    }
+
+    switch(action) {
+        case 'split':
+            openSplitModal(selectedContainers);
+            break;
+    }
+}
+
+function openSplitModal(selectedContainers) {
+    document.getElementById('splitSelectedContainersInput').value = JSON.stringify(selectedContainers);
+    document.getElementById('splitModal').classList.remove('hidden');
+    
+    // Initialize container fields visibility
+    toggleSplitContainerFields();
+    
+    // Load barang data from selected containers - get all IDs from containers
+    loadBarangForSplit(selectedContainers);
+    
+    // Focus on first input
+    const firstInput = document.querySelector('#splitModal select[name="tipe_kontainer"]');
+    if (firstInput) firstInput.focus();
+}
+
+function loadBarangForSplit(selectedContainers) {
+    const namaBarangSelect = document.getElementById('split_nama_barang');
+    
+    if (!namaBarangSelect) {
+        console.error('Dropdown nama barang tidak ditemukan');
+        return;
+    }
+    
+    // Reset dropdown
+    namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
+    namaBarangSelect.disabled = true;
+    
+    // Get all tanda terima IDs from selected containers
+    // We need to make an AJAX call to get barang from these containers
+    fetch('{{ route("tanda-terima-lcl.get-barang-from-containers-by-nomor") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            containers: selectedContainers
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.barang && data.barang.length > 0) {
+            namaBarangSelect.innerHTML = '<option value="">-- Pilih Barang --</option>';
+            
+            data.barang.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.nama_barang;
+                option.textContent = item.nama_barang;
+                option.dataset.satuan = item.satuan || '';
+                option.dataset.panjang = item.panjang || '';
+                option.dataset.lebar = item.lebar || '';
+                option.dataset.tinggi = item.tinggi || '';
+                option.dataset.jumlah = item.jumlah || '';
+                option.dataset.volume = item.meter_kubik || '';
+                option.dataset.tonase = item.tonase || '';
+                namaBarangSelect.appendChild(option);
+            });
+            
+            namaBarangSelect.disabled = false;
+            
+            // Add event listener to auto-fill dimensi
+            namaBarangSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    document.getElementById('split_satuan').value = selectedOption.dataset.satuan || '';
+                    document.getElementById('split_panjang').value = selectedOption.dataset.panjang || '';
+                    document.getElementById('split_lebar').value = selectedOption.dataset.lebar || '';
+                    document.getElementById('split_tinggi').value = selectedOption.dataset.tinggi || '';
+                    document.getElementById('split_jumlah').value = selectedOption.dataset.jumlah || '';
+                    calculateSplitVolume();
+                }
+            });
+            
+            console.log('✓ Loaded', data.barang.length, 'barang items');
+        } else {
+            namaBarangSelect.innerHTML = '<option value="">Tidak ada data barang</option>';
+            namaBarangSelect.disabled = false;
+            console.warn('Tidak ada data barang ditemukan');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading barang:', error);
+        namaBarangSelect.innerHTML = '<option value="">Error memuat data</option>';
+        namaBarangSelect.disabled = false;
+        alert('Terjadi error saat memuat data barang. Silakan coba lagi.');
+    });
+}
+
+function closeSplitModal() {
+    document.getElementById('splitModal').classList.add('hidden');
+    
+    // Reset form
+    const form = document.getElementById('splitForm');
+    if (form) {
+        form.reset();
+    }
+    
+    // Reset barang dropdown
+    const namaBarangSelect = document.getElementById('split_nama_barang');
+    if (namaBarangSelect) {
+        namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
+        namaBarangSelect.disabled = true;
+    }
+    
+    // Reset all dimensi input fields
+    document.getElementById('split_panjang').value = '';
+    document.getElementById('split_lebar').value = '';
+    document.getElementById('split_tinggi').value = '';
+    document.getElementById('split_jumlah').value = '';
+    document.getElementById('split_volume').value = '';
+    document.getElementById('split_tonase').value = '';
+    
+    // Show container fields again
+    toggleSplitContainerFields();
+}
+
+function toggleSplitContainerFields() {
+    const tipeSelect = document.getElementById('split_tipe_kontainer');
+    const nomorKontainerField = document.getElementById('splitNomorKontainerField');
+    const sizeKontainerField = document.getElementById('splitSizeKontainerField');
+    const containerGrid = document.getElementById('containerFieldsGrid');
+    
+    if (tipeSelect && nomorKontainerField && sizeKontainerField && containerGrid) {
+        if (tipeSelect.value === 'cargo') {
+            nomorKontainerField.style.display = 'none';
+            sizeKontainerField.style.display = 'none';
+            containerGrid.className = 'grid grid-cols-1 gap-4 mb-4';
+            
+            const nomorInput = nomorKontainerField.querySelector('input[name="nomor_kontainer"]');
+            const sizeSelect = sizeKontainerField.querySelector('select[name="size_kontainer"]');
+            if (nomorInput) nomorInput.value = '';
+            if (sizeSelect) sizeSelect.value = '';
+        } else {
+            nomorKontainerField.style.display = 'block';
+            sizeKontainerField.style.display = 'block';
+            containerGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-4';
+        }
+    }
+}
+
+function calculateSplitVolume() {
+    const panjangInput = document.getElementById('split_panjang');
+    const lebarInput = document.getElementById('split_lebar');
+    const tinggiInput = document.getElementById('split_tinggi');
+    const jumlahInput = document.getElementById('split_jumlah');
+    const volumeInput = document.getElementById('split_volume');
+
+    if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) {
+        return;
+    }
+
+    const panjang = parseFloat(panjangInput.value) || 0;
+    const lebar = parseFloat(lebarInput.value) || 0;
+    const tinggi = parseFloat(tinggiInput.value) || 0;
+    const jumlah = parseFloat(jumlahInput.value) || 1;
+
+    if (panjang > 0 && lebar > 0 && tinggi > 0) {
+        const volume = panjang * lebar * tinggi * jumlah;
+        volumeInput.value = volume.toFixed(3);
+    } else {
+        volumeInput.value = '';
+    }
+}
+
+// Close split modal when clicking outside
+window.addEventListener('click', function(event) {
+    const splitModal = document.getElementById('splitModal');
+    if (event.target === splitModal) {
+        closeSplitModal();
     }
 });
 </script>

@@ -2130,6 +2130,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-lcl.get-barang-from-containers')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
     
+    Route::post('tanda-terima-lcl/get-barang-from-containers-by-nomor', [\App\Http\Controllers\TandaTerimaLclController::class, 'getBarangFromContainersByNomor'])
+         ->name('tanda-terima-lcl.get-barang-from-containers-by-nomor')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+    
     Route::get('tanda-terima-lcl/show-container/{nomor_kontainer}', [\App\Http\Controllers\TandaTerimaLclController::class, 'showContainer'])
          ->name('tanda-terima-lcl.show-container')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
