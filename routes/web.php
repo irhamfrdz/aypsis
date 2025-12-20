@@ -2114,6 +2114,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-lcl.seal')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
 
+    Route::post('tanda-terima-lcl/unseal', [\App\Http\Controllers\TandaTerimaLclController::class, 'unsealKontainer'])
+         ->name('tanda-terima-lcl.unseal')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     Route::post('tanda-terima-lcl/assign-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'assignContainer'])
          ->name('tanda-terima-tanpa-surat-jalan.assign-container')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');

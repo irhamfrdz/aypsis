@@ -1481,4 +1481,95 @@ class TandaTerimaLclController extends Controller
                            ->with('error', 'Gagal melakukan seal kontainer: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Unseal (lepas seal) kontainer LCL
+     */
+    public function unsealKontainer(Request $request)
+    {
+        try {
+            $request->validate([
+                'nomor_kontainer' => 'required|string|max:255',
+                'alasan_unseal' => 'required|string|min:10',
+            ], [
+                'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
+                'alasan_unseal.required' => 'Alasan lepas seal wajib diisi',
+                'alasan_unseal.min' => 'Alasan lepas seal minimal 10 karakter',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                           ->withErrors($e->errors())
+                           ->withInput()
+                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+        }
+
+        DB::beginTransaction();
+        try {
+            // Cek apakah kontainer ini sudah di-seal
+            $existingSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->whereNotNull('nomor_seal')
+                ->first();
+
+            if (!$existingSeal) {
+                DB::rollBack();
+                return redirect()->back()
+                               ->with('error', "Kontainer {$request->nomor_kontainer} belum di-seal atau sudah dilepas sealnya.");
+            }
+
+            $oldSealNumber = $existingSeal->nomor_seal;
+            $oldSealDate = $existingSeal->tanggal_seal;
+
+            // Hapus seal dari pivot records
+            $updated = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->update([
+                    'nomor_seal' => null,
+                    'tanggal_seal' => null,
+                ]);
+
+            // Update status kontainer kembali ke active (jika ada di tabel kontainer)
+            Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
+                ->update([
+                    'status' => 'active',
+                    'updated_at' => now()
+                ]);
+
+            // Update status prospek terkait menjadi dibatalkan atau tambahkan keterangan
+            Prospek::where('nomor_kontainer', $request->nomor_kontainer)
+                ->where('no_seal', $oldSealNumber)
+                ->update([
+                    'status' => Prospek::STATUS_DIBATALKAN,
+                    'keterangan' => DB::raw("CONCAT(COALESCE(keterangan, ''), '\n[UNSEAL] Seal dilepas pada " . now()->format('Y-m-d H:i:s') . " oleh " . Auth::user()->name . ". Alasan: " . $request->alasan_unseal . "')"),
+                    'updated_at' => now()
+                ]);
+
+            // Log aktivitas
+            \Log::info('Container unsealed', [
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'old_seal' => $oldSealNumber,
+                'old_seal_date' => $oldSealDate,
+                'alasan' => $request->alasan_unseal,
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'lcl_count' => $updated
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('tanda-terima-lcl.stuffing')
+                           ->with('success', "✓ Berhasil melepas seal kontainer {$request->nomor_kontainer}. Nomor seal {$oldSealNumber} telah dihapus. Total {$updated} LCL telah dilepas sealnya.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error unsealing container: ' . $e->getMessage(), [
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'alasan' => $request->alasan_unseal,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Gagal melepas seal kontainer: ' . $e->getMessage());
+        }
+    }
 }
