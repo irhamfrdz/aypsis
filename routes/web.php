@@ -2125,6 +2125,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tanda-terima-lcl/bulk-split', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkSplit'])
          ->name('tanda-terima-lcl.bulk-split')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+    
+    Route::post('tanda-terima-lcl/get-barang-from-containers', [\App\Http\Controllers\TandaTerimaLclController::class, 'getBarangFromContainers'])
+         ->name('tanda-terima-lcl.get-barang-from-containers')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
 
     // Download image route for LCL (must be before resource route)
     Route::get('tanda-terima-lcl/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}', 

@@ -611,11 +611,13 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Nama Barang
+                                        Nama Barang <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="text" name="nama_barang"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                           placeholder="Nama barang">
+                                    <select id="split_nama_barang" name="nama_barang" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                        <option value="">Memuat data barang...</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Pilih dari barang yang ada di kontainer terpilih</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -1272,9 +1274,109 @@
         // Initialize container fields visibility
         toggleContainerFields();
         
+        // Load barang data from selected containers
+        loadBarangForSplit(selectedIds);
+        
         // Focus on first input in the form
         const firstInput = document.querySelector('#splitModal select[name="tipe_kontainer"]');
         if (firstInput) firstInput.focus();
+    }
+    
+    function loadBarangForSplit(selectedIds) {
+        const namaBarangSelect = document.getElementById('split_nama_barang');
+        
+        if (!namaBarangSelect) {
+            console.error('Dropdown nama barang tidak ditemukan');
+            return;
+        }
+        
+        // Reset dropdown
+        namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
+        namaBarangSelect.disabled = true;
+        
+        // Fetch barang data from selected containers
+        fetch('{{ route("tanda-terima-lcl.get-barang-from-containers") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                ids: selectedIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.barang && data.barang.length > 0) {
+                // Clear loading message
+                namaBarangSelect.innerHTML = '<option value="">-- Pilih Barang --</option>';
+                
+                // Add barang options
+                data.barang.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.nama_barang;
+                    option.textContent = item.nama_barang;
+                    
+                    // Store additional data as data attributes
+                    if (item.satuan) option.setAttribute('data-satuan', item.satuan);
+                    if (item.panjang) option.setAttribute('data-panjang', item.panjang);
+                    if (item.lebar) option.setAttribute('data-lebar', item.lebar);
+                    if (item.tinggi) option.setAttribute('data-tinggi', item.tinggi);
+                    if (item.jumlah) option.setAttribute('data-jumlah', item.jumlah);
+                    
+                    namaBarangSelect.appendChild(option);
+                });
+                
+                namaBarangSelect.disabled = false;
+                
+                // Add event listener to auto-fill dimensi when barang is selected
+                namaBarangSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.value) {
+                        // Auto-fill dimensi fields if data available
+                        const satuan = selectedOption.getAttribute('data-satuan');
+                        const panjang = selectedOption.getAttribute('data-panjang');
+                        const lebar = selectedOption.getAttribute('data-lebar');
+                        const tinggi = selectedOption.getAttribute('data-tinggi');
+                        const jumlah = selectedOption.getAttribute('data-jumlah');
+                        
+                        if (satuan) {
+                            const satuanInput = document.querySelector('#splitModal input[name="satuan"]');
+                            if (satuanInput) satuanInput.value = satuan;
+                        }
+                        
+                        // Optional: pre-fill dimensi as reference (user can modify)
+                        if (panjang) {
+                            const panjangInput = document.getElementById('split_panjang');
+                            if (panjangInput) panjangInput.value = panjang;
+                        }
+                        if (lebar) {
+                            const lebarInput = document.getElementById('split_lebar');
+                            if (lebarInput) lebarInput.value = lebar;
+                        }
+                        if (tinggi) {
+                            const tinggiInput = document.getElementById('split_tinggi');
+                            if (tinggiInput) tinggiInput.value = tinggi;
+                        }
+                        
+                        // Auto-calculate volume
+                        calculateSplitVolume();
+                    }
+                });
+                
+                console.log('✓ Loaded', data.barang.length, 'barang items');
+            } else {
+                namaBarangSelect.innerHTML = '<option value="">Tidak ada data barang</option>';
+                namaBarangSelect.disabled = false;
+                console.warn('Tidak ada data barang ditemukan');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading barang:', error);
+            namaBarangSelect.innerHTML = '<option value="">Error memuat data</option>';
+            namaBarangSelect.disabled = false;
+            alert('Terjadi error saat memuat data barang. Silakan coba lagi.');
+        });
     }
 
     function closeSplitModal() {
@@ -1284,6 +1386,13 @@
         const form = document.getElementById('splitForm');
         if (form) {
             form.reset();
+        }
+        
+        // Reset barang dropdown
+        const namaBarangSelect = document.getElementById('split_nama_barang');
+        if (namaBarangSelect) {
+            namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
+            namaBarangSelect.disabled = true;
         }
         
         // Reset all dimensi input fields

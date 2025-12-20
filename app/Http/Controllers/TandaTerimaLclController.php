@@ -1568,4 +1568,71 @@ class TandaTerimaLclController extends Controller
                            ->with('error', 'Gagal melepas seal kontainer: ' . $e->getMessage());
         }
     }
+    
+    /**
+     * Get barang data from selected containers for split modal
+     */
+    public function getBarangFromContainers(Request $request)
+    {
+        try {
+            $ids = $request->ids;
+            
+            if (empty($ids)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada kontainer yang dipilih'
+                ]);
+            }
+            
+            // Get all TandaTerimaLcl records with their items
+            $tandaTerimas = TandaTerimaLcl::whereIn('id', $ids)
+                ->with('items')
+                ->get();
+            
+            // Collect all unique barang from items
+            $barangData = [];
+            $barangNames = [];
+            
+            foreach ($tandaTerimas as $tandaTerima) {
+                foreach ($tandaTerima->items as $item) {
+                    $namaBarang = $item->nama_barang;
+                    
+                    // Skip if we already have this barang
+                    if (in_array($namaBarang, $barangNames)) {
+                        continue;
+                    }
+                    
+                    $barangNames[] = $namaBarang;
+                    
+                    $barangData[] = [
+                        'nama_barang' => $namaBarang,
+                        'satuan' => $item->satuan,
+                        'panjang' => $item->panjang,
+                        'lebar' => $item->lebar,
+                        'tinggi' => $item->tinggi,
+                        'jumlah' => $item->jumlah,
+                        'meter_kubik' => $item->meter_kubik,
+                        'tonase' => $item->tonase
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'barang' => $barangData,
+                'message' => 'Data barang berhasil dimuat'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting barang from containers: ' . $e->getMessage(), [
+                'ids' => $request->ids ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
