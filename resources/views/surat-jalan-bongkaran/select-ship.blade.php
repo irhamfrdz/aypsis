@@ -71,19 +71,28 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-center justify-end gap-3 pt-4">
-                        <a href="{{ route('dashboard') }}" 
-                           class="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                            Batal
-                        </a>
-                        <button type="submit" 
-                                class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                id="submitBtn">
+                    <div class="flex items-center justify-between pt-4">
+                        <a href="{{ route('surat-jalan-bongkaran.list') }}" 
+                           class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                             </svg>
-                            Lanjutkan
-                        </button>
+                            Lihat Semua
+                        </a>
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('dashboard') }}" 
+                               class="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                Batal
+                            </a>
+                            <button type="submit" 
+                                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    id="submitBtn">
+                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                Lanjutkan
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>

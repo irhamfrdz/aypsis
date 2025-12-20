@@ -1801,10 +1801,6 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-bongkaran.get-voyages')
          ->middleware('can:surat-jalan-bongkaran-view');
     
-    Route::get('surat-jalan-bongkaran/all', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'all'])
-         ->name('surat-jalan-bongkaran.all')
-         ->middleware('can:surat-jalan-bongkaran-view');
-    
     Route::get('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
          ->name('surat-jalan-bongkaran.index')
          ->middleware('can:surat-jalan-bongkaran-view');
