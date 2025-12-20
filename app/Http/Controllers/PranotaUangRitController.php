@@ -135,10 +135,15 @@ class PranotaUangRitController extends Controller
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
-            // Only include surat jalan that already have a supir checkpoint OR have a Tanda Terima record
+            // Only include surat jalan that already have a supir checkpoint OR have a Tanda Terima record OR bongkaran dengan tanggal tanda terima
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                  ->orWhereHas('tandaTerima')
+                  ->orWhere(function($subQ) {
+                      // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
+                      $subQ->where('kegiatan', 'bongkaran')
+                           ->whereNotNull('tanggal_tanda_terima');
+                  });
             });
 
         // Apply date range filter to base query BEFORE any cloning - use where with DATE() function for explicit filtering
@@ -183,7 +188,12 @@ class PranotaUangRitController extends Controller
             })
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                  ->orWhereHas('tandaTerima')
+                  ->orWhere(function($subQ) {
+                      // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
+                      $subQ->where('kegiatan', 'bongkaran')
+                           ->whereNotNull('tanggal_tanda_terima');
+                  });
             });
         
         $countBeforeDate = $baseQueryBeforeDate->count();

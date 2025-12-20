@@ -223,7 +223,7 @@
                     </div>
                 </div>
                 <div class="px-4 py-3 text-xs text-gray-600">
-                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, atau memiliki <strong>Tanda Terima</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
+                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
@@ -312,6 +312,9 @@
                                         @endif
                                         @if($suratJalan->tandaTerima)
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800 ml-1" title="Tanda Terima exists">Tanda Terima</span>
+                                        @endif
+                                        @if($suratJalan->kegiatan == 'bongkaran' && $suratJalan->tanggal_tanda_terima)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-800 ml-1" title="Bongkaran dengan tanggal tanda terima">Bongkaran TT</span>
                                         @endif
                                         @if($suratJalan->approvals && $suratJalan->approvals->where('status', 'approved')->isNotEmpty())
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 ml-1" title="Approved via approval flow">Approved</span>
