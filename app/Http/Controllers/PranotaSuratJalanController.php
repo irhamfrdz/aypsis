@@ -28,7 +28,7 @@ class PranotaSuratJalanController extends Controller
         }
 
         // Build query with filters
-        $query = PranotaUangJalan::with(['uangJalans'])
+        $query = PranotaUangJalan::with(['uangJalans', 'pembayaranPranotaUangJalan'])
             ->withCount('uangJalans');
 
         // Search filter
