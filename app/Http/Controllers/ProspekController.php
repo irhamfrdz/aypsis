@@ -664,6 +664,7 @@ class ProspekController extends Controller
             $suratJalan = $prospek->suratJalan;
             
             // Update data prospek dari surat jalan
+            $prospek->no_surat_jalan = $suratJalan->no_surat_jalan;
             $prospek->nomor_kontainer = $suratJalan->no_kontainer;
             $prospek->nama_supir = $suratJalan->supir;
             $prospek->barang = $suratJalan->jenis_barang;
@@ -676,6 +677,7 @@ class ProspekController extends Controller
                 'success' => true,
                 'message' => 'Data prospek berhasil disinkronkan dari surat jalan',
                 'data' => [
+                    'no_surat_jalan' => $prospek->no_surat_jalan,
                     'nomor_kontainer' => $prospek->nomor_kontainer,
                     'nama_supir' => $prospek->nama_supir,
                     'barang' => $prospek->barang,
