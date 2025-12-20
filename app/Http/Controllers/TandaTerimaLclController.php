@@ -1490,11 +1490,11 @@ class TandaTerimaLclController extends Controller
         try {
             $request->validate([
                 'nomor_kontainer' => 'required|string|max:255',
-                'alasan_unseal' => 'required|string|min:10',
+                'alasan_unseal' => 'required|string|min:5',
             ], [
                 'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
                 'alasan_unseal.required' => 'Alasan lepas seal wajib diisi',
-                'alasan_unseal.min' => 'Alasan lepas seal minimal 10 karakter',
+                'alasan_unseal.min' => 'Alasan lepas seal minimal 5 karakter',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
