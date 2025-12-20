@@ -182,151 +182,115 @@
             </div>
         </div>
 
-        <!-- Table - Display Pivot Data Grouped by Container -->
+        <!-- Table - Display Containers -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="overflow-x-auto">
-                @forelse($groupedByContainer as $container)
-                    <div class="border-b border-gray-200 last:border-b-0">
-                        <!-- Container Header -->
-                        <div class="bg-gray-50 px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition" onclick="toggleContainer('container-{{ $loop->index }}')">
-                            <div class="flex items-center gap-6">
-                                <div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size / Tipe</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total LCL</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume Total</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berat Total</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Seal</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($groupedByContainer as $container)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-gray-900">{{ $container['nomor_kontainer'] }}</div>
-                                    <div class="text-xs text-gray-500 mt-1">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">
                                         {{ $container['size_kontainer'] ?? '-' }}
                                         @if($container['tipe_kontainer'])
-                                            | {{ $container['tipe_kontainer'] }}
+                                            <span class="text-gray-500">/ {{ $container['tipe_kontainer'] }}</span>
                                         @endif
                                     </div>
-                                </div>
-                                <div class="flex items-center gap-4 text-sm">
-                                    <div class="flex items-center gap-2">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ $container['total_lcl'] }} LCL
-                                        </span>
-                                    </div>
-                                    <div class="text-gray-600">
-                                        <span class="font-medium">Volume:</span> {{ number_format($container['total_volume'], 2) }} m³
-                                    </div>
-                                    <div class="text-gray-600">
-                                        <span class="font-medium">Berat:</span> {{ number_format($container['total_berat'], 2) }} ton
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                @php
-                                    $firstPivot = $container['items']->first();
-                                    $hasSealed = $firstPivot && $firstPivot->nomor_seal;
-                                @endphp
-                                @if($hasSealed)
-                                    <div class="flex items-center gap-2">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ $container['total_lcl'] }} LCL
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">{{ number_format($container['total_volume'], 2) }} m³</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">{{ number_format($container['total_berat'], 2) }} ton</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $firstPivot = $container['items']->first();
+                                        $hasSealed = $firstPivot && $firstPivot->nomor_seal;
+                                    @endphp
+                                    @if($hasSealed)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                             Seal: {{ $firstPivot->nomor_seal }}
                                         </span>
-                                        <button type="button" onclick="showUnsealModal('{{ $container['nomor_kontainer'] }}', event)" 
-                                                style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
-                                                onmouseover="this.style.backgroundColor='#b91c1c'" 
-                                                onmouseout="this.style.backgroundColor='#dc2626'"
-                                                class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs font-medium transition">
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            Belum Seal
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('tanda-terima-lcl.show-container', ['nomor_kontainer' => $container['nomor_kontainer']]) }}"
+                                           style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #2563eb; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; text-decoration: none; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                           onmouseover="this.style.backgroundColor='#1d4ed8'" 
+                                           onmouseout="this.style.backgroundColor='#2563eb'"
+                                           class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs font-medium transition">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                             </svg>
-                                            Lepas Seal
-                                        </button>
+                                            Detail
+                                        </a>
+                                        @if($hasSealed)
+                                            <button type="button" onclick="showUnsealModal('{{ $container['nomor_kontainer'] }}', event)" 
+                                                    style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                                    onmouseover="this.style.backgroundColor='#b91c1c'" 
+                                                    onmouseout="this.style.backgroundColor='#dc2626'"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs font-medium transition">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                                </svg>
+                                                Lepas Seal
+                                            </button>
+                                        @else
+                                            <button type="button" onclick="showSealModal('{{ $container['nomor_kontainer'] }}', event)" 
+                                                    style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #d97706; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                                    onmouseover="this.style.backgroundColor='#b45309'" 
+                                                    onmouseout="this.style.backgroundColor='#d97706'"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-amber-600 text-white rounded-md hover:bg-amber-700 text-xs font-medium transition">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Seal
+                                            </button>
+                                        @endif
                                     </div>
-                                @else
-                                    <button type="button" onclick="showSealModal('{{ $container['nomor_kontainer'] }}', event)" 
-                                            style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #d97706; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
-                                            onmouseover="this.style.backgroundColor='#b45309'" 
-                                            onmouseout="this.style.backgroundColor='#d97706'"
-                                            class="inline-flex items-center px-3 py-1.5 bg-amber-600 text-white rounded-md hover:bg-amber-700 text-xs font-medium transition">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                        </svg>
-                                        Seal Kontainer
-                                    </button>
-                                @endif
-                                <svg class="w-5 h-5 text-gray-400 transition-transform" id="arrow-container-{{ $loop->index }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-
-                        <!-- Container Details (Collapsible) -->
-                        <div id="container-{{ $loop->index }}" class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima LCL</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (m³)</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berat (ton)</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Stuffing</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($container['items'] as $pivot)
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-6 py-3">
-                                                @if($pivot->tandaTerima)
-                                                    <div class="text-sm font-medium text-gray-900">{{ $pivot->tandaTerima->nomor_tanda_terima ?? 'TT-LCL-' . $pivot->tandaTerima->id }}</div>
-                                                @else
-                                                    <span class="text-xs text-gray-400">Data tidak tersedia</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-3">
-                                                @if($pivot->tandaTerima)
-                                                    <div class="text-sm text-gray-900">{{ $pivot->tandaTerima->nama_penerima ?? '-' }}</div>
-                                                @else
-                                                    <span class="text-xs text-gray-400">-</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-3">
-                                                @if($pivot->tandaTerima)
-                                                    <div class="text-sm text-gray-900">{{ $pivot->tandaTerima->nama_pengirim ?? '-' }}</div>
-                                                @else
-                                                    <span class="text-xs text-gray-400">-</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-3">
-                                                @if($pivot->tandaTerima && $pivot->tandaTerima->items)
-                                                    <div class="text-sm text-gray-900">{{ number_format($pivot->tandaTerima->items->sum('meter_kubik'), 3) }}</div>
-                                                @else
-                                                    <span class="text-xs text-gray-400">-</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-3">
-                                                @if($pivot->tandaTerima && $pivot->tandaTerima->items)
-                                                    <div class="text-sm text-gray-900">{{ number_format($pivot->tandaTerima->items->sum('tonase'), 3) }}</div>
-                                                @else
-                                                    <span class="text-xs text-gray-400">-</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-3">
-                                                <div class="text-sm text-gray-900">{{ $pivot->assigned_at ? $pivot->assigned_at->format('d/m/Y H:i') : '-' }}</div>
-                                            </td>
-                                            <td class="px-6 py-3">
-                                                <div class="text-sm text-gray-900">{{ $pivot->assignedByUser->name ?? '-' }}</div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                @empty
-                    <div class="px-6 py-8 text-center text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                        </svg>
-                        <p class="text-sm">Belum ada data stuffing</p>
-                    </div>
-                @endforelse
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    <p class="text-sm">Belum ada data stuffing</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -713,19 +677,6 @@ jQuery(document).ready(function($) {
         selectedUnstuffedCount.text(count);
     }
 });
-
-function toggleContainer(containerId) {
-    const element = document.getElementById(containerId);
-    const arrow = document.getElementById('arrow-' + containerId);
-    
-    if (element.style.display === 'none') {
-        element.style.display = 'block';
-        arrow.style.transform = 'rotate(0deg)';
-    } else {
-        element.style.display = 'none';
-        arrow.style.transform = 'rotate(-90deg)';
-    }
-}
 
 function showSealModal(nomorKontainer, event) {
     event.stopPropagation(); // Prevent toggle container

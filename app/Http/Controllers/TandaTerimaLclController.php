@@ -1635,4 +1635,58 @@ class TandaTerimaLclController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * Show detail of a specific container with all its LCL items
+     */
+    public function showContainer($nomor_kontainer)
+    {
+        try {
+            // Get all pivot records for this container
+            $pivots = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser'])
+                ->where('nomor_kontainer', $nomor_kontainer)
+                ->orderBy('assigned_at', 'desc')
+                ->get();
+            
+            if ($pivots->isEmpty()) {
+                return redirect()->route('tanda-terima-lcl.stuffing')
+                    ->with('error', 'Kontainer tidak ditemukan atau belum ada data stuffing.');
+            }
+            
+            // Get first pivot for container info
+            $firstPivot = $pivots->first();
+            
+            // Calculate totals
+            $totalVolume = 0;
+            $totalBerat = 0;
+            
+            foreach ($pivots as $pivot) {
+                if ($pivot->tandaTerima && $pivot->tandaTerima->items) {
+                    $totalVolume += $pivot->tandaTerima->items->sum('meter_kubik');
+                    $totalBerat += $pivot->tandaTerima->items->sum('tonase');
+                }
+            }
+            
+            $containerData = [
+                'nomor_kontainer' => $nomor_kontainer,
+                'size_kontainer' => $firstPivot->size_kontainer,
+                'tipe_kontainer' => $firstPivot->tipe_kontainer,
+                'total_lcl' => $pivots->count(),
+                'total_volume' => $totalVolume,
+                'total_berat' => $totalBerat,
+                'items' => $pivots
+            ];
+            
+            return view('tanda-terima-lcl.show-container', compact('containerData'));
+            
+        } catch (\Exception $e) {
+            \Log::error('Error showing container detail: ' . $e->getMessage(), [
+                'nomor_kontainer' => $nomor_kontainer,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('tanda-terima-lcl.stuffing')
+                ->with('error', 'Terjadi error saat memuat detail kontainer: ' . $e->getMessage());
+        }
+    }
 }
