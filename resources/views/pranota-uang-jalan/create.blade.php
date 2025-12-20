@@ -157,13 +157,13 @@
                                                 <div class="text-xs text-gray-900">
                                                     <div>
                                                         <span class="font-medium">Supir:</span> {{ $surat->supir ?? '-' }}
-                                                        @if($surat->supir_nik)
+                                                        @if(isset($surat->supir_nik) && $surat->supir_nik)
                                                             <span class="text-gray-500">({{ $surat->supir_nik }})</span>
                                                         @endif
                                                     </div>
                                                     <div>
                                                         <span class="font-medium">Kenek:</span> {{ $surat->kenek ?? '-' }}
-                                                        @if($surat->kenek_nik)
+                                                        @if(isset($surat->kenek_nik) && $surat->kenek_nik)
                                                             <span class="text-gray-500">({{ $surat->kenek_nik }})</span>
                                                         @endif
                                                     </div>
