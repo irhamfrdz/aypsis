@@ -606,43 +606,88 @@
                             <div class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
                                 <strong>Catatan:</strong> Untuk tipe <strong>Cargo</strong>, field nomor kontainer dan size kontainer akan disembunyikan karena cargo tidak menggunakan kontainer standar.
                             </div>
-                            <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded">
-                                <h5 class="text-sm font-medium text-green-800 mb-2">💡 Tips untuk Volume dan Berat:</h5>
-                                <ul class="text-xs text-green-700 space-y-1">
-                                    <li>• Contoh volume kecil: 0.001 m³ (1 liter), 0.01 m³ (10 liter), 0.1 m³ (100 liter)</li>
-                                    <li>• Contoh berat: 0.010 ton, 0.050 ton, 0.100 ton</li>
-                                    <li>• Pastikan volume dan berat tidak melebihi kapasitas tanda terima asli</li>
-                                </ul>
+                            
+                            <h5 class="text-sm font-medium text-gray-900 mb-3 mt-4">Dimensi Barang yang Dipindahkan</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Nama Barang
+                                    </label>
+                                    <input type="text" name="nama_barang"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="Nama barang">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Jumlah
+                                    </label>
+                                    <input type="number" id="split_jumlah" name="jumlah" min="0" step="1"
+                                           class="split-dimensi-input w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Satuan
+                                    </label>
+                                    <input type="text" name="satuan"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="Pcs, Kg, Box">
+                                </div>
                             </div>
-                            <h5 class="text-sm font-medium text-gray-900 mb-3">Informasi Barang yang Dipindahkan</h5>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Panjang (m) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" id="split_panjang" name="panjang" step="0.001" min="0" required
+                                           class="split-dimensi-input w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="0.000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Lebar (m) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" id="split_lebar" name="lebar" step="0.001" min="0" required
+                                           class="split-dimensi-input w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="0.000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Tinggi (m) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" id="split_tinggi" name="tinggi" step="0.001" min="0" required
+                                           class="split-dimensi-input w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="0.000">
+                                </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Volume (m³) <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" name="volume" step="0.001" min="0.001" max="999"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                           placeholder="0.000" required onchange="validateSplitInputs()">
-                                    <p class="text-xs text-gray-500 mt-1">Volume dalam meter kubik (m³)</p>
+                                    <input type="number" id="split_volume" name="meter_kubik" step="0.001" min="0.001" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                           placeholder="0.000" readonly>
+                                    <p class="text-xs text-gray-500 mt-1">Auto-calculated</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Berat (Ton) <span class="text-red-500">*</span>
+                                        Tonase (Ton) <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" name="berat" step="0.001" min="0.001" max="999"
+                                    <input type="number" id="split_tonase" name="tonase" step="0.001" min="0.001" required
                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                           placeholder="0.000" required onchange="validateSplitInputs()">
-                                    <p class="text-xs text-gray-500 mt-1">Berat dalam ton</p>
+                                           placeholder="0.000">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Kuantitas
-                                    </label>
-                                    <input type="number" name="kuantitas" min="1"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                           placeholder="0">
-                                    <p class="text-xs text-gray-500 mt-1">Jumlah item yang dipindahkan</p>
-                                </div>
+                            </div>
+                            
+                            <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded">
+                                <h5 class="text-sm font-medium text-green-800 mb-2">💡 Cara Mengisi:</h5>
+                                <ul class="text-xs text-green-700 space-y-1">
+                                    <li>• <strong>Panjang, Lebar, Tinggi:</strong> Masukkan dalam satuan meter (contoh: 1.5m, 0.8m)</li>
+                                    <li>• <strong>Jumlah:</strong> Berapa banyak barang dengan dimensi tersebut</li>
+                                    <li>• <strong>Volume:</strong> Akan dihitung otomatis = Panjang × Lebar × Tinggi × Jumlah</li>
+                                    <li>• <strong>Tonase:</strong> Berat total barang dalam ton</li>
+                                    <li>• Pastikan volume dan berat tidak melebihi kapasitas tanda terima asli</li>
+                                </ul>
                             </div>
                         </div>
                         
@@ -891,7 +936,21 @@
         
         // Handle manual input toggle
         handleContainerManualInput();
+        
+        // Initialize split modal dimensi calculation
+        initializeSplitModalCalculation();
     });
+    
+    function initializeSplitModalCalculation() {
+        // Add event listeners to split modal dimensi inputs
+        const dimensiInputs = document.querySelectorAll('.split-dimensi-input');
+        if (dimensiInputs.length > 0) {
+            dimensiInputs.forEach(input => {
+                input.addEventListener('input', calculateSplitVolume);
+            });
+            console.log('✓ Split modal volume calculation initialized');
+        }
+    }
     
     function initializeContainerSelect() {
         // Check if Select2 is available
@@ -1220,9 +1279,21 @@
 
     function closeSplitModal() {
         document.getElementById('splitModal').classList.add('hidden');
+        
         // Reset form
         const form = document.getElementById('splitForm');
-        form.reset();
+        if (form) {
+            form.reset();
+        }
+        
+        // Reset all dimensi input fields
+        document.getElementById('split_panjang').value = '';
+        document.getElementById('split_lebar').value = '';
+        document.getElementById('split_tinggi').value = '';
+        document.getElementById('split_jumlah').value = '';
+        document.getElementById('split_volume').value = '';
+        document.getElementById('split_tonase').value = '';
+        
         // Show container fields again when modal is closed
         toggleContainerFields();
     }
@@ -1306,13 +1377,37 @@
         }
     }
 
+    function calculateSplitVolume() {
+        const panjangInput = document.getElementById('split_panjang');
+        const lebarInput = document.getElementById('split_lebar');
+        const tinggiInput = document.getElementById('split_tinggi');
+        const jumlahInput = document.getElementById('split_jumlah');
+        const volumeInput = document.getElementById('split_volume');
+
+        if (!panjangInput || !lebarInput || !tinggiInput || !volumeInput) {
+            return;
+        }
+
+        const panjang = parseFloat(panjangInput.value) || 0;
+        const lebar = parseFloat(lebarInput.value) || 0;
+        const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 1;
+
+        if (panjang > 0 && lebar > 0 && tinggi > 0) {
+            const volume = panjang * lebar * tinggi * jumlah;
+            volumeInput.value = volume.toFixed(3);
+        } else {
+            volumeInput.value = '';
+        }
+    }
+
     function validateSplitInputs() {
-        const volumeInput = document.querySelector('input[name="volume"]');
-        const beratInput = document.querySelector('input[name="berat"]');
+        const volumeInput = document.getElementById('split_volume');
+        const tonaseInput = document.getElementById('split_tonase');
         
-        if (volumeInput && beratInput) {
+        if (volumeInput && tonaseInput) {
             const volume = parseFloat(volumeInput.value) || 0;
-            const berat = parseFloat(beratInput.value) || 0;
+            const tonase = parseFloat(tonaseInput.value) || 0;
             
             // Basic validation - reasonable limits
             if (volume > 50) {
@@ -1323,12 +1418,12 @@
                 volumeInput.title = '';
             }
             
-            if (berat > 10) {
-                beratInput.style.borderColor = '#f59e0b';
-                beratInput.title = 'Berat sangat besar. Pastikan benar!';
+            if (tonase > 10) {
+                tonaseInput.style.borderColor = '#f59e0b';
+                tonaseInput.title = 'Tonase sangat besar. Pastikan benar!';
             } else {
-                beratInput.style.borderColor = '';
-                beratInput.title = '';
+                tonaseInput.style.borderColor = '';
+                tonaseInput.title = '';
             }
         }
     }
