@@ -141,7 +141,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($prospeks as $key => $prospek)
-                        <tr class="hover:bg-gray-50 transition duration-150">
+                        <tr class="transition duration-150 {{ $prospek->status == 'aktif' ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50' }}">
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospeks->firstItem() + $key }}
                             </td>
