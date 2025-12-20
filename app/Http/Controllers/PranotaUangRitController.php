@@ -154,8 +154,8 @@ class PranotaUangRitController extends Controller
                 $q->where(function($subQ) use ($startDateObj, $endDateObj) {
                     // 1. Tanggal dari relasi tandaTerima (untuk surat jalan non-bongkaran seperti pengiriman, muat, dll)
                     $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
-                        $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
-                                ->where(\DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                        $ttQuery->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                                ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                     });
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
