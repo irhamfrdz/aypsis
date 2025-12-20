@@ -219,13 +219,23 @@
                                     $hasSealed = $firstPivot && $firstPivot->nomor_seal;
                                 @endphp
                                 @if($hasSealed)
-                                    <div class="text-sm">
+                                    <div class="flex items-center gap-2">
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                             Seal: {{ $firstPivot->nomor_seal }}
                                         </span>
+                                        <button type="button" onclick="showUnsealModal('{{ $container['nomor_kontainer'] }}', event)" 
+                                                style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                                onmouseover="this.style.backgroundColor='#b91c1c'" 
+                                                onmouseout="this.style.backgroundColor='#dc2626'"
+                                                class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs font-medium transition">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                            </svg>
+                                            Lepas Seal
+                                        </button>
                                     </div>
                                 @else
                                     <button type="button" onclick="showSealModal('{{ $container['nomor_kontainer'] }}', event)" 
@@ -552,6 +562,73 @@
         </div>
     </div>
 </div>
+
+<!-- Unseal Modal -->
+<div id="unsealModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <h3 class="text-lg font-medium text-gray-900">Lepas Seal Kontainer</h3>
+                <button type="button" onclick="closeUnsealModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="unsealForm" method="POST" action="{{ route('tanda-terima-lcl.unseal') }}">
+                @csrf
+                <input type="hidden" name="nomor_kontainer" id="unseal_nomor_kontainer">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Nomor Kontainer
+                    </label>
+                    <div id="unseal_container_display" class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 font-medium">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="alasan_unseal" class="block text-sm font-medium text-gray-700 mb-1">
+                        Alasan Lepas Seal <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="alasan_unseal" id="alasan_unseal" required rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                              placeholder="Jelaskan alasan melepas seal kontainer..."></textarea>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+                    <p class="text-xs text-red-800">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        Peringatan: Melepas seal akan menghapus data nomor seal dan tanggal seal. Pastikan ada alasan yang jelas untuk melepas seal kontainer.
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeUnsealModal()" 
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #d1d5db; color: #374151; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#9ca3af'" 
+                            onmouseout="this.style.backgroundColor='#d1d5db'"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+                            onmouseover="this.style.backgroundColor='#b91c1c'" 
+                            onmouseout="this.style.backgroundColor='#dc2626'"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                        </svg>
+                        Lepas Seal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -667,6 +744,18 @@ function closeSealModal() {
     document.getElementById('sealForm').reset();
 }
 
+function showUnsealModal(nomorKontainer, event) {
+    event.stopPropagation(); // Prevent toggle container
+    document.getElementById('unseal_nomor_kontainer').value = nomorKontainer;
+    document.getElementById('unseal_container_display').textContent = nomorKontainer;
+    document.getElementById('unsealModal').classList.remove('hidden');
+}
+
+function closeUnsealModal() {
+    document.getElementById('unsealModal').classList.add('hidden');
+    document.getElementById('unsealForm').reset();
+}
+
 function showUnstuffedModal() {
     document.getElementById('stuffingModal').classList.remove('hidden');
 }
@@ -704,6 +793,11 @@ document.getElementById('stuffingForm').addEventListener('submit', function(e) {
         container.appendChild(input);
     });
 });
+    
+    const unsealModal = document.getElementById('unsealModal');
+    if (event.target === unsealModal) {
+        closeUnsealModal();
+    }
 
 // Close modal when clicking outside
 document.addEventListener('click', function(event) {
@@ -722,6 +816,22 @@ document.addEventListener('click', function(event) {
 document.getElementById('sealForm').addEventListener('submit', function(e) {
     const nomorSeal = document.getElementById('nomor_seal').value.trim();
     if (!nomorSeal) {
+
+// Validate unseal form
+document.getElementById('unsealForm').addEventListener('submit', function(e) {
+    const alasanUnseal = document.getElementById('alasan_unseal').value.trim();
+    if (!alasanUnseal) {
+        e.preventDefault();
+        alert('Alasan lepas seal wajib diisi');
+        return false;
+    }
+    
+    // Konfirmasi sebelum submit
+    if (!confirm('Apakah Anda yakin ingin melepas seal kontainer ini? Data seal akan dihapus.')) {
+        e.preventDefault();
+        return false;
+    }
+});
         e.preventDefault();
         alert('Nomor seal wajib diisi');
         return false;
