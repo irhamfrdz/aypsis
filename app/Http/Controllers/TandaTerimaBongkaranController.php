@@ -44,7 +44,7 @@ class TandaTerimaBongkaranController extends Controller
             return view('tanda-terima-bongkaran.index', compact('tandaTerimas'));
         } else {
             // Query for Surat Jalan Bongkaran
-            $query = SuratJalanBongkaran::with(['bl']);
+            $query = SuratJalanBongkaran::with(['bl', 'tandaTerima']);
 
             // Search filter
             if ($request->filled('search')) {
@@ -61,6 +61,15 @@ class TandaTerimaBongkaranController extends Controller
             // Kegiatan filter
             if ($request->filled('kegiatan')) {
                 $query->where('kegiatan', $request->kegiatan);
+            }
+
+            // Status filter
+            if ($request->filled('status')) {
+                if ($request->status === 'sudah') {
+                    $query->whereHas('tandaTerima');
+                } elseif ($request->status === 'belum') {
+                    $query->whereDoesntHave('tandaTerima');
+                }
             }
 
             $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);

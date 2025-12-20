@@ -59,7 +59,7 @@
         <form method="GET" action="{{ route('tanda-terima-bongkaran.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <!-- Tipe -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label for="tipe" class="block text-sm font-medium text-gray-700 mb-2">Tampilkan</label>
                     <select name="tipe" 
                             id="tipe"
@@ -81,7 +81,7 @@
                 </div>
 
                 <!-- Kegiatan -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">Kegiatan</label>
                     <select name="kegiatan" 
                             id="kegiatan"
@@ -91,6 +91,18 @@
                         <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
                         <option value="stuffing" {{ request('kegiatan') == 'stuffing' ? 'selected' : '' }}>Stuffing</option>
                         <option value="stripping" {{ request('kegiatan') == 'stripping' ? 'selected' : '' }}>Stripping</option>
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div class="md:col-span-2">
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" 
+                            id="status"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Semua Status</option>
+                        <option value="sudah" {{ request('status') == 'sudah' ? 'selected' : '' }}>Sudah Tanda Terima</option>
+                        <option value="belum" {{ request('status') == 'belum' ? 'selected' : '' }}>Belum Tanda Terima</option>
                     </select>
                 </div>
 
@@ -426,6 +438,10 @@
     });
     
     document.getElementById('kegiatan')?.addEventListener('change', function() {
+        this.form.submit();
+    });
+    
+    document.getElementById('status')?.addEventListener('change', function() {
         this.form.submit();
     });
 

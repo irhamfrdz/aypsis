@@ -116,6 +116,14 @@ class SuratJalanBongkaran extends Model
     }
 
     /**
+     * Relationship to Tanda Terima Bongkaran
+     */
+    public function tandaTerima()
+    {
+        return $this->hasOne(\App\Models\TandaTerimaBongkaran::class, 'surat_jalan_bongkaran_id');
+    }
+
+    /**
      * Relationship dengan Uang Jalan (unified table)
      */
     public function uangJalan()

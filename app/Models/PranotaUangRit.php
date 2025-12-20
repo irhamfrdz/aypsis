@@ -16,6 +16,7 @@ class PranotaUangRit extends Model
         'no_pranota',
         'tanggal',
         'surat_jalan_id',
+        'surat_jalan_bongkaran_id',
         'no_surat_jalan',
         'supir_nama',
         'kenek_nama',
@@ -76,6 +77,11 @@ class PranotaUangRit extends Model
     public function suratJalan()
     {
         return $this->belongsTo(SuratJalan::class);
+    }
+
+    public function suratJalanBongkaran()
+    {
+        return $this->belongsTo(SuratJalanBongkaran::class);
     }
 
     public function creator()

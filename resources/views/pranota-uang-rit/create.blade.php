@@ -288,41 +288,90 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($suratJalans as $suratJalan)
+                            @php
+                                $allSuratJalans = collect();
+                                
+                                // Add regular surat jalans
+                                foreach($suratJalans as $sj) {
+                                    $allSuratJalans->push([
+                                        'type' => 'regular',
+                                        'id' => $sj->id,
+                                        'no_surat_jalan' => $sj->no_surat_jalan,
+                                        'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                                        'supir' => $sj->supir,
+                                        'tanggal_checkpoint' => $sj->tanggal_checkpoint,
+                                        'tandaTerima' => $sj->tandaTerima,
+                                        'kegiatan' => $sj->kegiatan,
+                                        'tanggal_tanda_terima' => $sj->tanggal_tanda_terima,
+                                        'approvals' => $sj->approvals,
+                                        'data' => $sj
+                                    ]);
+                                }
+                                
+                                // Add surat jalan bongkarans if available
+                                if(isset($suratJalanBongkarans)) {
+                                    foreach($suratJalanBongkarans as $sjb) {
+                                        $allSuratJalans->push([
+                                            'type' => 'bongkaran',
+                                            'id' => $sjb->id,
+                                            'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                                            'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                                            'supir' => $sjb->supir,
+                                            'tanggal_checkpoint' => null,
+                                            'tandaTerima' => $sjb->tandaTerima,
+                                            'kegiatan' => $sjb->kegiatan,
+                                            'tanggal_tanda_terima' => $sjb->tandaTerima ? $sjb->tandaTerima->tanggal_tanda_terima : null,
+                                            'approvals' => null,
+                                            'data' => $sjb
+                                        ]);
+                                    }
+                                }
+                            @endphp
+                            
+                            @forelse($allSuratJalans as $item)
+                                @php
+                                    $inputPrefix = $item['type'] === 'regular' ? 'surat_jalan_data' : 'surat_jalan_bongkaran_data';
+                                @endphp
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
-                                    data-nomor="{{ strtolower($suratJalan->no_surat_jalan ?? '') }}"
-                                    data-supir="{{ strtolower($suratJalan->supir ?? '') }}">
+                                    data-nomor="{{ strtolower($item['no_surat_jalan'] ?? '') }}"
+                                    data-supir="{{ strtolower($item['supir'] ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox"
-                                               name="surat_jalan_data[{{ $suratJalan->id }}][selected]"
+                                               name="{{ $inputPrefix }}[{{ $item['id'] }}][selected]"
                                                value="1"
                                                class="surat-jalan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded"
-                                               data-id="{{ $suratJalan->id }}"
-                                               data-no_surat_jalan="{{ $suratJalan->no_surat_jalan }}"
-                                               data-supir_nama="{{ $suratJalan->supir }}">
-                                        <input type="hidden" name="surat_jalan_data[{{ $suratJalan->id }}][no_surat_jalan]" value="{{ $suratJalan->no_surat_jalan }}">
-                                        <input type="hidden" name="surat_jalan_data[{{ $suratJalan->id }}][supir_nama]" value="{{ $suratJalan->supir }}">
+                                               data-id="{{ $item['id'] }}"
+                                               data-type="{{ $item['type'] }}"
+                                               data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
+                                               data-supir_nama="{{ $item['supir'] }}">
+                                        <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][no_surat_jalan]" value="{{ $item['no_surat_jalan'] }}">
+                                        <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][supir_nama]" value="{{ $item['supir'] }}">
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $suratJalan->no_surat_jalan ?? '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->supir ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                                        {{ $item['no_surat_jalan'] ?? '-' }}
+                                        @if($item['type'] === 'bongkaran')
+                                            <span class="ml-1 px-1 py-0.5 text-xs font-semibold rounded bg-purple-100 text-purple-800">Bongkaran</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $item['tanggal_surat_jalan'] ? $item['tanggal_surat_jalan']->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $item['supir'] ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center text-xs">
-                                        @if($suratJalan->tanggal_checkpoint)
+                                        @if($item['tanggal_checkpoint'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800" title="Checkpoint supir detected">Checkpoint</span>
                                         @endif
-                                        @if($suratJalan->tandaTerima)
+                                        @if($item['tandaTerima'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800 ml-1" title="Tanda Terima exists">Tanda Terima</span>
                                         @endif
-                                        @if($suratJalan->kegiatan == 'bongkaran' && $suratJalan->tanggal_tanda_terima)
+                                        @if($item['kegiatan'] == 'bongkaran' && $item['tanggal_tanda_terima'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-800 ml-1" title="Bongkaran dengan tanggal tanda terima">Bongkaran TT</span>
                                         @endif
-                                        @if($suratJalan->approvals && $suratJalan->approvals->where('status', 'approved')->isNotEmpty())
+                                        @if($item['approvals'] && $item['approvals']->where('status', 'approved')->isNotEmpty())
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 ml-1" title="Approved via approval flow">Approved</span>
                                         @endif
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs">
                                         <input type="number" 
-                                               name="surat_jalan_data[{{ $suratJalan->id }}][uang_rit_supir]" 
+                                               name="{{ $inputPrefix }}[{{ $item['id'] }}][uang_rit_supir]" 
                                                class="uang-rit-supir-input w-20 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                                placeholder="85000" 
                                                value="85000"

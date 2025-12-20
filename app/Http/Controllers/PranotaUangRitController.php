@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PranotaUangRit;
 use App\Models\PranotaUangRitSupirDetail;
 use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -288,7 +289,29 @@ class PranotaUangRitController extends Controller
             ->take(10)
             ->get(['id', 'no_surat_jalan', 'supir', 'status', 'rit', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
 
-        return view('pranota-uang-rit.create', compact('suratJalans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate'));
+        // TAMBAHAN: Ambil juga data dari SuratJalanBongkaran yang sudah ada tanda terima
+        $suratJalanBongkarans = collect();
+        if ($startDateObj && $endDateObj) {
+            $suratJalanBongkarans = SuratJalanBongkaran::with(['tandaTerima'])
+                ->whereHas('tandaTerima', function($query) use ($startDateObj, $endDateObj) {
+                    $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                          ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                })
+                ->where('rit', 'menggunakan_rit')
+                ->where('status_pembayaran_uang_rit', 'belum_dibayar')
+                ->whereNotIn('id', function($query) {
+                    $query->select('surat_jalan_bongkaran_id')
+                        ->from('pranota_uang_rits')
+                        ->whereNotNull('surat_jalan_bongkaran_id')
+                        ->whereNotIn('status', ['cancelled']);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            Log::info('Surat Jalan Bongkaran with Tanda Terima: ' . $suratJalanBongkarans->count());
+        }
+
+        return view('pranota-uang-rit.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate'));
     }
 
     /**
@@ -431,12 +454,17 @@ class PranotaUangRitController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string',
-            'surat_jalan_data' => 'required|array|min:1',
+            'surat_jalan_data' => 'sometimes|array',
             'surat_jalan_data.*.selected' => 'required',
             'surat_jalan_data.*.no_surat_jalan' => 'required|string|max:255',
             'surat_jalan_data.*.supir_nama' => 'required|string|max:255',
             'surat_jalan_data.*.kenek_nama' => 'nullable|string|max:255',
             'surat_jalan_data.*.uang_rit_supir' => 'required|numeric|min:0',
+            'surat_jalan_bongkaran_data' => 'sometimes|array',
+            'surat_jalan_bongkaran_data.*.selected' => 'required',
+            'surat_jalan_bongkaran_data.*.no_surat_jalan' => 'required|string|max:255',
+            'surat_jalan_bongkaran_data.*.supir_nama' => 'required|string|max:255',
+            'surat_jalan_bongkaran_data.*.uang_rit_supir' => 'required|numeric|min:0',
             'supir_details' => 'sometimes|array', // Data hutang, tabungan, dan BPJS per supir
             'supir_details.*.hutang' => 'nullable|numeric|min:0',
             'supir_details.*.tabungan' => 'nullable|numeric|min:0',
@@ -448,12 +476,23 @@ class PranotaUangRitController extends Controller
 
         DB::beginTransaction();
         try {
-            // Filter hanya data yang dipilih
-            $selectedData = array_filter($request->surat_jalan_data, function($item) {
-                return isset($item['selected']) && $item['selected'];
-            });
+            // Filter hanya data yang dipilih untuk regular surat jalan
+            $selectedData = [];
+            if ($request->has('surat_jalan_data')) {
+                $selectedData = array_filter($request->surat_jalan_data, function($item) {
+                    return isset($item['selected']) && $item['selected'];
+                });
+            }
 
-            if (empty($selectedData)) {
+            // Filter hanya data yang dipilih untuk surat jalan bongkaran
+            $selectedBongkaranData = [];
+            if ($request->has('surat_jalan_bongkaran_data')) {
+                $selectedBongkaranData = array_filter($request->surat_jalan_bongkaran_data, function($item) {
+                    return isset($item['selected']) && $item['selected'];
+                });
+            }
+
+            if (empty($selectedData) && empty($selectedBongkaranData)) {
                 return back()->withErrors(['surat_jalan_data' => 'Silakan pilih minimal satu surat jalan.'])->withInput();
             }
 
@@ -475,7 +514,27 @@ class PranotaUangRitController extends Controller
                 $supirNama = $data['supir_nama'];
                 $uangSupir = floatval($data['uang_rit_supir'] ?? 0); // Ensure it's a number
                 
-                Log::info("Processing Supir: {$supirNama}, Uang Supir: {$uangSupir}");
+                Log::info("Processing Regular Supir: {$supirNama}, Uang Supir: {$uangSupir}");
+                
+                if (!isset($supirTotals[$supirNama])) {
+                    $supirTotals[$supirNama] = [
+                        'total_uang_supir' => 0.0,
+                        'hutang' => 0.0,
+                        'tabungan' => 0.0,
+                        'bpjs' => 0.0,
+                    ];
+                }
+                
+                $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
+                $totalUangSupirKeseluruhan += $uangSupir;
+            }
+
+            // Hitung total uang supir per supir untuk bongkaran
+            foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
+                $supirNama = $data['supir_nama'];
+                $uangSupir = floatval($data['uang_rit_supir'] ?? 0);
+                
+                Log::info("Processing Bongkaran Supir: {$supirNama}, Uang Supir: {$uangSupir}");
                 
                 if (!isset($supirTotals[$supirNama])) {
                     $supirTotals[$supirNama] = [
@@ -521,6 +580,7 @@ class PranotaUangRitController extends Controller
             $allKenekNama = [];
             $allNoPlat = [];
             $firstSuratJalanId = null;
+            $firstSuratJalanBongkaranId = null;
             
             foreach ($selectedData as $suratJalanId => $data) {
                 if ($firstSuratJalanId === null) {
@@ -532,6 +592,16 @@ class PranotaUangRitController extends Controller
                 }
                 if (!empty($data['kenek_nama']) && !in_array($data['kenek_nama'], $allKenekNama)) {
                     $allKenekNama[] = $data['kenek_nama'];
+                }
+            }
+
+            foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
+                if ($firstSuratJalanBongkaranId === null) {
+                    $firstSuratJalanBongkaranId = $suratJalanBongkaranId;
+                }
+                $allNoSuratJalan[] = $data['no_surat_jalan'] . ' (Bongkaran)';
+                if (!in_array($data['supir_nama'], $allSupirNama)) {
+                    $allSupirNama[] = $data['supir_nama'];
                 }
             }
             
@@ -546,7 +616,8 @@ class PranotaUangRitController extends Controller
             $pranotaUangRit = PranotaUangRit::create([
                 'no_pranota' => $nomorPranota,
                 'tanggal' => $request->tanggal,
-                'surat_jalan_id' => $firstSuratJalanId, // Referensi ke surat jalan pertama
+                'surat_jalan_id' => $firstSuratJalanId, // Referensi ke surat jalan pertama (bisa null jika hanya bongkaran)
+                'surat_jalan_bongkaran_id' => $firstSuratJalanBongkaranId, // Referensi ke surat jalan bongkaran pertama
                 'no_surat_jalan' => $combinedNoSuratJalan,
                 'supir_nama' => $combinedSupirNama,
                 'kenek_nama' => $combinedKenekNama ?: null,
@@ -570,6 +641,16 @@ class PranotaUangRitController extends Controller
                 if ($suratJalan) {
                     $suratJalan->update([
                         'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA
+                    ]);
+                }
+            }
+
+            // Update status pembayaran uang rit pada SEMUA surat jalan bongkaran yang dipilih
+            foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
+                $suratJalanBongkaran = SuratJalanBongkaran::find($suratJalanBongkaranId);
+                if ($suratJalanBongkaran) {
+                    $suratJalanBongkaran->update([
+                        'status_pembayaran_uang_rit' => 'sudah_masuk_pranota'
                     ]);
                 }
             }
