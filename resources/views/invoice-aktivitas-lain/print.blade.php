@@ -327,50 +327,41 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 45%;">Deskripsi</th>
-                    <th style="width: 10%;">Qty</th>
-                    <th style="width: 15%;">Harga Satuan</th>
+                    <th style="width: 70%;">Deskripsi</th>
                     <th style="width: 25%;">Total</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($invoice->details ?? [] as $index => $detail)
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ $detail->deskripsi ?? '-' }}</td>
-                        <td class="text-center">{{ $detail->qty ?? 1 }}</td>
-                        <td class="text-right">Rp {{ number_format($detail->harga_satuan ?? 0, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($detail->total ?? 0, 0, ',', '.') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="text-center">Tidak ada detail item</td>
-                    </tr>
-                @endforelse
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>
+                        <strong>{{ $invoice->jenis_aktivitas }}</strong>
+                        @if($invoice->sub_jenis_kendaraan)
+                            <br>Kendaraan: {{ $invoice->sub_jenis_kendaraan }}
+                        @endif
+                        @if($invoice->nomor_polisi)
+                            <br>No. Polisi: {{ $invoice->nomor_polisi }}
+                        @endif
+                        @if($invoice->nomor_voyage)
+                            <br>No. Voyage: {{ $invoice->nomor_voyage }}
+                        @endif
+                        @if($invoice->penerima)
+                            <br>Penerima: {{ $invoice->penerima }}
+                        @endif
+                        @if($invoice->keterangan)
+                            <br><em>{{ $invoice->keterangan }}</em>
+                        @endif
+                    </td>
+                    <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
+                </tr>
             </tbody>
         </table>
         
         <!-- Total Section -->
         <div class="total-section">
-            <div class="total-row">
-                <span class="total-label">Subtotal:</span>
-                <span>Rp {{ number_format($invoice->subtotal ?? 0, 0, ',', '.') }}</span>
-            </div>
-            @if(($invoice->ppn ?? 0) > 0)
-            <div class="total-row">
-                <span class="total-label">PPN ({{ $invoice->ppn_persen ?? 11 }}%):</span>
-                <span>Rp {{ number_format($invoice->ppn ?? 0, 0, ',', '.') }}</span>
-            </div>
-            @endif
-            @if(($invoice->pph ?? 0) > 0)
-            <div class="total-row">
-                <span class="total-label">PPH ({{ $invoice->pph_persen ?? 2 }}%):</span>
-                <span>Rp {{ number_format($invoice->pph ?? 0, 0, ',', '.') }}</span>
-            </div>
-            @endif
             <div class="total-row grand-total">
-                <span class="total-label">TOTAL:</span>
-                <span>Rp {{ number_format($invoice->total ?? 0, 0, ',', '.') }}</span>
+                <span class="total-label">TOTAL INVOICE:</span>
+                <span>Rp {{ number_format($invoice->total, 0, ',', '.') }}</span>
             </div>
         </div>
         
