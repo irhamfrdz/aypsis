@@ -454,8 +454,9 @@
                         <!-- Penerima -->
                         <div>
                             <label for="modal_penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                            <input type="text" name="pengirim" id="modal_penerima" readonly
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                            <input type="text" name="penerima" id="modal_penerima"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama penerima">
                         </div>
 
                         <!-- Jenis Barang -->
@@ -812,8 +813,9 @@
                         <!-- Penerima -->
                         <div>
                             <label for="edit_modal_penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                            <input type="text" name="pengirim" id="edit_modal_penerima"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="penerima" id="edit_modal_penerima"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama penerima">
                         </div>
 
                         <!-- Jenis Barang -->
@@ -1595,7 +1597,7 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_term').value = data.term || '';
             document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
             
-            document.getElementById('edit_modal_penerima').value = data.pengirim || '';
+            document.getElementById('edit_modal_penerima').value = data.penerima || data.pengirim || '';
             document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
             document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
             document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';

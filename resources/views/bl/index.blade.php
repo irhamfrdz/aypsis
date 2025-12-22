@@ -307,6 +307,9 @@
                                 Pelabuhan Tujuan
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Penerima
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_barang', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Nama Barang
@@ -411,7 +414,11 @@
                                         {{ $bl->pelabuhan_tujuan ?: '-' }}
                                     </div>
                                 </td>
-                                <!-- alamat_penerima removed -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        {{ $bl->penerima ?: '-' }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">
                                         {{ Str::limit($bl->nama_barang, 30) }}
