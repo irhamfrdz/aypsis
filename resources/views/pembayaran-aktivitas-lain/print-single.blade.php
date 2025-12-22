@@ -280,6 +280,43 @@
             </table>
         </div>
 
+        <!-- Daftar Invoice yang Dibayar -->
+        @if($pembayaranAktivitasLain->invoices && $pembayaranAktivitasLain->invoices->count() > 0)
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Daftar Invoice yang Dibayar:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 22%;">No. Invoice</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 20%;">Jenis Aktivitas</th>
+                        <th style="width: 15%;">Sub Jenis</th>
+                        <th style="width: 20%;">Total Invoice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $totalInvoices = 0; @endphp
+                    @foreach($pembayaranAktivitasLain->invoices as $index => $invoice)
+                        @php $totalInvoices += $invoice->total; @endphp
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $invoice->nomor_invoice }}</td>
+                            <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
+                            <td>{{ $invoice->jenis_aktivitas }}</td>
+                            <td>{{ $invoice->sub_jenis_kendaraan ?? '-' }}</td>
+                            <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="5" class="text-right"><strong>TOTAL INVOICE</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @endif
+
         <!-- Tipe Penyesuaian Detail (jika ada) -->
         @if($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Adjusment Uang Jalan' && 
             $pembayaranAktivitasLain->tipe_penyesuaian_detail && 
