@@ -218,6 +218,7 @@
                                         <tr>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Item</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Nama Barang</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Kuantitas</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Panjang (m)</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Lebar (m)</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Tinggi (m)</th>
@@ -230,6 +231,7 @@
                                             <tr class="hover:bg-gray-50">
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->item_number ?? $loop->iteration }}</td>
                                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $item->nama_barang ?? $tandaTerima->nama_barang ?? '-' }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->kuantitas ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->panjang ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->lebar ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->tinggi ?? '-' }}</td>
@@ -240,7 +242,7 @@
                                     </tbody>
                                     <tfoot class="bg-gray-50">
                                         <tr>
-                                            <td colspan="5" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
+                                            <td colspan="6" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
                                             <td class="px-4 py-3 text-sm font-semibold text-purple-600">{{ number_format($tandaTerima->items->sum('meter_kubik'), 3) }} m³</td>
                                             <td class="px-4 py-3 text-sm font-semibold text-purple-600">{{ number_format($tandaTerima->items->sum('tonase'), 2) }} Ton</td>
                                         </tr>
