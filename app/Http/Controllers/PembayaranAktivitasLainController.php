@@ -311,7 +311,6 @@ class PembayaranAktivitasLainController extends Controller
                 'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari ' . count($invoiceIds) . ' invoice',
                 'invoice_ids' => $validated['invoice_ids'],
                 'created_by' => Auth::id(),
-                'status' => 'approved',
             ]);
 
             // Attach invoices to payment with amount (many-to-many relationship)
