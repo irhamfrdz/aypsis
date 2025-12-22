@@ -117,9 +117,9 @@ class PergerakanKapal extends Model
             $q->where('nama_kapal', 'like', '%' . $search . '%')
               ->orWhere('kapten', 'like', '%' . $search . '%')
               ->orWhere('voyage', 'like', '%' . $search . '%')
-              ->orWhere('pelabuhan_asal', 'like', '%' . $search . '%')
-              ->orWhere('pelabuhan_tujuan', 'like', '%' . $search . '%')
-              ->orWhere('pelabuhan_transit', 'like', '%' . $search . '%');
+              ->orWhere('tujuan_asal', 'like', '%' . $search . '%')
+              ->orWhere('tujuan_tujuan', 'like', '%' . $search . '%')
+              ->orWhere('tujuan_transit', 'like', '%' . $search . '%');
         });
     }
 
