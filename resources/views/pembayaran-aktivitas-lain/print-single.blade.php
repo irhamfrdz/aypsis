@@ -344,46 +344,6 @@
         </div>
         @endif
 
-        <!-- Tipe Penyesuaian Detail (jika ada di pembayaran langsung) -->
-        @if($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Adjusment Uang Jalan' && 
-            $pembayaranAktivitasLain->tipe_penyesuaian_detail && 
-            is_array($pembayaranAktivitasLain->tipe_penyesuaian_detail) && 
-            count($pembayaranAktivitasLain->tipe_penyesuaian_detail) > 0)
-        <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Rincian Tipe Penyesuaian:</strong>
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">No</th>
-                        <th style="width: 50%;">Keterangan</th>
-                        <th style="width: 40%;">Nominal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $totalPenyesuaian = 0;
-                    @endphp
-                    @foreach($pembayaranAktivitasLain->tipe_penyesuaian_detail as $index => $item)
-                        @php
-                            $nominal = is_array($item) ? ($item['nominal'] ?? 0) : 0;
-                            $tipe = is_array($item) ? ($item['tipe'] ?? '-') : '-';
-                            $totalPenyesuaian += $nominal;
-                        @endphp
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ ucfirst($tipe) }}</td>
-                            <td class="text-right">Rp {{ number_format($nominal, 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                    <tr class="total-row">
-                        <td colspan="2" class="text-right"><strong>TOTAL PENYESUAIAN</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($totalPenyesuaian, 0, ',', '.') }}</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        @endif
-
         <!-- Detail Table -->
         <table class="table">
             <thead>
