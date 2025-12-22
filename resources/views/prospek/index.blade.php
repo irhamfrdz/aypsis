@@ -107,6 +107,10 @@
                 
                 {{-- Tombol Naik Kapal untuk prospek aktif --}}
                 <div class="flex gap-2">
+                    <button type="button" onclick="openScanModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-file-upload mr-2"></i>
+                        Scan Surat Jalan
+                    </button>
                     <a href="{{ route('prospek.pilih-tujuan') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-ship mr-2"></i>
                         Naik Kapal
@@ -414,7 +418,174 @@
     </div>
 </div>
 
+{{-- Modal Scan Surat Jalan --}}
+<div id="scanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-file-upload mr-2 text-purple-600"></i>
+                    Scan Surat Jalan dari Excel
+                </h3>
+                <button type="button" onclick="closeScanModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-purple-800">Petunjuk Upload</h3>
+                        <div class="mt-2 text-sm text-purple-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Upload file Excel berisi daftar nomor surat jalan</li>
+                                <li>Kolom pertama harus berisi nomor surat jalan</li>
+                                <li>Sistem akan mencari surat jalan yang sesuai</li>
+                                <li>Data BL terkait akan diupdate menjadi status "Sudah Muat"</li>
+                                <li>Format file yang didukung: .xlsx, .xls, .csv</li>
+                                <li>Maksimal ukuran file: 5 MB</li>
+                            </ul>
+                            <div class="mt-3">
+                                <a href="{{ asset('templates/template_scan_surat_jalan.csv') }}" download class="inline-flex items-center text-purple-600 hover:text-purple-800 font-medium">
+                                    <i class="fas fa-download mr-1"></i> Download Template Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="scanForm" action="{{ route('prospek.scan-surat-jalan') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                
+                <div class="mb-6">
+                    <label for="excel_file" class="block text-sm font-medium text-gray-700 mb-2">
+                        Pilih File Excel <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-purple-400 transition-colors">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="excel_file" class="relative cursor-pointer bg-white rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-purple-500">
+                                    <span>Upload file</span>
+                                    <input id="excel_file" name="excel_file" type="file" class="sr-only" accept=".xlsx,.xls,.csv" onchange="showScanFileName(this)" required>
+                                </label>
+                                <p class="pl-1">atau drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                XLSX, XLS, CSV maksimal 5MB
+                            </p>
+                            <p id="scan-file-name" class="text-sm text-gray-700 font-medium mt-2"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeScanModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        <i class="fas fa-times mr-1"></i> Batal
+                    </button>
+                    <button type="submit" id="btnScanSubmit"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <i class="fas fa-search mr-1"></i> Scan & Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+// Global functions for modal
+function openScanModal() {
+    document.getElementById('scanModal').classList.remove('hidden');
+}
+
+function closeScanModal() {
+    document.getElementById('scanModal').classList.add('hidden');
+    document.getElementById('excel_file').value = '';
+    document.getElementById('scan-file-name').textContent = '';
+}
+
+function showScanFileName(input) {
+    const fileName = input.files[0]?.name || '';
+    document.getElementById('scan-file-name').textContent = fileName ? `File: ${fileName}` : '';
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('scanModal');
+    if (e.target === modal) {
+        closeScanModal();
+    }
+});
+
+// Handle form submission with AJAX
+document.getElementById('scanForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('btnScanSubmit');
+    const formData = new FormData(this);
+    
+    // Change button state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memproses...';
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-search mr-1"></i> Scan & Update';
+        
+        if (data.success) {
+            // Show success message with details
+            let message = data.message;
+            if (data.data) {
+                message += `\n\nDetail:\n`;
+                message += `- Total dipindai: ${data.data.total_scanned}\n`;
+                message += `- Ditemukan: ${data.data.found}\n`;
+                message += `- Tidak ditemukan: ${data.data.not_found}\n`;
+                message += `- Prospek diupdate: ${data.data.prospek_updated}\n`;
+                message += `- BL diupdate: ${data.data.bl_updated}`;
+                
+                if (data.data.not_found_numbers && data.data.not_found_numbers.length > 0) {
+                    message += `\n\nTidak ditemukan:\n${data.data.not_found_numbers.join('\n')}`;
+                }
+            }
+            
+            alert(message);
+            closeScanModal();
+            
+            // Reload page to show updated data
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Terjadi kesalahan'));
+        }
+    })
+    .catch(error => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-search mr-1"></i> Scan & Update';
+        alert('Terjadi kesalahan saat memproses file: ' + error.message);
+        console.error('Error:', error);
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Handle seal inline editing
     const sealContainers = document.querySelectorAll('.seal-edit-container');

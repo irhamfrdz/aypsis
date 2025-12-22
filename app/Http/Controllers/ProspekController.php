@@ -699,6 +699,140 @@ class ProspekController extends Controller
         }
     }
 
+    /**
+     * Scan surat jalan dari Excel dan update status BL menjadi "Sudah Muat"
+     */
+    public function scanSuratJalan(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak memiliki akses untuk melakukan scan surat jalan'
+                ], 403);
+            }
+
+            // Validasi file upload
+            $request->validate([
+                'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120' // max 5MB
+            ]);
+
+            $file = $request->file('excel_file');
+            
+            // Baca file Excel
+            $data = Excel::toArray([], $file);
+            
+            if (empty($data) || empty($data[0])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File Excel kosong atau tidak valid'
+                ], 400);
+            }
+
+            $rows = $data[0]; // Ambil sheet pertama
+            $suratJalanNumbers = [];
+            
+            // Ambil nomor surat jalan dari kolom pertama (skip header jika ada)
+            $startRow = 0;
+            
+            // Deteksi header - jika row pertama berisi text seperti "nomor", "no", "surat jalan", skip
+            if (!empty($rows[0]) && !empty($rows[0][0])) {
+                $firstCell = strtolower(trim($rows[0][0]));
+                if (stripos($firstCell, 'nomor') !== false || 
+                    stripos($firstCell, 'no') !== false || 
+                    stripos($firstCell, 'surat') !== false) {
+                    $startRow = 1; // Skip header
+                }
+            }
+
+            // Kumpulkan semua nomor surat jalan
+            for ($i = $startRow; $i < count($rows); $i++) {
+                if (!empty($rows[$i]) && !empty($rows[$i][0])) {
+                    $noSuratJalan = trim($rows[$i][0]);
+                    if (!empty($noSuratJalan)) {
+                        $suratJalanNumbers[] = $noSuratJalan;
+                    }
+                }
+            }
+
+            if (empty($suratJalanNumbers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada nomor surat jalan yang ditemukan dalam file Excel'
+                ], 400);
+            }
+
+            // Cari surat jalan yang cocok
+            $suratJalans = \App\Models\SuratJalan::whereIn('no_surat_jalan', $suratJalanNumbers)->get();
+            
+            $foundCount = 0;
+            $updatedBlCount = 0;
+            $notFoundNumbers = [];
+            $updatedProspekIds = [];
+
+            foreach ($suratJalanNumbers as $number) {
+                $suratJalan = $suratJalans->firstWhere('no_surat_jalan', $number);
+                
+                if ($suratJalan) {
+                    $foundCount++;
+                    
+                    // Cari prospek yang terkait dengan surat jalan ini
+                    $prospeks = Prospek::where('surat_jalan_id', $suratJalan->id)->get();
+                    
+                    foreach ($prospeks as $prospek) {
+                        // Update prospek status menjadi "sudah_muat"
+                        $prospek->update([
+                            'status' => Prospek::STATUS_SUDAH_MUAT,
+                            'updated_by' => $user->id
+                        ]);
+                        
+                        $updatedProspekIds[] = $prospek->id;
+                        
+                        // Update semua BL yang terkait dengan prospek ini
+                        $bls = Bl::where('prospek_id', $prospek->id)->get();
+                        foreach ($bls as $bl) {
+                            $bl->update([
+                                'status_bongkar' => 'Sudah Muat',
+                                'updated_by' => $user->id
+                            ]);
+                            $updatedBlCount++;
+                        }
+                    }
+                } else {
+                    $notFoundNumbers[] = $number;
+                }
+            }
+
+            $message = "Berhasil memproses {$foundCount} dari " . count($suratJalanNumbers) . " surat jalan. ";
+            $message .= "{$updatedBlCount} BL telah diupdate menjadi 'Sudah Muat'.";
+            
+            if (!empty($notFoundNumbers)) {
+                $message .= " Tidak ditemukan: " . implode(', ', $notFoundNumbers);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data' => [
+                    'total_scanned' => count($suratJalanNumbers),
+                    'found' => $foundCount,
+                    'not_found' => count($notFoundNumbers),
+                    'not_found_numbers' => $notFoundNumbers,
+                    'bl_updated' => $updatedBlCount,
+                    'prospek_updated' => count(array_unique($updatedProspekIds))
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error scanning surat jalan: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function hasProspekPermission($user, $permission)
     {
         // Admin and user_admin always have access

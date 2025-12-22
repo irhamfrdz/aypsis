@@ -582,7 +582,8 @@
                             <div class="flex text-sm text-gray-600">
                                 <label for="import_file" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                     <span>Upload file</span>
-                                    <input id="import_file" name="file" type="file" class="sr-only" accept=".xlsx,.xls,.csv" required onchange="showFileName(this)">
+                                    <input id="import_file" name="file" type="file" 
+                                    class="sr-only" accept=".xlsx,.xls,.csv" required onchange="showFileName(this)">
                                 </label>
                                 <p class="pl-1">atau drag and drop</p>
                             </div>
