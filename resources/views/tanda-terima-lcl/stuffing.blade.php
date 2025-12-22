@@ -724,10 +724,11 @@
                                 <label for="split_nama_barang" class="block text-sm font-medium text-gray-700 mb-1">
                                     Nama Barang <span class="text-red-500">*</span>
                                 </label>
-                                <select name="nama_barang" id="split_nama_barang" required
+                                <select id="split_nama_barang" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="">Memuat data barang...</option>
                                 </select>
+                                <input type="hidden" name="nama_barang" id="split_nama_barang_value">
                             </div>
 
                             <!-- Jumlah -->
@@ -1143,8 +1144,9 @@ function loadBarangForSplit(selectedContainers) {
             
             data.barang.forEach(item => {
                 const option = document.createElement('option');
-                option.value = item.nama_barang;
-                option.textContent = item.nama_barang;
+                option.value = item.id; // Use item ID as unique identifier
+                option.textContent = item.display_label || item.nama_barang;
+                option.dataset.namaBarang = item.nama_barang;
                 option.dataset.satuan = item.satuan || '';
                 option.dataset.panjang = item.panjang || '';
                 option.dataset.lebar = item.lebar || '';
@@ -1161,6 +1163,12 @@ function loadBarangForSplit(selectedContainers) {
             namaBarangSelect.addEventListener('change', function() {
                 const selectedOption = this.options[this.selectedIndex];
                 if (selectedOption.value) {
+                    // Set the hidden input for nama_barang
+                    const namaBarangInput = document.getElementById('split_nama_barang_value');
+                    if (namaBarangInput) {
+                        namaBarangInput.value = selectedOption.dataset.namaBarang || selectedOption.textContent;
+                    }
+                    
                     document.getElementById('split_satuan').value = selectedOption.dataset.satuan || '';
                     document.getElementById('split_panjang').value = selectedOption.dataset.panjang || '';
                     document.getElementById('split_lebar').value = selectedOption.dataset.lebar || '';
@@ -1199,6 +1207,12 @@ function closeSplitModal() {
     if (namaBarangSelect) {
         namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
         namaBarangSelect.disabled = true;
+    }
+    
+    // Reset hidden nama_barang input
+    const namaBarangInput = document.getElementById('split_nama_barang_value');
+    if (namaBarangInput) {
+        namaBarangInput.value = '';
     }
     
     // Reset all dimensi input fields

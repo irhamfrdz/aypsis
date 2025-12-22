@@ -1717,31 +1717,26 @@ class TandaTerimaLclController extends Controller
                 ]);
             }
             
-            // Collect all unique barang from items
+            // Collect all barang from items (including duplicates with different dimensions)
             $barangData = [];
-            $barangNames = [];
             
             foreach ($pivots as $pivot) {
                 if ($pivot->tandaTerima && $pivot->tandaTerima->items) {
                     foreach ($pivot->tandaTerima->items as $item) {
-                        $namaBarang = $item->nama_barang;
-                        
-                        // Skip if we already have this barang
-                        if (in_array($namaBarang, $barangNames)) {
-                            continue;
-                        }
-                        
-                        $barangNames[] = $namaBarang;
-                        
                         $barangData[] = [
-                            'nama_barang' => $namaBarang,
+                            'id' => $item->id,
+                            'nama_barang' => $item->nama_barang,
                             'satuan' => $item->satuan,
                             'panjang' => $item->panjang,
                             'lebar' => $item->lebar,
                             'tinggi' => $item->tinggi,
                             'jumlah' => $item->jumlah,
                             'meter_kubik' => $item->meter_kubik,
-                            'tonase' => $item->tonase
+                            'tonase' => $item->tonase,
+                            'display_label' => $item->nama_barang . 
+                                             ($item->jumlah ? ' (' . $item->jumlah . ' ' . ($item->satuan ?: 'pcs') . ')' : '') .
+                                             ($item->panjang && $item->lebar && $item->tinggi ? 
+                                                 ' - ' . $item->panjang . 'x' . $item->lebar . 'x' . $item->tinggi . 'm' : '')
                         ];
                     }
                 }
