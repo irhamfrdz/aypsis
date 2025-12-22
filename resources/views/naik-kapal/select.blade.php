@@ -57,16 +57,21 @@
                         <select id="kapal_id" name="kapal_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" required>
                             <option value="">--Pilih Kapal--</option>
                             @php
-                                // Ambil kapal yang ada di table naik_kapal (berdasarkan nama_kapal)
+                                // Ambil kapal dari master_kapal yang ada di table naik_kapal
                                 $kapalsWithData = \App\Models\NaikKapal::select('nama_kapal')
                                     ->distinct()
                                     ->orderBy('nama_kapal')
                                     ->pluck('nama_kapal')
                                     ->filter();
+                                
+                                // Get master kapal data
+                                $masterKapals = \App\Models\MasterKapal::whereIn('nama_kapal', $kapalsWithData)
+                                    ->orderBy('nama_kapal')
+                                    ->get();
                             @endphp
-                            @foreach($kapalsWithData as $namaKapal)
-                                <option value="{{ $namaKapal }}">
-                                    {{ $namaKapal }}
+                            @foreach($masterKapals as $kapal)
+                                <option value="{{ $kapal->id }}">
+                                    {{ $kapal->nama_kapal }}
                                 </option>
                             @endforeach
                         </select>
@@ -123,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch(`{{ route('naik-kapal.get-voyages') }}?nama_kapal=${encodeURIComponent(kapalId)}`, {
+        fetch(`{{ route('naik-kapal.get-voyages') }}?kapal_id=${encodeURIComponent(kapalId)}`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
             credentials: 'same-origin'

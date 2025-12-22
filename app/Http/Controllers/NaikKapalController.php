@@ -110,12 +110,24 @@ class NaikKapalController extends Controller
      */
     public function getVoyagesByKapal(Request $request)
     {
-        $namaKapal = $request->nama_kapal;
+        // Support both kapal_id and nama_kapal for backward compatibility
+        $namaKapal = null;
+        
+        if ($request->filled('kapal_id')) {
+            // Get nama_kapal from MasterKapal by ID
+            $kapal = \App\Models\MasterKapal::find($request->kapal_id);
+            if ($kapal) {
+                $namaKapal = $kapal->nama_kapal;
+            }
+        } elseif ($request->filled('nama_kapal')) {
+            // Direct nama_kapal (legacy support)
+            $namaKapal = $request->nama_kapal;
+        }
         
         if (!$namaKapal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Nama kapal is required'
+                'message' => 'Kapal tidak ditemukan'
             ], 400);
         }
         
