@@ -1,5 +1,77 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+.searchable-select-wrapper {
+    position: relative;
+}
+.searchable-select-container {
+    position: relative;
+}
+.searchable-select-container input.search-input {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.searchable-select-container input.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.searchable-select-container .dropdown-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #6b7280;
+}
+.searchable-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    margin-top: 4px;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.searchable-select-options.show {
+    display: block;
+}
+.searchable-select-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.15s;
+}
+.searchable-select-option:hover {
+    background-color: #f3f4f6;
+}
+.searchable-select-option.selected {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+.searchable-select-option.hidden {
+    display: none;
+}
+.no-results {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4 py-6">
     <div class="bg-white rounded-lg shadow-sm">
@@ -210,23 +282,61 @@
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Akun COA <span class="text-red-500">*</span></label>
-                                <select name="akun_coa_id" id="akun_coa_id" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                                    <option value="">-- Pilih Akun COA --</option>
-                                    @foreach($akunCoas as $akun)
-                                        <option value="{{ $akun->id }}">{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="searchable-select-wrapper">
+                                    <div class="searchable-select-container">
+                                        <input type="text" 
+                                            id="akun_coa_search" 
+                                            class="search-input" 
+                                            placeholder="-- Pilih Akun COA --"
+                                            autocomplete="off"
+                                            readonly>
+                                        <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                        <div class="searchable-select-options" id="akun_coa_options">
+                                            @foreach($akunCoas as $akun)
+                                                <div class="searchable-select-option" data-value="{{ $akun->id }}" data-text="{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}">
+                                                    {{ $akun->kode_nomor }} - {{ $akun->nama_akun }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <select name="akun_coa_id" id="akun_coa_id" required style="display: none;">
+                                        <option value="">-- Pilih Akun COA --</option>
+                                        @foreach($akunCoas as $akun)
+                                            <option value="{{ $akun->id }}">{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Akun Bank <span class="text-red-500">*</span></label>
-                                <select name="akun_bank_id" id="akun_bank_id" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                                    <option value="">-- Pilih Akun Bank --</option>
-                                    @foreach($akunBanks as $bank)
-                                        <option value="{{ $bank->id }}">{{ $bank->kode_nomor }} - {{ $bank->nama_akun }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="searchable-select-wrapper">
+                                    <div class="searchable-select-container">
+                                        <input type="text" 
+                                            id="akun_bank_search" 
+                                            class="search-input" 
+                                            placeholder="-- Pilih Akun Bank --"
+                                            autocomplete="off"
+                                            readonly>
+                                        <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                        <div class="searchable-select-options" id="akun_bank_options">
+                                            @foreach($akunBanks as $bank)
+                                                <div class="searchable-select-option" data-value="{{ $bank->id }}" data-text="{{ $bank->kode_nomor }} - {{ $bank->nama_akun }}">
+                                                    {{ $bank->kode_nomor }} - {{ $bank->nama_akun }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <select name="akun_bank_id" id="akun_bank_id" required style="display: none;">
+                                        <option value="">-- Pilih Akun Bank --</option>
+                                        @foreach($akunBanks as $bank)
+                                            <option value="{{ $bank->id }}">{{ $bank->kode_nomor }} - {{ $bank->nama_akun }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Debit/Kredit <span class="text-red-500">*</span></label>
@@ -310,33 +420,144 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAllCheckbox = document.getElementById('select-all');
-    const invoiceCheckboxes = document.querySelectorAll('.invoice-checkbox');
-    const submitButton = document.getElementById('submit_button');
-
-    // Select All Functionality
-    selectAllCheckbox.addEventListener('change', function() {
-        const visibleCheckboxes = Array.from(invoiceCheckboxes).filter(cb => {
-            return cb.closest('tr').style.display !== 'none';
+(function() {
+    'use strict';
+    
+    // Shared variables
+    let selectAllCheckbox;
+    let invoiceCheckboxes;
+    let submitButton;
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    function init() {
+        // Get DOM elements
+        selectAllCheckbox = document.getElementById('select-all');
+        invoiceCheckboxes = document.querySelectorAll('.invoice-checkbox');
+        submitButton = document.getElementById('submit_button');
+        
+        // Initialize searchable dropdowns
+        initializeSearchableSelect('akun_coa_search', 'akun_coa_options', 'akun_coa_id');
+        initializeSearchableSelect('akun_bank_search', 'akun_bank_options', 'akun_bank_id');
+        
+        // Initialize invoice selection
+        initializeInvoiceSelection();
+        
+        // Initialize filters
+        initializeFilters();
+        
+        // Initialize form validation
+        initializeFormValidation();
+        
+        // Initial state
+        if (submitButton) {
+            submitButton.disabled = true;
+        }
+    }
+    
+    function initializeSearchableSelect(inputId, optionsId, selectId) {
+        const input = document.getElementById(inputId);
+        const optionsContainer = document.getElementById(optionsId);
+        const hiddenSelect = document.getElementById(selectId);
+        
+        if (!input || !optionsContainer || !hiddenSelect) return;
+        
+        const options = optionsContainer.querySelectorAll('.searchable-select-option');
+        
+        // Toggle dropdown on input click
+        input.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeAllDropdowns();
+            optionsContainer.classList.add('show');
+            input.removeAttribute('readonly');
+            input.focus();
+            input.select();
         });
         
-        visibleCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+        // Search functionality
+        input.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasResults = false;
+            
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.classList.remove('hidden');
+                    hasResults = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+            
+            // Show/hide no results message
+            let noResultsMsg = optionsContainer.querySelector('.no-results');
+            if (!hasResults) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.className = 'no-results';
+                    noResultsMsg.textContent = 'Tidak ada hasil ditemukan';
+                    optionsContainer.appendChild(noResultsMsg);
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
         });
-        updateTotals();
-    });
-
-    // Individual Checkbox Change
-    invoiceCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateTotals();
-            updateSelectAllState();
+        
+        // Select option
+        options.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+                
+                // Update hidden select
+                hiddenSelect.value = value;
+                
+                // Update input display
+                input.value = text;
+                input.setAttribute('readonly', 'readonly');
+                
+                // Update selected state
+                options.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // Close dropdown
+                optionsContainer.classList.remove('show');
+            });
         });
-    });
-
-    // Update Select All State
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !optionsContainer.contains(e.target)) {
+                optionsContainer.classList.remove('show');
+                if (hiddenSelect.value) {
+                    const selectedOption = optionsContainer.querySelector(`[data-value="${hiddenSelect.value}"]`);
+                    if (selectedOption) {
+                        input.value = selectedOption.getAttribute('data-text');
+                    }
+                } else {
+                    input.value = '';
+                }
+                input.setAttribute('readonly', 'readonly');
+            }
+        });
+    }
+    
+    function closeAllDropdowns() {
+        document.querySelectorAll('.searchable-select-options').forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+    }
+    
+    // Update Select All State - shared function
     function updateSelectAllState() {
+        if (!selectAllCheckbox) return;
+        
         const visibleCheckboxes = Array.from(invoiceCheckboxes).filter(cb => {
             return cb.closest('tr').style.display !== 'none';
         });
@@ -345,8 +566,8 @@ document.addEventListener('DOMContentLoaded', function() {
         selectAllCheckbox.checked = visibleCheckboxes.length > 0 && checkedCount === visibleCheckboxes.length;
         selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
     }
-
-    // Update Totals
+    
+    // Update Totals - shared function
     function updateTotals() {
         const checkedCheckboxes = Array.from(invoiceCheckboxes).filter(cb => cb.checked);
         const count = checkedCheckboxes.length;
@@ -388,11 +609,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Enable/disable submit button
-        submitButton.disabled = count === 0;
+        if (submitButton) {
+            submitButton.disabled = count === 0;
+        }
     }
+    
+    function initializeInvoiceSelection() {
+        // Select All Functionality
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const visibleCheckboxes = Array.from(invoiceCheckboxes).filter(cb => {
+                    return cb.closest('tr').style.display !== 'none';
+                });
+                
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateTotals();
+            });
+        }
 
-    // Filter Functions
-    window.applyFilter = function() {
+        // Individual Checkbox Change
+        invoiceCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateTotals();
+                updateSelectAllState();
+            });
+        });
+    }
+    
+    function initializeFilters() {
+        // Filter Functions
+        window.applyFilter = function() {
         const tanggalDari = document.getElementById('filter_tanggal_dari').value;
         const tanggalSampai = document.getElementById('filter_tanggal_sampai').value;
         const jenis = document.getElementById('filter_jenis').value;
@@ -415,11 +663,11 @@ document.addEventListener('DOMContentLoaded', function() {
             row.style.display = show ? '' : 'none';
         });
 
-        updateSelectAllState();
-        updateTotals();
-    };
+            updateSelectAllState();
+            updateTotals();
+        };
 
-    window.resetFilter = function() {
+        window.resetFilter = function() {
         document.getElementById('filter_tanggal_dari').value = '';
         document.getElementById('filter_tanggal_sampai').value = '';
         document.getElementById('filter_jenis').value = '';
@@ -430,12 +678,17 @@ document.addEventListener('DOMContentLoaded', function() {
             row.style.display = '';
         });
 
-        updateSelectAllState();
-        updateTotals();
-    };
-
-    // Form Validation
-    document.getElementById('invoice_payment_form').addEventListener('submit', function(e) {
+            updateSelectAllState();
+            updateTotals();
+        };
+    }
+    
+    function initializeFormValidation() {
+        // Form Validation
+        const form = document.getElementById('invoice_payment_form');
+        if (!form) return;
+        
+        form.addEventListener('submit', function(e) {
         const checkedCount = Array.from(invoiceCheckboxes).filter(cb => cb.checked).length;
         
         if (checkedCount === 0) {
@@ -453,15 +706,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
-        return true;
-    });
-
-    // Initial state
-    submitButton.disabled = true;
-    
-    // Show all invoices on load
-    resetFilter();
-});
+            return true;
+        });
+    }
+})();
 </script>
 @endpush
 @endsection

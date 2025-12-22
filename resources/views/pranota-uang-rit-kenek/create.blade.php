@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Pranota Uang Supir')
+@section('title', 'Tambah Pranota Uang Kenek')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,7 +38,7 @@
             $labelClasses = "block text-xs font-medium text-gray-700 mb-1";
         @endphp
 
-        <form action="{{ route('pranota-uang-rit.store') }}" method="POST" id="pranotaForm" class="space-y-3">
+        <form action="{{ route('pranota-uang-rit-kenek.store') }}" method="POST" id="pranotaForm" class="space-y-3">
             @csrf
             <input type="hidden" name="start_date" value="{{ request('start_date') }}">
             <input type="hidden" name="end_date" value="{{ request('end_date') }}">
@@ -46,7 +46,7 @@
             @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
             <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
                 <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dengan <strong>tanggal tanda terima</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
-                <a href="{{ route('pranota-uang-rit.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
+                <a href="{{ route('pranota-uang-rit-kenek.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
             </div>
             @endif
 
@@ -67,22 +67,22 @@
             </div>
             @endif
 
-            <!-- Hidden inputs untuk data hutang dan tabungan per supir -->
-            <div id="supirDetailsInputs"></div>
+            <!-- Hidden inputs untuk data hutang dan tabungan per Kenek -->
+            <div id="kenekDetailsInputs"></div>
 
             <!-- Data Pranota & Total Uang dalam satu baris -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 <!-- Data Pranota -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">💰 Data Pranota Uang Supir</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">💰 Data Pranota Uang Kenek</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div>
                                 <label for="nomor_pranota_preview" class="{{ $labelClasses }}">Nomor Pranota</label>
                                 <input type="text"
                                        class="{{ $readonlyInputClasses }} font-medium text-indigo-600"
                                        id="nomor_pranota_preview"
-                                       value="Auto Generate: PUR-{{ date('m') }}-{{ date('y') }}-XXXXXX"
+                                       value="Auto Generate: PURK-{{ date('m') }}-{{ date('y') }}-XXXXXX"
                                        readonly>
                                 <p class="mt-1 text-xs text-gray-500">Satu nomor untuk semua surat jalan yang dipilih</p>
                             </div>
@@ -125,11 +125,11 @@
                                 <input type="text" id="jumlah_surat_jalan_display" class="{{ $readonlyInputClasses }}" value="0" readonly>
                             </div>
                             <div>
-                                <label for="jumlah_supir_display" class="{{ $labelClasses }}">Jumlah Supir</label>
-                                <input type="text" id="jumlah_supir_display" class="{{ $readonlyInputClasses }}" value="0" readonly>
+                                <label for="jumlah_Kenek_display" class="{{ $labelClasses }}">Jumlah Kenek</label>
+                                <input type="text" id="jumlah_Kenek_display" class="{{ $readonlyInputClasses }}" value="0" readonly>
                             </div>
                             <div>
-                                <label for="total_uang_rit_display" class="{{ $labelClasses }}">Total Uang Supir</label>
+                                <label for="total_uang_rit_display" class="{{ $labelClasses }}">Total Uang Kenek</label>
                                 <input type="text" id="total_uang_rit_display" class="{{ $readonlyInputClasses }} font-bold text-indigo-600" value="Rp 0" readonly>
                             </div>
                             <div>
@@ -158,7 +158,7 @@
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div class="flex items-center gap-3">
-                            <h4 class="text-sm font-semibold text-gray-800">🚚 Pilih Surat Jalan untuk Uang Supir</h4>
+                            <h4 class="text-sm font-semibold text-gray-800">🚚 Pilih Surat Jalan untuk Uang Kenek</h4>
                             <span id="searchResults" class="text-xs text-gray-500 hidden"></span>
                         </div>
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -168,7 +168,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </div>
-                                <input type="text" id="searchSuratJalan" placeholder="Cari nomor surat jalan, supir, no plat... (Ctrl+F)" class="pl-8 pr-3 py-1.5 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64 transition-colors" title="Tekan Ctrl+F untuk fokus search, ESC untuk clear">
+                                <input type="text" id="searchSuratJalan" placeholder="Cari nomor surat jalan, Kenek, no plat... (Ctrl+F)" class="pl-8 pr-3 py-1.5 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64 transition-colors" title="Tekan Ctrl+F untuk fokus search, ESC untuk clear">
                             </div>
                             <button type="button" id="clearSearch" class="inline-flex items-center justify-center px-2 py-1.5 border border-gray-300 rounded-md text-xs text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" title="Clear search">
                                 <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,10 +203,10 @@
                             </span>
                         </div>
                         <div class="text-xs text-blue-700">
-                            <span id="selectedSupirCount">0</span> supir terlibat
+                            <span id="selectedKenekCount">0</span> Kenek terlibat
                         </div>
                         <div class="text-xs text-blue-700">
-                            Total Uang Supir: <span class="font-semibold text-indigo-600" id="totalUangRit">Rp 0</span>
+                            Total Uang Kenek: <span class="font-semibold text-indigo-600" id="totalUangRit">Rp 0</span>
                         </div>
                         <div class="text-xs text-blue-700">
                             Total Utang: <span class="font-semibold text-red-600" id="totalUtangSummary">Rp 0</span>
@@ -223,7 +223,7 @@
                     </div>
                 </div>
                 <div class="px-4 py-3 text-xs text-gray-600">
-                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
+                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> yang dapat dipilih untuk Pranota Uang Rit Kenek.</p>
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
@@ -236,7 +236,7 @@
                     <p class="font-semibold mb-1">Contoh surat jalan yang memenuhi syarat:</p>
                     <ul class="list-disc list-inside text-xs text-gray-600">
                         @foreach($eligibleExamples as $ex)
-                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - status: {{ $ex->status }}</li>
+                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - status: {{ $ex->status }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -247,7 +247,7 @@
                     <p class="font-semibold mb-1">Contoh surat jalan yang <strong>sudah diproses (pranota)</strong> (sehingga tidak tampil):</p>
                     <ul class="list-disc list-inside text-xs text-gray-600">
                         @foreach($excludedByPranotaExamples as $ex)
-                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - status: {{ $ex->status }}</li>
+                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - status: {{ $ex->status }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -257,7 +257,7 @@
                     <p class="font-semibold mb-1">Contoh surat jalan yang <strong>terhalang karena status pembayaran</strong> (bukan 'belum_dibayar'):</p>
                     <ul class="list-disc list-inside text-xs text-gray-600">
                         @foreach($excludedByPaymentExamples as $ex)
-                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit }}</li>
+                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -267,7 +267,7 @@
                     <p class="font-semibold mb-1">Contoh surat jalan yang <strong>memiliki Tanda Terima</strong> tetapi <strong>tidak tampil</strong> setelah filter:</p>
                     <ul class="list-disc list-inside text-xs text-gray-600">
                         @foreach($excludedByTandaTerimaExamples as $ex)
-                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->supir }} - rit: {{ $ex->rit ?? '-' }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit ?? '-' }} - status: {{ $ex->status ?? '-' }}</li>
+                            <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - rit: {{ $ex->rit ?? '-' }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit ?? '-' }} - status: {{ $ex->status ?? '-' }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -282,9 +282,9 @@
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                                 <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Tanda Terima</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kenek</th>
                                 <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Eligible</th>
-                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Supir</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Kenek</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -298,7 +298,7 @@
                                         'id' => $sj->id,
                                         'no_surat_jalan' => $sj->no_surat_jalan,
                                         'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
-                                        'supir' => $sj->supir,
+                                        'kenek' => $sj->kenek,
                                         'tanggal_checkpoint' => $sj->tanggal_checkpoint,
                                         'tandaTerima' => $sj->tandaTerima,
                                         'kegiatan' => $sj->kegiatan,
@@ -316,7 +316,7 @@
                                             'id' => $sjb->id,
                                             'no_surat_jalan' => $sjb->nomor_surat_jalan,
                                             'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
-                                            'supir' => $sjb->supir,
+                                            'kenek' => $sjb->kenek,
                                             'tanggal_checkpoint' => null,
                                             'tandaTerima' => $sjb->tandaTerima,
                                             'kegiatan' => $sjb->kegiatan,
@@ -334,7 +334,7 @@
                                 @endphp
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
                                     data-nomor="{{ strtolower($item['no_surat_jalan'] ?? '') }}"
-                                    data-supir="{{ strtolower($item['supir'] ?? '') }}">
+                                    data-kenek="{{ strtolower($item['kenek'] ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox"
                                                name="{{ $inputPrefix }}[{{ $item['id'] }}][selected]"
@@ -343,9 +343,9 @@
                                                data-id="{{ $item['id'] }}"
                                                data-type="{{ $item['type'] }}"
                                                data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
-                                               data-supir_nama="{{ $item['supir'] }}">
+                                               data-kenek_nama="{{ $item['kenek'] }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][no_surat_jalan]" value="{{ $item['no_surat_jalan'] }}">
-                                        <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][supir_nama]" value="{{ $item['supir'] }}">
+                                        <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][kenek_nama]" value="{{ $item['kenek'] }}">
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
                                         {{ $item['no_surat_jalan'] ?? '-' }}
@@ -354,10 +354,10 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $item['tanggal_tanda_terima'] ? \Carbon\Carbon::parse($item['tanggal_tanda_terima'])->format('d/m/Y') : '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $item['supir'] ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $item['kenek'] ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center text-xs">
                                         @if($item['tanggal_checkpoint'])
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800" title="Checkpoint supir detected">Checkpoint</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800" title="Checkpoint Kenek detected">Checkpoint</span>
                                         @endif
                                         @if($item['tandaTerima'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800 ml-1" title="Tanda Terima exists">Tanda Terima</span>
@@ -374,12 +374,12 @@
                                             // Ambil nilai rit dari data surat jalan
                                             $ritValue = $item['data']->rit ?? 0;
                                             
-                                            // Jika rit kosong atau 0, ambil dari pricelist_rit tabel dengan tujuan = 'Supir'
+                                            // Jika rit kosong atau 0, ambil dari pricelist_rit tabel dengan tujuan = 'Kenek'
                                             if (!$ritValue || $ritValue == 0) {
                                                 try {
-                                                    // Query langsung ke tabel pricelist_rit untuk tujuan 'Supir'
+                                                    // Query langsung ke tabel pricelist_rit untuk tujuan 'Kenek'
                                                     $pricelistRit = \DB::table('pricelist_rit')
-                                                        ->where('tujuan', 'Supir')
+                                                        ->where('tujuan', 'Kenek')
                                                         ->where('status', 'aktif')
                                                         ->first();
                                                     
@@ -392,12 +392,12 @@
                                                 }
                                             }
                                             
-                                            // Konversi ke numeric dan default ke 85000 jika masih 0
-                                            $ritValue = (float) ($ritValue ?: 85000);
+                                            // Konversi ke numeric dan default ke 50000 jika masih 0
+                                            $ritValue = (float) ($ritValue ?: 50000);
                                         @endphp
                                         <input type="number" 
-                                               name="{{ $inputPrefix }}[{{ $item['id'] }}][uang_rit_supir]" 
-                                               class="uang-rit-supir-input w-20 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-right"
+                                               name="{{ $inputPrefix }}[{{ $item['id'] }}][uang_rit_kenek]" 
+                                               class="uang-rit-kenek-input w-20 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                                placeholder="{{ number_format($ritValue, 0, ',', '') }}" 
                                                value="{{ $ritValue }}"
                                                min="0" 
@@ -429,7 +429,7 @@
                                 <td class="px-2 py-3 text-xs font-bold" colspan="5">
                                     GRAND TOTAL KESELURUHAN
                                 </td>
-                                <td class="px-2 py-3 text-right text-xs font-bold text-indigo-600" id="grandTotalUangSupir">
+                                <td class="px-2 py-3 text-right text-xs font-bold text-indigo-600" id="grandTotalUangKenek">
                                     Rp 0
                                 </td>
                             </tr>
@@ -470,8 +470,8 @@
                 </div>
                 <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
                     <p class="text-xs text-gray-600">
-                        * Pilih surat jalan dan masukkan nominal uang supir, hutang, tabungan, dan BPJS untuk setiap surat jalan yang dipilih.
-                        <br>* <strong>Grand Total = Uang Supir - Hutang - Tabungan - BPJS</strong> (Hutang, Tabungan, dan BPJS mengurangi total yang diterima supir)
+                        * Pilih surat jalan dan masukkan nominal Uang Kenek, hutang, tabungan, dan BPJS untuk setiap surat jalan yang dipilih.
+                        <br>* <strong>Grand Total = Uang Kenek - Hutang - Tabungan - BPJS</strong> (Hutang, Tabungan, dan BPJS mengurangi total yang diterima Kenek)
                     </p>
                 </div>
 
@@ -485,7 +485,7 @@
             <!-- Submit Button -->
             @if($suratJalans->count() > 0)
                 <div class="flex flex-col sm:flex-row justify-end gap-2">
-                    <a href="{{ route('pranota-uang-rit.index') }}"
+                    <a href="{{ route('pranota-uang-rit-kenek.index') }}"
                        class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -499,7 +499,7 @@
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
                         </svg>
-                        Buat Pranota Uang Supir
+                        Buat Pranota Uang Kenek
                     </button>
                 </div>
             @endif
@@ -513,9 +513,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const suratJalanCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
-    const uangRitSupirInputs = document.querySelectorAll('.uang-rit-supir-input');
+    const uangRitKenekInputs = document.querySelectorAll('.uang-rit-Kenek-input');
     const jumlahSuratJalanDisplay = document.getElementById('jumlah_surat_jalan_display');
-    const jumlahSupirDisplay = document.getElementById('jumlah_supir_display');
+    const jumlahKenekDisplay = document.getElementById('jumlah_Kenek_display');
     const totalUangRitDisplay = document.getElementById('total_uang_rit_display');
     const totalUtangDisplay = document.getElementById('total_utang_display');
     const totalTabunganDisplay = document.getElementById('total_tabungan_display');
@@ -536,25 +536,25 @@ document.addEventListener('DOMContentLoaded', function () {
             if (checkbox.checked) {
                 count++;
                 
-                const uangRitSupirInput = uangRitSupirInputs[index];
+                const uangRitKenekInput = uangRitKenekInputs[index];
                 
                 // Get person name from data attribute
-                const personName = checkbox.dataset.supir_nama || 'Tanpa Nama';
+                const personName = checkbox.dataset.kenek_nama || 'Tanpa Nama';
                 
                 // Initialize person totals if not exists
                 if (!personTotals[personName]) {
                     personTotals[personName] = {
                         count: 0,
-                        uangSupir: 0
+                        uangKenek: 0
                     };
                 }
                 
                 personTotals[personName].count++;
                 
-                if (uangRitSupirInput) {
-                    const rowUangSupir = parseFloat(uangRitSupirInput.value) || 0;
-                    totalRit += rowUangSupir;
-                    personTotals[personName].uangSupir += rowUangSupir;
+                if (uangRitKenekInput) {
+                    const rowUangKenek = parseFloat(uangRitKenekInput.value) || 0;
+                    totalRit += rowUangKenek;
+                    personTotals[personName].uangKenek += rowUangKenek;
                 }
             }
         });
@@ -562,8 +562,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update displays
         jumlahSuratJalanDisplay.value = count;
         
-        if (jumlahSupirDisplay) {
-            jumlahSupirDisplay.value = Object.keys(personTotals).length;
+        if (jumlahKenekDisplay) {
+            jumlahKenekDisplay.value = Object.keys(personTotals).length;
         }
         
         totalUangRitDisplay.value = 'Rp ' + totalRit.toLocaleString('id-ID');
@@ -574,10 +574,10 @@ document.addEventListener('DOMContentLoaded', function () {
             totalUangRit.textContent = 'Rp ' + totalRit.toLocaleString('id-ID');
         }
 
-        // Update supir count in summary
-        const selectedSupirCount = document.getElementById('selectedSupirCount');
-        if (selectedSupirCount) {
-            selectedSupirCount.textContent = Object.keys(personTotals).length;
+        // Update Kenek count in summary
+        const selectedKenekCount = document.getElementById('selectedKenekCount');
+        if (selectedKenekCount) {
+            selectedKenekCount.textContent = Object.keys(personTotals).length;
         }
 
         // Update per person totals
@@ -614,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function () {
             headerRow.className = 'bg-yellow-100 font-semibold text-gray-700';
             headerRow.innerHTML = `
                 <td class="px-2 py-2 text-xs font-bold" colspan="6">
-                    📊 TOTAL PER SUPIR
+                    📊 TOTAL PER Kenek
                 </td>
             `;
             grandTotalPerPersonContainer.appendChild(headerRow);
@@ -640,7 +640,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         -
                     </td>
                     <td class="px-2 py-2 text-right text-xs font-semibold text-indigo-600">
-                        Rp ${totals.uangSupir.toLocaleString('id-ID')}
+                        Rp ${totals.uangKenek.toLocaleString('id-ID')}
                     </td>
                     <td class="px-2 py-2 text-right text-xs">
                         <div class="flex gap-1">
@@ -667,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                    data-person="${personName}">
                             <div class="person-grand-total w-20 px-1 py-1 text-xs bg-purple-50 border border-purple-200 rounded text-right font-semibold text-purple-700"
                                  data-person="${personName}">
-                                Rp ${totals.uangSupir.toLocaleString('id-ID')}
+                                Rp ${totals.uangKenek.toLocaleString('id-ID')}
                             </div>
                         </div>
                     </td>
@@ -716,13 +716,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const tabunganInput = document.querySelector(`.person-tabungan-input[data-person="${personName}"]`);
             const bpjsInput = document.querySelector(`.person-bpjs-input[data-person="${personName}"]`);
             
-            // Get person's total uang supir from checked checkboxes
-            let personUangSupir = 0;
+            // Get person's total Uang Kenek from checked checkboxes
+            let personUangKenek = 0;
             suratJalanCheckboxes.forEach((checkbox, index) => {
-                if (checkbox.checked && checkbox.dataset.supir_nama === personName) {
-                    const uangRitSupirInput = uangRitSupirInputs[index];
-                    if (uangRitSupirInput) {
-                        personUangSupir += parseFloat(uangRitSupirInput.value) || 0;
+                if (checkbox.checked && checkbox.dataset.kenek_nama === personName) {
+                    const uangRitKenekInput = uangRitKenekInputs[index];
+                    if (uangRitKenekInput) {
+                        personUangKenek += parseFloat(uangRitKenekInput.value) || 0;
                     }
                 }
             });
@@ -731,8 +731,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const tabungan = tabunganInput ? (parseFloat(tabunganInput.value) || 0) : 0;
             const bpjs = bpjsInput ? (parseFloat(bpjsInput.value) || 0) : 0;
             
-            // Calculate grand total: Uang Supir - Hutang - Tabungan - BPJS
-            const grandTotal = personUangSupir - utang - tabungan - bpjs;
+            // Calculate grand total: Uang Kenek - Hutang - Tabungan - BPJS
+            const grandTotal = personUangKenek - utang - tabungan - bpjs;
             grandTotalDiv.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
         });
         
@@ -748,14 +748,14 @@ document.addEventListener('DOMContentLoaded', function () {
         let totalUtang = 0;
         let totalTabungan = 0;
         let totalBpjs = 0;
-        let totalUangSupir = 0;
+        let totalUangKenek = 0;
         
-        // Calculate total uang supir from checked checkboxes
+        // Calculate total Uang Kenek from checked checkboxes
         suratJalanCheckboxes.forEach((checkbox, index) => {
             if (checkbox.checked) {
-                const uangRitSupirInput = uangRitSupirInputs[index];
-                if (uangRitSupirInput) {
-                    totalUangSupir += parseFloat(uangRitSupirInput.value) || 0;
+                const uangRitKenekInput = uangRitKenekInputs[index];
+                if (uangRitKenekInput) {
+                    totalUangKenek += parseFloat(uangRitKenekInput.value) || 0;
                 }
             }
         });
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
             totalBpjs += parseFloat(input.value) || 0;
         });
         
-        const overallGrandTotal = totalUangSupir - totalUtang - totalTabungan - totalBpjs;
+        const overallGrandTotal = totalUangKenek - totalUtang - totalTabungan - totalBpjs;
         
         // Update display elements
         if (totalUtangDisplay) {
@@ -815,14 +815,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Update footer totals
-        const grandTotalUangSupir = document.getElementById('grandTotalUangSupir');
+        const grandTotalUangKenek = document.getElementById('grandTotalUangKenek');
         const grandTotalUtang = document.getElementById('grandTotalUtang');
         const grandTotalTabungan = document.getElementById('grandTotalTabungan');
         const grandTotalBpjs = document.getElementById('grandTotalBpjs');
         const grandTotalKeseluruhan = document.getElementById('grandTotalKeseluruhan');
 
-        if (grandTotalUangSupir) {
-            grandTotalUangSupir.textContent = 'Rp ' + totalUangSupir.toLocaleString('id-ID');
+        if (grandTotalUangKenek) {
+            grandTotalUangKenek.textContent = 'Rp ' + totalUangKenek.toLocaleString('id-ID');
         }
 
         if (grandTotalUtang) {
@@ -851,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Uang rit input change events
-    uangRitSupirInputs.forEach(input => {
+    uangRitKenekInputs.forEach(input => {
         input.addEventListener('input', updateTotals);
     });
 
@@ -933,11 +933,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         tableRows.forEach(row => {
             const nomor = row.dataset.nomor || '';
-            const supir = row.dataset.supir || '';
+            const kenek = row.dataset.kenek || '';
             const plat = row.dataset.plat || '';
 
             const isVisible = nomor.includes(term) ||
-                            supir.includes(term) ||
+                            kenek.includes(term) ||
                             plat.includes(term);
 
             row.style.display = isVisible ? '' : 'none';
@@ -998,72 +998,72 @@ document.addEventListener('DOMContentLoaded', function () {
             const checkedCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:checked');
             if (checkedCheckboxes.length === 0) {
                 e.preventDefault();
-                alert('Silakan pilih minimal satu surat jalan untuk membuat pranota uang supir.');
+                alert('Silakan pilih minimal satu surat jalan untuk membuat pranota Uang Kenek.');
                 return false;
             }
 
             // Check if all selected items have valid values
             let hasEmptyValues = false;
             checkedCheckboxes.forEach(checkbox => {
-                const uangRitSupirInput = document.querySelector(`input[name*="[${checkbox.dataset.id}][uang_rit_supir]"]`);
+                const uangRitKenekInput = document.querySelector(`input[name*="[${checkbox.dataset.id}][uang_rit_Kenek]"]`);
                 
-                if (uangRitSupirInput && (!uangRitSupirInput.value || parseFloat(uangRitSupirInput.value) < 0)) {
+                if (uangRitKenekInput && (!uangRitKenekInput.value || parseFloat(uangRitKenekInput.value) < 0)) {
                     hasEmptyValues = true;
                 }
             });
 
             if (hasEmptyValues) {
                 e.preventDefault();
-                alert('Silakan masukkan nilai yang valid untuk uang supir pada semua surat jalan yang dipilih.');
+                alert('Silakan masukkan nilai yang valid untuk Uang Kenek pada semua surat jalan yang dipilih.');
                 return false;
             }
 
-            // Collect hutang and tabungan data per supir
-            collectSupirDetailsData();
+            // Collect hutang and tabungan data per Kenek
+            collectKenekDetailsData();
         });
     }
 
-    function collectSupirDetailsData() {
-        const supirDetailsContainer = document.getElementById('supirDetailsInputs');
+    function collectKenekDetailsData() {
+        const kenekDetailsContainer = document.getElementById('kenekDetailsInputs');
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
         const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
         
         // Clear existing inputs
-        supirDetailsContainer.innerHTML = '';
+        kenekDetailsContainer.innerHTML = '';
         
-        // Create hidden inputs for each supir's hutang, tabungan, and bpjs
+        // Create hidden inputs for each Kenek's hutang, tabungan, and bpjs
         personUtangInputs.forEach(input => {
-            const supirNama = input.dataset.person;
+            const kenekNama = input.dataset.person;
             const hutangValue = input.value || 0;
             
             const hutangInput = document.createElement('input');
             hutangInput.type = 'hidden';
-            hutangInput.name = `supir_details[${supirNama}][hutang]`;
+            hutangInput.name = `kenek_details[${kenekNama}][hutang]`;
             hutangInput.value = hutangValue;
-            supirDetailsContainer.appendChild(hutangInput);
+            kenekDetailsContainer.appendChild(hutangInput);
         });
         
         personTabunganInputs.forEach(input => {
-            const supirNama = input.dataset.person;
+            const kenekNama = input.dataset.person;
             const tabunganValue = input.value || 0;
             
             const tabunganInput = document.createElement('input');
             tabunganInput.type = 'hidden';
-            tabunganInput.name = `supir_details[${supirNama}][tabungan]`;
+            tabunganInput.name = `kenek_details[${kenekNama}][tabungan]`;
             tabunganInput.value = tabunganValue;
-            supirDetailsContainer.appendChild(tabunganInput);
+            kenekDetailsContainer.appendChild(tabunganInput);
         });
         
         personBpjsInputs.forEach(input => {
-            const supirNama = input.dataset.person;
+            const kenekNama = input.dataset.person;
             const bpjsValue = input.value || 0;
             
             const bpjsInput = document.createElement('input');
             bpjsInput.type = 'hidden';
-            bpjsInput.name = `supir_details[${supirNama}][bpjs]`;
+            bpjsInput.name = `kenek_details[${kenekNama}][bpjs]`;
             bpjsInput.value = bpjsValue;
-            supirDetailsContainer.appendChild(bpjsInput);
+            kenekDetailsContainer.appendChild(bpjsInput);
         });
     }
 
