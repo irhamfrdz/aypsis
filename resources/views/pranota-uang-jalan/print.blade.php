@@ -470,7 +470,11 @@
                             </td>
                             <td>
                                 @if($surat)
-                                    {{ $surat->pengirim ?? 'PT CS2 POLA SEHAT' }}
+                                    @php
+                                        $pengirimFull = $surat->pengirim ?? 'PT CS2 POLA SEHAT';
+                                        $pengirimNama = explode(',', $pengirimFull)[0];
+                                    @endphp
+                                    {{ trim($pengirimNama) }}
                                 @else
                                     PT CS2 POLA SEHAT
                                 @endif
