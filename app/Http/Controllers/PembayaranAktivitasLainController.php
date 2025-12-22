@@ -281,13 +281,14 @@ class PembayaranAktivitasLainController extends Controller
             'jenis_aktivitas' => 'nullable|string',
             'penerima' => 'nullable|string',
             'keterangan' => 'nullable|string',
+            'nomor_accurate' => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
 
             // Generate nomor pembayaran
-            $nomor = PembayaranInvoiceAktivitasLain::generateNomor();
+            $nomor = PembayaranAktivitasLain::generateNomor();
 
             // Get selected invoices
             $invoiceIds = $request->selected_invoices;
@@ -296,23 +297,24 @@ class PembayaranAktivitasLainController extends Controller
             // Calculate total from selected invoices
             $totalInvoice = $invoices->sum('total');
 
-            // Create payment record
-            $pembayaran = PembayaranInvoiceAktivitasLain::create([
+            // Create payment record - save to pembayaran_aktivitas_lains table
+            $pembayaran = PembayaranAktivitasLain::create([
                 'nomor' => $nomor,
+                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal' => $validated['tanggal'],
-                'jenis_aktivitas' => $validated['jenis_aktivitas'] ?? 'Multiple',
+                'jenis_aktivitas' => $validated['jenis_aktivitas'] ?? 'Pembayaran Multiple Invoice',
                 'penerima' => $validated['penerima'] ?? 'Multiple',
-                'total_invoice' => $totalInvoice,
-                'jumlah_dibayar' => $validated['jumlah'],
+                'jumlah' => $validated['jumlah'],
                 'debit_kredit' => $validated['debit_kredit'],
                 'akun_coa_id' => $validated['akun_coa_id'],
                 'akun_bank_id' => $validated['akun_bank_id'],
                 'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari ' . count($invoiceIds) . ' invoice',
+                'invoice_ids' => $validated['invoice_ids'],
                 'created_by' => Auth::id(),
-                'status' => 'pending',
+                'status' => 'approved',
             ]);
 
-            // Attach invoices to payment with amount
+            // Attach invoices to payment with amount (many-to-many relationship)
             foreach ($invoices as $invoice) {
                 $pembayaran->invoices()->attach($invoice->id, [
                     'jumlah_dibayar' => $invoice->total,
@@ -324,8 +326,8 @@ class PembayaranAktivitasLainController extends Controller
                 ]);
             }
 
-            // Create double book journal using the new model
-            $this->createDoubleBookJournalInvoice($pembayaran, $validated);
+            // Create double book journal entries
+            $this->createDoubleBookJournalFromInvoice($pembayaran, $validated);
 
             DB::commit();
 
@@ -700,10 +702,46 @@ class PembayaranAktivitasLainController extends Controller
      */
     public function print(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
-        $pembayaranAktivitasLain->load(['creator', 'approver']);
+        $pembayaranAktivitasLain->load(['creator', 'approver', 'invoices']);
 
         $akunCoas = DB::table('akun_coa')->whereIn('id', [$pembayaranAktivitasLain->akun_coa_id, $pembayaranAktivitasLain->akun_bank_id])->get()->keyBy('id');
 
         return view('pembayaran-aktivitas-lain.print-single', compact('pembayaranAktivitasLain', 'akunCoas'));
+    }
+
+    /**
+     * Create double book journal from invoice payment
+     */
+    private function createDoubleBookJournalFromInvoice($pembayaran, $validated)
+    {
+        // Debit: Account (COA)
+        CoaTransaction::create([
+            'tanggal_transaksi' => $validated['tanggal'],
+            'kode_akun' => DB::table('akun_coa')->where('id', $validated['akun_coa_id'])->value('kode_nomor'),
+            'nama_akun' => DB::table('akun_coa')->where('id', $validated['akun_coa_id'])->value('nama_akun'),
+            'kategori' => 'Pembayaran Aktivitas Lain - Multiple Invoice',
+            'debit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
+            'kredit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
+            'saldo' => 0, // Will be calculated by observer
+            'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: ' . $pembayaran->nomor,
+            'nomor_referensi' => $pembayaran->nomor,
+            'jenis_transaksi' => 'Pembayaran Aktivitas Lain - Invoice',
+            'created_by' => Auth::id(),
+        ]);
+
+        // Credit: Bank Account
+        CoaTransaction::create([
+            'tanggal_transaksi' => $validated['tanggal'],
+            'kode_akun' => DB::table('akun_coa')->where('id', $validated['akun_bank_id'])->value('kode_nomor'),
+            'nama_akun' => DB::table('akun_coa')->where('id', $validated['akun_bank_id'])->value('nama_akun'),
+            'kategori' => 'Pembayaran Aktivitas Lain - Multiple Invoice',
+            'debit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
+            'kredit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
+            'saldo' => 0, // Will be calculated by observer
+            'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: ' . $pembayaran->nomor,
+            'nomor_referensi' => $pembayaran->nomor,
+            'jenis_transaksi' => 'Pembayaran Aktivitas Lain - Invoice',
+            'created_by' => Auth::id(),
+        ]);
     }
 }

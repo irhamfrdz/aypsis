@@ -281,9 +281,13 @@
         </div>
 
         <!-- Daftar Invoice yang Dibayar -->
-        @if($pembayaranAktivitasLain->invoices && $pembayaranAktivitasLain->invoices->count() > 0)
+        @php
+            // Debug: Check if invoices relation exists
+            $hasInvoices = isset($pembayaranAktivitasLain->invoices) && $pembayaranAktivitasLain->invoices->count() > 0;
+        @endphp
+        @if($hasInvoices)
         <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Daftar Invoice yang Dibayar:</strong>
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Daftar Invoice yang Dibayar ({{ $pembayaranAktivitasLain->invoices->count() }} invoice):</strong>
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>

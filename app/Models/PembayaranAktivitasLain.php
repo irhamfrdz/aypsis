@@ -62,6 +62,16 @@ class PembayaranAktivitasLain extends Model
         return $this->belongsTo(Coa::class, 'akun_bank_id');
     }
 
+    public function invoices()
+    {
+        return $this->belongsToMany(
+            InvoiceAktivitasLain::class,
+            'pembayaran_invoice_pivot',
+            'pembayaran_id',
+            'invoice_id'
+        )->withPivot('jumlah_dibayar')->withTimestamps();
+    }
+
     public function coaTransactions()
     {
         return $this->hasMany(CoaTransaction::class, 'nomor_referensi', 'nomor');
