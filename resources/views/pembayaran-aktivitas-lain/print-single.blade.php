@@ -342,59 +342,6 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Tipe Penyesuaian Detail dari Invoice Adjustment -->
-        @php
-            $allTipePenyesuaian = [];
-            if ($hasInvoices) {
-                foreach ($pembayaranAktivitasLain->invoices as $invoice) {
-                    if (stripos($invoice->jenis_aktivitas, 'Adjustment') !== false && 
-                        !empty($invoice->tipe_penyesuaian)) {
-                        $decodedTipe = json_decode($invoice->tipe_penyesuaian, true);
-                        if (is_array($decodedTipe)) {
-                            foreach ($decodedTipe as $tipe) {
-                                $allTipePenyesuaian[] = [
-                                    'nomor_invoice' => $invoice->nomor_invoice,
-                                    'tipe' => $tipe['tipe'] ?? '-',
-                                    'nominal' => $tipe['nominal'] ?? 0
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-        @endphp
-        @if(count($allTipePenyesuaian) > 0)
-        <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Rincian Tipe Penyesuaian:</strong>
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
-                <thead>
-                    <tr>
-                        <th style="width: 8%;">No</th>
-                        <th style="width: 30%;">No. Invoice</th>
-                        <th style="width: 30%;">Tipe Penyesuaian</th>
-                        <th style="width: 32%;">Nominal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $totalPenyesuaian = 0; @endphp
-                    @foreach($allTipePenyesuaian as $index => $item)
-                        @php $totalPenyesuaian += $item['nominal']; @endphp
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $item['nomor_invoice'] }}</td>
-                            <td>{{ strtoupper($item['tipe']) }}</td>
-                            <td class="text-right">Rp {{ number_format($item['nominal'], 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                    <tr class="total-row">
-                        <td colspan="3" class="text-right"><strong>TOTAL PENYESUAIAN</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($totalPenyesuaian, 0, ',', '.') }}</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        @endif
         @endif
 
         <!-- Tipe Penyesuaian Detail (jika ada di pembayaran langsung) -->
