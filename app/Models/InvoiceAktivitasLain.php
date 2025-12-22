@@ -54,6 +54,14 @@ class InvoiceAktivitasLain extends Model
     }
 
     /**
+     * Relationship dengan SuratJalan
+     */
+    public function suratJalan()
+    {
+        return $this->belongsTo(SuratJalan::class, 'surat_jalan_id');
+    }
+
+    /**
      * Relationship dengan Pembayaran Invoice (many-to-many)
      */
     public function pembayarans()

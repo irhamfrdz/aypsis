@@ -291,18 +291,21 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 8%;">No</th>
-                        <th style="width: 22%;">No. Invoice</th>
-                        <th style="width: 15%;">Tanggal</th>
-                        <th style="width: 20%;">Jenis Aktivitas</th>
-                        <th style="width: 15%;">
+                        <th style="width: 6%;">No</th>
+                        <th style="width: 18%;">No. Invoice</th>
+                        <th style="width: 12%;">Tanggal</th>
+                        <th style="width: 16%;">Jenis Aktivitas</th>
+                        @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
+                            <th style="width: 14%;">No. Surat Jalan</th>
+                        @endif
+                        <th style="width: 14%;">
                             @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
                                 Tipe Penyesuaian
                             @else
                                 Sub Jenis
                             @endif
                         </th>
-                        <th style="width: 20%;">Total Invoice</th>
+                        <th style="width: 16%;">Total Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -314,6 +317,9 @@
                             <td>{{ $invoice->nomor_invoice }}</td>
                             <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
                             <td>{{ $invoice->jenis_aktivitas }}</td>
+                            @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
+                                <td>{{ $invoice->suratJalan->no_surat_jalan ?? '-' }}</td>
+                            @endif
                             <td>
                                 @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
                                     @php
@@ -336,7 +342,7 @@
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="5" class="text-right"><strong>TOTAL INVOICE</strong></td>
+                        <td colspan="{{ stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false ? '6' : '5' }}" class="text-right"><strong>TOTAL INVOICE</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
