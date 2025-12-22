@@ -350,42 +350,6 @@
         </div>
         @endif
 
-        <!-- Detail Table -->
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="width: 40%;">Akun COA</th>
-                    <th style="width: 40%;">Akun Bank</th>
-                    <th style="width: 20%;">Jumlah</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        @if($pembayaranAktivitasLain->akun_coa_id && isset($akunCoas[$pembayaranAktivitasLain->akun_coa_id]))
-                            {{ $akunCoas[$pembayaranAktivitasLain->akun_coa_id]->kode_nomor }}<br>
-                            <small>{{ $akunCoas[$pembayaranAktivitasLain->akun_coa_id]->nama_akun }}</small>
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td>
-                        @if($pembayaranAktivitasLain->akun_bank_id && isset($akunCoas[$pembayaranAktivitasLain->akun_bank_id]))
-                            {{ $akunCoas[$pembayaranAktivitasLain->akun_bank_id]->kode_nomor }}<br>
-                            <small>{{ $akunCoas[$pembayaranAktivitasLain->akun_bank_id]->nama_akun }}</small>
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td class="text-right">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="total-row">
-                    <td colspan="2" class="text-right"><strong>TOTAL</strong></td>
-                    <td class="text-right"><strong>Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</strong></td>
-                </tr>
-            </tbody>
-        </table>
-
         <!-- Keterangan -->
         @if($pembayaranAktivitasLain->keterangan)
         <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
