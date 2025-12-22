@@ -1156,6 +1156,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Rit --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Rit</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-rit][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-rit']['view']) && $userMatrixPermissions['master-pricelist-rit']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-rit][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-rit']['create']) && $userMatrixPermissions['master-pricelist-rit']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-rit][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-rit']['update']) && $userMatrixPermissions['master-pricelist-rit']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-rit][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-rit']['delete']) && $userMatrixPermissions['master-pricelist-rit']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Vendor/Bengkel --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

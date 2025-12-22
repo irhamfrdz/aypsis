@@ -635,6 +635,46 @@ Route::middleware([
              ->name('pricelist-cat.destroy')
              ->middleware('can:master-pricelist-cat-delete');
 
+        // Pricelist Rit Import/Export routes
+        Route::get('pricelist-rit/template', [App\Http\Controllers\MasterPricelistRitImportController::class, 'downloadTemplate'])
+             ->name('pricelist-rit.template');
+        Route::post('pricelist-rit/import', [App\Http\Controllers\MasterPricelistRitImportController::class, 'import'])
+             ->name('pricelist-rit.import')
+             ->middleware('can:master-pricelist-rit-create');
+
+        // Pricelist Rit Management - Separate routes to avoid middleware conflicts
+        Route::get('pricelist-rit', [\App\Http\Controllers\PricelistRitController::class, 'index'])
+             ->name('pricelist-rit.index')
+             ->middleware('can:master-pricelist-rit-view');
+        
+        Route::get('pricelist-rit/create', [\App\Http\Controllers\PricelistRitController::class, 'create'])
+             ->name('pricelist-rit.create')
+             ->middleware('can:master-pricelist-rit-create');
+        
+        Route::post('pricelist-rit', [\App\Http\Controllers\PricelistRitController::class, 'store'])
+             ->name('pricelist-rit.store')
+             ->middleware('can:master-pricelist-rit-create');
+        
+        Route::get('pricelist-rit/{pricelistRit}', [\App\Http\Controllers\PricelistRitController::class, 'show'])
+             ->name('pricelist-rit.show')
+             ->middleware('can:master-pricelist-rit-view');
+        
+        Route::get('pricelist-rit/{pricelistRit}/edit', [\App\Http\Controllers\PricelistRitController::class, 'edit'])
+             ->name('pricelist-rit.edit')
+             ->middleware('can:master-pricelist-rit-update');
+        
+        Route::put('pricelist-rit/{pricelistRit}', [\App\Http\Controllers\PricelistRitController::class, 'update'])
+             ->name('pricelist-rit.update')
+             ->middleware('can:master-pricelist-rit-update');
+        
+        Route::patch('pricelist-rit/{pricelistRit}', [\App\Http\Controllers\PricelistRitController::class, 'update'])
+             ->name('pricelist-rit.update')
+             ->middleware('can:master-pricelist-rit-update');
+        
+        Route::delete('pricelist-rit/{pricelistRit}', [\App\Http\Controllers\PricelistRitController::class, 'destroy'])
+             ->name('pricelist-rit.destroy')
+             ->middleware('can:master-pricelist-rit-delete');
+
         // Master pricelist gate in routes - granular permissions
         // Import/Export routes (must be BEFORE resource routes)
         Route::get('pricelist-gate-in/import', [\App\Http\Controllers\PricelistGateInController::class, 'import'])

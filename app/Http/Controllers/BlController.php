@@ -1188,6 +1188,24 @@ class BlController extends Controller
                         // For debugging convenience, prepare a short row preview for possible error messages
                         $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-');
 
+                        // Handle tanggal_berangkat - convert Excel serial date to MySQL date
+                        $tanggalBerangkatRaw = (isset($xlsHeaderMap['tanggal berangkat']) ? ($worksheet->getCell("{$xlsHeaderMap['tanggal berangkat']}{$row}")->getValue() ?: null) : ($worksheet->getCell("F{$row}")->getValue() ?: null));
+                        $tanggalBerangkat = null;
+                        if (!empty($tanggalBerangkatRaw)) {
+                            try {
+                                // Check if it's an Excel serial date number
+                                if (is_numeric($tanggalBerangkatRaw)) {
+                                    $tanggalBerangkat = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tanggalBerangkatRaw)->format('Y-m-d');
+                                } else {
+                                    // Try to parse as string date
+                                    $tanggalBerangkat = Carbon::parse($tanggalBerangkatRaw)->format('Y-m-d');
+                                }
+                            } catch (\Exception $e) {
+                                \Log::warning("Baris {$row}: Gagal konversi tanggal berangkat '{$tanggalBerangkatRaw}': " . $e->getMessage());
+                                $tanggalBerangkat = null;
+                            }
+                        }
+
                         // Create BL record
                         Bl::create([
                             'nomor_bl' => (isset($xlsHeaderMap['nomor bl']) ? ($worksheet->getCell("{$xlsHeaderMap['nomor bl']}{$row}")->getValue() ?: null) : ($worksheet->getCell("A{$row}")->getValue() ?: null)),
@@ -1195,7 +1213,7 @@ class BlController extends Controller
                             'no_seal' => (isset($xlsHeaderMap['no seal']) ? ($worksheet->getCell("{$xlsHeaderMap['no seal']}{$row}")->getValue() ?: null) : ($worksheet->getCell("C{$row}")->getValue() ?: null)),
                             'nama_kapal' => $namaKapal,
                             'no_voyage' => $noVoyage,
-                            'tanggal_berangkat' => (isset($xlsHeaderMap['tanggal berangkat']) ? ($worksheet->getCell("{$xlsHeaderMap['tanggal berangkat']}{$row}")->getValue() ?: null) : ($worksheet->getCell("F{$row}")->getValue() ?: null)),
+                            'tanggal_berangkat' => $tanggalBerangkat,
                             'pelabuhan_asal' => (isset($xlsHeaderMap['pelabuhan asal']) ? ($worksheet->getCell("{$xlsHeaderMap['pelabuhan asal']}{$row}")->getValue() ?: null) : ($worksheet->getCell("G{$row}")->getValue() ?: null)),
                             'pelabuhan_tujuan' => (isset($xlsHeaderMap['pelabuhan tujuan']) ? ($worksheet->getCell("{$xlsHeaderMap['pelabuhan tujuan']}{$row}")->getValue() ?: null) : ($worksheet->getCell("H{$row}")->getValue() ?: null)),
                             'nama_barang' => (isset($xlsHeaderMap['nama barang']) ? ($worksheet->getCell("{$xlsHeaderMap['nama barang']}{$row}")->getValue() ?: null) : ($worksheet->getCell("I{$row}")->getValue() ?: null)),
