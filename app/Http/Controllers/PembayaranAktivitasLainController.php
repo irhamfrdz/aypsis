@@ -715,10 +715,8 @@ class PembayaranAktivitasLainController extends Controller
     {
         // Debit: Account (COA)
         CoaTransaction::create([
+            'coa_id' => $validated['akun_coa_id'],
             'tanggal_transaksi' => $validated['tanggal'],
-            'kode_akun' => DB::table('akun_coa')->where('id', $validated['akun_coa_id'])->value('kode_nomor'),
-            'nama_akun' => DB::table('akun_coa')->where('id', $validated['akun_coa_id'])->value('nama_akun'),
-            'kategori' => 'Pembayaran Aktivitas Lain - Multiple Invoice',
             'debit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
             'kredit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
             'saldo' => 0, // Will be calculated by observer
@@ -730,10 +728,8 @@ class PembayaranAktivitasLainController extends Controller
 
         // Credit: Bank Account
         CoaTransaction::create([
+            'coa_id' => $validated['akun_bank_id'],
             'tanggal_transaksi' => $validated['tanggal'],
-            'kode_akun' => DB::table('akun_coa')->where('id', $validated['akun_bank_id'])->value('kode_nomor'),
-            'nama_akun' => DB::table('akun_coa')->where('id', $validated['akun_bank_id'])->value('nama_akun'),
-            'kategori' => 'Pembayaran Aktivitas Lain - Multiple Invoice',
             'debit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
             'kredit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
             'saldo' => 0, // Will be calculated by observer
