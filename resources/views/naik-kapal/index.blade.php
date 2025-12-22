@@ -354,20 +354,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Print functionality - open in new tab
     document.getElementById('btnPrint').addEventListener('click', function() {
-        const kapalId = "{{ request('kapal_id') }}";
-        const noVoyage = "{{ request('no_voyage') }}";
-        const statusFilter = "{{ request('status_filter') }}";
-        const search = "{{ request('search') }}";
-        const statusBl = "{{ request('status_bl') }}";
-        const tipeKontainer = "{{ request('tipe_kontainer') }}";
+        // Get values from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const kapalId = urlParams.get('kapal_id') || '';
+        const noVoyage = urlParams.get('no_voyage') || '';
+        const statusFilter = urlParams.get('status_filter') || '';
+        const search = urlParams.get('search') || '';
+        const statusBl = urlParams.get('status_bl') || '';
+        const tipeKontainer = urlParams.get('tipe_kontainer') || '';
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            window.location.href = "{{ route('naik-kapal.select') }}";
             return;
         }
         
         // Build print URL with parameters
-        let printUrl = "{{ route('naik-kapal.print') }}?kapal_id=" + kapalId + "&no_voyage=" + noVoyage;
+        let printUrl = "{{ route('naik-kapal.print') }}?kapal_id=" + kapalId + "&no_voyage=" + encodeURIComponent(noVoyage);
         if (statusFilter) {
             printUrl += "&status_filter=" + statusFilter;
         }
@@ -387,15 +390,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Export Excel functionality
     document.getElementById('btnExportExcel').addEventListener('click', function() {
-        const kapalId = "{{ request('kapal_id') }}";
-        const noVoyage = "{{ request('no_voyage') }}";
-        const statusFilter = "{{ request('status_filter') }}";
-        const search = "{{ request('search') }}";
-        const statusBl = "{{ request('status_bl') }}";
-        const tipeKontainer = "{{ request('tipe_kontainer') }}";
+        // Get values from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const kapalId = urlParams.get('kapal_id') || '';
+        const noVoyage = urlParams.get('no_voyage') || '';
+        const statusFilter = urlParams.get('status_filter') || '';
+        const search = urlParams.get('search') || '';
+        const statusBl = urlParams.get('status_bl') || '';
+        const tipeKontainer = urlParams.get('tipe_kontainer') || '';
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            window.location.href = "{{ route('naik-kapal.select') }}";
             return;
         }
         
@@ -405,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.disabled = true;
         
         // Build export URL with parameters
-        let exportUrl = "{{ route('naik-kapal.export') }}?kapal_id=" + kapalId + "&no_voyage=" + noVoyage;
+        let exportUrl = "{{ route('naik-kapal.export') }}?kapal_id=" + kapalId + "&no_voyage=" + encodeURIComponent(noVoyage);
         if (statusFilter) {
             exportUrl += "&status_filter=" + statusFilter;
         }
