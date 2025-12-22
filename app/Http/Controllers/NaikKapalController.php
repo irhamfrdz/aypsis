@@ -142,11 +142,22 @@ class NaikKapalController extends Controller
      */
     public function print(Request $request)
     {
-        $kapal = \App\Models\MasterKapal::find($request->kapal_id);
-        
-        if (!$kapal || !$request->filled('no_voyage')) {
+        // Validate required parameters
+        if (!$request->has('kapal_id') || !$request->has('no_voyage')) {
             return redirect()->route('naik-kapal.select')
                 ->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
+        }
+        
+        $kapal = \App\Models\MasterKapal::find($request->kapal_id);
+        
+        if (!$kapal) {
+            return redirect()->route('naik-kapal.select')
+                ->with('error', 'Kapal tidak ditemukan. Silakan pilih kapal terlebih dahulu.');
+        }
+        
+        if (empty($request->no_voyage)) {
+            return redirect()->route('naik-kapal.select')
+                ->with('error', 'Nomor voyage tidak valid. Silakan pilih voyage terlebih dahulu.');
         }
         
         $query = NaikKapal::with(['prospek.tandaTerima', 'createdBy'])

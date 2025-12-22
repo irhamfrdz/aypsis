@@ -363,6 +363,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusBl = urlParams.get('status_bl') || '';
         const tipeKontainer = urlParams.get('tipe_kontainer') || '';
         
+        // Debug: log values
+        console.log('Print - Kapal ID:', kapalId);
+        console.log('Print - No Voyage:', noVoyage);
+        console.log('Print - Current URL:', window.location.search);
+        
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
             window.location.href = "{{ route('naik-kapal.select') }}";
@@ -383,6 +388,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tipeKontainer) {
             printUrl += "&tipe_kontainer=" + tipeKontainer;
         }
+        
+        // Debug: log final URL
+        console.log('Print URL:', printUrl);
         
         // Open print page in new tab
         window.open(printUrl, '_blank');
