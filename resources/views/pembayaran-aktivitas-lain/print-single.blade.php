@@ -295,7 +295,13 @@
                         <th style="width: 22%;">No. Invoice</th>
                         <th style="width: 15%;">Tanggal</th>
                         <th style="width: 20%;">Jenis Aktivitas</th>
-                        <th style="width: 15%;">Sub Jenis</th>
+                        <th style="width: 15%;">
+                            @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
+                                Tipe Penyesuaian
+                            @else
+                                Sub Jenis
+                            @endif
+                        </th>
                         <th style="width: 20%;">Total Invoice</th>
                     </tr>
                 </thead>
@@ -308,7 +314,24 @@
                             <td>{{ $invoice->nomor_invoice }}</td>
                             <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
                             <td>{{ $invoice->jenis_aktivitas }}</td>
-                            <td>{{ $invoice->sub_jenis_kendaraan ?? '-' }}</td>
+                            <td>
+                                @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
+                                    @php
+                                        $tipePenyesuaianList = [];
+                                        if (!empty($invoice->tipe_penyesuaian)) {
+                                            $decodedTipe = json_decode($invoice->tipe_penyesuaian, true);
+                                            if (is_array($decodedTipe)) {
+                                                foreach ($decodedTipe as $tipe) {
+                                                    $tipePenyesuaianList[] = strtoupper($tipe['tipe'] ?? '-');
+                                                }
+                                            }
+                                        }
+                                    @endphp
+                                    {{ count($tipePenyesuaianList) > 0 ? implode(', ', $tipePenyesuaianList) : '-' }}
+                                @else
+                                    {{ $invoice->sub_jenis_kendaraan ?? '-' }}
+                                @endif
+                            </td>
                             <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
