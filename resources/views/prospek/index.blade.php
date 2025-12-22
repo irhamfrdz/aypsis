@@ -534,7 +534,19 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const submitBtn = document.getElementById('btnScanSubmit');
+    const fileInput = document.getElementById('excel_file');
+    
+    // Validasi file dipilih
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Silakan pilih file Excel terlebih dahulu');
+        return;
+    }
+    
     const formData = new FormData(this);
+    
+    // Debug: log file yang akan diupload
+    console.log('File to upload:', fileInput.files[0]);
+    console.log('FormData entries:', Array.from(formData.entries()));
     
     // Change button state
     submitBtn.disabled = true;
@@ -546,6 +558,7 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
+            // Jangan set Content-Type, biar browser yang set otomatis dengan boundary
         }
     })
     .then(response => response.json())

@@ -713,12 +713,34 @@ class ProspekController extends Controller
                 ], 403);
             }
 
-            // Validasi file upload
-            $request->validate([
-                'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120' // max 5MB
+            // Debug logging
+            \Log::info('Scan Surat Jalan Request', [
+                'has_file' => $request->hasFile('excel_file'),
+                'all_files' => $request->allFiles(),
+                'content_type' => $request->header('Content-Type')
             ]);
 
+            // Validasi file upload
+            try {
+                $request->validate([
+                    'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120' // max 5MB
+                ]);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                \Log::error('Validation failed', ['errors' => $e->validator->errors()->toArray()]);
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->validator->errors()->first()
+                ], 422);
+            }
+
             $file = $request->file('excel_file');
+            
+            if (!$file) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File tidak ditemukan. Pastikan Anda memilih file Excel yang valid.'
+                ], 400);
+            }
             
             // Baca file Excel
             $data = Excel::toArray([], $file);
