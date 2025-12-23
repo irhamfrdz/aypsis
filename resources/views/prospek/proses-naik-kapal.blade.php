@@ -6,9 +6,9 @@
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center">
-                <i class="fas fa-ship mr-3 text-green-600 text-2xl"></i>
+                <i class="fas fa-clipboard-check mr-3 text-green-600 text-2xl"></i>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Proses Naik Kapal</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">Proses Prospek</h1>
                     <p class="text-gray-600">Tujuan: <span class="font-semibold text-green-600">{{ $tujuan->nama }}</span></p>
                 </div>
             </div>
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Confirmation
-        if (!confirm(`Apakah Anda yakin ingin memproses ${selectedProspeks.length} prospek untuk naik kapal?`)) {
+        if (!confirm(`Apakah Anda yakin ingin memproses ${selectedProspeks.length} prospek?`)) {
             e.preventDefault();
         }
     });
