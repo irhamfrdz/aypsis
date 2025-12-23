@@ -3712,6 +3712,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
                 ->middleware('can:prospek-view');
 
+    // Route untuk edit prospek
+    Route::get('prospek/{prospek}/edit', [ProspekController::class, 'edit'])->name('prospek.edit')
+         ->middleware('can:prospek-edit');
+
+    // Route untuk update prospek
+    Route::put('prospek/{prospek}', [ProspekController::class, 'update'])->name('prospek.update')
+         ->middleware('can:prospek-edit');
+
     // Route untuk update seal (inline edit)
     Route::patch('prospek/{prospek}/update-seal', [ProspekController::class, 'updateSeal'])->name('prospek.update-seal')
          ->middleware('can:prospek-edit');
