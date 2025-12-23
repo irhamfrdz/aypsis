@@ -1430,10 +1430,20 @@ class TandaTerimaLclController extends Controller
                 return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
             })->filter()->unique()->implode(', ');
 
+            // Limit to 180 characters to avoid database truncation error
+            if (strlen($ptPengirimList) > 180) {
+                $ptPengirimList = substr($ptPengirimList, 0, 177) . '...';
+            }
+
             $barangList = $pivotRecords->map(function($pivot) {
                 if (!$pivot->tandaTerima || !$pivot->tandaTerima->items) return null;
                 return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
             })->filter()->unique()->implode(', ');
+
+            // Limit barang to 180 characters to avoid database truncation error
+            if (strlen($barangList) > 180) {
+                $barangList = substr($barangList, 0, 177) . '...';
+            }
 
             // Insert ke tabel prospek
             $prospek = Prospek::create([
