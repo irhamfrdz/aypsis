@@ -55,7 +55,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
 // use App\Http\Controllers\PranotaSuratJalanController; // Disabled - replaced with pranota uang jalan
 use App\Http\Controllers\PranotaUangKenekController;
-use App\Http\Controllers\PranotaRitController;
+use App\Http\Controllers\PranotaUangRitController;
 // use App\Http\Controllers\PranotaRitKenekController; // Removed - not used
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
@@ -1766,8 +1766,8 @@ Route::middleware(['auth'])->group(function () {
                ->name('pranota-ob.input-dp')
                ->middleware('can:pranota-ob-view');
 
-     // Pranota Rit Management
-          Route::resource('pranota-rit', \App\Http\Controllers\PranotaRitController::class)
+     // Pranota Uang Rit Management
+          Route::resource('pranota-rit', \App\Http\Controllers\PranotaUangRitController::class)
                ->middleware([
                    'index' => 'can:pranota-rit-view',
                    'create' => 'can:pranota-rit-create',
