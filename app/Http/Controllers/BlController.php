@@ -61,12 +61,12 @@ class BlController extends Controller
 
         // Filter berdasarkan kapal
         if ($request->filled('kapal')) {
-            $query->where('nama_kapal', 'like', "%{$request->kapal}%");
+            $query->where('nama_kapal', $request->kapal);
         }
         
         // Filter berdasarkan nama_kapal (dari select page)
         if ($request->filled('nama_kapal')) {
-            $query->where('nama_kapal', 'like', "%{$request->nama_kapal}%");
+            $query->where('nama_kapal', $request->nama_kapal);
         }
 
         // Filter berdasarkan voyage
