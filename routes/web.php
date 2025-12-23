@@ -56,7 +56,7 @@ use App\Http\Controllers\OutstandingController;
 // use App\Http\Controllers\PranotaSuratJalanController; // Disabled - replaced with pranota uang jalan
 use App\Http\Controllers\PranotaUangKenekController;
 use App\Http\Controllers\PranotaRitController;
-use App\Http\Controllers\PranotaRitKenekController;
+// use App\Http\Controllers\PranotaRitKenekController; // Removed - not used
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ProspekController;
@@ -1778,17 +1778,7 @@ Route::middleware(['auth'])->group(function () {
                    'destroy' => 'can:pranota-rit-delete'
                ]);
 
-     // Pranota Rit Kenek Management
-          Route::resource('pranota-rit-kenek', \App\Http\Controllers\PranotaRitKenekController::class)
-               ->middleware([
-                   'index' => 'can:pranota-rit-kenek-view',
-                   'create' => 'can:pranota-rit-kenek-create',
-                   'store' => 'can:pranota-rit-kenek-create',
-                   'show' => 'can:pranota-rit-kenek-view',
-                   'edit' => 'can:pranota-rit-kenek-update',
-                   'update' => 'can:pranota-rit-kenek-update',
-                   'destroy' => 'can:pranota-rit-kenek-delete'
-               ]);
+     // Pranota Rit Kenek route removed - functionality moved to pranota-uang-rit-kenek
 
      // Pranota Uang Jalan Bongkaran Management with permissions
       Route::resource('pranota-uang-jalan-bongkaran', \App\Http\Controllers\PranotaUangJalanBongkaranController::class)
