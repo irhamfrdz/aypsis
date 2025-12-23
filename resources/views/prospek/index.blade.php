@@ -448,7 +448,7 @@
                                 <li>Upload file Excel berisi daftar nomor surat jalan</li>
                                 <li>Kolom pertama harus berisi nomor surat jalan</li>
                                 <li>Sistem akan mencari surat jalan yang sesuai</li>
-                                <li>Data BL terkait akan diupdate menjadi status "Sudah Muat"</li>
+                                <li>Prospek terkait akan diupdate menjadi status "Sudah Muat"</li>
                                 <li>Format file yang didukung: .xlsx, .xls, .csv</li>
                                 <li>Maksimal ukuran file: 5 MB</li>
                             </ul>
@@ -591,8 +591,7 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
                 message += `- Total dipindai: ${data.data.total_scanned}\n`;
                 message += `- Ditemukan: ${data.data.found}\n`;
                 message += `- Tidak ditemukan: ${data.data.not_found}\n`;
-                message += `- Prospek diupdate: ${data.data.prospek_updated}\n`;
-                message += `- BL diupdate: ${data.data.bl_updated}`;
+                message += `- Prospek diupdate: ${data.data.prospek_updated}`;
                 
                 if (data.data.not_found_numbers && data.data.not_found_numbers.length > 0) {
                     message += `\n\nTidak ditemukan:\n${data.data.not_found_numbers.join('\n')}`;

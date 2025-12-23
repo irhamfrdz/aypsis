@@ -789,7 +789,6 @@ class ProspekController extends Controller
             $suratJalans = \App\Models\SuratJalan::whereIn('no_surat_jalan', $suratJalanNumbers)->get();
             
             $foundCount = 0;
-            $updatedBlCount = 0;
             $notFoundNumbers = [];
             $updatedProspekIds = [];
 
@@ -810,16 +809,6 @@ class ProspekController extends Controller
                         ]);
                         
                         $updatedProspekIds[] = $prospek->id;
-                        
-                        // Update semua BL yang terkait dengan prospek ini
-                        $bls = Bl::where('prospek_id', $prospek->id)->get();
-                        foreach ($bls as $bl) {
-                            $bl->update([
-                                'status_bongkar' => 'Sudah Muat',
-                                'updated_by' => $user->id
-                            ]);
-                            $updatedBlCount++;
-                        }
                     }
                 } else {
                     $notFoundNumbers[] = $number;
@@ -827,7 +816,7 @@ class ProspekController extends Controller
             }
 
             $message = "Berhasil memproses {$foundCount} dari " . count($suratJalanNumbers) . " surat jalan. ";
-            $message .= "{$updatedBlCount} BL telah diupdate menjadi 'Sudah Muat'.";
+            $message .= count(array_unique($updatedProspekIds)) . " prospek telah diupdate menjadi 'Sudah Muat'.";
             
             if (!empty($notFoundNumbers)) {
                 $message .= " Tidak ditemukan: " . implode(', ', $notFoundNumbers);
@@ -841,7 +830,6 @@ class ProspekController extends Controller
                     'found' => $foundCount,
                     'not_found' => count($notFoundNumbers),
                     'not_found_numbers' => $notFoundNumbers,
-                    'bl_updated' => $updatedBlCount,
                     'prospek_updated' => count(array_unique($updatedProspekIds))
                 ]
             ]);
