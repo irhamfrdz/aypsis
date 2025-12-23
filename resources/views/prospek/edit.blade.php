@@ -51,7 +51,7 @@
                         <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-                                <input type="date" name="tanggal" value="{{ old('tanggal', $prospek->tanggal?->format('Y-m-d')) }}" 
+                                <input type="date" name="tanggal" value="{{ old('tanggal', $prospek->tanggal ? (is_string($prospek->tanggal) ? $prospek->tanggal : $prospek->tanggal->format('Y-m-d')) : '') }}" 
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
@@ -124,7 +124,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tanggal Muat</label>
-                                <input type="date" name="tanggal_muat" value="{{ old('tanggal_muat', $prospek->tanggal_muat?->format('Y-m-d')) }}" 
+                                <input type="date" name="tanggal_muat" value="{{ old('tanggal_muat', $prospek->tanggal_muat ? (is_string($prospek->tanggal_muat) ? $prospek->tanggal_muat : $prospek->tanggal_muat->format('Y-m-d')) : '') }}" 
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                         </div>
