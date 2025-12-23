@@ -137,9 +137,8 @@
                                      class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
                                     @foreach($prospeksAktif as $prospek)
                                         @php
-                                            // Skip CARGO dan FCL/LCL yang belum ada nomor kontainer
-                                            $tipeUpper = strtoupper($prospek->tipe);
-                                            if ($tipeUpper === 'CARGO' || !$prospek->nomor_kontainer) {
+                                            // Skip kontainer yang belum ada nomor kontainernya
+                                            if (!$prospek->nomor_kontainer) {
                                                 continue;
                                             }
                                             
