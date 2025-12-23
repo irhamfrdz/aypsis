@@ -430,7 +430,7 @@
                                 {{ $naikKapal->nomor_kontainer ?: '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                {{ $naikKapal->no_seal ?: '-' }}
+                                {{ $naikKapal->no_seal ?: ($naikKapal->prospek->no_seal ?? '-') }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
