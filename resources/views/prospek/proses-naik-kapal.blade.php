@@ -137,14 +137,18 @@
                                      class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
                                     @foreach($prospeksAktif as $prospek)
                                         @php
-                                            // Skip kontainer yang belum ada nomor kontainernya
-                                            if (!$prospek->nomor_kontainer) {
-                                                continue;
+                                            // Allow selection even without container number
+                                            if ($prospek->nomor_kontainer) {
+                                                $displayText = $prospek->no_seal 
+                                                    ? $prospek->nomor_kontainer . ' - ' . $prospek->no_seal 
+                                                    : $prospek->nomor_kontainer;
+                                            } else {
+                                                // Show alternative info when container number is empty
+                                                $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
+                                                if ($prospek->no_seal) {
+                                                    $displayText .= ' - Seal: ' . $prospek->no_seal;
+                                                }
                                             }
-                                            
-                                            $displayText = $prospek->nomor_kontainer && $prospek->no_seal 
-                                                ? $prospek->nomor_kontainer . ' - ' . $prospek->no_seal 
-                                                : $prospek->nomor_kontainer;
                                         @endphp
                                         <div class="prospek-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
                                              data-id="{{ $prospek->id }}"
@@ -152,7 +156,7 @@
                                              data-tipe="{{ $prospek->tipe }}"
                                              data-supir="{{ $prospek->nama_supir }}"
                                              data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}">
-                                            <div class="font-medium text-gray-900">
+                                            <div class="font-medium text-gray-900 {{ !$prospek->nomor_kontainer ? 'text-orange-600' : '' }}">
                                                 {{ $displayText }}
                                             </div>
                                             <div class="text-sm text-gray-500 flex justify-between items-center">
@@ -166,7 +170,7 @@
                             
                             <div class="mt-2 flex justify-between items-center">
                                 <span id="selectedCount" class="text-sm text-blue-600">
-                                    Terpilih: 0 dari {{ $prospeksAktif->where('nomor_kontainer', '!=', null)->where('tipe', '!=', 'CARGO')->count() }} prospek
+                                    Terpilih: 0 dari {{ $prospeksAktif->where('tipe', '!=', 'CARGO')->count() }} prospek
                                 </span>
                                 <div class="flex gap-2">
                                     <button type="button" 
@@ -632,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update selected count display
     function updateSelectedCount() {
-        selectedCount.textContent = `Terpilih: ${selectedProspeks.length} dari {{ $prospeksAktif->where('nomor_kontainer', '!=', null)->where('tipe', '!=', 'CARGO')->count() }} prospek`;
+        selectedCount.textContent = `Terpilih: ${selectedProspeks.length} dari {{ $prospeksAktif->where('tipe', '!=', 'CARGO')->count() }} prospek`;
     }
     
     // Form validation
