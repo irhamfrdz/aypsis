@@ -107,9 +107,9 @@
                 
                 {{-- Tombol Naik Kapal untuk prospek aktif --}}
                 <div class="flex gap-2">
-                    <button type="button" id="btnGabungkanFCL" onclick="gabungkanFCL()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center shadow-lg">
+                    <button type="button" id="btnGabungkanLCL" onclick="gabungkanLCL()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center shadow-lg">
                         <i class="fas fa-link mr-2"></i>
-                        Gabungkan FCL <span id="countSelected" class="ml-1 bg-white text-indigo-600 px-2 py-0.5 rounded-full text-xs font-bold">0</span>
+                        Gabungkan LCL <span id="countSelected" class="ml-1 bg-white text-indigo-600 px-2 py-0.5 rounded-full text-xs font-bold">0</span>
                     </button>
                     <button type="button" onclick="openScanModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-file-upload mr-2"></i>
@@ -132,8 +132,8 @@
                     <tr>
                         <th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 60px;">
                             <div class="flex flex-col items-center gap-1">
-                                <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" title="Pilih Semua FCL Aktif">
-                                <span class="text-[10px] text-gray-400 font-normal normal-case">FCL</span>
+                                <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" title="Pilih Semua LCL Aktif">
+                                <span class="text-[10px] text-gray-400 font-normal normal-case">LCL</span>
                             </div>
                         </th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th>
@@ -157,8 +157,8 @@
                     @forelse($prospeks as $key => $prospek)
                         <tr class="transition duration-150 {{ $prospek->status == 'aktif' ? 'bg-blue-50 hover:bg-blue-100' : ($prospek->status == 'sudah_muat' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50') }}" data-prospek-id="{{ $prospek->id }}" data-tipe="{{ strtoupper($prospek->tipe) }}">
                             <td class="px-4 py-4 whitespace-nowrap text-center">
-                                @if(strtoupper($prospek->tipe) == 'FCL' && $prospek->status == 'aktif')
-                                    <input type="checkbox" class="fcl-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                                @if(strtoupper($prospek->tipe) == 'LCL' && $prospek->status == 'aktif')
+                                    <input type="checkbox" class="lcl-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
                                            data-prospek-id="{{ $prospek->id }}" 
                                            data-no-surat-jalan="{{ $prospek->no_surat_jalan }}" 
                                            data-nomor-kontainer="{{ $prospek->nomor_kontainer }}">
@@ -525,15 +525,15 @@
 </div>
 
 <script>
-// Global functions for modal and FCL merge
+// Global functions for modal and LCL merge
 function openScanModal() {
     document.getElementById('scanModal').classList.remove('hidden');
 }
 
-function gabungkanFCL() {
-    const checkboxes = document.querySelectorAll('.fcl-checkbox:checked');
+function gabungkanLCL() {
+    const checkboxes = document.querySelectorAll('.lcl-checkbox:checked');
     if (checkboxes.length < 2) {
-        alert('Pilih minimal 2 kontainer FCL untuk digabungkan');
+        alert('Pilih minimal 2 kontainer LCL untuk digabungkan');
         return;
     }
     
@@ -543,25 +543,25 @@ function gabungkanFCL() {
         nomor_kontainer: cb.dataset.nomorKontainer
     }));
     
-    let confirmMessage = `Gabungkan ${checkboxes.length} kontainer FCL berikut?\n\n`;
+    let confirmMessage = `Gabungkan ${checkboxes.length} kontainer LCL berikut?\n\n`;
     selectedData.forEach((item, index) => {
         confirmMessage += `${index + 1}. ${item.no_surat_jalan} - ${item.nomor_kontainer}\n`;
     });
     confirmMessage += '\nData akan digabungkan menjadi satu BL.';
     
     if (confirm(confirmMessage)) {
-        // Kirim request untuk gabungkan FCL
+        // Kirim request untuk gabungkan LCL
         const formData = new FormData();
         formData.append('prospek_ids', JSON.stringify(selectedData.map(item => item.id)));
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
         
         // Show loading
-        const btn = document.getElementById('btnGabungkanFCL');
+        const btn = document.getElementById('btnGabungkanLCL');
         const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
         btn.disabled = true;
         
-        fetch('/prospek/gabungkan-fcl', {
+        fetch('/prospek/gabungkan-lcl', {
             method: 'POST',
             body: formData,
             headers: {
@@ -572,7 +572,7 @@ function gabungkanFCL() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message || 'Data FCL berhasil digabungkan');
+                alert(data.message || 'Data LCL berhasil digabungkan');
                 window.location.reload();
             } else {
                 alert('Error: ' + (data.message || 'Terjadi kesalahan'));
@@ -582,7 +582,7 @@ function gabungkanFCL() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menggabungkan data FCL');
+            alert('Terjadi kesalahan saat menggabungkan data LCL');
             btn.innerHTML = originalHTML;
             btn.disabled = false;
         });
@@ -710,14 +710,14 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle FCL checkbox selection
-    const checkboxes = document.querySelectorAll('.fcl-checkbox');
+    // Handle LCL checkbox selection
+    const checkboxes = document.querySelectorAll('.lcl-checkbox');
     const checkAll = document.getElementById('checkAll');
-    const btnGabungkan = document.getElementById('btnGabungkanFCL');
+    const btnGabungkan = document.getElementById('btnGabungkanLCL');
     const countSelected = document.getElementById('countSelected');
     
     function updateGabungkanButton() {
-        const checkedCount = document.querySelectorAll('.fcl-checkbox:checked').length;
+        const checkedCount = document.querySelectorAll('.lcl-checkbox:checked').length;
         countSelected.textContent = checkedCount;
         
         if (checkedCount >= 2) {
@@ -749,11 +749,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateGabungkanButton();
         });
         
-        // Show info if no FCL checkboxes available
+        // Show info if no LCL checkboxes available
         if (checkboxes.length === 0) {
             checkAll.disabled = true;
             checkAll.style.opacity = '0.3';
-            checkAll.title = 'Tidak ada FCL aktif untuk dipilih';
+            checkAll.title = 'Tidak ada LCL aktif untuk dipilih';
         }
     }
     

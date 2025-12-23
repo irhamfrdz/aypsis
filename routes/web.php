@@ -3707,7 +3707,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('prospek/scan-surat-jalan', [ProspekController::class, 'scanSuratJalan'])->name('prospek.scan-surat-jalan')
          ->middleware('can:prospek-edit');
 
-    Route::post('prospek/gabungkan-fcl', [ProspekController::class, 'gabungkanFCL'])->name('prospek.gabungkan-fcl')
+    Route::post('prospek/gabungkan-lcl', [ProspekController::class, 'gabungkanLCL'])->name('prospek.gabungkan-lcl')
          ->middleware('can:prospek-edit');
 
     Route::post('prospek/execute-naik-kapal', [ProspekController::class, 'executeNaikKapal'])->name('prospek.execute-naik-kapal')

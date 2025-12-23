@@ -870,16 +870,16 @@ class ProspekController extends Controller
     }
 
     /**
-     * Gabungkan multiple kontainer FCL
+     * Gabungkan multiple kontainer LCL
      */
-    public function gabungkanFCL(Request $request)
+    public function gabungkanLCL(Request $request)
     {
         try {
             $user = Auth::user();
             if (!$this->hasProspekPermission($user, 'prospek-edit')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak memiliki akses untuk menggabungkan FCL'
+                    'message' => 'Tidak memiliki akses untuk menggabungkan LCL'
                 ], 403);
             }
 
@@ -893,7 +893,7 @@ class ProspekController extends Controller
             if (!is_array($prospekIds) || count($prospekIds) < 2) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pilih minimal 2 kontainer FCL untuk digabungkan'
+                    'message' => 'Pilih minimal 2 kontainer LCL untuk digabungkan'
                 ], 400);
             }
 
@@ -902,15 +902,15 @@ class ProspekController extends Controller
                 ->where('status', Prospek::STATUS_AKTIF)
                 ->get();
 
-            // Validasi semua prospek adalah FCL
-            $nonFCL = $prospeks->filter(function($p) {
-                return strtoupper($p->tipe) !== 'FCL';
+            // Validasi semua prospek adalah LCL
+            $nonLCL = $prospeks->filter(function($p) {
+                return strtoupper($p->tipe) !== 'LCL';
             });
 
-            if ($nonFCL->count() > 0) {
+            if ($nonLCL->count() > 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Hanya kontainer FCL yang dapat digabungkan'
+                    'message' => 'Hanya kontainer LCL yang dapat digabungkan'
                 ], 400);
             }
 
@@ -931,7 +931,7 @@ class ProspekController extends Controller
                 'pt_pengirim' => $prospeks->pluck('pt_pengirim')->filter()->unique()->implode(', '),
                 'tujuan_pengiriman' => $prospeks->pluck('tujuan_pengiriman')->filter()->unique()->first(),
                 'tanggal' => $prospeks->sortBy('tanggal')->first()->tanggal,
-                'tipe' => 'FCL',
+                'tipe' => 'LCL',
                 'ukuran' => $prospeks->pluck('ukuran')->filter()->unique()->implode(', '),
                 'status' => Prospek::STATUS_AKTIF,
                 'created_by' => $user->id,
@@ -956,7 +956,7 @@ class ProspekController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Berhasil menggabungkan {$prospeks->count()} kontainer FCL menjadi 1 prospek",
+                    'message' => "Berhasil menggabungkan {$prospeks->count()} kontainer LCL menjadi 1 prospek",
                     'data' => [
                         'prospek_id' => $prospekGabungan->id,
                         'merged_count' => $prospeks->count()
@@ -969,7 +969,7 @@ class ProspekController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Error gabungkan FCL: ' . $e->getMessage());
+            \Log::error('Error gabungkan LCL: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
