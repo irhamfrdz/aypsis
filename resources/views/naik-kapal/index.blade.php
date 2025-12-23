@@ -8,7 +8,7 @@
             <div class="flex items-center">
                 <i class="fas fa-ship mr-3 text-purple-600 text-2xl"></i>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Naik Kapal</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">Prospek</h1>
                     <p class="text-gray-600">Daftar kontainer yang naik kapal</p>
                 </div>
             </div>
