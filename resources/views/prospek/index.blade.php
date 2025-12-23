@@ -116,8 +116,8 @@
                         Scan Surat Jalan
                     </button>
                     <a href="{{ route('prospek.pilih-tujuan') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
-                        <i class="fas fa-ship mr-2"></i>
-                        Naik Kapal
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Buat Prospek
                     </a>
                 </div>
             </div>
