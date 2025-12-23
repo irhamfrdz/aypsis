@@ -138,7 +138,74 @@ class ProspekController extends Controller
         return view('prospek.show', compact('prospek'));
     }
 
-    // Edit, Update, and Destroy methods removed - Prospek is read-only
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Prospek $prospek)
+    {
+        $user = Auth::user();
+        if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            abort(403, "Tidak memiliki akses untuk mengedit prospek");
+        }
+
+        $prospek->load(['suratJalan', 'tandaTerima', 'kapal', 'createdBy', 'updatedBy']);
+        
+        // Get master data for dropdowns
+        $kapals = MasterKapal::orderBy('nama_kapal')->get();
+
+        return view('prospek.edit', compact('prospek', 'kapals'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Prospek $prospek)
+    {
+        $user = Auth::user();
+        if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            abort(403, "Tidak memiliki akses untuk mengedit prospek");
+        }
+
+        $validated = $request->validate([
+            'tanggal' => 'nullable|date',
+            'nama_supir' => 'nullable|string|max:255',
+            'supir_ob' => 'nullable|string|max:255',
+            'barang' => 'nullable|string|max:255',
+            'pt_pengirim' => 'nullable|string|max:255',
+            'ukuran' => 'nullable|string|max:50',
+            'tipe' => 'nullable|string|max:50',
+            'nomor_kontainer' => 'nullable|string|max:255',
+            'no_seal' => 'nullable|string|max:255',
+            'tujuan_pengiriman' => 'nullable|string|max:255',
+            'total_ton' => 'nullable|numeric',
+            'kuantitas' => 'nullable|integer',
+            'total_volume' => 'nullable|numeric',
+            'kapal_id' => 'nullable|exists:master_kapal,id',
+            'nama_kapal' => 'nullable|string|max:255',
+            'no_voyage' => 'nullable|string|max:255',
+            'pelabuhan_asal' => 'nullable|string|max:255',
+            'tanggal_muat' => 'nullable|date',
+            'keterangan' => 'nullable|string',
+            'status' => 'nullable|string|max:50',
+        ]);
+
+        // Update kapal name if kapal_id is selected
+        if ($request->filled('kapal_id')) {
+            $kapal = MasterKapal::find($request->kapal_id);
+            if ($kapal) {
+                $validated['nama_kapal'] = $kapal->nama_kapal;
+            }
+        }
+
+        $validated['updated_by'] = $user->id;
+        
+        $prospek->update($validated);
+
+        return redirect()->route('prospek.index')
+            ->with('success', 'Prospek berhasil diperbarui');
+    }
+
+    // Destroy method below
 
     /**
      * Check if user has specific prospek permission
