@@ -544,8 +544,17 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
     
     const formData = new FormData(this);
     
+    // Pastikan CSRF token terkirim dengan benar
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                      document.querySelector('input[name="_token"]')?.value;
+    
+    if (csrfToken) {
+        formData.set('_token', csrfToken);
+    }
+    
     // Debug: log file yang akan diupload
     console.log('File to upload:', fileInput.files[0]);
+    console.log('CSRF Token:', csrfToken);
     console.log('FormData entries:', Array.from(formData.entries()));
     
     // Change button state
@@ -561,7 +570,15 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
             // Jangan set Content-Type, biar browser yang set otomatis dengan boundary
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        // Handle both success and error responses
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw { status: response.status, data: data };
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-search mr-1"></i> Scan & Update';
@@ -594,8 +611,23 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
     .catch(error => {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-search mr-1"></i> Scan & Update';
-        alert('Terjadi kesalahan saat memproses file: ' + error.message);
+        
         console.error('Error:', error);
+        
+        // Handle validation errors (422)
+        if (error.status === 422 && error.data && error.data.errors) {
+            let errorMessage = 'Validasi gagal:\n\n';
+            Object.keys(error.data.errors).forEach(key => {
+                errorMessage += `- ${error.data.errors[key].join(', ')}\n`;
+            });
+            alert(errorMessage);
+        } else if (error.data && error.data.message) {
+            alert('Error: ' + error.data.message);
+        } else if (error.message) {
+            alert('Terjadi kesalahan saat memproses file: ' + error.message);
+        } else {
+            alert('Terjadi kesalahan saat memproses file. Silakan coba lagi.');
+        }
     });
 });
 
