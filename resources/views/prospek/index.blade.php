@@ -107,6 +107,10 @@
                 
                 {{-- Tombol Naik Kapal untuk prospek aktif --}}
                 <div class="flex gap-2">
+                    <button type="button" id="btnGabungkanFCL" onclick="gabungkanFCL()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center shadow-lg">
+                        <i class="fas fa-link mr-2"></i>
+                        Gabungkan FCL <span id="countSelected" class="ml-1 bg-white text-indigo-600 px-2 py-0.5 rounded-full text-xs font-bold">0</span>
+                    </button>
                     <button type="button" onclick="openScanModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-file-upload mr-2"></i>
                         Scan Surat Jalan
@@ -126,6 +130,9 @@
                 <table class="min-w-full table-auto resizable-table" id="prospekTable">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 50px;">
+                            <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Pilih Semua FCL">
+                        </th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Surat Jalan<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
@@ -145,7 +152,17 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($prospeks as $key => $prospek)
-                        <tr class="transition duration-150 {{ $prospek->status == 'aktif' ? 'bg-blue-50 hover:bg-blue-100' : ($prospek->status == 'sudah_muat' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50') }}">
+                        <tr class="transition duration-150 {{ $prospek->status == 'aktif' ? 'bg-blue-50 hover:bg-blue-100' : ($prospek->status == 'sudah_muat' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50') }}" data-prospek-id="{{ $prospek->id }}" data-tipe="{{ strtoupper($prospek->tipe) }}">
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                @if(strtoupper($prospek->tipe) == 'FCL' && $prospek->status == 'aktif')
+                                    <input type="checkbox" class="fcl-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                                           data-prospek-id="{{ $prospek->id }}" 
+                                           data-no-surat-jalan="{{ $prospek->no_surat_jalan }}" 
+                                           data-nomor-kontainer="{{ $prospek->nomor_kontainer }}">
+                                @else
+                                    <span class="text-gray-300">-</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospeks->firstItem() + $key }}
                             </td>
@@ -350,7 +367,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="14" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="15" class="px-4 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
                                     <p class="text-lg font-medium">Tidak ada data prospek yang ditemukan</p>
@@ -505,9 +522,68 @@
 </div>
 
 <script>
-// Global functions for modal
+// Global functions for modal and FCL merge
 function openScanModal() {
     document.getElementById('scanModal').classList.remove('hidden');
+}
+
+function gabungkanFCL() {
+    const checkboxes = document.querySelectorAll('.fcl-checkbox:checked');
+    if (checkboxes.length < 2) {
+        alert('Pilih minimal 2 kontainer FCL untuk digabungkan');
+        return;
+    }
+    
+    const selectedData = Array.from(checkboxes).map(cb => ({
+        id: cb.dataset.prospekId,
+        no_surat_jalan: cb.dataset.noSuratJalan,
+        nomor_kontainer: cb.dataset.nomorKontainer
+    }));
+    
+    let confirmMessage = `Gabungkan ${checkboxes.length} kontainer FCL berikut?\n\n`;
+    selectedData.forEach((item, index) => {
+        confirmMessage += `${index + 1}. ${item.no_surat_jalan} - ${item.nomor_kontainer}\n`;
+    });
+    confirmMessage += '\nData akan digabungkan menjadi satu BL.';
+    
+    if (confirm(confirmMessage)) {
+        // Kirim request untuk gabungkan FCL
+        const formData = new FormData();
+        formData.append('prospek_ids', JSON.stringify(selectedData.map(item => item.id)));
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        
+        // Show loading
+        const btn = document.getElementById('btnGabungkanFCL');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+        btn.disabled = true;
+        
+        fetch('/prospek/gabungkan-fcl', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Data FCL berhasil digabungkan');
+                window.location.reload();
+            } else {
+                alert('Error: ' + (data.message || 'Terjadi kesalahan'));
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menggabungkan data FCL');
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+    }
 }
 
 function closeScanModal() {
@@ -631,6 +707,46 @@ document.getElementById('scanForm')?.addEventListener('submit', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle FCL checkbox selection
+    const checkboxes = document.querySelectorAll('.fcl-checkbox');
+    const checkAll = document.getElementById('checkAll');
+    const btnGabungkan = document.getElementById('btnGabungkanFCL');
+    const countSelected = document.getElementById('countSelected');
+    
+    function updateGabungkanButton() {
+        const checkedCount = document.querySelectorAll('.fcl-checkbox:checked').length;
+        countSelected.textContent = checkedCount;
+        
+        if (checkedCount >= 2) {
+            btnGabungkan.classList.remove('hidden');
+        } else {
+            btnGabungkan.classList.add('hidden');
+        }
+    }
+    
+    // Handle individual checkbox
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateGabungkanButton();
+            
+            // Update check all status
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+            checkAll.checked = allChecked;
+            checkAll.indeterminate = someChecked && !allChecked;
+        });
+    });
+    
+    // Handle check all
+    if (checkAll) {
+        checkAll.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateGabungkanButton();
+        });
+    }
+    
     // Handle seal inline editing
     const sealContainers = document.querySelectorAll('.seal-edit-container');
     

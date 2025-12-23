@@ -868,4 +868,112 @@ class ProspekController extends Controller
             return false;
         }
     }
+
+    /**
+     * Gabungkan multiple kontainer FCL
+     */
+    public function gabungkanFCL(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak memiliki akses untuk menggabungkan FCL'
+                ], 403);
+            }
+
+            // Validasi input
+            $request->validate([
+                'prospek_ids' => 'required|json'
+            ]);
+
+            $prospekIds = json_decode($request->prospek_ids, true);
+
+            if (!is_array($prospekIds) || count($prospekIds) < 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pilih minimal 2 kontainer FCL untuk digabungkan'
+                ], 400);
+            }
+
+            // Ambil data prospek
+            $prospeks = Prospek::whereIn('id', $prospekIds)
+                ->where('status', Prospek::STATUS_AKTIF)
+                ->get();
+
+            // Validasi semua prospek adalah FCL
+            $nonFCL = $prospeks->filter(function($p) {
+                return strtoupper($p->tipe) !== 'FCL';
+            });
+
+            if ($nonFCL->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya kontainer FCL yang dapat digabungkan'
+                ], 400);
+            }
+
+            if ($prospeks->count() < 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data prospek tidak valid atau tidak dalam status aktif'
+                ], 400);
+            }
+
+            // Gabungkan data
+            $gabunganData = [
+                'no_surat_jalan' => $prospeks->pluck('no_surat_jalan')->filter()->unique()->implode(', '),
+                'nomor_kontainer' => $prospeks->pluck('nomor_kontainer')->filter()->unique()->implode(', '),
+                'no_seal' => $prospeks->pluck('no_seal')->filter()->unique()->implode(', '),
+                'nama_supir' => $prospeks->pluck('nama_supir')->filter()->unique()->implode(', '),
+                'barang' => $prospeks->pluck('barang')->filter()->unique()->implode(', '),
+                'pt_pengirim' => $prospeks->pluck('pt_pengirim')->filter()->unique()->implode(', '),
+                'tujuan_pengiriman' => $prospeks->pluck('tujuan_pengiriman')->filter()->unique()->first(),
+                'tanggal' => $prospeks->sortBy('tanggal')->first()->tanggal,
+                'tipe' => 'FCL',
+                'ukuran' => $prospeks->pluck('ukuran')->filter()->unique()->implode(', '),
+                'status' => Prospek::STATUS_AKTIF,
+                'created_by' => $user->id,
+                'updated_by' => $user->id
+            ];
+
+            DB::beginTransaction();
+
+            try {
+                // Buat prospek gabungan baru
+                $prospekGabungan = Prospek::create($gabunganData);
+
+                // Tandai prospek lama sebagai digabungkan (update ke status batal dengan catatan)
+                foreach ($prospeks as $prospek) {
+                    $prospek->update([
+                        'status' => Prospek::STATUS_BATAL,
+                        'updated_by' => $user->id
+                    ]);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Berhasil menggabungkan {$prospeks->count()} kontainer FCL menjadi 1 prospek",
+                    'data' => [
+                        'prospek_id' => $prospekGabungan->id,
+                        'merged_count' => $prospeks->count()
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error gabungkan FCL: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
