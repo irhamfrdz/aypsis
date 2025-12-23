@@ -1686,6 +1686,15 @@ class TandaTerimaController extends Controller
                     $updateFields['no_seal'] = $noSealToSet;
                 }
 
+                // Update tujuan_pengiriman if available from request or tanda terima
+                $tujuanPengiriman = $request->filled('tujuan_pengiriman') 
+                    ? $request->tujuan_pengiriman 
+                    : $tandaTerima->tujuan_pengiriman;
+                
+                if (!empty($tujuanPengiriman)) {
+                    $updateFields['tujuan_pengiriman'] = $tujuanPengiriman;
+                }
+
                 $prospek->update($updateFields);
                 $updatedCount++;
 
@@ -1694,6 +1703,7 @@ class TandaTerimaController extends Controller
                     'tanda_terima_id' => $tandaTerima->id,
                     'nomor_kontainer' => $prospek->nomor_kontainer,
                     'nomor_kontainer_set' => $noKontainerToSet ?? null,
+                    'tujuan_pengiriman' => $prospek->tujuan_pengiriman,
                     'surat_jalan_id' => $prospek->surat_jalan_id,
                     'no_surat_jalan' => $prospek->no_surat_jalan,
                     'total_volume' => $totalVolume,
