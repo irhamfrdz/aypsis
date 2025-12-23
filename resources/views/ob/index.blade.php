@@ -728,7 +728,7 @@ function openSupirModal(type, id) {
     document.getElementById('record_id').value = id;
     document.getElementById('supir_id').value = '';
     document.getElementById('catatan').value = '';
-    document.getElementById('supirModal').classList.remove('hidden');di
+    document.getElementById('supirModal').classList.remove('hidden');
 }
 
 function closeSupirModal() {
