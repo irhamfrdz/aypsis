@@ -6,10 +6,10 @@
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center">
-                <i class="fas fa-ship mr-3 text-green-600 text-2xl"></i>
+                <i class="fas fa-plus-circle mr-3 text-green-600 text-2xl"></i>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Naik Kapal - Pilih Tujuan</h1>
-                    <p class="text-gray-600">Pilih tujuan untuk prospek yang akan naik kapal</p>
+                    <h1 class="text-2xl font-bold text-gray-800">Buat Prospek - Pilih Tujuan</h1>
+                    <p class="text-gray-600">Pilih tujuan untuk prospek baru</p>
                 </div>
             </div>
             <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
@@ -104,8 +104,8 @@
                         id="submitBtn"
                         class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-md transition duration-200 inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled>
-                    <i class="fas fa-ship mr-2"></i>
-                    Lanjutkan Proses Naik Kapal
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    Lanjutkan Proses Buat Prospek
                 </button>
             </div>
         </form>
