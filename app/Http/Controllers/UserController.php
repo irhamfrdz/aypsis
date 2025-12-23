@@ -2315,6 +2315,23 @@ class UserController extends Controller
                         }
                     }
 
+                    // Special handling for pranota-rit-kenek
+                    if ($module === 'pranota-rit-kenek') {
+                        foreach ($possibleActions as $dbAction) {
+                            // Only process if the action from form matches the current dbAction
+                            if ($action === $dbAction) {
+                                $permissionName = 'pranota-rit-kenek-' . $dbAction;
+                                $permission = Permission::where('name', $permissionName)->first();
+
+                                if ($permission) {
+                                    $permissionIds[] = $permission->id;
+                                    $found = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     // Special handling for pembayaran-pranota-tagihan-kontainer
                     if ($module === 'pembayaran-pranota-tagihan-kontainer') {
                         foreach ($possibleActions as $dbAction) {
