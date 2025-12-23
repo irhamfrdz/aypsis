@@ -130,8 +130,11 @@
                 <table class="min-w-full table-auto resizable-table" id="prospekTable">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 50px;">
-                            <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Pilih Semua FCL">
+                        <th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 60px;">
+                            <div class="flex flex-col items-center gap-1">
+                                <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" title="Pilih Semua FCL Aktif">
+                                <span class="text-[10px] text-gray-400 font-normal normal-case">FCL</span>
+                            </div>
                         </th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Surat Jalan<div class="resize-handle"></div></th>
@@ -745,6 +748,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             updateGabungkanButton();
         });
+        
+        // Show info if no FCL checkboxes available
+        if (checkboxes.length === 0) {
+            checkAll.disabled = true;
+            checkAll.style.opacity = '0.3';
+            checkAll.title = 'Tidak ada FCL aktif untuk dipilih';
+        }
     }
     
     // Handle seal inline editing
