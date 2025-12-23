@@ -105,6 +105,11 @@ class Prospek extends Model
         return $this->belongsTo(\App\Models\SuratJalan::class, 'surat_jalan_id');
     }
 
+    public function kapal()
+    {
+        return $this->belongsTo(\App\Models\MasterKapal::class, 'kapal_id');
+    }
+
     /**
      * Boot method untuk auto-linking
      */

@@ -148,7 +148,7 @@ class ProspekController extends Controller
             abort(403, "Tidak memiliki akses untuk mengedit prospek");
         }
 
-        $prospek->load(['suratJalan', 'tandaTerima', 'kapal', 'createdBy', 'updatedBy']);
+        $prospek->load(['suratJalan', 'tandaTerima', 'createdBy', 'updatedBy']);
         
         // Get master data for dropdowns
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
