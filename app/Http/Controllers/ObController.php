@@ -712,7 +712,7 @@ class ObController extends Controller
                 
                 // Copy data dari naik_kapal ke BLS
                 $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
-                $bl->no_seal = $naikKapal->no_seal;
+                $bl->no_seal = $naikKapal->no_seal ?: ($naikKapal->prospek->no_seal ?? null);
                 $bl->nama_barang = $naikKapal->jenis_barang;
                 $bl->tipe_kontainer = $naikKapal->tipe_kontainer;
                 $bl->size_kontainer = $naikKapal->size_kontainer;
@@ -722,17 +722,41 @@ class ObController extends Controller
                 $bl->ke = $naikKapal->ke;
                 $bl->pelabuhan_asal = $naikKapal->pelabuhan_asal;
                 $bl->pelabuhan_tujuan = $naikKapal->pelabuhan_tujuan;
+                $bl->tonnage = $naikKapal->total_tonase;
+                $bl->volume = $naikKapal->total_volume;
+                $bl->kuantitas = $naikKapal->kuantitas;
+                
+                // Set prospek_id jika ada dan ambil data tambahan dari prospek
+                if ($naikKapal->prospek_id) {
+                    $bl->prospek_id = $naikKapal->prospek_id;
+                    
+                    // Ambil data lengkap dari prospek
+                    $prospek = $naikKapal->prospek;
+                    if ($prospek) {
+                        $bl->pengirim = $prospek->pt_pengirim;
+                        $bl->penerima = $prospek->tujuan_pengiriman;
+                        // Jika no_seal belum ada, ambil dari prospek
+                        if (!$bl->no_seal) {
+                            $bl->no_seal = $prospek->no_seal;
+                        }
+                        // Ambil data lain dari prospek jika belum ada
+                        if (!$bl->tonnage) {
+                            $bl->tonnage = $prospek->total_ton;
+                        }
+                        if (!$bl->volume) {
+                            $bl->volume = $prospek->total_volume;
+                        }
+                        if (!$bl->kuantitas) {
+                            $bl->kuantitas = $prospek->kuantitas;
+                        }
+                    }
+                }
                 
                 // Set status OB langsung
                 $bl->sudah_ob = true;
                 $bl->supir_id = $request->supir_id;
                 $bl->tanggal_ob = now();
                 $bl->catatan_ob = $request->catatan;
-                
-                // Set prospek_id jika ada
-                if ($naikKapal->prospek_id) {
-                    $bl->prospek_id = $naikKapal->prospek_id;
-                }
                 
                 // Generate nomor BL otomatis jika belum ada
                 $lastBl = Bl::whereNotNull('nomor_bl')
