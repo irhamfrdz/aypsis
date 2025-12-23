@@ -45,6 +45,16 @@ class BlController extends Controller
             }
         }
 
+        // Log filter parameters untuk debugging
+        \Log::info('BL Index Filter Parameters:', [
+            'nama_kapal' => $request->get('nama_kapal'),
+            'no_voyage' => $request->get('no_voyage'),
+            'kapal' => $request->get('kapal'),
+            'voyage' => $request->get('voyage'),
+            'search' => $request->get('search'),
+            'all_params' => $request->all()
+        ]);
+
         $query = Bl::with('prospek');
 
         // Filter berdasarkan search
@@ -61,22 +71,30 @@ class BlController extends Controller
 
         // Filter berdasarkan kapal
         if ($request->filled('kapal')) {
-            $query->where('nama_kapal', $request->kapal);
+            $kapal = trim($request->kapal);
+            $query->where('nama_kapal', $kapal);
+            \Log::info("Filter by kapal (exact): {$kapal}");
         }
         
         // Filter berdasarkan nama_kapal (dari select page)
         if ($request->filled('nama_kapal')) {
-            $query->where('nama_kapal', $request->nama_kapal);
+            $namaKapal = trim($request->nama_kapal);
+            $query->where('nama_kapal', $namaKapal);
+            \Log::info("Filter by nama_kapal (exact): {$namaKapal}");
         }
 
         // Filter berdasarkan voyage
         if ($request->filled('voyage')) {
-            $query->where('no_voyage', $request->voyage);
+            $voyage = trim($request->voyage);
+            $query->where('no_voyage', $voyage);
+            \Log::info("Filter by voyage (exact): {$voyage}");
         }
         
         // Filter berdasarkan no_voyage (dari select page)
         if ($request->filled('no_voyage')) {
-            $query->where('no_voyage', $request->no_voyage);
+            $noVoyage = trim($request->no_voyage);
+            $query->where('no_voyage', $noVoyage);
+            \Log::info("Filter by no_voyage (exact): {$noVoyage}");
         }
 
         // Sort berdasarkan parameter
@@ -88,7 +106,14 @@ class BlController extends Controller
             $query->orderBy($sortBy, $sortDirection);
         }
 
+        // Log SQL query
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        \Log::info("BL Query SQL: {$sql}", ['bindings' => $bindings]);
+
         $bls = $query->paginate(15)->withQueryString();
+        
+        \Log::info("BL Query Results: {$bls->count()} records found, Total: {$bls->total()}");
 
         return view('bl.index', compact('bls'));
     }
