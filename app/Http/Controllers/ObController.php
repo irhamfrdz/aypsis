@@ -678,7 +678,7 @@ class ObController extends Controller
 
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
             
-            // Update status OB
+            // Update status OB di naik_kapal
             $naikKapal->sudah_ob = true;
             $naikKapal->supir_id = $request->supir_id;
             $naikKapal->tanggal_ob = now();
@@ -686,9 +686,85 @@ class ObController extends Controller
             $naikKapal->updated_by = $user->id;
             $naikKapal->save();
 
+            // Otomatis buat record di BLS untuk kegiatan muat
+            // Cek dulu apakah sudah ada BL dengan nomor kontainer dan voyage yang sama
+            $existingBl = Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                ->where('no_voyage', $naikKapal->no_voyage)
+                ->where('nama_kapal', $naikKapal->nama_kapal)
+                ->first();
+
+            if (!$existingBl) {
+                // Buat record baru di BLS
+                $bl = new Bl();
+                
+                // Copy data dari naik_kapal ke BLS
+                $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
+                $bl->no_seal = $naikKapal->no_seal;
+                $bl->nama_barang = $naikKapal->jenis_barang;
+                $bl->tipe_kontainer = $naikKapal->tipe_kontainer;
+                $bl->size_kontainer = $naikKapal->size_kontainer;
+                $bl->nama_kapal = $naikKapal->nama_kapal;
+                $bl->no_voyage = $naikKapal->no_voyage;
+                $bl->asal_kontainer = $naikKapal->asal_kontainer;
+                $bl->ke = $naikKapal->ke;
+                $bl->pelabuhan_asal = $naikKapal->pelabuhan_asal;
+                $bl->pelabuhan_tujuan = $naikKapal->pelabuhan_tujuan;
+                
+                // Set status OB langsung
+                $bl->sudah_ob = true;
+                $bl->supir_id = $request->supir_id;
+                $bl->tanggal_ob = now();
+                $bl->catatan_ob = $request->catatan;
+                
+                // Set prospek_id jika ada
+                if ($naikKapal->prospek_id) {
+                    $bl->prospek_id = $naikKapal->prospek_id;
+                }
+                
+                // Generate nomor BL otomatis jika belum ada
+                if (!$bl->nomor_bl) {
+                    $lastBl = Bl::whereNotNull('nomor_bl')
+                        ->orderBy('id', 'desc')
+                        ->first();
+                    
+                    if ($lastBl && $lastBl->nomor_bl) {
+                        // Extract number from last BL
+                        preg_match('/\d+/', $lastBl->nomor_bl, $matches);
+                        $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                        $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                        $bl->nomor_bl = 'BL-' . $nextNumber;
+                    } else {
+                        $bl->nomor_bl = 'BL-000001';
+                    }
+                }
+                
+                $bl->created_by = $user->id;
+                $bl->updated_by = $user->id;
+                $bl->save();
+                
+                \Log::info("Auto-created BL record from naik_kapal", [
+                    'naik_kapal_id' => $naikKapal->id,
+                    'bl_id' => $bl->id,
+                    'nomor_kontainer' => $bl->nomor_kontainer
+                ]);
+            } else {
+                // Jika sudah ada, update status OB-nya
+                $existingBl->sudah_ob = true;
+                $existingBl->supir_id = $request->supir_id;
+                $existingBl->tanggal_ob = now();
+                $existingBl->catatan_ob = $request->catatan;
+                $existingBl->updated_by = $user->id;
+                $existingBl->save();
+                
+                \Log::info("Updated existing BL record OB status", [
+                    'bl_id' => $existingBl->id,
+                    'nomor_kontainer' => $existingBl->nomor_kontainer
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Kontainer berhasil ditandai sudah OB'
+                'message' => 'Kontainer berhasil ditandai sudah OB dan data BL telah dibuat/diupdate'
             ]);
         } catch (\Exception $e) {
             \Log::error('Mark as OB error: ' . $e->getMessage());
