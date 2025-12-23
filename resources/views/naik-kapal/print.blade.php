@@ -182,12 +182,11 @@
         <thead>
             <tr>
                 <th style="width: 4%;">No</th>
-                <th style="width: 16%;">Kontainer</th>
-                <th style="width: 20%;">Barang</th>
-                <th style="width: 16%;">Tipe</th>
-                <th style="width: 8%;">Tgl TT</th>
-                <th style="width: 16%;">Supir OB</th>
-                <th style="width: 20%;">Keterangan</th>
+                <th style="width: 18%;">Kontainer</th>
+                <th style="width: 24%;">Barang</th>
+                <th style="width: 18%;">Tipe</th>
+                <th style="width: 10%;">Tgl TT</th>
+                <th style="width: 26%;">Keterangan</th>
             </tr>
         </thead>
         <tbody>
@@ -233,17 +232,6 @@
                     @endif
                 </td>
                 <td>
-                    @php
-                        $supir = $naikKapal->prospek?->tandaTerima?->supir?->nama 
-                                ?? $naikKapal->prospek?->tandaTerima?->nama_supir;
-                    @endphp
-                    @if($supir)
-                        {{ $supir }}
-                    @else
-                        <span style="color: #999;">-</span>
-                    @endif
-                </td>
-                <td>
                     <strong>{{ $naikKapal->nama_kapal }}</strong>
                     @if($naikKapal->no_voyage)
                     <br><span style="color: #666;">V: {{ $naikKapal->no_voyage }}</span>
@@ -266,7 +254,7 @@
     <div class="footer">
         Dicetak pada: {{ now()->format('d/m/Y H:i') }} WIB
     </div>
-    
+    6
     <script>
         // Auto print when page loads (optional)
         // window.onload = function() { window.print(); };
