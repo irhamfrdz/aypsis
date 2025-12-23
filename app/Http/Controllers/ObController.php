@@ -9,6 +9,10 @@ use App\Models\Bl;
 use App\Models\MasterPricelistOb;
 use App\Models\PranotaOb;
 use App\Models\Prospek;
+use App\Models\SuratJalan;
+use App\Models\TandaTerima;
+use App\Models\Karyawan;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -749,6 +753,37 @@ class ObController extends Controller
                     }
                     if (empty($bl->kuantitas) && !empty($prospek->kuantitas)) {
                         $bl->kuantitas = $prospek->kuantitas;
+                    }
+                    
+                    // Copy additional fields dari prospek jika ada
+                    if (!empty($prospek->tanggal_muat)) {
+                        $bl->tanggal_berangkat = $prospek->tanggal_muat;
+                    }
+                    
+                    // Jika ada surat jalan terkait, ambil data alamat_pengiriman dan contact_person
+                    if ($prospek->surat_jalan_id) {
+                        $suratJalan = \App\Models\SuratJalan::find($prospek->surat_jalan_id);
+                        if ($suratJalan) {
+                            if (!empty($suratJalan->alamat_tujuan)) {
+                                $bl->alamat_pengiriman = $suratJalan->alamat_tujuan;
+                            }
+                            if (!empty($suratJalan->contact_person)) {
+                                $bl->contact_person = $suratJalan->contact_person;
+                            }
+                        }
+                    }
+                    
+                    // Jika ada tanda terima terkait, coba ambil data dari sana
+                    if (empty($bl->alamat_pengiriman) && $prospek->tanda_terima_id) {
+                        $tandaTerima = \App\Models\TandaTerima::find($prospek->tanda_terima_id);
+                        if ($tandaTerima) {
+                            if (!empty($tandaTerima->alamat_penerima)) {
+                                $bl->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                            }
+                            if (!empty($tandaTerima->contact_person)) {
+                                $bl->contact_person = $tandaTerima->contact_person;
+                            }
+                        }
                     }
                 }
                 
