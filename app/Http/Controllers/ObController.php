@@ -64,6 +64,19 @@ class ObController extends Controller
     }
 
     /**
+     * Normalize ship name for flexible matching
+     * Remove dots, extra spaces, and convert to uppercase
+     */
+    private function normalizeShipName($name)
+    {
+        // Remove dots, convert to uppercase, and normalize spaces
+        $normalized = strtoupper(trim($name));
+        $normalized = str_replace('.', '', $normalized);
+        $normalized = preg_replace('/\s+/', ' ', $normalized); // Normalize multiple spaces to single space
+        return $normalized;
+    }
+
+    /**
      * Display OB data table for selected ship and voyage
      */
     private function showOBData(Request $request, $namaKapal, $noVoyage, $kegiatan = null)
@@ -76,14 +89,17 @@ class ObController extends Controller
         // Trim whitespace untuk memastikan matching yang tepat
         $namaKapal = trim($namaKapal);
         $noVoyage = trim($noVoyage);
+        
+        // Normalize ship name for flexible matching (remove dots, extra spaces)
+        $normalizedKapal = $this->normalizeShipName($namaKapal);
 
         // Determine data source based on kegiatan
         // If kegiatan is 'muat', FORCE use naik_kapal table
         // If kegiatan is 'bongkar' or not specified, check BL first (legacy behavior)
         $useMuatData = ($kegiatan === 'muat');
 
-        // Check if we have BL records for this ship/voyage
-        $hasBl = Bl::where('nama_kapal', $namaKapal)
+        // Check if we have BL records for this ship/voyage using normalized name
+        $hasBl = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
             ->exists();
 
@@ -91,7 +107,7 @@ class ObController extends Controller
         // Only use BL if kegiatan is NOT 'muat' AND BL data exists
         if ($kegiatan !== 'muat' && $hasBl) {
             $queryBl = Bl::with(['prospek', 'supir'])
-                ->where('nama_kapal', $namaKapal)
+                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
                 // IMPORTANT: Use COALESCE to handle NULL tipe_kontainer properly
@@ -142,14 +158,14 @@ class ObController extends Controller
             // Enable query logging
             \DB::enableQueryLog();
 
-            $totalKontainer = Bl::where('nama_kapal', $namaKapal)
+            $totalKontainer = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
                 ->whereRaw("NOT (tipe_kontainer = 'CARGO' OR (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%')))")
                 ->count();
 
             // Try multiple ways to count sudah_ob untuk debugging
-            $sudahOB_v1 = Bl::where('nama_kapal', $namaKapal)
+            $sudahOB_v1 = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', true)
                 // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
@@ -159,7 +175,7 @@ class ObController extends Controller
             $sudahOB_v1_sql = \DB::getQueryLog();
             \DB::flushQueryLog();
             
-            $sudahOB_v2 = Bl::where('nama_kapal', $namaKapal)
+            $sudahOB_v2 = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', '=', 1)
                 ->count();
@@ -167,7 +183,7 @@ class ObController extends Controller
             $sudahOB_v2_sql = \DB::getQueryLog();
             \DB::flushQueryLog();
             
-            $sudahOB_v3 = Bl::where('nama_kapal', $namaKapal)
+            $sudahOB_v3 = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 ->whereNotNull('sudah_ob')
                 ->where('sudah_ob', '!=', 0)
@@ -180,7 +196,7 @@ class ObController extends Controller
             $belumOB = $totalKontainer - $sudahOB;
 
             // Get sample of all BLs untuk debugging
-            $allBlsSample = Bl::where('nama_kapal', $namaKapal)
+            $allBlsSample = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 ->select('id', 'nomor_kontainer', 'sudah_ob', 'supir_id', 'tanggal_ob', 'nama_kapal', 'no_voyage')
                 ->limit(10)
@@ -190,6 +206,7 @@ class ObController extends Controller
             // Debug logging untuk investigate issue
             \Log::info('OB Index - BL Query Debug', [
                 'nama_kapal' => $namaKapal,
+                'nama_kapal_normalized' => $normalizedKapal,
                 'nama_kapal_length' => strlen($namaKapal),
                 'nama_kapal_hex' => bin2hex($namaKapal),
                 'no_voyage' => $noVoyage,
@@ -204,7 +221,7 @@ class ObController extends Controller
                 'sql_query_v2' => $sudahOB_v2_sql,
                 'sql_query_v3' => $sudahOB_v3_sql,
                 'all_bls_sample' => $allBlsSample,
-                'raw_sudah_ob_data' => Bl::where('nama_kapal', $namaKapal)
+                'raw_sudah_ob_data' => Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                     ->where('no_voyage', $noVoyage)
                     ->where('sudah_ob', true)
                     ->select('id', 'nomor_kontainer', 'sudah_ob', 'supir_id', 'tanggal_ob')
@@ -271,7 +288,7 @@ class ObController extends Controller
 
         // Default: Get naik_kapal data for the selected ship and voyage
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
-            ->where('nama_kapal', $namaKapal)
+            ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
             // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
             ->whereRaw("NOT (tipe_kontainer = 'CARGO' OR (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%')))");
@@ -321,13 +338,13 @@ class ObController extends Controller
             ->withQueryString();
 
         // Statistics
-        $totalKontainer = NaikKapal::where('nama_kapal', $namaKapal)
+        $totalKontainer = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
             // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
             ->whereRaw("NOT (tipe_kontainer = 'CARGO' OR (tipe_kontainer = 'FCL' AND (nomor_kontainer = 'CARGO' OR nomor_kontainer LIKE 'CARGO%')))")
             ->count();
 
-        $sudahOB = NaikKapal::where('nama_kapal', $namaKapal)
+        $sudahOB = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
             ->where('sudah_ob', true)
             // Exclude CARGO type containers and FCL containers where nomor_kontainer starts with 'CARGO'
