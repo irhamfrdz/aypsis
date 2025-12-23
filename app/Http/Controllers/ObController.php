@@ -8,6 +8,7 @@ use App\Models\NaikKapal;
 use App\Models\Bl;
 use App\Models\MasterPricelistOb;
 use App\Models\PranotaOb;
+use App\Models\Prospek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
