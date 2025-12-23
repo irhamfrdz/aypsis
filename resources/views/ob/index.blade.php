@@ -925,7 +925,15 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('Server error response:', text);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Reload page to show updated status
@@ -938,7 +946,7 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat menyimpan data');
+        alert('Terjadi kesalahan saat menyimpan data: ' + error.message);
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
     });

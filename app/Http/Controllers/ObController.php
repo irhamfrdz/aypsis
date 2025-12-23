@@ -679,7 +679,7 @@ class ObController extends Controller
                 'catatan' => 'nullable|string'
             ]);
 
-            $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+            $naikKapal = NaikKapal::with('prospek')->findOrFail($request->naik_kapal_id);
             \Log::info("Found naik_kapal:", [
                 'id' => $naikKapal->id,
                 'nomor_kontainer' => $naikKapal->nomor_kontainer,
