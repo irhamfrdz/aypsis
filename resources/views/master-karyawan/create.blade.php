@@ -143,8 +143,8 @@
 
                 <div>
                     <label for="no_hp" class="{{ $labelClasses }}">Nomor Handphone/Whatsapp</label>
-                    <input type="tel" name="no_hp" id="no_hp" class="{{ $inputClasses }}" placeholder="08xxxxxxxxxx">
-                    <div id="noHpError" class="text-xs text-red-600 mt-1 hidden">Nomor handphone harus berupa angka saja, tidak boleh ada huruf</div>
+                    <input type="tel" name="no_hp" id="no_hp" class="{{ $inputClasses }}" placeholder="08xxxxxxxxxx" maxlength="20">
+                    <div id="noHpError" class="text-xs text-red-600 mt-1 hidden">Nomor handphone harus berupa angka saja, tidak boleh ada huruf (maksimal 20 digit)</div>
                 </div>
 
                 <div>
