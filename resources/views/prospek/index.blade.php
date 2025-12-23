@@ -325,6 +325,11 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @can('prospek-edit')
+                                        <a href="{{ route('prospek.edit', $prospek->id) }}"
+                                           class="text-yellow-600 hover:text-yellow-900 transition duration-150"
+                                           title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                         @if($prospek->suratJalan)
                                             <button type="button"
                                                     class="sync-prospek text-purple-600 hover:text-purple-900 transition duration-150"
