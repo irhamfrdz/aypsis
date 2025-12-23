@@ -3396,6 +3396,8 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
 Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middleware(['auth'])->group(function () {
     Route::get('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'index'])->name('index')
          ->middleware('can:invoice-aktivitas-lain-view');
+    Route::get('/get-next-number', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'getNextInvoiceNumber'])->name('get-next-number')
+         ->middleware('can:invoice-aktivitas-lain-create');
     Route::get('/create', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'create'])->name('create')
          ->middleware('can:invoice-aktivitas-lain-create');
     Route::post('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'store'])->name('store')

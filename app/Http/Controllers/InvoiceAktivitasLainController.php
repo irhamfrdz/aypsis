@@ -104,6 +104,45 @@ class InvoiceAktivitasLainController extends Controller
     }
 
     /**
+     * Get next invoice number (AJAX endpoint)
+     */
+    public function getNextInvoiceNumber()
+    {
+        try {
+            $now = now();
+            $month = $now->format('m');
+            $year = $now->format('y');
+            $prefix = "IAL-{$month}-{$year}-";
+            
+            // Get last invoice number for current month and year
+            $lastInvoice = InvoiceAktivitasLain::where('nomor_invoice', 'like', $prefix . '%')
+                ->orderBy('nomor_invoice', 'desc')
+                ->first();
+            
+            if ($lastInvoice) {
+                // Extract running number from last invoice
+                $lastNumber = substr($lastInvoice->nomor_invoice, -6);
+                $nextNumber = str_pad((int)$lastNumber + 1, 6, '0', STR_PAD_LEFT);
+            } else {
+                // First invoice of the month
+                $nextNumber = '000001';
+            }
+            
+            $invoiceNumber = $prefix . $nextNumber;
+            
+            return response()->json([
+                'success' => true,
+                'invoice_number' => $invoiceNumber
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor invoice: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

@@ -41,14 +41,23 @@
                     <label for="nomor_invoice" class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Invoice <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" 
-                           name="nomor_invoice" 
-                           id="nomor_invoice" 
-                           value="{{ old('nomor_invoice') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nomor_invoice') border-red-500 @enderror"
-                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           placeholder="Masukkan nomor invoice"
-                           required>
+                    <div class="relative">
+                        <input type="text" 
+                               name="nomor_invoice" 
+                               id="nomor_invoice" 
+                               value="{{ old('nomor_invoice') }}"
+                               class="w-full border-gray-300 rounded-md shadow-sm bg-gray-50 @error('nomor_invoice') border-red-500 @enderror"
+                               style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                               placeholder="Loading..."
+                               readonly
+                               required>
+                        <div id="invoice_loader" class="absolute right-3 top-1/2 -translate-y-1/2">
+                            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
                     @error('nomor_invoice')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -666,8 +675,58 @@
         const $ = jqInstance || window.jQuery;
         $(document).ready(function() {
             initializeSelect2AndForm($);
+            generateInvoiceNumber();
         });
     });
+
+    // Generate Invoice Number automatically
+    function generateInvoiceNumber() {
+        const invoiceInput = document.getElementById('nomor_invoice');
+        const loader = document.getElementById('invoice_loader');
+        
+        // Fetch next invoice number from server
+        fetch('{{ route("invoice-aktivitas-lain.get-next-number") }}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.invoice_number) {
+                invoiceInput.value = data.invoice_number;
+                if (loader) loader.style.display = 'none';
+            } else {
+                throw new Error('Invalid response format');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching invoice number:', error);
+            // Fallback: generate client-side (without checking database)
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const runningNumber = '000001'; // Placeholder - should come from server
+            
+            invoiceInput.value = `IAL-${month}-${year}-${runningNumber}`;
+            invoiceInput.placeholder = 'Nomor otomatis (offline mode)';
+            if (loader) loader.style.display = 'none';
+            
+            // Show warning
+            const warning = document.createElement('p');
+            warning.className = 'mt-1 text-sm text-yellow-600';
+            warning.textContent = 'Menggunakan nomor offline - pastikan koneksi server tersedia';
+            invoiceInput.parentElement.appendChild(warning);
+        });
+    }
 })();
 </script>
 @endsection
