@@ -72,15 +72,19 @@ class BlController extends Controller
         // Filter berdasarkan kapal
         if ($request->filled('kapal')) {
             $kapal = trim($request->kapal);
-            $query->where('nama_kapal', $kapal);
-            \Log::info("Filter by kapal (exact): {$kapal}");
+            // Remove dots and use LIKE to handle inconsistencies
+            $kapalPattern = str_replace('.', '', $kapal);
+            $query->where(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+            \Log::info("Filter by kapal (flexible): {$kapal} -> pattern: {$kapalPattern}");
         }
         
         // Filter berdasarkan nama_kapal (dari select page)
         if ($request->filled('nama_kapal')) {
             $namaKapal = trim($request->nama_kapal);
-            $query->where('nama_kapal', $namaKapal);
-            \Log::info("Filter by nama_kapal (exact): {$namaKapal}");
+            // Remove dots and use LIKE to handle inconsistencies
+            $kapalPattern = str_replace('.', '', $namaKapal);
+            $query->where(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+            \Log::info("Filter by nama_kapal (flexible): {$namaKapal} -> pattern: {$kapalPattern}");
         }
 
         // Filter berdasarkan voyage
