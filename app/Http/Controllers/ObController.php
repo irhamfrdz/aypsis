@@ -670,6 +670,9 @@ class ObController extends Controller
         }
 
         try {
+            \Log::info("===== START markAsOB =====");
+            \Log::info("Request data:", $request->all());
+            
             $request->validate([
                 'naik_kapal_id' => 'required|exists:naik_kapal,id',
                 'supir_id' => 'required|exists:karyawans,id',
@@ -677,6 +680,12 @@ class ObController extends Controller
             ]);
 
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+            \Log::info("Found naik_kapal:", [
+                'id' => $naikKapal->id,
+                'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                'nama_kapal' => $naikKapal->nama_kapal,
+                'no_voyage' => $naikKapal->no_voyage
+            ]);
             
             // Update status OB di naik_kapal
             $naikKapal->sudah_ob = true;
@@ -685,15 +694,19 @@ class ObController extends Controller
             $naikKapal->catatan_ob = $request->catatan;
             $naikKapal->updated_by = $user->id;
             $naikKapal->save();
+            \Log::info("Updated naik_kapal OB status");
 
             // Otomatis buat record di BLS untuk kegiatan muat
             // Cek dulu apakah sudah ada BL dengan nomor kontainer dan voyage yang sama
+            \Log::info("Checking existing BL...");
             $existingBl = Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
                 ->where('no_voyage', $naikKapal->no_voyage)
                 ->where('nama_kapal', $naikKapal->nama_kapal)
                 ->first();
 
             if (!$existingBl) {
+                \Log::info("No existing BL found, creating new BL record...");
+                
                 // Buat record baru di BLS
                 $bl = new Bl();
                 
@@ -722,32 +735,48 @@ class ObController extends Controller
                 }
                 
                 // Generate nomor BL otomatis jika belum ada
-                if (!$bl->nomor_bl) {
-                    $lastBl = Bl::whereNotNull('nomor_bl')
-                        ->orderBy('id', 'desc')
-                        ->first();
-                    
-                    if ($lastBl && $lastBl->nomor_bl) {
-                        // Extract number from last BL
-                        preg_match('/\d+/', $lastBl->nomor_bl, $matches);
-                        $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
-                        $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                        $bl->nomor_bl = 'BL-' . $nextNumber;
-                    } else {
-                        $bl->nomor_bl = 'BL-000001';
-                    }
+                $lastBl = Bl::whereNotNull('nomor_bl')
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                if ($lastBl && $lastBl->nomor_bl) {
+                    // Extract number from last BL
+                    preg_match('/\d+/', $lastBl->nomor_bl, $matches);
+                    $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                    $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    $bl->nomor_bl = 'BL-' . $nextNumber;
+                } else {
+                    $bl->nomor_bl = 'BL-000001';
                 }
+                
+                \Log::info("Generated nomor_bl: " . $bl->nomor_bl);
                 
                 $bl->created_by = $user->id;
                 $bl->updated_by = $user->id;
+                
+                \Log::info("Saving BL record with data:", [
+                    'nomor_bl' => $bl->nomor_bl,
+                    'nomor_kontainer' => $bl->nomor_kontainer,
+                    'nama_kapal' => $bl->nama_kapal,
+                    'no_voyage' => $bl->no_voyage,
+                    'tipe_kontainer' => $bl->tipe_kontainer,
+                    'size_kontainer' => $bl->size_kontainer
+                ]);
+                
                 $bl->save();
                 
-                \Log::info("Auto-created BL record from naik_kapal", [
+                \Log::info("✅ SUCCESS: Auto-created BL record", [
                     'naik_kapal_id' => $naikKapal->id,
                     'bl_id' => $bl->id,
+                    'nomor_bl' => $bl->nomor_bl,
                     'nomor_kontainer' => $bl->nomor_kontainer
                 ]);
             } else {
+                \Log::info("Found existing BL, updating OB status...", [
+                    'bl_id' => $existingBl->id,
+                    'nomor_kontainer' => $existingBl->nomor_kontainer
+                ]);
+                
                 // Jika sudah ada, update status OB-nya
                 $existingBl->sudah_ob = true;
                 $existingBl->supir_id = $request->supir_id;
@@ -756,18 +785,18 @@ class ObController extends Controller
                 $existingBl->updated_by = $user->id;
                 $existingBl->save();
                 
-                \Log::info("Updated existing BL record OB status", [
-                    'bl_id' => $existingBl->id,
-                    'nomor_kontainer' => $existingBl->nomor_kontainer
-                ]);
+                \Log::info("✅ SUCCESS: Updated existing BL record OB status");
             }
 
+            \Log::info("===== END markAsOB SUCCESS =====");
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Kontainer berhasil ditandai sudah OB dan data BL telah dibuat/diupdate'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Mark as OB error: ' . $e->getMessage());
+            \Log::error('❌ ERROR in markAsOB: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
