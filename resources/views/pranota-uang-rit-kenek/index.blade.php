@@ -74,14 +74,14 @@
                 <h3 class="text-lg font-medium text-gray-900">Daftar Pranota Uang Rit Kenek</h3>
             </div>
             <div class="p-6">
-                @if($pranotaUangRitKeneks->count() > 0)
+                @if($pranotaUangRits->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pranotaUangRitTable">
                         <thead class="bg-gray-50">
                             <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Surat Jalan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Uang Rit<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($pranotaUangRitKeneks as $item)
+                            @foreach($pranotaUangRits as $item)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $item->no_pranota }}</div>
@@ -196,7 +196,7 @@
 
                 <!-- Pagination -->
                 <div class="flex justify-center mt-6">
-                    @include('components.modern-pagination', ['paginator' => $pranotaUangRitKeneks])
+                    @include('components.modern-pagination', ['paginator' => $pranotaUangRits])
                     @include('components.rows-per-page')
                 </div>
                 @else
