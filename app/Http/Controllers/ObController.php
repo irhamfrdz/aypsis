@@ -812,11 +812,25 @@ class ObController extends Controller
                 \Log::info("✅ SUCCESS: Updated existing BL record OB status");
             }
 
+            // Update status prospek menjadi 'sudah_muat' jika ada
+            if ($naikKapal->prospek_id) {
+                $prospek = Prospek::find($naikKapal->prospek_id);
+                if ($prospek) {
+                    $prospek->status = Prospek::STATUS_SUDAH_MUAT;
+                    $prospek->updated_by = $user->id;
+                    $prospek->save();
+                    \Log::info("✅ SUCCESS: Updated prospek status to 'sudah_muat'", [
+                        'prospek_id' => $prospek->id,
+                        'nomor_kontainer' => $prospek->nomor_kontainer
+                    ]);
+                }
+            }
+
             \Log::info("===== END markAsOB SUCCESS =====");
             
             return response()->json([
                 'success' => true,
-                'message' => 'Kontainer berhasil ditandai sudah OB dan data BL telah dibuat/diupdate'
+                'message' => 'Kontainer berhasil ditandai sudah OB, data BL dan status prospek telah diupdate'
             ]);
         } catch (\Exception $e) {
             \Log::error('❌ ERROR in markAsOB: ' . $e->getMessage());
