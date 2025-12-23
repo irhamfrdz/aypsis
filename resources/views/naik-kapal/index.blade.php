@@ -213,16 +213,22 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    // Ambil volume dan tonase dari prospek jika ada, fallback ke naik_kapal
+                                    $volume = $naikKapal->prospek->total_volume ?? $naikKapal->total_volume ?? 0;
+                                    $tonase = $naikKapal->prospek->total_ton ?? $naikKapal->total_tonase ?? 0;
+                                    $kuantitas = $naikKapal->prospek->kuantitas ?? $naikKapal->kuantitas ?? 0;
+                                @endphp
                                 <div class="text-sm text-blue-600">
                                     <i class="fas fa-cube mr-1"></i>
-                                    {{ $naikKapal->formatted_volume }} m³
+                                    {{ number_format($volume, 3, ',', '.') }} m³
                                 </div>
                                 <div class="text-sm text-green-600">
                                     <i class="fas fa-weight-hanging mr-1"></i>
-                                    {{ $naikKapal->formatted_tonase }} Ton
+                                    {{ number_format($tonase, 3, ',', '.') }} Ton
                                 </div>
-                                @if($naikKapal->kuantitas)
-                                    <div class="text-xs text-gray-500">Qty: {{ number_format($naikKapal->kuantitas) }}</div>
+                                @if($kuantitas)
+                                    <div class="text-xs text-gray-500">Qty: {{ number_format($kuantitas) }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
