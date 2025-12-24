@@ -549,9 +549,9 @@
                                                     <i class="fas fa-ship mr-2"></i>Ke Prospek
                                                 </button>
                                                 <button type="button"
-                                                        onclick="openChangeContainerModal('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}')"
+                                                        onclick="openChangeContainerModal('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}', '{{ $tandaTerima->no_seal }}')"
                                                         class="block w-full px-4 py-2 text-left text-xs text-blue-600 hover:bg-blue-50">
-                                                    <i class="fas fa-exchange-alt mr-2"></i>Ganti Nomor Kontainer
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Ganti Nomor Kontainer & Seal
                                                 </button>
                                                 <button type="button"
                                                         onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', 'TT-{{ $tandaTerima->id }}')"
@@ -962,7 +962,7 @@
     }
 
     // Function to open change container modal
-    function openChangeContainerModal(tandaTerimaId, noSuratJalan, noKontainer) {
+    function openChangeContainerModal(tandaTerimaId, noSuratJalan, noKontainer, noSeal) {
         // Set form action
         const form = document.getElementById('changeContainerForm');
         form.action = '{{ route("tanda-terima.update", ":id") }}'.replace(':id', tandaTerimaId);
@@ -970,7 +970,9 @@
         // Fill modal fields
         document.getElementById('modalNoSuratJalan').value = noSuratJalan || '-';
         document.getElementById('modalOldKontainer').value = noKontainer || '-';
+        document.getElementById('modalOldSeal').value = noSeal || '-';
         document.getElementById('newKontainer').value = '';
+        document.getElementById('newSeal').value = '';
         
         // Show modal
         document.getElementById('changeContainerModal').classList.remove('hidden');
@@ -1020,7 +1022,7 @@
         <div class="flex justify-between items-center pb-3 border-b">
             <h3 class="text-xl font-semibold text-gray-900">
                 <i class="fas fa-exchange-alt mr-2 text-blue-600"></i>
-                Ganti Nomor Kontainer
+                Ganti Nomor Kontainer & Seal
             </h3>
             <button onclick="closeChangeContainerModal()" class="text-gray-400 hover:text-gray-600 transition duration-150">
                 <i class="fas fa-times text-2xl"></i>
@@ -1047,14 +1049,32 @@
                        class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700">
             </div>
             
-            <div class="mb-6">
+            <div class="mb-4">
                 <label for="newKontainer" class="block text-sm font-medium text-gray-700 mb-2">
                     Nomor Kontainer Baru <span class="text-red-500">*</span>
                 </label>
-                <input type="text" id="newKontainer" name="no_kontainer" required
+                <input type="text" id="newKontainer" name="nomor_kontainer[]" required
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                        placeholder="Masukkan nomor kontainer baru">
                 <p class="mt-1 text-xs text-gray-500">Masukkan nomor kontainer yang baru untuk mengganti nomor kontainer lama</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nomor Seal Lama
+                </label>
+                <input type="text" id="modalOldSeal" readonly
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700">
+            </div>
+            
+            <div class="mb-6">
+                <label for="newSeal" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nomor Seal Baru
+                </label>
+                <input type="text" id="newSeal" name="no_seal[]" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Masukkan nomor seal baru (opsional)">
+                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ingin mengubah nomor seal</p>
             </div>
             
             <!-- Warning Info Box -->
@@ -1068,15 +1088,15 @@
                         <ul class="text-xs text-blue-700 space-y-1">
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle text-blue-500 mr-2 mt-0.5"></i>
-                                <span>Nomor kontainer di <strong>Tanda Terima</strong></span>
+                                <span>Nomor kontainer & seal di <strong>Tanda Terima</strong></span>
                             </li>
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle text-blue-500 mr-2 mt-0.5"></i>
-                                <span>Nomor kontainer di <strong>Surat Jalan</strong> terkait</span>
+                                <span>Nomor kontainer & seal di <strong>Surat Jalan</strong> terkait</span>
                             </li>
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle text-blue-500 mr-2 mt-0.5"></i>
-                                <span>Nomor kontainer di <strong>Prospek</strong> yang terhubung</span>
+                                <span>Nomor kontainer & seal di <strong>Prospek</strong> yang terhubung</span>
                             </li>
                         </ul>
                     </div>
