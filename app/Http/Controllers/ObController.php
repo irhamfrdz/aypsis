@@ -150,6 +150,15 @@ class ObController extends Controller
                 });
             }
 
+            // Filter by nama supir
+            if ($request->filled('nama_supir')) {
+                $namaSupir = $request->nama_supir;
+                $queryBl->whereHas('supir', function($q) use ($namaSupir) {
+                    $q->where('nama_panggilan', 'like', "%{$namaSupir}%")
+                      ->orWhere('nama_lengkap', 'like', "%{$namaSupir}%");
+                });
+            }
+
             $perPage = $request->get('per_page', 15);
             $bls = $queryBl->orderBy('nomor_bl', 'asc')
                 ->paginate($perPage)
@@ -334,6 +343,15 @@ class ObController extends Controller
                     $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
                       ->orWhere('no_seal', 'like', "%{$search}%")
                       ->orWhere('jenis_barang', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter by nama supir
+            if ($request->filled('nama_supir')) {
+                $namaSupir = $request->nama_supir;
+                $query->whereHas('supir', function($q) use ($namaSupir) {
+                    $q->where('nama_panggilan', 'like', "%{$namaSupir}%")
+                      ->orWhere('nama_lengkap', 'like', "%{$namaSupir}%");
                 });
             }
 
