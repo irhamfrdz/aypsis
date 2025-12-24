@@ -547,8 +547,8 @@
 
                         {{-- Master Tarif Sub-Dropdown --}}
         @php
-            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master.pricelist-ob.*') || Request::routeIs('pricelist-uang-jalan-batam.*') || Request::routeIs('master.pricelist-rit.*');
-            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('uang-jalan-batam.view') || $user->can('master-pricelist-gate-in-view') || $user->can('master-pricelist-ob-view') || $user->can('master-pricelist-uang-jalan-batam-view') || $user->can('master-pricelist-rit-view'));
+            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('pricelist-ob.*') || Request::routeIs('pricelist-uang-jalan-batam.*') || Request::routeIs('master.pricelist-rit.*') || Request::routeIs('master-pelayanan-pelabuhan.*');
+            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('uang-jalan-batam.view') || $user->can('master-pricelist-gate-in-view') || $user->can('master-pricelist-ob-view') || $user->can('master-pricelist-uang-jalan-batam-view') || $user->can('master-pricelist-rit-view') || $user->can('master-pelayanan-pelabuhan-view'));
         @endphp                        @if($hasTarifPermissions)
                         <div class="mx-2 mb-3">
                             <button id="master-tarif-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group {{ $isTarifRoute ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
@@ -574,8 +574,13 @@
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-ob-view'))
-                                    <a href="{{ route('master.pricelist-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('pricelist-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pricelist-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist OB</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('master-pelayanan-pelabuhan-view'))
+                                    <a href="{{ route('master-pelayanan-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pelayanan-pelabuhan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Master Pelayanan Pelabuhan</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-uang-jalan-batam-view'))
@@ -633,8 +638,8 @@
 
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('master-gudang.*');
-    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-mobil-view') || $user->can('master-kapal.view') || $user->can('biaya-kapal-view') || $user->can('master-gudang-view'));
+    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-gudang.*');
+    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-mobil-view') || $user->can('master-kapal.view') || $user->can('master-gudang-view'));
 @endphp
 
 @if($hasAktivaPermissions)

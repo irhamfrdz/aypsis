@@ -66,6 +66,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SuratJalanController;
 use App\Http\Controllers\SuratJalanBongkaranController;
 use App\Http\Controllers\MasterPricelistObController;
+use App\Http\Controllers\MasterPelayananPelabuhanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -760,6 +761,10 @@ Route::middleware([
         Route::delete('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'destroy'])
              ->name('pricelist-ob.destroy')
              ->middleware('can:master-pricelist-ob-delete');
+
+        // Master Pelayanan Pelabuhan Management
+        Route::resource('master-pelayanan-pelabuhan', MasterPelayananPelabuhanController::class)
+             ->except(['show']);
 
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
