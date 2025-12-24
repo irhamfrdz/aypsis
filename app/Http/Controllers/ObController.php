@@ -237,14 +237,24 @@ class ObController extends Controller
                 $priceMap[$key] = $pl->biaya;
             }
             foreach ($bls as $bl) {
-                // Logika: Jika ada nama_barang (terlepas dari isinya) = FULL
-                // Hanya jika benar-benar kosong/null = EMPTY
-                // Barang dengan nama "BOTOL KOSONG" tetap dianggap FULL karena ada muatan
+                // Logika penentuan status kontainer:
+                // 1. Jika nama_barang kosong/null → EMPTY
+                // 2. Jika nama_barang mengandung "Empty Container" (case insensitive) → EMPTY
+                // 3. Jika nama_barang = barang lain (termasuk "BOTOL KOSONG") → FULL
                 $status = 'full';
                 if (empty($bl->nama_barang) || trim($bl->nama_barang) === '') {
                     $status = 'empty';
+                } else {
+                    $lowerName = strtolower(trim($bl->nama_barang));
+                    // Check if it's an empty container marker
+                    if (str_contains($lowerName, 'empty container') || 
+                        str_contains($lowerName, 'container empty') ||
+                        $lowerName === 'empty' ||
+                        $lowerName === 'mt' || // MT = Empty
+                        $lowerName === 'mty') { // MTY = Empty
+                        $status = 'empty';
+                    }
                 }
-                // Jika ada nama_barang, apapun isinya, tetap FULL
                 $sizeStr = null;
                 if (!empty($bl->size_kontainer)) {
                     $sizeInt = intval($bl->size_kontainer);
@@ -358,14 +368,24 @@ class ObController extends Controller
             $priceMap[$key] = $pl->biaya;
         }
         foreach ($naikKapals as $nk) {
-            // Logika: Jika ada jenis_barang (terlepas dari isinya) = FULL
-            // Hanya jika benar-benar kosong/null = EMPTY
-            // Barang dengan nama "BOTOL KOSONG" tetap dianggap FULL karena ada muatan
+            // Logika penentuan status kontainer:
+            // 1. Jika jenis_barang kosong/null → EMPTY
+            // 2. Jika jenis_barang mengandung "Empty Container" (case insensitive) → EMPTY
+            // 3. Jika jenis_barang = barang lain (termasuk "BOTOL KOSONG") → FULL
             $status = 'full';
             if (empty($nk->jenis_barang) || trim($nk->jenis_barang) === '') {
                 $status = 'empty';
+            } else {
+                $lowerName = strtolower(trim($nk->jenis_barang));
+                // Check if it's an empty container marker
+                if (str_contains($lowerName, 'empty container') || 
+                    str_contains($lowerName, 'container empty') ||
+                    $lowerName === 'empty' ||
+                    $lowerName === 'mt' || // MT = Empty
+                    $lowerName === 'mty') { // MTY = Empty
+                    $status = 'empty';
+                }
             }
-            // Jika ada jenis_barang, apapun isinya, tetap FULL
             $sizeStr = null;
             if (!empty($nk->size_kontainer)) {
                 $sizeInt = intval($nk->size_kontainer);
