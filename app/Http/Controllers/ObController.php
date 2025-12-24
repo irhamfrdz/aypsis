@@ -1089,6 +1089,20 @@ class ObController extends Controller
                 ], 400);
             }
 
+            // Build reverse mapping from pricelist: biaya => status
+            $pricelist = \App\Models\MasterPricelistOb::all();
+            $reverseMap = [];
+            foreach ($pricelist as $p) {
+                $sizeStr = $p->size_kontainer . 'ft';
+                $statusLower = strtolower($p->status);
+                $biaya = (int) $p->biaya;
+                // Map biaya|size => status
+                $key = $biaya . '|' . $sizeStr;
+                if (!isset($reverseMap[$key])) {
+                    $reverseMap[$key] = $statusLower;
+                }
+            }
+
             // Build snapshot items before create so pranota keeps essential info
             $itemsToSave = $request->items;
             foreach ($itemsToSave as $idx => $it) {
@@ -1101,6 +1115,18 @@ class ObController extends Controller
                         $itemsToSave[$idx]['size'] = $bl->size_kontainer ?? null;
                         // Use biaya from request if provided, otherwise from DB
                         $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null);
+                        
+                        // Recalculate status from biaya to ensure accuracy
+                        $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
+                        $sizeStr = ($bl->size_kontainer ?? '') . 'ft';
+                        $mapKey = $biaya . '|' . $sizeStr;
+                        if (isset($reverseMap[$mapKey])) {
+                            $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
+                        } else {
+                            // Fallback to request status or default
+                            $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                        }
+                        
                         if (!empty($bl->supir_id)) {
                             $sup = \DB::table('karyawans')->find($bl->supir_id);
                             $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_lengkap ?? $sup->name ?? null) : null;
@@ -1114,6 +1140,18 @@ class ObController extends Controller
                         $itemsToSave[$idx]['size'] = $nk->size_kontainer ?? ($nk->ukuran_kontainer ?? null);
                         // Use biaya from request if provided, otherwise from DB
                         $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null);
+                        
+                        // Recalculate status from biaya to ensure accuracy
+                        $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
+                        $sizeStr = ($nk->size_kontainer ?? $nk->ukuran_kontainer ?? '') . 'ft';
+                        $mapKey = $biaya . '|' . $sizeStr;
+                        if (isset($reverseMap[$mapKey])) {
+                            $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
+                        } else {
+                            // Fallback to request status or default
+                            $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                        }
+                        
                         if (!empty($nk->supir_id)) {
                             $sup = \DB::table('karyawans')->find($nk->supir_id);
                             $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_lengkap ?? $sup->name ?? null) : null;
