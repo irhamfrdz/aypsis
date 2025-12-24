@@ -1074,9 +1074,9 @@ function checkSelected() {
     const selected = document.querySelectorAll('.row-checkbox:checked');
     bulkActions.classList.toggle('hidden', selected.length === 0);
     
-    // Update select all for current page
-    const currentPageCheckboxes = document.querySelectorAll('.row-checkbox');
-    const currentPageSelected = document.querySelectorAll('.row-checkbox:checked');
+    // Update select all for current page (exclude disabled checkboxes from count)
+    const currentPageCheckboxes = Array.from(document.querySelectorAll('.row-checkbox')).filter(cb => !cb.disabled);
+    const currentPageSelected = Array.from(document.querySelectorAll('.row-checkbox:checked')).filter(cb => !cb.disabled);
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
