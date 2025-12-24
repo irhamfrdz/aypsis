@@ -281,13 +281,13 @@
             <table class="table" style="margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 30%;">Penerima</th>
+                        <th style="width: 30%;">Penerima Pembayaran</th>
                         <th style="width: 70%;">Nama</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="text-center"><strong>Penerima</strong></td>
+                        <td class="text-center"><strong>Penerima Pembayaran</strong></td>
                         <td><strong>{{ $pembayaranAktivitasLain->penerima }}</strong></td>
                     </tr>
                 </tbody>
@@ -305,21 +305,22 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 6%;">No</th>
-                        <th style="width: 18%;">No. Invoice</th>
-                        <th style="width: 12%;">Tanggal</th>
-                        <th style="width: 16%;">Jenis Aktivitas</th>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No. Invoice</th>
+                        <th style="width: 10%;">Tanggal</th>
+                        <th style="width: 13%;">Jenis Aktivitas</th>
                         @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
-                            <th style="width: 14%;">No. Surat Jalan</th>
+                            <th style="width: 12%;">No. Surat Jalan</th>
                         @endif
-                        <th style="width: 14%;">
+                        <th style="width: 12%;">
                             @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
                                 Tipe Penyesuaian
                             @else
                                 Sub Jenis
                             @endif
                         </th>
-                        <th style="width: 16%;">Total Invoice</th>
+                        <th style="width: 15%;">Penerima</th>
+                        <th style="width: 13%;">Total Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -352,11 +353,12 @@
                                     {{ $invoice->sub_jenis_kendaraan ?? '-' }}
                                 @endif
                             </td>
+                            <td>{{ $invoice->penerima ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="{{ stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false ? '6' : '5' }}" class="text-right"><strong>TOTAL INVOICE</strong></td>
+                        <td colspan="{{ stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false ? '7' : '6' }}" class="text-right"><strong>TOTAL INVOICE</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
