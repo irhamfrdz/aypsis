@@ -79,13 +79,17 @@ class PranotaObController extends Controller
         }
 
         // Build reverse map from pricelist: biaya|size => status
+        // Use integer biaya as key to match with item biaya
         $pricelists = \App\Models\MasterPricelistOb::all();
         $reverseMap = [];
         foreach ($pricelists as $pl) {
-            $sizeStr = $pl->size_kontainer;
-            $biaya = $pl->biaya;
+            // Normalize size - remove 'ft' suffix if present, then add it back
+            $sizeRaw = preg_replace('/ft$/i', '', $pl->size_kontainer);
+            $sizeStr = $sizeRaw . 'ft';
+            $biaya = (int) $pl->biaya; // Convert to integer for consistent comparison
             $key = $biaya . '|' . $sizeStr;
-            $reverseMap[$key] = $pl->status_kontainer;
+            $reverseMap[$key] = strtolower($pl->status_kontainer);
+            \Log::info("Print pricelist map: $key => " . $pl->status_kontainer);
         }
 
         // Summaries: total biaya and group by driver (supir) + counts for full/empty per size
@@ -126,15 +130,17 @@ class PranotaObController extends Controller
             elseif ($sizeKey === '40') $sizeStr = '40ft';
             
             // Detect status from biaya using reverse map
-            if (!empty($amount) && $sizeStr) {
-                $reverseKey = $amount . '|' . $sizeStr;
+            $biayaInt = (int) $amount; // Convert to integer for consistent comparison
+            if ($biayaInt > 0 && $sizeStr) {
+                $reverseKey = $biayaInt . '|' . $sizeStr;
+                \Log::info("Print lookup: biaya=$biayaInt, size=$sizeStr, key=$reverseKey, found=" . ($reverseMap[$reverseKey] ?? 'NOT FOUND'));
                 if (isset($reverseMap[$reverseKey])) {
                     // Status ditentukan dari pricelist yang cocok dengan biaya
                     $status = $reverseMap[$reverseKey];
                 } else {
                     // Biaya tidak cocok dengan pricelist, fallback ke status tersimpan atau nama_barang
-                    if (isset($item['status']) && in_array($item['status'], ['full','empty'])) {
-                        $status = $item['status'];
+                    if (isset($item['status']) && in_array(strtolower($item['status']), ['full','empty'])) {
+                        $status = strtolower($item['status']);
                     } else {
                         $name = $item['nama_barang'] ?? '';
                         $lowerName = strtolower($name);
@@ -145,8 +151,8 @@ class PranotaObController extends Controller
                 }
             } else {
                 // Tidak ada biaya atau size, fallback ke status tersimpan atau nama_barang
-                if (isset($item['status']) && in_array($item['status'], ['full','empty'])) {
-                    $status = $item['status'];
+                if (isset($item['status']) && in_array(strtolower($item['status']), ['full','empty'])) {
+                    $status = strtolower($item['status']);
                 } else {
                     $name = $item['nama_barang'] ?? '';
                     $lowerName = strtolower($name);
@@ -163,7 +169,10 @@ class PranotaObController extends Controller
             $perSupirCounts[$key]['sizes'][$sizeKey][$status]++;
         }
 
-        return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts'));
+        // Pass pranotaItems for print view
+        $pranotaItems = $displayItems;
+
+        return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts', 'pranotaItems'));
     }
 
     public function inputDp($id)
