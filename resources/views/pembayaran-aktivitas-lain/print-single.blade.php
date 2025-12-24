@@ -17,9 +17,9 @@
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px',
-            'headerH1' => '16px',
-            'tableFont' => '9px',
+            'fontSize' => '12px',
+            'headerH1' => '18px',
+            'tableFont' => '10px',
         ],
         'A4' => [
             'size' => 'A4',
@@ -297,22 +297,21 @@
                 <thead>
                     <tr>
                         <th style="width: 4%;">No</th>
-                        <th style="width: 13%;">No. Invoice</th>
-                        <th style="width: 8%;">Tanggal</th>
-                        <th style="width: 11%;">Jenis Aktivitas</th>
+                        <th style="width: 15%;">No. Invoice</th>
+                        <th style="width: 10%;">Tanggal</th>
                         @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
-                            <th style="width: 10%;">No. Surat Jalan</th>
-                            <th style="width: 11%;">No. Accurate Sebelumnya</th>
+                            <th style="width: 12%;">No. Surat Jalan</th>
+                            <th style="width: 13%;">No. Accurate Sebelumnya</th>
                         @endif
-                        <th style="width: 10%;">
+                        <th style="width: 12%;">
                             @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
                                 Tipe Penyesuaian
                             @else
                                 Sub Jenis
                             @endif
                         </th>
-                        <th style="width: 13%;">Penerima</th>
-                        <th style="width: 11%;">Total Invoice</th>
+                        <th style="width: 15%;">Penerima</th>
+                        <th style="width: 13%;">Total Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -323,7 +322,6 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $invoice->nomor_invoice }}</td>
                             <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
-                            <td>{{ $invoice->jenis_aktivitas }}</td>
                             @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
                                 <td>{{ $invoice->suratJalan->no_surat_jalan ?? '-' }}</td>
                                 <td>
@@ -359,7 +357,7 @@
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="{{ stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false ? '8' : '6' }}" class="text-right"><strong>TOTAL INVOICE</strong></td>
+                        <td colspan="{{ stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false ? '7' : '5' }}" class="text-right"><strong>TOTAL INVOICE</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
