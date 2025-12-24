@@ -3,8 +3,12 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
 @section('title', 'Tanda Terima')
@@ -729,8 +733,6 @@
 </div>
 
 @push('scripts')
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {
@@ -976,26 +978,18 @@
         document.getElementById('modalOldKontainer').value = noKontainer || '-';
         document.getElementById('modalOldSeal').value = noSeal || '-';
         
-        // Reset select2 dropdown
-        $('#newKontainer').val('').trigger('change');
+        // Reset fields
         document.getElementById('newSeal').value = '';
         
         // Show modal
         document.getElementById('changeContainerModal').classList.remove('hidden');
         
-        // Initialize Select2 for kontainer dropdown if not already initialized
-        if (!$('#newKontainer').hasClass('select2-hidden-accessible')) {
-            $('#newKontainer').select2({
-                placeholder: '-- Pilih Nomor Kontainer --',
-                allowClear: true,
-                width: '100%',
-                dropdownParent: $('#changeContainerModal')
-            });
-        }
+        // Reset select dropdown
+        document.getElementById('newKontainer').value = '';
         
-        // Focus on select2
+        // Focus on select dropdown
         setTimeout(() => {
-            $('#newKontainer').select2('open');
+            document.getElementById('newKontainer').focus();
         }, 100);
         
         // Close dropdowns
@@ -1148,7 +1142,7 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     if ('{{ request('mode') }}' === 'missing') {
         initResizableTable('suratJalanTable');
     } else if ('{{ request('mode') }}' === 'with_tanda_terima') {

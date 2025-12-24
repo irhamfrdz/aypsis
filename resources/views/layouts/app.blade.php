@@ -633,8 +633,8 @@
 
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-gudang.*');
-    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-mobil-view') || $user->can('master-kapal.view') || $user->can('master-gudang-view'));
+    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('master-gudang.*');
+    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-mobil-view') || $user->can('master-kapal.view') || $user->can('biaya-kapal-view') || $user->can('master-gudang-view'));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -692,6 +692,15 @@
         <div class="mx-2 mb-3">
             <a href="{{ route('master-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Master Kapal</span>
+            </a>
+        </div>
+        @endif
+
+        {{-- Biaya Kapal --}}
+        @if($user && $user->can('biaya-kapal-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('biaya-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('biaya-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Biaya Kapal</span>
             </a>
         </div>
         @endif

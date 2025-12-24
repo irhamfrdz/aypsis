@@ -1071,6 +1071,19 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    // 💰 Biaya Kapal (Ship Costs) Management with permissions
+    Route::resource('biaya-kapal', \App\Http\Controllers\BiayaKapalController::class)
+         ->names('biaya-kapal')
+         ->middleware([
+             'index' => 'can:biaya-kapal-view',
+             'show' => 'can:biaya-kapal-view',
+             'create' => 'can:biaya-kapal-create',
+             'store' => 'can:biaya-kapal-create',
+             'edit' => 'can:biaya-kapal-update',
+             'update' => 'can:biaya-kapal-update',
+             'destroy' => 'can:biaya-kapal-delete'
+         ]);
+
     // 🏢 Master Gudang (Warehouse Master) Management with permissions
     // Import & Template routes (must be before resource routes)
     Route::get('master-gudang/template/download', [\App\Http\Controllers\MasterGudangController::class, 'template'])
