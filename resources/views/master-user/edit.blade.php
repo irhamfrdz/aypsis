@@ -628,6 +628,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Jenis Layanan Pelabuhan --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Jenis Layanan Pelabuhan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-jenis-layanan-pelabuhan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jenis-layanan-pelabuhan']['view']) && $userMatrixPermissions['master-jenis-layanan-pelabuhan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-jenis-layanan-pelabuhan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jenis-layanan-pelabuhan']['create']) && $userMatrixPermissions['master-jenis-layanan-pelabuhan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-jenis-layanan-pelabuhan][edit]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jenis-layanan-pelabuhan']['edit']) && $userMatrixPermissions['master-jenis-layanan-pelabuhan']['edit']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-jenis-layanan-pelabuhan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jenis-layanan-pelabuhan']['delete']) && $userMatrixPermissions['master-jenis-layanan-pelabuhan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
@@ -1246,7 +1263,7 @@
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
-                                        <span>Pergerakan Kapal</span>
+                                        <span>Pergezrakan Kapal</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[pergerakan-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kapal']['view']) && $userMatrixPermissions['pergerakan-kapal']['view']) checked @endif></td>
