@@ -78,6 +78,16 @@ class PranotaObController extends Controller
             $displayItems = $pranota->items;
         }
 
+        // Build reverse map from pricelist: biaya|size => status
+        $pricelists = \App\Models\MasterPricelistOb::all();
+        $reverseMap = [];
+        foreach ($pricelists as $pl) {
+            $sizeStr = $pl->size_kontainer;
+            $biaya = $pl->biaya;
+            $key = $biaya . '|' . $sizeStr;
+            $reverseMap[$key] = $pl->status_kontainer;
+        }
+
         // Summaries: total biaya and group by driver (supir) + counts for full/empty per size
         $totalBiaya = 0;
         $perSupir = []; // total biaya per supir
@@ -97,28 +107,54 @@ class PranotaObController extends Controller
                 ];
             }
 
-            // Use status from saved data (pivot table)
-            $status = 'full';
-            if (isset($item['status']) && in_array($item['status'], ['full','empty'])) {
-                $status = $item['status'];
-            } else {
-                // Fallback: detect from nama_barang if status not saved
-                $name = $item['nama_barang'] ?? '';
-                $lowerName = strtolower($name);
-                if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                    $status = 'empty';
-                }
-            }
-
+            // PERBAIKAN: Tentukan status dari biaya yang tersimpan, bukan dari field status yang mungkin salah
+            $status = 'full'; // default
+            
+            // Normalize size first
             $size = (string)($item['size'] ?? $item['size_kontainer'] ?? 'unknown');
             if ($size === '') $size = 'unknown';
-            // Normalize size to 20, 40 or other
             $sizeKey = 'other';
             $lowerSize = strtolower($size);
             if (str_contains($lowerSize, '40')) $sizeKey = '40';
             elseif (str_contains($lowerSize, '20')) $sizeKey = '20';
             elseif (is_numeric($size) && intval($size) === 40) $sizeKey = '40';
             elseif (is_numeric($size) && intval($size) === 20) $sizeKey = '20';
+            
+            // Convert size to pricelist format
+            $sizeStr = null;
+            if ($sizeKey === '20') $sizeStr = '20ft';
+            elseif ($sizeKey === '40') $sizeStr = '40ft';
+            
+            // Detect status from biaya using reverse map
+            if (!empty($amount) && $sizeStr) {
+                $reverseKey = $amount . '|' . $sizeStr;
+                if (isset($reverseMap[$reverseKey])) {
+                    // Status ditentukan dari pricelist yang cocok dengan biaya
+                    $status = $reverseMap[$reverseKey];
+                } else {
+                    // Biaya tidak cocok dengan pricelist, fallback ke status tersimpan atau nama_barang
+                    if (isset($item['status']) && in_array($item['status'], ['full','empty'])) {
+                        $status = $item['status'];
+                    } else {
+                        $name = $item['nama_barang'] ?? '';
+                        $lowerName = strtolower($name);
+                        if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                            $status = 'empty';
+                        }
+                    }
+                }
+            } else {
+                // Tidak ada biaya atau size, fallback ke status tersimpan atau nama_barang
+                if (isset($item['status']) && in_array($item['status'], ['full','empty'])) {
+                    $status = $item['status'];
+                } else {
+                    $name = $item['nama_barang'] ?? '';
+                    $lowerName = strtolower($name);
+                    if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                        $status = 'empty';
+                    }
+                }
+            }
 
             $perSupirCounts[$key][$status]++;
             if (!isset($perSupirCounts[$key]['sizes'][$sizeKey])) {
