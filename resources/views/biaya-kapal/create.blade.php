@@ -85,13 +85,17 @@
                     <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Kapal <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" 
-                           id="nama_kapal" 
-                           name="nama_kapal" 
-                           value="{{ old('nama_kapal') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_kapal') border-red-500 @enderror"
-                           placeholder="Masukkan nama kapal"
-                           required>
+                    <select id="nama_kapal" 
+                            name="nama_kapal" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_kapal') border-red-500 @enderror"
+                            required>
+                        <option value="">-- Pilih Kapal --</option>
+                        @foreach($kapals as $kapal)
+                            <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
+                                {{ $kapal->nama_kapal }}
+                            </option>
+                        @endforeach
+                    </select>
                     @error('nama_kapal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
