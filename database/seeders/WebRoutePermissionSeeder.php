@@ -112,6 +112,9 @@ class WebRoutePermissionSeeder extends Seeder
                 // Master Pelabuhan permissions
                 'master-pelabuhan-view', 'master-pelabuhan-create', 'master-pelabuhan-edit', 
                 'master-pelabuhan-update', 'master-pelabuhan-delete',
+
+                // Master Jenis Layanan Pelabuhan permissions
+                'master-jenis-layanan-pelabuhan-view', 'master-jenis-layanan-pelabuhan-create', 'master-jenis-layanan-pelabuhan-edit', 'master-jenis-layanan-pelabuhan-delete',
                 
                 // Master Tipe Akun permissions
                 'master-tipe-akun-view', 'master-tipe-akun-create', 'master-tipe-akun-update', 

@@ -1150,6 +1150,28 @@ Route::middleware([
              'destroy' => 'can:master-pelabuhan-delete'
          ]);
 
+    // ⚓ Master Jenis Layanan Pelabuhan Management with permissions
+    Route::resource('master-jenis-layanan-pelabuhan', \App\Http\Controllers\MasterJenisLayananPelabuhanController::class)
+         ->names([
+             'index' => 'master.jenis-layanan-pelabuhan.index',
+             'create' => 'master.jenis-layanan-pelabuhan.create',
+             'store' => 'master.jenis-layanan-pelabuhan.store',
+             'show' => 'master.jenis-layanan-pelabuhan.show',
+             'edit' => 'master.jenis-layanan-pelabuhan.edit',
+             'update' => 'master.jenis-layanan-pelabuhan.update',
+             'destroy' => 'master.jenis-layanan-pelabuhan.destroy'
+         ])
+         ->parameters(['master-jenis-layanan-pelabuhan' => 'masterJenisLayananPelabuhan'])
+         ->middleware([
+             'index' => 'can:master-jenis-layanan-pelabuhan-view',
+             'create' => 'can:master-jenis-layanan-pelabuhan-create',
+             'store' => 'can:master-jenis-layanan-pelabuhan-create',
+             'show' => 'can:master-jenis-layanan-pelabuhan-view',
+             'edit' => 'can:master-jenis-layanan-pelabuhan-edit',
+             'update' => 'can:master-jenis-layanan-pelabuhan-edit',
+             'destroy' => 'can:master-jenis-layanan-pelabuhan-delete'
+         ]);
+
     // 🏦 Tipe Akun (Account Type) Management with permissions
     Route::resource('master/tipe-akun', TipeAkunController::class)->names('master.tipe-akun')->middleware([
         'index' => 'can:master-tipe-akun-view',

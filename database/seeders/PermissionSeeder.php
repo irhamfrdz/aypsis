@@ -162,6 +162,13 @@ class PermissionSeeder extends Seeder
             'master-pelabuhan-edit',
             'master-pelabuhan-view',
 
+            // ⚓ MASTER JENIS LAYANAN PELABUHAN PERMISSIONS (4)
+            // ═══════════════════════════════════════════════════════════════════════
+            'master-jenis-layanan-pelabuhan-create',
+            'master-jenis-layanan-pelabuhan-delete',
+            'master-jenis-layanan-pelabuhan-edit',
+            'master-jenis-layanan-pelabuhan-view',
+
             // ═══════════════════════════════════════════════════════════════════════
             // 📧 MASTER PENGIRIM PERMISSIONS (4)
             // ═══════════════════════════════════════════════════════════════════════
