@@ -559,15 +559,11 @@
 
         @endif
 
-        {{-- Pagination --}}
-        @if((isset($bls) && $bls->hasPages()) || (!isset($bls) && isset($naikKapals) && $naikKapals->hasPages()))
-            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
-                @if(isset($bls))
-                    {{ $bls->links() }}
-                @else
-                    {{ $naikKapals->links() }}
-                @endif
-            </div>
+        {{-- Modern Pagination --}}
+        @if(isset($bls))
+            @include('components.modern-pagination', ['paginator' => $bls])
+        @else
+            @include('components.modern-pagination', ['paginator' => $naikKapals])
         @endif
     </div>
 </div>
@@ -696,6 +692,14 @@
 </div>
 
 <script>
+// Handle per page change
+function changePerPage(perPage) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', perPage);
+    url.searchParams.delete('page'); // Reset to page 1 when changing per page
+    window.location.href = url.toString();
+}
+
 function openSupirModal(type, id) {
     document.getElementById('record_type').value = type;
     document.getElementById('record_id').value = id;
