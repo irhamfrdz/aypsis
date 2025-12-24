@@ -259,9 +259,12 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($bls as $key => $bl)
-                    <tr class="hover:bg-gray-50 transition duration-150">
+                    <tr class="hover:bg-gray-50 transition duration-150 {{ $bl->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}">
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" {{ $bl->tipe_kontainer == 'CARGO' ? 'disabled title="Kontainer CARGO tidak bisa dimasukkan ke pranota"' : '' }}>
+                            @if($bl->tipe_kontainer == 'CARGO')
+                                <span class="text-xs text-red-600 ml-1" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
+                            @endif
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bls->firstItem() + $key }}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
@@ -403,9 +406,12 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
-                        <tr class="hover:bg-gray-50 transition duration-150">
+                        <tr class="hover:bg-gray-50 transition duration-150 {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}">
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'disabled title="Kontainer CARGO tidak bisa dimasukkan ke pranota"' : '' }}>
+                                @if($naikKapal->tipe_kontainer == 'CARGO')
+                                    <span class="text-xs text-red-600 ml-1" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
+                                @endif
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $naikKapals->firstItem() + $key }}
@@ -742,14 +748,24 @@ document.addEventListener('click', function(event) {
 
 // Pranota Modal functions
 function openPranotaModal() {
-    const selectedItems = getSelectedItems();
+    let selectedItems = getSelectedItems();
+    
+    // Filter out CARGO containers
+    const cargoItems = selectedItems.filter(item => item.tipe === 'CARGO');
+    selectedItems = selectedItems.filter(item => item.tipe !== 'CARGO');
+    
+    // Show warning if CARGO items were filtered out
+    if (cargoItems.length > 0) {
+        alert(`${cargoItems.length} kontainer CARGO tidak akan dimasukkan ke pranota.\nKontainer CARGO: ${cargoItems.map(item => item.nomor_kontainer).join(', ')}`);
+    }
+    
     // Ensure ship/voyage info available before opening modal
     if (!__PRANOTA_nama_kapal || !__PRANOTA_no_voyage) {
         alert('Informasi kapal dan voyage tidak ditemukan');
         return;
     }
     if (selectedItems.length === 0) {
-        alert('Silakan pilih kontainer terlebih dahulu');
+        alert('Silakan pilih kontainer terlebih dahulu (non-CARGO)');
         return;
     }
     
@@ -1054,18 +1070,20 @@ function checkSelected() {
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
-    // Save to storage - collect all selected items
-    const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => ({
-        id: cb.value,
-        type: cb.getAttribute('data-type'),
-        nomor_kontainer: cb.getAttribute('data-nomor-kontainer'),
-        nama_barang: cb.getAttribute('data-nama-barang'),
-        tipe: cb.getAttribute('data-tipe'),
-        size: cb.getAttribute('data-size'),
-        biaya: cb.getAttribute('data-biaya'),
-        status: cb.getAttribute('data-status'),
-        supir: cb.getAttribute('data-supir')
-    }));
+    // Save to storage - collect all selected items (exclude CARGO)
+    const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+        .filter(cb => cb.getAttribute('data-tipe') !== 'CARGO') // Filter out CARGO containers
+        .map(cb => ({
+            id: cb.value,
+            type: cb.getAttribute('data-type'),
+            nomor_kontainer: cb.getAttribute('data-nomor-kontainer'),
+            nama_barang: cb.getAttribute('data-nama-barang'),
+            tipe: cb.getAttribute('data-tipe'),
+            size: cb.getAttribute('data-size'),
+            biaya: cb.getAttribute('data-biaya'),
+            status: cb.getAttribute('data-status'),
+            supir: cb.getAttribute('data-supir')
+        }));
     saveSelectedItems(allSelected);
 }
 
