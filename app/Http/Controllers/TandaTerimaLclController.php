@@ -1241,13 +1241,17 @@ class TandaTerimaLclController extends Controller
             'total_lcl_unstuffed' => $unstuffedLcl->count(),
         ];
         
+        // Get master tujuan kirim for dropdown
+        $masterTujuanKirim = MasterTujuanKirim::active()->orderBy('nama_tujuan')->get();
+        
         return view('tanda-terima-lcl.stuffing', compact(
             'pivotData', 
             'groupedByContainer', 
             'availableKontainers', 
             'unstuffedLcl',
             'uniqueContainers',
-            'stats'
+            'stats',
+            'masterTujuanKirim'
         ));
     }
     
