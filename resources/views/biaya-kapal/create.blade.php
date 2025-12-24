@@ -85,21 +85,61 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Kapal <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
                     </label>
-                    <div class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white @error('nama_kapal') border-red-500 @enderror" style="max-height: 200px; overflow-y: auto;">
-                        <div class="space-y-2">
+                    
+                    {{-- Hidden inputs for selected kapal --}}
+                    <div id="hidden_kapal_inputs"></div>
+                    
+                    {{-- Search input with dropdown --}}
+                    <div class="relative">
+                        <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white cursor-text @error('nama_kapal') border-red-500 @enderror" 
+                             id="kapal_container"
+                             onclick="document.getElementById('kapal_search').focus()">
+                             
+                            {{-- Selected kapal chips --}}
+                            <div id="selected_kapal_chips" class="flex flex-wrap gap-1 mb-1"></div>
+                            
+                            {{-- Search input --}}
+                            <input type="text" 
+                                   id="kapal_search"
+                                   placeholder="--Pilih Kapal--"
+                                   class="border-0 outline-none bg-transparent flex-1 min-w-[200px]"
+                                   autocomplete="off">
+                        </div>
+                        
+                        {{-- Dropdown list --}}
+                        <div id="kapal_dropdown" 
+                             class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto hidden">
                             @foreach($kapals as $kapal)
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition">
-                                    <input type="checkbox" 
-                                           name="nama_kapal[]" 
-                                           value="{{ $kapal->nama_kapal }}" 
-                                           {{ is_array(old('nama_kapal')) && in_array($kapal->nama_kapal, old('nama_kapal')) ? 'checked' : '' }}
-                                           class="kapal-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700">{{ $kapal->nama_kapal }}</span>
-                                </label>
+                                <div class="kapal-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                     data-id="{{ $kapal->id }}"
+                                     data-nama="{{ $kapal->nama_kapal }}">
+                                    <div class="font-medium text-gray-900">{{ $kapal->nama_kapal }}</div>
+                                    @if($kapal->nickname)
+                                        <div class="text-sm text-gray-500">{{ $kapal->nickname }}</div>
+                                    @endif
+                                </div>
                             @endforeach
                         </div>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500">Centang kapal yang ingin dipilih</p>
+                    
+                    <div class="mt-2 flex justify-between items-center">
+                        <span id="kapalSelectedCount" class="text-sm text-blue-600">
+                            Terpilih: 0 dari {{ $kapals->count() }} kapal
+                        </span>
+                        <div class="flex gap-2">
+                            <button type="button" 
+                                    id="selectAllKapalBtn"
+                                    class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition duration-200">
+                                Select All
+                            </button>
+                            <button type="button" 
+                                    id="clearAllKapalBtn"
+                                    class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition duration-200">
+                                Clear Semua
+                            </button>
+                        </div>
+                    </div>
+                    
                     @error('nama_kapal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -110,10 +150,53 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Voyage <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
                     </label>
-                    <div id="voyage-container" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 @error('no_voyage') border-red-500 @enderror" style="min-height: 100px; max-height: 200px; overflow-y: auto;">
-                        <p class="text-sm text-gray-500 italic">Pilih kapal terlebih dahulu untuk menampilkan voyages</p>
+                    
+                    {{-- Hidden inputs for selected voyage --}}
+                    <div id="hidden_voyage_inputs"></div>
+                    
+                    {{-- Search input with dropdown --}}
+                    <div class="relative">
+                        <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white cursor-text @error('no_voyage') border-red-500 @enderror" 
+                             id="voyage_container_input"
+                             onclick="document.getElementById('voyage_search').focus()">
+                             
+                            {{-- Selected voyage chips --}}
+                            <div id="selected_voyage_chips" class="flex flex-wrap gap-1 mb-1"></div>
+                            
+                            {{-- Search input --}}
+                            <input type="text" 
+                                   id="voyage_search"
+                                   placeholder="--Pilih Kapal Terlebih Dahulu--"
+                                   class="border-0 outline-none bg-transparent flex-1 min-w-[200px]"
+                                   autocomplete="off"
+                                   disabled>
+                        </div>
+                        
+                        {{-- Dropdown list --}}
+                        <div id="voyage_dropdown" 
+                             class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto hidden">
+                            <p class="px-3 py-2 text-sm text-gray-500 italic">Pilih kapal terlebih dahulu</p>
+                        </div>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500">Centang voyage yang ingin dipilih</p>
+                    
+                    <div class="mt-2 flex justify-between items-center">
+                        <span id="voyageSelectedCount" class="text-sm text-blue-600">
+                            Terpilih: 0 voyage
+                        </span>
+                        <div class="flex gap-2">
+                            <button type="button" 
+                                    id="selectAllVoyageBtn"
+                                    class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition duration-200">
+                                Select All
+                            </button>
+                            <button type="button" 
+                                    id="clearAllVoyageBtn"
+                                    class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition duration-200">
+                                Clear Semua
+                            </button>
+                        </div>
+                    </div>
+                    
                     @error('no_voyage')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -286,32 +369,256 @@
         });
     }, 5000);
 
-    // Dynamic voyage filtering based on selected ships
-    const kapalCheckboxes = document.querySelectorAll('.kapal-checkbox');
-    const voyageContainer = document.getElementById('voyage-container');
-    const oldVoyageValue = @json(old('no_voyage', []));
+    // ============= KAPAL MULTI-SELECT =============
+    const kapalSearch = document.getElementById('kapal_search');
+    const kapalDropdown = document.getElementById('kapal_dropdown');
+    const selectedKapalChips = document.getElementById('selected_kapal_chips');
+    const hiddenKapalInputs = document.getElementById('hidden_kapal_inputs');
+    const kapalOptions = document.querySelectorAll('.kapal-option');
+    const kapalSelectedCount = document.getElementById('kapalSelectedCount');
+    const selectAllKapalBtn = document.getElementById('selectAllKapalBtn');
+    const clearAllKapalBtn = document.getElementById('clearAllKapalBtn');
+    
+    let selectedKapals = [];
+    const oldKapalValue = @json(old('nama_kapal', []));
+    
+    // Show kapal dropdown on focus
+    kapalSearch.addEventListener('focus', function() {
+        kapalDropdown.classList.remove('hidden');
+        filterKapalOptions();
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#kapal_container') && !e.target.closest('#kapal_dropdown')) {
+            kapalDropdown.classList.add('hidden');
+        }
+        if (!e.target.closest('#voyage_container_input') && !e.target.closest('#voyage_dropdown')) {
+            voyageDropdown.classList.add('hidden');
+        }
+    });
+    
+    // Search/filter kapal options
+    kapalSearch.addEventListener('input', function() {
+        filterKapalOptions();
+    });
+    
+    function filterKapalOptions() {
+        const searchTerm = kapalSearch.value.toLowerCase();
+        kapalOptions.forEach(option => {
+            const nama = option.getAttribute('data-nama').toLowerCase();
+            const shouldShow = nama.includes(searchTerm);
+            option.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+    
+    // Handle kapal option selection
+    kapalOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const nama = this.getAttribute('data-nama');
+            
+            if (!selectedKapals.find(k => k.nama === nama)) {
+                selectedKapals.push({ id, nama });
+                addKapalChip(id, nama);
+                updateKapalHiddenInputs();
+                updateKapalSelectedCount();
+                updateVoyages();
+                this.classList.add('selected');
+            }
+            
+            kapalSearch.value = '';
+            kapalDropdown.classList.add('hidden');
+        });
+    });
+    
+    function addKapalChip(id, nama) {
+        const chip = document.createElement('span');
+        chip.className = 'selected-chip';
+        chip.setAttribute('data-nama', nama);
+        chip.innerHTML = `
+            <span class="font-medium">${nama}</span>
+            <span class="remove-chip" onclick="removeKapalChip('${nama}')">&times;</span>
+        `;
+        selectedKapalChips.appendChild(chip);
+    }
+    
+    window.removeKapalChip = function(nama) {
+        selectedKapals = selectedKapals.filter(k => k.nama !== nama);
+        const chip = document.querySelector(`[data-nama="${nama}"].selected-chip`);
+        if (chip) chip.remove();
+        
+        const option = Array.from(kapalOptions).find(opt => opt.getAttribute('data-nama') === nama);
+        if (option) option.classList.remove('selected');
+        
+        updateKapalHiddenInputs();
+        updateKapalSelectedCount();
+        updateVoyages();
+    };
+    
+    selectAllKapalBtn.addEventListener('click', function() {
+        kapalOptions.forEach(option => {
+            const id = option.getAttribute('data-id');
+            const nama = option.getAttribute('data-nama');
+            
+            if (!selectedKapals.find(k => k.nama === nama)) {
+                selectedKapals.push({ id, nama });
+                addKapalChip(id, nama);
+                option.classList.add('selected');
+            }
+        });
+        
+        updateKapalHiddenInputs();
+        updateKapalSelectedCount();
+        updateVoyages();
+    });
+    
+    clearAllKapalBtn.addEventListener('click', function() {
+        selectedKapals = [];
+        selectedKapalChips.innerHTML = '';
+        hiddenKapalInputs.innerHTML = '';
+        kapalOptions.forEach(option => option.classList.remove('selected'));
+        updateKapalSelectedCount();
+        updateVoyages();
+    });
+    
+    function updateKapalHiddenInputs() {
+        hiddenKapalInputs.innerHTML = '';
+        selectedKapals.forEach(kapal => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'nama_kapal[]';
+            input.value = kapal.nama;
+            hiddenKapalInputs.appendChild(input);
+        });
+    }
+    
+    function updateKapalSelectedCount() {
+        kapalSelectedCount.textContent = `Terpilih: ${selectedKapals.length} dari ${kapalOptions.length} kapal`;
+    }
 
+    // ============= VOYAGE MULTI-SELECT =============
+    const voyageSearch = document.getElementById('voyage_search');
+    const voyageDropdown = document.getElementById('voyage_dropdown');
+    const selectedVoyageChips = document.getElementById('selected_voyage_chips');
+    const hiddenVoyageInputs = document.getElementById('hidden_voyage_inputs');
+    const voyageSelectedCount = document.getElementById('voyageSelectedCount');
+    const selectAllVoyageBtn = document.getElementById('selectAllVoyageBtn');
+    const clearAllVoyageBtn = document.getElementById('clearAllVoyageBtn');
+    
+    let selectedVoyages = [];
+    let availableVoyages = [];
+    const oldVoyageValue = @json(old('no_voyage', []));
+    
+    // Show voyage dropdown on focus
+    voyageSearch.addEventListener('focus', function() {
+        if (selectedKapals.length > 0) {
+            voyageDropdown.classList.remove('hidden');
+            filterVoyageOptions();
+        }
+    });
+    
+    // Search/filter voyage options
+    voyageSearch.addEventListener('input', function() {
+        filterVoyageOptions();
+    });
+    
+    function filterVoyageOptions() {
+        const searchTerm = voyageSearch.value.toLowerCase();
+        const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
+        voyageOptions.forEach(option => {
+            const voyage = option.getAttribute('data-voyage').toLowerCase();
+            const shouldShow = voyage.includes(searchTerm);
+            option.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+    
+    function addVoyageChip(voyage) {
+        const chip = document.createElement('span');
+        chip.className = 'selected-chip';
+        chip.setAttribute('data-voyage', voyage);
+        chip.innerHTML = `
+            <span class="font-medium">${voyage}</span>
+            <span class="remove-chip" onclick="removeVoyageChip('${voyage}')">&times;</span>
+        `;
+        selectedVoyageChips.appendChild(chip);
+    }
+    
+    window.removeVoyageChip = function(voyage) {
+        selectedVoyages = selectedVoyages.filter(v => v !== voyage);
+        const chip = document.querySelector(`[data-voyage="${voyage}"].selected-chip`);
+        if (chip) chip.remove();
+        
+        const option = voyageDropdown.querySelector(`[data-voyage="${voyage}"].voyage-option`);
+        if (option) option.classList.remove('selected');
+        
+        updateVoyageHiddenInputs();
+        updateVoyageSelectedCount();
+    };
+    
+    selectAllVoyageBtn.addEventListener('click', function() {
+        selectedVoyages = [...availableVoyages];
+        selectedVoyageChips.innerHTML = '';
+        availableVoyages.forEach(voyage => {
+            addVoyageChip(voyage);
+        });
+        
+        const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
+        voyageOptions.forEach(option => option.classList.add('selected'));
+        
+        updateVoyageHiddenInputs();
+        updateVoyageSelectedCount();
+    });
+    
+    clearAllVoyageBtn.addEventListener('click', function() {
+        selectedVoyages = [];
+        selectedVoyageChips.innerHTML = '';
+        hiddenVoyageInputs.innerHTML = '';
+        
+        const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
+        voyageOptions.forEach(option => option.classList.remove('selected'));
+        
+        updateVoyageSelectedCount();
+    });
+    
+    function updateVoyageHiddenInputs() {
+        hiddenVoyageInputs.innerHTML = '';
+        selectedVoyages.forEach(voyage => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'no_voyage[]';
+            input.value = voyage;
+            hiddenVoyageInputs.appendChild(input);
+        });
+    }
+    
+    function updateVoyageSelectedCount() {
+        voyageSelectedCount.textContent = `Terpilih: ${selectedVoyages.length} voyage`;
+    }
+    
     // Function to fetch and display voyages for selected ships
     function updateVoyages() {
-        // Get all checked ships
-        const selectedShips = Array.from(kapalCheckboxes)
-            .filter(cb => cb.checked)
-            .map(cb => cb.value);
-
-        if (selectedShips.length === 0) {
-            voyageContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Pilih kapal terlebih dahulu untuk menampilkan voyages</p>';
+        if (selectedKapals.length === 0) {
+            voyageSearch.disabled = true;
+            voyageSearch.placeholder = '--Pilih Kapal Terlebih Dahulu--';
+            voyageDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Pilih kapal terlebih dahulu</p>';
+            selectedVoyages = [];
+            selectedVoyageChips.innerHTML = '';
+            hiddenVoyageInputs.innerHTML = '';
+            updateVoyageSelectedCount();
             return;
         }
-
-        // Show loading
-        voyageContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Memuat voyages...</p>';
-
+        
+        voyageSearch.disabled = false;
+        voyageSearch.placeholder = '--Pilih Voyage--';
+        voyageDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat voyages...</p>';
+        
         // Fetch voyages for all selected ships
-        const fetchPromises = selectedShips.map(namaKapal => 
-            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(namaKapal)}`)
+        const fetchPromises = selectedKapals.map(kapal => 
+            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapal.nama)}`)
                 .then(response => response.json())
         );
-
+        
         Promise.all(fetchPromises)
             .then(results => {
                 // Collect all voyages from all ships
@@ -321,50 +628,141 @@
                         data.voyages.forEach(voyage => allVoyages.add(voyage));
                     }
                 });
-
-                if (allVoyages.size > 0) {
-                    // Create checkbox list
-                    let html = '<div class="space-y-2">';
-                    
-                    // Sort voyages
-                    const sortedVoyages = Array.from(allVoyages).sort();
-                    
-                    sortedVoyages.forEach(voyage => {
-                        const isChecked = oldVoyageValue && oldVoyageValue.includes(voyage) ? 'checked' : '';
+                
+                availableVoyages = Array.from(allVoyages).sort();
+                
+                if (availableVoyages.length > 0) {
+                    // Create option list
+                    let html = '';
+                    availableVoyages.forEach(voyage => {
+                        const isSelected = selectedVoyages.includes(voyage) ? 'selected' : '';
                         html += `
-                            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition">
-                                <input type="checkbox" 
-                                       name="no_voyage[]" 
-                                       value="${voyage}" 
-                                       ${isChecked}
-                                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                <span class="text-sm text-gray-700">${voyage}</span>
-                            </label>
+                            <div class="voyage-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 ${isSelected}"
+                                 data-voyage="${voyage}">
+                                <div class="font-medium text-gray-900">${voyage}</div>
+                            </div>
                         `;
                     });
+                    voyageDropdown.innerHTML = html;
                     
-                    html += '</div>';
-                    voyageContainer.innerHTML = html;
+                    // Add click handlers to new options
+                    const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
+                    voyageOptions.forEach(option => {
+                        option.addEventListener('click', function() {
+                            const voyage = this.getAttribute('data-voyage');
+                            
+                            if (!selectedVoyages.includes(voyage)) {
+                                selectedVoyages.push(voyage);
+                                addVoyageChip(voyage);
+                                updateVoyageHiddenInputs();
+                                updateVoyageSelectedCount();
+                                this.classList.add('selected');
+                            }
+                            
+                            voyageSearch.value = '';
+                            voyageDropdown.classList.add('hidden');
+                        });
+                    });
                 } else {
-                    voyageContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Tidak ada voyage untuk kapal yang dipilih</p>';
+                    voyageDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada voyage untuk kapal yang dipilih</p>';
                 }
             })
             .catch(error => {
                 console.error('Error fetching voyages:', error);
-                voyageContainer.innerHTML = '<p class="text-sm text-red-600">Gagal memuat voyages. Silakan coba lagi.</p>';
+                voyageDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-red-600">Gagal memuat voyages. Silakan coba lagi.</p>';
             });
     }
-
-    // Add event listener to all ship checkboxes
-    kapalCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateVoyages);
-    });
-
-    // Trigger update on page load if ships are already selected (for validation errors)
-    const hasSelectedShips = Array.from(kapalCheckboxes).some(cb => cb.checked);
-    if (hasSelectedShips) {
+    
+    // Restore old values on page load (for validation errors)
+    if (oldKapalValue.length > 0) {
+        oldKapalValue.forEach(namaKapal => {
+            const option = Array.from(kapalOptions).find(opt => opt.getAttribute('data-nama') === namaKapal);
+            if (option) {
+                const id = option.getAttribute('data-id');
+                selectedKapals.push({ id, nama: namaKapal });
+                addKapalChip(id, namaKapal);
+                option.classList.add('selected');
+            }
+        });
+        updateKapalHiddenInputs();
+        updateKapalSelectedCount();
         updateVoyages();
+        
+        // Restore voyage selections after voyages are loaded
+        setTimeout(() => {
+            if (oldVoyageValue.length > 0) {
+                oldVoyageValue.forEach(voyage => {
+                    if (availableVoyages.includes(voyage)) {
+                        selectedVoyages.push(voyage);
+                        addVoyageChip(voyage);
+                        const option = voyageDropdown.querySelector(`[data-voyage="${voyage}"]`);
+                        if (option) option.classList.add('selected');
+                    }
+                });
+                updateVoyageHiddenInputs();
+                updateVoyageSelectedCount();
+            }
+        }, 1000);
     }
 </script>
 @endpush
 @endsection
+
+@push('styles')
+<style>
+    /* Searchable Multi-Select Styling */
+    #kapal_container, #voyage_container_input {
+        transition: all 0.15s ease;
+    }
+    
+    #kapal_container:focus-within, #voyage_container_input:focus-within {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .selected-chip {
+        display: inline-flex;
+        align-items: center;
+        background-color: #3b82f6;
+        color: white;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin: 1px;
+        gap: 6px;
+    }
+    
+    .selected-chip .remove-chip {
+        margin-left: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+    
+    .selected-chip .remove-chip:hover {
+        opacity: 1;
+    }
+    
+    .kapal-option, .voyage-option {
+        transition: background-color 0.15s ease;
+    }
+    
+    .kapal-option:hover, .voyage-option:hover {
+        background-color: #eff6ff !important;
+    }
+    
+    .kapal-option.selected, .voyage-option.selected {
+        background-color: #dbeafe;
+        opacity: 0.6;
+    }
+    
+    #kapal_search::placeholder, #voyage_search::placeholder {
+        color: #9ca3af;
+    }
+    
+    #kapal_dropdown, #voyage_dropdown {
+        border-top: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+</style>
+@endpush
