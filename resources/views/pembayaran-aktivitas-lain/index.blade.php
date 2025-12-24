@@ -63,88 +63,84 @@
         <!-- Table Section -->
         <div class="overflow-x-auto">
             <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
+                <thead class="bg-gray-50 border-b-2 border-gray-300">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Accurate</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Aktivitas</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sub Jenis</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akun COA</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akun Bank</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit/Kredit</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-12">No</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">Tipe</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nomor</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nomor Accurate</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">Tanggal</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jenis Aktivitas</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penerima</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Jumlah</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($pembayarans as $index => $item)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pembayarans->firstItem() + $index }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-900">{{ $pembayarans->firstItem() + $index }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-center">
                                 @if($item->tipe_pembayaran === 'invoice')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Invoice</span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-md bg-purple-100 text-purple-800">Invoice</span>
                                 @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Langsung</span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-md bg-blue-100 text-blue-800">Langsung</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nomor }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->nomor_accurate ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $item->jenis_aktivitas }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $item->sub_jenis_kendaraan ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $item->penerima }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                @if($item->akun_coa_id && isset($akunCoas[$item->akun_coa_id]))
-                                    {{ $akunCoas[$item->akun_coa_id]->kode_nomor }} - {{ $akunCoas[$item->akun_coa_id]->nama_akun }}
-                                @else
-                                    -
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $item->nomor }}</div>
+                                @if($item->sub_jenis_kendaraan)
+                                    <div class="text-xs text-gray-500">{{ $item->sub_jenis_kendaraan }}</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                @if($item->akun_bank_id && isset($akunCoas[$item->akun_bank_id]))
-                                    {{ $akunCoas[$item->akun_bank_id]->kode_nomor }} - {{ $akunCoas[$item->akun_bank_id]->nama_akun }}
-                                @else
-                                    -
-                                @endif
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->nomor_accurate ?? '-' }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-900">{{ $item->jenis_aktivitas }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                @if($item->debit_kredit == 'debit')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Debit</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Kredit</span>
-                                @endif
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-900">
+                                    @php
+                                        $penerimaList = explode(',', $item->penerima);
+                                        $penerimaCount = count($penerimaList);
+                                    @endphp
+                                    @if($penerimaCount > 3)
+                                        <span class="font-medium">{{ trim($penerimaList[0]) }}</span>
+                                        <span class="text-xs text-gray-500"> +{{ $penerimaCount - 1 }} lainnya</span>
+                                    @else
+                                        {{ $item->penerima }}
+                                    @endif
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex gap-2">
+                            <td class="px-4 py-3 whitespace-nowrap text-right">
+                                <div class="text-sm font-semibold text-gray-900">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-center">
+                                <div class="flex justify-center gap-2">
                                     @can('pembayaran-aktivitas-lain-view')
-                                        <a href="{{ route('pembayaran-aktivitas-lain.show', $item) }}" class="text-blue-600 hover:text-blue-900" title="Lihat">
+                                        <a href="{{ route('pembayaran-aktivitas-lain.show', $item) }}" class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 rounded transition-colors" title="Lihat Detail">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
                                         </a>
                                     @endcan
-                                    @can('pembayaran-aktivitas-lain-update')
-                                        <a href="{{ route('pembayaran-aktivitas-lain.edit', $item) }}" class="text-amber-600 hover:text-amber-900" title="Edit">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                            </svg>
-                                        </a>
-                                    @endcan
                                     @can('pembayaran-aktivitas-lain-view')
-                                        <a href="{{ route('pembayaran-aktivitas-lain.print', $item) }}" class="text-green-600 hover:text-green-900" title="Print" target="_blank">
+                                        <a href="{{ route('pembayaran-aktivitas-lain.print', $item) }}" class="text-green-600 hover:text-green-800 hover:bg-green-50 p-1 rounded transition-colors" title="Print" target="_blank">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                                             </svg>
                                         </a>
                                     @endcan
+                                    @can('pembayaran-aktivitas-lain-update')
+                                        <a href="{{ route('pembayaran-aktivitas-lain.edit', $item) }}" class="text-amber-600 hover:text-amber-800 hover:bg-amber-50 p-1 rounded transition-colors" title="Edit">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
+                                    @endcan
                                     @can('pembayaran-aktivitas-lain-delete')
-                                        <button onclick="confirmDelete({{ $item->id }})" class="text-red-600 hover:text-red-900" title="Hapus">
+                                        <button onclick="confirmDelete({{ $item->id }})" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors" title="Hapus">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                             </svg>
@@ -155,12 +151,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="13" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
-                                    <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                                     </svg>
-                                    <p class="text-sm">Tidak ada data</p>
+                                    <p class="text-sm font-medium">Tidak ada data pembayaran</p>
+                                    <p class="text-xs text-gray-400 mt-1">Gunakan filter atau tambahkan data baru</p>
                                 </div>
                             </td>
                         </tr>
