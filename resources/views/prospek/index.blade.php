@@ -1,5 +1,22 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+    /* Limit width for barang and pt_pengirim columns */
+    .truncate-cell {
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: help;
+    }
+    
+    .truncate-cell:hover {
+        background-color: #f3f4f6;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
     {{-- Header --}}
@@ -185,11 +202,15 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospek->nama_supir ?? '-' }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $prospek->barang ?? '-' }}
+                            <td class="px-4 py-4 text-sm text-gray-900">
+                                <div class="truncate-cell" title="{{ $prospek->barang ?? '-' }}">
+                                    {{ $prospek->barang ?? '-' }}
+                                </div>
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $prospek->pt_pengirim ?? '-' }}
+                            <td class="px-4 py-4 text-sm text-gray-900">
+                                <div class="truncate-cell" title="{{ $prospek->pt_pengirim ?? '-' }}">
+                                    {{ $prospek->pt_pengirim ?? '-' }}
+                                </div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($prospek->tipe)
