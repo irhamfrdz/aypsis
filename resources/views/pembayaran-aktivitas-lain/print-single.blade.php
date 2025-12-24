@@ -273,10 +273,24 @@
                     <td>: {{ $pembayaranAktivitasLain->nomor_voyage }}</td>
                 </tr>
                 @endif
-                <tr>
-                    <td>Penerima</td>
-                    <td>: {{ $pembayaranAktivitasLain->penerima }}</td>
-                </tr>
+            </table>
+        </div>
+
+        <!-- Penerima -->
+        <div style="margin-bottom: 12px;">
+            <table class="table" style="margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Penerima</th>
+                        <th style="width: 70%;">Nama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"><strong>Penerima</strong></td>
+                        <td><strong>{{ $pembayaranAktivitasLain->penerima }}</strong></td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
