@@ -44,12 +44,33 @@ class BiayaKapalController extends Controller
      */
     public function create()
     {
-        // Get list of ships for dropdown (optional enhancement)
+        // Get list of ships for dropdown
         $kapals = MasterKapal::where('status', 'aktif')
             ->orderBy('nama_kapal')
             ->get();
 
-        return view('biaya-kapal.create', compact('kapals'));
+        // Get distinct no_voyage from naik_kapal and bls tables
+        $voyagesFromNaikKapal = \DB::table('naik_kapal')
+            ->select('no_voyage')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->pluck('no_voyage');
+
+        $voyagesFromBls = \DB::table('bls')
+            ->select('no_voyage')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->pluck('no_voyage');
+
+        // Merge and get unique voyages
+        $voyages = $voyagesFromNaikKapal->merge($voyagesFromBls)
+            ->unique()
+            ->sort()
+            ->values();
+
+        return view('biaya-kapal.create', compact('kapals', 'voyages'));
     }
 
     /**

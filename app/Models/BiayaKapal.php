@@ -15,6 +15,7 @@ class BiayaKapal extends Model
     protected $fillable = [
         'tanggal',
         'nama_kapal',
+        'no_voyage',
         'jenis_biaya',
         'nominal',
         'keterangan',

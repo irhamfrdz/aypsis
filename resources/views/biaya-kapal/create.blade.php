@@ -101,6 +101,26 @@
                     @enderror
                 </div>
 
+                <!-- Nomor Voyage -->
+                <div>
+                    <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Voyage
+                    </label>
+                    <select id="no_voyage" 
+                            name="no_voyage" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('no_voyage') border-red-500 @enderror">
+                        <option value="">-- Pilih Voyage (Opsional) --</option>
+                        @foreach($voyages as $voyage)
+                            <option value="{{ $voyage }}" {{ old('no_voyage') == $voyage ? 'selected' : '' }}>
+                                {{ $voyage }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('no_voyage')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Jenis Biaya -->
                 <div>
                     <label for="jenis_biaya" class="block text-sm font-medium text-gray-700 mb-2">
