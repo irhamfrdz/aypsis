@@ -109,12 +109,7 @@
                     <select id="no_voyage" 
                             name="no_voyage" 
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('no_voyage') border-red-500 @enderror">
-                        <option value="">-- Pilih Voyage (Opsional) --</option>
-                        @foreach($voyages as $voyage)
-                            <option value="{{ $voyage }}" {{ old('no_voyage') == $voyage ? 'selected' : '' }}>
-                                {{ $voyage }}
-                            </option>
-                        @endforeach
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                     </select>
                     @error('no_voyage')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -287,6 +282,60 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    // Dynamic voyage filtering based on selected ship
+    const namaKapalSelect = document.getElementById('nama_kapal');
+    const noVoyageSelect = document.getElementById('no_voyage');
+    const oldVoyageValue = "{{ old('no_voyage') }}";
+
+    namaKapalSelect.addEventListener('change', function() {
+        const namaKapal = this.value;
+        
+        // Reset voyage dropdown
+        noVoyageSelect.innerHTML = '<option value="">-- Memuat voyages... --</option>';
+        noVoyageSelect.disabled = true;
+
+        if (!namaKapal) {
+            noVoyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            return;
+        }
+
+        // Fetch voyages for selected ship
+        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(namaKapal)}`)
+            .then(response => response.json())
+            .then(data => {
+                noVoyageSelect.disabled = false;
+                
+                if (data.success && data.voyages.length > 0) {
+                    noVoyageSelect.innerHTML = '<option value="">-- Pilih Voyage (Opsional) --</option>';
+                    
+                    data.voyages.forEach(voyage => {
+                        const option = document.createElement('option');
+                        option.value = voyage;
+                        option.textContent = voyage;
+                        
+                        // Restore old value if exists
+                        if (oldVoyageValue && voyage === oldVoyageValue) {
+                            option.selected = true;
+                        }
+                        
+                        noVoyageSelect.appendChild(option);
+                    });
+                } else {
+                    noVoyageSelect.innerHTML = '<option value="">-- Tidak ada voyage untuk kapal ini --</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching voyages:', error);
+                noVoyageSelect.disabled = false;
+                noVoyageSelect.innerHTML = '<option value="">-- Gagal memuat voyages --</option>';
+            });
+    });
+
+    // Trigger change event on page load if ship is already selected (for validation errors)
+    if (namaKapalSelect.value) {
+        namaKapalSelect.dispatchEvent(new Event('change'));
+    }
 </script>
 @endpush
 @endsection

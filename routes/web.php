@@ -1072,6 +1072,8 @@ Route::middleware([
          ]);
 
     // 💰 Biaya Kapal (Ship Costs) Management with permissions
+    Route::get('biaya-kapal/get-voyages/{namaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'getVoyagesByShip'])
+         ->name('biaya-kapal.get-voyages');
     Route::resource('biaya-kapal', \App\Http\Controllers\BiayaKapalController::class)
          ->names('biaya-kapal')
          ->middleware([

@@ -49,28 +49,7 @@ class BiayaKapalController extends Controller
             ->orderBy('nama_kapal')
             ->get();
 
-        // Get distinct no_voyage from naik_kapal and bls tables
-        $voyagesFromNaikKapal = \DB::table('naik_kapal')
-            ->select('no_voyage')
-            ->whereNotNull('no_voyage')
-            ->where('no_voyage', '!=', '')
-            ->distinct()
-            ->pluck('no_voyage');
-
-        $voyagesFromBls = \DB::table('bls')
-            ->select('no_voyage')
-            ->whereNotNull('no_voyage')
-            ->where('no_voyage', '!=', '')
-            ->distinct()
-            ->pluck('no_voyage');
-
-        // Merge and get unique voyages
-        $voyages = $voyagesFromNaikKapal->merge($voyagesFromBls)
-            ->unique()
-            ->sort()
-            ->values();
-
-        return view('biaya-kapal.create', compact('kapals', 'voyages'));
+        return view('biaya-kapal.create', compact('kapals'));
     }
 
     /**
@@ -199,6 +178,48 @@ class BiayaKapalController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Gagal menghapus data biaya kapal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get voyages by ship name for AJAX request
+     */
+    public function getVoyagesByShip($namaKapal)
+    {
+        try {
+            // Get distinct no_voyage from naik_kapal for the selected ship
+            $voyagesFromNaikKapal = \DB::table('naik_kapal')
+                ->select('no_voyage')
+                ->where('nama_kapal', $namaKapal)
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->distinct()
+                ->pluck('no_voyage');
+
+            // Get distinct no_voyage from bls for the selected ship
+            $voyagesFromBls = \DB::table('bls')
+                ->select('no_voyage')
+                ->where('nama_kapal', $namaKapal)
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->distinct()
+                ->pluck('no_voyage');
+
+            // Merge and get unique voyages
+            $voyages = $voyagesFromNaikKapal->merge($voyagesFromBls)
+                ->unique()
+                ->sort()
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'voyages' => $voyages
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data voyage: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
