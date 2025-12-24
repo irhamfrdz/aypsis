@@ -240,11 +240,17 @@ class ObController extends Controller
 
             // Pre-compute pricing map and attach biaya & detected_status for each BL
             $pricelists = MasterPricelistOb::all();
-            $priceMap = [];
+            $priceMap = []; // Forward map: status|size => biaya
+            $reverseMap = []; // Reverse map: biaya|size => status
             foreach ($pricelists as $pl) {
                 $key = ($pl->status_kontainer ?? '') . '|' . ($pl->size_kontainer ?? '');
                 $priceMap[$key] = $pl->biaya;
+                
+                // Reverse map untuk menentukan status dari biaya
+                $reverseKey = $pl->biaya . '|' . ($pl->size_kontainer ?? '');
+                $reverseMap[$reverseKey] = $pl->status_kontainer;
             }
+            
             foreach ($bls as $bl) {
                 // Determine size first
                 $sizeStr = null;
@@ -257,41 +263,56 @@ class ObController extends Controller
                     }
                 }
                 
-                // Logika baru: Status ditentukan dari pricelist yang digunakan
-                // 1. Cek apakah ada pricelist full untuk size ini
-                // 2. Cek apakah ada pricelist empty untuk size ini
-                // 3. Set biaya dan status berdasarkan pricelist yang tersedia
-                $status = 'full'; // default
-                $keyFull = 'full|' . ($sizeStr ?? '');
-                $keyEmpty = 'empty|' . ($sizeStr ?? '');
-                
-                // Jika ada pricelist full, gunakan itu sebagai default
-                if (isset($priceMap[$keyFull])) {
-                    $bl->biaya = $priceMap[$keyFull];
-                    $status = 'full';
-                }
-                // Jika nama_barang kosong atau mengandung kata "empty", gunakan pricelist empty
-                if (!empty($bl->nama_barang)) {
-                    $lowerName = strtolower(trim($bl->nama_barang));
-                    if (str_contains($lowerName, 'empty container') || 
-                        str_contains($lowerName, 'container empty') ||
-                        $lowerName === 'empty' ||
-                        $lowerName === 'mt' || // MT = Empty
-                        $lowerName === 'mty') { // MTY = Empty
+                // Logika BARU: Jika BL sudah punya biaya, tentukan statusnya dari pricelist yang cocok
+                if (!empty($bl->biaya) && $sizeStr) {
+                    // Cek apakah biaya ini cocok dengan pricelist yang ada
+                    $reverseKey = $bl->biaya . '|' . $sizeStr;
+                    if (isset($reverseMap[$reverseKey])) {
+                        // Status ditentukan dari pricelist yang cocok dengan biaya
+                        $bl->detected_status = $reverseMap[$reverseKey];
+                    } else {
+                        // Biaya tidak cocok dengan pricelist manapun, default full
+                        $bl->detected_status = 'full';
+                    }
+                } else {
+                    // BL belum punya biaya, tentukan dari nama_barang dan set biaya
+                    $status = 'full'; // default
+                    $keyFull = 'full|' . ($sizeStr ?? '');
+                    $keyEmpty = 'empty|' . ($sizeStr ?? '');
+                    
+                    // Cek nama_barang untuk menentukan status
+                    if (empty($bl->nama_barang) || trim($bl->nama_barang) === '') {
+                        // Nama barang kosong, gunakan pricelist empty jika ada
                         if (isset($priceMap[$keyEmpty])) {
                             $bl->biaya = $priceMap[$keyEmpty];
                             $status = 'empty';
+                        } elseif (isset($priceMap[$keyFull])) {
+                            $bl->biaya = $priceMap[$keyFull];
+                            $status = 'full';
+                        }
+                    } else {
+                        $lowerName = strtolower(trim($bl->nama_barang));
+                        // Check if it's an empty container marker
+                        if (str_contains($lowerName, 'empty container') || 
+                            str_contains($lowerName, 'container empty') ||
+                            $lowerName === 'empty' ||
+                            $lowerName === 'mt' || // MT = Empty
+                            $lowerName === 'mty') { // MTY = Empty
+                            if (isset($priceMap[$keyEmpty])) {
+                                $bl->biaya = $priceMap[$keyEmpty];
+                                $status = 'empty';
+                            }
+                        } else {
+                            // Barang lain, gunakan full
+                            if (isset($priceMap[$keyFull])) {
+                                $bl->biaya = $priceMap[$keyFull];
+                                $status = 'full';
+                            }
                         }
                     }
-                } else {
-                    // Nama barang kosong, gunakan pricelist empty jika ada
-                    if (isset($priceMap[$keyEmpty])) {
-                        $bl->biaya = $priceMap[$keyEmpty];
-                        $status = 'empty';
-                    }
+                    
+                    $bl->detected_status = $status;
                 }
-                
-                $bl->detected_status = $status;
             }
 
             // Get list of supir (drivers) from karyawan table
@@ -396,11 +417,17 @@ class ObController extends Controller
 
         // Pre-compute pricing map and attach biaya & detected_status for each naikKapal
         $pricelists = MasterPricelistOb::all();
-        $priceMap = [];
+        $priceMap = []; // Forward map: status|size => biaya
+        $reverseMap = []; // Reverse map: biaya|size => status
         foreach ($pricelists as $pl) {
             $key = ($pl->status_kontainer ?? '') . '|' . ($pl->size_kontainer ?? '');
             $priceMap[$key] = $pl->biaya;
+            
+            // Reverse map untuk menentukan status dari biaya
+            $reverseKey = $pl->biaya . '|' . ($pl->size_kontainer ?? '');
+            $reverseMap[$reverseKey] = $pl->status_kontainer;
         }
+        
         foreach ($naikKapals as $nk) {
             // Determine size first
             $sizeStr = null;
@@ -413,41 +440,56 @@ class ObController extends Controller
                 }
             }
             
-            // Logika baru: Status ditentukan dari pricelist yang digunakan
-            // 1. Cek apakah ada pricelist full untuk size ini
-            // 2. Cek apakah ada pricelist empty untuk size ini
-            // 3. Set biaya dan status berdasarkan pricelist yang tersedia
-            $status = 'full'; // default
-            $keyFull = 'full|' . ($sizeStr ?? '');
-            $keyEmpty = 'empty|' . ($sizeStr ?? '');
-            
-            // Jika ada pricelist full, gunakan itu sebagai default
-            if (isset($priceMap[$keyFull])) {
-                $nk->biaya = $priceMap[$keyFull];
-                $status = 'full';
-            }
-            // Jika jenis_barang kosong atau mengandung kata "empty", gunakan pricelist empty
-            if (!empty($nk->jenis_barang)) {
-                $lowerName = strtolower(trim($nk->jenis_barang));
-                if (str_contains($lowerName, 'empty container') || 
-                    str_contains($lowerName, 'container empty') ||
-                    $lowerName === 'empty' ||
-                    $lowerName === 'mt' || // MT = Empty
-                    $lowerName === 'mty') { // MTY = Empty
+            // Logika BARU: Jika naik_kapal sudah punya biaya, tentukan statusnya dari pricelist yang cocok
+            if (!empty($nk->biaya) && $sizeStr) {
+                // Cek apakah biaya ini cocok dengan pricelist yang ada
+                $reverseKey = $nk->biaya . '|' . $sizeStr;
+                if (isset($reverseMap[$reverseKey])) {
+                    // Status ditentukan dari pricelist yang cocok dengan biaya
+                    $nk->detected_status = $reverseMap[$reverseKey];
+                } else {
+                    // Biaya tidak cocok dengan pricelist manapun, default full
+                    $nk->detected_status = 'full';
+                }
+            } else {
+                // Naik kapal belum punya biaya, tentukan dari jenis_barang dan set biaya
+                $status = 'full'; // default
+                $keyFull = 'full|' . ($sizeStr ?? '');
+                $keyEmpty = 'empty|' . ($sizeStr ?? '');
+                
+                // Cek jenis_barang untuk menentukan status
+                if (empty($nk->jenis_barang) || trim($nk->jenis_barang) === '') {
+                    // Jenis barang kosong, gunakan pricelist empty jika ada
                     if (isset($priceMap[$keyEmpty])) {
                         $nk->biaya = $priceMap[$keyEmpty];
                         $status = 'empty';
+                    } elseif (isset($priceMap[$keyFull])) {
+                        $nk->biaya = $priceMap[$keyFull];
+                        $status = 'full';
+                    }
+                } else {
+                    $lowerName = strtolower(trim($nk->jenis_barang));
+                    // Check if it's an empty container marker
+                    if (str_contains($lowerName, 'empty container') || 
+                        str_contains($lowerName, 'container empty') ||
+                        $lowerName === 'empty' ||
+                        $lowerName === 'mt' || // MT = Empty
+                        $lowerName === 'mty') { // MTY = Empty
+                        if (isset($priceMap[$keyEmpty])) {
+                            $nk->biaya = $priceMap[$keyEmpty];
+                            $status = 'empty';
+                        }
+                    } else {
+                        // Barang lain, gunakan full
+                        if (isset($priceMap[$keyFull])) {
+                            $nk->biaya = $priceMap[$keyFull];
+                            $status = 'full';
+                        }
                     }
                 }
-            } else {
-                // Jenis barang kosong, gunakan pricelist empty jika ada
-                if (isset($priceMap[$keyEmpty])) {
-                    $nk->biaya = $priceMap[$keyEmpty];
-                    $status = 'empty';
-                }
+                
+                $nk->detected_status = $status;
             }
-            
-            $nk->detected_status = $status;
         }
 
         // Get list of supir (drivers) from karyawan table
