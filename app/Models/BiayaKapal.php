@@ -25,6 +25,7 @@ class BiayaKapal extends Model
     protected $casts = [
         'tanggal' => 'date',
         'nominal' => 'decimal:2',
+        'nama_kapal' => 'array',
         'no_voyage' => 'array',
     ];
 

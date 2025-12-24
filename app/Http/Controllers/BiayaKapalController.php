@@ -59,7 +59,8 @@ class BiayaKapalController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'nama_kapal' => 'required|string|max:255',
+            'nama_kapal' => 'required|array|min:1',
+            'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
             'no_voyage.*' => 'string',
             'jenis_biaya' => 'required|in:bahan_bakar,pelabuhan,perbaikan,awak_kapal,asuransi,lainnya',

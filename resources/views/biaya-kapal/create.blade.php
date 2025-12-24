@@ -82,20 +82,24 @@
 
                 <!-- Nama Kapal -->
                 <div>
-                    <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Kapal <span class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nama Kapal <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
                     </label>
-                    <select id="nama_kapal" 
-                            name="nama_kapal" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_kapal') border-red-500 @enderror"
-                            required>
-                        <option value="">-- Pilih Kapal --</option>
-                        @foreach($kapals as $kapal)
-                            <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
-                                {{ $kapal->nama_kapal }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white @error('nama_kapal') border-red-500 @enderror" style="max-height: 200px; overflow-y: auto;">
+                        <div class="space-y-2">
+                            @foreach($kapals as $kapal)
+                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition">
+                                    <input type="checkbox" 
+                                           name="nama_kapal[]" 
+                                           value="{{ $kapal->nama_kapal }}" 
+                                           {{ is_array(old('nama_kapal')) && in_array($kapal->nama_kapal, old('nama_kapal')) ? 'checked' : '' }}
+                                           class="kapal-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $kapal->nama_kapal }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Centang kapal yang ingin dipilih</p>
                     @error('nama_kapal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -103,17 +107,13 @@
 
                 <!-- Nomor Voyage -->
                 <div>
-                    <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Voyage <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
                     </label>
-                    <select id="no_voyage" 
-                            name="no_voyage[]" 
-                            multiple
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('no_voyage') border-red-500 @enderror"
-                            style="min-height: 100px;">
-                        <option disabled>-- Pilih Kapal Terlebih Dahulu --</option>
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">Tahan Ctrl (Windows) atau Cmd (Mac) untuk memilih multiple voyage</p>
+                    <div id="voyage-container" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 @error('no_voyage') border-red-500 @enderror" style="min-height: 100px; max-height: 200px; overflow-y: auto;">
+                        <p class="text-sm text-gray-500 italic">Pilih kapal terlebih dahulu untuk menampilkan voyages</p>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Centang voyage yang ingin dipilih</p>
                     @error('no_voyage')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -286,58 +286,84 @@
         });
     }, 5000);
 
-    // Dynamic voyage filtering based on selected ship
-    const namaKapalSelect = document.getElementById('nama_kapal');
-    const noVoyageSelect = document.getElementById('no_voyage');
+    // Dynamic voyage filtering based on selected ships
+    const kapalCheckboxes = document.querySelectorAll('.kapal-checkbox');
+    const voyageContainer = document.getElementById('voyage-container');
     const oldVoyageValue = @json(old('no_voyage', []));
 
-    namaKapalSelect.addEventListener('change', function() {
-        const namaKapal = this.value;
-        
-        // Reset voyage dropdown
-        noVoyageSelect.innerHTML = '<option disabled>-- Memuat voyages... --</option>';
-        noVoyageSelect.disabled = true;
+    // Function to fetch and display voyages for selected ships
+    function updateVoyages() {
+        // Get all checked ships
+        const selectedShips = Array.from(kapalCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
 
-        if (!namaKapal) {
-            noVoyageSelect.innerHTML = '<option disabled>-- Pilih Kapal Terlebih Dahulu --</option>';
+        if (selectedShips.length === 0) {
+            voyageContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Pilih kapal terlebih dahulu untuk menampilkan voyages</p>';
             return;
         }
 
-        // Fetch voyages for selected ship
-        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(namaKapal)}`)
-            .then(response => response.json())
-            .then(data => {
-                noVoyageSelect.disabled = false;
-                
-                if (data.success && data.voyages.length > 0) {
-                    noVoyageSelect.innerHTML = '';
+        // Show loading
+        voyageContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Memuat voyages...</p>';
+
+        // Fetch voyages for all selected ships
+        const fetchPromises = selectedShips.map(namaKapal => 
+            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(namaKapal)}`)
+                .then(response => response.json())
+        );
+
+        Promise.all(fetchPromises)
+            .then(results => {
+                // Collect all voyages from all ships
+                const allVoyages = new Set();
+                results.forEach(data => {
+                    if (data.success && data.voyages) {
+                        data.voyages.forEach(voyage => allVoyages.add(voyage));
+                    }
+                });
+
+                if (allVoyages.size > 0) {
+                    // Create checkbox list
+                    let html = '<div class="space-y-2">';
                     
-                    data.voyages.forEach(voyage => {
-                        const option = document.createElement('option');
-                        option.value = voyage;
-                        option.textContent = voyage;
-                        
-                        // Restore old value if exists (for validation errors)
-                        if (oldVoyageValue && oldVoyageValue.includes(voyage)) {
-                            option.selected = true;
-                        }
-                        
-                        noVoyageSelect.appendChild(option);
+                    // Sort voyages
+                    const sortedVoyages = Array.from(allVoyages).sort();
+                    
+                    sortedVoyages.forEach(voyage => {
+                        const isChecked = oldVoyageValue && oldVoyageValue.includes(voyage) ? 'checked' : '';
+                        html += `
+                            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition">
+                                <input type="checkbox" 
+                                       name="no_voyage[]" 
+                                       value="${voyage}" 
+                                       ${isChecked}
+                                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">${voyage}</span>
+                            </label>
+                        `;
                     });
+                    
+                    html += '</div>';
+                    voyageContainer.innerHTML = html;
                 } else {
-                    noVoyageSelect.innerHTML = '<option disabled>-- Tidak ada voyage untuk kapal ini --</option>';
+                    voyageContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Tidak ada voyage untuk kapal yang dipilih</p>';
                 }
             })
             .catch(error => {
                 console.error('Error fetching voyages:', error);
-                noVoyageSelect.disabled = false;
-                noVoyageSelect.innerHTML = '<option disabled>-- Gagal memuat voyages --</option>';
+                voyageContainer.innerHTML = '<p class="text-sm text-red-600">Gagal memuat voyages. Silakan coba lagi.</p>';
             });
+    }
+
+    // Add event listener to all ship checkboxes
+    kapalCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateVoyages);
     });
 
-    // Trigger change event on page load if ship is already selected (for validation errors)
-    if (namaKapalSelect.value) {
-        namaKapalSelect.dispatchEvent(new Event('change'));
+    // Trigger update on page load if ships are already selected (for validation errors)
+    const hasSelectedShips = Array.from(kapalCheckboxes).some(cb => cb.checked);
+    if (hasSelectedShips) {
+        updateVoyages();
     }
 </script>
 @endpush
