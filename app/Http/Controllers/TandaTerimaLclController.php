@@ -1387,11 +1387,13 @@ class TandaTerimaLclController extends Controller
                 'nomor_kontainer' => 'required|string|max:255',
                 'nomor_seal' => 'required|string|max:255',
                 'tanggal_seal' => 'required|date',
+                'tujuan' => 'required|string|max:255',
             ], [
                 'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
                 'nomor_seal.required' => 'Nomor seal wajib diisi',
                 'tanggal_seal.required' => 'Tanggal seal wajib diisi',
                 'tanggal_seal.date' => 'Format tanggal seal tidak valid',
+                'tujuan.required' => 'Tujuan pengiriman wajib diisi',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
@@ -1475,9 +1477,7 @@ class TandaTerimaLclController extends Controller
                 'total_volume' => $totalVolume,
                 'total_ton' => $totalTon,
                 'kuantitas' => $pivotRecords->count(),
-                'tujuan_pengiriman' => $firstPivot->tandaTerima && $firstPivot->tandaTerima->tujuanPengiriman 
-                    ? $firstPivot->tandaTerima->tujuanPengiriman->nama_tujuan 
-                    : null,
+                'tujuan_pengiriman' => $request->tujuan,
                 'status' => Prospek::STATUS_AKTIF,
                 'keterangan' => "Kontainer LCL dengan {$pivotRecords->count()} tanda terima",
                 'created_by' => Auth::id(),
