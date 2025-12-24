@@ -237,17 +237,14 @@ class ObController extends Controller
                 $priceMap[$key] = $pl->biaya;
             }
             foreach ($bls as $bl) {
+                // Logika: Jika ada nama_barang (terlepas dari isinya) = FULL
+                // Hanya jika benar-benar kosong/null = EMPTY
+                // Barang dengan nama "BOTOL KOSONG" tetap dianggap FULL karena ada muatan
                 $status = 'full';
-                if (empty($bl->nama_barang) || $bl->nama_barang === '') {
+                if (empty($bl->nama_barang) || trim($bl->nama_barang) === '') {
                     $status = 'empty';
-                } else {
-                    $lowerName = strtolower($bl->nama_barang);
-                    if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                        $status = 'empty';
-                    } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
-                        $status = 'full';
-                    }
                 }
+                // Jika ada nama_barang, apapun isinya, tetap FULL
                 $sizeStr = null;
                 if (!empty($bl->size_kontainer)) {
                     $sizeInt = intval($bl->size_kontainer);
@@ -361,17 +358,14 @@ class ObController extends Controller
             $priceMap[$key] = $pl->biaya;
         }
         foreach ($naikKapals as $nk) {
+            // Logika: Jika ada jenis_barang (terlepas dari isinya) = FULL
+            // Hanya jika benar-benar kosong/null = EMPTY
+            // Barang dengan nama "BOTOL KOSONG" tetap dianggap FULL karena ada muatan
             $status = 'full';
-            if (empty($nk->jenis_barang) || $nk->jenis_barang === '') {
+            if (empty($nk->jenis_barang) || trim($nk->jenis_barang) === '') {
                 $status = 'empty';
-            } else {
-                $lowerName = strtolower($nk->jenis_barang);
-                if (str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                    $status = 'empty';
-                } elseif (str_contains($lowerName, 'full') || str_contains($lowerName, 'isi')) {
-                    $status = 'full';
-                }
             }
+            // Jika ada jenis_barang, apapun isinya, tetap FULL
             $sizeStr = null;
             if (!empty($nk->size_kontainer)) {
                 $sizeInt = intval($nk->size_kontainer);
