@@ -1371,6 +1371,50 @@ class ObController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generate nomor pranota otomatis
+     * Format: XXX-MM-YY-000001
+     * XXX = 3 digit kode (OB)
+     * MM = 2 digit bulan
+     * YY = 2 digit tahun
+     * 000001 = 6 digit running number
+     */
+    public function generateNomorPranota(Request $request)
+    {
+        try {
+            $kode = 'POB'; // Pranota OB
+            $bulan = now()->format('m');
+            $tahun = now()->format('y');
+            
+            // Get last pranota number for current month
+            $prefix = "{$kode}-{$bulan}-{$tahun}-";
+            $lastPranota = PranotaOb::where('nomor_pranota', 'like', $prefix . '%')
+                ->orderBy('nomor_pranota', 'desc')
+                ->first();
+            
+            if ($lastPranota) {
+                // Extract running number from last pranota
+                $lastNumber = (int) substr($lastPranota->nomor_pranota, -6);
+                $runningNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+            } else {
+                // First pranota for this month
+                $runningNumber = '000001';
+            }
+            
+            $nomorPranota = "{$prefix}{$runningNumber}";
+            
+            return response()->json([
+                'success' => true,
+                'nomor_pranota' => $nomorPranota
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor pranota: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
 

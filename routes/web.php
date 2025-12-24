@@ -3092,6 +3092,9 @@ Route::middleware(['auth'])->group(function() {
     Route::post('ob/masuk-pranota', [\App\Http\Controllers\ObController::class, 'masukPranota'])
          ->name('ob.masuk-pranota')
          ->middleware('can:ob-view');
+    Route::get('ob/generate-nomor-pranota', [\App\Http\Controllers\ObController::class, 'generateNomorPranota'])
+         ->name('ob.generate-nomor-pranota')
+         ->middleware('can:ob-view');
     Route::post('ob/save-asal-ke', [\App\Http\Controllers\ObController::class, 'saveAsalKe'])
          ->name('ob.save-asal-ke')
          ->middleware('can:ob-view');

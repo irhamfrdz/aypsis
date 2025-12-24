@@ -653,9 +653,17 @@
                     <label for="nomor_pranota" class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Pranota <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" id="nomor_pranota" name="nomor_pranota" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           placeholder="Masukkan nomor pranota...">
+                    <div class="flex gap-2">
+                        <input type="text" id="nomor_pranota" name="nomor_pranota" required readonly
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Loading nomor pranota...">
+                        <button type="button" onclick="generateNomorPranota()" 
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+                                title="Generate nomor baru">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Format: POB-MM-YY-000001 (auto-generate)</p>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -734,6 +742,9 @@ function openPranotaModal() {
         return;
     }
     
+    // Generate nomor pranota otomatis
+    generateNomorPranota();
+    
     const tbody = document.getElementById('pranota-items');
     tbody.innerHTML = '';
     
@@ -771,6 +782,34 @@ function openPranotaModal() {
 function closePranotaModal() {
     document.getElementById('pranotaModal').classList.add('hidden');
     document.getElementById('nomor_pranota').value = '';
+}
+
+// Generate nomor pranota otomatis
+function generateNomorPranota() {
+    const nomorInput = document.getElementById('nomor_pranota');
+    nomorInput.value = 'Loading...';
+    
+    fetch('/ob/generate-nomor-pranota', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            nomorInput.value = data.nomor_pranota;
+        } else {
+            alert(data.message || 'Gagal generate nomor pranota');
+            nomorInput.value = '';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat generate nomor pranota');
+        nomorInput.value = '';
+    });
 }
 
 // Close pranota modal when clicking outside
