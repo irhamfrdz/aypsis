@@ -1041,7 +1041,11 @@ const storageKey = `selected_ob_{{ $namaKapal }}_{{ $noVoyage }}`;
 
 function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    
+    // Parse and filter out CARGO containers
+    const items = JSON.parse(stored);
+    return items.filter(item => item.tipe !== 'CARGO');
 }
 
 function saveSelectedItems(items) {
@@ -1051,8 +1055,14 @@ function saveSelectedItems(items) {
 function loadSelectedCheckboxes() {
     const selectedItems = getSelectedItems();
     checkboxes.forEach(cb => {
+        // Skip disabled checkboxes (CARGO)
+        if (cb.disabled) {
+            cb.checked = false; // Ensure CARGO is never checked
+            return;
+        }
+        
         const item = selectedItems.find(item => item.id === cb.value);
-        if (item) {
+        if (item && item.tipe !== 'CARGO') {
             cb.checked = true;
         }
     });
@@ -1100,8 +1110,25 @@ selectAll.addEventListener('change', function() {
     checkSelected();
 });
 
+// Clean CARGO from localStorage on page load
+function cleanCargoFromStorage() {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+        const items = JSON.parse(stored);
+        const cleanedItems = items.filter(item => item.tipe !== 'CARGO');
+        if (cleanedItems.length !== items.length) {
+            // CARGO found and removed, update storage
+            localStorage.setItem(storageKey, JSON.stringify(cleanedItems));
+            console.log(`Removed ${items.length - cleanedItems.length} CARGO containers from selection`);
+        }
+    }
+}
+
 // Load selected on page load
-document.addEventListener('DOMContentLoaded', loadSelectedCheckboxes);
+document.addEventListener('DOMContentLoaded', function() {
+    cleanCargoFromStorage(); // Clean first
+    loadSelectedCheckboxes(); // Then load
+});
 
 document.getElementById('btnMasukPranota').addEventListener('click', function() {
     openPranotaModal();
