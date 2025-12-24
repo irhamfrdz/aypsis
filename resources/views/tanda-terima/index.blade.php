@@ -3,6 +3,8 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endsection
 
 @section('title', 'Tanda Terima')
@@ -727,6 +729,8 @@
 </div>
 
 @push('scripts')
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {
@@ -971,15 +975,27 @@
         document.getElementById('modalNoSuratJalan').value = noSuratJalan || '-';
         document.getElementById('modalOldKontainer').value = noKontainer || '-';
         document.getElementById('modalOldSeal').value = noSeal || '-';
-        document.getElementById('newKontainer').value = '';
+        
+        // Reset select2 dropdown
+        $('#newKontainer').val('').trigger('change');
         document.getElementById('newSeal').value = '';
         
         // Show modal
         document.getElementById('changeContainerModal').classList.remove('hidden');
         
-        // Focus on input
+        // Initialize Select2 for kontainer dropdown if not already initialized
+        if (!$('#newKontainer').hasClass('select2-hidden-accessible')) {
+            $('#newKontainer').select2({
+                placeholder: '-- Pilih Nomor Kontainer --',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#changeContainerModal')
+            });
+        }
+        
+        // Focus on select2
         setTimeout(() => {
-            document.getElementById('newKontainer').focus();
+            $('#newKontainer').select2('open');
         }, 100);
         
         // Close dropdowns
@@ -1053,10 +1069,19 @@
                 <label for="newKontainer" class="block text-sm font-medium text-gray-700 mb-2">
                     Nomor Kontainer Baru <span class="text-red-500">*</span>
                 </label>
-                <input type="text" id="newKontainer" name="nomor_kontainer[]" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                       placeholder="Masukkan nomor kontainer baru">
-                <p class="mt-1 text-xs text-gray-500">Masukkan nomor kontainer yang baru untuk mengganti nomor kontainer lama</p>
+                <select id="newKontainer" name="nomor_kontainer[]" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">-- Pilih Nomor Kontainer --</option>
+                    @foreach($allKontainers as $kontainer)
+                        <option value="{{ $kontainer->nomor_seri_gabungan }}">
+                            {{ $kontainer->nomor_seri_gabungan }}
+                            @if($kontainer->ukuran || $kontainer->tipe_kontainer)
+                                ({{ $kontainer->ukuran }} - {{ $kontainer->tipe_kontainer }})
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Pilih nomor kontainer dari daftar atau ketik untuk mencari</p>
             </div>
             
             <div class="mb-4">

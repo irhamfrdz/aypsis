@@ -141,6 +141,26 @@ class TandaTerimaController extends Controller
         $mode = $request->input('mode', '');
         $perPage = $request->input('rows_per_page', 25);
 
+        // Get all kontainers for dropdown - combine from stock_kontainers and kontainers
+        $stockKontainersFromStock = \App\Models\StockKontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->whereNotNull('nomor_seri_gabungan')
+            ->where('nomor_seri_gabungan', '!=', '')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+        
+        $stockKontainersFromKontainers = \App\Models\Kontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->whereNotNull('nomor_seri_gabungan')
+            ->where('nomor_seri_gabungan', '!=', '')
+            ->where('status', 'tersedia')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+        
+        // Merge and remove duplicates
+        $allKontainers = $stockKontainersFromStock->merge($stockKontainersFromKontainers)
+            ->unique('nomor_seri_gabungan')
+            ->sortBy('nomor_seri_gabungan')
+            ->values();
+
         // Get distinct kegiatan for filter dropdown based on mode
         if ($mode === 'missing' || $mode === 'with_tanda_terima') {
             // Get distinct kegiatan from surat_jalans
@@ -209,7 +229,7 @@ class TandaTerimaController extends Controller
 
             $suratJalans = $suratQuery->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers'));
         }
         
         // If mode is 'with_tanda_terima' then we should list Surat Jalan that have Tanda Terima
@@ -256,7 +276,7 @@ class TandaTerimaController extends Controller
                 ->paginate($perPage)
                 ->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList'));
+            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers'));
         }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.uangJalan']);
@@ -350,10 +370,10 @@ class TandaTerimaController extends Controller
             // Return the view with missing surat jalan results and a fallback flag
             $mode = 'missing';
             $fallback_missing = true;
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList', 'allKontainers'));
         }
 
-        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList'));
+        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers'));
     }
 
     /**
