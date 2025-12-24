@@ -17,7 +17,7 @@
             </div>
             <div class="flex gap-2">
                 @can('master-pelayanan-pelabuhan-create')
-                <a href="{{ route('master-pelayanan-pelabuhan.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                <a href="{{ route('master.master-pelayanan-pelabuhan.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-plus mr-2"></i>Tambah Pelayanan
                 </a>
                 @endcan
@@ -42,7 +42,7 @@
 
     {{-- Filter Section --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <form method="GET" action="{{ route('master-pelayanan-pelabuhan.index') }}">
+        <form method="GET" action="{{ route('master.master-pelayanan-pelabuhan.index') }}">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {{-- Search --}}
                 <div>
@@ -80,7 +80,7 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-search mr-2"></i>Filter
                 </button>
-                <a href="{{ route('master-pelayanan-pelabuhan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                <a href="{{ route('master.master-pelayanan-pelabuhan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-times mr-2"></i>Reset
                 </a>
             </div>
@@ -96,8 +96,6 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pelayanan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -114,16 +112,6 @@
                         <td class="px-4 py-4 text-sm text-gray-900">
                             {{ Str::limit($pelayanan->deskripsi ?? '-', 50) }}
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            @if($pelayanan->biaya)
-                                Rp {{ number_format($pelayanan->biaya, 0, ',', '.') }}
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $pelayanan->satuan ?? '-' }}
-                        </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm">
                             @if($pelayanan->is_active)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -138,14 +126,14 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center space-x-2">
                                 @can('master-pelayanan-pelabuhan-edit')
-                                <a href="{{ route('master-pelayanan-pelabuhan.edit', $pelayanan->id) }}" 
+                                <a href="{{ route('master.master-pelayanan-pelabuhan.edit', $pelayanan->id) }}" 
                                    class="text-blue-600 hover:text-blue-900 transition duration-150"
                                    title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @endcan
                                 @can('master-pelayanan-pelabuhan-delete')
-                                <form action="{{ route('master-pelayanan-pelabuhan.destroy', $pelayanan->id) }}" 
+                                <form action="{{ route('master.master-pelayanan-pelabuhan.destroy', $pelayanan->id) }}" 
                                       method="POST" 
                                       class="inline"
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">

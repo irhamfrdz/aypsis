@@ -741,6 +741,30 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for master-pelayanan-pelabuhan permissions
+            if (strpos($permissionName, 'master-pelayanan-pelabuhan-') === 0) {
+                $module = 'master-pelayanan-pelabuhan';
+                $action = str_replace('master-pelayanan-pelabuhan-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Special handling for tagihan-perbaikan-kontainer dash notation permissions
             if (strpos($permissionName, 'tagihan-perbaikan-kontainer-') === 0) {
                 $module = 'tagihan-perbaikan-kontainer';
@@ -1724,6 +1748,27 @@ class UserController extends Controller
                                     'delete' => 'master-mobil-delete',
                                     'print' => 'master-mobil-print',
                                     'export' => 'master-mobil-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-pelayanan-pelabuhan permissions explicitly
+                            if ($module === 'master-pelayanan-pelabuhan' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-pelayanan-pelabuhan-view',
+                                    'create' => 'master-pelayanan-pelabuhan-create',
+                                    'update' => 'master-pelayanan-pelabuhan-edit',
+                                    'delete' => 'master-pelayanan-pelabuhan-delete'
                                 ];
 
                                 if (isset($actionMap[$action])) {

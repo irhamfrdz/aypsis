@@ -762,10 +762,6 @@ Route::middleware([
              ->name('pricelist-ob.destroy')
              ->middleware('can:master-pricelist-ob-delete');
 
-        // Master Pelayanan Pelabuhan Management
-        Route::resource('master-pelayanan-pelabuhan', MasterPelayananPelabuhanController::class)
-             ->except(['show']);
-
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
              ->name('divisi.download-template')
@@ -786,7 +782,32 @@ Route::middleware([
              ->name('coa.download-template')
              ->middleware('can:master-coa-view');
 
+        // ═══════════════════════════════════════════════════════════════════════
+        // 🏭 MASTER PELAYANAN PELABUHAN MANAGEMENT
+        // ═══════════════════════════════════════════════════════════════════════
+        Route::get('master-pelayanan-pelabuhan', [MasterPelayananPelabuhanController::class, 'index'])
+             ->name('master-pelayanan-pelabuhan.index')
+             ->middleware('can:master-pelayanan-pelabuhan-view');
 
+        Route::get('master-pelayanan-pelabuhan/create', [MasterPelayananPelabuhanController::class, 'create'])
+             ->name('master-pelayanan-pelabuhan.create')
+             ->middleware('can:master-pelayanan-pelabuhan-create');
+
+        Route::post('master-pelayanan-pelabuhan', [MasterPelayananPelabuhanController::class, 'store'])
+             ->name('master-pelayanan-pelabuhan.store')
+             ->middleware('can:master-pelayanan-pelabuhan-create');
+
+        Route::get('master-pelayanan-pelabuhan/{masterPelayananPelabuhan}/edit', [MasterPelayananPelabuhanController::class, 'edit'])
+             ->name('master-pelayanan-pelabuhan.edit')
+             ->middleware('can:master-pelayanan-pelabuhan-edit');
+
+        Route::put('master-pelayanan-pelabuhan/{masterPelayananPelabuhan}', [MasterPelayananPelabuhanController::class, 'update'])
+             ->name('master-pelayanan-pelabuhan.update')
+             ->middleware('can:master-pelayanan-pelabuhan-edit');
+
+        Route::delete('master-pelayanan-pelabuhan/{masterPelayananPelabuhan}', [MasterPelayananPelabuhanController::class, 'destroy'])
+             ->name('master-pelayanan-pelabuhan.destroy')
+             ->middleware('can:master-pelayanan-pelabuhan-delete');
 
     });
 

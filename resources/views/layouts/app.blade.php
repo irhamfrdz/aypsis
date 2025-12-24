@@ -574,7 +574,7 @@
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pelayanan-pelabuhan-view'))
-                                    <a href="{{ route('master-pelayanan-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pelayanan-pelabuhan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.master-pelayanan-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.master-pelayanan-pelabuhan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Pelayanan Pelabuhan</span>
                                     </a>
                                 @endif

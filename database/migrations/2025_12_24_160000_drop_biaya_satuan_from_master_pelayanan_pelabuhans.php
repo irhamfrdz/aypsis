@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('master_pelayanan_pelabuhans', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama_pelayanan');
-            $table->text('deskripsi')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        Schema::table('master_pelayanan_pelabuhans', function (Blueprint $table) {
+            $table->dropColumn(['biaya', 'satuan']);
         });
     }
 
@@ -25,6 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_pelayanan_pelabuhans');
+        Schema::table('master_pelayanan_pelabuhans', function (Blueprint $table) {
+            $table->decimal('biaya', 15, 2)->nullable();
+            $table->string('satuan')->nullable();
+        });
     }
 };
