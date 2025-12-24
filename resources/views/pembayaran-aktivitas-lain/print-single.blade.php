@@ -12,6 +12,15 @@
             'headerH1' => '18px',
             'tableFont' => '9px',
         ],
+        'Half-Folio' => [
+            'size' => '215.9mm 165.1mm',
+            'width' => '215.9mm',
+            'height' => '165.1mm',
+            'containerWidth' => '215.9mm',
+            'fontSize' => '11px',
+            'headerH1' => '16px',
+            'tableFont' => '9px',
+        ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
