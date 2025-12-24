@@ -1096,7 +1096,7 @@ class ObController extends Controller
                 // Normalize size - remove 'ft' suffix if present, then add it back
                 $sizeRaw = preg_replace('/ft$/i', '', $p->size_kontainer);
                 $sizeStr = $sizeRaw . 'ft';
-                $statusLower = strtolower($p->status);
+                $statusLower = strtolower($p->status_kontainer); // Fixed: use status_kontainer column
                 $biaya = (int) $p->biaya;
                 // Map biaya|size => status
                 $key = $biaya . '|' . $sizeStr;
