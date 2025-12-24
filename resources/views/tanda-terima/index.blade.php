@@ -549,6 +549,11 @@
                                                     <i class="fas fa-ship mr-2"></i>Ke Prospek
                                                 </button>
                                                 <button type="button"
+                                                        onclick="openChangeContainerModal('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}')"
+                                                        class="block w-full px-4 py-2 text-left text-xs text-blue-600 hover:bg-blue-50">
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Ganti Nomor Kontainer
+                                                </button>
+                                                <button type="button"
                                                         onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', 'TT-{{ $tandaTerima->id }}')"
                                                         class="block w-full px-4 py-2 text-left text-xs text-purple-600 hover:bg-purple-50">
                                                     <i class="fas fa-history mr-2"></i>Riwayat
@@ -955,11 +960,142 @@
             form.submit();
         }
     }
+
+    // Function to open change container modal
+    function openChangeContainerModal(tandaTerimaId, noSuratJalan, noKontainer) {
+        // Set form action
+        const form = document.getElementById('changeContainerForm');
+        form.action = '{{ route("tanda-terima.update", ":id") }}'.replace(':id', tandaTerimaId);
+        
+        // Fill modal fields
+        document.getElementById('modalNoSuratJalan').value = noSuratJalan || '-';
+        document.getElementById('modalOldKontainer').value = noKontainer || '-';
+        document.getElementById('newKontainer').value = '';
+        
+        // Show modal
+        document.getElementById('changeContainerModal').classList.remove('hidden');
+        
+        // Focus on input
+        setTimeout(() => {
+            document.getElementById('newKontainer').focus();
+        }, 100);
+        
+        // Close dropdowns
+        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+        allDropdowns.forEach(d => d.classList.add('hidden'));
+    }
+
+    // Function to close change container modal
+    function closeChangeContainerModal() {
+        document.getElementById('changeContainerModal').classList.add('hidden');
+        document.getElementById('changeContainerForm').reset();
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('changeContainerModal');
+        if (event.target === modal) {
+            closeChangeContainerModal();
+        }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('changeContainerModal');
+            if (!modal.classList.contains('hidden')) {
+                closeChangeContainerModal();
+            }
+        }
+    });
 </script>
 @endpush
 
 <!-- Audit Log Modal -->
 @include('components.audit-log-modal')
+
+<!-- Change Container Number Modal -->
+<div id="changeContainerModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center pb-3 border-b">
+            <h3 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-exchange-alt mr-2 text-blue-600"></i>
+                Ganti Nomor Kontainer
+            </h3>
+            <button onclick="closeChangeContainerModal()" class="text-gray-400 hover:text-gray-600 transition duration-150">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        
+        <form id="changeContainerForm" method="POST" action="" class="mt-4">
+            @csrf
+            @method('PUT')
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    No. Surat Jalan
+                </label>
+                <input type="text" id="modalNoSuratJalan" readonly
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nomor Kontainer Lama
+                </label>
+                <input type="text" id="modalOldKontainer" readonly
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700">
+            </div>
+            
+            <div class="mb-6">
+                <label for="newKontainer" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nomor Kontainer Baru <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="newKontainer" name="no_kontainer" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Masukkan nomor kontainer baru">
+                <p class="mt-1 text-xs text-gray-500">Masukkan nomor kontainer yang baru untuk mengganti nomor kontainer lama</p>
+            </div>
+            
+            <!-- Warning Info Box -->
+            <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-400 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-semibold text-blue-800 mb-1">Perubahan akan mempengaruhi:</h4>
+                        <ul class="text-xs text-blue-700 space-y-1">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-blue-500 mr-2 mt-0.5"></i>
+                                <span>Nomor kontainer di <strong>Tanda Terima</strong></span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-blue-500 mr-2 mt-0.5"></i>
+                                <span>Nomor kontainer di <strong>Surat Jalan</strong> terkait</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-blue-500 mr-2 mt-0.5"></i>
+                                <span>Nomor kontainer di <strong>Prospek</strong> yang terhubung</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 pt-3 border-t">
+                <button type="button" onclick="closeChangeContainerModal()"
+                        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition duration-150">
+                    <i class="fas fa-times mr-2"></i>Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-150">
+                    <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @endsection
 
