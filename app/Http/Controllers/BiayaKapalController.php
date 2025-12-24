@@ -187,10 +187,13 @@ class BiayaKapalController extends Controller
     public function getVoyagesByShip($namaKapal)
     {
         try {
+            // Normalize ship name for flexible matching (remove dots, extra spaces, lowercase)
+            $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $namaKapal)));
+            
             // Get distinct no_voyage from naik_kapal for the selected ship
             $voyagesFromNaikKapal = \DB::table('naik_kapal')
                 ->select('no_voyage')
-                ->where('nama_kapal', $namaKapal)
+                ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
                 ->whereNotNull('no_voyage')
                 ->where('no_voyage', '!=', '')
                 ->distinct()
@@ -199,7 +202,7 @@ class BiayaKapalController extends Controller
             // Get distinct no_voyage from bls for the selected ship
             $voyagesFromBls = \DB::table('bls')
                 ->select('no_voyage')
-                ->where('nama_kapal', $namaKapal)
+                ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
                 ->whereNotNull('no_voyage')
                 ->where('no_voyage', '!=', '')
                 ->distinct()
