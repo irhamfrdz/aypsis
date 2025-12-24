@@ -1093,7 +1093,9 @@ class ObController extends Controller
             $pricelist = \App\Models\MasterPricelistOb::all();
             $reverseMap = [];
             foreach ($pricelist as $p) {
-                $sizeStr = $p->size_kontainer . 'ft';
+                // Normalize size - remove 'ft' suffix if present, then add it back
+                $sizeRaw = preg_replace('/ft$/i', '', $p->size_kontainer);
+                $sizeStr = $sizeRaw . 'ft';
                 $statusLower = strtolower($p->status);
                 $biaya = (int) $p->biaya;
                 // Map biaya|size => status
@@ -1101,6 +1103,7 @@ class ObController extends Controller
                 if (!isset($reverseMap[$key])) {
                     $reverseMap[$key] = $statusLower;
                 }
+                \Log::info("Pricelist map: $key => $statusLower");
             }
 
             // Build snapshot items before create so pranota keeps essential info
@@ -1118,8 +1121,11 @@ class ObController extends Controller
                         
                         // Recalculate status from biaya to ensure accuracy
                         $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
-                        $sizeStr = ($bl->size_kontainer ?? '') . 'ft';
+                        // Normalize size - remove 'ft' suffix if present, then add it back
+                        $sizeRaw = preg_replace('/ft$/i', '', $bl->size_kontainer ?? '');
+                        $sizeStr = $sizeRaw . 'ft';
                         $mapKey = $biaya . '|' . $sizeStr;
+                        \Log::info("BL lookup: biaya=$biaya, size=$sizeStr, key=$mapKey, found=" . (isset($reverseMap[$mapKey]) ? $reverseMap[$mapKey] : 'NOT FOUND'));
                         if (isset($reverseMap[$mapKey])) {
                             $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
                         } else {
@@ -1143,8 +1149,11 @@ class ObController extends Controller
                         
                         // Recalculate status from biaya to ensure accuracy
                         $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
-                        $sizeStr = ($nk->size_kontainer ?? $nk->ukuran_kontainer ?? '') . 'ft';
+                        // Normalize size - remove 'ft' suffix if present, then add it back
+                        $sizeRaw = preg_replace('/ft$/i', '', $nk->size_kontainer ?? $nk->ukuran_kontainer ?? '');
+                        $sizeStr = $sizeRaw . 'ft';
                         $mapKey = $biaya . '|' . $sizeStr;
+                        \Log::info("NK lookup: biaya=$biaya, size=$sizeStr, key=$mapKey, found=" . (isset($reverseMap[$mapKey]) ? $reverseMap[$mapKey] : 'NOT FOUND'));
                         if (isset($reverseMap[$mapKey])) {
                             $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
                         } else {

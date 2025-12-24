@@ -1185,7 +1185,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
         return;
     }
     
-    const items = selectedItems.map(item => ({ id: item.id, type: item.type, nomor_kontainer: item.nomor_kontainer, nama_barang: item.nama_barang, size: item.size, biaya: item.biaya, supir: item.supir }));
+    const items = selectedItems.map(item => ({ id: item.id, type: item.type, nomor_kontainer: item.nomor_kontainer, nama_barang: item.nama_barang, size: item.size, biaya: item.biaya, status: item.status, supir: item.supir }));
     
     // client-side validation for ship/voyage information
     if (!__PRANOTA_nama_kapal || !__PRANOTA_no_voyage) {
