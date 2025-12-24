@@ -12,7 +12,7 @@ class PranotaObItem extends Model
     protected $table = 'pranota_ob_items';
 
     protected $fillable = [
-        'pranota_ob_id', 'item_type', 'item_id', 'nomor_kontainer', 'nama_barang', 'supir', 'size', 'biaya', 'created_by'
+        'pranota_ob_id', 'item_type', 'item_id', 'nomor_kontainer', 'nama_barang', 'supir', 'size', 'biaya', 'status', 'created_by'
     ];
 
     public function pranotaOb()

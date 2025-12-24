@@ -97,37 +97,17 @@ class PranotaObController extends Controller
                 ];
             }
 
-            // Detect status: prefer explicit field, otherwise check type + DB if available
+            // Use status from saved data (pivot table)
             $status = 'full';
             if (isset($item['status']) && in_array($item['status'], ['full','empty'])) {
                 $status = $item['status'];
-            } elseif (isset($item['type']) && isset($item['id'])) {
-                try {
-                    if ($item['type'] === 'bl') {
-                        $bl = \DB::table('bls')->find($item['id']);
-                        if ($bl) {
-                            $name = $bl->nama_barang ?? '';
-                            $lowerName = strtolower($name);
-                            if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) $status = 'empty';
-                            else $status = 'full';
-                        }
-                    } elseif ($item['type'] === 'naik_kapal') {
-                        $nk = \DB::table('naik_kapal')->find($item['id']);
-                        if ($nk) {
-                            $name = $nk->jenis_barang ?? ($nk->nama_barang ?? '');
-                            $lowerName = strtolower($name);
-                            if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) $status = 'empty';
-                            else $status = 'full';
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    // ignore and rely on fallback logic
-                }
             } else {
+                // Fallback: detect from nama_barang if status not saved
                 $name = $item['nama_barang'] ?? '';
                 $lowerName = strtolower($name);
-                if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) $status = 'empty';
-                else $status = 'full';
+                if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
+                    $status = 'empty';
+                }
             }
 
             $size = (string)($item['size'] ?? $item['size_kontainer'] ?? 'unknown');

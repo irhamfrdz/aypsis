@@ -1134,6 +1134,7 @@ class ObController extends Controller
                     'supir' => $it['supir'] ?? null,
                     'size' => $it['size'] ?? ($it['size_kontainer'] ?? null),
                     'biaya' => $it['biaya'] ?? null,
+                    'status' => $it['status'] ?? 'full',
                     'created_by' => $user->id,
                 ]);
             }
