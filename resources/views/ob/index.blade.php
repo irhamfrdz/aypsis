@@ -750,9 +750,17 @@ document.addEventListener('click', function(event) {
 function openPranotaModal() {
     let selectedItems = getSelectedItems();
     
-    // Filter out CARGO containers
-    const cargoItems = selectedItems.filter(item => item.tipe === 'CARGO');
-    selectedItems = selectedItems.filter(item => item.tipe !== 'CARGO');
+    // Filter out CARGO containers (by type or container number)
+    const cargoItems = selectedItems.filter(item => {
+        if (item.tipe === 'CARGO') return true;
+        if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return true;
+        return false;
+    });
+    selectedItems = selectedItems.filter(item => {
+        if (item.tipe === 'CARGO') return false;
+        if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
+        return true;
+    });
     
     // Show warning if CARGO items were filtered out
     if (cargoItems.length > 0) {
@@ -1043,9 +1051,15 @@ function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
     if (!stored) return [];
     
-    // Parse and filter out CARGO containers
+    // Parse and filter out CARGO containers (by type or container number)
     const items = JSON.parse(stored);
-    return items.filter(item => item.tipe !== 'CARGO');
+    return items.filter(item => {
+        // Filter by type
+        if (item.tipe === 'CARGO') return false;
+        // Filter by container number containing 'CARGO'
+        if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
+        return true;
+    });
 }
 
 function saveSelectedItems(items) {
@@ -1058,6 +1072,13 @@ function loadSelectedCheckboxes() {
         // Skip disabled checkboxes (CARGO)
         if (cb.disabled) {
             cb.checked = false; // Ensure CARGO is never checked
+            return;
+        }
+        
+        // Skip if container number contains CARGO
+        const nomorKontainer = cb.getAttribute('data-nomor-kontainer');
+        if (nomorKontainer && nomorKontainer.toUpperCase().includes('CARGO')) {
+            cb.checked = false;
             return;
         }
         
@@ -1082,7 +1103,14 @@ function checkSelected() {
     
     // Save to storage - collect all selected items (exclude CARGO)
     const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
-        .filter(cb => cb.getAttribute('data-tipe') !== 'CARGO') // Filter out CARGO containers
+        .filter(cb => {
+            // Filter by type
+            if (cb.getAttribute('data-tipe') === 'CARGO') return false;
+            // Filter by container number containing 'CARGO'
+            const nomorKontainer = cb.getAttribute('data-nomor-kontainer');
+            if (nomorKontainer && nomorKontainer.toUpperCase().includes('CARGO')) return false;
+            return true;
+        })
         .map(cb => ({
             id: cb.value,
             type: cb.getAttribute('data-type'),
@@ -1115,7 +1143,13 @@ function cleanCargoFromStorage() {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
         const items = JSON.parse(stored);
-        const cleanedItems = items.filter(item => item.tipe !== 'CARGO');
+        const cleanedItems = items.filter(item => {
+            // Filter by type
+            if (item.tipe === 'CARGO') return false;
+            // Filter by container number containing 'CARGO'
+            if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
+            return true;
+        });
         if (cleanedItems.length !== items.length) {
             // CARGO found and removed, update storage
             localStorage.setItem(storageKey, JSON.stringify(cleanedItems));
