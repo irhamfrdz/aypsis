@@ -1091,7 +1091,12 @@ checkboxes.forEach(cb => cb.addEventListener('change', checkSelected));
 
 selectAll.addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.row-checkbox');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+    checkboxes.forEach(cb => {
+        // Only check/uncheck if checkbox is not disabled (skip CARGO)
+        if (!cb.disabled) {
+            cb.checked = this.checked;
+        }
+    });
     checkSelected();
 });
 
