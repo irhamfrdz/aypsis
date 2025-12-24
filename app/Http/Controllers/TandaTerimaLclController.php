@@ -1144,6 +1144,24 @@ class TandaTerimaLclController extends Controller
         // This allows same container number to be used multiple times (different batches)
         $groupedQuery = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
         
+        // Apply search filter to grouped query
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $groupedQuery->where(function($q) use ($searchTerm) {
+                $q->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhereHas('tandaTerima', function($sq) use ($searchTerm) {
+                      $sq->where('nomor_tanda_terima', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+        
+        // Apply container filter to grouped query
+        if ($request->filled('kontainer')) {
+            $groupedQuery->where('nomor_kontainer', $request->kontainer);
+        }
+        
         // Apply seal status filter before grouping
         if ($request->filled('seal_status')) {
             if ($request->seal_status === 'sealed') {
