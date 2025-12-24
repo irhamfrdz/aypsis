@@ -821,9 +821,9 @@
                                 <label for="split_tonase" class="block text-sm font-medium text-gray-700 mb-1">
                                     Tonase (ton) <span class="text-red-500">*</span>
                                 </label>
-                                <input type="number" name="berat" id="split_tonase" required min="0" step="0.001"
+                                <input type="number" name="berat" id="split_tonase" required min="0.001" step="0.001"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                       placeholder="0.000">
+                                       placeholder="0.001">
                             </div>
                         </div>
                         
