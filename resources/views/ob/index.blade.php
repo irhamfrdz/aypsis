@@ -118,59 +118,6 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                {{-- Search Nomor Kontainer (dedicated) --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Kontainer</label>
-                    <input type="text"
-                           id="nomor_kontainer"
-                           name="nomor_kontainer"
-                           value="{{ request('nomor_kontainer') }}"
-                           placeholder="Masukkan nomor kontainer"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                {{-- Search Nama Supir --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Supir</label>
-                    <input type="text"
-                           id="nama_supir"
-                           name="nama_supir"
-                           value="{{ request('nama_supir') }}"
-                           placeholder="Cari nama supir..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                {{-- Status OB Filter --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status OB</label>
-                    <select name="status_ob" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Semua Status</option>
-                        <option value="sudah" {{ request('status_ob') == 'sudah' ? 'selected' : '' }}>Sudah OB</option>
-                        <option value="belum" {{ request('status_ob') == 'belum' ? 'selected' : '' }}>Belum OB</option>
-                    </select>
-                </div>
-
-                {{-- Tipe Kontainer Filter --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
-                    <select name="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Semua Tipe</option>
-                        <option value="FCL" {{ request('tipe_kontainer') == 'FCL' ? 'selected' : '' }}>FCL</option>
-                        <option value="LCL" {{ request('tipe_kontainer') == 'LCL' ? 'selected' : '' }}>LCL</option>
-                        <option value="CARGO" {{ request('tipe_kontainer') == 'CARGO' ? 'selected' : '' }}>CARGO</option>
-                    </select>
-                </div>
-
-                {{-- Size Kontainer Filter --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Size Kontainer</label>
-                    <select name="size_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Semua Size</option>
-                        <option value="20" {{ request('size_kontainer') == '20' ? 'selected' : '' }}>20 Feet</option>
-                        <option value="40" {{ request('size_kontainer') == '40' ? 'selected' : '' }}>40 Feet</option>
-                    </select>
-                </div>
-
                 {{-- Asal Kontainer Input --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Asal Kontainer (Semua)</label>
@@ -235,46 +182,46 @@
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             @if(isset($bls))
-            <table class="min-w-full table-auto">
+            <table class="min-w-full table-auto text-xs">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <input type="checkbox" id="select-all" class="mr-2">
-                            Checklist
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
+                            <input type="checkbox" id="select-all" class="mr-1">
+                            <span class="text-[10px]">✓</span>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Kontainer</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ke</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. BL</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Nama Barang</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Size</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Created</th>
                         {{-- Volume and Tonase columns removed per request --}}
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status OB</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status OB</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($bls as $key => $bl)
                     <tr class="hover:bg-gray-50 transition duration-150 {{ $bl->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                             <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" {{ $bl->tipe_kontainer == 'CARGO' ? 'disabled title="Kontainer CARGO tidak bisa dimasukkan ke pranota"' : '' }}>
                             @if($bl->tipe_kontainer == 'CARGO')
-                                <span class="text-xs text-red-600 ml-1" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
+                                <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
                             @endif
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bls->firstItem() + $key }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->nama_barang ?: '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div class="flex items-center gap-2">
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bls->firstItem() + $key }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->nomor_bl ?: '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
+                        <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->nama_barang }}">{{ $bl->nama_barang ?: '-' }}</td>
+                        <td class="px-1 py-1 text-xs text-gray-900">
+                            <div class="flex items-center gap-1">
                                 @if(request('kegiatan') === 'muat')
-                                    <select class="editable-asal-kontainer select2-gudang w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                    <select class="editable-asal-kontainer select2-gudang w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                             data-id="{{ $bl->id }}" 
                                             data-type="bl">
                                         <option value="">Pilih gudang...</option>
@@ -286,7 +233,7 @@
                                     </select>
                                 @else
                                     <input type="text" 
-                                           class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           class="editable-asal-kontainer w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                            data-id="{{ $bl->id }}" 
                                            data-type="bl"
                                            value="{{ $bl->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
@@ -299,10 +246,10 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div class="flex items-center gap-2">
+                        <td class="px-1 py-1 text-xs text-gray-900">
+                            <div class="flex items-center gap-1">
                                 <input type="text" 
-                                       class="editable-ke w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                       class="editable-ke w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                        data-id="{{ $bl->id }}" 
                                        data-type="bl"
                                        value="{{ $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '') }}"
@@ -314,20 +261,19 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer . ' Feet' : '-' }}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/Y') : '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer : '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/y') : '-' }}</td>
                         {{-- Volume and Tonase cells removed per request --}}
-                        <td class="px-4 py-4 text-sm text-gray-900">
+                        <td class="px-1 py-1 text-xs text-gray-900">
                             @if($bl->sudah_ob)
-                                <div class="flex flex-col space-y-1">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Sudah OB
+                                <div class="flex flex-col space-y-0.5">
+                                    <span class="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
+                                        <i class="fas fa-check-circle mr-0.5 text-[9px]"></i>
+                                        OB
                                     </span>
                                     @if($bl->supir)
-                                        <div class="text-xs text-gray-600">
-                                            <i class="fas fa-user mr-1"></i>
+                                        <div class="text-[10px] text-gray-600">
                                             <span class="font-medium">{{ $bl->supir->nama_panggilan }}</span>
                                             @if($bl->supir->plat)
                                                 <span class="text-gray-500">({{ $bl->supir->plat }})</span>
@@ -335,34 +281,32 @@
                                         </div>
                                     @endif
                                     @if($bl->tanggal_ob)
-                                        <div class="text-xs text-gray-500">
-                                            <i class="fas fa-calendar mr-1"></i>
-                                            {{ $bl->tanggal_ob->format('d/m/Y H:i') }}
+                                        <div class="text-[10px] text-gray-500">
+                                            {{ $bl->tanggal_ob->format('d/m H:i') }}
                                         </div>
                                     @endif
                                 </div>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    Belum OB
+                                <span class="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                    <i class="fas fa-clock mr-0.5 text-[9px]"></i>
+                                    Belum
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-4 text-sm text-gray-900">
+                        <td class="px-1 py-1 text-xs text-gray-900">
                             @if($bl->sudah_tl)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                    <i class="fas fa-exchange-alt mr-1"></i>
-                                    Sudah TL
+                                <span class="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                    <i class="fas fa-exchange-alt mr-0.5 text-[9px]"></i>
+                                    TL
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                                    <i class="fas fa-minus-circle mr-1"></i>
-                                    Belum TL
+                                <span class="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                    -
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex items-center space-x-2">
+                        <td class="px-1 py-1 whitespace-nowrap text-xs font-medium">
+                            <div class="flex items-center space-x-1">
                                 @if(!$bl->sudah_ob)
                                     <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
                                            class="text-green-600 hover:text-green-900 transition duration-150"
@@ -396,52 +340,52 @@
                 </tbody>
             </table>
             @else
-            <table class="min-w-full table-auto">
+            <table class="min-w-full table-auto text-xs">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <input type="checkbox" id="select-all" class="mr-2">
-                            Checklist
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
+                            <input type="checkbox" id="select-all" class="mr-1">
+                            <span class="text-[10px]">✓</span>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Kontainer</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ke</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Muat</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Jenis Barang</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Size</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tgl Muat</th>
                         {{-- Volume and Tonase columns removed per request --}}
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status OB</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status OB</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
                         <tr class="hover:bg-gray-50 transition duration-150 {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                                 <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'disabled title="Kontainer CARGO tidak bisa dimasukkan ke pranota"' : '' }}>
                                 @if($naikKapal->tipe_kontainer == 'CARGO')
-                                    <span class="text-xs text-red-600 ml-1" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
+                                    <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                                 {{ $naikKapals->firstItem() + $key }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">
                                 {{ $naikKapal->nomor_kontainer ?: '-' }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">
                                 {{ $naikKapal->no_seal ?: ($naikKapal->prospek->no_seal ?? '-') }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->jenis_barang }}">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <div class="flex items-center gap-2">
+                            <td class="px-1 py-1 text-xs text-gray-900">
+                                <div class="flex items-center gap-1">
                                     @if(request('kegiatan') === 'muat')
-                                        <select class="editable-asal-kontainer select2-gudang w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                        <select class="editable-asal-kontainer select2-gudang w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                                 data-id="{{ $naikKapal->id }}" 
                                                 data-type="naik_kapal">
                                             <option value="">Pilih gudang...</option>
@@ -453,7 +397,7 @@
                                         </select>
                                     @else
                                         <input type="text" 
-                                               class="editable-asal-kontainer w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                               class="editable-asal-kontainer w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                                data-id="{{ $naikKapal->id }}" 
                                                data-type="naik_kapal"
                                                value="{{ $naikKapal->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
@@ -466,10 +410,10 @@
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <div class="flex items-center gap-2">
+                            <td class="px-1 py-1 text-xs text-gray-900">
+                                <div class="flex items-center gap-1">
                                     <input type="text" 
-                                           class="editable-ke w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           class="editable-ke w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                            data-id="{{ $naikKapal->id }}" 
                                            data-type="naik_kapal"
                                            value="{{ $naikKapal->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '') }}"
@@ -481,7 +425,7 @@
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                                 @if($naikKapal->tipe_kontainer)
                                     @php
                                         $tipeUpper = strtoupper($naikKapal->tipe_kontainer);
@@ -492,30 +436,28 @@
                                         ];
                                         $config = $tipeConfig[$tipeUpper] ?? ['color' => 'bg-gray-100 text-gray-800', 'icon' => 'fa-shipping-fast'];
                                     @endphp
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['color'] }}">
-                                        <i class="fas {{ $config['icon'] }} mr-1"></i>
+                                    <span class="inline-flex items-center px-1 py-0 rounded text-[10px] font-medium {{ $config['color'] }}">
                                         {{ $tipeUpper }}
                                     </span>
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                                 @if($naikKapal->size_kontainer)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    <span class="inline-flex items-center px-1 py-0 rounded text-[10px] font-medium
                                         {{ $naikKapal->size_kontainer == '20' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                        <i class="fas fa-box mr-1"></i>
-                                        {{ $naikKapal->size_kontainer }} Feet
+                                        {{ $naikKapal->size_kontainer }}
                                     </span>
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $naikKapal->tanggal_muat ? $naikKapal->tanggal_muat->format('d/m/Y') : '-' }}
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                                {{ $naikKapal->tanggal_muat ? $naikKapal->tanggal_muat->format('d/m/y') : '-' }}
                             </td>
                             {{-- Volume and Tonase cells removed per request --}}
-                            <td class="px-4 py-4 text-sm text-gray-900">
+                            <td class="px-1 py-1 text-xs text-gray-900">
                                 @if($naikKapal->sudah_ob)
                                     <div class="flex flex-col space-y-1">
                                         <div class="flex items-center space-x-1">
@@ -547,13 +489,13 @@
                                         @endif
                                     </div>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        Belum OB
+                                    <span class="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                        <i class="fas fa-clock mr-0.5 text-[9px]"></i>
+                                        Belum
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-1 py-1 whitespace-nowrap text-xs font-medium">
                                 <div class="flex items-center space-x-2">
                                     @if(!$naikKapal->sudah_ob)
                                         <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
