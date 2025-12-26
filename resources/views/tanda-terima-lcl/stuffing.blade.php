@@ -1313,6 +1313,57 @@ function calculateSplitVolume() {
     }
 }
 
+// Add submit handler for split form with debugging
+document.getElementById('splitForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const formUrl = this.action;
+    
+    console.log('🚀 Submitting split form to:', formUrl);
+    console.log('📋 Form data:', Object.fromEntries(formData));
+    
+    // Validate nama_barang value
+    const namaBarangValue = document.getElementById('split_nama_barang_value').value;
+    if (!namaBarangValue) {
+        alert('Silakan pilih barang terlebih dahulu');
+        return false;
+    }
+    
+    fetch(formUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response URL:', response.url);
+        
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('❌ Error response:', text);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('✅ Success response:', data);
+        if (data.success) {
+            alert('Pecah kontainer berhasil!');
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Gagal memproses pecah kontainer'));
+        }
+    })
+    .catch(error => {
+        console.error('❌ Fetch error:', error);
+        alert('Terjadi kesalahan: ' + error.message + '\n\nSilakan cek Console (F12) untuk detail.');
+    });
+});
+
 // Close split modal when clicking outside
 window.addEventListener('click', function(event) {
     const splitModal = document.getElementById('splitModal');
