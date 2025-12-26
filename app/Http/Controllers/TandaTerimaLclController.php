@@ -975,7 +975,7 @@ class TandaTerimaLclController extends Controller
 
         if ($processedCount == 0) {
             // Get first selected item to show current capacity
-            $firstId = $ids[0] ?? null;
+            $firstId = $tandaTerimaIds[0] ?? null;
             if ($firstId) {
                 $firstTandaTerima = TandaTerimaLcl::with('items')->find($firstId);
                 if ($firstTandaTerima) {
