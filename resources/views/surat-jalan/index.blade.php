@@ -458,7 +458,7 @@ use Illuminate\Support\Str;
                     dropdown.style.left = '';
                     dropdown.style.top = '';
                     dropdown.style.zIndex = '';
-                    dropdown.style.width = '';
+                    dropdown.style.minWidth = '';
                 }
             });
 
@@ -468,30 +468,44 @@ use Illuminate\Support\Str;
             const isHidden = dropdown.classList.contains('hidden');
 
             if (isHidden) {
+                // Show dropdown first so we can measure its natural size
                 dropdown.classList.remove('hidden');
+
+                // Reset inline styles used for previous positioning
+                dropdown.style.position = 'fixed';
+                dropdown.style.left = '0px';
+                dropdown.style.top = '0px';
+                dropdown.style.zIndex = '9999';
+                dropdown.style.minWidth = '';
+
+                // Measure natural width and height
+                const naturalWidth = Math.max(dropdown.scrollWidth || 0, dropdown.offsetWidth || 0);
+                const naturalHeight = dropdown.offsetHeight || 0;
+
                 // Get button position
                 const rect = button.getBoundingClientRect();
-                dropdown.style.position = 'fixed';
-                dropdown.style.left = rect.left + 'px';
-                dropdown.style.top = (rect.bottom + 4) + 'px'; // 4px offset
-                dropdown.style.zIndex = '9999';
-                dropdown.style.width = dropdown.offsetWidth + 'px';
+                let left = rect.left;
+                // Prevent horizontal overflow (8px padding from edge)
+                if (left + naturalWidth + 8 > window.innerWidth) {
+                    left = Math.max(window.innerWidth - naturalWidth - 8, 8);
+                }
+
+                // Prefer showing below the button; if not enough space, show above
+                let top = rect.bottom + 4; // 4px offset
+                if (top + naturalHeight + 8 > window.innerHeight) {
+                    top = Math.max(rect.top - naturalHeight - 4, 8);
+                }
+
+                dropdown.style.left = left + 'px';
+                dropdown.style.top = top + 'px';
+                dropdown.style.minWidth = naturalWidth + 'px';
             } else {
                 dropdown.classList.add('hidden');
                 dropdown.style.position = '';
                 dropdown.style.left = '';
                 dropdown.style.top = '';
                 dropdown.style.zIndex = '';
-                dropdown.style.width = '';
-            }
-}
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('[onclick*="toggleDropdown"]') && !event.target.closest('[id^="dropdown-"]')) {
-        document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
-            dropdown.classList.add('hidden');
-        });
+                dropdown.style.minWidth = '';
     }
 });
 
