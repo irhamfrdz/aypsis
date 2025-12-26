@@ -62,12 +62,20 @@
             <!-- Filter dan Search -->
             <div class="bg-gray-50 rounded-lg p-4 mb-6">
                 <form method="GET" action="{{ route('pembayaran-ob.index') }}" id="filterForm">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Pembayaran</label>
                             <input type="text" name="nomor_pembayaran"
                                    value="{{ request('nomor_pembayaran') }}"
                                    placeholder="Cari nomor pembayaran..."
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Accurate</label>
+                            <input type="text" name="nomor_accurate"
+                                   value="{{ request('nomor_accurate') }}"
+                                   placeholder="Cari nomor accurate..."
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
 
@@ -82,7 +90,9 @@
                                 @endforeach
                             </select>
                         </div>
+                    </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
                             <input type="date" name="tanggal_dari"
@@ -97,7 +107,7 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
 
-                        <div class="flex items-end">
+                        <div class="col-span-2 flex items-end">
                             <button type="submit"
                                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 transition duration-200">
                                 <i class="fas fa-search mr-1"></i> Cari
@@ -123,6 +133,10 @@
                                 </th>
                                 <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                                     Nomor Pembayaran
+                                    <div class="resize-handle"></div>
+                                </th>
+                                <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
+                                    Nomor Accurate
                                     <div class="resize-handle"></div>
                                 </th>
                                 <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
@@ -158,6 +172,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
                                         {{ $pembayaran->nomor_pembayaran }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @if($pembayaran->nomor_accurate)
+                                            <span class="text-purple-600 font-medium">{{ $pembayaran->nomor_accurate }}</span>
+                                        @else
+                                            <span class="text-gray-400 italic">-</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y') }}
@@ -274,7 +295,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                    <td colspan="9" class="px-6 py-4 text-center text-gray-500">
                                         <div class="flex flex-col items-center justify-center py-12">
                                             <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>

@@ -29,6 +29,11 @@ class PembayaranObController extends Controller
             $query->where('nomor_pembayaran', 'like', '%' . $request->nomor_pembayaran . '%');
         }
 
+        // Filter berdasarkan nomor accurate
+        if ($request->filled('nomor_accurate')) {
+            $query->where('nomor_accurate', 'like', '%' . $request->nomor_accurate . '%');
+        }
+
         // Filter berdasarkan supir (search dalam JSON array)
         if ($request->filled('supir')) {
             $supirId = $request->supir;
@@ -239,6 +244,7 @@ class PembayaranObController extends Controller
         // Validasi input
         $validated = $request->validate([
             'nomor_pembayaran' => 'required|string|max:255|unique:pembayaran_obs,nomor_pembayaran',
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
@@ -292,6 +298,7 @@ class PembayaranObController extends Controller
             // Simpan pembayaran OB
             $pembayaran = PembayaranOb::create([
                 'nomor_pembayaran' => $nomorPembayaran,
+                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'kas_bank_id' => $validated['kas_bank'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
