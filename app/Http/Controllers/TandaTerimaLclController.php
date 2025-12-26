@@ -832,8 +832,9 @@ class TandaTerimaLclController extends Controller
                     continue; // Skip this item if not enough weight (in ton)
                 }
                 
-                // Generate new tanda terima number with suffix
-                $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima . '-SPLIT';
+                // Generate new tanda terima number with suffix and timestamp for uniqueness
+                $timestamp = now()->format('YmdHis'); // Format: 20251226163049
+                $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima . '-SPLIT-' . $timestamp;
                 
                 // Create new LCL record for split container
                 $newTandaTerima = TandaTerimaLcl::create([
