@@ -560,6 +560,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Klasifikasi Biaya --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Klasifikasi Biaya</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-klasifikasi-biaya][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-klasifikasi-biaya']['view']) && $userMatrixPermissions['master-klasifikasi-biaya']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-klasifikasi-biaya][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-klasifikasi-biaya']['create']) && $userMatrixPermissions['master-klasifikasi-biaya']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-klasifikasi-biaya][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-klasifikasi-biaya']['update']) && $userMatrixPermissions['master-klasifikasi-biaya']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-klasifikasi-biaya][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-klasifikasi-biaya']['delete']) && $userMatrixPermissions['master-klasifikasi-biaya']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Kelola BBM --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

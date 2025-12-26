@@ -79,12 +79,9 @@
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_biaya') border-red-500 @enderror"
                         required>
                     <option value="">-- Pilih Jenis Biaya --</option>
-                    <option value="bahan_bakar" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == 'bahan_bakar' ? 'selected' : '' }}>Bahan Bakar</option>
-                    <option value="pelabuhan" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == 'pelabuhan' ? 'selected' : '' }}>Pelabuhan</option>
-                    <option value="perbaikan" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == 'perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                    <option value="awak_kapal" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == 'awak_kapal' ? 'selected' : '' }}>Awak Kapal</option>
-                    <option value="asuransi" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == 'asuransi' ? 'selected' : '' }}>Asuransi</option>
-                    <option value="lainnya" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                    @foreach($klasifikasiBiayas as $k)
+                        <option value="{{ $k->kode }}" {{ old('jenis_biaya', $biayaKapal->jenis_biaya) == $k->kode ? 'selected' : '' }}>{{ $k->nama }}</option>
+                    @endforeach
                 </select>
                 @error('jenis_biaya')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

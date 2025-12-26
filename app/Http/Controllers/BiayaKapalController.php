@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BiayaKapal;
 use App\Models\MasterKapal;
+use App\Models\KlasifikasiBiaya;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,7 +50,10 @@ class BiayaKapalController extends Controller
             ->orderBy('nama_kapal')
             ->get();
 
-        return view('biaya-kapal.create', compact('kapals'));
+        // Get active klasifikasi biaya for jenis biaya dropdown
+        $klasifikasiBiayas = KlasifikasiBiaya::where('is_active', true)->orderBy('nama')->get();
+
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas'));
     }
 
     /**
@@ -63,7 +67,7 @@ class BiayaKapalController extends Controller
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
             'no_voyage.*' => 'string',
-            'jenis_biaya' => 'required|in:bahan_bakar,pelabuhan,perbaikan,awak_kapal,asuransi,lainnya',
+            'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
@@ -113,7 +117,10 @@ class BiayaKapalController extends Controller
             ->orderBy('nama_kapal')
             ->get();
 
-        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals'));
+        // Get active klasifikasi biaya for jenis biaya dropdown
+        $klasifikasiBiayas = KlasifikasiBiaya::where('is_active', true)->orderBy('nama')->get();
+
+        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals', 'klasifikasiBiayas'));
     }
 
     /**
@@ -124,7 +131,7 @@ class BiayaKapalController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'nama_kapal' => 'required|string|max:255',
-            'jenis_biaya' => 'required|in:bahan_bakar,pelabuhan,perbaikan,awak_kapal,asuransi,lainnya',
+            'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
@@ -225,6 +232,44 @@ class BiayaKapalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data voyage: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get BL numbers by voyages for AJAX request
+     */
+    public function getBlsByVoyages(Request $request)
+    {
+        try {
+            $voyages = $request->input('voyages', []);
+            
+            if (empty($voyages)) {
+                return response()->json([
+                    'success' => true,
+                    'bls' => []
+                ]);
+            }
+
+            // Get distinct no_bl from bls table for the selected voyages
+            $bls = \DB::table('bls')
+                ->select('nomor_bl')
+                ->whereIn('no_voyage', $voyages)
+                ->whereNotNull('nomor_bl')
+                ->where('nomor_bl', '!=', '')
+                ->distinct()
+                ->pluck('nomor_bl')
+                ->sort()
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'bls' => $bls
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data BL: ' . $e->getMessage()
             ], 500);
         }
     }

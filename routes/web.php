@@ -15,6 +15,7 @@ use App\Http\Controllers\PajakController;
 use App\Http\Controllers\CabangController;
 use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MasterBankController;
+use App\Http\Controllers\Master\KlasifikasiBiayaController;
 
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\TujuanKegiatanUtamaController;
@@ -1100,6 +1101,8 @@ Route::middleware([
     // 💰 Biaya Kapal (Ship Costs) Management with permissions
     Route::get('biaya-kapal/get-voyages/{namaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'getVoyagesByShip'])
          ->name('biaya-kapal.get-voyages');
+    Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])
+         ->name('biaya-kapal.get-bls-by-voyages');
     Route::resource('biaya-kapal', \App\Http\Controllers\BiayaKapalController::class)
          ->names('biaya-kapal')
          ->middleware([
@@ -1318,6 +1321,31 @@ Route::middleware([
     Route::post('master/jenis-barang-import', [JenisBarangController::class, 'import'])
          ->name('jenis-barang.import')
          ->middleware('can:master-jenis-barang-create');
+
+    // 📦 Klasifikasi Biaya (Master) Management with permissions
+    Route::get('master/klasifikasi-biaya-download-template', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'downloadTemplate'])
+         ->name('klasifikasi-biaya.download-template')
+         ->middleware('can:master-klasifikasi-biaya-view');
+
+    Route::get('master/klasifikasi-biaya-import', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'showImportForm'])
+         ->name('klasifikasi-biaya.import-form')
+         ->middleware('can:master-klasifikasi-biaya-create');
+
+    Route::post('master/klasifikasi-biaya-import', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'import'])
+         ->name('klasifikasi-biaya.import')
+         ->middleware('can:master-klasifikasi-biaya-create');
+
+    Route::resource('master/klasifikasi-biaya', KlasifikasiBiayaController::class)
+         ->names('klasifikasi-biaya')
+         ->middleware([
+             'index' => 'can:master-klasifikasi-biaya-view',
+             'create' => 'can:master-klasifikasi-biaya-create',
+             'store' => 'can:master-klasifikasi-biaya-create',
+             'show' => 'can:master-klasifikasi-biaya-view',
+             'edit' => 'can:master-klasifikasi-biaya-update',
+             'update' => 'can:master-klasifikasi-biaya-update',
+             'destroy' => 'can:master-klasifikasi-biaya-delete'
+         ]);
 
     // 📦 Term Management with permissions
     Route::resource('master/term', TermController::class)
