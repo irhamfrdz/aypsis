@@ -479,8 +479,9 @@
                         <!-- Jenis Barang -->
                         <div>
                             <label for="modal_jenis_barang" class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
-                            <input type="text" name="jenis_barang" id="modal_jenis_barang" readonly
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
+                            <input type="text" name="jenis_barang" id="modal_jenis_barang"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan jenis barang">
                         </div>
 
                         <!-- Tujuan Alamat -->
@@ -505,13 +506,6 @@
                                     </option>
                                 @endforeach
                             </select>
-                        </div>
-
-                        <!-- Tujuan Pengiriman -->
-                        <div>
-                            <label for="modal_tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                            <input type="text" name="tujuan_pengiriman" id="modal_tujuan_pengiriman" readonly
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700">
                         </div>
 
                         <!-- Jenis Pengiriman -->
@@ -874,13 +868,6 @@
                             </select>
                         </div>
 
-                        <!-- Tujuan Pengiriman -->
-                        <div>
-                            <label for="edit_modal_tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                            <input type="text" name="tujuan_pengiriman" id="edit_modal_tujuan_pengiriman"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
                         <!-- Jenis Pengiriman -->
                         <div>
                             <label for="edit_modal_jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
@@ -1177,7 +1164,6 @@ function buatSuratJalanManual() {
     document.getElementById('modal_size').value = '';
     document.getElementById('modal_jenis_barang').value = '';
     document.getElementById('modal_penerima').value = '';
-    document.getElementById('modal_tujuan_pengiriman').value = '';
     document.getElementById('modal_tujuan_alamat').value = '';
     
     // Remove readonly from fields
@@ -1186,7 +1172,6 @@ function buatSuratJalanManual() {
     document.getElementById('modal_no_seal').removeAttribute('readonly');
     document.getElementById('modal_size').removeAttribute('readonly');
     document.getElementById('modal_jenis_barang').removeAttribute('readonly');
-    document.getElementById('modal_tujuan_pengiriman').removeAttribute('readonly');
     
     // Setup auto-fill and calculations
     setupModalSupirAutoFill();
@@ -1241,7 +1226,6 @@ function buatSuratJalan(blId) {
             document.getElementById('modal_size').value = data.size_kontainer || '';
             document.getElementById('modal_pengirim').value = data.pengirim || '';
             document.getElementById('modal_penerima').value = data.penerima || data.pengirim || '';
-            document.getElementById('modal_tujuan_pengiriman').value = data.pelabuhan_tujuan || '';
             
             // Set jenis pengiriman if available
             if (data.jenis_pengiriman) {
@@ -1675,7 +1659,6 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
             document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
             document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';
-            document.getElementById('edit_modal_tujuan_pengiriman').value = data.tujuan_pengiriman || '';
             document.getElementById('edit_modal_jenis_pengiriman').value = data.jenis_pengiriman || '';
             document.getElementById('edit_modal_tanggal_ambil_barang').value = data.tanggal_ambil_barang || '';
             

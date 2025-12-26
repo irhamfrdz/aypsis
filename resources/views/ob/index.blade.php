@@ -208,9 +208,11 @@
                     @forelse($bls as $key => $bl)
                     <tr class="hover:bg-gray-50 transition duration-150 {{ $bl->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" {{ $bl->tipe_kontainer == 'CARGO' ? 'disabled title="Kontainer CARGO tidak bisa dimasukkan ke pranota"' : '' }}>
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $bl->sudah_tl ? '1' : '0' }}" {{ $bl->tipe_kontainer == 'CARGO' || $bl->sudah_tl ? 'disabled title="' . ($bl->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : 'Kontainer TL') . ' tidak bisa dimasukkan ke pranota"' : '' }}>
                             @if($bl->tipe_kontainer == 'CARGO')
                                 <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
+                            @elseif($bl->sudah_tl)
+                                <span class="text-[10px] text-blue-600" title="Kontainer TL tidak bisa dimasukkan ke pranota">⚠️</span>
                             @endif
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bls->firstItem() + $key }}</td>
@@ -365,9 +367,11 @@
                     @forelse($naikKapals as $key => $naikKapal)
                         <tr class="hover:bg-gray-50 transition duration-150 {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'disabled title="Kontainer CARGO tidak bisa dimasukkan ke pranota"' : '' }}>
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $naikKapal->sudah_tl ? '1' : '0' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' || $naikKapal->sudah_tl ? 'disabled title="' . ($naikKapal->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : 'Kontainer TL') . ' tidak bisa dimasukkan ke pranota"' : '' }}>
                                 @if($naikKapal->tipe_kontainer == 'CARGO')
                                     <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
+                                @elseif($naikKapal->sudah_tl)
+                                    <span class="text-[10px] text-blue-600" title="Kontainer TL tidak bisa dimasukkan ke pranota">⚠️</span>
                                 @endif
                             </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
@@ -724,15 +728,28 @@ function openPranotaModal() {
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return true;
         return false;
     });
+    
+    // Filter out TL containers
+    const tlItems = selectedItems.filter(item => item.sudah_tl === '1' || item.sudah_tl === true);
+    
     selectedItems = selectedItems.filter(item => {
         if (item.tipe === 'CARGO') return false;
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
+        if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
         return true;
     });
     
-    // Show warning if CARGO items were filtered out
+    // Show warning if CARGO or TL items were filtered out
+    let warningMsg = '';
     if (cargoItems.length > 0) {
-        alert(`${cargoItems.length} kontainer CARGO tidak akan dimasukkan ke pranota.\nKontainer CARGO: ${cargoItems.map(item => item.nomor_kontainer).join(', ')}`);
+        warningMsg += `${cargoItems.length} kontainer CARGO tidak akan dimasukkan ke pranota.\nKontainer CARGO: ${cargoItems.map(item => item.nomor_kontainer).join(', ')}`;
+    }
+    if (tlItems.length > 0) {
+        if (warningMsg) warningMsg += '\n\n';
+        warningMsg += `${tlItems.length} kontainer TL tidak akan dimasukkan ke pranota.\nKontainer TL: ${tlItems.map(item => item.nomor_kontainer).join(', ')}`;
+    }
+    if (warningMsg) {
+        alert(warningMsg);
     }
     
     // Ensure ship/voyage info available before opening modal
@@ -1061,13 +1078,15 @@ function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
     if (!stored) return [];
     
-    // Parse and filter out CARGO containers (by type or container number)
+    // Parse and filter out CARGO containers (by type or container number) and TL containers
     const items = JSON.parse(stored);
     return items.filter(item => {
         // Filter by type
         if (item.tipe === 'CARGO') return false;
         // Filter by container number containing 'CARGO'
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
+        // Filter by TL status
+        if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
         return true;
     });
 }
@@ -1079,9 +1098,9 @@ function saveSelectedItems(items) {
 function loadSelectedCheckboxes() {
     const selectedItems = getSelectedItems();
     checkboxes.forEach(cb => {
-        // Skip disabled checkboxes (CARGO)
+        // Skip disabled checkboxes (CARGO or TL)
         if (cb.disabled) {
-            cb.checked = false; // Ensure CARGO is never checked
+            cb.checked = false; // Ensure CARGO and TL are never checked
             return;
         }
         
@@ -1092,8 +1111,15 @@ function loadSelectedCheckboxes() {
             return;
         }
         
+        // Skip if TL
+        const sudahTl = cb.getAttribute('data-sudah-tl');
+        if (sudahTl === '1' || sudahTl === 'true') {
+            cb.checked = false;
+            return;
+        }
+        
         const item = selectedItems.find(item => item.id === cb.value);
-        if (item && item.tipe !== 'CARGO') {
+        if (item && item.tipe !== 'CARGO' && item.sudah_tl !== '1' && item.sudah_tl !== true) {
             cb.checked = true;
         }
     });
@@ -1111,7 +1137,7 @@ function checkSelected() {
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
-    // Save to storage - collect all selected items (exclude CARGO)
+    // Save to storage - collect all selected items (exclude CARGO and TL)
     const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
         .filter(cb => {
             // Filter by type
@@ -1119,6 +1145,9 @@ function checkSelected() {
             // Filter by container number containing 'CARGO'
             const nomorKontainer = cb.getAttribute('data-nomor-kontainer');
             if (nomorKontainer && nomorKontainer.toUpperCase().includes('CARGO')) return false;
+            // Filter by TL status
+            const sudahTl = cb.getAttribute('data-sudah-tl');
+            if (sudahTl === '1' || sudahTl === 'true') return false;
             return true;
         })
         .map(cb => ({
@@ -1130,7 +1159,8 @@ function checkSelected() {
             size: cb.getAttribute('data-size'),
             biaya: cb.getAttribute('data-biaya'),
             status: cb.getAttribute('data-status'),
-            supir: cb.getAttribute('data-supir')
+            supir: cb.getAttribute('data-supir'),
+            sudah_tl: cb.getAttribute('data-sudah-tl')
         }));
     saveSelectedItems(allSelected);
 }
@@ -1148,7 +1178,7 @@ selectAll.addEventListener('change', function() {
     checkSelected();
 });
 
-// Clean CARGO from localStorage on page load
+// Clean CARGO and TL from localStorage on page load
 function cleanCargoFromStorage() {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
@@ -1158,12 +1188,14 @@ function cleanCargoFromStorage() {
             if (item.tipe === 'CARGO') return false;
             // Filter by container number containing 'CARGO'
             if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
+            // Filter by TL status
+            if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
             return true;
         });
         if (cleanedItems.length !== items.length) {
-            // CARGO found and removed, update storage
+            // CARGO or TL found and removed, update storage
             localStorage.setItem(storageKey, JSON.stringify(cleanedItems));
-            console.log(`Removed ${items.length - cleanedItems.length} CARGO containers from selection`);
+            console.log(`Removed ${items.length - cleanedItems.length} CARGO/TL containers from selection`);
         }
     }
 }
