@@ -136,37 +136,26 @@ class TandaTerimaLclController extends Controller
             }
 
             // Create main LCL record
-            try {
-                $tandaTerima = TandaTerimaLcl::create([
-                    'nomor_tanda_terima' => $request->nomor_tanda_terima,
-                    'tanggal_tanda_terima' => $request->tanggal_tanda_terima,
-                    'no_surat_jalan_customer' => $request->no_surat_jalan_customer,
-                    'term_id' => $request->term_id,
-                    'nama_penerima' => $request->nama_penerima,
-                    'pic_penerima' => $request->pic_penerima,
-                    'telepon_penerima' => $request->telepon_penerima,
-                    'alamat_penerima' => $request->alamat_penerima,
-                    'nama_pengirim' => $request->nama_pengirim,
-                    'pic_pengirim' => $request->pic_pengirim,
-                    'telepon_pengirim' => $request->telepon_pengirim,
-                    'alamat_pengirim' => $request->alamat_pengirim,
-                    'gambar_surat_jalan' => !empty($gambarPaths) ? $gambarPaths : null,
-                    'supir' => $request->supir,
-                    'no_plat' => $request->no_plat,
-                    'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
-                    'status' => 'draft',
-                    'created_by' => Auth::id(),
-                ]);
-            } catch (\Illuminate\Database\QueryException $ex) {
-                // Handle duplicate nomor_tanda_terima gracefully
-                if (strpos($ex->getMessage(), 'Duplicate entry') !== false) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'nomor_tanda_terima' => ['Nomor Tanda Terima sudah ada. Silakan gunakan nomor lain atau kosongkan untuk auto-generate.']
-                    ]);
-                }
-
-                throw $ex;
-            }
+            $tandaTerima = TandaTerimaLcl::create([
+                'nomor_tanda_terima' => $request->nomor_tanda_terima,
+                'tanggal_tanda_terima' => $request->tanggal_tanda_terima,
+                'no_surat_jalan_customer' => $request->no_surat_jalan_customer,
+                'term_id' => $request->term_id,
+                'nama_penerima' => $request->nama_penerima,
+                'pic_penerima' => $request->pic_penerima,
+                'telepon_penerima' => $request->telepon_penerima,
+                'alamat_penerima' => $request->alamat_penerima,
+                'nama_pengirim' => $request->nama_pengirim,
+                'pic_pengirim' => $request->pic_pengirim,
+                'telepon_pengirim' => $request->telepon_pengirim,
+                'alamat_pengirim' => $request->alamat_pengirim,
+                'gambar_surat_jalan' => !empty($gambarPaths) ? $gambarPaths : null,
+                'supir' => $request->supir,
+                'no_plat' => $request->no_plat,
+                'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
+                'status' => 'draft',
+                'created_by' => Auth::id(),
+            ]);
 
             // Create dimension items from array fields
             if ($request->has('panjang') && is_array($request->panjang)) {
@@ -818,14 +807,12 @@ class TandaTerimaLclController extends Controller
                     continue; // Skip this item if not enough weight (in ton)
                 }
                 
-                // Generate new tanda terima number with suffix and ensure uniqueness
-                $baseNewNomor = $originalTandaTerima->nomor_tanda_terima . '-SPLIT';
-                $newNomorTandaTerima = $this->generateUniqueNomorTandaTerima($baseNewNomor);
-
+                // Generate new tanda terima number with suffix
+                $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima . '-SPLIT';
+                
                 // Create new LCL record for split container
-                try {
-                    $newTandaTerima = TandaTerimaLcl::create([
-                        'nomor_tanda_terima' => $newNomorTandaTerima,
+                $newTandaTerima = TandaTerimaLcl::create([
+                    'nomor_tanda_terima' => $newNomorTandaTerima,
                     'tanggal_tanda_terima' => $originalTandaTerima->tanggal_tanda_terima,
                     'no_surat_jalan_customer' => $originalTandaTerima->no_surat_jalan_customer,
                     'term_id' => $originalTandaTerima->term_id,
@@ -859,52 +846,6 @@ class TandaTerimaLclController extends Controller
                     'tinggi' => null,
                     'meter_kubik' => $splitVolume,
                     'tonase' => $splitBeratTon, // Berat sudah dalam ton dari form
-                ]);
-                } catch (\Illuminate\Database\QueryException $ex) {
-                    // In the unlikely event a race condition still produces a duplicate key,
-                    // try once to generate an alternative unique nomor and create again.
-                    if ($ex->getCode() === '23000') {
-                        $newNomorTandaTerima = $this->generateUniqueNomorTandaTerima($baseNewNomor, 1);
-                        $newTandaTerima = TandaTerimaLcl::create([
-                            'nomor_tanda_terima' => $newNomorTandaTerima,
-                            'tanggal_tanda_terima' => $originalTandaTerima->tanggal_tanda_terima,
-                            'no_surat_jalan_customer' => $originalTandaTerima->no_surat_jalan_customer,
-                            'term_id' => $originalTandaTerima->term_id,
-                            'nama_penerima' => $originalTandaTerima->nama_penerima,
-                            'pic_penerima' => $originalTandaTerima->pic_penerima,
-                            'telepon_penerima' => $originalTandaTerima->telepon_penerima,
-                            'alamat_penerima' => $originalTandaTerima->alamat_penerima,
-                            'nama_pengirim' => $originalTandaTerima->nama_pengirim,
-                            'pic_pengirim' => $originalTandaTerima->pic_pengirim,
-                            'telepon_pengirim' => $originalTandaTerima->telepon_pengirim,
-                            'alamat_pengirim' => $originalTandaTerima->alamat_pengirim,
-                            'nama_barang' => $originalTandaTerima->nama_barang . ' (Pecahan)',
-                            'kuantitas' => $splitKuantitas > 0 ? $splitKuantitas : $originalTandaTerima->kuantitas,
-                            'keterangan_barang' => $request->keterangan,
-                            'supir' => $originalTandaTerima->supir,
-                            'no_plat' => $originalTandaTerima->no_plat,
-                            'tujuan_pengiriman_id' => $originalTandaTerima->tujuan_pengiriman_id,
-                            'tipe_kontainer' => $request->tipe_kontainer,
-                            'nomor_kontainer' => $request->nomor_kontainer,
-                            'size_kontainer' => $request->size_kontainer,
-                            'status' => 'draft',
-                            'created_by' => Auth::id(),
-                        ]);
-
-                        // Create single item for split container with specified dimensions
-                        TandaTerimaLclItem::create([
-                            'tanda_terima_lcl_id' => $newTandaTerima->id,
-                            'item_number' => 1,
-                            'panjang' => null,
-                            'lebar' => null,
-                            'tinggi' => null,
-                            'meter_kubik' => $splitVolume,
-                            'tonase' => $splitBeratTon,
-                        ]);
-                    } else {
-                        throw $ex;
-                    }
-                }
                 ]);
                 
                 // Update original tanda terima - reduce volume and weight
@@ -1179,29 +1120,6 @@ class TandaTerimaLclController extends Controller
             \Log::error('Error creating prospek from LCL: ' . $e->getMessage());
             $prospekMessage = "Terjadi error saat menambahkan ke prospek: " . $e->getMessage();
         }
-    }
-
-    /**
-     * Generate a unique nomor_tanda_terima based on a base string.
-     * It will append -1, -2, ... if needed until a unique value is found.
-     * Optionally start with a different suffix start index.
-     */
-    private function generateUniqueNomorTandaTerima(string $base, int $startIndex = 0): string
-    {
-        $candidate = $base;
-        if ($startIndex > 0) {
-            $candidate = $base . '-' . $startIndex;
-        }
-
-        $i = max(0, $startIndex);
-        while (TandaTerimaLcl::where('nomor_tanda_terima', $candidate)->exists()) {
-            $i++;
-            $candidate = $base . '-' . $i;
-            // safety cap to prevent infinite loop
-            if ($i > 1000) break;
-        }
-
-        return $candidate;
     }
     
     /**
