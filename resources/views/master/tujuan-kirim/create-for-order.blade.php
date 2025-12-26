@@ -38,10 +38,13 @@
                                name="nama_tujuan"
                                id="nama_tujuan"
                                value="{{ old('nama_tujuan', request('search')) }}"
+                               list="tujuan_suggestions"
                                maxlength="100"
                                required
                                placeholder="Contoh: Jakarta Pusat"
+                               autocomplete="off"
                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 transition-colors duration-200 @error('nama_tujuan') border-red-500 focus:ring-red-500 focus:border-red-500 @else border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @enderror">
+                        <datalist id="tujuan_suggestions"></datalist>
                         @error('nama_tujuan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -245,6 +248,56 @@
             catatanField.addEventListener('input', updateCounter);
             updateCounter(); // Initialize counter
         }
+
+        // Suggestions for existing Nama Tujuan to avoid duplicates
+        (function() {
+            const tujuanInput = document.getElementById('nama_tujuan');
+            const suggestionsList = document.getElementById('tujuan_suggestions');
+            let suggestionTimer = null;
+            let lastSuggestions = [];
+
+            function fetchSuggestions(q) {
+                fetch(`{{ route('order.tujuan-kirim.suggest') }}?q=${encodeURIComponent(q)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestionsList.innerHTML = '';
+                        lastSuggestions = data || [];
+                        (data || []).forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item;
+                            suggestionsList.appendChild(opt);
+                        });
+                    }).catch(() => {
+                        // ignore
+                    });
+            }
+
+            if (tujuanInput) {
+                tujuanInput.addEventListener('input', function() {
+                    const q = this.value.trim();
+                    if (suggestionTimer) clearTimeout(suggestionTimer);
+                    if (!q) { suggestionsList.innerHTML = ''; lastSuggestions = []; return; }
+                    suggestionTimer = setTimeout(() => fetchSuggestions(q), 250);
+                });
+
+                // On submit, warn user if exact name exists in suggestions
+                const form = document.getElementById('tujuanKirimForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        const val = tujuanInput.value.trim();
+                        if (!val) return;
+                        const exists = lastSuggestions.some(s => s.toLowerCase() === val.toLowerCase());
+                        if (exists) {
+                            if (!confirm('Nama tujuan kirim sudah ada. Tetap tambahkan data baru?')) {
+                                e.preventDefault();
+                                tujuanInput.focus();
+                                return;
+                            }
+                        }
+                    });
+                }
+            }
+        })();
     </script>
 </body>
 </html>

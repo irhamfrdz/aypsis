@@ -455,7 +455,7 @@ class MasterTujuanKirimController extends Controller
 
         $request->validate([
             'kode' => 'required|string|max:10|unique:master_tujuan_kirim,kode',
-            'nama_tujuan' => 'required|string|max:255',
+            'nama_tujuan' => 'required|string|max:255|unique:master_tujuan_kirim,nama_tujuan',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
@@ -463,5 +463,20 @@ class MasterTujuanKirimController extends Controller
         $tujuanKirim = MasterTujuanKirim::create($request->all());
 
         return view('master.tujuan-kirim.success-for-order', compact('tujuanKirim'));
+    }
+
+    /**
+     * Return JSON suggestions for tujuan kirim names (used by create-for-order popup)
+     */
+    public function suggestForOrder(Request $request)
+    {
+        $q = $request->get('q', '');
+
+        $results = MasterTujuanKirim::where('nama_tujuan', 'like', '%' . $q . '%')
+            ->orderBy('nama_tujuan')
+            ->limit(20)
+            ->pluck('nama_tujuan');
+
+        return response()->json($results);
     }
 }

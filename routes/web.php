@@ -1278,6 +1278,10 @@ Route::middleware([
     Route::post('order/tujuan-kirim/store', [MasterTujuanKirimController::class, 'storeForOrder'])
          ->name('order.tujuan-kirim.store');
 
+    // Suggestion API for create-for-order popup
+    Route::get('order/tujuan-kirim/suggest', [MasterTujuanKirimController::class, 'suggestForOrder'])
+         ->name('order.tujuan-kirim.suggest');
+
     // 🎯 Tujuan Ambil - Special routes for Order form (no permission required)
     Route::get('order/tujuan-ambil/create', [TujuanKegiatanUtamaController::class, 'createForOrder'])
          ->name('order.tujuan-ambil.create');
