@@ -817,7 +817,14 @@ class TandaTerimaLclController extends Controller
         DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
             
             foreach ($tandaTerimaIds as $originalId) {
-                $originalTandaTerima = TandaTerimaLcl::with('items')->findOrFail($originalId);
+                // Use find() instead of findOrFail() to handle orphaned pivot records
+                $originalTandaTerima = TandaTerimaLcl::with('items')->find($originalId);
+                
+                // Skip if tanda terima doesn't exist (orphaned pivot record)
+                if (!$originalTandaTerima) {
+                    \Log::warning("TandaTerimaLcl ID {$originalId} not found - skipping orphaned pivot record");
+                    continue;
+                }
                 
                 // Calculate current totals
                 $currentVolume = $originalTandaTerima->items->sum('meter_kubik');
