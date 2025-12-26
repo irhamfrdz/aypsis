@@ -61,13 +61,22 @@
                         </span>
                     </div>
                 </div>
-                <a href="{{ route('surat-jalan-bongkaran.select-ship') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Ganti Kapal/Voyage
-                </a>
+                <div class="flex gap-2">
+                    <button onclick="buatSuratJalanManual()" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah Surat Jalan
+                    </button>
+                    <a href="{{ route('surat-jalan-bongkaran.select-ship') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Ganti Kapal/Voyage
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -1120,6 +1129,53 @@ document.addEventListener('click', function(event) {
         });
     }
 });
+
+// Buat Surat Jalan Manual - Open modal without BL data
+function buatSuratJalanManual() {
+    // Show modal
+    document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
+    
+    // Clear BL ID
+    document.getElementById('modal_bl_id').value = '';
+    
+    // Set default values
+    document.getElementById('modal_nama_kapal').value = '{{ $selectedKapal }}';
+    document.getElementById('modal_no_voyage').value = '{{ $selectedVoyage }}';
+    
+    // Auto-generate nomor surat jalan
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const date = String(today.getDate()).padStart(2, '0');
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    document.getElementById('modal_nomor_surat_jalan').value = `SJB/${year}${month}${date}/${random}`;
+    
+    // Set default tanggal to today
+    document.getElementById('modal_tanggal_surat_jalan').value = new Date().toISOString().split('T')[0];
+    
+    // Clear all other fields
+    document.getElementById('modal_no_bl').value = '';
+    document.getElementById('modal_no_kontainer').value = '';
+    document.getElementById('modal_no_seal').value = '';
+    document.getElementById('modal_size').value = '';
+    document.getElementById('modal_jenis_barang').value = '';
+    document.getElementById('modal_penerima').value = '';
+    document.getElementById('modal_tujuan_pengiriman').value = '';
+    document.getElementById('modal_tujuan_alamat').value = '';
+    
+    // Remove readonly from fields
+    document.getElementById('modal_no_bl').removeAttribute('readonly');
+    document.getElementById('modal_no_kontainer').removeAttribute('readonly');
+    document.getElementById('modal_no_seal').removeAttribute('readonly');
+    document.getElementById('modal_size').removeAttribute('readonly');
+    document.getElementById('modal_jenis_barang').removeAttribute('readonly');
+    document.getElementById('modal_tujuan_pengiriman').removeAttribute('readonly');
+    
+    // Setup auto-fill and calculations
+    setupModalSupirAutoFill();
+    setupModalUangJalanCalculation('');
+    setupModalLanjutMuatToggle();
+}
 
 // Buat Surat Jalan function - Open modal and populate with BL data
 function buatSuratJalan(blId) {
