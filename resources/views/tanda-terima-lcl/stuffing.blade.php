@@ -1016,11 +1016,6 @@ document.getElementById('stuffingForm').addEventListener('submit', function(e) {
         container.appendChild(input);
     });
 });
-    
-    const unsealModal = document.getElementById('unsealModal');
-    if (event.target === unsealModal) {
-        closeUnsealModal();
-    }
 
 // Close modal when clicking outside
 document.addEventListener('click', function(event) {
@@ -1033,12 +1028,22 @@ document.addEventListener('click', function(event) {
     if (event.target === sealModal) {
         closeSealModal();
     }
+    
+    const unsealModal = document.getElementById('unsealModal');
+    if (event.target === unsealModal) {
+        closeUnsealModal();
+    }
 });
 
 // Prevent form submission if seal number is empty
 document.getElementById('sealForm').addEventListener('submit', function(e) {
     const nomorSeal = document.getElementById('nomor_seal').value.trim();
     if (!nomorSeal) {
+        e.preventDefault();
+        alert('Nomor seal wajib diisi');
+        return false;
+    }
+});
 
 // Validate unseal form
 document.getElementById('unsealForm').addEventListener('submit', function(e) {
@@ -1052,11 +1057,6 @@ document.getElementById('unsealForm').addEventListener('submit', function(e) {
     // Konfirmasi sebelum submit
     if (!confirm('Apakah Anda yakin ingin melepas seal kontainer ini? Data seal akan dihapus.')) {
         e.preventDefault();
-        return false;
-    }
-});
-        e.preventDefault();
-        alert('Nomor seal wajib diisi');
         return false;
     }
 });
