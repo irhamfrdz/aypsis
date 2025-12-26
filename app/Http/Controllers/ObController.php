@@ -15,6 +15,7 @@ use App\Models\Karyawan;
 use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ObController extends Controller
