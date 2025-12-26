@@ -202,9 +202,9 @@
                                     <td class="px-2 py-2 text-xs">
                                         @php
                                             $enrichedItems = $pranota->getEnrichedItems();
-                                            $supirList = array_unique(array_filter(array_column($enrichedItems, 'supir'), function($supir) {
-                                                return $supir && $supir !== '-';
-                                            }));
+                                            $supirList = array_values(array_unique(array_filter(array_column($enrichedItems, 'supir'), function($supir) {
+                                                return $supir && $supir !== '-' && $supir !== null && trim($supir) !== '';
+                                            })));
                                         @endphp
                                         <div class="flex flex-wrap gap-1" data-supir-data='@json($supirList)'>
                                             @if(count($supirList) > 0)
@@ -433,7 +433,12 @@
                     
                     if (supirCell && pranotaId) {
                         try {
-                            const supirList = JSON.parse(supirCell.getAttribute('data-supir-data'));
+                            const supirDataAttr = supirCell.getAttribute('data-supir-data');
+                            console.log('Pranota ID:', pranotaId, 'Supir Data Attr:', supirDataAttr);
+                            
+                            const supirList = JSON.parse(supirDataAttr);
+                            console.log('Parsed supirList:', supirList, 'Length:', supirList.length);
+                            
                             const biayaText = row.querySelector('td:nth-child(7)').textContent;
                             const biaya = parseFloat(biayaText.replace(/Rp\s|,|\./g, '')) || 0;
                             const itemCountText = row.querySelector('td:nth-child(5) span').textContent;
@@ -441,10 +446,12 @@
                             
                             // If there are supir in this pranota
                             if (supirList.length > 0) {
+                                console.log('Processing', supirList.length, 'supir(s)');
                                 const biayaPerSupir = biaya / supirList.length;
                                 const itemPerSupir = itemCount / supirList.length;
                                 
                                 supirList.forEach(supir => {
+                                    console.log('Adding supir:', supir);
                                     if (!supirData[supir]) {
                                         supirData[supir] = {
                                             items: 0,
@@ -455,6 +462,7 @@
                                     supirData[supir].biaya += biayaPerSupir;
                                 });
                             } else {
+                                console.log('No supir found, using "Belum Ditentukan"');
                                 // If no supir, count as "Belum Ditentukan"
                                 if (!supirData['Belum Ditentukan']) {
                                     supirData['Belum Ditentukan'] = {
