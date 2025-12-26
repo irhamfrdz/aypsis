@@ -1167,8 +1167,8 @@ function buatSuratJalanManual() {
     document.getElementById('modal_nomor_surat_jalan').value = `SJB/${year}${month}${date}/${random}`;
     
     // Set default tanggal to today
-    document.getElementById('modal_tangirim').value = '';
-    document.getElementById('modal_penggal_surat_jalan').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal_pengirim').value = '';
+    document.getElementById('modal_tanggal_surat_jalan').value = new Date().toISOString().split('T')[0];
     
     // Clear all other fields
     document.getElementById('modal_no_bl').value = '';
@@ -1239,8 +1239,7 @@ function buatSuratJalan(blId) {
             document.getElementById('modal_no_kontainer').value = data.nomor_kontainer || '';
             document.getElementById('modal_no_seal').value = data.no_seal || '';
             document.getElementById('modal_size').value = data.size_kontainer || '';
-            document.getElementById('modal_jengirim').value = data.pengirim || '';
-            document.getElementById('modal_penerima').value = data.penerima
+            document.getElementById('modal_pengirim').value = data.pengirim || '';
             document.getElementById('modal_penerima').value = data.penerima || data.pengirim || '';
             document.getElementById('modal_tujuan_pengiriman').value = data.pelabuhan_tujuan || '';
             
@@ -1671,8 +1670,7 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
             document.getElementById('edit_modal_term').value = data.term || '';
             document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
-            girim').value = data.pengirim || '';
-            document.getElementById('edit_modal_penerima').value = data.penerima
+            document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
             document.getElementById('edit_modal_penerima').value = data.penerima || data.pengirim || '';
             document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
             document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
