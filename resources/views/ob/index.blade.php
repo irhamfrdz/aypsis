@@ -1082,7 +1082,17 @@ function prosesTL(naikKapalId) {
             naik_kapal_id: naikKapalId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                console.error('Non-JSON response:', text);
+                throw new Error('Server mengembalikan response yang tidak valid. Cek console untuk detail.');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             alert('Proses TL berhasil! Kontainer sudah masuk ke BLS dan ditandai sebagai OB');

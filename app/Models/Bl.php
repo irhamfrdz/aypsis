@@ -25,6 +25,8 @@ class Bl extends Model
         'pelabuhan_asal',
         'pelabuhan_tujuan',
         'nama_barang',
+        'asal_kontainer',
+        'ke',
         'pengirim',
         'penerima',
         'alamat_pengiriman',

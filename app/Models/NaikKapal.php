@@ -24,6 +24,8 @@ class NaikKapal extends Model
         'no_voyage',
         'pelabuhan_asal',
         'pelabuhan_tujuan',
+        'asal_kontainer',
+        'ke',
         'tanggal_muat',
         'jam_muat',
         'total_volume',
