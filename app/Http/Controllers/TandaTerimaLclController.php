@@ -903,6 +903,21 @@ class TandaTerimaLclController extends Controller
                     'created_by' => Auth::id(),
                 ]);
 
+                // Add new tanda terima to pivot table so it appears in stuffing page
+                if ($request->nomor_kontainer) {
+                    TandaTerimaLclKontainerPivot::create([
+                        'tanda_terima_lcl_id' => $newTandaTerima->id,
+                        'nomor_kontainer' => $request->nomor_kontainer,
+                        'size_kontainer' => $request->size_kontainer,
+                        'tipe_kontainer' => $request->tipe_kontainer ?? 'lcl',
+                    ]);
+                    
+                    \Log::info("Added new tanda terima to pivot table", [
+                        'tanda_terima_lcl_id' => $newTandaTerima->id,
+                        'nomor_kontainer' => $request->nomor_kontainer,
+                    ]);
+                }
+
                 // Create single item for split container with specified dimensions
                 TandaTerimaLclItem::create([
                     'tanda_terima_lcl_id' => $newTandaTerima->id,
