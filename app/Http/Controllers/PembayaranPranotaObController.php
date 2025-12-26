@@ -95,8 +95,24 @@ class PembayaranPranotaObController extends Controller
 
         // Get the selected DP
         $selectedDp = null;
+        $dpSupirData = [];
         if ($request->filled('dp')) {
             $selectedDp = \App\Models\PembayaranOb::find($request->dp);
+            
+            // Build dpSupirData array dari jumlah_per_supir
+            if ($selectedDp && $selectedDp->jumlah_per_supir) {
+                $jumlahPerSupir = is_array($selectedDp->jumlah_per_supir) ? $selectedDp->jumlah_per_supir : json_decode($selectedDp->jumlah_per_supir, true);
+                
+                if (is_array($jumlahPerSupir)) {
+                    foreach ($jumlahPerSupir as $supirId => $jumlah) {
+                        // Get supir name
+                        $supir = \App\Models\Karyawan::find($supirId);
+                        if ($supir) {
+                            $dpSupirData[$supir->nama_lengkap] = floatval($jumlah);
+                        }
+                    }
+                }
+            }
         }
 
         // Get pranota OB filtered by kapal, voyage
@@ -128,7 +144,7 @@ class PembayaranPranotaObController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-ob.create', compact('pranotaList', 'akunCoa'));
+        return view('pembayaran-pranota-ob.create', compact('pranotaList', 'akunCoa', 'selectedDp', 'dpSupirData'));
     }
 
     /**
