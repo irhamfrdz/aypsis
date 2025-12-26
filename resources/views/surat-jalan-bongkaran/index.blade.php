@@ -457,7 +457,15 @@
 
                         <!-- Informasi Penerimaan -->
                         <div class="md:col-span-2 mt-3">
-                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Penerimaan</h4>
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Pengiriman</h4>
+                        </div>
+
+                        <!-- Pengirim -->
+                        <div>
+                            <label for="modal_pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
+                            <input type="text" name="pengirim" id="modal_pengirim"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama pengirim">
                         </div>
 
                         <!-- Penerima -->
@@ -819,6 +827,14 @@
                             <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Pengiriman</h4>
                         </div>
 
+                        <!-- Pengirim -->
+                        <div>
+                            <label for="edit_modal_pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
+                            <input type="text" name="pengirim" id="edit_modal_pengirim"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama pengirim">
+                        </div>
+
                         <!-- Penerima -->
                         <div>
                             <label for="edit_modal_penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
@@ -1151,7 +1167,8 @@ function buatSuratJalanManual() {
     document.getElementById('modal_nomor_surat_jalan').value = `SJB/${year}${month}${date}/${random}`;
     
     // Set default tanggal to today
-    document.getElementById('modal_tanggal_surat_jalan').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal_tangirim').value = '';
+    document.getElementById('modal_penggal_surat_jalan').value = new Date().toISOString().split('T')[0];
     
     // Clear all other fields
     document.getElementById('modal_no_bl').value = '';
@@ -1222,7 +1239,8 @@ function buatSuratJalan(blId) {
             document.getElementById('modal_no_kontainer').value = data.nomor_kontainer || '';
             document.getElementById('modal_no_seal').value = data.no_seal || '';
             document.getElementById('modal_size').value = data.size_kontainer || '';
-            document.getElementById('modal_jenis_barang').value = data.nama_barang || '';
+            document.getElementById('modal_jengirim').value = data.pengirim || '';
+            document.getElementById('modal_penerima').value = data.penerima
             document.getElementById('modal_penerima').value = data.penerima || data.pengirim || '';
             document.getElementById('modal_tujuan_pengiriman').value = data.pelabuhan_tujuan || '';
             
@@ -1474,6 +1492,7 @@ function getFieldLabel(fieldName) {
         'tanggal_surat_jalan': 'Tanggal Surat Jalan',
         'term': 'Term',
         'aktifitas': 'Aktifitas',
+        'penerima': 'Penerima',
         'pengirim': 'Pengirim',
         'jenis_barang': 'Jenis Barang',
         'tujuan_alamat': 'Tujuan Alamat',
@@ -1652,7 +1671,8 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
             document.getElementById('edit_modal_term').value = data.term || '';
             document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
-            
+            girim').value = data.pengirim || '';
+            document.getElementById('edit_modal_penerima').value = data.penerima
             document.getElementById('edit_modal_penerima').value = data.penerima || data.pengirim || '';
             document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
             document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
