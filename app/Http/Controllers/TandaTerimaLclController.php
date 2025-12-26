@@ -1784,17 +1784,21 @@ class TandaTerimaLclController extends Controller
                         if (!isset($seenItems[$itemKey])) {
                             $seenItems[$itemKey] = true;
                             
+                            // Use nama_barang from item, fallback to tanda_terima if needed
+                            $namaBarang = $item->nama_barang ?? $tandaTerima->nama_barang ?? 'N/A';
+                            $satuan = $item->keterangan_barang ?? $tandaTerima->keterangan_barang ?? '';
+                            
                             $barangData[] = [
                                 'id' => $item->id,
-                                'nama_barang' => $tandaTerima->nama_barang ?? 'N/A',
-                                'satuan' => $tandaTerima->keterangan_barang ?? '',
+                                'nama_barang' => $namaBarang,
+                                'satuan' => $satuan,
                                 'panjang' => $item->panjang,
                                 'lebar' => $item->lebar,
                                 'tinggi' => $item->tinggi,
                                 'jumlah' => $tandaTerima->kuantitas ?? 1,
                                 'meter_kubik' => $item->meter_kubik,
                                 'tonase' => $item->tonase,
-                                'display_label' => ($tandaTerima->nama_barang ?? 'N/A') . 
+                                'display_label' => $namaBarang . 
                                                  ($tandaTerima->kuantitas ? ' (' . $tandaTerima->kuantitas . ' pcs)' : '') .
                                                  ($item->panjang && $item->lebar && $item->tinggi ? 
                                                      ' - ' . $item->panjang . 'x' . $item->lebar . 'x' . $item->tinggi . 'm' : '') .
