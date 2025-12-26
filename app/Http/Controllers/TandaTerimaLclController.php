@@ -762,6 +762,12 @@ class TandaTerimaLclController extends Controller
             'tipe_kontainer' => 'required|in:lcl,cargo',
             'nomor_kontainer' => 'nullable|string|max:255',
             'size_kontainer' => 'nullable|in:20ft,40ft,40hc,45ft',
+            'nama_barang' => 'required|string|max:255',
+            'jumlah' => 'required|integer|min:1',
+            'satuan' => 'required|string|max:50',
+            'panjang' => 'required|numeric|min:0.01',
+            'lebar' => 'required|numeric|min:0.01',
+            'tinggi' => 'required|numeric|min:0.01',
             'volume' => 'required|numeric|min:0.001',
             'berat' => 'required|numeric|min:0.001',
             'kuantitas' => 'nullable|integer|min:1',
@@ -774,11 +780,18 @@ class TandaTerimaLclController extends Controller
             return redirect()->back()->with('error', 'Tidak ada kontainer yang dipilih.');
         }
 
-        // Get all tanda terima IDs from selected containers
-        $tandaTerimaIds = TandaTerimaLcl::whereIn('nomor_kontainer', $containerNumbers)
-            ->whereNotNull('nomor_kontainer')
-            ->pluck('id')
+        \Log::info('Bulk Split Request', [
+            'container_numbers' => $containerNumbers,
+            'request_data' => $request->all()
+        ]);
+
+        // Get all tanda terima IDs from selected containers via pivot table
+        $tandaTerimaIds = TandaTerimaLclKontainerPivot::whereIn('nomor_kontainer', $containerNumbers)
+            ->pluck('tanda_terima_lcl_id')
+            ->unique()
             ->toArray();
+
+        \Log::info('Found tanda terima IDs', ['ids' => $tandaTerimaIds]);
 
         if (empty($tandaTerimaIds)) {
             return redirect()->back()->with('error', 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.');
@@ -824,9 +837,9 @@ class TandaTerimaLclController extends Controller
                     'pic_pengirim' => $originalTandaTerima->pic_pengirim,
                     'telepon_pengirim' => $originalTandaTerima->telepon_pengirim,
                     'alamat_pengirim' => $originalTandaTerima->alamat_pengirim,
-                    'nama_barang' => $originalTandaTerima->nama_barang . ' (Pecahan)',
-                    'kuantitas' => $splitKuantitas > 0 ? $splitKuantitas : $originalTandaTerima->kuantitas,
-                    'keterangan_barang' => $request->keterangan,
+                    'nama_barang' => $request->nama_barang,
+                    'kuantitas' => $request->jumlah,
+                    'keterangan_barang' => $request->satuan,
                     'supir' => $originalTandaTerima->supir,
                     'no_plat' => $originalTandaTerima->no_plat,
                     'tujuan_pengiriman_id' => $originalTandaTerima->tujuan_pengiriman_id,
@@ -841,11 +854,13 @@ class TandaTerimaLclController extends Controller
                 TandaTerimaLclItem::create([
                     'tanda_terima_lcl_id' => $newTandaTerima->id,
                     'item_number' => 1,
-                    'panjang' => null, // Will be calculated or set separately
-                    'lebar' => null,
-                    'tinggi' => null,
+                    'nama_barang' => $request->nama_barang,
+                    'keterangan_barang' => $request->keterangan,
+                    'panjang' => $request->panjang,
+                    'lebar' => $request->lebar,
+                    'tinggi' => $request->tinggi,
                     'meter_kubik' => $splitVolume,
-                    'tonase' => $splitBeratTon, // Berat sudah dalam ton dari form
+                    'tonase' => $splitBeratTon,
                 ]);
                 
                 // Update original tanda terima - reduce volume and weight
