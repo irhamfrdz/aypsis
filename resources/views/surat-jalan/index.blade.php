@@ -188,7 +188,7 @@ use Illuminate\Support\Str;
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-2 whitespace-nowrap text-center sticky left-0 bg-white z-10">
                                 <div class="relative inline-block text-left z-50">
-                                    <button type="button" onclick="toggleDropdown('dropdown-{{ $suratJalan->id }}')"
+                                    <button type="button" onclick="toggleDropdown(event, 'dropdown-{{ $suratJalan->id }}')"
                                             class="inline-flex items-center justify-center w-6 h-6 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors duration-200">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -207,7 +207,7 @@ use Illuminate\Support\Str;
                                             </a>
 
                                             {{-- Tombol Cancel - untuk membatalkan surat jalan --}}
-                                            <button onclick="updateStatus('{{ $suratJalan->id }}', 'cancelled')"
+                                            <button onclick="event.stopPropagation(); updateStatus('{{ $suratJalan->id }}', 'cancelled')"
                                                     class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 whitespace-nowrap">
                                                 <svg class="mr-2 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -236,7 +236,7 @@ use Illuminate\Support\Str;
                                             </a>
 
                                             {{-- Tombol Pre Printed --}}
-                                                <button onclick="printPreprinted('{{ $suratJalan->id }}')"
+                                                <button onclick="event.stopPropagation(); printPreprinted('{{ $suratJalan->id }}')"
                                                     class="group flex items-center w-full px-3 py-1.5 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900 whitespace-nowrap">
                                                 <svg class="mr-2 h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -250,7 +250,7 @@ use Illuminate\Support\Str;
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    onclick="return confirm('Yakin ingin menghapus surat jalan ini?')"
+                                                    onclick="event.stopPropagation(); return confirm('Yakin ingin menghapus surat jalan ini?')"
                                                     class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 whitespace-nowrap">
                                                     <svg class="mr-2 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -449,8 +449,9 @@ use Illuminate\Support\Str;
 
 <script>
 // Toggle dropdown menu
-        function toggleDropdown(dropdownId) {
-            // Close all other dropdowns first
+        function toggleDropdown(event, dropdownId) {
+            event.stopPropagation();
+            // Close all other dropdowns first and move them back to their original parent
             document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
                 if (dropdown.id !== dropdownId) {
                     dropdown.classList.add('hidden');
@@ -459,6 +460,10 @@ use Illuminate\Support\Str;
                     dropdown.style.top = '';
                     dropdown.style.zIndex = '';
                     dropdown.style.minWidth = '';
+                    if (dropdown.__origParent) {
+                        dropdown.__origParent.appendChild(dropdown);
+                        dropdown.__origParent = null;
+                    }
                 }
             });
 
@@ -468,6 +473,12 @@ use Illuminate\Support\Str;
             const isHidden = dropdown.classList.contains('hidden');
 
             if (isHidden) {
+                // Move dropdown to body to avoid clipping by overflow/scrolling parents
+                if (!dropdown.__origParent) {
+                    dropdown.__origParent = dropdown.parentElement;
+                    document.body.appendChild(dropdown);
+                }
+
                 // Show dropdown first so we can measure its natural size
                 dropdown.classList.remove('hidden');
 
@@ -477,6 +488,9 @@ use Illuminate\Support\Str;
                 dropdown.style.top = '0px';
                 dropdown.style.zIndex = '9999';
                 dropdown.style.minWidth = '';
+
+                // Force reflow to get correct measurements
+                void dropdown.offsetWidth;
 
                 // Measure natural width and height
                 const naturalWidth = Math.max(dropdown.scrollWidth || 0, dropdown.offsetWidth || 0);
@@ -498,7 +512,7 @@ use Illuminate\Support\Str;
 
                 dropdown.style.left = left + 'px';
                 dropdown.style.top = top + 'px';
-                dropdown.style.minWidth = naturalWidth + 'px';
+                dropdown.style.minWidth = Math.max(naturalWidth, rect.width) + 'px';
             } else {
                 dropdown.classList.add('hidden');
                 dropdown.style.position = '';
@@ -506,6 +520,10 @@ use Illuminate\Support\Str;
                 dropdown.style.top = '';
                 dropdown.style.zIndex = '';
                 dropdown.style.minWidth = '';
+                if (dropdown.__origParent) {
+                    dropdown.__origParent.appendChild(dropdown);
+                    dropdown.__origParent = null;
+                }
             }
         }
 
@@ -539,6 +557,25 @@ function updateStatus(suratJalanId, status) {
 function printPreprinted(suratJalanId) {
     window.open(`/surat-jalan/${suratJalanId}/print-preprinted`, '_blank');
 }
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    // If click is not inside the button wrapper or inside any open dropdown, hide and restore dropdowns
+    if (!event.target.closest('.relative.inline-block') && !event.target.closest('[id^="dropdown-"]')) {
+        document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+            dropdown.classList.add('hidden');
+            dropdown.style.position = '';
+            dropdown.style.left = '';
+            dropdown.style.top = '';
+            dropdown.style.zIndex = '';
+            dropdown.style.minWidth = '';
+            if (dropdown.__origParent) {
+                dropdown.__origParent.appendChild(dropdown);
+                dropdown.__origParent = null;
+            }
+        });
+    }
+});
 </script>
 @endsection
 
