@@ -693,7 +693,6 @@
                 
                 <!-- Hidden input untuk nomor kontainer yang dipilih -->
                 <input type="hidden" id="splitSelectedContainersInput" name="ids" value="">
-                <input type="hidden" id="splitKuantitasInput" name="kuantitas" value="1">
                 
                 <div class="mb-6">
                     <h4 class="text-md font-medium text-gray-900 mb-4">Detail Kontainer Baru</h4>

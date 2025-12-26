@@ -770,7 +770,6 @@ class TandaTerimaLclController extends Controller
             'tinggi' => 'required|numeric|min:0.01',
             'volume' => 'required|numeric|min:0.001',
             'berat' => 'required|numeric|min:0',
-            'kuantitas' => 'nullable|integer|min:1',
             'keterangan' => 'required|string|max:1000'
         ]);
 
@@ -816,13 +815,14 @@ class TandaTerimaLclController extends Controller
         // Convert comma to dot for proper numeric parsing
         $splitVolume = floatval(str_replace(',', '.', $rawVolume));
         $splitBeratTon = floatval(str_replace(',', '.', $rawBerat));
-        $splitKuantitas = $request->kuantitas ?? 0;
+        $splitKuantitas = $request->jumlah ?? 1; // Use jumlah from form
         $processedCount = 0;
         
         \Log::info('Split values after conversion', [
             'raw_volume' => $rawVolume,
             'raw_berat' => $rawBerat,
             'parsed_volume' => $splitVolume,
+            'split_kuantitas' => $splitKuantitas,
             'parsed_berat' => $splitBeratTon,
         ]);
         
