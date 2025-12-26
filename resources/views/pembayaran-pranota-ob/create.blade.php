@@ -131,6 +131,13 @@
                                 </div>
                             </div>
                             <div>
+                                <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                                <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                    value="{{ old('nomor_accurate') }}"
+                                    placeholder="Masukkan nomor accurate (opsional)"
+                                    class="{{ $inputClasses }}">
+                            </div>
+                            <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
                                 <input type="text" id="tanggal_kas"
                                     value="{{ now()->format('d/M/Y') }}"

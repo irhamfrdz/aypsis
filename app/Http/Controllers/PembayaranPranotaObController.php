@@ -165,6 +165,7 @@ class PembayaranPranotaObController extends Controller
 
             $request->validate([
                 'nomor_pembayaran' => 'required|string',
+                'nomor_accurate' => 'nullable|string|max:255',
                 'bank' => 'required|string|max:255',
                 'jenis_transaksi' => 'required|in:debit,credit',
                 'tanggal_kas' => 'required|date',
@@ -233,6 +234,7 @@ class PembayaranPranotaObController extends Controller
             // Create pembayaran record
             $pembayaran = PembayaranPranotaOb::create([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
+                'nomor_accurate' => $request->nomor_accurate,
                 'nomor_cetakan' => 1,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,

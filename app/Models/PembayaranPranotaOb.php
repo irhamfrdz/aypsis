@@ -14,6 +14,7 @@ class PembayaranPranotaOb extends Model
 
     protected $fillable = [
         'nomor_pembayaran',
+        'nomor_accurate',
         'nomor_cetakan',
         'bank',
         'jenis_transaksi',
