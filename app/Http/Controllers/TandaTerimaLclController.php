@@ -768,10 +768,20 @@ class TandaTerimaLclController extends Controller
             'keterangan' => 'required|string|max:1000'
         ]);
 
-        $ids = json_decode($request->input('ids'), true);
+        $containerNumbers = json_decode($request->input('ids'), true);
         
-        if (empty($ids)) {
-            return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
+        if (empty($containerNumbers)) {
+            return redirect()->back()->with('error', 'Tidak ada kontainer yang dipilih.');
+        }
+
+        // Get all tanda terima IDs from selected containers
+        $tandaTerimaIds = TandaTerimaLcl::whereIn('nomor_kontainer', $containerNumbers)
+            ->whereNotNull('nomor_kontainer')
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($tandaTerimaIds)) {
+            return redirect()->back()->with('error', 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.');
         }
 
         $splitVolume = $request->volume; // CBM (sudah dalam m³)
@@ -779,9 +789,9 @@ class TandaTerimaLclController extends Controller
         $splitKuantitas = $request->kuantitas ?? 0;
         $processedCount = 0;
         
-        DB::transaction(function () use ($ids, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
+        DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
             
-            foreach ($ids as $originalId) {
+            foreach ($tandaTerimaIds as $originalId) {
                 $originalTandaTerima = TandaTerimaLcl::with('items')->findOrFail($originalId);
                 
                 // Calculate current totals
@@ -1737,12 +1747,13 @@ class TandaTerimaLclController extends Controller
                 ]);
             }
             
-            // Get all pivot records for these containers
-            $pivots = TandaTerimaLclKontainerPivot::with('tandaTerima.items')
+            // Get all tanda terima records for these containers
+            $tandaTerimas = TandaTerimaLcl::with('items')
                 ->whereIn('nomor_kontainer', $containers)
+                ->whereNotNull('nomor_kontainer')
                 ->get();
             
-            if ($pivots->isEmpty()) {
+            if ($tandaTerimas->isEmpty()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak ada data kontainer ditemukan'
@@ -1751,25 +1762,34 @@ class TandaTerimaLclController extends Controller
             
             // Collect all barang from items (including duplicates with different dimensions)
             $barangData = [];
+            $seenItems = []; // Track unique items to avoid duplicates
             
-            foreach ($pivots as $pivot) {
-                if ($pivot->tandaTerima && $pivot->tandaTerima->items) {
-                    foreach ($pivot->tandaTerima->items as $item) {
-                        $barangData[] = [
-                            'id' => $item->id,
-                            'nama_barang' => $item->nama_barang,
-                            'satuan' => $item->satuan,
-                            'panjang' => $item->panjang,
-                            'lebar' => $item->lebar,
-                            'tinggi' => $item->tinggi,
-                            'jumlah' => $item->jumlah,
-                            'meter_kubik' => $item->meter_kubik,
-                            'tonase' => $item->tonase,
-                            'display_label' => $item->nama_barang . 
-                                             ($item->jumlah ? ' (' . $item->jumlah . ' ' . ($item->satuan ?: 'pcs') . ')' : '') .
-                                             ($item->panjang && $item->lebar && $item->tinggi ? 
-                                                 ' - ' . $item->panjang . 'x' . $item->lebar . 'x' . $item->tinggi . 'm' : '')
-                        ];
+            foreach ($tandaTerimas as $tandaTerima) {
+                if ($tandaTerima->items && $tandaTerima->items->count() > 0) {
+                    foreach ($tandaTerima->items as $item) {
+                        // Create unique key based on item attributes
+                        $itemKey = $item->id;
+                        
+                        if (!isset($seenItems[$itemKey])) {
+                            $seenItems[$itemKey] = true;
+                            
+                            $barangData[] = [
+                                'id' => $item->id,
+                                'nama_barang' => $tandaTerima->nama_barang ?? 'N/A',
+                                'satuan' => $tandaTerima->keterangan_barang ?? '',
+                                'panjang' => $item->panjang,
+                                'lebar' => $item->lebar,
+                                'tinggi' => $item->tinggi,
+                                'jumlah' => $tandaTerima->kuantitas ?? 1,
+                                'meter_kubik' => $item->meter_kubik,
+                                'tonase' => $item->tonase,
+                                'display_label' => ($tandaTerima->nama_barang ?? 'N/A') . 
+                                                 ($tandaTerima->kuantitas ? ' (' . $tandaTerima->kuantitas . ' pcs)' : '') .
+                                                 ($item->panjang && $item->lebar && $item->tinggi ? 
+                                                     ' - ' . $item->panjang . 'x' . $item->lebar . 'x' . $item->tinggi . 'm' : '') .
+                                                 ($item->meter_kubik ? ' - ' . number_format($item->meter_kubik, 3) . 'm³' : '')
+                            ];
+                        }
                     }
                 }
             }
@@ -1777,7 +1797,7 @@ class TandaTerimaLclController extends Controller
             return response()->json([
                 'success' => true,
                 'barang' => $barangData,
-                'message' => 'Data barang berhasil dimuat'
+                'message' => 'Data barang berhasil dimuat (' . count($barangData) . ' items)'
             ]);
             
         } catch (\Exception $e) {
