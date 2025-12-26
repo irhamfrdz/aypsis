@@ -110,6 +110,25 @@
                                 <p class="mt-1 text-sm text-gray-500">Format: Kode_COA + Bulan(2) + Tahun(2) + Urutan(6). Pilih kas/bank untuk generate otomatis.</p>
                             </div>
 
+                            <!-- Nomor Accurate -->
+                            <div>
+                                <label for="nomor_accurate" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor Accurate
+                                </label>
+                                <input type="text"
+                                       name="nomor_accurate"
+                                       id="nomor_accurate"
+                                       value="{{ old('nomor_accurate') }}"
+                                       placeholder="Masukkan nomor accurate (opsional)"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_accurate') border-red-300 @enderror">
+                                @error('nomor_accurate')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">Nomor referensi dari sistem Accurate (opsional)</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Tanggal Pembayaran -->
                             <div>
                                 <label for="tanggal_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">

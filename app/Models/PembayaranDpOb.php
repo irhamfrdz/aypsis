@@ -16,6 +16,7 @@ class PembayaranDpOb extends Model
 
     protected $fillable = [
         'nomor_pembayaran',
+        'nomor_accurate',
         'tanggal_pembayaran',
         'kas_bank_id',
         'jenis_transaksi',
