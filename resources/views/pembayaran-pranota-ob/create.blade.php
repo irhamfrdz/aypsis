@@ -205,8 +205,26 @@
                                             $supirList = array_values(array_unique(array_filter(array_column($enrichedItems, 'supir'), function($supir) {
                                                 return $supir && $supir !== '-' && $supir !== null && trim($supir) !== '';
                                             })));
+                                            
+                                            // Build supir breakdown data with actual biaya per supir
+                                            $supirBreakdown = [];
+                                            foreach ($enrichedItems as $item) {
+                                                $supirName = $item['supir'] ?? null;
+                                                if ($supirName && $supirName !== '-' && $supirName !== null && trim($supirName) !== '') {
+                                                    if (!isset($supirBreakdown[$supirName])) {
+                                                        $supirBreakdown[$supirName] = [
+                                                            'items' => 0,
+                                                            'biaya' => 0
+                                                        ];
+                                                    }
+                                                    $supirBreakdown[$supirName]['items'] += 1;
+                                                    $supirBreakdown[$supirName]['biaya'] += floatval($item['biaya'] ?? 0);
+                                                }
+                                            }
                                         @endphp
-                                        <div class="flex flex-wrap gap-1" data-supir-data='@json($supirList)'>
+                                        <div class="flex flex-wrap gap-1" 
+                                             data-supir-data='@json($supirList)'
+                                             data-supir-breakdown='@json($supirBreakdown)'>
                                             @if(count($supirList) > 0)
                                                 @foreach(array_slice($supirList, 0, 2) as $supir)
                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">{{ $supir }}</span>
@@ -434,36 +452,39 @@
                     if (supirCell && pranotaId) {
                         try {
                             const supirDataAttr = supirCell.getAttribute('data-supir-data');
+                            const supirBreakdownAttr = supirCell.getAttribute('data-supir-breakdown');
                             console.log('Pranota ID:', pranotaId, 'Supir Data Attr:', supirDataAttr);
+                            console.log('Supir Breakdown:', supirBreakdownAttr);
                             
                             const supirList = JSON.parse(supirDataAttr);
+                            const supirBreakdown = JSON.parse(supirBreakdownAttr);
                             console.log('Parsed supirList:', supirList, 'Length:', supirList.length);
-                            
-                            const biayaText = row.querySelector('td:nth-child(7)').textContent;
-                            const biaya = parseFloat(biayaText.replace(/Rp\s|,|\./g, '')) || 0;
-                            const itemCountText = row.querySelector('td:nth-child(5) span').textContent;
-                            const itemCount = parseInt(itemCountText) || 0;
+                            console.log('Parsed supirBreakdown:', supirBreakdown);
                             
                             // If there are supir in this pranota
-                            if (supirList.length > 0) {
-                                console.log('Processing', supirList.length, 'supir(s)');
-                                const biayaPerSupir = biaya / supirList.length;
-                                const itemPerSupir = itemCount / supirList.length;
+                            if (supirList.length > 0 && Object.keys(supirBreakdown).length > 0) {
+                                console.log('Processing', supirList.length, 'supir(s) with breakdown data');
                                 
-                                supirList.forEach(supir => {
-                                    console.log('Adding supir:', supir);
+                                // Use actual breakdown data instead of dividing equally
+                                Object.entries(supirBreakdown).forEach(([supir, data]) => {
+                                    console.log('Adding supir:', supir, 'with', data.items, 'items and biaya:', data.biaya);
                                     if (!supirData[supir]) {
                                         supirData[supir] = {
                                             items: 0,
                                             biaya: 0
                                         };
                                     }
-                                    supirData[supir].items += itemPerSupir;
-                                    supirData[supir].biaya += biayaPerSupir;
+                                    supirData[supir].items += data.items;
+                                    supirData[supir].biaya += data.biaya;
                                 });
                             } else {
-                                console.log('No supir found, using "Belum Ditentukan"');
+                                console.log('No supir found or no breakdown data, using "Belum Ditentukan"');
                                 // If no supir, count as "Belum Ditentukan"
+                                const biayaText = row.querySelector('td:nth-child(7)').textContent;
+                                const biaya = parseFloat(biayaText.replace(/Rp\s|,|\./g, '')) || 0;
+                                const itemCountText = row.querySelector('td:nth-child(5) span').textContent;
+                                const itemCount = parseInt(itemCountText) || 0;
+                                
                                 if (!supirData['Belum Ditentukan']) {
                                     supirData['Belum Ditentukan'] = {
                                         items: 0,
