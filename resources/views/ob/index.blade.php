@@ -348,6 +348,19 @@
                                 </span>
                             @endif
                         </td>
+                        <td class="px-4 py-4 text-sm text-gray-900">
+                            @if($bl->sudah_tl)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                    <i class="fas fa-exchange-alt mr-1"></i>
+                                    Sudah TL
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                    <i class="fas fa-minus-circle mr-1"></i>
+                                    Belum TL
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center space-x-2">
                                 @if(!$bl->sudah_ob)
@@ -377,7 +390,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="13" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                        <td colspan="14" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -505,10 +518,18 @@
                             <td class="px-4 py-4 text-sm text-gray-900">
                                 @if($naikKapal->sudah_ob)
                                     <div class="flex flex-col space-y-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
-                                            <i class="fas fa-check-circle mr-1"></i>
-                                            Sudah OB
-                                        </span>
+                                        <div class="flex items-center space-x-1">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Sudah OB
+                                            </span>
+                                            @if($naikKapal->is_tl)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 w-fit">
+                                                    <i class="fas fa-exchange-alt mr-1"></i>
+                                                    TL
+                                                </span>
+                                            @endif
+                                        </div>
                                         @if($naikKapal->supir)
                                             <div class="text-xs text-gray-600">
                                                 <i class="fas fa-user mr-1"></i>
@@ -539,6 +560,11 @@
                                                class="text-green-600 hover:text-green-900 transition duration-150"
                                                title="Tandai sudah OB">
                                             <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" onclick="prosesTL({{ $naikKapal->id }})"
+                                               class="text-purple-600 hover:text-purple-900 transition duration-150"
+                                               title="Transfer Loading (TL)">
+                                            <i class="fas fa-exchange-alt"></i> TL
                                         </button>
                                     @else
                                         <button type="button" onclick="unmarkOB('naik_kapal', {{ $naikKapal->id }})"
@@ -1037,6 +1063,107 @@ function unmarkOB(type, id) {
             alert('Terjadi kesalahan saat membatalkan OB');
         });
     }
+}
+
+// Function to process TL (Tanda Langsung)
+function prosesTL(naikKapalId) {
+    // Get list of supir from the existing modal
+    const supirSelect = document.getElementById('supir_id');
+    
+    // Create confirmation modal
+    const modalHtml = `
+        <div id="tl-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
+                        Proses TL (Tanda Langsung)
+                    </h3>
+                    <button onclick="closeTLModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Supir OB:</label>
+                    <select id="tl-supir-id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                        <option value="">-- Pilih Supir --</option>
+                        ${Array.from(supirSelect.options).map(opt => 
+                            opt.value ? `<option value="${opt.value}">${opt.text}</option>` : ''
+                        ).join('')}
+                    </select>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">
+                    Proses ini akan:
+                    <ul class="list-disc ml-5 mt-2">
+                        <li>Membuat record BL baru dari data kontainer</li>
+                        <li>Menandai kontainer sebagai sudah OB</li>
+                        <li>Menandai proses TL untuk audit trail</li>
+                    </ul>
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeTLModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        Batal
+                    </button>
+                    <button onclick="submitTL(${naikKapalId})" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">
+                        <i class="fas fa-exchange-alt mr-2"></i>
+                        Proses TL
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeTLModal() {
+    const modal = document.getElementById('tl-modal');
+    if (modal) modal.remove();
+}
+
+function submitTL(naikKapalId) {
+    const supirId = document.getElementById('tl-supir-id').value;
+    
+    if (!supirId) {
+        alert('Silakan pilih supir terlebih dahulu');
+        return;
+    }
+    
+    // Disable button to prevent double submission
+    const btnSubmit = event.target;
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+    
+    // Send AJAX request
+    fetch('/ob/process-tl', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            naik_kapal_id: naikKapalId,
+            supir_id: supirId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeTLModal();
+            alert('Proses TL berhasil! Kontainer sudah masuk ke BLS dan ditandai sebagai OB');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan saat memproses TL');
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-exchange-alt mr-2"></i>Proses TL';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses TL: ' + error.message);
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fas fa-exchange-alt mr-2"></i>Proses TL';
+    });
 }
 
 // Handle bulk actions

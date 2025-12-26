@@ -1509,6 +1509,78 @@ class ObController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Process TL (Tanda Langsung) - Copy naik_kapal to BL and mark as OB
+     */
+    public function processTL(Request $request)
+    {
+        try {
+            $request->validate([
+                'naik_kapal_id' => 'required|integer|exists:naik_kapal,id',
+                'supir_id' => 'required|integer|exists:karyawans,id'
+            ]);
+
+            $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+
+            // Check if already processed
+            if ($naikKapal->sudah_ob) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kontainer ini sudah ditandai OB'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Create BL record from naik_kapal
+            $bl = new Bl();
+            $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
+            $bl->no_seal = $naikKapal->no_seal;
+            $bl->nama_barang = $naikKapal->jenis_barang;
+            $bl->tipe_kontainer = $naikKapal->tipe_kontainer;
+            $bl->size_kontainer = $naikKapal->size_kontainer;
+            $bl->nama_kapal = $naikKapal->nama_kapal;
+            $bl->no_voyage = $naikKapal->no_voyage;
+            $bl->pelabuhan_asal = $naikKapal->pelabuhan_asal;
+            $bl->pelabuhan_tujuan = $naikKapal->pelabuhan_tujuan;
+            $bl->asal_kontainer = $naikKapal->asal_kontainer ?? null;
+            $bl->ke = $naikKapal->ke ?? null;
+            
+            // Mark as sudah OB
+            $bl->sudah_ob = true;
+            $bl->supir_id = $request->supir_id;
+            $bl->tanggal_ob = now();
+            $bl->catatan_ob = 'Proses TL (Tanda Langsung)';
+            
+            $bl->save();
+
+            // Update naik_kapal status
+            $naikKapal->sudah_ob = true;
+            $naikKapal->supir_id = $request->supir_id;
+            $naikKapal->tanggal_ob = now();
+            $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung)';
+            $naikKapal->is_tl = true;
+            $naikKapal->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil proses TL kontainer ' . $naikKapal->nomor_kontainer
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error in processTL: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal proses TL: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
 
 

@@ -33,6 +33,7 @@ class NaikKapal extends Model
         'supir_id',
         'tanggal_ob',
         'catatan_ob',
+        'is_tl',
         // 'status', // Kolom tidak ada di table
         'keterangan',
         'created_by',
@@ -53,6 +54,7 @@ class NaikKapal extends Model
         'total_volume' => 'decimal:3',
         'total_tonase' => 'decimal:3',
         'sudah_ob' => 'boolean',
+        'is_tl' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
