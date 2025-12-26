@@ -769,7 +769,7 @@ class TandaTerimaLclController extends Controller
             'lebar' => 'required|numeric|min:0.01',
             'tinggi' => 'required|numeric|min:0.01',
             'volume' => 'required|numeric|min:0.001',
-            'berat' => 'required|numeric|min:0.001',
+            'berat' => 'required|numeric|min:0',
             'kuantitas' => 'nullable|integer|min:1',
             'keterangan' => 'required|string|max:1000'
         ]);
@@ -809,10 +809,22 @@ class TandaTerimaLclController extends Controller
             return redirect()->back()->with('error', 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.');
         }
 
-        $splitVolume = $request->volume; // CBM (sudah dalam m³)
-        $splitBeratTon = $request->berat; // Ton dari form (tidak perlu konversi lagi)
+        // Handle locale-specific decimal formatting (comma vs dot)
+        $rawVolume = $request->input('volume');
+        $rawBerat = $request->input('berat');
+        
+        // Convert comma to dot for proper numeric parsing
+        $splitVolume = floatval(str_replace(',', '.', $rawVolume));
+        $splitBeratTon = floatval(str_replace(',', '.', $rawBerat));
         $splitKuantitas = $request->kuantitas ?? 0;
         $processedCount = 0;
+        
+        \Log::info('Split values after conversion', [
+            'raw_volume' => $rawVolume,
+            'raw_berat' => $rawBerat,
+            'parsed_volume' => $splitVolume,
+            'parsed_berat' => $splitBeratTon,
+        ]);
         
         DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
             
@@ -830,14 +842,35 @@ class TandaTerimaLclController extends Controller
                 $currentVolume = $originalTandaTerima->items->sum('meter_kubik');
                 $currentBeratTon = $originalTandaTerima->items->sum('tonase');
                 
-                // Check if we have enough volume and weight to split
+                \Log::info("Checking split eligibility for ID {$originalId}", [
+                    'current_volume' => $currentVolume,
+                    'current_berat' => $currentBeratTon,
+                    'requested_split_volume' => $splitVolume,
+                    'requested_split_berat' => $splitBeratTon,
+                    'volume_sufficient' => $currentVolume >= $splitVolume,
+                    'berat_sufficient' => $currentBeratTon >= $splitBeratTon || $currentBeratTon == 0,
+                ]);
+                
+                // Check if we have enough volume to split (required)
                 if ($currentVolume < $splitVolume) {
+                    \Log::info("Skipping ID {$originalId} - insufficient volume: {$currentVolume} < {$splitVolume}");
                     continue; // Skip this item if not enough volume
                 }
                 
-                if ($currentBeratTon < $splitBeratTon) {
+                // For berat: if original has no berat data (0), proceed anyway
+                // Only skip if original has berat data but it's less than requested
+                if ($currentBeratTon > 0 && $currentBeratTon < $splitBeratTon) {
+                    \Log::info("Skipping ID {$originalId} - insufficient berat: {$currentBeratTon} < {$splitBeratTon}");
                     continue; // Skip this item if not enough weight (in ton)
                 }
+                
+                // If original has no berat, use the requested berat for the new split
+                // If original has berat, use the minimum of requested and available
+                $actualSplitBerat = $currentBeratTon > 0 ? min($splitBeratTon, $currentBeratTon) : $splitBeratTon;
+                
+                \Log::info("Proceeding with split for ID {$originalId}", [
+                    'actual_split_berat' => $actualSplitBerat
+                ]);
                 
                 // Generate new tanda terima number with suffix and timestamp for uniqueness
                 $timestamp = now()->format('YmdHis'); // Format: 20251226163049
