@@ -1747,24 +1747,35 @@ class TandaTerimaLclController extends Controller
                 ]);
             }
             
-            // Get all tanda terima records for these containers
-            $tandaTerimas = TandaTerimaLcl::with('items')
+            \Log::info('Getting barang for containers:', ['containers' => $containers]);
+            
+            // Get pivot records for these containers
+            $pivotRecords = TandaTerimaLclKontainerPivot::with(['tandaTerima.items'])
                 ->whereIn('nomor_kontainer', $containers)
-                ->whereNotNull('nomor_kontainer')
                 ->get();
             
-            if ($tandaTerimas->isEmpty()) {
+            if ($pivotRecords->isEmpty()) {
+                \Log::warning('No pivot records found for containers:', ['containers' => $containers]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak ada data kontainer ditemukan'
                 ]);
             }
             
+            \Log::info('Found pivot records:', ['count' => $pivotRecords->count()]);
+            
             // Collect all barang from items (including duplicates with different dimensions)
             $barangData = [];
             $seenItems = []; // Track unique items to avoid duplicates
             
-            foreach ($tandaTerimas as $tandaTerima) {
+            foreach ($pivotRecords as $pivot) {
+                if (!$pivot->tandaTerima) {
+                    \Log::warning('Pivot without tanda_terima:', ['pivot_id' => $pivot->id]);
+                    continue;
+                }
+                
+                $tandaTerima = $pivot->tandaTerima;
+                
                 if ($tandaTerima->items && $tandaTerima->items->count() > 0) {
                     foreach ($tandaTerima->items as $item) {
                         // Create unique key based on item attributes
@@ -1793,6 +1804,8 @@ class TandaTerimaLclController extends Controller
                     }
                 }
             }
+            
+            \Log::info('Collected barang data:', ['count' => count($barangData)]);
             
             return response()->json([
                 'success' => true,
