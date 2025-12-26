@@ -777,6 +777,12 @@ class TandaTerimaLclController extends Controller
         $containerNumbers = json_decode($request->input('ids'), true);
         
         if (empty($containerNumbers)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada kontainer yang dipilih.'
+                ], 400);
+            }
             return redirect()->back()->with('error', 'Tidak ada kontainer yang dipilih.');
         }
 
@@ -794,6 +800,12 @@ class TandaTerimaLclController extends Controller
         \Log::info('Found tanda terima IDs', ['ids' => $tandaTerimaIds]);
 
         if (empty($tandaTerimaIds)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.'
+                ], 404);
+            }
             return redirect()->back()->with('error', 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.');
         }
 
@@ -976,11 +988,27 @@ class TandaTerimaLclController extends Controller
                 $message = 'Tidak ada tanda terima yang dapat dipecah. Pastikan volume dan berat yang diminta tidak melebihi kapasitas yang tersedia.';
             }
             
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 400);
+            }
             return redirect()->back()->with('error', $message);
         }
         
+        $successMessage = "Berhasil memecah {$processedCount} tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.";
+        
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $successMessage,
+                'processed_count' => $processedCount
+            ]);
+        }
+        
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', "Berhasil memecah {$processedCount} tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.");
+                        ->with('success', $successMessage);
     }
 
     /**
