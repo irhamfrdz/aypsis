@@ -1151,6 +1151,8 @@ function loadBarangForSplit(selectedContainers) {
         return;
     }
     
+    console.log('🔍 Loading barang for containers:', selectedContainers);
+    
     // Reset dropdown
     namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
     namaBarangSelect.disabled = true;
@@ -1167,8 +1169,13 @@ function loadBarangForSplit(selectedContainers) {
             containers: selectedContainers
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📡 Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('📦 Response data:', data);
+        
         if (data.success && data.barang && data.barang.length > 0) {
             namaBarangSelect.innerHTML = '<option value="">-- Pilih Barang --</option>';
             
@@ -1210,13 +1217,14 @@ function loadBarangForSplit(selectedContainers) {
             
             console.log('✓ Loaded', data.barang.length, 'barang items');
         } else {
+            console.warn('⚠️ No barang found. Data:', data);
             namaBarangSelect.innerHTML = '<option value="">Tidak ada data barang</option>';
             namaBarangSelect.disabled = false;
             console.warn('Tidak ada data barang ditemukan');
         }
     })
     .catch(error => {
-        console.error('Error loading barang:', error);
+        console.error('❌ Error loading barang:', error);
         namaBarangSelect.innerHTML = '<option value="">Error memuat data</option>';
         namaBarangSelect.disabled = false;
         alert('Terjadi error saat memuat data barang. Silakan coba lagi.');
