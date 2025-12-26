@@ -1517,8 +1517,7 @@ class ObController extends Controller
     {
         try {
             $request->validate([
-                'naik_kapal_id' => 'required|integer|exists:naik_kapal,id',
-                'supir_id' => 'required|integer|exists:karyawans,id'
+                'naik_kapal_id' => 'required|integer|exists:naik_kapal,id'
             ]);
 
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
@@ -1547,19 +1546,19 @@ class ObController extends Controller
             $bl->asal_kontainer = $naikKapal->asal_kontainer ?? null;
             $bl->ke = $naikKapal->ke ?? null;
             
-            // Mark as sudah OB
+            // Mark as sudah OB (TL tidak perlu supir karena langsung dimuat)
             $bl->sudah_ob = true;
-            $bl->supir_id = $request->supir_id;
+            $bl->supir_id = null;
             $bl->tanggal_ob = now();
-            $bl->catatan_ob = 'Proses TL (Tanda Langsung)';
+            $bl->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
             
             $bl->save();
 
             // Update naik_kapal status
             $naikKapal->sudah_ob = true;
-            $naikKapal->supir_id = $request->supir_id;
+            $naikKapal->supir_id = null;
             $naikKapal->tanggal_ob = now();
-            $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung)';
+            $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
             $naikKapal->is_tl = true;
             $naikKapal->save();
 

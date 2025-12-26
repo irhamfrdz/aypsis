@@ -1065,76 +1065,13 @@ function unmarkOB(type, id) {
     }
 }
 
-// Function to process TL (Tanda Langsung)
+// Function to process TL (Tanda Langsung) - Langsung dimuat tanpa supir
 function prosesTL(naikKapalId) {
-    // Get list of supir from the existing modal
-    const supirSelect = document.getElementById('supir_id');
-    
-    // Create confirmation modal
-    const modalHtml = `
-        <div id="tl-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
-                        Proses TL (Tanda Langsung)
-                    </h3>
-                    <button onclick="closeTLModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Supir OB:</label>
-                    <select id="tl-supir-id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                        <option value="">-- Pilih Supir --</option>
-                        ${Array.from(supirSelect.options).map(opt => 
-                            opt.value ? `<option value="${opt.value}">${opt.text}</option>` : ''
-                        ).join('')}
-                    </select>
-                </div>
-                <p class="text-sm text-gray-600 mb-4">
-                    Proses ini akan:
-                    <ul class="list-disc ml-5 mt-2">
-                        <li>Membuat record BL baru dari data kontainer</li>
-                        <li>Menandai kontainer sebagai sudah OB</li>
-                        <li>Menandai proses TL untuk audit trail</li>
-                    </ul>
-                </p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeTLModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                        Batal
-                    </button>
-                    <button onclick="submitTL(${naikKapalId})" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">
-                        <i class="fas fa-exchange-alt mr-2"></i>
-                        Proses TL
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-function closeTLModal() {
-    const modal = document.getElementById('tl-modal');
-    if (modal) modal.remove();
-}
-
-function submitTL(naikKapalId) {
-    const supirId = document.getElementById('tl-supir-id').value;
-    
-    if (!supirId) {
-        alert('Silakan pilih supir terlebih dahulu');
+    if (!confirm('Proses TL (Tanda Langsung)?\n\nKontainer akan langsung dimuat dan ditandai sebagai OB tanpa supir.\n\nProses ini akan:\n- Membuat record BL baru\n- Menandai sebagai sudah OB\n- Ditandai TL untuk audit trail')) {
         return;
     }
     
-    // Disable button to prevent double submission
-    const btnSubmit = event.target;
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
-    
-    // Send AJAX request
+    // Send AJAX request langsung tanpa modal
     fetch('/ob/process-tl', {
         method: 'POST',
         headers: {
@@ -1142,27 +1079,21 @@ function submitTL(naikKapalId) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
-            naik_kapal_id: naikKapalId,
-            supir_id: supirId
+            naik_kapal_id: naikKapalId
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            closeTLModal();
             alert('Proses TL berhasil! Kontainer sudah masuk ke BLS dan ditandai sebagai OB');
             window.location.reload();
         } else {
             alert(data.message || 'Terjadi kesalahan saat memproses TL');
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="fas fa-exchange-alt mr-2"></i>Proses TL';
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('Terjadi kesalahan saat memproses TL: ' + error.message);
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = '<i class="fas fa-exchange-alt mr-2"></i>Proses TL';
     });
 }
 
