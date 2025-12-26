@@ -506,8 +506,8 @@ use Illuminate\Support\Str;
                 dropdown.style.top = '';
                 dropdown.style.zIndex = '';
                 dropdown.style.minWidth = '';
-    }
-});
+            }
+        }
 
 // Update status function
 function updateStatus(suratJalanId, status) {
