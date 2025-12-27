@@ -747,8 +747,22 @@ class ObController extends Controller
             $naikKapal->tanggal_ob = now();
             $naikKapal->catatan_ob = $request->catatan;
             $naikKapal->updated_by = $user->id;
+            // If this naik_kapal was previously marked TL, clear it because supir is selected
+            if ($naikKapal->is_tl) {
+                $naikKapal->is_tl = false;
+            }
             $naikKapal->save();
             \Log::info("Updated naik_kapal OB status");
+
+            // Also clear TL flag on related BLs (if any)
+            try {
+                Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                    ->where('no_voyage', $naikKapal->no_voyage)
+                    ->where('nama_kapal', $naikKapal->nama_kapal)
+                    ->update(['sudah_tl' => false]);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to clear BL.sudah_tl for container in markAsOB: ' . $e->getMessage());
+            }
 
             // Otomatis buat record di BLS untuk kegiatan muat
             // Cek dulu apakah sudah ada BL dengan nomor kontainer dan voyage yang sama
@@ -891,9 +905,23 @@ class ObController extends Controller
                 $existingBl->tanggal_ob = now();
                 $existingBl->catatan_ob = $request->catatan;
                 $existingBl->updated_by = $user->id;
+                // If BL was previously TL, clear TL status because now a supir is assigned
+                if ($existingBl->sudah_tl) {
+                    $existingBl->sudah_tl = false;
+                }
                 $existingBl->save();
                 
                 \Log::info("✅ SUCCESS: Updated existing BL record OB status");
+
+                // Also clear TL flag on related NaikKapal rows (if any)
+                try {
+                    NaikKapal::where('nomor_kontainer', $existingBl->nomor_kontainer)
+                        ->where('no_voyage', $existingBl->no_voyage)
+                        ->where('nama_kapal', $existingBl->nama_kapal)
+                        ->update(['is_tl' => false]);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to clear NaikKapal.is_tl for container in markAsOB: ' . $e->getMessage());
+                }
             }
 
             // Update status prospek menjadi 'sudah_muat' jika ada
@@ -952,7 +980,21 @@ class ObController extends Controller
             $bl->tanggal_ob = now();
             $bl->catatan_ob = $request->catatan;
             $bl->updated_by = $user->id;
+            // Clear TL flag if present because assigning a supir means it's no longer TL
+            if ($bl->sudah_tl) {
+                $bl->sudah_tl = false;
+            }
             $bl->save();
+
+            // Also clear any related NaikKapal.is_tl records
+            try {
+                NaikKapal::where('nomor_kontainer', $bl->nomor_kontainer)
+                    ->where('no_voyage', $bl->no_voyage)
+                    ->where('nama_kapal', $bl->nama_kapal)
+                    ->update(['is_tl' => false]);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to clear NaikKapal.is_tl for container in markAsOBBl: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
