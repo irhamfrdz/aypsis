@@ -134,64 +134,64 @@
         <!-- Table -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-xs">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-4 py-3 text-left">
+                            <th scope="col" class="px-2 py-2 text-left">
                                 <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-orange-600">
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($suratJalans as $sj)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-4">
+                                <td class="px-2 py-2">
                                     <input type="checkbox" class="item-checkbox rounded border-gray-300 text-orange-600" value="{{ $sj->id }}">
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="font-medium text-blue-600">{{ $sj->no_surat_jalan }}</span>
+                                <td class="px-3 py-2">
+                                    <span class="font-medium text-blue-600 text-xs">{{ $sj->no_surat_jalan }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-3 py-2 text-xs text-gray-600">
                                     {{ $sj->tanggal_surat_jalan ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : '-' }}
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                                <td class="px-3 py-2">
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-medium rounded">
                                         {{ $sj->no_kontainer ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->supir ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->no_plat ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tujuan_pengiriman ?? '-' }}</td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-xs text-gray-600">{{ $sj->supir ?? '-' }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-600">{{ $sj->no_plat ?? '-' }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-600">{{ $sj->tujuan_pengiriman ?? '-' }}</td>
+                                <td class="px-3 py-2">
                                     @if($sj->status_checkpoint_keluar == 'sudah_keluar')
-                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                        <span class="px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-medium rounded-full">
                                             Sudah Keluar
                                         </span>
                                     @elseif($sj->status_checkpoint_keluar == 'pending')
-                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                                        <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-medium rounded-full">
                                             Pending
                                         </span>
                                     @else
-                                        <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-[10px] font-medium rounded-full">
                                             Belum Keluar
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2">
                                     <button type="button" onclick="showKeluarModal({{ $sj->id }}, '{{ $sj->no_kontainer }}', '{{ $sj->no_surat_jalan }}')"
-                                            class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition">
+                                            class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                         </svg>
-                                        Proses Keluar
+                                        Proses
                                     </button>
                                 </td>
                             </tr>
