@@ -916,6 +916,23 @@
                                 <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.export') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['export']) && $userMatrixPermissions['tanda-terima-bongkaran']['export']) || ($user && $user->can('tanda-terima-bongkaran-export'))) checked @endif></td>
                             </tr>
 
+                            {{-- Checkpoint Kontainer Keluar --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Checkpoint Kontainer Keluar</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[checkpoint-kontainer-keluar][view]" value="1" class="permission-checkbox" @if(old('permissions.checkpoint-kontainer-keluar.view') || (isset($userMatrixPermissions['checkpoint-kontainer-keluar']['view']) && $userMatrixPermissions['checkpoint-kontainer-keluar']['view']) || ($user && $user->can('checkpoint-kontainer-keluar-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[checkpoint-kontainer-keluar][create]" value="1" class="permission-checkbox" @if(old('permissions.checkpoint-kontainer-keluar.create') || (isset($userMatrixPermissions['checkpoint-kontainer-keluar']['create']) && $userMatrixPermissions['checkpoint-kontainer-keluar']['create']) || ($user && $user->can('checkpoint-kontainer-keluar-create'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[checkpoint-kontainer-keluar][delete]" value="1" class="permission-checkbox" @if(old('permissions.checkpoint-kontainer-keluar.delete') || (isset($userMatrixPermissions['checkpoint-kontainer-keluar']['delete']) && $userMatrixPermissions['checkpoint-kontainer-keluar']['delete']) || ($user && $user->can('checkpoint-kontainer-keluar-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- User --}}
                             <tr class="module-row" data-module="user">
                                 <td class="module-header">
