@@ -1885,7 +1885,10 @@ class TandaTerimaLclController extends Controller
                             
                             // Use nama_barang from item, fallback to tanda_terima if needed
                             $namaBarang = $item->nama_barang ?? $tandaTerima->nama_barang ?? 'N/A';
-                            $satuan = $item->keterangan_barang ?? $tandaTerima->keterangan_barang ?? '';
+                            $satuan = $item->satuan ?? $item->keterangan_barang ?? $tandaTerima->keterangan_barang ?? '';
+                            
+                            // Get jumlah from item first, fallback to tanda_terima->kuantitas
+                            $jumlah = $item->jumlah ?? $tandaTerima->kuantitas ?? 1;
                             
                             $barangData[] = [
                                 'id' => $item->id,
@@ -1894,11 +1897,11 @@ class TandaTerimaLclController extends Controller
                                 'panjang' => $item->panjang,
                                 'lebar' => $item->lebar,
                                 'tinggi' => $item->tinggi,
-                                'jumlah' => $tandaTerima->kuantitas ?? 1,
+                                'jumlah' => $jumlah,
                                 'meter_kubik' => $item->meter_kubik,
                                 'tonase' => $item->tonase,
                                 'display_label' => $namaBarang . 
-                                                 ($tandaTerima->kuantitas ? ' (' . $tandaTerima->kuantitas . ' pcs)' : '') .
+                                                 ($jumlah > 1 ? ' (' . $jumlah . ' pcs)' : '') .
                                                  ($item->panjang && $item->lebar && $item->tinggi ? 
                                                      ' - ' . $item->panjang . 'x' . $item->lebar . 'x' . $item->tinggi . 'm' : '') .
                                                  ($item->meter_kubik ? ' - ' . number_format($item->meter_kubik, 3) . 'm³' : '')
