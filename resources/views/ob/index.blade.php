@@ -366,6 +366,13 @@
                                        title="Input Supir OB">
                                     <i class="fas fa-user-plus"></i>
                                 </button>
+                                @if($bl->sudah_tl)
+                                <button type="button" onclick="clearTL('bl', {{ $bl->id }})"
+                                       class="text-red-600 hover:text-red-900 transition duration-150"
+                                       title="Hapus status TL">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
+                                @endif
                                 <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
                                    title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
@@ -567,6 +574,13 @@
                                                title="Batalkan OB">
                                             <i class="fas fa-undo"></i>
                                         </button>
+                                        @if($naikKapal->is_tl)
+                                        <button type="button" onclick="clearTL('naik_kapal', {{ $naikKapal->id }})"
+                                               class="text-red-600 hover:text-red-900 transition duration-150"
+                                               title="Hapus status TL">
+                                            <i class="fas fa-times-circle"></i>
+                                        </button>
+                                        @endif
                                     @endif
                                     <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
                                            class="text-blue-600 hover:text-blue-900 transition duration-150"
@@ -1162,6 +1176,42 @@ function prosesTLBongkar(blId) {
     .catch(error => {
         console.error('Error:', error);
         alert('Terjadi kesalahan saat memproses TL Bongkar: ' + error.message);
+    });
+}
+
+// Manual clear TL action (for BL or NaikKapal)
+function clearTL(type, id) {
+    if (!confirm('Hapus status TL untuk kontainer ini?\n\nIni akan menghapus flag TL (Tanda Langsung) sehingga kontainer bisa dimasukkan ke pranota atau diproses kembali.')) {
+        return;
+    }
+
+    let endpoint = '/ob/clear-tl';
+    let requestData = { naik_kapal_id: id };
+    if (type === 'bl') {
+        endpoint = '/ob/clear-tl-bl';
+        requestData = { bl_id: id };
+    }
+
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || 'Status TL berhasil dihapus');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan saat menghapus status TL');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menghapus status TL');
     });
 }
 

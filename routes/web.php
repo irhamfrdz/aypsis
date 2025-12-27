@@ -3156,6 +3156,13 @@ Route::middleware(['auth'])->group(function() {
     Route::post('ob/unmark-ob-bl', [\App\Http\Controllers\ObController::class, 'unmarkOBBl'])
          ->name('ob.unmark-ob-bl')
          ->middleware('can:ob-view');
+    // Clear TL (Tanda Langsung) actions - allow manual removal of TL status
+    Route::post('ob/clear-tl', [\App\Http\Controllers\ObController::class, 'clearTL'])
+         ->name('ob.clear-tl')
+         ->middleware('can:ob-view');
+    Route::post('ob/clear-tl-bl', [\App\Http\Controllers\ObController::class, 'clearTLBl'])
+         ->name('ob.clear-tl-bl')
+         ->middleware('can:ob-view');
     Route::post('ob/masuk-pranota', [\App\Http\Controllers\ObController::class, 'masukPranota'])
          ->name('ob.masuk-pranota')
          ->middleware('can:ob-view');

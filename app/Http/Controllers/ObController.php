@@ -1088,6 +1088,98 @@ class ObController extends Controller
     }
 
     /**
+     * Clear TL status for a BL record and related NaikKapal (if any)
+     */
+    public function clearTLBl(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'bl_id' => 'required|exists:bls,id'
+            ]);
+
+            $bl = Bl::findOrFail($request->bl_id);
+
+            // Clear TL flag on BL
+            $bl->sudah_tl = false;
+            $bl->updated_by = $user->id;
+            $bl->save();
+
+            // Also attempt to clear corresponding NaikKapal.is_tl for consistency
+            try {
+                NaikKapal::where('nomor_kontainer', $bl->nomor_kontainer)
+                    ->where('no_voyage', $bl->no_voyage)
+                    ->where('nama_kapal', $bl->nama_kapal)
+                    ->update(['is_tl' => false]);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to clear NaikKapal.is_tl in clearTLBl: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status TL berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Clear TL BL error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear TL status for a NaikKapal record and related BL (if any)
+     */
+    public function clearTL(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'naik_kapal_id' => 'required|exists:naik_kapal,id'
+            ]);
+
+            $nk = NaikKapal::findOrFail($request->naik_kapal_id);
+
+            // Clear TL flag on NaikKapal
+            $nk->is_tl = false;
+            $nk->updated_by = $user->id;
+            $nk->save();
+
+            // Also attempt to clear corresponding BL.sudah_tl for consistency
+            try {
+                Bl::where('nomor_kontainer', $nk->nomor_kontainer)
+                    ->where('no_voyage', $nk->no_voyage)
+                    ->where('nama_kapal', $nk->nama_kapal)
+                    ->update(['sudah_tl' => false]);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to clear Bl.sudah_tl in clearTL: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status TL berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Clear TL error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store selected items into a new OB pranota
      */
     public function masukPranota(Request $request)
