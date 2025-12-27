@@ -220,11 +220,13 @@
                     @forelse($bls as $key => $bl)
                     <tr class="hover:bg-gray-50 transition duration-150 {{ $bl->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $bl->sudah_tl ? '1' : '0' }}" {{ $bl->tipe_kontainer == 'CARGO' || $bl->sudah_tl ? 'disabled title="' . ($bl->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : 'Kontainer TL') . ' tidak bisa dimasukkan ke pranota"' : '' }}>
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $bl->sudah_tl ? '1' : '0' }}" data-sudah-ob="{{ $bl->sudah_ob ? '1' : '0' }}" {{ $bl->tipe_kontainer == 'CARGO' || $bl->sudah_tl || !$bl->sudah_ob ? 'disabled title="' . ($bl->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : ($bl->sudah_tl ? 'Kontainer TL' : 'Kontainer belum OB')) . ' tidak bisa dimasukkan ke pranota"' : '' }}>
                             @if($bl->tipe_kontainer == 'CARGO')
                                 <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
                             @elseif($bl->sudah_tl)
                                 <span class="text-[10px] text-blue-600" title="Kontainer TL tidak bisa dimasukkan ke pranota">⚠️</span>
+                            @elseif(!$bl->sudah_ob)
+                                <span class="text-[10px] text-orange-600" title="Kontainer belum OB tidak bisa dimasukkan ke pranota">⚠️</span>
                             @endif
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bls->firstItem() + $key }}</td>
@@ -386,11 +388,13 @@
                     @forelse($naikKapals as $key => $naikKapal)
                         <tr class="hover:bg-gray-50 transition duration-150 {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $naikKapal->sudah_tl ? '1' : '0' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' || $naikKapal->sudah_tl ? 'disabled title="' . ($naikKapal->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : 'Kontainer TL') . ' tidak bisa dimasukkan ke pranota"' : '' }}>
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $naikKapal->sudah_tl ? '1' : '0' }}" data-sudah-ob="{{ $naikKapal->sudah_ob ? '1' : '0' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' || $naikKapal->sudah_tl || !$naikKapal->sudah_ob ? 'disabled title="' . ($naikKapal->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : ($naikKapal->sudah_tl ? 'Kontainer TL' : 'Kontainer belum OB')) . ' tidak bisa dimasukkan ke pranota"' : '' }}>
                                 @if($naikKapal->tipe_kontainer == 'CARGO')
                                     <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
                                 @elseif($naikKapal->sudah_tl)
                                     <span class="text-[10px] text-blue-600" title="Kontainer TL tidak bisa dimasukkan ke pranota">⚠️</span>
+                                @elseif(!$naikKapal->sudah_ob)
+                                    <span class="text-[10px] text-orange-600" title="Kontainer belum OB tidak bisa dimasukkan ke pranota">⚠️</span>
                                 @endif
                             </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
@@ -751,14 +755,18 @@ function openPranotaModal() {
     // Filter out TL containers
     const tlItems = selectedItems.filter(item => item.sudah_tl === '1' || item.sudah_tl === true);
     
+    // Filter out non-OB containers
+    const nonObItems = selectedItems.filter(item => item.sudah_ob !== '1' && item.sudah_ob !== true);
+    
     selectedItems = selectedItems.filter(item => {
         if (item.tipe === 'CARGO') return false;
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
         if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
+        if (item.sudah_ob !== '1' && item.sudah_ob !== true) return false;
         return true;
     });
     
-    // Show warning if CARGO or TL items were filtered out
+    // Show warning if CARGO, TL, or non-OB items were filtered out
     let warningMsg = '';
     if (cargoItems.length > 0) {
         warningMsg += `${cargoItems.length} kontainer CARGO tidak akan dimasukkan ke pranota.\nKontainer CARGO: ${cargoItems.map(item => item.nomor_kontainer).join(', ')}`;
@@ -766,6 +774,10 @@ function openPranotaModal() {
     if (tlItems.length > 0) {
         if (warningMsg) warningMsg += '\n\n';
         warningMsg += `${tlItems.length} kontainer TL tidak akan dimasukkan ke pranota.\nKontainer TL: ${tlItems.map(item => item.nomor_kontainer).join(', ')}`;
+    }
+    if (nonObItems.length > 0) {
+        if (warningMsg) warningMsg += '\n\n';
+        warningMsg += `${nonObItems.length} kontainer belum OB tidak akan dimasukkan ke pranota.\nKontainer belum OB: ${nonObItems.map(item => item.nomor_kontainer).join(', ')}`;
     }
     if (warningMsg) {
         alert(warningMsg);
@@ -1139,7 +1151,7 @@ function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
     if (!stored) return [];
     
-    // Parse and filter out CARGO containers (by type or container number) and TL containers
+    // Parse and filter out CARGO containers (by type or container number), TL containers, and non-OB containers
     const items = JSON.parse(stored);
     return items.filter(item => {
         // Filter by type
@@ -1148,6 +1160,8 @@ function getSelectedItems() {
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
         // Filter by TL status
         if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
+        // Filter by OB status
+        if (item.sudah_ob !== '1' && item.sudah_ob !== true) return false;
         return true;
     });
 }
@@ -1179,8 +1193,15 @@ function loadSelectedCheckboxes() {
             return;
         }
         
+        // Skip if not OB
+        const sudahOb = cb.getAttribute('data-sudah-ob');
+        if (sudahOb !== '1' && sudahOb !== 'true') {
+            cb.checked = false;
+            return;
+        }
+        
         const item = selectedItems.find(item => item.id === cb.value);
-        if (item && item.tipe !== 'CARGO' && item.sudah_tl !== '1' && item.sudah_tl !== true) {
+        if (item && item.tipe !== 'CARGO' && item.sudah_tl !== '1' && item.sudah_tl !== true && (item.sudah_ob === '1' || item.sudah_ob === true)) {
             cb.checked = true;
         }
     });
@@ -1198,7 +1219,7 @@ function checkSelected() {
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
-    // Save to storage - collect all selected items (exclude CARGO and TL)
+    // Save to storage - collect all selected items (exclude CARGO, TL, and non-OB)
     const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
         .filter(cb => {
             // Filter by type
@@ -1209,6 +1230,9 @@ function checkSelected() {
             // Filter by TL status
             const sudahTl = cb.getAttribute('data-sudah-tl');
             if (sudahTl === '1' || sudahTl === 'true') return false;
+            // Filter by OB status
+            const sudahOb = cb.getAttribute('data-sudah-ob');
+            if (sudahOb !== '1' && sudahOb !== 'true') return false;
             return true;
         })
         .map(cb => ({
@@ -1221,7 +1245,8 @@ function checkSelected() {
             biaya: cb.getAttribute('data-biaya'),
             status: cb.getAttribute('data-status'),
             supir: cb.getAttribute('data-supir'),
-            sudah_tl: cb.getAttribute('data-sudah-tl')
+            sudah_tl: cb.getAttribute('data-sudah-tl'),
+            sudah_ob: cb.getAttribute('data-sudah-ob')
         }));
     saveSelectedItems(allSelected);
 }
@@ -1239,7 +1264,7 @@ selectAll.addEventListener('change', function() {
     checkSelected();
 });
 
-// Clean CARGO and TL from localStorage on page load
+// Clean CARGO, TL, and non-OB from localStorage on page load
 function cleanCargoFromStorage() {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
@@ -1251,12 +1276,14 @@ function cleanCargoFromStorage() {
             if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
             // Filter by TL status
             if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
+            // Filter by OB status
+            if (item.sudah_ob !== '1' && item.sudah_ob !== true) return false;
             return true;
         });
         if (cleanedItems.length !== items.length) {
-            // CARGO or TL found and removed, update storage
+            // CARGO, TL, or non-OB found and removed, update storage
             localStorage.setItem(storageKey, JSON.stringify(cleanedItems));
-            console.log(`Removed ${items.length - cleanedItems.length} CARGO/TL containers from selection`);
+            console.log(`Removed ${items.length - cleanedItems.length} CARGO/TL/non-OB containers from selection`);
         }
     }
 }
