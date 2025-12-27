@@ -1611,6 +1611,9 @@ class ObController extends Controller
             $bl->tanggal_ob = now();
             $bl->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
 
+            // Mark BL as TL as well to keep status consistent
+            $bl->sudah_tl = true;
+
             // Link BL back to Prospek (if naik_kapal has prospek_id)
             if ($naikKapal->prospek_id) {
                 $bl->prospek_id = $naikKapal->prospek_id;

@@ -406,7 +406,8 @@
                     @forelse($naikKapals as $key => $naikKapal)
                         @php
                             // Perkuat pengecekan TL dengan berbagai kemungkinan nilai
-                            $isTL = ($naikKapal->sudah_tl === true || $naikKapal->sudah_tl === 1 || $naikKapal->sudah_tl === '1');
+                            // NaikKapal uses field `is_tl` (boolean) while BL uses `sudah_tl`.
+                            $isTL = ($naikKapal->is_tl === true || $naikKapal->is_tl === 1 || $naikKapal->is_tl === '1');
                             $isOB = ($naikKapal->sudah_ob === true || $naikKapal->sudah_ob === 1 || $naikKapal->sudah_ob === '1');
                             $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
                             $shouldDisable = $isCARGO || $isTL || !$isOB;
