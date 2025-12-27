@@ -1535,6 +1535,22 @@ class ObController extends Controller
             $bl->catatan_ob = 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar';
             $bl->save();
 
+            // If BL is linked to a Prospek, update its status to 'sudah_muat'
+            try {
+                if ($bl->prospek_id) {
+                    $prospek = Prospek::find($bl->prospek_id);
+                    if ($prospek && $prospek->status !== Prospek::STATUS_SUDAH_MUAT) {
+                        $prospek->status = Prospek::STATUS_SUDAH_MUAT;
+                        $prospek->tanggal_muat = now();
+                        $prospek->updated_by = Auth::id() ?? $prospek->updated_by;
+                        $prospek->save();
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to update Prospek status for BL (processTLBongkar) ID ' . ($bl->id ?? 'unknown') . ': ' . $e->getMessage());
+                // don't break TL processing for Prospek update failure
+            }
+
             DB::commit();
 
             return response()->json([
@@ -1594,7 +1610,12 @@ class ObController extends Controller
             $bl->supir_id = null;
             $bl->tanggal_ob = now();
             $bl->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
-            
+
+            // Link BL back to Prospek (if naik_kapal has prospek_id)
+            if ($naikKapal->prospek_id) {
+                $bl->prospek_id = $naikKapal->prospek_id;
+            }
+
             $bl->save();
 
             // Update naik_kapal status
@@ -1604,6 +1625,22 @@ class ObController extends Controller
             $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
             $naikKapal->is_tl = true;
             $naikKapal->save();
+
+            // If NaikKapal is linked to a Prospek, update its status to 'sudah_muat'
+            try {
+                if ($naikKapal->prospek_id) {
+                    $prospek = Prospek::find($naikKapal->prospek_id);
+                    if ($prospek && $prospek->status !== Prospek::STATUS_SUDAH_MUAT) {
+                        $prospek->status = Prospek::STATUS_SUDAH_MUAT;
+                        $prospek->tanggal_muat = now();
+                        $prospek->updated_by = Auth::id() ?? $prospek->updated_by;
+                        $prospek->save();
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to update Prospek status for NaikKapal (processTL) ID ' . ($naikKapal->id ?? 'unknown') . ': ' . $e->getMessage());
+                // continue without breaking TL
+            }
 
             DB::commit();
 
