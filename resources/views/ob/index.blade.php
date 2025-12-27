@@ -229,14 +229,21 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($bls as $key => $bl)
-                    <tr class="hover:bg-gray-50 transition duration-150 {{ $bl->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
+                    @php
+                        // Perkuat pengecekan TL dengan berbagai kemungkinan nilai
+                        $isTL = ($bl->sudah_tl === true || $bl->sudah_tl === 1 || $bl->sudah_tl === '1');
+                        $isOB = ($bl->sudah_ob === true || $bl->sudah_ob === 1 || $bl->sudah_ob === '1');
+                        $isCARGO = ($bl->tipe_kontainer == 'CARGO');
+                        $shouldDisable = $isCARGO || $isTL || !$isOB;
+                    @endphp
+                    <tr class="hover:bg-gray-50 transition duration-150 {{ $isCARGO ? 'bg-gray-100' : '' }}">
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $bl->sudah_tl ? '1' : '0' }}" data-sudah-ob="{{ $bl->sudah_ob ? '1' : '0' }}" {{ $bl->tipe_kontainer == 'CARGO' || $bl->sudah_tl || !$bl->sudah_ob ? 'disabled title="' . ($bl->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : ($bl->sudah_tl ? 'Kontainer TL' : 'Kontainer belum OB')) . ' tidak bisa dimasukkan ke pranota"' : '' }}>
-                            @if($bl->tipe_kontainer == 'CARGO')
+                            <input type="checkbox" class="row-checkbox" value="{{ $bl->id }}" data-type="bl" data-nomor-kontainer="{{ $bl->nomor_kontainer }}" data-nama-barang="{{ $bl->nama_barang }}" data-tipe="{{ $bl->tipe_kontainer }}" data-size="{{ $bl->size_kontainer }}" data-biaya="{{ $bl->biaya ?? '' }}" data-status="{{ $bl->detected_status ?? 'full' }}" data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $isTL ? '1' : '0' }}" data-sudah-ob="{{ $isOB ? '1' : '0' }}" {{ $shouldDisable ? 'disabled title="' . ($isCARGO ? 'Kontainer CARGO' : ($isTL ? 'Kontainer TL' : 'Kontainer belum OB')) . ' tidak bisa dimasukkan ke pranota"' : '' }}>
+                            @if($isCARGO)
                                 <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
-                            @elseif($bl->sudah_tl)
+                            @elseif($isTL)
                                 <span class="text-[10px] text-blue-600" title="Kontainer TL tidak bisa dimasukkan ke pranota">⚠️</span>
-                            @elseif(!$bl->sudah_ob)
+                            @elseif(!$isOB)
                                 <span class="text-[10px] text-orange-600" title="Kontainer belum OB tidak bisa dimasukkan ke pranota">⚠️</span>
                             @endif
                         </td>
@@ -397,14 +404,21 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
-                        <tr class="hover:bg-gray-50 transition duration-150 {{ $naikKapal->tipe_kontainer == 'CARGO' ? 'bg-gray-100' : '' }}">
+                        @php
+                            // Perkuat pengecekan TL dengan berbagai kemungkinan nilai
+                            $isTL = ($naikKapal->sudah_tl === true || $naikKapal->sudah_tl === 1 || $naikKapal->sudah_tl === '1');
+                            $isOB = ($naikKapal->sudah_ob === true || $naikKapal->sudah_ob === 1 || $naikKapal->sudah_ob === '1');
+                            $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
+                            $shouldDisable = $isCARGO || $isTL || !$isOB;
+                        @endphp
+                        <tr class="hover:bg-gray-50 transition duration-150 {{ $isCARGO ? 'bg-gray-100' : '' }}">
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $naikKapal->sudah_tl ? '1' : '0' }}" data-sudah-ob="{{ $naikKapal->sudah_ob ? '1' : '0' }}" {{ $naikKapal->tipe_kontainer == 'CARGO' || $naikKapal->sudah_tl || !$naikKapal->sudah_ob ? 'disabled title="' . ($naikKapal->tipe_kontainer == 'CARGO' ? 'Kontainer CARGO' : ($naikKapal->sudah_tl ? 'Kontainer TL' : 'Kontainer belum OB')) . ' tidak bisa dimasukkan ke pranota"' : '' }}>
-                                @if($naikKapal->tipe_kontainer == 'CARGO')
+                                <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $isTL ? '1' : '0' }}" data-sudah-ob="{{ $isOB ? '1' : '0' }}" {{ $shouldDisable ? 'disabled title="' . ($isCARGO ? 'Kontainer CARGO' : ($isTL ? 'Kontainer TL' : 'Kontainer belum OB')) . ' tidak bisa dimasukkan ke pranota"' : '' }}>
+                                @if($isCARGO)
                                     <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
-                                @elseif($naikKapal->sudah_tl)
+                                @elseif($isTL)
                                     <span class="text-[10px] text-blue-600" title="Kontainer TL tidak bisa dimasukkan ke pranota">⚠️</span>
-                                @elseif(!$naikKapal->sudah_ob)
+                                @elseif(!$isOB)
                                     <span class="text-[10px] text-orange-600" title="Kontainer belum OB tidak bisa dimasukkan ke pranota">⚠️</span>
                                 @endif
                             </td>
@@ -1262,13 +1276,27 @@ function checkSelected() {
     saveSelectedItems(allSelected);
 }
 
-checkboxes.forEach(cb => cb.addEventListener('change', checkSelected));
+checkboxes.forEach(cb => {
+    // Prevent TL checkboxes from being checked
+    cb.addEventListener('change', function(e) {
+        const sudahTl = this.getAttribute('data-sudah-tl');
+        if (sudahTl === '1' || sudahTl === 'true' || sudahTl === true) {
+            e.preventDefault();
+            this.checked = false;
+            this.disabled = true;
+            alert('Kontainer TL tidak bisa dimasukkan ke pranota!');
+            return false;
+        }
+        checkSelected();
+    });
+});
 
 selectAll.addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     checkboxes.forEach(cb => {
-        // Only check/uncheck if checkbox is not disabled (skip CARGO)
-        if (!cb.disabled) {
+        // Only check/uncheck if checkbox is not disabled (skip CARGO and TL)
+        const sudahTl = cb.getAttribute('data-sudah-tl');
+        if (!cb.disabled && sudahTl !== '1' && sudahTl !== 'true' && sudahTl !== true) {
             cb.checked = this.checked;
         }
     });
@@ -1303,6 +1331,16 @@ function cleanCargoFromStorage() {
 document.addEventListener('DOMContentLoaded', function() {
     cleanCargoFromStorage(); // Clean first
     loadSelectedCheckboxes(); // Then load
+    
+    // FORCE uncheck and disable all TL checkboxes on page load
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+        const sudahTl = cb.getAttribute('data-sudah-tl');
+        if (sudahTl === '1' || sudahTl === 'true' || sudahTl === true) {
+            cb.checked = false;
+            cb.disabled = true;
+            console.log('TL checkbox disabled:', cb.getAttribute('data-nomor-kontainer'));
+        }
+    });
 });
 
 document.getElementById('btnMasukPranota').addEventListener('click', function() {
