@@ -828,7 +828,16 @@ class TandaTerimaLclController extends Controller
         
         DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
             
+            // Track processed tanda terima to avoid duplicates when multiple containers have same tanda terima
+            $processedTandaTerimaIds = [];
+            
             foreach ($tandaTerimaIds as $originalId) {
+                // Skip if already processed (prevents duplicate splits for same tanda terima)
+                if (in_array($originalId, $processedTandaTerimaIds)) {
+                    \Log::info("Skipping ID {$originalId} - already processed to avoid duplicate");
+                    continue;
+                }
+                
                 // Use find() instead of findOrFail() to handle orphaned pivot records
                 $originalTandaTerima = TandaTerimaLcl::with('items')->find($originalId);
                 
@@ -1023,6 +1032,9 @@ class TandaTerimaLclController extends Controller
                     'eloquent_total_volume' => $updatedTotalVolume,
                     'volumes_match' => abs($dbTotalVolume - $updatedTotalVolume) < 0.001
                 ]);
+                
+                // Mark this tanda terima as processed to avoid duplicates
+                $processedTandaTerimaIds[] = $originalId;
                 
                 $processedCount++;
             }
