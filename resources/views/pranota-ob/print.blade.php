@@ -158,7 +158,11 @@
             </div>
             <div class="text-right">
                 <p>Disiapkan oleh:</p>
-                <p class="mt-16 text-lg">______________________________</p>
+                <!-- Extra space for handwritten signature -->
+                <div style="height:80px;"></div>
+                <!-- Wider underline for signature -->
+                <p style="display:inline-block; width:320px; border-bottom:1px solid #000; margin:0;"></p>
+                <p class="mt-2 text-xs" style="margin-top:6px;">(Nama &amp; Tanda Tangan)</p>
             </div>
         </div>
     </div>
