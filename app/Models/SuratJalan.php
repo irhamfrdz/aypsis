@@ -142,6 +142,15 @@ class SuratJalan extends Model
     {
         return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');
     }
+
+    /**
+     * Kontainer relationship
+     * Maps SuratJalan.no_kontainer -> Kontainer.nomor_seri_gabungan
+     */
+    public function kontainer()
+    {
+        return $this->belongsTo(Kontainer::class, 'no_kontainer', 'nomor_seri_gabungan');
+    }
     
     // Alternative: Get supir NIK with fallback
     public function getSupirNikAttribute()
