@@ -765,10 +765,10 @@ class TandaTerimaLclController extends Controller
             'nama_barang' => 'required|string|max:255',
             'jumlah' => 'required|integer|min:1',
             'satuan' => 'required|string|max:50',
-            'panjang' => 'required|numeric|min:0.01',
-            'lebar' => 'required|numeric|min:0.01',
-            'tinggi' => 'required|numeric|min:0.01',
-            'volume' => 'required|numeric|min:0.001',
+            'panjang' => 'required|numeric|min:0',
+            'lebar' => 'required|numeric|min:0',
+            'tinggi' => 'required|numeric|min:0',
+            'volume' => 'required|numeric|min:0',
             'berat' => 'required|numeric|min:0',
             'keterangan' => 'required|string|max:1000'
         ]);
