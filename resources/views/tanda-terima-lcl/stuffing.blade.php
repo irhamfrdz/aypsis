@@ -1304,12 +1304,9 @@ function calculateSplitVolume() {
     const tinggi = parseFloat(tinggiInput.value) || 0;
     const jumlah = parseFloat(jumlahInput.value) || 1;
 
-    if (panjang > 0 && lebar > 0 && tinggi > 0) {
-        const volume = panjang * lebar * tinggi * jumlah;
-        volumeInput.value = volume.toFixed(3);
-    } else {
-        volumeInput.value = '';
-    }
+    // Calculate volume even when dimensions are 0
+    const volume = panjang * lebar * tinggi * jumlah;
+    volumeInput.value = volume.toFixed(3);
 }
 
 // Add submit handler for split form with debugging
