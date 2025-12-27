@@ -761,7 +761,7 @@ class TandaTerimaLclController extends Controller
             'ids' => 'required|string',
             'tipe_kontainer' => 'required|in:lcl,cargo',
             'nomor_kontainer' => 'nullable|string|max:255',
-            'size_kontainer' => 'nullable|in:20ft,40hc,40hc,45ft',
+            'size_kontainer' => 'nullable|in:20ft,40ft,40hc,45ft',
             'item_id' => 'required|integer|exists:tanda_terima_lcl_items,id',
             'nama_barang' => 'required|string|max:255',
             'jumlah' => 'required|integer|min:1',
@@ -793,9 +793,9 @@ class TandaTerimaLclController extends Controller
 
         // Get the specific item to split
         $itemId = $request->input('item_id');
-        $specificItem = TandaTerimaLclItem::with('tandaTerimaLcl')->find($itemId);
+        $specificItem = TandaTerimaLclItem::with('tandaTerima')->find($itemId);
         
-        if (!$specificItem || !$specificItem->tandaTerimaLcl) {
+        if (!$specificItem || !$specificItem->tandaTerima) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
