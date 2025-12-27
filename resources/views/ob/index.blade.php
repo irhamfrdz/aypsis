@@ -107,7 +107,7 @@
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 {{-- Search --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
@@ -127,6 +127,17 @@
                         <option value="FCL" {{ request('tipe_kontainer') == 'FCL' ? 'selected' : '' }}>FCL</option>
                         <option value="LCL" {{ request('tipe_kontainer') == 'LCL' ? 'selected' : '' }}>LCL</option>
                         <option value="CARGO" {{ request('tipe_kontainer') == 'CARGO' ? 'selected' : '' }}>CARGO</option>
+                    </select>
+                </div>
+
+                {{-- Status OB Filter --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status OB</label>
+                    <select name="status_ob"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="sudah" {{ request('status_ob') == 'sudah' ? 'selected' : '' }}>Sudah OB</option>
+                        <option value="belum" {{ request('status_ob') == 'belum' ? 'selected' : '' }}>Belum OB</option>
                     </select>
                 </div>
 
