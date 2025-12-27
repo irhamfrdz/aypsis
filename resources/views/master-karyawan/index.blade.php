@@ -473,15 +473,21 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                                <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
-                                    {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
-                                       (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
-                                       (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
-                                       'bg-gray-100 text-gray-800')) }}">
-                                    {{ strtoupper($karyawan->divisi) }}
-                                </span>
+                                @if($karyawan->divisi && $karyawan->divisi !== '0')
+                                    <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
+                                        {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
+                                           (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
+                                           (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
+                                           'bg-gray-100 text-gray-800')) }}">
+                                        {{ strtoupper($karyawan->divisi) }}
+                                    </span>
+                                @endif
                             </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->pekerjaan) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                @if($karyawan->pekerjaan && $karyawan->pekerjaan !== '0')
+                                    {{ strtoupper($karyawan->pekerjaan) }}
+                                @endif
+                            </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
