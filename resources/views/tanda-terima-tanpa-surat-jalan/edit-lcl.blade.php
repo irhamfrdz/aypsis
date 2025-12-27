@@ -541,11 +541,12 @@
                                         <input type="number"
                                                name="jumlah[]"
                                                id="jumlah_0"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                                placeholder="0"
                                                value="{{ old('jumlah.0') }}"
                                                min="0"
-                                               step="1">
+                                               step="1"
+                                               onchange="calculateVolume(this.closest('.dimensi-row'))">
                                     </div>
                                     <div>
                                         <label for="satuan_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -633,7 +634,7 @@
                                 </div>
                                 <p class="text-xs text-gray-500 mt-2">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    Volume akan dihitung otomatis dari panjang × lebar × tinggi
+                                    Volume akan dihitung otomatis dari panjang × lebar × tinggi × jumlah
                                 </p>
                             </div>
                         @endif
@@ -1035,7 +1036,7 @@ function addDimensiRow() {
         </div>
         <p class="text-xs text-gray-500 mt-2">
             <i class="fas fa-info-circle mr-1"></i>
-            Volume akan dihitung otomatis dari panjang × lebar × tinggi
+            Volume akan dihitung otomatis dari panjang × lebar × tinggi × jumlah
         </p>
     `;
     
