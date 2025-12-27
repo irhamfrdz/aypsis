@@ -1497,6 +1497,63 @@ class ObController extends Controller
     }
 
     /**
+     * Process TL Bongkar (Tanda Langsung) - Only mark BL as OB without creating new records
+     * Untuk kegiatan bongkar, TL hanya menandai sudah OB tanpa membuat record BL baru
+     */
+    public function processTLBongkar(Request $request)
+    {
+        try {
+            $request->validate([
+                'bl_id' => 'required|integer|exists:bls,id'
+            ]);
+
+            $bl = Bl::findOrFail($request->bl_id);
+
+            // Check if already processed
+            if ($bl->sudah_ob) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kontainer ini sudah ditandai OB'
+                ], 400);
+            }
+
+            // Check if already TL
+            if ($bl->sudah_tl) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kontainer ini sudah ditandai TL'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Mark BL as sudah OB and sudah TL (TL tidak perlu supir karena langsung dibongkar)
+            $bl->sudah_ob = true;
+            $bl->sudah_tl = true;
+            $bl->supir_id = null;
+            $bl->tanggal_ob = now();
+            $bl->catatan_ob = 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar';
+            $bl->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil proses TL Bongkar kontainer ' . $bl->nomor_kontainer
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error in processTLBongkar: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal proses TL Bongkar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Process TL (Tanda Langsung) - Copy naik_kapal to BL and mark as OB
      */
     public function processTL(Request $request)

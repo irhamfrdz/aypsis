@@ -327,6 +327,13 @@
                                            title="Tandai sudah OB">
                                         <i class="fas fa-check"></i>
                                     </button>
+                                    @if(!$bl->sudah_tl)
+                                    <button type="button" onclick="prosesTLBongkar({{ $bl->id }})"
+                                           class="text-purple-600 hover:text-purple-900 transition duration-150"
+                                           title="Transfer Loading (TL) - Langsung Dibongkar">
+                                        <i class="fas fa-exchange-alt"></i> TL
+                                    </button>
+                                    @endif
                                 @else
                                     <button type="button" onclick="unmarkOB('bl', {{ $bl->id }})"
                                            class="text-yellow-600 hover:text-yellow-900 transition duration-150"
@@ -1075,6 +1082,48 @@ function prosesTL(naikKapalId) {
     .catch(error => {
         console.error('Error:', error);
         alert('Terjadi kesalahan saat memproses TL: ' + error.message);
+    });
+}
+
+// Function to process TL Bongkar (Tanda Langsung) - Langsung dibongkar tanpa supir
+function prosesTLBongkar(blId) {
+    if (!confirm('Proses TL Bongkar (Tanda Langsung)?\n\nKontainer akan langsung dibongkar dan ditandai sebagai OB tanpa supir.\n\nProses ini akan:\n- Menandai BL sebagai sudah OB\n- Ditandai TL untuk audit trail\n- TIDAK membuat record BL baru')) {
+        return;
+    }
+    
+    // Send AJAX request langsung tanpa modal
+    fetch('/ob/process-tl-bongkar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            bl_id: blId
+        })
+    })
+    .then(response => {
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                console.error('Non-JSON response:', text);
+                throw new Error('Server mengembalikan response yang tidak valid. Cek console untuk detail.');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Proses TL Bongkar berhasil! Kontainer sudah ditandai sebagai OB');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan saat memproses TL Bongkar');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses TL Bongkar: ' + error.message);
     });
 }
 

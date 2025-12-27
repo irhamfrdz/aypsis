@@ -42,12 +42,14 @@ class Bl extends Model
         'catatan_ob',
         'status_bongkar',
         'sudah_ob',
+        'sudah_tl',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'sudah_ob' => 'boolean',
+        'sudah_tl' => 'boolean',
         'tanggal_ob' => 'datetime',
     ];
 
