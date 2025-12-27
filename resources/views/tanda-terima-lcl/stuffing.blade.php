@@ -747,10 +747,7 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="">Memuat data barang...</option>
                                 </select>
-                                <input type="hidden" name="nama_barang" id="split_nama_barang_value">
-                            </div>
-
-                            <!-- Jumlah -->
+                            <input type="hidden" name="item_id" id="split_item_id">
                             <div>
                                 <label for="split_jumlah" class="block text-sm font-medium text-gray-700 mb-1">
                                     Jumlah <span class="text-red-500">*</span>
@@ -1250,6 +1247,12 @@ function closeSplitModal() {
     if (namaBarangSelect) {
         namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
         namaBarangSelect.disabled = true;
+    }
+    
+    // Reset hidden item_id input
+    const itemIdInput = document.getElementById('split_item_id');
+    if (itemIdInput) {
+        itemIdInput.value = '';
     }
     
     // Reset hidden nama_barang input
