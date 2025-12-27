@@ -445,11 +445,24 @@ class ProspekController extends Controller
                 \Log::info('Updated prospek info (status tetap) for ID: ' . $prospek->id);
 
                 // Simpan data ke tabel naik_kapal
+                // Format size_kontainer: convert ukuran (20, 40, 40hc, 45) to standard format (20ft, 40ft, 40hc, 45ft)
+                $sizeKontainer = null;
+                if ($prospek->ukuran) {
+                    $ukuran = strtolower($prospek->ukuran);
+                    // If already has 'ft' or 'hc' suffix, use as is, otherwise add 'ft'
+                    if (strpos($ukuran, 'ft') !== false || strpos($ukuran, 'hc') !== false) {
+                        $sizeKontainer = $ukuran;
+                    } else {
+                        $sizeKontainer = $ukuran . 'ft';
+                    }
+                }
+                
                 $naikKapalData = [
                     'prospek_id' => $prospek->id,
                     'nomor_kontainer' => $prospek->nomor_kontainer ?: 'CARGO-' . $prospek->id, // Handle null
                     'jenis_barang' => $prospek->barang,
                     'tipe_kontainer' => $prospek->tipe,
+                    'size_kontainer' => $sizeKontainer,
                     'ukuran_kontainer' => $prospek->ukuran ? $prospek->ukuran . ' Feet' : null,
                     'nama_kapal' => $masterKapal->nama_kapal,
                     'no_voyage' => $request->no_voyage,
