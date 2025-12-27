@@ -2382,6 +2382,29 @@ Route::middleware(['auth'])->group(function () {
          ->name('gate-in.update-status')
          ->middleware('can:gate-in-update');
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🚚 CHECKPOINT KONTAINER KELUAR ROUTES
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::get('checkpoint-kontainer-keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'index'])
+         ->name('checkpoint-kontainer-keluar.index')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
+    Route::get('checkpoint-kontainer-keluar/history', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'history'])
+         ->name('checkpoint-kontainer-keluar.history')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
+    Route::post('checkpoint-kontainer-keluar/{suratJalan}/keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'processKeluar'])
+         ->name('checkpoint-kontainer-keluar.keluar')
+         ->middleware('can:checkpoint-kontainer-keluar-create');
+
+    Route::post('checkpoint-kontainer-keluar/bulk-keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'bulkKeluar'])
+         ->name('checkpoint-kontainer-keluar.bulk-keluar')
+         ->middleware('can:checkpoint-kontainer-keluar-create');
+
+    Route::post('checkpoint-kontainer-keluar/{suratJalan}/cancel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'cancelKeluar'])
+         ->name('checkpoint-kontainer-keluar.cancel')
+         ->middleware('can:checkpoint-kontainer-keluar-delete');
+
 });
 
 // Test route for AJAX debugging
