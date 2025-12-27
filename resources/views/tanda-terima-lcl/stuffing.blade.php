@@ -1199,7 +1199,13 @@ function loadBarangForSplit(selectedContainers) {
             namaBarangSelect.addEventListener('change', function() {
                 const selectedOption = this.options[this.selectedIndex];
                 if (selectedOption.value) {
-                    // Set the hidden input for nama_barang
+                    // Set the item ID (specific item to split)
+                    const itemIdInput = document.getElementById('split_item_id');
+                    if (itemIdInput) {
+                        itemIdInput.value = selectedOption.value; // This is the item ID
+                    }
+                    
+                    // Set the nama_barang for display/logging
                     const namaBarangInput = document.getElementById('split_nama_barang_value');
                     if (namaBarangInput) {
                         namaBarangInput.value = selectedOption.dataset.namaBarang || selectedOption.textContent;
@@ -1319,9 +1325,9 @@ document.getElementById('splitForm').addEventListener('submit', function(e) {
     console.log('🚀 Submitting split form to:', formUrl);
     console.log('📋 Form data:', Object.fromEntries(formData));
     
-    // Validate nama_barang value
-    const namaBarangValue = document.getElementById('split_nama_barang_value').value;
-    if (!namaBarangValue) {
+    // Validate item_id value
+    const itemIdValue = document.getElementById('split_item_id').value;
+    if (!itemIdValue) {
         alert('Silakan pilih barang terlebih dahulu');
         return false;
     }

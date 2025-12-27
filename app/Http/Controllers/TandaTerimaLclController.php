@@ -761,7 +761,8 @@ class TandaTerimaLclController extends Controller
             'ids' => 'required|string',
             'tipe_kontainer' => 'required|in:lcl,cargo',
             'nomor_kontainer' => 'nullable|string|max:255',
-            'size_kontainer' => 'nullable|in:20ft,40ft,40hc,45ft',
+            'size_kontainer' => 'nullable|in:20ft,40hc,40hc,45ft',
+            'item_id' => 'required|integer|exists:tanda_terima_lcl_items,id',
             'nama_barang' => 'required|string|max:255',
             'jumlah' => 'required|integer|min:1',
             'satuan' => 'required|string|max:50',
@@ -790,23 +791,28 @@ class TandaTerimaLclController extends Controller
             'request_data' => $request->all()
         ]);
 
-        // Get all tanda terima IDs from selected containers via pivot table
-        $tandaTerimaIds = TandaTerimaLclKontainerPivot::whereIn('nomor_kontainer', $containerNumbers)
-            ->pluck('tanda_terima_lcl_id')
-            ->unique()
-            ->toArray();
-
-        \Log::info('Found tanda terima IDs', ['ids' => $tandaTerimaIds]);
-
-        if (empty($tandaTerimaIds)) {
+        // Get the specific item to split
+        $itemId = $request->input('item_id');
+        $specificItem = TandaTerimaLclItem::with('tandaTerimaLcl')->find($itemId);
+        
+        if (!$specificItem || !$specificItem->tandaTerimaLcl) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.'
+                    'message' => 'Item barang yang dipilih tidak ditemukan.'
                 ], 404);
             }
-            return redirect()->back()->with('error', 'Tidak ada tanda terima ditemukan untuk kontainer yang dipilih.');
+            return redirect()->back()->with('error', 'Item barang yang dipilih tidak ditemukan.');
         }
+        
+        // Only process the tanda terima that contains this specific item
+        $tandaTerimaIds = [$specificItem->tanda_terima_lcl_id];
+
+        \Log::info('Processing specific item split', [
+            'item_id' => $itemId,
+            'tanda_terima_id' => $specificItem->tanda_terima_lcl_id,
+            'nama_barang' => $request->input('nama_barang')
+        ]);
 
         // Handle locale-specific decimal formatting (comma vs dot)
         $rawVolume = $request->input('volume');
@@ -828,15 +834,7 @@ class TandaTerimaLclController extends Controller
         
         DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
             
-            // Track processed tanda terima to avoid duplicates when multiple containers have same tanda terima
-            $processedTandaTerimaIds = [];
-            
             foreach ($tandaTerimaIds as $originalId) {
-                // Skip if already processed (prevents duplicate splits for same tanda terima)
-                if (in_array($originalId, $processedTandaTerimaIds)) {
-                    \Log::info("Skipping ID {$originalId} - already processed to avoid duplicate");
-                    continue;
-                }
                 
                 // Use find() instead of findOrFail() to handle orphaned pivot records
                 $originalTandaTerima = TandaTerimaLcl::with('items')->find($originalId);
@@ -1032,9 +1030,6 @@ class TandaTerimaLclController extends Controller
                     'eloquent_total_volume' => $updatedTotalVolume,
                     'volumes_match' => abs($dbTotalVolume - $updatedTotalVolume) < 0.001
                 ]);
-                
-                // Mark this tanda terima as processed to avoid duplicates
-                $processedTandaTerimaIds[] = $originalId;
                 
                 $processedCount++;
             }
