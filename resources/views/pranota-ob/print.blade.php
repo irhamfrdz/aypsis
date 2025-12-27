@@ -158,7 +158,7 @@
             </div>
             <div class="text-right">
                 <p>Disiapkan oleh:</p>
-                <p class="mt-12">____________________</p>
+                <p class="mt-16 text-lg">______________________________</p>
             </div>
         </div>
     </div>
