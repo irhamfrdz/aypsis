@@ -85,7 +85,7 @@ class TandaTerimaLclController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima',
+            'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terimas_lcl,nomor_tanda_terima',
             'tanggal_tanda_terima' => 'required|date',
             'term_id' => 'required|exists:terms,id',
             'nama_penerima' => 'required|string|max:255',
