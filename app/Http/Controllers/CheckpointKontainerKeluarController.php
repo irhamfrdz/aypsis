@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
 use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -59,6 +60,10 @@ class CheckpointKontainerKeluarController extends Controller
                             ->paginate(20)
                             ->withQueryString();
 
+        // Also provide available stock kontainers and kontainers for modal dropdown
+        $stockKontainers = StockKontainer::active()->orderBy('nomor_seri_gabungan')->get();
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->orderBy('nomor_seri_gabungan')->get();
+
         // Statistics
         $stats = [
             'total_pending' => SuratJalan::whereNotNull('no_kontainer')
@@ -77,7 +82,7 @@ class CheckpointKontainerKeluarController extends Controller
                 ->count(),
         ];
 
-        return view('checkpoint-kontainer-keluar.index', compact('suratJalans', 'stats'));
+        return view('checkpoint-kontainer-keluar.index', compact('suratJalans', 'stats', 'stockKontainers', 'kontainers'));
     }
 
     /**
@@ -124,10 +129,31 @@ class CheckpointKontainerKeluarController extends Controller
     {
         $request->validate([
             'catatan_keluar' => 'nullable|string|max:500',
+            'selected_kontainer' => 'nullable|string'
         ]);
 
         try {
             DB::beginTransaction();
+
+            // If user selected a specific container from dropdown, map it and update SJ
+            if ($request->filled('selected_kontainer')) {
+                // Expecting format 'stock:ID' or 'kontainer:ID'
+                [$type, $id] = explode(':', $request->selected_kontainer);
+                if ($type === 'stock') {
+                    $stock = StockKontainer::find($id);
+                    if ($stock) {
+                        $suratJalan->no_kontainer = $stock->nomor_seri_gabungan;
+                        // mark stock kontainer as rented
+                        $stock->update(['status' => 'rented']);
+                    }
+                } elseif ($type === 'kontainer') {
+                    $kont = Kontainer::find($id);
+                    if ($kont) {
+                        $suratJalan->no_kontainer = $kont->nomor_seri_gabungan;
+                        // We'll update kontainer status below
+                    }
+                }
+            }
 
             $suratJalan->update([
                 'status_checkpoint_keluar' => 'sudah_keluar',

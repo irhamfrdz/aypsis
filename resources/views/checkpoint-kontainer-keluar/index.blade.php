@@ -241,7 +241,21 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
-                    <div id="modal_no_kontainer" class="px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 font-medium"></div>
+                    <div id="modal_no_kontainer" class="px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 font-medium mb-2"></div>
+
+                    <select name="selected_kontainer" id="modal_nomor_kontainer_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Pilih dari Stock/Kontainer atau biarkan kosong untuk gunakan nomor SJ --</option>
+                        <optgroup label="Stock Kontainer">
+                            @foreach($stockKontainers as $sk)
+                                <option value="stock:{{ $sk->id }}" data-number="{{ $sk->nomor_seri_gabungan }}">{{ $sk->nomor_seri_gabungan }} @if($sk->status) ({{ $sk->status }}) @endif</option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Kontainer">
+                            @foreach($kontainers as $k)
+                                <option value="kontainer:{{ $k->id }}" data-number="{{ $k->nomor_seri_gabungan }}">{{ $k->nomor_seri_gabungan }} @if($k->status) ({{ $k->status }}) @endif</option>
+                            @endforeach
+                        </optgroup>
+                    </select>
                 </div>
 
                 <div class="mb-4">
@@ -338,6 +352,16 @@ function showKeluarModal(id, noKontainer, noSuratJalan) {
     document.getElementById('modal_no_kontainer').textContent = noKontainer;
     document.getElementById('keluarForm').action = `/checkpoint-kontainer-keluar/${id}/keluar`;
     document.getElementById('currentTime').textContent = new Date().toLocaleString('id-ID');
+
+    // Preselect option in dropdown by matching data-number attribute
+    const select = document.getElementById('modal_nomor_kontainer_select');
+    if (select) {
+        select.value = '';
+        const options = Array.from(select.options);
+        const matched = options.find(opt => opt.dataset && opt.dataset.number === noKontainer);
+        if (matched) select.value = matched.value;
+    }
+
     document.getElementById('keluarModal').classList.remove('hidden');
 }
 
