@@ -301,6 +301,182 @@ class ObController extends Controller
             ));
         }
 
+        // ... rest of method continued ...
+    }
+
+    /**
+     * Export OB data (CSV) with same filters as index
+     */
+    public function export(Request $request)
+    {
+        // Ensure fresh data
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        \Illuminate\Support\Facades\Cache::flush();
+        \Illuminate\Support\Facades\DB::reconnect();
+
+        $sep = $request->query('sep', ';');
+        $sep = urldecode($sep);
+        $delimiter = $sep === ',' ? ',' : ';';
+
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+        $kegiatan = $request->get('kegiatan');
+
+        $fileName = 'ob_export_' . date('Ymd_His') . '.csv';
+
+        $callback = function() use ($delimiter, $namaKapal, $noVoyage, $kegiatan) {
+            $out = fopen('php://output', 'w');
+            // BOM for Excel
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Header
+            $headers = ['nomor_kontainer', 'nomor_bl', 'no_seal', 'nama_barang_or_jenis_barang', 'asal', 'ke', 'tipe_kontainer', 'size_kontainer', 'status_ob', 'supir', 'tanggal_ob_or_tanggal_muat', 'biaya', 'detected_status', 'created_at'];
+            fwrite($out, implode($delimiter, $headers) . "\r\n");
+
+            // Normalize ship name
+            $normalizedKapal = $this->normalizeShipName($namaKapal);
+
+            // If BLs exist for this ship/voyage and not kegiatan='muat', export BLs
+            $hasBl = \App\Models\Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage)
+                ->exists();
+
+            if ($kegiatan !== 'muat' && $hasBl) {
+                $query = \App\Models\Bl::with('supir')
+                    ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                    ->where('no_voyage', $noVoyage)
+                    ->orderBy('nomor_bl', 'asc');
+
+                // Apply filters similar to index
+                if (request()->filled('status_ob')) {
+                    if (request('status_ob') === 'sudah') $query->where('sudah_ob', true);
+                    if (request('status_ob') === 'belum') $query->where('sudah_ob', false);
+                }
+                if (request()->filled('tipe_kontainer')) $query->where('tipe_kontainer', request('tipe_kontainer'));
+                if (request()->filled('size_kontainer')) $query->where('size_kontainer', request('size_kontainer'));
+
+                if (request()->filled('search')) {
+                    $search = request('search');
+                    $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                    $query->where(function($q) use ($search, $searchNum) {
+                        $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
+                          ->orWhere('no_seal', 'like', "%{$search}%")
+                          ->orWhere('nama_barang', 'like', "%{$search}%")
+                          ->orWhere('nomor_bl', 'like', "%{$search}%");
+                    });
+                }
+
+                $query->chunk(200, function($rows) use ($out, $delimiter) {
+                    foreach ($rows as $r) {
+                        // detect status & pricing (reuse logic from index)
+                        $status = 'full';
+                        if (empty($r->nama_barang) || trim($r->nama_barang) === '') $status = 'empty';
+                        $biaya = null; // pricing logic omitted for export; could be attached if needed
+
+                        $supirName = $r->supir ? ($r->supir->nama_panggilan ?? $r->supir->nama_lengkap ?? '') : '';
+
+                        $row = [
+                            $r->nomor_kontainer ?? '',
+                            $r->nomor_bl ?? '',
+                            $r->no_seal ?? '',
+                            $r->nama_barang ?? '',
+                            $r->asal_kontainer ?? '',
+                            $r->ke ?? '',
+                            $r->tipe_kontainer ?? '',
+                            $r->size_kontainer ?? '',
+                            $r->sudah_ob ? 'sudah' : 'belum',
+                            $supirName,
+                            $r->tanggal_ob ? $r->tanggal_ob : '',
+                            $biaya ?? '',
+                            $status,
+                            $r->created_at ? $r->created_at : ''
+                        ];
+
+                        fwrite($out, implode($delimiter, array_map(function($v){
+                            return str_replace(["\r","\n"], ' ', (string)$v);
+                        }, $row)) . "\r\n");
+                    }
+                });
+
+            } else {
+                // Use NaikKapal
+                $query = \App\Models\NaikKapal::with('supir')
+                    ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                    ->where('no_voyage', $noVoyage)
+                    ->orderBy('tanggal_muat', 'desc');
+
+                if (request()->filled('status_ob')) {
+                    if (request('status_ob') === 'sudah') $query->where('sudah_ob', true);
+                    if (request('status_ob') === 'belum') $query->where('sudah_ob', false);
+                }
+                if (request()->filled('tipe_kontainer')) $query->where('tipe_kontainer', request('tipe_kontainer'));
+                if (request()->filled('size_kontainer')) $query->where('size_kontainer', request('size_kontainer'));
+
+                if (request()->filled('search')) {
+                    $search = request('search');
+                    $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                    $query->where(function($q) use ($search, $searchNum) {
+                        $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
+                          ->orWhere('no_seal', 'like', "%{$search}%")
+                          ->orWhere('jenis_barang', 'like', "%{$search}%");
+                    });
+                }
+
+                $query->chunk(200, function($rows) use ($out, $delimiter) {
+                    foreach ($rows as $r) {
+                        $status = 'full';
+                        if (empty($r->jenis_barang) || trim($r->jenis_barang) === '') $status = 'empty';
+                        $supirName = $r->supir ? ($r->supir->nama_panggilan ?? $r->supir->nama_lengkap ?? '') : '';
+
+                        $row = [
+                            $r->nomor_kontainer ?? '',
+                            '', // nomor_bl empty for naik_kapal
+                            $r->no_seal ?? '',
+                            $r->jenis_barang ?? '',
+                            $r->asal_kontainer ?? '',
+                            $r->ke ?? '',
+                            $r->tipe_kontainer ?? '',
+                            $r->size_kontainer ?? '',
+                            $r->sudah_ob ? 'sudah' : 'belum',
+                            $supirName,
+                            $r->tanggal_muat ? $r->tanggal_muat : '',
+                            $r->biaya ?? '',
+                            $status,
+                            $r->created_at ? $r->created_at : ''
+                        ];
+
+                        fwrite($out, implode($delimiter, array_map(function($v){
+                            return str_replace(["\r","\n"], ' ', (string)$v);
+                        }, $row)) . "\r\n");
+                    }
+                });
+            }
+
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT'
+        ]);
+    }
+
+    /**
+     * Export Excel formatted CSV (semicolon delimiter)
+     */
+    public function exportExcel(Request $request)
+    {
+        // Reuse export logic but force delimiter to semicolon
+        $request->merge(['sep' => ';']);
+        return $this->export($request);
+    }
+        }
+
         // Default: Get naik_kapal data for the selected ship and voyage
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
             ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])

@@ -32,6 +32,47 @@
                 <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-print mr-2"></i>Print
                 </a>
+
+                <!-- Export Dropdown -->
+                <div class="relative group">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md inline-flex items-center">
+                        <i class="fas fa-file-export mr-2"></i>Export
+                        <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                        <div class="py-2">
+                            <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob','tipe_kontainer','kegiatan','search']))) }}?sep=%3B"
+                               class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                <i class="fas fa-file-csv mr-3 text-purple-500"></i>
+                                <div>
+                                    <div class="font-medium">Export CSV (Semicolon)</div>
+                                    <div class="text-xs text-gray-500">Untuk Excel (disarankan)</div>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob','tipe_kontainer','kegiatan','search']))) }}?sep=,"
+                               class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                <i class="fas fa-file-csv mr-3 text-green-500"></i>
+                                <div>
+                                    <div class="font-medium">Export CSV (Comma)</div>
+                                    <div class="text-xs text-gray-500">CSV standard</div>
+                                </div>
+                            </a>
+
+                            <div class="border-t border-gray-200 my-1"></div>
+
+                            <a href="{{ route('ob.export-excel', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob','tipe_kontainer','kegiatan','search']))) }}"
+                               class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                <i class="fas fa-file-excel mr-3 text-green-600"></i>
+                                <div>
+                                    <div class="font-medium">Export Excel (Semicolon)</div>
+                                    <div class="text-xs text-gray-500">Semicolon + BOM untuk Excel</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
                 </a>

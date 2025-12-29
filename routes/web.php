@@ -3120,6 +3120,14 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob/print', [\App\Http\Controllers\ObController::class, 'print'])
          ->name('ob.print')
          ->middleware('can:ob-view');
+
+    // Export CSV/Excel for OB data (uses same filters as index)
+    Route::get('ob/export', [\App\Http\Controllers\ObController::class, 'export'])
+         ->name('ob.export')
+         ->middleware('can:ob-view');
+    Route::get('ob/export-excel', [\App\Http\Controllers\ObController::class, 'exportExcel'])
+         ->name('ob.export-excel')
+         ->middleware('can:ob-view');
     Route::get('ob/get-voyage-by-kapal', [\App\Http\Controllers\ObController::class, 'getVoyageByKapal'])
          ->name('ob.get-voyage-by-kapal')
          ->middleware('can:ob-view');
