@@ -2,20 +2,51 @@
 
 @section('title', 'Print Pranota OB - ' . ($pranota->nomor_pranota ?? '-'))
 
+@push('styles')
+<style>
+    @page {
+        size: 8.5in 6.5in; /* Half folio size */
+        margin: 0.5in;
+    }
+    
+    @media print {
+        body {
+            width: 8.5in;
+            height: 6.5in;
+        }
+        .print-container {
+            width: 100%;
+            height: 100%;
+        }
+    }
+    
+    /* Adjust font sizes for smaller paper */
+    .print-container h2 {
+        font-size: 16px;
+    }
+    .print-container p, .print-container td, .print-container th {
+        font-size: 9px;
+    }
+    .print-container table {
+        font-size: 9px;
+    }
+</style>
+@endpush
+
 @section('content')
-    <div class="p-6 bg-white">
-        <div class="flex justify-between items-start mb-6">
+    <div class="p-4 bg-white print-container">
+        <div class="flex justify-between items-start mb-4">
             <div>
-                <h2 class="text-2xl font-semibold">Pranota OB</h2>
-                <p class="text-sm">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
+                <h2 class="text-xl font-semibold">Pranota OB</h2>
+                <p class="text-xs">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
                 <!-- Kapal / Voyage removed as per request -->
             </div>
             <!-- Right column removed as per request (no print of Tanggal Cetak / Pembuat) -->
         </div>
 
-        <div class="mb-4">
-            <h4 class="text-sm font-medium mb-1">Ringkasan Per Supir</h4>
-            <table class="min-w-full table-auto border-collapse text-xs">
+        <div class="mb-3">
+            <h4 class="text-xs font-medium mb-1">Ringkasan Per Supir</h4>
+            <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
                 <thead>
                     <tr>
                         <th class="border px-2 py-1 text-center" rowspan="2"></th>
@@ -136,22 +167,22 @@
             </table>
         </div>
 
-        <div class="mt-4">
+        <div class="mt-3">
             <table class="min-w-full table-auto border-collapse">
                 <tbody>
                     <tr>
-                        <td class="px-3 py-2 text-sm font-medium">Total Kontainer</td>
-                        <td class="px-3 py-2 text-sm">{{ array_sum(array_map(function($c){ return array_sum(array_map('array_sum', array_column($c['sizes'], null))); }, $perSupirCounts)) ?? 0 }}</td>
+                        <td class="px-2 py-1 text-xs font-medium">Total Kontainer</td>
+                        <td class="px-2 py-1 text-xs">{{ array_sum(array_map(function($c){ return array_sum(array_map('array_sum', array_column($c['sizes'], null))); }, $perSupirCounts)) ?? 0 }}</td>
                     </tr>
                     <tr>
-                        <td class="px-3 py-2 text-sm font-medium">Total Biaya</td>
-                        <td class="px-3 py-2 text-sm">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
+                        <td class="px-2 py-1 text-xs font-medium">Total Biaya</td>
+                        <td class="px-2 py-1 text-xs">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="mt-6 flex justify-between text-sm">
+        <div class="mt-4 flex justify-between" style="font-size: 9px;">
             <div>
                 <p>Catatan:</p>
                 <p>{{ $pranota->catatan ?? '-' }}</p>
@@ -159,10 +190,10 @@
             <div class="text-right">
                 <p>Disiapkan oleh:</p>
                 <!-- Extra space for handwritten signature -->
-                <div style="height:80px;"></div>
+                <div style="height:50px;"></div>
                 <!-- Wider underline for signature -->
-                <p style="display:inline-block; width:320px; border-bottom:1px solid #000; margin:0;"></p>
-                <p class="mt-2 text-xs" style="margin-top:6px;">(Nama &amp; Tanda Tangan)</p>
+                <p style="display:inline-block; width:200px; border-bottom:1px solid #000; margin:0;"></p>
+                <p class="mt-1" style="margin-top:4px; font-size: 8px;">(Nama &amp; Tanda Tangan)</p>
             </div>
         </div>
     </div>
