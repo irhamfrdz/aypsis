@@ -301,203 +301,6 @@ class ObController extends Controller
             ));
         }
 
-        // ... rest of method continued ...
-    }
-
-    /**
-     * Export OB data (CSV) with same filters as index
-     */
-    public function export(Request $request)
-    {
-        // Ensure fresh data
-        if (function_exists('opcache_reset')) {
-            @opcache_reset();
-        }
-        \Illuminate\Support\Facades\Cache::flush();
-        \Illuminate\Support\Facades\DB::reconnect();
-
-        $sep = $request->query('sep', ';');
-        $sep = urldecode($sep);
-        $delimiter = $sep === ',' ? ',' : ';';
-
-        $namaKapal = $request->get('nama_kapal');
-        $noVoyage = $request->get('no_voyage');
-        $kegiatan = $request->get('kegiatan');
-
-        $fileName = 'ob_export_' . date('Ymd_His') . '.csv';
-
-        $callback = function() use ($delimiter, $namaKapal, $noVoyage, $kegiatan) {
-            $out = fopen('php://output', 'w');
-            // BOM for Excel
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            // Header
-            $headers = ['nomor_kontainer', 'nomor_bl', 'no_seal', 'nama_barang_or_jenis_barang', 'asal', 'ke', 'tipe_kontainer', 'size_kontainer', 'status_ob', 'supir', 'tanggal_ob_or_tanggal_muat', 'biaya', 'detected_status', 'created_at'];
-            fwrite($out, implode($delimiter, $headers) . "\r\n");
-
-            // Normalize ship name
-            $normalizedKapal = $this->normalizeShipName($namaKapal);
-
-            // If BLs exist for this ship/voyage and not kegiatan='muat', export BLs
-            $hasBl = \App\Models\Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-                ->where('no_voyage', $noVoyage)
-                ->exists();
-
-            if ($kegiatan !== 'muat' && $hasBl) {
-                $query = \App\Models\Bl::with('supir')
-                    ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-                    ->where('no_voyage', $noVoyage)
-                    ->orderBy('nomor_bl', 'asc');
-
-                // Apply filters similar to index
-                if (request()->filled('status_ob')) {
-                    if (request('status_ob') === 'sudah') $query->where('sudah_ob', true);
-                    if (request('status_ob') === 'belum') $query->where('sudah_ob', false);
-                }
-                if (request()->filled('tipe_kontainer')) $query->where('tipe_kontainer', request('tipe_kontainer'));
-                if (request()->filled('size_kontainer')) $query->where('size_kontainer', request('size_kontainer'));
-
-                if (request()->filled('search')) {
-                    $search = request('search');
-                    $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
-                    $query->where(function($q) use ($search, $searchNum) {
-                        $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
-                          ->orWhere('no_seal', 'like', "%{$search}%")
-                          ->orWhere('nama_barang', 'like', "%{$search}%")
-                          ->orWhere('nomor_bl', 'like', "%{$search}%");
-                    });
-                }
-
-                $query->chunk(200, function($rows) use ($out, $delimiter) {
-                    foreach ($rows as $r) {
-                        // detect status & pricing (reuse logic from index)
-                        $status = 'full';
-                        if (empty($r->nama_barang) || trim($r->nama_barang) === '') $status = 'empty';
-                        $biaya = null; // pricing logic omitted for export; could be attached if needed
-
-                        $supirName = $r->supir ? ($r->supir->nama_panggilan ?? $r->supir->nama_lengkap ?? '') : '';
-
-                        $row = [
-                            $r->nomor_kontainer ?? '',
-                            $r->nomor_bl ?? '',
-                            $r->no_seal ?? '',
-                            $r->nama_barang ?? '',
-                            $r->asal_kontainer ?? '',
-                            $r->ke ?? '',
-                            $r->tipe_kontainer ?? '',
-                            $r->size_kontainer ?? '',
-                            $r->sudah_ob ? 'sudah' : 'belum',
-                            $supirName,
-                            $r->tanggal_ob ? $r->tanggal_ob : '',
-                            $biaya ?? '',
-                            $status,
-                            $r->created_at ? $r->created_at : ''
-                        ];
-
-                        fwrite($out, implode($delimiter, array_map(function($v){
-                            return str_replace(["\r","\n"], ' ', (string)$v);
-                        }, $row)) . "\r\n");
-                    }
-                });
-
-            } else {
-                // Use NaikKapal
-                $query = \App\Models\NaikKapal::with('supir')
-                    ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-                    ->where('no_voyage', $noVoyage)
-                    ->orderBy('tanggal_muat', 'desc');
-
-                if (request()->filled('status_ob')) {
-                    if (request('status_ob') === 'sudah') $query->where('sudah_ob', true);
-                    if (request('status_ob') === 'belum') $query->where('sudah_ob', false);
-                }
-                if (request()->filled('tipe_kontainer')) $query->where('tipe_kontainer', request('tipe_kontainer'));
-                if (request()->filled('size_kontainer')) $query->where('size_kontainer', request('size_kontainer'));
-
-                if (request()->filled('search')) {
-                    $search = request('search');
-                    $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
-                    $query->where(function($q) use ($search, $searchNum) {
-                        $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
-                          ->orWhere('no_seal', 'like', "%{$search}%")
-                          ->orWhere('jenis_barang', 'like', "%{$search}%");
-                    });
-                }
-
-                $query->chunk(200, function($rows) use ($out, $delimiter) {
-                    foreach ($rows as $r) {
-                        $status = 'full';
-                        if (empty($r->jenis_barang) || trim($r->jenis_barang) === '') $status = 'empty';
-                        $supirName = $r->supir ? ($r->supir->nama_panggilan ?? $r->supir->nama_lengkap ?? '') : '';
-
-                        $row = [
-                            $r->nomor_kontainer ?? '',
-                            '', // nomor_bl empty for naik_kapal
-                            $r->no_seal ?? '',
-                            $r->jenis_barang ?? '',
-                            $r->asal_kontainer ?? '',
-                            $r->ke ?? '',
-                            $r->tipe_kontainer ?? '',
-                            $r->size_kontainer ?? '',
-                            $r->sudah_ob ? 'sudah' : 'belum',
-                            $supirName,
-                            $r->tanggal_muat ? $r->tanggal_muat : '',
-                            $r->biaya ?? '',
-                            $status,
-                            $r->created_at ? $r->created_at : ''
-                        ];
-
-                        fwrite($out, implode($delimiter, array_map(function($v){
-                            return str_replace(["\r","\n"], ' ', (string)$v);
-                        }, $row)) . "\r\n");
-                    }
-                });
-            }
-
-            fclose($out);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma' => 'no-cache',
-            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT'
-        ]);
-    }
-
-    /**
-     * Export Excel formatted CSV (semicolon delimiter)
-     */
-    public function exportExcel(Request $request)
-    {
-        // Reuse export logic but force delimiter to semicolon
-        $request->merge(['sep' => ';']);
-        return $this->export($request);
-    }
-
-    /**
-     * Display OB kontainer for a specific ship and voyage
-     */
-    public function show(Request $request)
-    {
-        $user = Auth::user();
-
-        if (!$user->can('ob-view')) {
-            abort(403, 'Unauthorized');
-        }
-
-        $namaKapal = $request->query('nama_kapal');
-        $noVoyage = $request->query('no_voyage');
-        $kegiatan = $request->query('kegiatan', 'bongkar'); // default to 'bongkar'
-
-        if (!$namaKapal || !$noVoyage) {
-            return redirect()->route('ob.index')->with('error', 'Pilih kapal dan voyage terlebih dahulu');
-        }
-
-        // Normalize ship name
-        $normalizedKapal = $this->normalizeShipName($namaKapal);
-
         // Default: Get naik_kapal data for the selected ship and voyage
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
             ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
@@ -1620,6 +1423,220 @@ class ObController extends Controller
                 'noVoyage',
                 'statusFilter'
             ));
+        }
+    }
+
+    /**
+     * Export OB data to Excel (CSV format)
+     */
+    public function exportExcel(Request $request)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (!$user->can('ob-view')) {
+            abort(403, 'Anda tidak memiliki akses untuk export OB.');
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+        $kegiatan = $request->get('kegiatan');
+        $statusFilter = $request->get('status_ob');
+        $tipeFilter = $request->get('tipe_kontainer');
+        $searchFilter = $request->get('search');
+
+        if (!$namaKapal || !$noVoyage) {
+            abort(400, 'Nama kapal dan nomor voyage harus diisi');
+        }
+
+        // Trim whitespace
+        $namaKapal = trim($namaKapal);
+        $noVoyage = trim($noVoyage);
+        
+        // Normalize ship name
+        $normalizedKapal = $this->normalizeShipName($namaKapal);
+
+        // Check if we have BL records for this ship/voyage
+        $hasBl = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $noVoyage)
+            ->exists();
+
+        $fileName = 'OB_' . str_replace(' ', '_', $namaKapal) . '_' . $noVoyage . '_' . date('Ymd_His') . '.csv';
+
+        // Determine which data to use
+        if ($kegiatan !== 'muat' && $hasBl) {
+            // Use BL data
+            $query = Bl::with(['prospek', 'supir'])
+                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage);
+
+            // Apply filters
+            if ($statusFilter) {
+                if ($statusFilter === 'sudah') {
+                    $query->where('sudah_ob', true);
+                } elseif ($statusFilter === 'belum') {
+                    $query->where('sudah_ob', false);
+                }
+            }
+
+            if ($tipeFilter) {
+                $query->where('tipe_kontainer', $tipeFilter);
+            }
+
+            if ($searchFilter) {
+                $search = $searchFilter;
+                $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                $query->where(function($q) use ($search, $searchNum) {
+                    $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
+                      ->orWhere('no_seal', 'like', "%{$search}%")
+                      ->orWhere('nama_barang', 'like', "%{$search}%")
+                      ->orWhere('nomor_bl', 'like', "%{$search}%");
+                });
+            }
+
+            $bls = $query->orderBy('nomor_bl', 'asc')->get();
+
+            $callback = function() use ($bls, $namaKapal, $noVoyage) {
+                $out = fopen('php://output', 'w');
+
+                // Write UTF-8 BOM
+                fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+                // Header row
+                $headers = [
+                    'No', 'No. BL', 'No. Kontainer', 'No. Seal', 'Nama Barang', 
+                    'Asal Kontainer', 'Ke', 'Tipe', 'Size', 
+                    'Tanggal Dibuat', 'Status OB', 'Tanggal OB', 'Supir', 
+                    'Nama Kapal', 'No. Voyage'
+                ];
+                fwrite($out, implode(";", $headers) . "\r\n");
+
+                // Data rows
+                $no = 1;
+                foreach ($bls as $bl) {
+                    $row = [
+                        $no++,
+                        $bl->nomor_bl ?: '-',
+                        "\u{200B}" . ($bl->nomor_kontainer ?: '-'), // Zero-width space to prevent scientific notation
+                        "\u{200B}" . ($bl->no_seal ?: '-'),
+                        $bl->nama_barang ?: '-',
+                        $bl->asal_kontainer ?: '-',
+                        $bl->ke ?: '-',
+                        $bl->tipe_kontainer ?: '-',
+                        $bl->size_kontainer ? $bl->size_kontainer . ' Feet' : '-',
+                        $bl->created_at ? $bl->created_at->format('d/m/Y H:i') : '-',
+                        $bl->sudah_ob ? 'Sudah OB' : 'Belum OB',
+                        $bl->tanggal_ob ? \Carbon\Carbon::parse($bl->tanggal_ob)->format('d/m/Y H:i') : '-',
+                        $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '-') : '-',
+                        $namaKapal,
+                        $noVoyage
+                    ];
+                    
+                    // Clean line breaks
+                    $row = array_map(function($val) {
+                        return str_replace(["\r", "\n"], ' ', $val);
+                    }, $row);
+                    
+                    fwrite($out, implode(";", $row) . "\r\n");
+                }
+
+                fclose($out);
+            };
+
+            return response()->stream($callback, 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
+
+        } else {
+            // Use naik_kapal data
+            $query = NaikKapal::with(['prospek', 'supir'])
+                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage);
+
+            // Apply filters
+            if ($statusFilter) {
+                if ($statusFilter === 'sudah') {
+                    $query->where('sudah_ob', true);
+                } elseif ($statusFilter === 'belum') {
+                    $query->where('sudah_ob', false);
+                }
+            }
+
+            if ($tipeFilter) {
+                $query->where('tipe_kontainer', $tipeFilter);
+            }
+
+            if ($searchFilter) {
+                $search = $searchFilter;
+                $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                $query->where(function($q) use ($search, $searchNum) {
+                    $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
+                      ->orWhere('no_seal', 'like', "%{$search}%")
+                      ->orWhere('jenis_barang', 'like', "%{$search}%");
+                });
+            }
+
+            $naikKapals = $query->orderBy('tanggal_muat', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $callback = function() use ($naikKapals, $namaKapal, $noVoyage) {
+                $out = fopen('php://output', 'w');
+
+                // Write UTF-8 BOM
+                fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+                // Header row
+                $headers = [
+                    'No', 'No. Kontainer', 'No. Seal', 'Jenis Barang', 
+                    'Asal Kontainer', 'Ke', 'Tipe', 'Size', 
+                    'Tanggal Muat', 'Status OB', 'Tanggal OB', 'Supir', 
+                    'Nama Kapal', 'No. Voyage'
+                ];
+                fwrite($out, implode(";", $headers) . "\r\n");
+
+                // Data rows
+                $no = 1;
+                foreach ($naikKapals as $nk) {
+                    $row = [
+                        $no++,
+                        "\u{200B}" . ($nk->nomor_kontainer ?: '-'),
+                        "\u{200B}" . ($nk->no_seal ?: '-'),
+                        $nk->jenis_barang ?: '-',
+                        $nk->asal_kontainer ?: '-',
+                        $nk->ke ?: '-',
+                        $nk->tipe_kontainer ?: '-',
+                        $nk->size_kontainer ? $nk->size_kontainer . ' Feet' : '-',
+                        $nk->tanggal_muat ? \Carbon\Carbon::parse($nk->tanggal_muat)->format('d/m/Y') : '-',
+                        $nk->sudah_ob ? 'Sudah OB' : 'Belum OB',
+                        $nk->tanggal_ob ? \Carbon\Carbon::parse($nk->tanggal_ob)->format('d/m/Y H:i') : '-',
+                        $nk->supir ? ($nk->supir->nama_panggilan ?? $nk->supir->nama_lengkap ?? '-') : '-',
+                        $namaKapal,
+                        $noVoyage
+                    ];
+                    
+                    // Clean line breaks
+                    $row = array_map(function($val) {
+                        return str_replace(["\r", "\n"], ' ', $val);
+                    }, $row);
+                    
+                    fwrite($out, implode(";", $row) . "\r\n");
+                }
+
+                fclose($out);
+            };
+
+            return response()->stream($callback, 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
         }
     }
 
