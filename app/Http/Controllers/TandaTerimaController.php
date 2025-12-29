@@ -821,6 +821,9 @@ class TandaTerimaController extends Controller
                 $suratJalan->update($suratJalanUpdate);
             }
 
+            // Update status_surat_jalan menjadi selesai karena sudah ada tanda terima
+            $suratJalan->update(['status_surat_jalan' => 'selesai']);
+
             // Update related Prospek data for newly created TandaTerima
             $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
 

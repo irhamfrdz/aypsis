@@ -1475,6 +1475,11 @@ Route::middleware([
          ->name('pergerakan-kapal.print')
          ->middleware('can:pergerakan-kapal-print');
 
+    // 📦 Pergerakan Kontainer Management
+    Route::get('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'index'])
+         ->name('pergerakan-kontainer.index')
+         ->middleware('can:pergerakan-kontainer-view');
+
     Route::get('pergerakan-kapal/export', [\App\Http\Controllers\PergerakanKapalController::class, 'export'])
          ->name('pergerakan-kapal.export')
          ->middleware('can:pergerakan-kapal-export');

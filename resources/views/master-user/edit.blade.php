@@ -1331,7 +1331,7 @@
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
-                                        <span>Pergezrakan Kapal</span>
+                                        <span>Pergerakan Kapal</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[pergerakan-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kapal']['view']) && $userMatrixPermissions['pergerakan-kapal']['view']) checked @endif></td>
@@ -1341,6 +1341,23 @@
                                 <td><input type="checkbox" name="permissions[pergerakan-kapal][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kapal']['approve']) && $userMatrixPermissions['pergerakan-kapal']['approve']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[pergerakan-kapal][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kapal']['print']) && $userMatrixPermissions['pergerakan-kapal']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[pergerakan-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kapal']['export']) && $userMatrixPermissions['pergerakan-kapal']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Pergerakan Kontainer --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pergerakan Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['view']) && $userMatrixPermissions['pergerakan-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['create']) && $userMatrixPermissions['pergerakan-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['update']) && $userMatrixPermissions['pergerakan-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['delete']) && $userMatrixPermissions['pergerakan-kontainer']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['approve']) && $userMatrixPermissions['pergerakan-kontainer']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['print']) && $userMatrixPermissions['pergerakan-kontainer']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pergerakan-kontainer][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pergerakan-kontainer']['export']) && $userMatrixPermissions['pergerakan-kontainer']['export']) checked @endif></td>
                             </tr>
 
                             {{-- Master Gudang --}}
