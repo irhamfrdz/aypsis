@@ -190,6 +190,12 @@ class SuratJalanController extends Controller
                          ->orderBy('nama_lengkap')
                          ->get(['id', 'nama_lengkap']);
 
+        // Get karyawan krani data - hanya divisi krani
+        $kranis = Karyawan::where('divisi', 'krani')
+                         ->whereNotNull('nama_lengkap')
+                         ->orderBy('nama_lengkap')
+                         ->get(['id', 'nama_lengkap']);
+
         // Get kegiatan surat jalan from master kegiatan
         $kegiatanSuratJalan = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
                                                         ->where('status', 'Aktif')
@@ -465,6 +471,12 @@ class SuratJalanController extends Controller
                          ->orderBy('nama_lengkap')
                          ->get(['id', 'nama_lengkap']);
 
+        // Get karyawan krani data - hanya divisi krani
+        $kranis = Karyawan::where('divisi', 'krani')
+                         ->whereNotNull('nama_lengkap')
+                         ->orderBy('nama_lengkap')
+                         ->get(['id', 'nama_lengkap']);
+
         // Get kegiatan surat jalan from master kegiatan
         $kegiatanSuratJalan = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
                                                         ->where('status', 'Aktif')
@@ -527,7 +539,7 @@ class SuratJalanController extends Controller
                                                            ->orderBy('nama_tujuan')
                                                            ->get(['id', 'nama_tujuan']);
 
-        return view('surat-jalan.edit', compact('suratJalan', 'supirs', 'keneks', 'kegiatanSuratJalan', 'stockKontainers', 'pengirims', 'jenisBarangOptions', 'tujuanKegiatanUtamas', 'tujuanKirimOptions'));
+        return view('surat-jalan.edit', compact('suratJalan', 'supirs', 'keneks', 'kranis', 'kegiatanSuratJalan', 'stockKontainers', 'pengirims', 'jenisBarangOptions', 'tujuanKegiatanUtamas', 'tujuanKirimOptions'));
     }
 
     /**
