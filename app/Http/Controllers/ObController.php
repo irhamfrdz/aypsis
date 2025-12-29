@@ -475,7 +475,28 @@ class ObController extends Controller
         $request->merge(['sep' => ';']);
         return $this->export($request);
     }
+
+    /**
+     * Display OB kontainer for a specific ship and voyage
+     */
+    public function show(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            abort(403, 'Unauthorized');
         }
+
+        $namaKapal = $request->query('nama_kapal');
+        $noVoyage = $request->query('no_voyage');
+        $kegiatan = $request->query('kegiatan', 'bongkar'); // default to 'bongkar'
+
+        if (!$namaKapal || !$noVoyage) {
+            return redirect()->route('ob.index')->with('error', 'Pilih kapal dan voyage terlebih dahulu');
+        }
+
+        // Normalize ship name
+        $normalizedKapal = $this->normalizeShipName($namaKapal);
 
         // Default: Get naik_kapal data for the selected ship and voyage
         $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
