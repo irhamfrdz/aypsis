@@ -134,6 +134,14 @@ class StockKontainer extends Model
     }
 
     /**
+     * Relationship to Gudang
+     */
+    public function gudang()
+    {
+        return $this->belongsTo(Gudang::class, 'gudangs_id');
+    }
+
+    /**
      * Check if this kontainer has duplicate in kontainers table
      */
     public function hasDuplicateInKontainers()

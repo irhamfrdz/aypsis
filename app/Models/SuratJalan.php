@@ -30,6 +30,7 @@ class SuratJalan extends Model
         'supir2',
         'no_plat',
         'kenek',
+        'krani',
         'tipe_kontainer',
         'no_kontainer',
         'no_seal',

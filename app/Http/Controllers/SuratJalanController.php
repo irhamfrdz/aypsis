@@ -235,7 +235,7 @@ class SuratJalanController extends Controller
         // Urutkan berdasarkan nomor
         $stockKontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
-        return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks', 'kegiatanSuratJalan', 'stockKontainers'));
+        return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'kegiatanSuratJalan', 'stockKontainers'));
     }
 
     /**
@@ -266,6 +266,7 @@ class SuratJalanController extends Controller
             'supir2' => 'nullable|string|max:255',
             'no_plat' => 'nullable|string|max:20',
             'kenek' => 'nullable|string|max:255',
+            'krani' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|string|max:50',
             'nomor_kontainer' => 'nullable',
             'nomor_kontainer.*' => 'nullable|string|max:255',

@@ -503,6 +503,26 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
+                    <select name="krani"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('krani') border-red-500 @enderror">
+                        <option value="">Pilih Krani</option>
+                        @if(isset($kranis))
+                            @foreach($kranis as $krani)
+                                <option value="{{ $krani->nama_lengkap }}"
+                                        {{ old('krani') == $krani->nama_lengkap ? 'selected' : '' }}>
+                                    {{ $krani->nama_lengkap }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                    @error('krani')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Data krani diambil dari master karyawan divisi krani</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat</label>
                     <input type="text"
                            name="no_plat"

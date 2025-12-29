@@ -193,8 +193,8 @@
                                     <div class="text-xs text-blue-600">Seal: {{ $naikKapal->no_seal }}</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900 break-words max-w-xs">
                                     {{ $naikKapal->jenis_barang ?? '-' }}
                                 </div>
                             </td>

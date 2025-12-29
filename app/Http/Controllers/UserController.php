@@ -1102,6 +1102,18 @@ class UserController extends Controller
                         $action = str_replace('invoice-aktivitas-lain-', '', $permissionName);
                     }
 
+                    // Special handling for pergerakan-kapal-* permissions
+                    if (strpos($permissionName, 'pergerakan-kapal-') === 0) {
+                        $module = 'pergerakan-kapal';
+                        $action = str_replace('pergerakan-kapal-', '', $permissionName);
+                    }
+
+                    // Special handling for pergerakan-kontainer-* permissions
+                    if (strpos($permissionName, 'pergerakan-kontainer-') === 0) {
+                        $module = 'pergerakan-kontainer';
+                        $action = str_replace('pergerakan-kontainer-', '', $permissionName);
+                    }
+
                     // Special handling for pembayaran-uang-muka-* permissions
                     if (strpos($permissionName, 'pembayaran-uang-muka-') === 0) {
                         $module = 'pembayaran-uang-muka';
@@ -1929,6 +1941,30 @@ class UserController extends Controller
                                 'approve' => 'pergerakan-kapal-approve',
                                 'print' => 'pergerakan-kapal-print',
                                 'export' => 'pergerakan-kapal-export'
+                            ];
+
+                            if (isset($actionMap[$action])) {
+                                $permissionName = $actionMap[$action];
+                                $directPermission = Permission::where('name', $permissionName)->first();
+                                if ($directPermission) {
+                                    $permissionIds[] = $directPermission->id;
+                                    $found = true;
+                                    continue; // Skip to next action
+                                }
+                            }
+                        }
+
+                        // DIRECT FIX: Handle pergerakan-kontainer permissions explicitly
+                        if ($module === 'pergerakan-kontainer' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                            // Map action to correct permission name
+                            $actionMap = [
+                                'view' => 'pergerakan-kontainer-view',
+                                'create' => 'pergerakan-kontainer-create',
+                                'update' => 'pergerakan-kontainer-update',
+                                'delete' => 'pergerakan-kontainer-delete',
+                                'approve' => 'pergerakan-kontainer-approve',
+                                'print' => 'pergerakan-kontainer-print',
+                                'export' => 'pergerakan-kontainer-export'
                             ];
 
                             if (isset($actionMap[$action])) {

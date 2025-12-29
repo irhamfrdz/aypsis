@@ -1480,6 +1480,10 @@ Route::middleware([
          ->name('pergerakan-kontainer.index')
          ->middleware('can:pergerakan-kontainer-view');
 
+    Route::post('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'store'])
+         ->name('pergerakan-kontainer.store')
+         ->middleware('can:pergerakan-kontainer-create');
+
     Route::get('pergerakan-kapal/export', [\App\Http\Controllers\PergerakanKapalController::class, 'export'])
          ->name('pergerakan-kapal.export')
          ->middleware('can:pergerakan-kapal-export');

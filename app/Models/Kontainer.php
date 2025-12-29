@@ -136,6 +136,11 @@ class Kontainer extends Model
         return $this->belongsTo(MasterTerminal::class, 'terminal_id');
     }
 
+    public function gudang()
+    {
+        return $this->belongsTo(Gudang::class, 'gudangs_id');
+    }
+
     // Accessor untuk nomor kontainer gabungan
     public function getNomorKontainerAttribute()
     {
