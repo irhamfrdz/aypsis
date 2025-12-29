@@ -11,6 +11,14 @@
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h2 class="text-xl font-semibold text-gray-900">Daftar Karyawan</h2>
 
+                @if(isset($counts))
+                    <div class="mt-2 text-sm text-gray-600 flex items-center gap-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-50 text-green-800 font-medium">Aktif: {{ $counts['aktif'] }}</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-50 text-red-800 font-medium">Berhenti: {{ $counts['berhenti'] }}</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-50 text-gray-800 font-medium">Total: {{ $counts['total'] }}</span>
+                    </div>
+                @endif
+
                 <!-- Search Box -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex-1 sm:flex-initial">
@@ -59,6 +67,15 @@
                                 @endif
                             </svg>
                             {{ request('show_berhenti') ? 'Semua Karyawan' : 'Karyawan Berhenti' }}
+                        </a>
+
+                        <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_all' => request('show_all') ? null : '1', 'show_berhenti' => null])) }}"
+                           class="inline-flex items-center px-3 py-2 {{ request('show_all') ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 hover:bg-gray-700' }} text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
+                           title="{{ request('show_all') ? 'Tampilkan default (Aktif)' : 'Tampilkan Semua Karyawan' }}">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
+                            </svg>
+                            Semua
                         </a>
                         
                         <a href="{{ route('master.karyawan.create') }}"
@@ -219,6 +236,22 @@
                         <a href="{{ route('master.karyawan.index', request()->except('show_berhenti')) }}" 
                            class="ml-3 text-red-600 hover:text-red-800 underline font-medium">
                             Tampilkan Semua
+                        </a>
+                    </div>
+                </div>
+            @endif
+
+            @if(request('show_all'))
+                <div class="mt-3 flex items-center text-sm">
+                    <div class="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-2 text-indigo-800">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
+                        </svg>
+                        <span class="font-medium">Filter Aktif:</span>
+                        <span class="ml-1">Menampilkan semua karyawan</span>
+                        <a href="{{ route('master.karyawan.index', request()->except('show_all')) }}" 
+                           class="ml-3 text-indigo-600 hover:text-indigo-800 underline font-medium">
+                            Tampilkan Default (Aktif)
                         </a>
                     </div>
                 </div>

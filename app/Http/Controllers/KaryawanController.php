@@ -80,8 +80,20 @@ class KaryawanController extends Controller
         // Query builder untuk karyawan
         $query = Karyawan::query();
 
-        // Filter untuk karyawan yang sudah berhenti
-        if ($request->filled('show_berhenti')) {
+        // Precompute counts for header summary
+        $totalCount = Karyawan::count();
+        $aktifCount = Karyawan::whereNull('tanggal_berhenti')->count();
+        $berhentiCount = Karyawan::whereNotNull('tanggal_berhenti')->count();
+        $counts = [
+            'total' => $totalCount,
+            'aktif' => $aktifCount,
+            'berhenti' => $berhentiCount,
+        ];
+
+        // Filter: show_all overrides other filters
+        if ($request->filled('show_all')) {
+            // show_all -> tampilkan semua karyawan (tidak menambah where)
+        } elseif ($request->filled('show_berhenti')) {
             $query->whereNotNull('tanggal_berhenti');
         } else {
             // Default: hanya tampilkan karyawan aktif (belum berhenti)
@@ -123,17 +135,21 @@ class KaryawanController extends Controller
         // Apply sorting
         $query->orderBy($sortField, $sortDirection);
 
-        // Handle per_page parameter for pagination
-        $perPage = $request->get('per_page', 15); // Default 15 per halaman
-        $allowedPerPage = [15, 50, 100];
-        if (!in_array($perPage, $allowedPerPage)) {
-            $perPage = 15;
+        // Handle per_page parameter for pagination (support show_all)
+        if ($request->filled('show_all')) {
+            $perPage = $totalCount > 0 ? $totalCount : 15;
+        } else {
+            $perPage = (int) $request->get('per_page', 15); // Default 15 per halaman
+            $allowedPerPage = [15, 50, 100];
+            if (!in_array($perPage, $allowedPerPage)) {
+                $perPage = 15;
+            }
         }
 
         // Menggunakan paginate dengan per_page yang dinamis
         $karyawans = $query->paginate($perPage)->appends($request->query());
 
-        return view('master-karyawan.index', compact('karyawans'));
+        return view('master-karyawan.index', compact('karyawans', 'counts'));
     }
 
     /**
