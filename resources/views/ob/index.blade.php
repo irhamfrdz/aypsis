@@ -669,6 +669,16 @@
                               placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                 </div>
 
+                <div class="mb-4">
+                    <label for="retur_barang" class="block text-sm font-medium text-gray-700 mb-2">
+                        Retur Barang (Opsional)
+                    </label>
+                    <textarea id="retur_barang" name="retur_barang" rows="2"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Catatan retur barang untuk surat jalan bongkaran..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Akan disimpan di surat jalan bongkaran jika ada</p>
+                </div>
+
                 <!-- Modal Footer -->
                 <div class="flex justify-end gap-3 pt-3 border-t">
                     <button type="button" onclick="closeSupirModal()"
@@ -999,6 +1009,7 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     const recordId = document.getElementById('record_id').value;
     const supirId = document.getElementById('supir_id').value;
     const catatan = document.getElementById('catatan').value;
+    const returBarang = document.getElementById('retur_barang').value;
     
     if (!supirId) {
         alert('Silakan pilih supir terlebih dahulu');
@@ -1014,7 +1025,8 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     let requestData = {
         naik_kapal_id: recordId,
         supir_id: supirId,
-        catatan: catatan
+        catatan: catatan,
+        retur_barang: returBarang
     };
     
     if (recordType === 'bl') {
@@ -1022,7 +1034,8 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
         requestData = {
             bl_id: recordId,
             supir_id: supirId,
-            catatan: catatan
+            catatan: catatan,
+            retur_barang: returBarang
         };
     }
     

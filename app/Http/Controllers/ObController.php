@@ -969,7 +969,8 @@ class ObController extends Controller
             $request->validate([
                 'bl_id' => 'required|exists:bls,id',
                 'supir_id' => 'required|exists:karyawans,id',
-                'catatan' => 'nullable|string'
+                'catatan' => 'nullable|string',
+                'retur_barang' => 'nullable|string'
             ]);
 
             $bl = Bl::findOrFail($request->bl_id);
@@ -985,6 +986,17 @@ class ObController extends Controller
                 $bl->sudah_tl = false;
             }
             $bl->save();
+
+            // Update retur_barang di surat_jalans based on nomor_kontainer
+            if ($request->filled('retur_barang') && $bl->nomor_kontainer) {
+                try {
+                    \App\Models\SuratJalan::where('no_kontainer', $bl->nomor_kontainer)
+                        ->where('kegiatan', 'bongkar')
+                        ->update(['retur_barang' => $request->retur_barang]);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to update retur_barang in surat_jalans: ' . $e->getMessage());
+                }
+            }
 
             // Also clear any related NaikKapal.is_tl records
             try {
