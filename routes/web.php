@@ -2427,11 +2427,45 @@ Route::middleware(['auth'])->group(function () {
          ->name('checkpoint-kontainer-keluar.cancel')
          ->middleware('can:checkpoint-kontainer-keluar-delete');
 
+    Route::post('checkpoint-kontainer-keluar/kirim-kontainer', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'kirimKontainer'])
+         ->name('checkpoint-kontainer-keluar.kirim')
+         ->middleware('can:checkpoint-kontainer-keluar-create');
+
     // 📦 KONTAINER DALAM PERJALANAN ROUTES
     // ═══════════════════════════════════════════════════════════════════════
     Route::get('kontainer-perjalanan', [\App\Http\Controllers\KontainerPerjalananController::class, 'index'])
          ->name('kontainer-perjalanan.index')
          ->middleware('can:checkpoint-kontainer-keluar-view');
+
+    // 📥 CHECKPOINT KONTAINER MASUK ROUTES
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::get('checkpoint-kontainer-masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'index'])
+         ->name('checkpoint-kontainer-masuk.index')
+         ->middleware('can:checkpoint-kontainer-masuk-view');
+
+    Route::get('checkpoint-kontainer-masuk/history', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'history'])
+         ->name('checkpoint-kontainer-masuk.history')
+         ->middleware('can:checkpoint-kontainer-masuk-view');
+
+    Route::get('checkpoint-kontainer-masuk/{cabangSlug}', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'checkpoint'])
+         ->name('checkpoint-kontainer-masuk.checkpoint')
+         ->middleware('can:checkpoint-kontainer-masuk-view');
+
+    Route::get('checkpoint-kontainer-masuk/{cabangSlug}/gudang/{gudangId}', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'showKontainer'])
+         ->name('checkpoint-kontainer-masuk.kontainer')
+         ->middleware('can:checkpoint-kontainer-masuk-view');
+
+    Route::post('checkpoint-kontainer-masuk/{kontainerPerjalananId}/masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'processMasuk'])
+         ->name('checkpoint-kontainer-masuk.masuk')
+         ->middleware('can:checkpoint-kontainer-masuk-create');
+
+    Route::post('checkpoint-kontainer-masuk/bulk-masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'bulkMasuk'])
+         ->name('checkpoint-kontainer-masuk.bulk-masuk')
+         ->middleware('can:checkpoint-kontainer-masuk-create');
+
+    Route::post('checkpoint-kontainer-masuk/{kontainerPerjalananId}/cancel', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'cancelMasuk'])
+         ->name('checkpoint-kontainer-masuk.cancel')
+         ->middleware('can:checkpoint-kontainer-masuk-delete');
 
 });
 
@@ -2794,6 +2828,12 @@ Route::get('/test-gate-in-ajax', function () {
             ->name('checkpoint.create-surat-jalan');
         Route::post('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'storeSuratJalan'])
             ->name('checkpoint.store-surat-jalan');
+
+        // Checkpoint management for surat jalan bongkaran
+        Route::get('/surat-jalan-bongkaran/{id}/checkpoint', [CheckpointController::class, 'createSuratJalanBongkaran'])
+            ->name('checkpoint.create-surat-jalan-bongkaran');
+        Route::post('/surat-jalan-bongkaran/{id}/checkpoint', [CheckpointController::class, 'storeSuratJalanBongkaran'])
+            ->name('checkpoint.store-surat-jalan-bongkaran');
         
         // API for kontainer search
         Route::get('/api/kontainer/search', [\App\Http\Controllers\Api\KontainerSearchController::class, 'search'])

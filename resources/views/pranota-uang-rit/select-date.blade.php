@@ -7,7 +7,7 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h1 class="text-xl font-semibold text-gray-900 mb-2">Pilih Rentang Tanggal</h1>
-            <p class="text-sm text-gray-600 mb-4">Silakan pilih rentang tanggal untuk menampilkan daftar Pranota Uang Rit berdasarkan <strong>tanggal tanda terima</strong>.</p>
+            <p class="text-sm text-gray-600 mb-4">Silakan pilih rentang tanggal untuk menampilkan daftar Pranota Uang Rit berdasarkan <strong>tanggal checkpoint</strong> dari Surat Jalan dan Surat Jalan Bongkaran.</p>
 
             <form method="GET" action="{{ route('pranota-uang-rit.create') }}" class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                 <div>

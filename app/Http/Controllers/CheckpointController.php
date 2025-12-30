@@ -19,12 +19,16 @@ class CheckpointController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
+        $user->load('karyawan'); // Eager load karyawan relationship
+        
         if (!$user->isSupir()) {
+            Log::warning('Checkpoint create (permohonan) blocked - user is not supir', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null]);
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
 
         // Otorisasi: Pastikan supir yang login adalah yang ditugaskan
-        if ($user->karyawan->id !== $permohonan->supir_id) {
+        if (!$user->karyawan || $user->karyawan->id !== $permohonan->supir_id) {
+            Log::warning('Checkpoint create (permohonan) access denied - supir mismatch', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null, 'karyawan_id' => $user->karyawan->id ?? null, 'permohonan_id' => $permohonan->id ?? null, 'permohonan_supir_id' => $permohonan->supir_id ?? null]);
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
@@ -329,20 +333,24 @@ class CheckpointController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
+        $user->load('karyawan'); // Eager load karyawan relationship
+        
         if (!$user->isSupir()) {
+            Log::warning('Checkpoint create (surat jalan) blocked - user is not supir', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null]);
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
 
         // Otorisasi: Pastikan supir yang login adalah yang ditugaskan untuk surat jalan ini
-        // Check multiple possible name formats to ensure access
+        // Check multiple possible name formats to ensure access (case-insensitive)
         $userNamaLengkap = $user->karyawan->nama_lengkap ?? $user->username;
         $userNama = $user->karyawan->nama ?? $user->username;
         $userName = $user->name; // This uses the accessor we created
 
-        if ($userNamaLengkap !== $suratJalan->supir &&
-            $userNama !== $suratJalan->supir &&
-            $userName !== $suratJalan->supir &&
-            $user->username !== $suratJalan->supir) {
+        if (strcasecmp($userNamaLengkap, $suratJalan->supir) !== 0 &&
+            strcasecmp($userNama, $suratJalan->supir) !== 0 &&
+            strcasecmp($userName, $suratJalan->supir) !== 0 &&
+            strcasecmp($user->username, $suratJalan->supir) !== 0) {
+            Log::warning('Checkpoint create (surat jalan) access denied - supir mismatch', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null, 'user_name' => $userName, 'surat_jalan_id' => $suratJalan->id ?? null, 'surat_jalan_supir' => $suratJalan->supir]);
             abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
         }
 
@@ -373,15 +381,15 @@ class CheckpointController extends Controller
         }
 
         // Otorisasi: Pastikan supir yang login adalah yang ditugaskan untuk surat jalan ini
-        // Check multiple possible name formats to ensure access
+        // Check multiple possible name formats to ensure access (case-insensitive)
         $userNamaLengkap = $user->karyawan->nama_lengkap ?? $user->username;
         $userNama = $user->karyawan->nama ?? $user->username;
         $userName = $user->name; // This uses the accessor we created
 
-        if ($userNamaLengkap !== $suratJalan->supir &&
-            $userNama !== $suratJalan->supir &&
-            $userName !== $suratJalan->supir &&
-            $user->username !== $suratJalan->supir) {
+        if (strcasecmp($userNamaLengkap, $suratJalan->supir) !== 0 &&
+            strcasecmp($userNama, $suratJalan->supir) !== 0 &&
+            strcasecmp($userName, $suratJalan->supir) !== 0 &&
+            strcasecmp($user->username, $suratJalan->supir) !== 0) {
             abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
         }
 
@@ -651,6 +659,170 @@ class CheckpointController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+        }
+    }
+
+    /**
+     * Menampilkan form checkpoint untuk surat jalan bongkaran.
+     */
+    public function createSuratJalanBongkaran($id)
+    {
+        $suratJalanBongkaran = \App\Models\SuratJalanBongkaran::findOrFail($id);
+        
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        $user->load('karyawan'); // Eager load karyawan relationship
+        
+        if (!$user->isSupir()) {
+            Log::warning('Checkpoint create (surat jalan bongkaran) blocked - user is not supir', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null]);
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
+        }
+
+        // Otorisasi: Pastikan supir yang login adalah yang ditugaskan untuk surat jalan bongkaran ini
+        // Check multiple possible name formats to ensure access (case-insensitive)
+        $userNamaLengkap = $user->karyawan->nama_lengkap ?? $user->username;
+        $userNama = $user->karyawan->nama ?? $user->username;
+        $userName = $user->name;
+
+        if (strcasecmp($userNamaLengkap, $suratJalanBongkaran->supir) !== 0 &&
+            strcasecmp($userNama, $suratJalanBongkaran->supir) !== 0 &&
+            strcasecmp($userName, $suratJalanBongkaran->supir) !== 0 &&
+            strcasecmp($user->username, $suratJalanBongkaran->supir) !== 0) {
+            Log::warning('Checkpoint create (surat jalan bongkaran) access denied - supir mismatch', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null, 'user_name' => $userName, 'surat_jalan_bongkaran_id' => $suratJalanBongkaran->id ?? null, 'surat_jalan_bongkaran_supir' => $suratJalanBongkaran->supir]);
+            abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: ' . $userName . ', Surat Jalan Bongkaran Supir: ' . $suratJalanBongkaran->supir);
+        }
+
+        // Untuk surat jalan bongkaran, ambil kontainer dengan status Tersedia
+        $kontainerList = Kontainer::where('ukuran', $suratJalanBongkaran->size)
+                                ->where('status', 'Tersedia')
+                                ->orderBy('nomor_seri_gabungan')
+                                ->get();
+
+        // Ambil stock kontainer berdasarkan ukuran surat jalan bongkaran
+        $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalanBongkaran->size)
+                                                    ->where('status', '!=', 'inactive')
+                                                    ->orderBy('nomor_seri_gabungan')
+                                                    ->get();
+
+        // Use the same view but pass the bongkaran model as 'suratJalan' for compatibility
+        return view('supir.checkpoint-create', [
+            'suratJalan' => $suratJalanBongkaran,
+            'kontainerList' => $kontainerList,
+            'stockKontainers' => $stockKontainers,
+            'isBongkaran' => true
+        ]);
+    }
+
+    /**
+     * Menyimpan checkpoint untuk surat jalan bongkaran.
+     */
+    public function storeSuratJalanBongkaran(Request $request, $id)
+    {
+        $suratJalanBongkaran = \App\Models\SuratJalanBongkaran::findOrFail($id);
+        
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
+        }
+
+        // Otorisasi: Pastikan supir yang login adalah yang ditugaskan untuk surat jalan bongkaran ini (case-insensitive)
+        $userNamaLengkap = $user->karyawan->nama_lengkap ?? $user->username;
+        $userNama = $user->karyawan->nama ?? $user->username;
+        $userName = $user->name;
+
+        if (strcasecmp($userNamaLengkap, $suratJalanBongkaran->supir) !== 0 &&
+            strcasecmp($userNama, $suratJalanBongkaran->supir) !== 0 &&
+            strcasecmp($userName, $suratJalanBongkaran->supir) !== 0 &&
+            strcasecmp($user->username, $suratJalanBongkaran->supir) !== 0) {
+            abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: ' . $userName . ', Surat Jalan Bongkaran Supir: ' . $suratJalanBongkaran->supir);
+        }
+
+        // Validasi input - similar to regular surat jalan
+        $rules = [
+            'surat_jalan_vendor' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string',
+            'tanggal_checkpoint' => 'required|date',
+            'gambar' => 'nullable|array',
+            'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+        ];
+
+        // Add nomor_kontainer and no_seal validation only if tipe_kontainer is not 'cargo'
+        if (strtolower($suratJalanBongkaran->tipe_kontainer ?? '') !== 'cargo') {
+            $rules['nomor_kontainer'] = 'required|array';
+            $rules['nomor_kontainer.*'] = 'required|string';
+            $rules['no_seal'] = 'nullable|array';
+            $rules['no_seal.*'] = 'nullable|string|max:255';
+        } else {
+            // For cargo type, these fields are optional
+            $rules['nomor_kontainer'] = 'nullable|array';
+            $rules['nomor_kontainer.*'] = 'nullable|string';
+            $rules['no_seal'] = 'nullable|array';
+            $rules['no_seal.*'] = 'nullable|string|max:255';
+        }
+
+        $request->validate($rules);
+
+        try {
+            DB::beginTransaction();
+
+            // Handle multiple image uploads
+            $imagePaths = [];
+            if ($request->hasFile('gambar')) {
+                foreach ($request->file('gambar') as $index => $image) {
+                    $filename = time() . '_' . $index . '_surat_jalan_bongkaran_checkpoint_' . $image->getClientOriginalName();
+                    $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                    $imagePaths[] = $imagePath;
+                }
+            }
+            // Store as JSON array if multiple files, or null if none
+            $imagePath = !empty($imagePaths) ? json_encode($imagePaths) : null;
+
+            // Update surat jalan bongkaran dengan nomor kontainer dan tanggal checkpoint
+            $updateData = [
+                'tanggal_checkpoint' => $request->tanggal_checkpoint,
+                'gambar_checkpoint' => $imagePath,
+            ];
+
+            // Handle cargo vs non-cargo types
+            if (strtolower($suratJalanBongkaran->tipe_kontainer ?? '') === 'cargo') {
+                // For cargo, set default values or leave as null
+                $updateData['no_kontainer'] = 'CARGO'; // Default value for cargo
+                $updateData['no_seal'] = null; // No seal for cargo
+                $nomorKontainers = 'CARGO'; // For logging purposes
+            } else {
+                // For non-cargo, use provided container numbers
+                $nomorKontainers = implode(', ', $request->nomor_kontainer ?? []);
+                $updateData['no_kontainer'] = $nomorKontainers;
+                
+                // Handle multiple seals - join with comma if multiple provided
+                $noSealArray = $request->no_seal ?? [];
+                $noSealArray = array_filter($noSealArray, function($seal) {
+                    return !empty(trim($seal));
+                }); // Filter out empty seals
+                $updateData['no_seal'] = !empty($noSealArray) ? implode(', ', $noSealArray) : null;
+            }
+
+            $suratJalanBongkaran->update($updateData);
+
+            // Log checkpoint untuk tracking
+            Log::info('Surat jalan bongkaran checkpoint completed by supir:', [
+                'surat_jalan_bongkaran_id' => $suratJalanBongkaran->id,
+                'supir' => $user->karyawan->nama ?? $user->name,
+                'nomor_kontainer' => $nomorKontainers,
+                'no_seal' => $request->no_seal,
+                'catatan' => $request->catatan,
+                'surat_jalan_vendor' => $request->surat_jalan_vendor,
+                'tanggal_checkpoint' => $request->tanggal_checkpoint
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan bongkaran berhasil disimpan!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error storing surat jalan bongkaran checkpoint: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menyimpan checkpoint: ' . $e->getMessage())->withInput();
         }
     }
 }

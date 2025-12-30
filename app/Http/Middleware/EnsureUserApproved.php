@@ -13,6 +13,13 @@ class EnsureUserApproved
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
+        
+        // Skip middleware for supir routes - they handle their own authorization
+        $routeName = optional($request->route())->getName();
+        if ($routeName && str_starts_with($routeName, 'supir.')) {
+            return $next($request);
+        }
+        
         if ($user && $user->status !== 'approved') {
             // Allow user to complete profile, logout and auth routes
             $allowedNamed = [
@@ -28,8 +35,6 @@ class EnsureUserApproved
                 'logout',
                 'password.change',
             ];
-
-            $routeName = optional($request->route())->getName();
             if (!in_array($routeName, $allowedNamed)) {
                 Log::warning('EnsureUserApproved blocking non-approved user', [
                     'user_id' => $user->id ?? null,

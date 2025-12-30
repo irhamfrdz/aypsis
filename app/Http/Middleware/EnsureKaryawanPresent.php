@@ -13,6 +13,13 @@ class EnsureKaryawanPresent
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
+        
+        // Skip middleware for supir routes - they handle their own authorization
+        $routeName = optional($request->route())->getName();
+        if ($routeName && str_starts_with($routeName, 'supir.')) {
+            return $next($request);
+        }
+        
         if ($user && empty($user->karyawan_id)) {
             // Allow access to logout and karyawan creation routes.
             // Use Route::has() to avoid calling route() for non-existent names which throws.

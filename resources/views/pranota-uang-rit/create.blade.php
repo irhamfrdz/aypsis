@@ -45,7 +45,7 @@
 
             @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
             <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-                <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dengan <strong>tanggal tanda terima</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
+                <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dengan <strong>tanggal checkpoint</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
                 <a href="{{ route('pranota-uang-rit.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
             </div>
             @endif
@@ -281,7 +281,7 @@
                                     <input type="checkbox" id="selectAllCheckbox" class="h-3 w-3 text-indigo-600 border-gray-300 rounded">
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Tanda Terima</th>
+                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Checkpoint</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Eligible</th>
                                 <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Supir</th>
@@ -302,7 +302,7 @@
                                         'tanggal_checkpoint' => $sj->tanggal_checkpoint,
                                         'tandaTerima' => $sj->tandaTerima,
                                         'kegiatan' => $sj->kegiatan,
-                                        'tanggal_tanda_terima' => $sj->tandaTerima ? $sj->tandaTerima->tanggal : null,
+                                        'tanggal_untuk_display' => $sj->tanggal_checkpoint,
                                         'approvals' => $sj->approvals,
                                         'data' => $sj
                                     ]);
@@ -317,10 +317,10 @@
                                             'no_surat_jalan' => $sjb->nomor_surat_jalan,
                                             'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
                                             'supir' => $sjb->supir,
-                                            'tanggal_checkpoint' => null,
+                                            'tanggal_checkpoint' => $sjb->tanggal_checkpoint,
                                             'tandaTerima' => $sjb->tandaTerima,
                                             'kegiatan' => $sjb->kegiatan,
-                                            'tanggal_tanda_terima' => $sjb->tandaTerima ? $sjb->tandaTerima->tanggal_tanda_terima : null,
+                                            'tanggal_untuk_display' => $sjb->tanggal_checkpoint,
                                             'approvals' => null,
                                             'data' => $sjb
                                         ]);
@@ -353,7 +353,7 @@
                                             <span class="ml-1 px-1 py-0.5 text-xs font-semibold rounded bg-purple-100 text-purple-800">Bongkaran</span>
                                         @endif
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $item['tanggal_tanda_terima'] ? \Carbon\Carbon::parse($item['tanggal_tanda_terima'])->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $item['tanggal_untuk_display'] ? \Carbon\Carbon::parse($item['tanggal_untuk_display'])->format('d/m/Y') : '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $item['supir'] ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center text-xs">
                                         @if($item['tanggal_checkpoint'])
@@ -362,8 +362,8 @@
                                         @if($item['tandaTerima'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800 ml-1" title="Tanda Terima exists">Tanda Terima</span>
                                         @endif
-                                        @if($item['kegiatan'] == 'bongkaran' && $item['tanggal_tanda_terima'])
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-800 ml-1" title="Bongkaran dengan tanggal tanda terima">Bongkaran TT</span>
+                                        @if($item['kegiatan'] == 'bongkaran' && $item['tanggal_checkpoint'])
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-800 ml-1" title="Bongkaran dengan tanggal checkpoint">Bongkaran CP</span>
                                         @endif
                                         @if($item['approvals'] && $item['approvals']->where('status', 'approved')->isNotEmpty())
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 ml-1" title="Approved via approval flow">Approved</span>

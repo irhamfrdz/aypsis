@@ -296,7 +296,7 @@
             </button>
         </div>
         
-        <form id="kirimKontainerForm" method="POST" action="#">
+        <form id="kirimKontainerForm" method="POST" action="{{ route('checkpoint-kontainer-keluar.kirim') }}">
             @csrf
             <input type="hidden" name="tipe_data" id="modal_tipe_data">
             <input type="hidden" name="kontainer_id" id="modal_kontainer_id">

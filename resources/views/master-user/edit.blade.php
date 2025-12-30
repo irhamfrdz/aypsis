@@ -933,6 +933,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Checkpoint Kontainer Masuk --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Checkpoint Kontainer Masuk</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[checkpoint-kontainer-masuk][view]" value="1" class="permission-checkbox" @if(old('permissions.checkpoint-kontainer-masuk.view') || (isset($userMatrixPermissions['checkpoint-kontainer-masuk']['view']) && $userMatrixPermissions['checkpoint-kontainer-masuk']['view']) || ($user && $user->can('checkpoint-kontainer-masuk-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[checkpoint-kontainer-masuk][create]" value="1" class="permission-checkbox" @if(old('permissions.checkpoint-kontainer-masuk.create') || (isset($userMatrixPermissions['checkpoint-kontainer-masuk']['create']) && $userMatrixPermissions['checkpoint-kontainer-masuk']['create']) || ($user && $user->can('checkpoint-kontainer-masuk-create'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[checkpoint-kontainer-masuk][delete]" value="1" class="permission-checkbox" @if(old('permissions.checkpoint-kontainer-masuk.delete') || (isset($userMatrixPermissions['checkpoint-kontainer-masuk']['delete']) && $userMatrixPermissions['checkpoint-kontainer-masuk']['delete']) || ($user && $user->can('checkpoint-kontainer-masuk-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- User --}}
                             <tr class="module-row" data-module="user">

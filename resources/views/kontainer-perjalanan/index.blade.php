@@ -114,10 +114,10 @@
                                     {{ $kontainersInTransit->firstItem() + $index }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ $item->no_surat_jalan }}
+                                    {{ $item->no_surat_jalan ?? '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $item->tanggal_surat_jalan ? \Carbon\Carbon::parse($item->tanggal_surat_jalan)->format('d/m/Y') : '-' }}
+                                    {{ $item->suratJalan && $item->suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($item->suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
                                     {{ $item->no_kontainer }}
@@ -132,10 +132,10 @@
                                     {{ $item->tujuan_pengiriman ?? '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $item->supir ?? '-' }}
+                                    {{ $item->suratJalan->supir ?? $item->supir ?? '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $item->no_plat ?? '-' }}
+                                    {{ $item->suratJalan->no_plat ?? $item->no_plat ?? '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                                     <div class="flex flex-col">

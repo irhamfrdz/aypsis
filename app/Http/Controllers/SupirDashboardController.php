@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Permohonan;
 use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaran;
 
 use Illuminate\Http\Request;
 
@@ -31,16 +32,42 @@ class SupirDashboardController extends Controller
                      ->get();
 
         // Ambil surat jalan yang perlu checkpoint atau sedang berjalan (menggunakan nama_lengkap karyawan)
-        // Hanya tampilkan surat jalan yang sudah ada pembayaran pranota uang jalan
+        // Untuk kegiatan bongkar tidak perlu cek pembayaran uang jalan
+        // Exclude surat jalan yang sudah memiliki tanggal_checkpoint
         $suratJalans = SuratJalan::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
                          $query->where('supir', $supirNamaLengkap)
                                ->orWhere('supir', $supirUsername)
                                ->orWhere('supir', $supirName);
                      })
                      ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
-                     ->where('status_pembayaran_uang_jalan', 'dibayar') // Hanya yang sudah dibayar
+                     ->where(function($query) {
+                         // Untuk kegiatan bongkar, tidak perlu cek pembayaran
+                         // Untuk kegiatan lain, harus sudah dibayar
+                         $query->where('kegiatan', 'BK')
+                               ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
+                     })
+                     ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
                      ->latest()
                      ->get();
+
+        // Ambil surat jalan bongkaran dari tabel terpisah
+        // Untuk surat jalan bongkaran, hanya filter berdasarkan tanggal_checkpoint
+        $suratJalanBongkarans = SuratJalanBongkaran::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+                         $query->where('supir', $supirNamaLengkap)
+                               ->orWhere('supir', $supirUsername)
+                               ->orWhere('supir', $supirName);
+                     })
+                     ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
+                     ->latest()
+                     ->get()
+                     ->map(function($item) {
+                         // Tambahkan identifier untuk membedakan tipe surat jalan
+                         $item->is_bongkaran = true;
+                         return $item;
+                     });
+
+        // Gabungkan kedua collection
+        $suratJalans = $suratJalans->merge($suratJalanBongkarans)->sortByDesc('created_at');
 
         // Debug logging to help diagnose issues
         \Log::info('Supir Dashboard Debug', [

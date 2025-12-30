@@ -143,14 +143,21 @@
                         @php
                             $needsCheckpoint = $suratJalan->status === 'belum masuk checkpoint';
                             $checkpointCompleted = $suratJalan->status === 'checkpoint_completed';
+                            $isBongkaran = isset($suratJalan->is_bongkaran) && $suratJalan->is_bongkaran;
+                            $checkpointRoute = $isBongkaran 
+                                ? route('supir.checkpoint.create-surat-jalan-bongkaran', $suratJalan->id)
+                                : route('supir.checkpoint.create-surat-jalan', $suratJalan->id);
                         @endphp
-                        <a href="{{ route('supir.checkpoint.create-surat-jalan', $suratJalan->id) }}"
+                        <a href="{{ $checkpointRoute }}"
                            class="block shadow-md rounded-lg p-6 transition duration-300
                            {{ $checkpointCompleted ? 'bg-green-50 border border-green-400 hover:bg-green-100' :
                               ($needsCheckpoint ? 'bg-yellow-50 border border-yellow-400 hover:bg-yellow-100' : 'bg-white hover:bg-gray-50') }}">
                             <div class="flex flex-col sm:flex-row justify-between sm:items-center">
                                 <h3 class="text-lg font-semibold {{ $checkpointCompleted ? 'text-green-700' : ($needsCheckpoint ? 'text-yellow-700' : 'text-indigo-600') }}">
-                                    {{ $suratJalan->no_surat_jalan }}
+                                    {{ $suratJalan->no_surat_jalan ?? $suratJalan->nomor_surat_jalan }}
+                                    @if($isBongkaran)
+                                        <span class="ml-2 px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Bongkaran</span>
+                                    @endif
                                 </h3>
                                 <span class="mt-2 sm:mt-0 px-2 py-1 text-xs font-semibold rounded-full
                                     {{ $checkpointCompleted ? 'bg-green-200 text-green-800' :

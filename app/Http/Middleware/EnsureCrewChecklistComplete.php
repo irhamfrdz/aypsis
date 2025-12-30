@@ -12,6 +12,13 @@ class EnsureCrewChecklistComplete
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
+        
+        // Skip middleware for supir routes - they handle their own authorization
+        $routeName = optional($request->route())->getName();
+        if ($routeName && str_starts_with($routeName, 'supir.')) {
+            return $next($request);
+        }
+        
         // Checklist tidak wajib lengkap, hanya pastikan default item ada (jika ingin tetap generate item default)
         if ($user && method_exists($user, 'karyawan') && $user->karyawan) {
             $k = $user->karyawan;

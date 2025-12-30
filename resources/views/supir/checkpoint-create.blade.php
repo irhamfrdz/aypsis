@@ -241,7 +241,7 @@
                     </form>
 
                 @elseif(isset($suratJalan))
-                    <form action="{{ route('supir.checkpoint.store-surat-jalan', $suratJalan->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ isset($isBongkaran) && $isBongkaran ? route('supir.checkpoint.store-surat-jalan-bongkaran', $suratJalan->id) : route('supir.checkpoint.store-surat-jalan', $suratJalan->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="space-y-4">
                             {{-- Simple form for surat jalan --}}

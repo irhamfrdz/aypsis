@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SuratJalan;
 use App\Models\Cabang;
+use App\Models\KontainerPerjalanan;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -247,6 +250,96 @@ class CheckpointKontainerKeluarController extends Controller
                 'success' => false,
                 'message' => 'Gagal membatalkan checkpoint: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Process kirim kontainer - saves to kontainer_perjalanans
+     */
+    public function kirimKontainer(Request $request)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-create');
+
+        $request->validate([
+            'tipe_data' => 'required|in:kontainer,stock',
+            'kontainer_id' => 'required|integer',
+            'gudangs_id' => 'required|exists:gudangs,id',
+            'tujuan' => 'required|string|max:255',
+            'tanggal_kirim' => 'required|date',
+            'nomor_surat_jalan' => 'nullable|string|max:100',
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Get kontainer data based on tipe_data
+            $kontainerData = null;
+            $kontainerRecord = null;
+            $stockRecord = null;
+            
+            if ($request->tipe_data === 'kontainer') {
+                $kontainerRecord = Kontainer::findOrFail($request->kontainer_id);
+                $kontainerData = [
+                    'no_kontainer' => $kontainerRecord->nomor_seri_gabungan,
+                    'ukuran' => $kontainerRecord->ukuran,
+                    'tipe_kontainer' => $kontainerRecord->tipe_kontainer,
+                ];
+            } else {
+                $stockRecord = StockKontainer::findOrFail($request->kontainer_id);
+                $kontainerData = [
+                    'no_kontainer' => $stockRecord->nomor_seri_gabungan,
+                    'ukuran' => $stockRecord->ukuran ?? '-',
+                    'tipe_kontainer' => $stockRecord->tipe_kontainer ?? '-',
+                ];
+            }
+
+            // Find surat jalan if nomor provided
+            $suratJalanId = null;
+            if ($request->filled('nomor_surat_jalan')) {
+                $suratJalan = SuratJalan::where('no_surat_jalan', $request->nomor_surat_jalan)->first();
+                if ($suratJalan) {
+                    $suratJalanId = $suratJalan->id;
+                    
+                    // Update surat jalan dengan nomor kontainer, ukuran, dan waktu keluar
+                    $suratJalan->update([
+                        'no_kontainer' => $kontainerData['no_kontainer'],
+                        'ukuran' => $kontainerData['ukuran'],
+                        'waktu_keluar' => Carbon::parse($request->tanggal_kirim),
+                        'tujuan_pengiriman' => $request->tujuan,
+                    ]);
+                }
+            }
+
+            // Create kontainer perjalanan record
+            KontainerPerjalanan::create([
+                'surat_jalan_id' => $suratJalanId,
+                'no_kontainer' => $kontainerData['no_kontainer'],
+                'no_surat_jalan' => $request->nomor_surat_jalan,
+                'ukuran' => $kontainerData['ukuran'],
+                'tipe_kontainer' => $kontainerData['tipe_kontainer'],
+                'tujuan_pengiriman' => $request->tujuan,
+                'waktu_keluar' => Carbon::parse($request->tanggal_kirim),
+                'status' => 'dalam_perjalanan',
+                'catatan' => $request->keterangan,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update gudangs_id to null (dalam perjalanan)
+            if ($kontainerRecord) {
+                $kontainerRecord->update(['gudangs_id' => null]);
+            } elseif ($stockRecord) {
+                $stockRecord->update(['gudangs_id' => null]);
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Kontainer berhasil dikirim dan masuk ke Kontainer Dalam Perjalanan');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal mengirim kontainer: ' . $e->getMessage());
         }
     }
 }
