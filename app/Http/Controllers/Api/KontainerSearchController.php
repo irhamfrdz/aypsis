@@ -29,11 +29,10 @@ class KontainerSearchController extends Controller
                 $kontainerQuery->where('ukuran', $ukuran);
             }
             
-            // For surat jalan, filter kontainers table by status Tersedia
-            $kontainerQuery->where('status', 'Tersedia');
+            // Show all containers regardless of status, filtered by size only
             
             $kontainers = $kontainerQuery->orderBy('nomor_seri_gabungan')
-                                        ->limit(15)
+                                        ->limit(50)
                                         ->get();
             
             foreach ($kontainers as $kontainer) {
@@ -55,7 +54,7 @@ class KontainerSearchController extends Controller
             }
             
             $stocks = $stockQuery->orderBy('nomor_seri_gabungan')
-                                ->limit(15)
+                                ->limit(50)
                                 ->get();
             
             foreach ($stocks as $stock) {
@@ -77,11 +76,10 @@ class KontainerSearchController extends Controller
                 $stockQuery->where('ukuran', $ukuran);
             }
             
-            // For surat jalan, filter kontainers table by status Tersedia
-            $kontainerQuery->where('status', 'Tersedia');
+            // Show all containers regardless of status, filtered by size only
             
-            $kontainers = $kontainerQuery->orderBy('nomor_seri_gabungan')->limit(10)->get();
-            $stocks = $stockQuery->orderBy('nomor_seri_gabungan')->limit(10)->get();
+            $kontainers = $kontainerQuery->orderBy('nomor_seri_gabungan')->limit(50)->get();
+            $stocks = $stockQuery->orderBy('nomor_seri_gabungan')->limit(50)->get();
             
             foreach ($kontainers as $kontainer) {
                 $results[] = [
