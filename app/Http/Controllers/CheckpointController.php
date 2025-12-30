@@ -227,10 +227,20 @@ class CheckpointController extends Controller
                     foreach ($validated['nomor_kontainer'] as $nomor) {
                         $nomorRaw = trim($nomor);
 
-                        // Cari stock kontainer berdasarkan nomor seri gabungan
+                        // Cari kontainer dan stock kontainer berdasarkan nomor seri gabungan
+                        $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                         $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
 
+                        // Set gudangs_id to null (kontainer dalam perjalanan)
+                        if ($kontainer) {
+                            $kontainer->update(['gudangs_id' => null]);
+                            Log::info("Kontainer {$nomorRaw} gudangs_id set to null - dalam perjalanan");
+                        }
+                        
                         if ($stockKontainer) {
+                            $stockKontainer->update(['gudangs_id' => null]);
+                            Log::info("Stock kontainer {$nomorRaw} gudangs_id set to null - dalam perjalanan");
+                            
                             if ($isAntarKontainerPerbaikan) {
                                 // Untuk antar kontainer perbaikan, status menjadi maintenance
                                 $stockKontainer->update(['status' => 'maintenance']);
@@ -459,6 +469,45 @@ class CheckpointController extends Controller
             }
 
             $suratJalan->update($updateData);
+
+            // Update gudangs_id to null for kontainers and stock_kontainers
+            if (strtolower($suratJalan->tipe_kontainer ?? '') !== 'cargo' && !empty($request->nomor_kontainer)) {
+                foreach ($request->nomor_kontainer as $nomor) {
+                    $nomorRaw = trim($nomor);
+                    
+                    // Update kontainer
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
+                    if ($kontainer) {
+                        $kontainer->update(['gudangs_id' => null]);
+                        Log::info("Kontainer {$nomorRaw} gudangs_id set to null - surat jalan checkpoint");
+                    }
+                    
+                    // Update stock kontainer
+                    $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
+                    if ($stockKontainer) {
+                        $stockKontainer->update(['gudangs_id' => null]);
+                        Log::info("Stock kontainer {$nomorRaw} gudangs_id set to null - surat jalan checkpoint");
+                    }
+                    
+                    // Create kontainer_perjalanans record
+                    \App\Models\KontainerPerjalanan::create([
+                        'surat_jalan_id' => $suratJalan->id,
+                        'no_kontainer' => $nomorRaw,
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                        'tipe_kontainer' => $suratJalan->tipe_kontainer,
+                        'ukuran' => $suratJalan->size,
+                        'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? $suratJalan->order->tujuan_kirim ?? null,
+                        'supir' => $suratJalan->supir,
+                        'no_plat' => $suratJalan->no_plat,
+                        'waktu_keluar' => $request->tanggal_checkpoint,
+                        'status' => 'dalam_perjalanan',
+                        'catatan_keluar' => $request->catatan,
+                        'created_by' => Auth::id(),
+                    ]);
+                    
+                    Log::info("Created kontainer_perjalanans record for {$nomorRaw}");
+                }
+            }
 
             // Buat approval record untuk surat jalan (hanya 1 approval) - cek dulu apakah sudah ada
             $existingApproval = \App\Models\SuratJalanApproval::where('surat_jalan_id', $suratJalan->id)
@@ -804,6 +853,31 @@ class CheckpointController extends Controller
             }
 
             $suratJalanBongkaran->update($updateData);
+
+            // Update gudangs_id to null for kontainers and stock_kontainers
+            if (strtolower($suratJalanBongkaran->tipe_kontainer ?? '') !== 'cargo' && !empty($request->nomor_kontainer)) {
+                foreach ($request->nomor_kontainer as $nomor) {
+                    $nomorRaw = trim($nomor);
+                    
+                    // Update kontainer
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
+                    if ($kontainer) {
+                        $kontainer->update(['gudangs_id' => null]);
+                        Log::info("Kontainer {$nomorRaw} gudangs_id set to null - surat jalan bongkaran checkpoint");
+                    }
+                    
+                    // Update stock kontainer
+                    $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
+                    if ($stockKontainer) {
+                        $stockKontainer->update(['gudangs_id' => null]);
+                        Log::info("Stock kontainer {$nomorRaw} gudangs_id set to null - surat jalan bongkaran checkpoint");
+                    }
+                    
+                    // Note: For surat_jalan_bongkaran, we don't have a direct surat_jalan_id
+                    // So we skip creating kontainer_perjalanans record for bongkaran
+                    // Unless we have a relationship or want to extend the model
+                }
+            }
 
             // Log checkpoint untuk tracking
             Log::info('Surat jalan bongkaran checkpoint completed by supir:', [
