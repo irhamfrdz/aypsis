@@ -38,7 +38,7 @@ class KontainerSearchController extends Controller
             foreach ($kontainers as $kontainer) {
                 $results[] = [
                     'id' => $kontainer->nomor_seri_gabungan,
-                    'text' => $kontainer->nomor_seri_gabungan . ' - ' . $kontainer->ukuran . 'ft (' . $kontainer->status . ')',
+                    'text' => $kontainer->nomor_seri_gabungan . ' - ' . $kontainer->ukuran . 'ft',
                     'source' => 'kontainers',
                     'status' => $kontainer->status,
                     'ukuran' => $kontainer->ukuran
@@ -60,7 +60,7 @@ class KontainerSearchController extends Controller
             foreach ($stocks as $stock) {
                 $results[] = [
                     'id' => $stock->nomor_seri_gabungan,
-                    'text' => $stock->nomor_seri_gabungan . ' - ' . $stock->ukuran . 'ft (' . ucfirst($stock->status) . ') [Stock]',
+                    'text' => $stock->nomor_seri_gabungan . ' - ' . $stock->ukuran . 'ft [Stock]',
                     'source' => 'stock_kontainers',
                     'status' => $stock->status,
                     'ukuran' => $stock->ukuran
@@ -84,7 +84,7 @@ class KontainerSearchController extends Controller
             foreach ($kontainers as $kontainer) {
                 $results[] = [
                     'id' => $kontainer->nomor_seri_gabungan,
-                    'text' => $kontainer->nomor_seri_gabungan . ' - ' . $kontainer->ukuran . 'ft (' . $kontainer->status . ')',
+                    'text' => $kontainer->nomor_seri_gabungan . ' - ' . $kontainer->ukuran . 'ft',
                     'source' => 'kontainers',
                     'status' => $kontainer->status,
                     'ukuran' => $kontainer->ukuran
@@ -94,7 +94,7 @@ class KontainerSearchController extends Controller
             foreach ($stocks as $stock) {
                 $results[] = [
                     'id' => $stock->nomor_seri_gabungan,
-                    'text' => $stock->nomor_seri_gabungan . ' - ' . $stock->ukuran . 'ft (' . ucfirst($stock->status) . ') [Stock]',
+                    'text' => $stock->nomor_seri_gabungan . ' - ' . $stock->ukuran . 'ft [Stock]',
                     'source' => 'stock_kontainers',
                     'status' => $stock->status,
                     'ukuran' => $stock->ukuran
