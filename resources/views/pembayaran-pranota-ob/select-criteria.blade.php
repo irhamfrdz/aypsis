@@ -61,7 +61,7 @@
                         <option value="{{ $dp->id }}" 
                                 data-voyage="{{ $dp->nomor_voyage }}"
                                 {{ request('dp') == $dp->id ? 'selected' : '' }}>
-                            {{ $dp->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }} - Rp {{ number_format($dp->dp_amount, 0, ',', '.') }}
+                            {{ $dp->nomor_accurate ?? $dp->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }} - Rp {{ number_format($dp->dp_amount, 0, ',', '.') }}
                         </option>
                     @endforeach
                 </select>
