@@ -1102,4 +1102,83 @@ class PranotaUangRitController extends Controller
             
         return view('pranota-uang-rit.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
     }
+
+    /**
+     * Export selected surat jalan to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $request->validate([
+            'selected_data' => 'required|json'
+        ]);
+
+        $selectedData = json_decode($request->selected_data, true);
+
+        if (empty($selectedData)) {
+            return back()->with('error', 'Tidak ada surat jalan yang dipilih.');
+        }
+
+        // Create Excel file using PhpSpreadsheet
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'No. Surat Jalan');
+        $sheet->setCellValue('C1', 'Nama Supir');
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+        ];
+        $sheet->getStyle('A1:C1')->applyFromArray($headerStyle);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(25);
+        $sheet->getColumnDimension('C')->setWidth(30);
+
+        // Fill data
+        $row = 2;
+        foreach ($selectedData as $index => $data) {
+            $sheet->setCellValue('A' . $row, $index + 1);
+            $sheet->setCellValue('B' . $row, $data['no_surat_jalan'] ?? '-');
+            $sheet->setCellValue('C' . $row, $data['supir'] ?? '-');
+            
+            // Add border to data rows
+            $sheet->getStyle('A' . $row . ':C' . $row)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ]);
+            
+            $row++;
+        }
+
+        // Add border to header
+        $sheet->getStyle('A1:C1')->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => 'FFFFFF']
+                ]
+            ]
+        ]);
+
+        // Create writer and download
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'Surat_Jalan_Pranota_' . date('YmdHis') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
 }

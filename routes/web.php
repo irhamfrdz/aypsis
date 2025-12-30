@@ -2043,6 +2043,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-rit.submit')
          ->middleware('can:pranota-uang-rit-update');
 
+    // Export Excel for selected surat jalan
+    Route::post('pranota-uang-rit/export-excel', [\App\Http\Controllers\PranotaUangRitController::class, 'exportExcel'])
+         ->name('pranota-uang-rit.export-excel')
+         ->middleware('can:pranota-uang-rit-create');
+
     Route::post('pranota-uang-rit/{pranotaUangRit}/approve', [\App\Http\Controllers\PranotaUangRitController::class, 'approve'])
          ->name('pranota-uang-rit.approve')
          ->middleware('can:pranota-uang-rit-approve');
