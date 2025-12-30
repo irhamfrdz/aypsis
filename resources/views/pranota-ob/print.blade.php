@@ -39,7 +39,8 @@
             <div>
                 <h2 class="text-xl font-semibold">Pranota OB</h2>
                 <p class="text-xs">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-                <!-- Kapal / Voyage removed as per request -->
+                <p class="text-xs">Kapal: {{ $pranota->nama_kapal ?? '-' }}</p>
+                <p class="text-xs">Voyage: {{ $pranota->nomor_voyage ?? '-' }}</p>
             </div>
             <!-- Right column removed as per request (no print of Tanggal Cetak / Pembuat) -->
         </div>
