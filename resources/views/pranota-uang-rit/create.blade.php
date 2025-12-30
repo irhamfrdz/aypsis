@@ -349,7 +349,8 @@
                                                data-id="{{ $item['id'] }}"
                                                data-type="{{ $item['type'] }}"
                                                data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
-                                               data-supir_nama="{{ $item['supir'] }}">
+                                               data-supir_nama="{{ $item['supir'] }}"
+                                               data-tanggal_checkpoint="{{ $item['tanggal_checkpoint'] ?? '' }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][no_surat_jalan]" value="{{ $item['no_surat_jalan'] }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][supir_nama]" value="{{ $item['supir'] }}">
                                     </td>
@@ -1087,7 +1088,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     id: checkbox.dataset.id,
                     type: checkbox.dataset.type,
                     no_surat_jalan: checkbox.dataset.no_surat_jalan,
-                    supir: checkbox.dataset.supir_nama
+                    supir: checkbox.dataset.supir_nama,
+                    tanggal_checkpoint: checkbox.dataset.tanggal_checkpoint || ''
                 });
             });
 

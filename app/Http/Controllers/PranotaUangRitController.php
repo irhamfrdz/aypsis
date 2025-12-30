@@ -1126,6 +1126,7 @@ class PranotaUangRitController extends Controller
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'No. Surat Jalan');
         $sheet->setCellValue('C1', 'Nama Supir');
+        $sheet->setCellValue('D1', 'Tanggal Checkpoint');
 
         // Style headers
         $headerStyle = [
@@ -1133,12 +1134,13 @@ class PranotaUangRitController extends Controller
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
         ];
-        $sheet->getStyle('A1:C1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(25);
         $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(20);
 
         // Fill data
         $row = 2;
@@ -1147,8 +1149,19 @@ class PranotaUangRitController extends Controller
             $sheet->setCellValue('B' . $row, $data['no_surat_jalan'] ?? '-');
             $sheet->setCellValue('C' . $row, $data['supir'] ?? '-');
             
+            // Format tanggal checkpoint
+            $tanggalCheckpoint = '-';
+            if (!empty($data['tanggal_checkpoint'])) {
+                try {
+                    $tanggalCheckpoint = \Carbon\Carbon::parse($data['tanggal_checkpoint'])->format('d/m/Y');
+                } catch (\Exception $e) {
+                    $tanggalCheckpoint = '-';
+                }
+            }
+            $sheet->setCellValue('D' . $row, $tanggalCheckpoint);
+            
             // Add border to data rows
-            $sheet->getStyle('A' . $row . ':C' . $row)->applyFromArray([
+            $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -1161,7 +1174,7 @@ class PranotaUangRitController extends Controller
         }
 
         // Add border to header
-        $sheet->getStyle('A1:C1')->applyFromArray([
+        $sheet->getStyle('A1:D1')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
