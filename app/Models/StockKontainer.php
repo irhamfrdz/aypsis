@@ -25,6 +25,7 @@ class StockKontainer extends Model
         'ukuran',
         'tipe_kontainer',
         'status',
+        'gudangs_id',
         'tanggal_masuk',
         'tanggal_keluar',
         'keterangan',

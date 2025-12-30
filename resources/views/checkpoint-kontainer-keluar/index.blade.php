@@ -1,389 +1,166 @@
 @extends('layouts.app')
 
-@section('title', 'Checkpoint Kontainer Keluar')
+@section('title', 'Checkpoint Kontainer Keluar - Pilih Cabang')
 @section('page_title', 'Checkpoint Kontainer Keluar')
 
 @section('content')
-<div class="container mx-auto px-4 py-4">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-gray-200">
-                <div>
-                    <h1 class="text-xl font-semibold text-gray-900">Checkpoint Kontainer Keluar</h1>
-                    <p class="text-xs text-gray-600 mt-1">Catat waktu keluar kontainer dari lokasi</p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-6 sm:py-12 px-3 sm:px-4 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-8 sm:mb-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl shadow-lg mb-4 sm:mb-6">
+                <svg class="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-3 px-4">Checkpoint Kontainer Keluar</h1>
+            <p class="text-sm sm:text-base lg:text-lg text-gray-600 px-4">Pilih cabang untuk melakukan checkpoint kontainer keluar</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+            <div class="mb-8 bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700 font-medium">{{ session('success') }}</p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-center">
-                        <div class="text-lg font-semibold text-orange-600">{{ $stats['total_pending'] ?? 0 }}</div>
-                        <div class="text-gray-500 text-xs">Menunggu Keluar</div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-8 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
                     </div>
-                    <div class="text-center">
-                        <div class="text-lg font-semibold text-green-600">{{ $stats['total_keluar_hari_ini'] ?? 0 }}</div>
-                        <div class="text-gray-500 text-xs">Keluar Hari Ini</div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
                     </div>
-                    <div class="text-center">
-                        <div class="text-lg font-semibold text-blue-600">{{ $stats['total_keluar_bulan_ini'] ?? 0 }}</div>
-                        <div class="text-gray-500 text-xs">Keluar Bulan Ini</div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Branch Selection Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+            
+            <!-- Jakarta Card -->
+            <a href="{{ route('checkpoint-kontainer-keluar.checkpoint', 'jakarta') }}" 
+               class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl active:shadow-xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-orange-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
+                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-100 to-orange-50 rounded-bl-full opacity-50"></div>
+                <div class="relative p-5 sm:p-8">
+                    <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl shadow-lg mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
                     </div>
-                    <a href="{{ route('checkpoint-kontainer-keluar.history') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 group-hover:text-orange-600 transition-colors">Jakarta</h3>
+                    <p class="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-0">Checkpoint kontainer keluar Jakarta</p>
+                    <div class="mt-4 sm:mt-6 flex items-center text-orange-600 font-medium text-sm sm:text-base">
+                        <span>Pilih Cabang</span>
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Batam Card -->
+            <a href="{{ route('checkpoint-kontainer-keluar.checkpoint', 'batam') }}" 
+               class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl active:shadow-xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-blue-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
+                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-100 to-blue-50 rounded-bl-full opacity-50"></div>
+                <div class="relative p-5 sm:p-8">
+                    <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl shadow-lg mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 group-hover:text-blue-600 transition-colors">Batam</h3>
+                    <p class="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-0">Checkpoint kontainer keluar Batam</p>
+                    <div class="mt-4 sm:mt-6 flex items-center text-blue-600 font-medium text-sm sm:text-base">
+                        <span>Pilih Cabang</span>
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Tanjung Pinang Card -->
+            <a href="{{ route('checkpoint-kontainer-keluar.checkpoint', 'tanjung-pinang') }}" 
+               class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl active:shadow-xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-green-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation sm:col-span-2 lg:col-span-1">
+                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-100 to-green-50 rounded-bl-full opacity-50"></div>
+                <div class="relative p-5 sm:p-8">
+                    <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-lg mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 group-hover:text-green-600 transition-colors">Tanjung Pinang</h3>
+                    <p class="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-0">Checkpoint kontainer keluar Tanjung Pinang</p>
+                    <div class="mt-4 sm:mt-6 flex items-center text-green-600 font-medium text-sm sm:text-base">
+                        <span>Pilih Cabang</span>
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg mr-4">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Riwayat Keluar
-                    </a>
-                </div>
-            </div>
-
-            <!-- Alerts -->
-            <div class="p-4">
-                @if(session('success'))
-                    <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="font-medium text-sm">{{ session('success') }}</span>
-                        </div>
                     </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="font-medium text-sm">{{ session('error') }}</span>
-                        </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Lihat Riwayat</h3>
+                        <p class="text-sm text-gray-600">Lihat history checkpoint kontainer keluar</p>
                     </div>
-                @endif
-
-                <!-- Filter Form -->
-                <form method="GET" action="{{ route('checkpoint-kontainer-keluar.index') }}" class="mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
-                            <input type="text" name="search" value="{{ request('search') }}"
-                                   placeholder="No. SJ, Kontainer, Supir..."
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
-                            <input type="date" name="dari_tanggal" value="{{ request('dari_tanggal') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
-                            <input type="date" name="sampai_tanggal" value="{{ request('sampai_tanggal') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Semua Status</option>
-                                <option value="belum" {{ request('status') == 'belum' ? 'selected' : '' }}>Belum Keluar</option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end gap-2">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                Cari
-                            </button>
-                            <a href="{{ route('checkpoint-kontainer-keluar.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
-                                Reset
-                            </a>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Bulk Action Bar -->
-                <div id="bulkActionBar" class="mb-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg shadow-sm" style="display: none;">
-                    <form id="bulkKeluarForm" method="POST" action="{{ route('checkpoint-kontainer-keluar.bulk-keluar') }}">
-                        @csrf
-                        <div id="selectedIdsContainer"></div>
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-sm font-medium text-gray-700">
-                                    <span id="selectedCount" class="font-bold text-orange-600">0</span> kontainer dipilih
-                                </span>
-                            </div>
-                            <div class="flex flex-wrap gap-2 items-center">
-                                <input type="text" name="catatan_keluar" placeholder="Catatan (opsional)" 
-                                       class="px-3 py-2 border border-gray-300 rounded-md text-sm w-48">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium transition">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                    </svg>
-                                    Proses Keluar Semua
-                                </button>
-                            </div>
-                        </div>
-                    </form>
                 </div>
-            </div>
-        </div>
-
-        <!-- Table -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-xs">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-2 py-2 text-left">
-                                <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-orange-600">
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($suratJalans as $sj)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-2 py-2">
-                                    <input type="checkbox" class="item-checkbox rounded border-gray-300 text-orange-600" value="{{ $sj->id }}">
-                                </td>
-                                <td class="px-3 py-2">
-                                    <span class="font-medium text-blue-600 text-xs">{{ $sj->no_surat_jalan }}</span>
-                                </td>
-                                <td class="px-3 py-2 text-xs text-gray-600">
-                                    {{ $sj->tanggal_surat_jalan ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : '-' }}
-                                </td>
-                                <td class="px-3 py-2">
-                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-medium rounded">
-                                        {{ $sj->no_kontainer ?? '-' }}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-2 text-xs text-gray-600">{{ $sj->supir ?? '-' }}</td>
-                                <td class="px-3 py-2 text-xs text-gray-600">{{ $sj->no_plat ?? '-' }}</td>
-                                <td class="px-3 py-2 text-xs text-gray-600">{{ $sj->tujuan_pengiriman ?? '-' }}</td>
-                                <td class="px-3 py-2">
-                                    @if($sj->status_checkpoint_keluar == 'sudah_keluar')
-                                        <span class="px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-medium rounded-full">
-                                            Sudah Keluar
-                                        </span>
-                                    @elseif($sj->status_checkpoint_keluar == 'pending')
-                                        <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-medium rounded-full">
-                                            Pending
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-[10px] font-medium rounded-full">
-                                            Belum Keluar
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-3 py-2">
-                                    <button type="button" onclick="showKeluarModal({{ $sj->id }}, '{{ $sj->no_kontainer }}', '{{ $sj->no_surat_jalan }}')"
-                                            class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                        </svg>
-                                        Proses
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="px-6 py-8 text-center text-gray-500">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                    </svg>
-                                    <p class="text-sm">Tidak ada kontainer yang menunggu keluar</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if($suratJalans->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $suratJalans->links() }}
-                </div>
-            @endif
-        </div>
-    </div>
-</div>
-
-<!-- Modal Proses Keluar -->
-<div id="keluarModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4 border-b pb-3">
-                <h3 class="text-lg font-medium text-gray-900">Proses Checkpoint Keluar</h3>
-                <button type="button" onclick="closeKeluarModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <a href="{{ route('checkpoint-kontainer-keluar.history') }}" 
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                     </svg>
-                </button>
+                    Lihat Riwayat
+                </a>
             </div>
-
-            <form id="keluarForm" method="POST">
-                @csrf
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Surat Jalan</label>
-                    <div id="modal_no_surat_jalan" class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 font-medium"></div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
-                    <div id="modal_no_kontainer" class="px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 font-medium mb-2"></div>
-
-                    <select name="selected_kontainer" id="modal_nomor_kontainer_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Pilih dari Stock/Kontainer atau biarkan kosong untuk gunakan nomor SJ --</option>
-                        <optgroup label="Stock Kontainer">
-                            @foreach($stockKontainers as $sk)
-                                <option value="stock:{{ $sk->id }}" data-number="{{ $sk->nomor_seri_gabungan }}">{{ $sk->nomor_seri_gabungan }} @if($sk->status) ({{ $sk->status }}) @endif</option>
-                            @endforeach
-                        </optgroup>
-                        <optgroup label="Kontainer">
-                            @foreach($kontainers as $k)
-                                <option value="kontainer:{{ $k->id }}" data-number="{{ $k->nomor_seri_gabungan }}">{{ $k->nomor_seri_gabungan }} @if($k->status) ({{ $k->status }}) @endif</option>
-                            @endforeach
-                        </optgroup>
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label for="catatan_keluar" class="block text-sm font-medium text-gray-700 mb-1">
-                        Catatan (Opsional)
-                    </label>
-                    <textarea name="catatan_keluar" id="catatan_keluar" rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                              placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-                </div>
-
-                <div class="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
-                    <p class="text-xs text-green-800">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Kontainer akan dicatat keluar dengan waktu saat ini: <strong id="currentTime"></strong>
-                    </p>
-                </div>
-
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" onclick="closeKeluarModal()" 
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
-                        Proses Keluar
-                    </button>
-                </div>
-            </form>
         </div>
+
+        <!-- Info Section -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800 mb-2">Informasi</h3>
+                    <div class="text-sm text-blue-700 space-y-1">
+                        <p>• Pilih cabang sesuai dengan lokasi checkpoint kontainer keluar</p>
+                        <p>• Hanya kontainer yang sudah gate in yang dapat diproses keluar</p>
+                        <p>• Pastikan data kontainer sudah benar sebelum memproses keluar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.item-checkbox');
-    const bulkActionBar = document.getElementById('bulkActionBar');
-    const selectedCount = document.getElementById('selectedCount');
-    const selectedIdsContainer = document.getElementById('selectedIdsContainer');
-
-    // Select All functionality
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(cb => cb.checked = this.checked);
-        updateBulkActionBar();
-    });
-
-    // Individual checkbox
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', function() {
-            updateSelectAllState();
-            updateBulkActionBar();
-        });
-    });
-
-    function updateSelectAllState() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        if (checkedBoxes.length === 0) {
-            selectAll.indeterminate = false;
-            selectAll.checked = false;
-        } else if (checkedBoxes.length === checkboxes.length) {
-            selectAll.indeterminate = false;
-            selectAll.checked = true;
-        } else {
-            selectAll.indeterminate = true;
-        }
-    }
-
-    function updateBulkActionBar() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        selectedCount.textContent = checkedBoxes.length;
-
-        // Update hidden inputs
-        selectedIdsContainer.innerHTML = '';
-        checkedBoxes.forEach(cb => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'surat_jalan_ids[]';
-            input.value = cb.value;
-            selectedIdsContainer.appendChild(input);
-        });
-
-        bulkActionBar.style.display = checkedBoxes.length > 0 ? 'block' : 'none';
-    }
-});
-
-function showKeluarModal(id, noKontainer, noSuratJalan) {
-    document.getElementById('modal_no_surat_jalan').textContent = noSuratJalan;
-    document.getElementById('modal_no_kontainer').textContent = noKontainer;
-    document.getElementById('keluarForm').action = `/checkpoint-kontainer-keluar/${id}/keluar`;
-    document.getElementById('currentTime').textContent = new Date().toLocaleString('id-ID');
-
-    // Preselect option in dropdown by matching data-number attribute
-    const select = document.getElementById('modal_nomor_kontainer_select');
-    if (select) {
-        select.value = '';
-        const options = Array.from(select.options);
-        const matched = options.find(opt => opt.dataset && opt.dataset.number === noKontainer);
-        if (matched) select.value = matched.value;
-    }
-
-    document.getElementById('keluarModal').classList.remove('hidden');
-}
-
-function closeKeluarModal() {
-    document.getElementById('keluarModal').classList.add('hidden');
-    document.getElementById('keluarForm').reset();
-}
-
-// Update current time every second
-setInterval(function() {
-    const timeElement = document.getElementById('currentTime');
-    if (timeElement) {
-        timeElement.textContent = new Date().toLocaleString('id-ID');
-    }
-}, 1000);
-
-// Close modal on outside click
-document.getElementById('keluarModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeKeluarModal();
-    }
-});
-</script>
-@endpush
 @endsection

@@ -91,7 +91,14 @@
 <div class="overflow-x-auto shadow-md sm:rounded-lg table-container">
     <table class="min-w-full divide-y divide-gray-200 resizable-table" id="masterStockKontainerTable">
         <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-            <tr></tr>
+            <tr>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Kontainer</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+            </tr>
         </thead>
 
         <tbody class="bg-white divide-y divide-gray-200">
@@ -107,6 +114,18 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">{{ $stockKontainer->tipe_kontainer ?? '-' }}</div>
+                </td>
+
+                <td class="px-4 py-2 whitespace-nowrap text-center">
+                    <div class="text-sm text-gray-500">
+                        @if($stockKontainer->gudang)
+                            <span class="font-medium text-gray-700">{{ $stockKontainer->gudang->nama_gudang }}</span>
+                            <br>
+                            <span class="text-xs text-gray-400">{{ $stockKontainer->gudang->lokasi }}</span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </div>
                 </td>
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
@@ -158,7 +177,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data stock kontainer.</td>
+                <td colspan="6" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data stock kontainer.</td>
             </tr>
             @endforelse
         </tbody>

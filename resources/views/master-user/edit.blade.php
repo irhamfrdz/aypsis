@@ -933,6 +933,7 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+
                             {{-- User --}}
                             <tr class="module-row" data-module="user">
                                 <td class="module-header">

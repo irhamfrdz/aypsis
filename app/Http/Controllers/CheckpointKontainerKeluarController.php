@@ -2,277 +2,251 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratJalan;
-use App\Models\Kontainer;
-use App\Models\StockKontainer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\SuratJalan;
+use App\Models\Cabang;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class CheckpointKontainerKeluarController extends Controller
 {
-    /**
-     * Display a listing of containers ready for exit checkpoint.
-     */
-    public function index(Request $request)
+    public function __construct()
     {
-        $query = SuratJalan::with(['kontainer', 'order'])
-            ->whereNotNull('no_kontainer')
-            ->where(function($q) {
-                $q->where('status_checkpoint_keluar', '!=', 'sudah_keluar')
-                  ->orWhereNull('status_checkpoint_keluar');
-            });
-
-        // Filter by search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by date range
-        if ($request->filled('dari_tanggal')) {
-            $query->whereDate('tanggal_surat_jalan', '>=', $request->dari_tanggal);
-        }
-        if ($request->filled('sampai_tanggal')) {
-            $query->whereDate('tanggal_surat_jalan', '<=', $request->sampai_tanggal);
-        }
-
-        // Filter by status
-        if ($request->filled('status')) {
-            if ($request->status == 'belum') {
-                $query->whereNull('status_checkpoint_keluar');
-            } else {
-                $query->where('status_checkpoint_keluar', $request->status);
-            }
-        }
-
-        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')
-                            ->orderBy('created_at', 'desc')
-                            ->paginate(20)
-                            ->withQueryString();
-
-        // Also provide available stock kontainers and kontainers for modal dropdown
-        $stockKontainers = StockKontainer::active()->orderBy('nomor_seri_gabungan')->get();
-        $kontainers = Kontainer::where('status', '!=', 'inactive')->orderBy('nomor_seri_gabungan')->get();
-
-        // Statistics
-        $stats = [
-            'total_pending' => SuratJalan::whereNotNull('no_kontainer')
-                ->where(function($q) {
-                    $q->whereNull('status_checkpoint_keluar')
-                      ->orWhere('status_checkpoint_keluar', 'pending');
-                })->count(),
-            'total_keluar_hari_ini' => SuratJalan::whereNotNull('no_kontainer')
-                ->where('status_checkpoint_keluar', 'sudah_keluar')
-                ->whereDate('waktu_keluar', Carbon::today())
-                ->count(),
-            'total_keluar_bulan_ini' => SuratJalan::whereNotNull('no_kontainer')
-                ->where('status_checkpoint_keluar', 'sudah_keluar')
-                ->whereMonth('waktu_keluar', Carbon::now()->month)
-                ->whereYear('waktu_keluar', Carbon::now()->year)
-                ->count(),
-        ];
-
-        return view('checkpoint-kontainer-keluar.index', compact('suratJalans', 'stats', 'stockKontainers', 'kontainers'));
+        $this->middleware('auth');
     }
 
     /**
-     * Display history of containers that have exited.
+     * Display branch selection page
+     */
+    public function index()
+    {
+        $this->authorize('checkpoint-kontainer-keluar-view');
+
+        // Get all cabangs from database
+        $cabangs = Cabang::orderBy('nama_cabang')->get();
+
+        return view('checkpoint-kontainer-keluar.index', compact('cabangs'));
+    }
+
+    /**
+     * Display checkpoint page for specific branch (warehouse selection)
+     */
+    public function checkpoint($cabangSlug)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-view');
+
+        // Map slug to cabang name
+        $cabangMap = [
+            'jakarta' => 'Jakarta',
+            'batam' => 'Batam',
+            'tanjung-pinang' => 'Tanjung Pinang',
+        ];
+
+        $cabangNama = $cabangMap[$cabangSlug] ?? null;
+
+        if (!$cabangNama) {
+            return redirect()->route('checkpoint-kontainer-keluar.index')
+                ->with('error', 'Cabang tidak ditemukan');
+        }
+
+        // Get gudangs by lokasi (cabang)
+        $gudangs = \App\Models\Gudang::where('lokasi', $cabangNama)
+            ->where('status', 'aktif')
+            ->orderBy('nama_gudang')
+            ->get();
+
+        return view('checkpoint-kontainer-keluar.checkpoint', compact('gudangs', 'cabangNama', 'cabangSlug'));
+    }
+
+    /**
+     * Display surat jalan list for specific gudang
+     */
+    public function showSuratJalan($cabangSlug, $gudangId)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-view');
+
+        // Map slug to cabang name
+        $cabangMap = [
+            'jakarta' => 'Jakarta',
+            'batam' => 'Batam',
+            'tanjung-pinang' => 'Tanjung Pinang',
+        ];
+
+        $cabangNama = $cabangMap[$cabangSlug] ?? null;
+
+        if (!$cabangNama) {
+            return redirect()->route('checkpoint-kontainer-keluar.index')
+                ->with('error', 'Cabang tidak ditemukan');
+        }
+
+        $gudang = \App\Models\Gudang::findOrFail($gudangId);
+
+        // Get kontainers by gudangs_id
+        $kontainers = \App\Models\Kontainer::where('gudangs_id', $gudangId)
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+
+        // Get stock_kontainers by gudangs_id
+        $stockKontainers = \App\Models\StockKontainer::where('gudangs_id', $gudangId)
+            ->orderBy('nomor_seri_gabungan', 'asc')
+            ->get();
+
+        // Get surat jalans that haven't received tanda terima yet
+        $suratJalans = SuratJalan::whereNull('tanggal_tanda_terima')
+            ->orderBy('tanggal_surat_jalan', 'desc')
+            ->orderBy('no_surat_jalan', 'desc')
+            ->get();
+
+        // Get all active gudangs for tujuan dropdown
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')
+            ->orderBy('lokasi')
+            ->orderBy('nama_gudang')
+            ->get();
+
+        return view('checkpoint-kontainer-keluar.surat-jalan', compact('kontainers', 'stockKontainers', 'cabangNama', 'cabangSlug', 'gudang', 'suratJalans', 'gudangs'));
+    }
+
+    /**
+     * Display history of checkpoint kontainer keluar
      */
     public function history(Request $request)
     {
-        $query = SuratJalan::with(['kontainer', 'order'])
-            ->whereNotNull('no_kontainer')
-            ->where('status_checkpoint_keluar', 'sudah_keluar');
+        $this->authorize('checkpoint-kontainer-keluar-view');
 
-        // Filter by search
+        $query = SuratJalan::whereNotNull('tanggal_checkpoint')
+            ->orderBy('tanggal_checkpoint', 'desc');
+
+        // Filter by date range if provided
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal_checkpoint', '>=', $request->tanggal_dari);
+        }
+
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal_checkpoint', '<=', $request->tanggal_sampai);
+        }
+
+        // Filter by search term
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%");
             });
         }
 
-        // Filter by date range
-        if ($request->filled('dari_tanggal')) {
-            $query->whereDate('waktu_keluar', '>=', $request->dari_tanggal);
-        }
-        if ($request->filled('sampai_tanggal')) {
-            $query->whereDate('waktu_keluar', '<=', $request->sampai_tanggal);
-        }
-
-        $suratJalans = $query->orderBy('waktu_keluar', 'desc')
-                            ->paginate(20)
-                            ->withQueryString();
+        $suratJalans = $query->paginate(20);
 
         return view('checkpoint-kontainer-keluar.history', compact('suratJalans'));
     }
 
     /**
-     * Process container exit checkpoint.
+     * Process kontainer keluar
      */
-    public function processKeluar(Request $request, SuratJalan $suratJalan)
+    public function processKeluar(Request $request, $suratJalanId)
     {
+        $this->authorize('checkpoint-kontainer-keluar-create');
+
         $request->validate([
-            'catatan_keluar' => 'nullable|string|max:500',
-            'selected_kontainer' => 'nullable|string'
+            'tanggal_checkpoint' => 'required|date',
+            'catatan_checkpoint' => 'nullable|string|max:500',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // If user selected a specific container from dropdown, map it and update SJ
-            if ($request->filled('selected_kontainer')) {
-                // Expecting format 'stock:ID' or 'kontainer:ID'
-                [$type, $id] = explode(':', $request->selected_kontainer);
-                if ($type === 'stock') {
-                    $stock = StockKontainer::find($id);
-                    if ($stock) {
-                        $suratJalan->no_kontainer = $stock->nomor_seri_gabungan;
-                        // mark stock kontainer as rented
-                        $stock->update(['status' => 'rented']);
-                    }
-                } elseif ($type === 'kontainer') {
-                    $kont = Kontainer::find($id);
-                    if ($kont) {
-                        $suratJalan->no_kontainer = $kont->nomor_seri_gabungan;
-                        // We'll update kontainer status below
-                    }
-                }
-            }
+            $suratJalan = SuratJalan::findOrFail($suratJalanId);
 
+            // Update surat jalan
             $suratJalan->update([
-                'status_checkpoint_keluar' => 'sudah_keluar',
-                'waktu_keluar' => Carbon::now(),
-                'catatan_keluar' => $request->catatan_keluar,
-                'user_keluar_id' => Auth::id(),
+                'tanggal_checkpoint' => $request->tanggal_checkpoint,
+                'catatan_checkpoint' => $request->catatan_checkpoint,
             ]);
-
-            // Update status kontainer jika perlu
-            if ($suratJalan->no_kontainer) {
-                $kontainer = Kontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)->first();
-                if ($kontainer) {
-                    $kontainer->update([
-                        'status' => 'Sedang Digunakan',
-                        'lokasi_terakhir' => 'Dalam Perjalanan',
-                    ]);
-                }
-            }
 
             DB::commit();
 
-            Log::info('Checkpoint Kontainer Keluar', [
-                'surat_jalan_id' => $suratJalan->id,
-                'no_surat_jalan' => $suratJalan->no_surat_jalan,
-                'no_kontainer' => $suratJalan->no_kontainer,
-                'waktu_keluar' => $suratJalan->waktu_keluar,
-                'user' => Auth::user()->name,
+            return response()->json([
+                'success' => true,
+                'message' => 'Kontainer berhasil keluar dari checkpoint'
             ]);
 
-            return redirect()->back()->with('success', 'Kontainer ' . $suratJalan->no_kontainer . ' berhasil dicatat keluar pada ' . Carbon::now()->format('d/m/Y H:i'));
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error Checkpoint Kontainer Keluar: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memproses checkpoint keluar: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses kontainer keluar: ' . $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * Process bulk container exit.
+     * Process bulk kontainer keluar
      */
     public function bulkKeluar(Request $request)
     {
+        $this->authorize('checkpoint-kontainer-keluar-create');
+
         $request->validate([
-            'surat_jalan_ids' => 'required|array|min:1',
+            'surat_jalan_ids' => 'required|array',
             'surat_jalan_ids.*' => 'exists:surat_jalans,id',
-            'catatan_keluar' => 'nullable|string|max:500',
+            'tanggal_checkpoint' => 'required|date',
+            'catatan_checkpoint' => 'nullable|string|max:500',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $count = 0;
-            $waktuKeluar = Carbon::now();
-
-            foreach ($request->surat_jalan_ids as $id) {
-                $suratJalan = SuratJalan::find($id);
-                if ($suratJalan && $suratJalan->status_checkpoint_keluar !== 'sudah_keluar') {
-                    $suratJalan->update([
-                        'status_checkpoint_keluar' => 'sudah_keluar',
-                        'waktu_keluar' => $waktuKeluar,
-                        'catatan_keluar' => $request->catatan_keluar,
-                        'user_keluar_id' => Auth::id(),
-                    ]);
-
-                    // Update status kontainer
-                    if ($suratJalan->no_kontainer) {
-                        Kontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
-                            ->update([
-                                'status' => 'Sedang Digunakan',
-                                'lokasi_terakhir' => 'Dalam Perjalanan',
-                            ]);
-                    }
-
-                    $count++;
-                }
-            }
+            $updated = SuratJalan::whereIn('id', $request->surat_jalan_ids)
+                ->update([
+                    'tanggal_checkpoint' => $request->tanggal_checkpoint,
+                    'catatan_checkpoint' => $request->catatan_checkpoint,
+                ]);
 
             DB::commit();
 
-            Log::info('Bulk Checkpoint Kontainer Keluar', [
-                'count' => $count,
-                'waktu_keluar' => $waktuKeluar,
-                'user' => Auth::user()->name,
-            ]);
+            return redirect()->back()->with('success', "Berhasil memproses {$updated} kontainer keluar");
 
-            return redirect()->back()->with('success', $count . ' kontainer berhasil dicatat keluar pada ' . $waktuKeluar->format('d/m/Y H:i'));
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error Bulk Checkpoint Kontainer Keluar: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memproses bulk checkpoint keluar: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal memproses kontainer keluar: ' . $e->getMessage());
         }
     }
 
     /**
-     * Cancel container exit (revert status).
+     * Cancel kontainer keluar
      */
-    public function cancelKeluar(Request $request, SuratJalan $suratJalan)
+    public function cancelKeluar($suratJalanId)
     {
-        $request->validate([
-            'alasan_cancel' => 'required|string|max:500',
-        ]);
+        $this->authorize('checkpoint-kontainer-keluar-delete');
 
         try {
             DB::beginTransaction();
 
+            $suratJalan = SuratJalan::findOrFail($suratJalanId);
+
+            // Reset checkpoint data
             $suratJalan->update([
-                'status_checkpoint_keluar' => null,
-                'waktu_keluar' => null,
-                'catatan_keluar' => 'DIBATALKAN: ' . $request->alasan_cancel . ' (oleh ' . Auth::user()->name . ' pada ' . Carbon::now()->format('d/m/Y H:i') . ')',
-                'user_keluar_id' => null,
+                'tanggal_checkpoint' => null,
+                'catatan_checkpoint' => null,
             ]);
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Status checkpoint keluar untuk kontainer ' . $suratJalan->no_kontainer . ' berhasil dibatalkan.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Checkpoint kontainer keluar berhasil dibatalkan'
+            ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error Cancel Checkpoint Keluar: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal membatalkan checkpoint keluar: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membatalkan checkpoint: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

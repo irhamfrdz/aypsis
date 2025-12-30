@@ -1234,6 +1234,11 @@ Route::middleware([
          ->name('pengirim.import.process')
          ->middleware('can:master-pengirim-create');
 
+    // 📊 Pengirim - Export to Excel
+    Route::get('master/pengirim-export-excel', [PengirimController::class, 'exportExcel'])
+         ->name('pengirim.export-excel')
+         ->middleware('can:master-pengirim-view');
+
     // Master Pengirim/Penerima - Download Template & Import (HARUS SEBELUM RESOURCE!)
     Route::get('master-pengirim-penerima/download-template', [MasterPengirimPenerimaController::class, 'downloadTemplate'])
          ->name('master-pengirim-penerima.download-template')
@@ -2402,6 +2407,14 @@ Route::middleware(['auth'])->group(function () {
          ->name('checkpoint-kontainer-keluar.history')
          ->middleware('can:checkpoint-kontainer-keluar-view');
 
+    Route::get('checkpoint-kontainer-keluar/{cabangSlug}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'checkpoint'])
+         ->name('checkpoint-kontainer-keluar.checkpoint')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
+    Route::get('checkpoint-kontainer-keluar/{cabangSlug}/gudang/{gudangId}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'showSuratJalan'])
+         ->name('checkpoint-kontainer-keluar.surat-jalan')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
     Route::post('checkpoint-kontainer-keluar/{suratJalan}/keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'processKeluar'])
          ->name('checkpoint-kontainer-keluar.keluar')
          ->middleware('can:checkpoint-kontainer-keluar-create');
@@ -2413,6 +2426,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('checkpoint-kontainer-keluar/{suratJalan}/cancel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'cancelKeluar'])
          ->name('checkpoint-kontainer-keluar.cancel')
          ->middleware('can:checkpoint-kontainer-keluar-delete');
+
+    // 📦 KONTAINER DALAM PERJALANAN ROUTES
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::get('kontainer-perjalanan', [\App\Http\Controllers\KontainerPerjalananController::class, 'index'])
+         ->name('kontainer-perjalanan.index')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
 
 });
 

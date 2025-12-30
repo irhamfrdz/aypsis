@@ -1396,6 +1396,16 @@
                         <span class="text-xs">Checkpoint Kontainer Keluar</span>
                     </a>
                 @endif
+
+                {{-- Kontainer Dalam Perjalanan --}}
+                @if($user && ($user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')))
+                    <a href="{{ route('kontainer-perjalanan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('kontainer-perjalanan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span class="text-xs">Kontainer Dalam Perjalanan</span>
+                    </a>
+                @endif
             </div>
         </div>
         @endif

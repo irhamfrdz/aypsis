@@ -14,6 +14,8 @@ protected $fillable = [
         'kode',
         'nama_pengirim',
         'catatan',
+        'harga_krani_20ft',
+        'harga_krani_40ft',
         'status'
     ];
 }

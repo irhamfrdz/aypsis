@@ -119,9 +119,23 @@
                     <p class="mt-1 text-xs text-gray-500">Status akan otomatis diset "Non-Aktif" jika nomor kontainer sudah ada di master kontainer</p>
                 </div>
 
-
-
-
+                <div>
+                    <label for="gudangs_id" class="block text-sm font-medium text-gray-700">Lokasi (Gudang)</label>
+                    <select name="gudangs_id" id="gudangs_id" class="{{ $selectClasses }}">
+                        <option value="">Pilih Gudang</option>
+                        @php
+                            $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+                        @endphp
+                        @foreach($gudangs as $gudang)
+                            <option value="{{ $gudang->id }}" {{ old('gudangs_id') == $gudang->id ? 'selected' : '' }}>
+                                {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('gudangs_id')
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 <div>
                     <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700">Tanggal Masuk</label>

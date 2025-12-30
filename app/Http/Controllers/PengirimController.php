@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Pengirim;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PengirimExport;
 
 class PengirimController extends Controller
 {
@@ -112,6 +114,20 @@ class PengirimController extends Controller
         return back()->with('success', "Import selesai. $successCount data berhasil diproses.");
     }
     /**
+     * Export pengirim data to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $filters = [
+            'search' => $request->input('search', ''),
+        ];
+
+        $filename = 'master_pengirim_' . date('Y-m-d_His') . '.xlsx';
+        
+        return Excel::download(new PengirimExport($filters), $filename);
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -150,6 +166,8 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirim,kode',
             'nama_pengirim' => 'required|string|max:255',
             'catatan' => 'nullable|string',
+            'harga_krani_20ft' => 'nullable|numeric|min:0',
+            'harga_krani_40ft' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -197,6 +215,8 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirim,kode,' . $id,
             'nama_pengirim' => 'required|string|max:255',
             'catatan' => 'nullable|string',
+            'harga_krani_20ft' => 'nullable|numeric|min:0',
+            'harga_krani_40ft' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
