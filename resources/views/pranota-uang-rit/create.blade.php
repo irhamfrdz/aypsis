@@ -371,25 +371,21 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs">
                                         @php
-                                            // Ambil nilai rit dari data surat jalan
-                                            $ritValue = $item['data']->rit ?? 0;
-                                            
-                                            // Jika rit kosong atau 0, ambil dari pricelist_rit tabel dengan tujuan = 'Supir'
-                                            if (!$ritValue || $ritValue == 0) {
-                                                try {
-                                                    // Query langsung ke tabel pricelist_rit untuk tujuan 'Supir'
-                                                    $pricelistRit = \DB::table('pricelist_rit')
-                                                        ->where('tujuan', 'Supir')
-                                                        ->where('status', 'aktif')
-                                                        ->first();
-                                                    
-                                                    if ($pricelistRit) {
-                                                        $ritValue = $pricelistRit->tarif ?? 0;
-                                                    }
-                                                } catch (\Exception $e) {
-                                                    // Jika query gagal, gunakan default
-                                                    $ritValue = 0;
+                                            // Ambil nilai uang supir dari pricelist_rit dengan tujuan = 'Supir'
+                                            $ritValue = 0;
+                                            try {
+                                                // Query langsung ke tabel pricelist_rit untuk tujuan 'Supir'
+                                                $pricelistRit = \DB::table('pricelist_rit')
+                                                    ->where('tujuan', 'Supir')
+                                                    ->where('status', 'aktif')
+                                                    ->first();
+                                                
+                                                if ($pricelistRit) {
+                                                    $ritValue = $pricelistRit->tarif ?? 0;
                                                 }
+                                            } catch (\Exception $e) {
+                                                // Jika query gagal, gunakan default 0
+                                                $ritValue = 0;
                                             }
                                             
                                             // Konversi ke numeric dan default ke 85000 jika masih 0
@@ -402,7 +398,7 @@
                                                value="{{ $ritValue }}"
                                                min="0" 
                                                step="1000"
-                                               title="Rit: {{ $item['data']->rit ?? 'Dari Pricelist' }}">
+                                               title="Dari Pricelist Rit - Tujuan: Supir">
                                     </td>
                                 </tr>
                             @empty
