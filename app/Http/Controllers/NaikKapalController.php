@@ -8,6 +8,8 @@ use App\Models\NaikKapal;
 use App\Models\Prospek;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Exports\NaikKapalExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class NaikKapalController extends Controller
 {
@@ -698,155 +700,18 @@ class NaikKapalController extends Controller
         $kapal = \App\Models\MasterKapal::find($request->kapal_id);
         $noVoyage = $request->no_voyage;
 
-        // Get naik kapal data
-        $query = NaikKapal::with(['prospek.tandaTerima'])
-            ->where('nama_kapal', $kapal->nama_kapal)
-            ->where('no_voyage', $noVoyage);
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
-            });
-        }
-        
-        // Filter by status BL
-        if ($request->filled('status_bl')) {
-            if ($request->status_bl === 'sudah_bl') {
-                $query->where('status', 'Moved to BLS');
-            } elseif ($request->status_bl === 'belum_bl') {
-                $query->where(function($q) {
-                    $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
-                });
-            }
-        }
-        
-        // Filter by tipe kontainer
-        if ($request->filled('tipe_kontainer')) {
-            $query->where('tipe_kontainer', $request->tipe_kontainer);
-        }
-        
-        // Legacy status filter support
-        if ($request->filled('status_filter')) {
-            if ($request->status_filter === 'sudah_bl') {
-                $query->where('status', 'Moved to BLS');
-            } elseif ($request->status_filter === 'belum_bl') {
-                $query->where(function($q) {
-                    $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
-                });
-            }
-        }
-
-        $naikKapals = $query->get();
-
-        if ($naikKapals->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tidak ada data untuk diekspor'
-            ], 404);
-        }
-
-        // Generate filename
-        $filename = 'Naik_Kapal_' . str_replace(' ', '_', $kapal->nama_kapal) . '_' . str_replace('/', '-', $noVoyage) . '_' . date('Y-m-d_H-i-s') . '.xlsx';
-
-        // Create Excel export
-        return $this->generateExcel($naikKapals, $kapal, $noVoyage, $filename);
-    }
-
-    private function generateExcel($naikKapals, $kapal, $noVoyage, $filename)
-    {
-        $headers = [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'max-age=0',
+        // Prepare filters
+        $filters = [
+            'search' => $request->search,
+            'status_bl' => $request->status_bl,
+            'tipe_kontainer' => $request->tipe_kontainer,
+            'status_filter' => $request->status_filter,
         ];
 
-        $callback = function() use ($naikKapals, $kapal, $noVoyage) {
-            $file = fopen('php://output', 'w');
-            
-            // Write UTF-8 BOM for proper encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // Write header
-            fputcsv($file, [
-                'LAPORAN DATA NAIK KAPAL'
-            ]);
-            
-            fputcsv($file, [
-                'Kapal: ' . $kapal->nama_kapal . ($kapal->nickname ? ' (' . $kapal->nickname . ')' : ''),
-                'Voyage: ' . $noVoyage,
-                'Tanggal Export: ' . date('d/m/Y H:i:s')
-            ]);
-            
-            fputcsv($file, []); // Empty row
-            
-            // Column headers
-            fputcsv($file, [
-                'No',
-                'Nomor Kontainer',
-                'Ukuran Kontainer', 
-                'No Seal',
-                'Jenis Barang',
-                'Tipe Kontainer',
-                'Volume (m³)',
-                'Tonase (Ton)',
-                'Kuantitas',
-                'Tanggal Muat',
-                'Jam Muat',
-                'Pelabuhan Asal',
-                'Pelabuhan Tujuan',
-                'Prospek ID',
-                'Nama Supir',
-                'Pengirim',
-                'Penerima',
-                'Status'
-            ]);
-            
-            // Data rows
-            foreach ($naikKapals as $index => $naikKapal) {
-                $prospek = $naikKapal->prospek;
-                $tandaTerima = $prospek ? $prospek->tandaTerima : null;
-                
-                fputcsv($file, [
-                    $index + 1,
-                    $naikKapal->nomor_kontainer ?: '-',
-                    $naikKapal->ukuran_kontainer ?: '-',
-                    $naikKapal->no_seal ?: '-',
-                    $naikKapal->jenis_barang ?: '-',
-                    $naikKapal->tipe_kontainer ?: '-',
-                    $naikKapal->total_volume ?: '0',
-                    $naikKapal->total_tonase ?: '0',
-                    $naikKapal->kuantitas ?: '0',
-                    $naikKapal->tanggal_muat ? date('d/m/Y', strtotime($naikKapal->tanggal_muat)) : '-',
-                    $naikKapal->jam_muat ? date('H:i', strtotime($naikKapal->jam_muat)) : '-',
-                    $naikKapal->pelabuhan_asal ?: '-',
-                    $naikKapal->pelabuhan_tujuan ?: '-',
-                    $prospek ? $prospek->id : '-',
-                    $prospek ? $prospek->nama_supir : '-',
-                    $prospek ? $prospek->pt_pengirim : ($tandaTerima ? $tandaTerima->pengirim : '-'),
-                    $tandaTerima ? $tandaTerima->penerima : '-',
-                    $naikKapal->status ?: 'Active'
-                ]);
-            }
-            
-            // Summary
-            fputcsv($file, []); // Empty row
-            fputcsv($file, [
-                'RINGKASAN:',
-                'Total Data: ' . $naikKapals->count(),
-                'Total Volume: ' . number_format($naikKapals->sum('total_volume'), 3) . ' m³',
-                'Total Tonase: ' . number_format($naikKapals->sum('total_tonase'), 3) . ' Ton'
-            ]);
-            
-            fclose($file);
-        };
+        // Generate filename
+        $filename = 'Naik_Kapal_' . str_replace(' ', '_', $kapal->nama_kapal) . '_' . str_replace('/', '-', $noVoyage) . '_' . date('YmdHis') . '.xlsx';
 
-        return response()->stream($callback, 200, $headers);
+        // Return Excel download
+        return Excel::download(new NaikKapalExport($filters, $kapal->nama_kapal, $noVoyage), $filename);
     }
 }
