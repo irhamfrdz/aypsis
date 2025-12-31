@@ -19,6 +19,7 @@ class KontainerPerjalanan extends Model
         'tipe_kontainer',
         'ukuran',
         'tujuan_pengiriman',
+        'gudang_tujuan_id',
         'supir',
         'no_plat',
         'waktu_keluar',
@@ -48,6 +49,14 @@ class KontainerPerjalanan extends Model
     public function suratJalan()
     {
         return $this->belongsTo(SuratJalan::class, 'surat_jalan_id');
+    }
+
+    /**
+     * Relationship to Gudang (warehouse destination)
+     */
+    public function gudangTujuan()
+    {
+        return $this->belongsTo(Gudang::class, 'gudang_tujuan_id');
     }
 
     /**

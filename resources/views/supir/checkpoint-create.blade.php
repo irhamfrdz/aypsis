@@ -166,6 +166,19 @@
                                         <input type="date" id="tanggal_checkpoint" name="tanggal_checkpoint" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" value="{{ date('Y-m-d') }}" required>
                                     </div>
 
+                                    <div>
+                                        <label for="gudang_tujuan_id" class="block text-sm font-medium text-gray-700">Gudang Tujuan</label>
+                                        <select id="gudang_tujuan_id" name="gudang_tujuan_id" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" required>
+                                            <option value="">-- Pilih Gudang Tujuan --</option>
+                                            @if(isset($gudangs))
+                                                @foreach($gudangs as $gudang)
+                                                    <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">Pilih gudang tujuan untuk kontainer ini.</p>
+                                    </div>
+
                                     {{-- Existing complex form logic for permohonan --}}
                                     @include('supir.checkpoint-permohonan-form')
                                 </div>
@@ -248,6 +261,19 @@
                             <div>
                                 <label for="tanggal_checkpoint" class="block text-sm font-medium text-gray-700">Tanggal Checkpoint</label>
                                 <input type="date" id="tanggal_checkpoint" name="tanggal_checkpoint" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" value="{{ date('Y-m-d') }}" required>
+                            </div>
+
+                            <div>
+                                <label for="gudang_tujuan_id" class="block text-sm font-medium text-gray-700">Gudang Tujuan</label>
+                                <select id="gudang_tujuan_id" name="gudang_tujuan_id" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" required>
+                                    <option value="">-- Pilih Gudang Tujuan --</option>
+                                    @if(isset($gudangs))
+                                        @foreach($gudangs as $gudang)
+                                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Pilih gudang tujuan untuk kontainer ini.</p>
                             </div>
 
                             {{-- Container inputs for surat jalan --}}

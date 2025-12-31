@@ -20,7 +20,7 @@ class KontainerPerjalananController extends Controller
     {
         $this->authorize('checkpoint-kontainer-keluar-view');
 
-        $query = KontainerPerjalanan::with('suratJalan')
+        $query = KontainerPerjalanan::with(['suratJalan', 'gudangTujuan'])
             ->where('status', 'dalam_perjalanan')
             ->orderBy('waktu_keluar', 'desc');
 

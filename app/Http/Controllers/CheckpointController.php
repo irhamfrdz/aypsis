@@ -98,7 +98,10 @@ class CheckpointController extends Controller
                                                     ->orderBy('nomor_seri_gabungan')
                                                     ->get();
 
-        return view('supir.checkpoint-create', compact('permohonan', 'kontainerList', 'stockKontainers'));
+        // Ambil data gudangs untuk dropdown gudang tujuan
+        $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
+
+        return view('supir.checkpoint-create', compact('permohonan', 'kontainerList', 'stockKontainers', 'gudangs'));
     }
 
     /**
@@ -123,6 +126,7 @@ class CheckpointController extends Controller
             'catatan' => 'nullable|string',
             'gambar' => 'nullable|array',
             'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ];
 
         // Add no_seal validation only if tipe is not 'cargo'
@@ -376,7 +380,10 @@ class CheckpointController extends Controller
                                                     ->orderBy('nomor_seri_gabungan')
                                                     ->get();
 
-        return view('supir.checkpoint-create', compact('suratJalan', 'kontainerList', 'stockKontainers'));
+        // Ambil data gudangs untuk dropdown gudang tujuan
+        $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
+
+        return view('supir.checkpoint-create', compact('suratJalan', 'kontainerList', 'stockKontainers', 'gudangs'));
     }
 
     /**
@@ -410,6 +417,7 @@ class CheckpointController extends Controller
             'tanggal_checkpoint' => 'required|date',
             'gambar' => 'nullable|array',
             'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ];
 
         // Add nomor_kontainer and no_seal validation only if tipe_kontainer is not 'cargo'
@@ -472,6 +480,10 @@ class CheckpointController extends Controller
 
             // Update gudangs_id to null for kontainers and stock_kontainers
             if (strtolower($suratJalan->tipe_kontainer ?? '') !== 'cargo' && !empty($request->nomor_kontainer)) {
+                // Get nama gudang untuk tujuan_pengiriman
+                $gudangTujuan = \App\Models\Gudang::find($request->gudang_tujuan_id);
+                $namaGudangTujuan = $gudangTujuan ? $gudangTujuan->nama_gudang : ($suratJalan->tujuan_pengiriman ?? $suratJalan->order->tujuan_kirim ?? null);
+                
                 foreach ($request->nomor_kontainer as $nomor) {
                     $nomorRaw = trim($nomor);
                     
@@ -496,7 +508,8 @@ class CheckpointController extends Controller
                         'no_surat_jalan' => $suratJalan->no_surat_jalan,
                         'tipe_kontainer' => $suratJalan->tipe_kontainer,
                         'ukuran' => $suratJalan->size,
-                        'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? $suratJalan->order->tujuan_kirim ?? null,
+                        'tujuan_pengiriman' => $namaGudangTujuan,
+                        'gudang_tujuan_id' => $request->gudang_tujuan_id,
                         'supir' => $suratJalan->supir,
                         'no_plat' => $suratJalan->no_plat,
                         'waktu_keluar' => $request->tanggal_checkpoint,
@@ -753,11 +766,15 @@ class CheckpointController extends Controller
                                                     ->orderBy('nomor_seri_gabungan')
                                                     ->get();
 
+        // Ambil data gudangs untuk dropdown gudang tujuan
+        $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
+
         // Use the same view but pass the bongkaran model as 'suratJalan' for compatibility
         return view('supir.checkpoint-create', [
             'suratJalan' => $suratJalanBongkaran,
             'kontainerList' => $kontainerList,
             'stockKontainers' => $stockKontainers,
+            'gudangs' => $gudangs,
             'isBongkaran' => true
         ]);
     }
@@ -794,6 +811,7 @@ class CheckpointController extends Controller
             'tanggal_checkpoint' => 'required|date',
             'gambar' => 'nullable|array',
             'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ];
 
         // Add nomor_kontainer and no_seal validation only if tipe_kontainer is not 'cargo'

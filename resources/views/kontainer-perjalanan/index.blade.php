@@ -129,7 +129,18 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 text-sm text-gray-600">
-                                    {{ $item->tujuan_pengiriman ?? '-' }}
+                                    @if($item->gudangTujuan)
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                                            </svg>
+                                            <span class="font-medium text-gray-800">{{ $item->gudangTujuan->nama_gudang }}</span>
+                                        </div>
+                                    @elseif($item->tujuan_pengiriman)
+                                        <span class="text-gray-600">{{ $item->tujuan_pengiriman }}</span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {{ $item->suratJalan->supir ?? $item->supir ?? '-' }}

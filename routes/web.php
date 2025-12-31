@@ -1055,6 +1055,14 @@ Route::middleware([
          ->name('master.stock-kontainer.import')
          ->middleware('can:master-stock-kontainer-create');
 
+    // Stock Kontainer Update Gudang routes
+    Route::get('master/stock-kontainer/template-gudang', [\App\Http\Controllers\StockKontainerController::class, 'downloadTemplateGudang'])
+         ->name('master.stock-kontainer.template-gudang');
+
+    Route::post('master/stock-kontainer/update-gudang', [\App\Http\Controllers\StockKontainerController::class, 'updateGudang'])
+         ->name('master.stock-kontainer.update-gudang')
+         ->middleware('can:master-stock-kontainer-update');
+
     // 📊 Stock Kontainer (Container Stock) Management with permissions
     Route::resource('master/stock-kontainer', \App\Http\Controllers\StockKontainerController::class)
          ->names('master.stock-kontainer')
