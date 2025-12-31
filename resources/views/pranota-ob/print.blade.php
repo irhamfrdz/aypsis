@@ -5,14 +5,14 @@
 @push('styles')
 <style>
     @page {
-        size: 8.5in 6.5in; /* Half folio size */
-        margin: 0.5in;
+        size: 21.5cm 16.5cm; /* Half folio size (setengah folio) */
+        margin: 1cm;
     }
     
     @media print {
         body {
-            width: 8.5in;
-            height: 6.5in;
+            width: 21.5cm;
+            height: 16.5cm;
         }
         .print-container {
             width: 100%;
@@ -29,6 +29,17 @@
     }
     .print-container table {
         font-size: 9px;
+    }
+    
+    /* Pertebal border table */
+    .print-container table,
+    .print-container table th,
+    .print-container table td {
+        border: 2px solid #000 !important;
+        border-collapse: collapse;
+    }
+    .print-container table {
+        border: 2px solid #000 !important;
     }
 </style>
 @endpush
