@@ -822,7 +822,10 @@ class TandaTerimaController extends Controller
             }
 
             // Update status_surat_jalan menjadi selesai karena sudah ada tanda terima
-            $suratJalan->update(['status_surat_jalan' => 'selesai']);
+            $suratJalan->update([
+                'status_surat_jalan' => 'selesai',
+                'status' => 'sudah_checkpoint'
+            ]);
 
             // Update related Prospek data for newly created TandaTerima
             $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
@@ -1300,6 +1303,9 @@ class TandaTerimaController extends Controller
                             }
                         }
                     }
+                    
+                    // Update status menjadi sudah_checkpoint karena sudah ada tanda terima
+                    $suratJalanUpdateData['status'] = 'sudah_checkpoint';
                     
                     // Lakukan update jika ada perubahan
                     if (!empty($suratJalanUpdateData)) {

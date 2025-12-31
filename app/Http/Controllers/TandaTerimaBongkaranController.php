@@ -121,6 +121,9 @@ class TandaTerimaBongkaranController extends Controller
 
             $tandaTerima = TandaTerimaBongkaran::create($validated);
 
+            // Update status surat jalan bongkaran menjadi sudah_checkpoint
+            $suratJalan->update(['status' => 'sudah_checkpoint']);
+
             DB::commit();
 
             return redirect()
@@ -177,6 +180,14 @@ class TandaTerimaBongkaranController extends Controller
             DB::beginTransaction();
 
             $tandaTerimaBongkaran->update($validated);
+
+            // Update status surat jalan bongkaran menjadi sudah_checkpoint
+            if ($tandaTerimaBongkaran->surat_jalan_bongkaran_id) {
+                $suratJalan = SuratJalanBongkaran::find($tandaTerimaBongkaran->surat_jalan_bongkaran_id);
+                if ($suratJalan) {
+                    $suratJalan->update(['status' => 'sudah_checkpoint']);
+                }
+            }
 
             DB::commit();
 

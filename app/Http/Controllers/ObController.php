@@ -754,6 +754,24 @@ class ObController extends Controller
             $naikKapal->save();
             \Log::info("Updated naik_kapal OB status");
 
+            // Update gudangs_id to ON BOARD for stock_kontainers and kontainers
+            try {
+                $gudangOnBoard = \App\Models\Gudang::where('nama_gudang', 'LIKE', '%ON BOARD%')->first();
+                if ($gudangOnBoard && $naikKapal->nomor_kontainer) {
+                    // Update stock_kontainers
+                    \App\Models\StockKontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
+                        ->update(['gudangs_id' => $gudangOnBoard->id]);
+                    
+                    // Update kontainers
+                    \App\Models\Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
+                        ->update(['gudangs_id' => $gudangOnBoard->id]);
+                    
+                    \Log::info("Updated gudangs_id to ON BOARD for container: " . $naikKapal->nomor_kontainer);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to update gudangs_id to ON BOARD: ' . $e->getMessage());
+            }
+
             // Also clear TL flag on related BLs (if any)
             try {
                 Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
@@ -986,6 +1004,42 @@ class ObController extends Controller
                 $bl->sudah_tl = false;
             }
             $bl->save();
+
+            // Update gudangs_id based on 'ke' field (kegiatan bongkar) or ON BOARD (kegiatan muat)
+            try {
+                $gudangTarget = null;
+                
+                // Jika kolom 'ke' terisi, gunakan gudang dari 'ke' (untuk kegiatan bongkar)
+                if (!empty($bl->ke)) {
+                    $gudangTarget = \App\Models\Gudang::where('nama_gudang', 'LIKE', '%' . $bl->ke . '%')->first();
+                    if ($gudangTarget) {
+                        \Log::info("Found gudang from 'ke' field: " . $gudangTarget->nama_gudang);
+                    }
+                }
+                
+                // Jika tidak ada gudang dari 'ke' atau tidak ditemukan, gunakan ON BOARD sebagai fallback
+                if (!$gudangTarget) {
+                    $gudangTarget = \App\Models\Gudang::where('nama_gudang', 'LIKE', '%ON BOARD%')->first();
+                    if ($gudangTarget) {
+                        \Log::info("Using ON BOARD as fallback gudang");
+                    }
+                }
+                
+                // Update stock_kontainers dan kontainers jika gudang ditemukan
+                if ($gudangTarget && $bl->nomor_kontainer) {
+                    // Update stock_kontainers
+                    \App\Models\StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                        ->update(['gudangs_id' => $gudangTarget->id]);
+                    
+                    // Update kontainers
+                    \App\Models\Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                        ->update(['gudangs_id' => $gudangTarget->id]);
+                    
+                    \Log::info("Updated gudangs_id to {$gudangTarget->nama_gudang} for container: " . $bl->nomor_kontainer);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to update gudangs_id: ' . $e->getMessage());
+            }
 
             // Update retur_barang di surat_jalans based on nomor_kontainer
             if ($request->filled('retur_barang') && $bl->nomor_kontainer) {
