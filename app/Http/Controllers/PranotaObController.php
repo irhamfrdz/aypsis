@@ -164,15 +164,30 @@ class PranotaObController extends Controller
 
             $perSupirCounts[$key][$status]++;
             if (!isset($perSupirCounts[$key]['sizes'][$sizeKey])) {
-                $perSupirCounts[$key]['sizes'][$sizeKey] = ['full' => 0, 'empty' => 0];
+                $perSupirCounts[$key]['sizes'][$sizeKey] = ['full' => 0, 'empty' => 0, 'biaya' => 0];
             }
             $perSupirCounts[$key]['sizes'][$sizeKey][$status]++;
+            $perSupirCounts[$key]['sizes'][$sizeKey]['biaya'] += $amount;
+        }
+
+        // Calculate total biaya per size (across all supirs)
+        $biayaPerSize = [
+            '20' => 0,
+            '40' => 0,
+            'other' => 0
+        ];
+        foreach ($perSupirCounts as $counts) {
+            foreach ($counts['sizes'] as $size => $data) {
+                if (isset($biayaPerSize[$size])) {
+                    $biayaPerSize[$size] += $data['biaya'] ?? 0;
+                }
+            }
         }
 
         // Pass pranotaItems for print view
         $pranotaItems = $displayItems;
 
-        return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts', 'pranotaItems'));
+        return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts', 'pranotaItems', 'biayaPerSize'));
     }
 
     public function inputDp($id)

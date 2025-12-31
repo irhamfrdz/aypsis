@@ -73,7 +73,6 @@
                         @php 
                             $totalFull20 = 0;
                             $totalEmpty20 = 0;
-                            $biaya20 = 0;
                         @endphp
                         @foreach($perSupirCounts as $supirName => $counts)
                             @php
@@ -81,24 +80,13 @@
                                 $empty20 = $counts['sizes']['20']['empty'] ?? 0;
                                 $totalFull20 += $full20;
                                 $totalEmpty20 += $empty20;
-                                
-                                // Calculate biaya untuk 20" kontainer supir ini
-                                $biaya20Supir = 0;
-                                if (isset($pranotaItems)) {
-                                    foreach ($pranotaItems as $item) {
-                                        if (($item['supir'] ?? '') == $supirName && ($item['size'] ?? '') == '20') {
-                                            $biaya20Supir += floatval($item['biaya'] ?? 0);
-                                        }
-                                    }
-                                }
-                                $biaya20 += $biaya20Supir;
                             @endphp
                             <td class="border px-2 py-1 text-center">{{ $full20 > 0 ? $full20 : '-' }}</td>
                             <td class="border px-2 py-1 text-center">{{ $empty20 > 0 ? $empty20 : '-' }}</td>
                         @endforeach
                         <td class="border px-2 py-1 text-center">{{ $totalFull20 > 0 ? $totalFull20 : '-' }}</td>
                         <td class="border px-2 py-1 text-center">{{ $totalEmpty20 > 0 ? $totalEmpty20 : '-' }}</td>
-                        <td class="border px-2 py-1 text-right">{{ $biaya20 > 0 ? number_format($biaya20, 0, ',', '.') : '-' }}</td>
+                        <td class="border px-2 py-1 text-right">{{ ($biayaPerSize['20'] ?? 0) > 0 ? number_format($biayaPerSize['20'], 0, ',', '.') : '-' }}</td>
                     </tr>
 
                     {{-- Baris 40" --}}
@@ -107,7 +95,6 @@
                         @php 
                             $totalFull40 = 0;
                             $totalEmpty40 = 0;
-                            $biaya40 = 0;
                         @endphp
                         @foreach($perSupirCounts as $supirName => $counts)
                             @php
@@ -115,24 +102,13 @@
                                 $empty40 = $counts['sizes']['40']['empty'] ?? 0;
                                 $totalFull40 += $full40;
                                 $totalEmpty40 += $empty40;
-                                
-                                // Calculate biaya untuk 40" kontainer supir ini
-                                $biaya40Supir = 0;
-                                if (isset($pranotaItems)) {
-                                    foreach ($pranotaItems as $item) {
-                                        if (($item['supir'] ?? '') == $supirName && ($item['size'] ?? '') == '40') {
-                                            $biaya40Supir += floatval($item['biaya'] ?? 0);
-                                        }
-                                    }
-                                }
-                                $biaya40 += $biaya40Supir;
                             @endphp
                             <td class="border px-2 py-1 text-center">{{ $full40 > 0 ? $full40 : '-' }}</td>
                             <td class="border px-2 py-1 text-center">{{ $empty40 > 0 ? $empty40 : '-' }}</td>
                         @endforeach
                         <td class="border px-2 py-1 text-center">{{ $totalFull40 > 0 ? $totalFull40 : '-' }}</td>
                         <td class="border px-2 py-1 text-center">{{ $totalEmpty40 > 0 ? $totalEmpty40 : '-' }}</td>
-                        <td class="border px-2 py-1 text-right">{{ $biaya40 > 0 ? number_format($biaya40, 0, ',', '.') : '-' }}</td>
+                        <td class="border px-2 py-1 text-right">{{ ($biayaPerSize['40'] ?? 0) > 0 ? number_format($biayaPerSize['40'], 0, ',', '.') : '-' }}</td>
                     </tr>
 
                     {{-- Baris curah --}}
