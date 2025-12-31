@@ -66,23 +66,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Style header row
-                $event->sheet->getStyle('A1:V1')->applyFromArray([
-                    'font' => [
-                        'bold' => true,
-                        'color' => ['rgb' => 'FFFFFF'],
-                    ],
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => '7C3AED'], // Purple-600
-                    ],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical' => Alignment::VERTICAL_CENTER,
-                    ],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgbF1')->applyFromArray([
+                $event->sheet->getStyle('A1:F1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -125,4 +109,8 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $event->sheet->getRowDimension(1)->setRowHeight(25);
 
                 // Auto-wrap text for jenis barang column
-                $event->sheet->getStyle('D2:D
+                $event->sheet->getStyle('D2:D' . $highestRow)->getAlignment()->setWrapText(true);
+            },
+        ];
+    }
+}
