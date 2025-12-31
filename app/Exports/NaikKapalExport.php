@@ -34,14 +34,23 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             ->orderBy('created_at', 'desc');
 
         $naikKapals = $query->get();
+        
+        // Debug: log jumlah data yang diambil
+        \Log::info('Excel Export - Kapal: ' . $this->kapalNama . ', Voyage: ' . $this->noVoyage . ', Total Data: ' . $naikKapals->count());
 
         return $naikKapals->map(function($naikKapal, $index) {
             $prospek = $naikKapal->prospek;
+            
+            // Ambil seal dari naik_kapal, jika kosong ambil dari prospek
+            $noSeal = $naikKapal->no_seal;
+            if (empty($noSeal) && $prospek) {
+                $noSeal = $prospek->no_seal;
+            }
 
             return [
                 $index + 1,
                 $naikKapal->nomor_kontainer ?: '-',
-                $naikKapal->no_seal ?: '-',
+                $noSeal ?: '-',
                 $naikKapal->jenis_barang ?: '-',
                 $naikKapal->tipe_kontainer ?: '-',
                 $prospek ? $prospek->nama_supir : '-',
