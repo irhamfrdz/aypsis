@@ -282,7 +282,8 @@
                             </th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Tanda Terima</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkpoint</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
@@ -441,6 +442,9 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $tandaTerima->tanggal ? \Carbon\Carbon::parse($tandaTerima->tanggal)->format('d/M/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $tandaTerima->tanggal_checkpoint_supir ? $tandaTerima->tanggal_checkpoint_supir->format('d/M/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
@@ -583,7 +587,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="12" class="px-3 py-8 text-center">
+                            <td colspan="13" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada data tanda terima</p>
