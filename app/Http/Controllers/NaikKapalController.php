@@ -700,18 +700,10 @@ class NaikKapalController extends Controller
         $kapal = \App\Models\MasterKapal::find($request->kapal_id);
         $noVoyage = $request->no_voyage;
 
-        // Prepare filters
-        $filters = [
-            'search' => $request->search,
-            'status_bl' => $request->status_bl,
-            'tipe_kontainer' => $request->tipe_kontainer,
-            'status_filter' => $request->status_filter,
-        ];
-
         // Generate filename
         $filename = 'Naik_Kapal_' . str_replace(' ', '_', $kapal->nama_kapal) . '_' . str_replace('/', '-', $noVoyage) . '_' . date('YmdHis') . '.xlsx';
 
-        // Return Excel download
-        return Excel::download(new NaikKapalExport($filters, $kapal->nama_kapal, $noVoyage), $filename);
+        // Return Excel download - export semua data tanpa filter
+        return Excel::download(new NaikKapalExport([], $kapal->nama_kapal, $noVoyage), $filename);
     }
 }
