@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\TandaTerimaBongkaran;
 use App\Models\SuratJalanBongkaran;
 use App\Models\Gudang;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use Illuminate\Support\Facades\DB;
 
 class TandaTerimaBongkaranController extends Controller
@@ -123,6 +125,18 @@ class TandaTerimaBongkaranController extends Controller
 
             // Update status surat jalan bongkaran menjadi sudah_checkpoint
             $suratJalan->update(['status' => 'sudah_checkpoint']);
+
+            // Update gudangs_id pada table kontainers berdasarkan no_kontainer
+            if ($suratJalan->no_kontainer) {
+                Kontainer::where('nomor_kontainer', $suratJalan->no_kontainer)
+                    ->update(['gudangs_id' => $validated['gudang_id']]);
+            }
+
+            // Update gudangs_id pada table stock_kontainers berdasarkan no_kontainer
+            if ($suratJalan->no_kontainer) {
+                StockKontainer::where('nomor_kontainer', $suratJalan->no_kontainer)
+                    ->update(['gudangs_id' => $validated['gudang_id']]);
+            }
 
             DB::commit();
 
