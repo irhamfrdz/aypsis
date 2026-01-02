@@ -39,6 +39,13 @@
         border-collapse: collapse;
     }
     .print-container table {
+        border: 3px solid #000 !important;
+    }
+    
+    /* Pertebal border untuk semua elemen table */
+    table.border-collapse,
+    table.border-collapse th,
+    table.border-collapse td {
         border: 2px solid #000 !important;
     }
 </style>
