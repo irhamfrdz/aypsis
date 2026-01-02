@@ -175,14 +175,32 @@
                 <p>Catatan:</p>
                 <p>{{ $pranota->catatan ?? '-' }}</p>
             </div>
-            <div class="text-right">
-                <p>Disiapkan oleh:</p>
-                <!-- Extra space for handwritten signature -->
-                <div style="height:50px;"></div>
-                <!-- Wider underline for signature -->
-                <p style="display:inline-block; width:200px; border-bottom:1px solid #000; margin:0;"></p>
-                <p class="mt-1" style="margin-top:4px; font-size: 8px;">(Nama &amp; Tanda Tangan)</p>
-            </div>
+        </div>
+
+        <!-- Signature Section with 3 signatures -->
+        <div style="margin-top: 30px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
+                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                        <div style="font-size: 9px;">
+                            (Pemohon)
+                        </div>
+                    </td>
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
+                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                        <div style="font-size: 9px;">
+                            (Pemeriksa)
+                        </div>
+                    </td>
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
+                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                        <div style="font-size: 9px;">
+                            (Kasir)
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 @endsection
