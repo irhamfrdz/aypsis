@@ -176,13 +176,13 @@ class TandaTerimaBongkaranController extends Controller
 
             // Update gudangs_id pada table kontainers berdasarkan no_kontainer
             if ($suratJalan->no_kontainer) {
-                Kontainer::where('nomor_kontainer', $suratJalan->no_kontainer)
+                Kontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
                     ->update(['gudangs_id' => $validated['gudang_id']]);
             }
 
             // Update gudangs_id pada table stock_kontainers berdasarkan no_kontainer
             if ($suratJalan->no_kontainer) {
-                StockKontainer::where('nomor_kontainer', $suratJalan->no_kontainer)
+                StockKontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
                     ->update(['gudangs_id' => $validated['gudang_id']]);
             }
 
