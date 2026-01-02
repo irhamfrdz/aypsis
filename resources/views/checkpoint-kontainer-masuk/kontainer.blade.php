@@ -181,8 +181,81 @@
     </div>
 </div>
 
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Custom Searchable Dropdown CSS -->
+<style>
+.searchable-dropdown {
+    position: relative;
+}
+
+.searchable-dropdown input[type="text"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.searchable-dropdown input[type="text"]:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    margin-top: 0.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    display: none;
+}
+
+.dropdown-list.show {
+    display: block;
+}
+
+.dropdown-group-label {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    text-transform: uppercase;
+}
+
+.dropdown-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.dropdown-item:hover {
+    background: #f3f4f6;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item.hidden {
+    display: none;
+}
+
+.no-results {
+    padding: 1rem;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+</style>
 
 <!-- Modal Checkpoint Masuk -->
 <div id="masukModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -258,34 +331,42 @@
             @csrf
             
             <div class="space-y-4">
-                <div>
-                    <label for="manual_nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer *</label>
-                    <select id="manual_nomor_kontainer" name="nomor_kontainer" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">- Pilih Nomor Kontainer -</option>
+                <div class="searchable-dropdown">
+                    <label for="manual_nomor_kontainer_search" class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer *</label>
+                    <input type="text" 
+                           id="manual_nomor_kontainer_search" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Cari nomor kontainer..."
+                           autocomplete="off">
+                    <input type="hidden" id="manual_nomor_kontainer" name="nomor_kontainer" required>
+                    
+                    <div id="dropdown_list" class="dropdown-list">
                         @if(isset($kontainers) && $kontainers->count() > 0)
-                            <optgroup label="Kontainers">
-                                @foreach($kontainers as $kontainer)
-                                    <option value="{{ $kontainer->nomor_seri_gabungan }}" 
-                                            data-ukuran="{{ $kontainer->ukuran }}" 
-                                            data-tipe="{{ $kontainer->tipe_kontainer }}">
-                                        {{ $kontainer->nomor_seri_gabungan }} - {{ $kontainer->ukuran }} - {{ $kontainer->tipe_kontainer }}
-                                    </option>
-                                @endforeach
-                            </optgroup>
+                            <div class="dropdown-group-label">Kontainers</div>
+                            @foreach($kontainers as $kontainer)
+                                <div class="dropdown-item" 
+                                     data-value="{{ $kontainer->nomor_seri_gabungan }}"
+                                     data-ukuran="{{ $kontainer->ukuran }}" 
+                                     data-tipe="{{ $kontainer->tipe_kontainer }}"
+                                     data-text="{{ $kontainer->nomor_seri_gabungan }} - {{ $kontainer->ukuran }} - {{ $kontainer->tipe_kontainer }}">
+                                    {{ $kontainer->nomor_seri_gabungan }} - {{ $kontainer->ukuran }} - {{ $kontainer->tipe_kontainer }}
+                                </div>
+                            @endforeach
                         @endif
                         @if(isset($stockKontainers) && $stockKontainers->count() > 0)
-                            <optgroup label="Stock Kontainers">
-                                @foreach($stockKontainers as $stock)
-                                    <option value="{{ $stock->nomor_seri_gabungan }}" 
-                                            data-ukuran="{{ $stock->ukuran }}" 
-                                            data-tipe="{{ $stock->tipe_kontainer }}">
-                                        {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
-                                    </option>
-                                @endforeach
-                            </optgroup>
+                            <div class="dropdown-group-label">Stock Kontainers</div>
+                            @foreach($stockKontainers as $stock)
+                                <div class="dropdown-item" 
+                                     data-value="{{ $stock->nomor_seri_gabungan }}"
+                                     data-ukuran="{{ $stock->ukuran }}" 
+                                     data-tipe="{{ $stock->tipe_kontainer }}"
+                                     data-text="{{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}">
+                                    {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
+                                </div>
+                            @endforeach
                         @endif
-                    </select>
+                        <div id="no_results" class="no-results hidden">Tidak ada hasil yang ditemukan</div>
+                    </div>
                 </div>
 
                 <div>
@@ -348,27 +429,138 @@
     </div>
 </div>
 
-<!-- Select2 JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-// Initialize Select2 on document ready
-$(document).ready(function() {
-    $('#manual_nomor_kontainer').select2({
-        placeholder: "- Pilih Nomor Kontainer -",
-        allowClear: true,
-        width: '100%',
-        dropdownParent: $('#manualModal'),
-        language: {
-            noResults: function() {
-                return "Tidak ada hasil yang ditemukan";
-            },
-            searching: function() {
-                return "Mencari...";
+// Vanilla JavaScript Searchable Dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('manual_nomor_kontainer_search');
+    const hiddenInput = document.getElementById('manual_nomor_kontainer');
+    const dropdownList = document.getElementById('dropdown_list');
+    const noResults = document.getElementById('no_results');
+    const allItems = dropdownList.querySelectorAll('.dropdown-item');
+    const groupLabels = dropdownList.querySelectorAll('.dropdown-group-label');
+    
+    // Show dropdown on focus
+    searchInput.addEventListener('focus', function() {
+        dropdownList.classList.add('show');
+        filterItems();
+    });
+    
+    // Filter items on input
+    searchInput.addEventListener('input', function() {
+        filterItems();
+    });
+    
+    // Filter function
+    function filterItems() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let hasVisibleItems = false;
+        let currentGroup = null;
+        
+        allItems.forEach(item => {
+            const text = item.getAttribute('data-text').toLowerCase();
+            const matches = text.includes(searchTerm);
+            
+            if (matches) {
+                item.classList.remove('hidden');
+                hasVisibleItems = true;
+            } else {
+                item.classList.add('hidden');
             }
+        });
+        
+        // Show/hide group labels based on whether they have visible items
+        groupLabels.forEach(label => {
+            let hasVisibleInGroup = false;
+            let nextElement = label.nextElementSibling;
+            
+            while (nextElement && !nextElement.classList.contains('dropdown-group-label') && nextElement !== noResults) {
+                if (nextElement.classList.contains('dropdown-item') && !nextElement.classList.contains('hidden')) {
+                    hasVisibleInGroup = true;
+                    break;
+                }
+                nextElement = nextElement.nextElementSibling;
+            }
+            
+            if (hasVisibleInGroup) {
+                label.classList.remove('hidden');
+            } else {
+                label.classList.add('hidden');
+            }
+        });
+        
+        // Show/hide no results message
+        if (hasVisibleItems) {
+            noResults.classList.add('hidden');
+        } else {
+            noResults.classList.remove('hidden');
+        }
+    }
+    
+    // Select item on click
+    allItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            const text = this.getAttribute('data-text');
+            const ukuran = this.getAttribute('data-ukuran');
+            const tipe = this.getAttribute('data-tipe');
+            
+            // Set values
+            searchInput.value = text;
+            hiddenInput.value = value;
+            
+            // Auto-fill ukuran and tipe
+            document.getElementById('manual_ukuran').value = ukuran || '';
+            document.getElementById('manual_tipe_kontainer').value = tipe || '';
+            
+            // Hide dropdown
+            dropdownList.classList.remove('show');
+            
+            // Remove selected class from all items
+            allItems.forEach(i => i.classList.remove('selected'));
+            // Add selected class to clicked item
+            this.classList.add('selected');
+        });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.searchable-dropdown')) {
+            dropdownList.classList.remove('show');
         }
     });
+    
+    // Keyboard navigation
+    let currentIndex = -1;
+    
+    searchInput.addEventListener('keydown', function(e) {
+        const visibleItems = Array.from(allItems).filter(item => !item.classList.contains('hidden'));
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentIndex = Math.min(currentIndex + 1, visibleItems.length - 1);
+            highlightItem(visibleItems);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentIndex = Math.max(currentIndex - 1, 0);
+            highlightItem(visibleItems);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentIndex >= 0 && visibleItems[currentIndex]) {
+                visibleItems[currentIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            dropdownList.classList.remove('show');
+            currentIndex = -1;
+        }
+    });
+    
+    function highlightItem(visibleItems) {
+        allItems.forEach(item => item.classList.remove('highlighted'));
+        if (currentIndex >= 0 && visibleItems[currentIndex]) {
+            visibleItems[currentIndex].classList.add('highlighted');
+            visibleItems[currentIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
 });
 
 function openMasukModal(suratJalanId, nomorKontainer) {
@@ -391,28 +583,17 @@ function closeManualModal() {
     document.getElementById('manualModal').classList.add('hidden');
     // Reset form
     document.getElementById('manualForm').reset();
-    // Reset Select2
-    $('#manual_nomor_kontainer').val(null).trigger('change');
+    // Clear searchable dropdown
+    document.getElementById('manual_nomor_kontainer_search').value = '';
+    document.getElementById('manual_nomor_kontainer').value = '';
     // Clear ukuran and tipe fields
     document.getElementById('manual_ukuran').value = '';
     document.getElementById('manual_tipe_kontainer').value = '';
+    // Remove selected class
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.classList.remove('selected', 'highlighted');
+    });
 }
-
-// Auto-fill ukuran and tipe kontainer when nomor kontainer is selected
-$('#manual_nomor_kontainer').on('select2:select', function(e) {
-    const selectedOption = e.params.data.element;
-    const ukuran = selectedOption.getAttribute('data-ukuran') || '';
-    const tipe = selectedOption.getAttribute('data-tipe') || '';
-    
-    document.getElementById('manual_ukuran').value = ukuran;
-    document.getElementById('manual_tipe_kontainer').value = tipe;
-});
-
-// Clear fields when selection is cleared
-$('#manual_nomor_kontainer').on('select2:clear', function() {
-    document.getElementById('manual_ukuran').value = '';
-    document.getElementById('manual_tipe_kontainer').value = '';
-});
 
 // Close modal when clicking outside
 document.getElementById('masukModal')?.addEventListener('click', function(e) {

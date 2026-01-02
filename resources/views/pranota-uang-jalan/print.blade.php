@@ -425,7 +425,7 @@
                         <th style="width: 15%">Barang</th>
                         <th style="width: 8%">NIK</th>
                         <th style="width: 12%">Supir</th>
-                        <th style="width: 15%">Pengirim</th>
+                        <th style="width: 15%">Pengirim/Penerima</th>
                         <th style="width: 12%">Tujuan</th>
                         <th style="width: 10%">Uang Jalan</th>
                         <th style="width: 8%">Total</th>
@@ -469,12 +469,18 @@
                                 @endif
                             </td>
                             <td>
-                                @if($surat)
+                                @if($uangJalan->suratJalan)
                                     @php
-                                        $pengirimFull = $surat->pengirim ?? 'PT CS2 POLA SEHAT';
+                                        $pengirimFull = $uangJalan->suratJalan->pengirim ?? 'PT CS2 POLA SEHAT';
                                         $pengirimNama = explode(',', $pengirimFull)[0];
                                     @endphp
                                     {{ trim($pengirimNama) }}
+                                @elseif($uangJalan->suratJalanBongkaran)
+                                    @php
+                                        $penerimaFull = $uangJalan->suratJalanBongkaran->penerima ?? 'PT CS2 POLA SEHAT';
+                                        $penerimaNama = explode(',', $penerimaFull)[0];
+                                    @endphp
+                                    {{ trim($penerimaNama) }}
                                 @else
                                     PT CS2 POLA SEHAT
                                 @endif
