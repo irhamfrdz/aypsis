@@ -2640,6 +2640,46 @@ class UserController extends Controller
                         }
                     }
 
+                    // Special handling for checkpoint-kontainer-keluar module
+                    if ($module === 'checkpoint-kontainer-keluar') {
+                        // For checkpoint-kontainer-keluar, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'checkpoint-kontainer-keluar-view',
+                            'create' => 'checkpoint-kontainer-keluar-create',
+                            'delete' => 'checkpoint-kontainer-keluar-delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for checkpoint-kontainer-masuk module
+                    if ($module === 'checkpoint-kontainer-masuk') {
+                        // For checkpoint-kontainer-masuk, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'checkpoint-kontainer-masuk-view',
+                            'create' => 'checkpoint-kontainer-masuk-create',
+                            'delete' => 'checkpoint-kontainer-masuk-delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Special handling for permohonan-memo module
                     if ($module === 'permohonan-memo') {
                         // For permohonan-memo, map matrix actions directly to permission names
