@@ -183,7 +183,7 @@
             <tr>
                 <th style="width: 3%;">No</th>
                 <th style="width: 14%;">Kontainer</th>
-                <th style="width: 16%;">Barang</th>
+                <th style="width: 5%;">Status</th>
                 <th style="width: 10%;">Asal Kontainer</th>
                 <th style="width: 10%;">Ke</th>
                 <th style="width: 8%;">Tipe</th>
@@ -223,7 +223,17 @@
                     <br><span style="color: #2563eb; font-size: 8pt;">Seal: {{ $item->no_seal }}</span>
                     @endif
                 </td>
-                <td>{{ isset($bls) ? ($item->nama_barang ?? '-') : ($item->jenis_barang ?? '-') }}</td>
+                <td style="text-align: center;">
+                    @php
+                        $tipe = strtoupper($item->tipe_kontainer ?? '');
+                        $nomorKontainer = strtoupper($item->nomor_kontainer ?? '');
+                        $status = 'F'; // Default Full
+                        if ($tipe === 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($nomorKontainer, 'CARGO-'))) {
+                            $status = 'E'; // Empty
+                        }
+                    @endphp
+                    <strong>{{ $status }}</strong>
+                </td>
                 <td>
                     @if($item->asal_kontainer)
                         {{ $item->asal_kontainer }}

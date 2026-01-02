@@ -221,6 +221,7 @@
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Nama Barang</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
@@ -256,6 +257,14 @@
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
                         <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->nama_barang }}">{{ $bl->nama_barang ?: '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs">
+                            @php
+                                $isEmpty = $bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-'));
+                            @endphp
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ $isEmpty ? 'E' : 'F' }}
+                            </span>
+                        </td>
                         <td class="px-1 py-1 text-xs text-gray-900">
                             <div class="flex items-center gap-1">
                                 @if(request('kegiatan') === 'muat')
@@ -403,6 +412,7 @@
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Jenis Barang</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
@@ -445,6 +455,14 @@
                             </td>
                             <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->jenis_barang }}">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
+                            </td>
+                            <td class="px-1 py-1 whitespace-nowrap text-xs">
+                                @php
+                                    $isEmpty = $naikKapal->tipe_kontainer == 'FCL' && (empty($naikKapal->nomor_kontainer) || str_starts_with($naikKapal->nomor_kontainer, 'CARGO-'));
+                                @endphp
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
+                                    {{ $isEmpty ? 'E' : 'F' }}
+                                </span>
                             </td>
                             <td class="px-1 py-1 text-xs text-gray-900">
                                 <div class="flex items-center gap-1">
