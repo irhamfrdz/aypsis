@@ -184,6 +184,7 @@
                 <th style="width: 3%;">No</th>
                 <th style="width: 14%;">Kontainer</th>
                 <th style="width: 5%;">Status</th>
+                <th style="width: 15%;">Barang</th>
                 <th style="width: 10%;">Asal Kontainer</th>
                 <th style="width: 10%;">Ke</th>
                 <th style="width: 8%;">Tipe</th>
@@ -233,6 +234,9 @@
                         }
                     @endphp
                     <strong>{{ $status }}</strong>
+                </td>
+                <td>
+                    {{ isset($bls) ? ($item->nama_barang ?? '-') : ($item->jenis_barang ?? '-') }}
                 </td>
                 <td>
                     @if($item->asal_kontainer)
@@ -288,7 +292,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
+                <td colspan="11" style="text-align: center; padding: 20px; color: #999;">
                     Tidak ada data kontainer
                 </td>
             </tr>
