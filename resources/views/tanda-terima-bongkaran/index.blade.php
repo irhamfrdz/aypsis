@@ -466,16 +466,16 @@
             if (response.ok) {
                 const data = await response.json();
                 const runningNumber = String(data.next_number).padStart(6, '0');
-                return `TTB/${bulan}/${tahun}/${runningNumber}`;
+                return `TTB${bulan}${tahun}${runningNumber}`;
             } else {
                 // Fallback: gunakan timestamp jika fetch gagal
                 const timestamp = now.getTime().toString().slice(-6);
-                return `TTB/${bulan}/${tahun}/${timestamp}`;
+                return `TTB${bulan}${tahun}${timestamp}`;
             }
         } catch (error) {
             // Fallback: gunakan timestamp jika terjadi error
             const timestamp = now.getTime().toString().slice(-6);
-            return `TTB/${bulan}/${tahun}/${timestamp}`;
+            return `TTB${bulan}${tahun}${timestamp}`;
         }
     }
 

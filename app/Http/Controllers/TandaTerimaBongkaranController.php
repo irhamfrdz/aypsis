@@ -32,10 +32,11 @@ class TandaTerimaBongkaranController extends Controller
             $nextNumber = 1;
             
             if ($lastTandaTerima && $lastTandaTerima->nomor_tanda_terima) {
-                // Extract running number from format TTB/MM/YY/XXXXXX
-                $parts = explode('/', $lastTandaTerima->nomor_tanda_terima);
-                if (count($parts) === 4) {
-                    $lastRunningNumber = (int) $parts[3];
+                // Extract running number from format TTBMMYYXXXXXX (13 characters)
+                $nomorTerima = $lastTandaTerima->nomor_tanda_terima;
+                if (strlen($nomorTerima) >= 13) {
+                    // Get last 6 digits as running number
+                    $lastRunningNumber = (int) substr($nomorTerima, -6);
                     $nextNumber = $lastRunningNumber + 1;
                 }
             }
