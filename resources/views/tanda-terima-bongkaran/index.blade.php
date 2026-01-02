@@ -367,7 +367,9 @@
                            name="nomor_tanda_terima" 
                            id="nomor_tanda_terima"
                            required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                           readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                           placeholder="Otomatis terisi">
                 </div>
 
                 <!-- Tanggal Terima -->
@@ -445,11 +447,48 @@
         this.form.submit();
     });
 
+    // Generate nomor tanda terima otomatis
+    async function generateNomorTandaTerima() {
+        const now = new Date();
+        const bulan = String(now.getMonth() + 1).padStart(2, '0');
+        const tahun = String(now.getFullYear()).slice(-2);
+        
+        try {
+            // Fetch running number dari server
+            const response = await fetch('{{ route('tanda-terima-bongkaran.get-next-number') }}', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const runningNumber = String(data.next_number).padStart(6, '0');
+                return `TTB/${bulan}/${tahun}/${runningNumber}`;
+            } else {
+                // Fallback: gunakan timestamp jika fetch gagal
+                const timestamp = now.getTime().toString().slice(-6);
+                return `TTB/${bulan}/${tahun}/${timestamp}`;
+            }
+        } catch (error) {
+            // Fallback: gunakan timestamp jika terjadi error
+            const timestamp = now.getTime().toString().slice(-6);
+            return `TTB/${bulan}/${tahun}/${timestamp}`;
+        }
+    }
+
     // Modal functions
-    function openTerimaBarangModal(suratJalanId, nomorSj, noKontainer) {
+    async function openTerimaBarangModal(suratJalanId, nomorSj, noKontainer) {
         document.getElementById('modal_surat_jalan_id').value = suratJalanId;
         document.getElementById('modal_nomor_sj').textContent = nomorSj || '-';
         document.getElementById('modal_no_kontainer').textContent = noKontainer || '-';
+        
+        // Generate nomor tanda terima otomatis
+        const nomorTandaTerima = await generateNomorTandaTerima();
+        document.getElementById('nomor_tanda_terima').value = nomorTandaTerima;
+        
         document.getElementById('terimaBarangModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }

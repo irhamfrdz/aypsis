@@ -1984,6 +1984,11 @@ Route::middleware(['auth'])->group(function () {
 
     // ============= TANDA TERIMA BONGKARAN ROUTES =============
     
+    // Get next number for tanda terima bongkaran
+    Route::get('/tanda-terima-bongkaran-next-number', [\App\Http\Controllers\TandaTerimaBongkaranController::class, 'getNextNumber'])
+         ->name('tanda-terima-bongkaran.get-next-number')
+         ->middleware('can:tanda-terima-bongkaran-create');
+    
     // Tanda Terima Bongkaran Management with permissions
     Route::resource('tanda-terima-bongkaran', \App\Http\Controllers\TandaTerimaBongkaranController::class)
          ->middleware([

@@ -14,6 +14,48 @@ use Illuminate\Support\Facades\DB;
 class TandaTerimaBongkaranController extends Controller
 {
     /**
+     * Get next number for tanda terima bongkaran
+     */
+    public function getNextNumber()
+    {
+        try {
+            $now = now();
+            $bulan = $now->format('m');
+            $tahun = $now->format('y');
+            
+            // Get last tanda terima for current month/year
+            $lastTandaTerima = TandaTerimaBongkaran::whereYear('created_at', $now->year)
+                ->whereMonth('created_at', $now->month)
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            $nextNumber = 1;
+            
+            if ($lastTandaTerima && $lastTandaTerima->nomor_tanda_terima) {
+                // Extract running number from format TTB/MM/YY/XXXXXX
+                $parts = explode('/', $lastTandaTerima->nomor_tanda_terima);
+                if (count($parts) === 4) {
+                    $lastRunningNumber = (int) $parts[3];
+                    $nextNumber = $lastRunningNumber + 1;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'next_number' => $nextNumber,
+                'bulan' => $bulan,
+                'tahun' => $tahun
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'next_number' => 1
+            ], 500);
+        }
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
