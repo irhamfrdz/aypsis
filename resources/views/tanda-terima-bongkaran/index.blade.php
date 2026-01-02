@@ -417,9 +417,8 @@
                             <div class="py-1">
                                 @foreach($karyawans ?? [] as $karyawan)
                                     <div class="supir-option px-3 py-2 hover:bg-gray-100 cursor-pointer" 
-                                         data-value="{{ $karyawan->nama_panggilan }}"
-                                         data-nik="{{ $karyawan->nik ?? '' }}">
-                                        {{ $karyawan->nama_panggilan }} @if($karyawan->nik)- {{ $karyawan->nik }}@endif
+                                         data-value="{{ $karyawan->nama_panggilan }}">
+                                        {{ $karyawan->nama_panggilan }}
                                     </div>
                                 @endforeach
                             </div>
@@ -599,9 +598,8 @@
     supirOptions.forEach(option => {
         option.addEventListener('click', function() {
             const value = this.getAttribute('data-value');
-            const nik = this.getAttribute('data-nik');
             
-            supirSearch.value = nik ? `${value} - ${nik}` : value;
+            supirSearch.value = value;
             supirHidden.value = value;
             supirDropdown.classList.add('hidden');
         });
