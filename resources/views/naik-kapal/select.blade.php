@@ -8,8 +8,8 @@
             <div class="flex items-center">
                 <i class="fas fa-ship mr-3 text-purple-600 text-2xl"></i>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Naik Kapal</h1>
-                    <p class="text-gray-600">Pilih kapal dan nomor voyage untuk melihat data naik kapal</p>
+                    <h1 class="text-2xl font-bold text-gray-800">Prospek</h1>
+                    <p class="text-gray-600">Pilih kapal dan nomor voyage untuk melihat data prospek</p>
                 </div>
             </div>
             <div class="flex gap-3">
@@ -45,7 +45,7 @@
             <div class="text-center mb-8">
                 <i class="fas fa-ship text-6xl text-purple-600 mb-4"></i>
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">Pilih Kapal dan Voyage</h2>
-                <p class="text-gray-600">Silakan pilih kapal dan nomor voyage untuk melihat data kontainer yang naik kapal</p>
+                <p class="text-gray-600">Silakan pilih kapal dan nomor voyage untuk melihat data kontainer prospek</p>
             </div>
 
             <form method="GET" action="{{ route('naik-kapal.index') }}" id="naikKapalSelectForm">
@@ -86,21 +86,10 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label for="status_filter" class="block text-sm font-medium text-gray-700 mb-2">
-                            Status BL (Opsional)
-                        </label>
-                        <select id="status_filter" name="status_filter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">--Semua Status--</option>
-                            <option value="sudah_bl">Sudah BL</option>
-                            <option value="belum_bl">Belum BL</option>
-                        </select>
-                    </div>
-
                     <div class="pt-4">
                         <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition duration-200 font-medium text-lg">
                             <i class="fas fa-search mr-2"></i>
-                            Lihat Data Naik Kapal
+                            Lihat Data Prospek
                         </button>
                     </div>
                 </div>

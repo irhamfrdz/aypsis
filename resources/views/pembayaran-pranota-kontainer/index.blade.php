@@ -115,7 +115,7 @@
 
                                     <!-- Print -->
                                     <a href="{{ route('pembayaran-pranota-kontainer.print', $pembayaran->id) }}"
-                                       class="text-purple-600 hover:text-purple-900"
+                                       class="text-purple-600 hover:text-purple-900"  
                                        target="_blank"
                                        title="Print">
                                         <i class="fas fa-print"></i>

@@ -57,6 +57,7 @@ echo "🗄️ 6. Checking migration status..."
 echo "🗄️ 6c. Running database migrations..."
 php artisan migrate --force
 
+
 # 7. Build Vite assets (PENTING untuk offline support)
 echo "🎨 7. Building Vite assets..."
 echo "⚠️  This may take a few minutes..."
@@ -151,7 +152,9 @@ echo 'Fixed ' . \$fixed . ' harian DPP records';
 "
 
 # Fix tarif bulanan (Rp 1,261,261 × periode)
-echo "🔧 Fixing Bulanan DPP calculations..."
+echo "🔧 Fixing Bulanan DPP calculations..."'
+
+
 php artisan tinker --execute="
 \$bulanan = \App\Models\DaftarTagihanKontainerSewa::where('tarif', 'Bulanan')->get();
 

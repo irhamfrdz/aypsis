@@ -9,7 +9,7 @@
                 <i class="fas fa-ship mr-3 text-purple-600 text-2xl"></i>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800">Prospek</h1>
-                    <p class="text-gray-600">Daftar kontainer yang naik kapal</p>
+                    <p class="text-gray-600">Daftar kontainer prospek</p>
                 </div>
             </div>
             <div class="flex gap-3">
@@ -151,7 +151,7 @@
                 </button>
                 <button type="button" id="btnTidakNaikKapal" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-times-circle mr-2"></i>
-                    Tidak Naik Kapal
+                    Tidak Jadi Prospek
                 </button>
                 <button type="button" id="btnClearSelection" class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-2 rounded-md transition duration-200">
                     <i class="fas fa-times"></i>
@@ -274,7 +274,7 @@
                                     <form action="{{ route('naik-kapal.destroy', $naikKapal) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus data naik kapal ini?')">
+                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus data prospek ini?')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -285,8 +285,8 @@
                         <tr>
                             <td colspan="10" class="px-6 py-4 text-center text-gray-500">
                                 <i class="fas fa-ship text-4xl mb-4 text-gray-300"></i>
-                                <p class="text-lg">Belum ada data naik kapal</p>
-                                <p class="text-sm">Data naik kapal akan muncul ketika tersedia</p>
+                                <p class="text-lg">Belum ada data prospek</p>
+                                <p class="text-sm">Data prospek akan muncul ketika tersedia</p>
                             </td>
                         </tr>
                     @endforelse
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnTidakNaikKapal').addEventListener('click', function() {
         const selectedIds = getSelectedIds();
         
-        if (confirm(`Yakin ingin menandai ${selectedIds.length} data sebagai tidak naik kapal?`)) {
+        if (confirm(`Yakin ingin menandai ${selectedIds.length} data sebagai tidak jadi prospek?`)) {
             processBulkAction('tidak_naik_kapal', selectedIds);
         }
     });

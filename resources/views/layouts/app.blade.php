@@ -1044,10 +1044,10 @@
                                 </a>
                             @endif
 
-                        {{-- Tanda Terima Bongkaran --}}
+                        {{-- Tanda Terima Surat Jalan Bongkaran --}}
                         @if($user && ($user->can('tanda-terima-bongkaran-view') || $user->can('tanda-terima-bongkaran-create') || $user->can('tanda-terima-bongkaran-update') || $user->can('tanda-terima-bongkaran-delete')))
                             <a href="{{ route('tanda-terima-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Tanda Terima Bongkaran</span>
+                                <span class="text-xs">Tanda Terima Surat Jalan Bongkaran</span>
                             </a>
                         @endif
                     </div>
