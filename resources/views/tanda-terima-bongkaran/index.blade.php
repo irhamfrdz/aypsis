@@ -415,10 +415,10 @@
                         <input type="hidden" name="supir" id="supir">
                         <div id="supir_dropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                             <div class="py-1">
-                                @foreach($karyawans ?? [] as $karyawan)
+                                @foreach($supirs ?? [] as $supir)
                                     <div class="supir-option px-3 py-2 hover:bg-gray-100 cursor-pointer" 
-                                         data-value="{{ $karyawan->nama_panggilan }}">
-                                        {{ $karyawan->nama_panggilan }}
+                                         data-value="{{ $supir->nama_panggilan }}">
+                                        {{ $supir->nama_panggilan }}
                                     </div>
                                 @endforeach
                             </div>
@@ -428,14 +428,27 @@
 
                 <!-- Kenek -->
                 <div>
-                    <label for="kenek" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="kenek_search" class="block text-sm font-medium text-gray-700 mb-2">
                         Kenek
                     </label>
-                    <input type="text" 
-                           name="kenek" 
-                           id="kenek"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                           placeholder="Nama kenek">
+                    <div class="relative">
+                        <input type="text" 
+                               id="kenek_search"
+                               autocomplete="off"
+                               placeholder="Ketik untuk mencari kenek..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <input type="hidden" name="kenek" id="kenek">
+                        <div id="kenek_dropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <div class="py-1">
+                                @foreach($kranis ?? [] as $krani)
+                                    <div class="kenek-option px-3 py-2 hover:bg-gray-100 cursor-pointer" 
+                                         data-value="{{ $krani->nama_panggilan }}">
+                                        {{ $krani->nama_panggilan }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Keterangan -->
@@ -618,7 +631,66 @@
         if (supirSearch) supirSearch.value = '';
         if (supirHidden) supirHidden.value = '';
         if (supirDropdown) supirDropdown.classList.add('hidden');
+        if (kenekSearch) kenekSearch.value = '';
+        if (kenekHidden) kenekHidden.value = '';
+        if (kenekDropdown) kenekDropdown.classList.add('hidden');
         originalCloseTerimaBarangModal();
     };
+
+    // Searchable Kenek Dropdown
+    const kenekSearch = document.getElementById('kenek_search');
+    const kenekDropdown = document.getElementById('kenek_dropdown');
+    const kenekHidden = document.getElementById('kenek');
+    const kenekOptions = document.querySelectorAll('.kenek-option');
+
+    // Show dropdown on focus
+    kenekSearch?.addEventListener('focus', function() {
+        kenekDropdown.classList.remove('hidden');
+        filterKenekOptions('');
+    });
+
+    // Filter options as user types
+    kenekSearch?.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        filterKenekOptions(searchTerm);
+    });
+
+    // Function to filter kenek options
+    function filterKenekOptions(searchTerm) {
+        let hasVisibleOptions = false;
+        kenekOptions.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                option.style.display = 'block';
+                hasVisibleOptions = true;
+            } else {
+                option.style.display = 'none';
+            }
+        });
+        
+        if (!hasVisibleOptions) {
+            kenekDropdown.classList.add('hidden');
+        } else {
+            kenekDropdown.classList.remove('hidden');
+        }
+    }
+
+    // Handle option selection
+    kenekOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            
+            kenekSearch.value = value;
+            kenekHidden.value = value;
+            kenekDropdown.classList.add('hidden');
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!kenekSearch?.contains(e.target) && !kenekDropdown?.contains(e.target)) {
+            kenekDropdown?.classList.add('hidden');
+        }
+    });
 </script>
 @endpush

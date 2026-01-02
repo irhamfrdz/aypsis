@@ -92,14 +92,23 @@ class TandaTerimaBongkaranController extends Controller
                 ->orderBy('nama_gudang')
                 ->get();
 
-            // Get karyawans - select only needed fields
-            $karyawans = Karyawan::select('id', 'nama_panggilan', 'nik')
+            // Get karyawans for supir (divisi supir)
+            $supirs = Karyawan::select('id', 'nama_panggilan', 'nik')
                 ->whereNotNull('nama_panggilan')
                 ->where('nama_panggilan', '!=', '')
+                ->where('divisi', 'supir')
+                ->orderBy('nama_panggilan')
+                ->get();
+
+            // Get karyawans for kenek (divisi krani)
+            $kranis = Karyawan::select('id', 'nama_panggilan', 'nik')
+                ->whereNotNull('nama_panggilan')
+                ->where('nama_panggilan', '!=', '')
+                ->where('divisi', 'krani')
                 ->orderBy('nama_panggilan')
                 ->get();
             
-            return view('tanda-terima-bongkaran.index', compact('tandaTerimas', 'gudangs', 'karyawans'));
+            return view('tanda-terima-bongkaran.index', compact('tandaTerimas', 'gudangs', 'supirs', 'kranis'));
         } else {
             // Query for Surat Jalan Bongkaran
             $query = SuratJalanBongkaran::with(['bl', 'tandaTerima']);
@@ -137,11 +146,23 @@ class TandaTerimaBongkaranController extends Controller
                 ->orderBy('nama_gudang')
                 ->get();
 
-            // Get karyawans with divisi supir for modal dropdown
-            // Try without filters first to see if data exists
-            $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+            // Get karyawans for supir (divisi supir)
+            $supirs = Karyawan::select('id', 'nama_panggilan', 'nik')
+                ->whereNotNull('nama_panggilan')
+                ->where('nama_panggilan', '!=', '')
+                ->where('divisi', 'supir')
+                ->orderBy('nama_panggilan')
+                ->get();
 
-            return view('tanda-terima-bongkaran.index', compact('suratJalans', 'gudangs', 'karyawans'));
+            // Get karyawans for kenek (divisi krani)
+            $kranis = Karyawan::select('id', 'nama_panggilan', 'nik')
+                ->whereNotNull('nama_panggilan')
+                ->where('nama_panggilan', '!=', '')
+                ->where('divisi', 'krani')
+                ->orderBy('nama_panggilan')
+                ->get();
+
+            return view('tanda-terima-bongkaran.index', compact('suratJalans', 'gudangs', 'supirs', 'kranis'));
         }
     }
 
