@@ -254,7 +254,7 @@
                             <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
                                 @can('tanda-terima-bongkaran-create')
                                 <button type="button" 
-                                        onclick="openTerimaBarangModal({{ $suratJalan->id }}, '{{ $suratJalan->nomor_surat_jalan }}', '{{ $suratJalan->no_kontainer }}')"
+                                        onclick="openTerimaBarangModal({{ $suratJalan->id }}, '{{ $suratJalan->nomor_surat_jalan }}', '{{ $suratJalan->no_kontainer }}', '{{ $suratJalan->supir ?? '' }}')"
                                         class="inline-flex items-center px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded transition duration-200"
                                         style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2); border: none; cursor: pointer;">
                                     <i class="fas fa-check-circle mr-1"></i>
@@ -518,10 +518,16 @@
     }
 
     // Modal functions
-    async function openTerimaBarangModal(suratJalanId, nomorSj, noKontainer) {
+    async function openTerimaBarangModal(suratJalanId, nomorSj, noKontainer, defaultSupir = '') {
         document.getElementById('modal_surat_jalan_id').value = suratJalanId;
         document.getElementById('modal_nomor_sj').textContent = nomorSj || '-';
         document.getElementById('modal_no_kontainer').textContent = noKontainer || '-';
+        
+        // Set default supir from surat jalan
+        if (defaultSupir) {
+            document.getElementById('supir_search').value = defaultSupir;
+            document.getElementById('supir').value = defaultSupir;
+        }
         
         // Generate nomor tanda terima otomatis
         const nomorTandaTerima = await generateNomorTandaTerima();
