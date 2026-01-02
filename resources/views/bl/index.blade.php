@@ -391,7 +391,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        {{ $bl->no_seal ?: '-' }}
+                                        {{ $bl->no_seal ?: ($bl->prospek->no_seal ?? '-') }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
