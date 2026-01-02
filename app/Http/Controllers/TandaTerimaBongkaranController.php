@@ -92,10 +92,8 @@ class TandaTerimaBongkaranController extends Controller
                 ->orderBy('nama_gudang')
                 ->get();
 
-            $karyawans = Karyawan::where('divisi', 'supir')
-                ->where('status', 'aktif')
-                ->orderBy('nama_lengkap')
-                ->get();
+            // Get karyawans - try without filters first
+            $karyawans = Karyawan::orderBy('nama_lengkap')->get();
             
             return view('tanda-terima-bongkaran.index', compact('tandaTerimas', 'gudangs', 'karyawans'));
         } else {
@@ -136,10 +134,8 @@ class TandaTerimaBongkaranController extends Controller
                 ->get();
 
             // Get karyawans with divisi supir for modal dropdown
-            $karyawans = Karyawan::where('divisi', 'supir')
-                ->where('status', 'aktif')
-                ->orderBy('nama_lengkap')
-                ->get();
+            // Try without filters first to see if data exists
+            $karyawans = Karyawan::orderBy('nama_lengkap')->get();
 
             return view('tanda-terima-bongkaran.index', compact('suratJalans', 'gudangs', 'karyawans'));
         }
