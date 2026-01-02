@@ -50,11 +50,6 @@ class PembayaranAktivitasLainController extends Controller
             // Only show direct payments
             $query = PembayaranAktivitasLain::with(['creator', 'approver']);
 
-            // Filter by status
-            if ($request->filled('status')) {
-                $query->where('status', $request->status);
-            }
-
             // Filter by date range
             if ($request->filled('tanggal_dari')) {
                 $query->whereDate('tanggal', '>=', $request->tanggal_dari);
@@ -369,7 +364,6 @@ class PembayaranAktivitasLainController extends Controller
             // Generate nomor pembayaran
             $validated['nomor'] = PembayaranAktivitasLain::generateNomor();
             $validated['created_by'] = Auth::id();
-            $validated['status'] = 'pending';
 
             // Create main payment record
             $pembayaran = PembayaranAktivitasLain::create($validated);
@@ -575,11 +569,6 @@ class PembayaranAktivitasLainController extends Controller
 
     public function edit(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
-        if ($pembayaranAktivitasLain->status !== 'pending') {
-            return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
-                ->with('error', 'Hanya pembayaran dengan status pending yang dapat diedit.');
-        }
-
         $akunBiaya = DB::table('akun_coa')
             ->where(function($q) {
                 $q->where('tipe_akun', 'like', '%biaya%')
@@ -593,11 +582,6 @@ class PembayaranAktivitasLainController extends Controller
 
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
-        if ($pembayaranAktivitasLain->status !== 'pending') {
-            return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
-                ->with('error', 'Hanya data dengan status pending yang dapat diedit');
-        }
-
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
@@ -618,49 +602,12 @@ class PembayaranAktivitasLainController extends Controller
 
     public function destroy(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
-        if ($pembayaranAktivitasLain->status === 'paid') {
-            return back()->with('error', 'Data yang sudah dibayar tidak dapat dihapus');
-        }
-
         try {
             $pembayaranAktivitasLain->delete();
             return redirect()->route('pembayaran-aktivitas-lain.index')
                 ->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
-        }
-    }
-
-    public function approve(PembayaranAktivitasLain $pembayaranAktivitasLain)
-    {
-        if ($pembayaranAktivitasLain->status !== 'pending') {
-            return back()->with('error', 'Data sudah diproses');
-        }
-
-        try {
-            $pembayaranAktivitasLain->update([
-                'status' => 'approved',
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
-            ]);
-
-            return back()->with('success', 'Pembayaran berhasil disetujui');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menyetujui pembayaran: ' . $e->getMessage());
-        }
-    }
-
-    public function markAsPaid(PembayaranAktivitasLain $pembayaranAktivitasLain)
-    {
-        if ($pembayaranAktivitasLain->status !== 'approved') {
-            return back()->with('error', 'Hanya data yang sudah approved yang dapat ditandai sebagai paid');
-        }
-
-        try {
-            $pembayaranAktivitasLain->update(['status' => 'paid']);
-            return back()->with('success', 'Status berhasil diubah menjadi paid');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengubah status: ' . $e->getMessage());
         }
     }
 
