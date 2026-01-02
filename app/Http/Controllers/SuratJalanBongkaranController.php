@@ -109,7 +109,11 @@ class SuratJalanBongkaranController extends Controller
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
-                $query->where('nama_kapal', $selectedKapal);
+                $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                    $q->where('nama_kapal', $selectedKapal)
+                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                });
             }
             if ($selectedVoyage) {
                 $query->where('no_voyage', $selectedVoyage);
@@ -141,10 +145,14 @@ class SuratJalanBongkaranController extends Controller
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
-                $query->where('nama_kapal', $selectedKapal);
+                $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                    $q->where('bls.nama_kapal', $selectedKapal)
+                      ->orWhereRaw("LOWER(REPLACE(bls.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                });
             }
             if ($selectedVoyage) {
-                $query->where('no_voyage', $selectedVoyage);
+                $query->where('bls.no_voyage', $selectedVoyage);
             }
 
             // Search in BL data
