@@ -87,7 +87,17 @@ class TandaTerimaBongkaranController extends Controller
 
             $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
             
-            return view('tanda-terima-bongkaran.index', compact('tandaTerimas'));
+            // Get gudangs and karyawans for modal dropdown (needed for both views)
+            $gudangs = Gudang::where('status', 'aktif')
+                ->orderBy('nama_gudang')
+                ->get();
+
+            $karyawans = Karyawan::where('divisi', 'supir')
+                ->where('status', 'aktif')
+                ->orderBy('nama_lengkap')
+                ->get();
+            
+            return view('tanda-terima-bongkaran.index', compact('tandaTerimas', 'gudangs', 'karyawans'));
         } else {
             // Query for Surat Jalan Bongkaran
             $query = SuratJalanBongkaran::with(['bl', 'tandaTerima']);
