@@ -72,12 +72,17 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['success' => false, 'message' => 'Nama kapal is required'], 400);
         }
 
-        $voyages = Bl::where('nama_kapal', $nama_kapal)
-                    ->select('no_voyage')
+        // Normalize the search term for flexible matching
+        $kapalClean = strtolower(str_replace('.', '', $nama_kapal));
+
+        $voyages = Bl::select('no_voyage')
+                    ->where(function($q) use ($nama_kapal, $kapalClean) {
+                        $q->where('nama_kapal', $nama_kapal)
+                          ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                    })
                     ->whereNotNull('no_voyage')
                     ->distinct()
-                    ->orderBy('no_voyage')
-                    ->get()
+                    ->orderBy('no_voyage', 'desc')
                     ->pluck('no_voyage');
 
         return response()->json([
