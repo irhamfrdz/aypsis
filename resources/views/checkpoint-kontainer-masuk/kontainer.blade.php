@@ -181,6 +181,9 @@
     </div>
 </div>
 
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <!-- Modal Checkpoint Masuk -->
 <div id="masukModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-lg bg-white">
@@ -342,7 +345,32 @@
     </div>
 </div>
 
+    </div>
+</div>
+
+<!-- Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+// Initialize Select2 on document ready
+$(document).ready(function() {
+    $('#manual_nomor_kontainer').select2({
+        placeholder: "- Pilih Nomor Kontainer -",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#manualModal'),
+        language: {
+            noResults: function() {
+                return "Tidak ada hasil yang ditemukan";
+            },
+            searching: function() {
+                return "Mencari...";
+            }
+        }
+    });
+});
+
 function openMasukModal(suratJalanId, nomorKontainer) {
     document.getElementById('masukModal').classList.remove('hidden');
     document.getElementById('displayNomorKontainer').textContent = nomorKontainer;
@@ -361,17 +389,29 @@ function openManualModal() {
 
 function closeManualModal() {
     document.getElementById('manualModal').classList.add('hidden');
+    // Reset form
     document.getElementById('manualForm').reset();
+    // Reset Select2
+    $('#manual_nomor_kontainer').val(null).trigger('change');
+    // Clear ukuran and tipe fields
+    document.getElementById('manual_ukuran').value = '';
+    document.getElementById('manual_tipe_kontainer').value = '';
 }
 
 // Auto-fill ukuran and tipe kontainer when nomor kontainer is selected
-document.getElementById('manual_nomor_kontainer')?.addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
+$('#manual_nomor_kontainer').on('select2:select', function(e) {
+    const selectedOption = e.params.data.element;
     const ukuran = selectedOption.getAttribute('data-ukuran') || '';
     const tipe = selectedOption.getAttribute('data-tipe') || '';
     
     document.getElementById('manual_ukuran').value = ukuran;
     document.getElementById('manual_tipe_kontainer').value = tipe;
+});
+
+// Clear fields when selection is cleared
+$('#manual_nomor_kontainer').on('select2:clear', function() {
+    document.getElementById('manual_ukuran').value = '';
+    document.getElementById('manual_tipe_kontainer').value = '';
 });
 
 // Close modal when clicking outside
