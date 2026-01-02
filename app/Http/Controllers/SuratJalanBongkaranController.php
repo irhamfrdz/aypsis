@@ -33,18 +33,23 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectShip(Request $request)
     {
-        // Get unique kapal names from BL table
+        // Get unique kapal names from BL table with normalization
         $kapals = Bl::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
-                    ->distinct()
-                    ->orderBy('nama_kapal')
+                    ->where('nama_kapal', '!=', '')
                     ->get()
-                    ->pluck('nama_kapal');
+                    ->map(function($item) {
+                        // Normalize: remove dots after KM/KMP, trim spaces, uppercase
+                        return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                    })
+                    ->unique()
+                    ->sort()
+                    ->values();
 
         // Get voyages for selected kapal
         $voyages = collect();
         if ($request->filled('nama_kapal')) {
-            $voyages = Bl::where('nama_kapal', $request->nama_kapal)
+            $voyages = Bl::where('nama_kapal', 'LIKE', '%' . str_replace(['KM ', 'KMP '], ['%', '%'], $request->nama_kapal) . '%')
                         ->select('no_voyage')
                         ->whereNotNull('no_voyage')
                         ->distinct()
