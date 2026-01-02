@@ -94,7 +94,11 @@ class CheckpointKontainerMasukController extends Controller
             ->orderBy('waktu_keluar', 'desc')
             ->get();
 
-        return view('checkpoint-kontainer-masuk.kontainer', compact('kontainersDalamPerjalanan', 'cabangNama', 'cabangSlug', 'gudang'));
+        // Get all kontainers and stock_kontainers for manual entry dropdown
+        $kontainers = Kontainer::orderBy('nomor_seri_gabungan')->get();
+        $stockKontainers = StockKontainer::orderBy('nomor_seri_gabungan')->get();
+
+        return view('checkpoint-kontainer-masuk.kontainer', compact('kontainersDalamPerjalanan', 'cabangNama', 'cabangSlug', 'gudang', 'kontainers', 'stockKontainers'));
     }
 
     /**

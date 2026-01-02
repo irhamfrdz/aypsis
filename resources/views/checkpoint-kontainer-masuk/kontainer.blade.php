@@ -257,32 +257,46 @@
             <div class="space-y-4">
                 <div>
                     <label for="manual_nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer *</label>
-                    <input type="text" id="manual_nomor_kontainer" name="nomor_kontainer" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Contoh: AYPU0033870">
+                    <select id="manual_nomor_kontainer" name="nomor_kontainer" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">- Pilih Nomor Kontainer -</option>
+                        @if(isset($kontainers) && $kontainers->count() > 0)
+                            <optgroup label="Kontainers">
+                                @foreach($kontainers as $kontainer)
+                                    <option value="{{ $kontainer->nomor_seri_gabungan }}" 
+                                            data-ukuran="{{ $kontainer->ukuran }}" 
+                                            data-tipe="{{ $kontainer->tipe_kontainer }}">
+                                        {{ $kontainer->nomor_seri_gabungan }} - {{ $kontainer->ukuran }} - {{ $kontainer->tipe_kontainer }}
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                        @if(isset($stockKontainers) && $stockKontainers->count() > 0)
+                            <optgroup label="Stock Kontainers">
+                                @foreach($stockKontainers as $stock)
+                                    <option value="{{ $stock->nomor_seri_gabungan }}" 
+                                            data-ukuran="{{ $stock->ukuran }}" 
+                                            data-tipe="{{ $stock->tipe_kontainer }}">
+                                        {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                    </select>
                 </div>
 
                 <div>
                     <label for="manual_ukuran" class="block text-sm font-medium text-gray-700 mb-1">Ukuran</label>
-                    <select id="manual_ukuran" name="ukuran"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">- Pilih Ukuran -</option>
-                        <option value="20">20</option>
-                        <option value="40">40</option>
-                        <option value="45">45</option>
-                    </select>
+                    <input type="text" id="manual_ukuran" name="ukuran" readonly
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Otomatis terisi">
                 </div>
 
                 <div>
                     <label for="manual_tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
-                    <select id="manual_tipe_kontainer" name="tipe_kontainer"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">- Pilih Tipe -</option>
-                        <option value="Dry Container">Dry Container</option>
-                        <option value="Reefer Container">Reefer Container</option>
-                        <option value="Open Top">Open Top</option>
-                        <option value="Flat Rack">Flat Rack</option>
-                    </select>
+                    <input type="text" id="manual_tipe_kontainer" name="tipe_kontainer" readonly
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Otomatis terisi">
                 </div>
 
                 <div>
@@ -349,6 +363,16 @@ function closeManualModal() {
     document.getElementById('manualModal').classList.add('hidden');
     document.getElementById('manualForm').reset();
 }
+
+// Auto-fill ukuran and tipe kontainer when nomor kontainer is selected
+document.getElementById('manual_nomor_kontainer')?.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const ukuran = selectedOption.getAttribute('data-ukuran') || '';
+    const tipe = selectedOption.getAttribute('data-tipe') || '';
+    
+    document.getElementById('manual_ukuran').value = ukuran;
+    document.getElementById('manual_tipe_kontainer').value = tipe;
+});
 
 // Close modal when clicking outside
 document.getElementById('masukModal')?.addEventListener('click', function(e) {
