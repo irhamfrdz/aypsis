@@ -9,6 +9,7 @@ use App\Models\SuratJalanBongkaran;
 use App\Models\Gudang;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
+use App\Models\Karyawan;
 use Illuminate\Support\Facades\DB;
 
 class TandaTerimaBongkaranController extends Controller
@@ -124,7 +125,13 @@ class TandaTerimaBongkaranController extends Controller
                 ->orderBy('nama_gudang')
                 ->get();
 
-            return view('tanda-terima-bongkaran.index', compact('suratJalans', 'gudangs'));
+            // Get karyawans with divisi supir for modal dropdown
+            $karyawans = Karyawan::where('divisi', 'supir')
+                ->where('status', 'aktif')
+                ->orderBy('nama_lengkap')
+                ->get();
+
+            return view('tanda-terima-bongkaran.index', compact('suratJalans', 'gudangs', 'karyawans'));
         }
     }
 
