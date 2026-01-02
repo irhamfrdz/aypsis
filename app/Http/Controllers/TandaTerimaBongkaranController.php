@@ -166,9 +166,9 @@ class TandaTerimaBongkaranController extends Controller
 
             $tandaTerima = TandaTerimaBongkaran::create($validated);
 
-            // Update status surat jalan bongkaran menjadi sudah_checkpoint
+            // Update status surat jalan bongkaran menjadi sudah masuk checkpoint
             // dan isi tanggal_checkpoint jika masih kosong
-            $updateData = ['status' => 'sudah_checkpoint'];
+            $updateData = ['status' => 'sudah masuk checkpoint'];
             if (empty($suratJalan->tanggal_checkpoint)) {
                 $updateData['tanggal_checkpoint'] = $validated['tanggal_tanda_terima'];
             }
