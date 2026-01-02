@@ -26,7 +26,7 @@
                     <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-2">Kapal <span class="text-red-500">*</span></label>
                     <select id="kapal_id" name="kapal_id" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
                         <option value="">--Pilih Kapal--</option>
-                        @foreach($masterKapals as $kapal)
+                        @foreach($masterKapals->unique('nama_kapal')->sortBy('nama_kapal') as $kapal)
                             <option value="{{ $kapal->nama_kapal }}">{{ $kapal->nama_kapal }}</option>
                         @endforeach
                     </select>
