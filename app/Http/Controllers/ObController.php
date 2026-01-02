@@ -526,9 +526,14 @@ class ObController extends Controller
             $kapals = Bl::select('nama_kapal')
                 ->whereNotNull('nama_kapal')
                 ->where('nama_kapal', '!=', '')
-                ->distinct()
-                ->orderBy('nama_kapal', 'asc')
-                ->pluck('nama_kapal')
+                ->get()
+                ->map(function($item) {
+                    // Normalize: remove dots after KM/KMP, trim spaces, uppercase
+                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                })
+                ->unique()
+                ->sort()
+                ->values()
                 ->toArray();
 
             return response()->json([
@@ -559,9 +564,14 @@ class ObController extends Controller
             $kapals = NaikKapal::select('nama_kapal')
                 ->whereNotNull('nama_kapal')
                 ->where('nama_kapal', '!=', '')
-                ->distinct()
-                ->orderBy('nama_kapal', 'asc')
-                ->pluck('nama_kapal')
+                ->get()
+                ->map(function($item) {
+                    // Normalize: remove dots after KM/KMP, trim spaces, uppercase
+                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                })
+                ->unique()
+                ->sort()
+                ->values()
                 ->toArray();
 
             return response()->json([
