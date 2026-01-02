@@ -450,13 +450,25 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        {{ $bl->tonnage ? number_format($bl->tonnage, 2) . ' Ton' : '-' }}
+                                        @php
+                                            $displayTonnage = $bl->tonnage;
+                                            if (empty($displayTonnage) && $bl->prospek) {
+                                                $displayTonnage = $bl->prospek->total_ton;
+                                            }
+                                        @endphp
+                                        {{ $displayTonnage ? number_format($displayTonnage, 2) . ' Ton' : '-' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        {{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}
-                                    </div>1
+                                        @php
+                                            $displayVolume = $bl->volume;
+                                            if (empty($displayVolume) && $bl->prospek) {
+                                                $displayVolume = $bl->prospek->total_volume;
+                                            }
+                                        @endphp
+                                        {{ $displayVolume ? number_format($displayVolume, 3) . ' m³' : '-' }}
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
