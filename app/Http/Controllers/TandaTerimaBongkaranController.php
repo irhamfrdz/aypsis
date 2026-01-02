@@ -208,13 +208,16 @@ class TandaTerimaBongkaranController extends Controller
 
             // Update status surat jalan bongkaran menjadi sudah masuk checkpoint
             // dan isi tanggal_checkpoint jika masih kosong
-            // juga update supir jika ada perubahan
+            // juga update supir dan kenek jika ada perubahan
             $updateData = ['status' => 'sudah masuk checkpoint'];
             if (empty($suratJalan->tanggal_checkpoint)) {
                 $updateData['tanggal_checkpoint'] = $validated['tanggal_tanda_terima'];
             }
             if (!empty($validated['supir'])) {
                 $updateData['supir'] = $validated['supir'];
+            }
+            if (!empty($validated['kenek'])) {
+                $updateData['kenek'] = $validated['kenek'];
             }
             $suratJalan->update($updateData);
 
