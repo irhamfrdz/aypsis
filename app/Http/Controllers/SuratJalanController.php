@@ -146,7 +146,7 @@ class SuratJalanController extends Controller
             $query->where('status', $request->status);
         }
 
-        $orders = $query->orderBy('nomor_order', 'desc')
+        $orders = $query->orderBy('tanggal_order', 'desc')
                        ->orderBy('created_at', 'desc')
                        ->paginate(15);
 
