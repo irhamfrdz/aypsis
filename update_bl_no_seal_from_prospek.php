@@ -17,16 +17,18 @@ echo "Update Nomor Seal BL dari Prospek\n";
 echo "=================================================\n\n";
 
 try {
-    // Ambil semua BL yang memiliki prospek_id dan no_seal di BL masih kosong
+    // Ambil semua BL yang no_seal masih kosong dan punya nomor kontainer
     $bls = DB::table('bls')
-        ->whereNotNull('prospek_id')
+        ->whereNotNull('nomor_kontainer')
+        ->where('nomor_kontainer', '!=', '')
         ->where(function($query) {
             $query->whereNull('no_seal')
-                  ->orWhere('no_seal', '');
+                  ->orWhere('no_seal', '')
+                  ->orWhere('no_seal', '-');
         })
         ->get();
 
-    echo "Ditemukan " . $bls->count() . " BL yang no_seal-nya kosong dan memiliki prospek_id.\n\n";
+    echo "Ditemukan " . $bls->count() . " BL yang no_seal-nya kosong dan memiliki nomor_kontainer.\n\n";
 
     if ($bls->count() === 0) {
         echo "Tidak ada data yang perlu diupdate.\n";
@@ -41,20 +43,17 @@ try {
 
     foreach ($bls as $bl) {
         try {
-            // Ambil data prospek
+            // Cari prospek berdasarkan nomor_kontainer, nama_kapal, dan no_voyage
             $prospek = DB::table('prospek')
-                ->where('id', $bl->prospek_id)
+                ->where('nomor_kontainer', $bl->nomor_kontainer)
+                ->where('nama_kapal', $bl->nama_kapal)
+                ->where('no_voyage', $bl->no_voyage)
+                ->whereNotNull('no_seal')
+                ->where('no_seal', '!=', '')
                 ->first();
 
             if (!$prospek) {
-                echo "❌ BL ID {$bl->id}: Prospek ID {$bl->prospek_id} tidak ditemukan\n";
-                $errors++;
-                continue;
-            }
-
-            // Cek apakah prospek punya no_seal
-            if (empty($prospek->no_seal)) {
-                echo "⊘  BL ID {$bl->id}: Prospek tidak memiliki no_seal (dilewati)\n";
+                echo "⊘  BL ID {$bl->id} (Kontainer: {$bl->nomor_kontainer}, Kapal: {$bl->nama_kapal}, Voyage: {$bl->no_voyage}): Prospek tidak ditemukan atau tidak punya no_seal (dilewati)\n";
                 $skipped++;
                 continue;
             }
@@ -67,7 +66,7 @@ try {
                     'updated_at' => now()
                 ]);
 
-            echo "✓  BL ID {$bl->id}: No Seal diupdate menjadi '{$prospek->no_seal}'\n";
+            echo "✓  BL ID {$bl->id} (Kontainer: {$bl->nomor_kontainer}, Kapal: {$bl->nama_kapal}, Voyage: {$bl->no_voyage}): No Seal diupdate menjadi '{$prospek->no_seal}'\n";
             $updated++;
 
         } catch (\Exception $e) {

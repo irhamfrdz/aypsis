@@ -391,7 +391,21 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        {{ $bl->no_seal ?: ($bl->prospek->no_seal ?? '-') }}
+                                        @php
+                                            $displaySeal = $bl->no_seal;
+                                            if (empty($displaySeal) && $bl->prospek) {
+                                                $displaySeal = $bl->prospek->no_seal;
+                                            }
+                                            if (empty($displaySeal) && $bl->nomor_kontainer && $bl->nama_kapal && $bl->no_voyage) {
+                                                $prospekBySeal = \App\Models\Prospek::where('nomor_kontainer', $bl->nomor_kontainer)
+                                                    ->where('nama_kapal', $bl->nama_kapal)
+                                                    ->where('no_voyage', $bl->no_voyage)
+                                                    ->whereNotNull('no_seal')
+                                                    ->first();
+                                                $displaySeal = $prospekBySeal->no_seal ?? null;
+                                            }
+                                        @endphp
+                                        {{ $displaySeal ?: '-' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
