@@ -30,7 +30,7 @@
                     </h1>
                     <p class="text-sm text-gray-600 mt-1">Gudang: <span class="font-medium text-gray-900">{{ $gudang->nama_gudang }}</span> | {{ $gudang->lokasi }}</p>
                 </div>
-                <div class="flex items-center">
+                <div class="flex items-center gap-3">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
@@ -38,6 +38,13 @@
                         </svg>
                         Total: {{ $kontainersDalamPerjalanan->count() }}
                     </span>
+                    <button onclick="openManualModal()" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Manual
+                    </button>
                 </div>
             </div>
         </div>
@@ -232,6 +239,95 @@
     </div>
 </div>
 
+<!-- Modal Tambah Manual -->
+<div id="manualModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Tambah Manual Checkpoint Masuk</h3>
+            <button onclick="closeManualModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="manualForm" method="POST" action="{{ route('checkpoint-kontainer-masuk.manual-masuk', ['cabang' => $cabangSlug, 'gudang' => $gudang->id]) }}">
+            @csrf
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="manual_nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer *</label>
+                    <input type="text" id="manual_nomor_kontainer" name="nomor_kontainer" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Contoh: AYPU0033870">
+                </div>
+
+                <div>
+                    <label for="manual_ukuran" class="block text-sm font-medium text-gray-700 mb-1">Ukuran</label>
+                    <select id="manual_ukuran" name="ukuran"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">- Pilih Ukuran -</option>
+                        <option value="20">20</option>
+                        <option value="40">40</option>
+                        <option value="45">45</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="manual_tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
+                    <select id="manual_tipe_kontainer" name="tipe_kontainer"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">- Pilih Tipe -</option>
+                        <option value="Dry Container">Dry Container</option>
+                        <option value="Reefer Container">Reefer Container</option>
+                        <option value="Open Top">Open Top</option>
+                        <option value="Flat Rack">Flat Rack</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="manual_no_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">Nomor Surat Jalan</label>
+                    <input type="text" id="manual_no_surat_jalan" name="no_surat_jalan"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Opsional">
+                </div>
+                
+                <div>
+                    <label for="manual_tanggal_masuk" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Masuk *</label>
+                    <input type="date" id="manual_tanggal_masuk" name="tanggal_masuk" required
+                           value="{{ date('Y-m-d') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="manual_waktu_masuk" class="block text-sm font-medium text-gray-700 mb-1">Waktu Masuk *</label>
+                    <input type="time" id="manual_waktu_masuk" name="waktu_masuk" required
+                           value="{{ date('H:i') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="manual_catatan" class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                    <textarea id="manual_catatan" name="catatan_masuk" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Catatan tambahan (opsional)"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="closeManualModal()"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openMasukModal(suratJalanId, nomorKontainer) {
     document.getElementById('masukModal').classList.remove('hidden');
@@ -245,10 +341,25 @@ function closeMasukModal() {
     document.getElementById('masukForm').reset();
 }
 
+function openManualModal() {
+    document.getElementById('manualModal').classList.remove('hidden');
+}
+
+function closeManualModal() {
+    document.getElementById('manualModal').classList.add('hidden');
+    document.getElementById('manualForm').reset();
+}
+
 // Close modal when clicking outside
 document.getElementById('masukModal')?.addEventListener('click', function(e) {
     if (e.target === this) {
         closeMasukModal();
+    }
+});
+
+document.getElementById('manualModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeManualModal();
     }
 });
 </script>

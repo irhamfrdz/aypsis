@@ -2468,6 +2468,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('checkpoint-kontainer-masuk.kontainer')
          ->middleware('can:checkpoint-kontainer-masuk-view');
 
+    Route::post('checkpoint-kontainer-masuk/{cabangSlug}/gudang/{gudangId}/manual-masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'manualMasuk'])
+         ->name('checkpoint-kontainer-masuk.manual-masuk')
+         ->middleware('can:checkpoint-kontainer-masuk-create');
+
     Route::post('checkpoint-kontainer-masuk/{kontainerPerjalananId}/masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'processMasuk'])
          ->name('checkpoint-kontainer-masuk.masuk')
          ->middleware('can:checkpoint-kontainer-masuk-create');

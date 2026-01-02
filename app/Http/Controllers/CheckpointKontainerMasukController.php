@@ -162,6 +162,66 @@ class CheckpointKontainerMasukController extends Controller
     }
 
     /**
+     * Process manual kontainer masuk (without kontainer_perjalanan record)
+     */
+    public function manualMasuk(Request $request, $cabangSlug, $gudangId)
+    {
+        $this->authorize('checkpoint-kontainer-masuk-create');
+
+        $request->validate([
+            'nomor_kontainer' => 'required|string',
+            'ukuran' => 'nullable|string',
+            'tipe_kontainer' => 'nullable|string',
+            'no_surat_jalan' => 'nullable|string',
+            'tanggal_masuk' => 'required|date',
+            'waktu_masuk' => 'required',
+            'catatan_masuk' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $gudang = Gudang::findOrFail($gudangId);
+            
+            // Combine date and time
+            $waktuTiba = Carbon::parse($request->tanggal_masuk . ' ' . $request->waktu_masuk);
+
+            // Create kontainer perjalanan record untuk tracking
+            KontainerPerjalanan::create([
+                'surat_jalan_id' => null,
+                'no_kontainer' => $request->nomor_kontainer,
+                'no_surat_jalan' => $request->no_surat_jalan,
+                'ukuran' => $request->ukuran,
+                'tipe_kontainer' => $request->tipe_kontainer,
+                'tujuan_pengiriman' => $gudang->nama_gudang,
+                'waktu_keluar' => $waktuTiba, // Set waktu keluar = waktu tiba untuk entry manual
+                'waktu_tiba_aktual' => $waktuTiba,
+                'status' => 'sampai_tujuan',
+                'catatan_tiba' => $request->catatan_masuk,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update gudangs_id on kontainers or stock_kontainers
+            $kontainer = Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)->first();
+            if ($kontainer) {
+                $kontainer->update(['gudangs_id' => $gudang->id]);
+            } else {
+                $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)->first();
+                if ($stockKontainer) {
+                    $stockKontainer->update(['gudangs_id' => $gudang->id]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Kontainer manual berhasil di-checkpoint masuk dan ditempatkan di gudang');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal checkpoint kontainer masuk manual: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Bulk process kontainer masuk
      */
     public function bulkMasuk(Request $request)
