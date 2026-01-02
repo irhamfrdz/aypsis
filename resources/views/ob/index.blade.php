@@ -259,7 +259,8 @@
                         <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->nama_barang }}">{{ $bl->nama_barang ?: '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs">
                             @php
-                                $isEmpty = $bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-'));
+                                $barangUpper = strtoupper($bl->nama_barang ?? '');
+                                $isEmpty = str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')));
                             @endphp
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
                                 {{ $isEmpty ? 'E' : 'F' }}
@@ -458,7 +459,8 @@
                             </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs">
                                 @php
-                                    $isEmpty = $naikKapal->tipe_kontainer == 'FCL' && (empty($naikKapal->nomor_kontainer) || str_starts_with($naikKapal->nomor_kontainer, 'CARGO-'));
+                                    $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
+                                    $isEmpty = str_contains($barangUpper, 'EMPTY') || ($naikKapal->tipe_kontainer == 'FCL' && (empty($naikKapal->nomor_kontainer) || str_starts_with($naikKapal->nomor_kontainer, 'CARGO-')));
                                 @endphp
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
                                     {{ $isEmpty ? 'E' : 'F' }}

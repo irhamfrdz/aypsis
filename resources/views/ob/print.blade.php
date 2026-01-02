@@ -226,10 +226,14 @@
                 </td>
                 <td style="text-align: center;">
                     @php
-                        $tipe = strtoupper($item->tipe_kontainer ?? '');
+                        $barang = strtoupper(isset($bls) ? ($item->nama_barang ?? '') : ($item->jenis_barang ?? ''));
                         $nomorKontainer = strtoupper($item->nomor_kontainer ?? '');
+                        $tipe = strtoupper($item->tipe_kontainer ?? '');
+                        
+                        // Check if container is empty based on barang field or container number
                         $status = 'F'; // Default Full
-                        if ($tipe === 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($nomorKontainer, 'CARGO-'))) {
+                        if (str_contains($barang, 'EMPTY') || 
+                            ($tipe === 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($nomorKontainer, 'CARGO-')))) {
                             $status = 'E'; // Empty
                         }
                     @endphp
