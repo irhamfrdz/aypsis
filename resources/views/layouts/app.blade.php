@@ -1029,21 +1029,6 @@
 
                         {{-- Removed 'Tambah Surat Jalan Bongkaran' from the dropdown as requested --}}
 
-                        {{-- Uang Jalan Bongkaran --}}
-                        @if($user && ($user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete')))
-                            <a href="{{ route('uang-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('uang-jalan-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Uang Jalan Bongkaran</span>
-                            </a>
-                        @endif
-
-                            {{-- Pranota Uang Jalan Bongkaran --}}
-                            @if($user && $user->can('pranota-uang-jalan-bongkaran-view'))
-                                <a href="{{ route('pranota-uang-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-jalan-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                    
-                                    <span class="text-xs">Pranota Uang Jalan Bongkaran</span>
-                                </a>
-                            @endif
-
                         {{-- Tanda Terima Surat Jalan Bongkaran --}}
                         @if($user && ($user->can('tanda-terima-bongkaran-view') || $user->can('tanda-terima-bongkaran-create') || $user->can('tanda-terima-bongkaran-update') || $user->can('tanda-terima-bongkaran-delete')))
                             <a href="{{ route('tanda-terima-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
