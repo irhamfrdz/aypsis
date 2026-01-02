@@ -92,8 +92,12 @@ class TandaTerimaBongkaranController extends Controller
                 ->orderBy('nama_gudang')
                 ->get();
 
-            // Get karyawans - try without filters first
-            $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+            // Get karyawans - select only needed fields
+            $karyawans = Karyawan::select('id', 'nama_panggilan', 'nik')
+                ->whereNotNull('nama_panggilan')
+                ->where('nama_panggilan', '!=', '')
+                ->orderBy('nama_panggilan')
+                ->get();
             
             return view('tanda-terima-bongkaran.index', compact('tandaTerimas', 'gudangs', 'karyawans'));
         } else {

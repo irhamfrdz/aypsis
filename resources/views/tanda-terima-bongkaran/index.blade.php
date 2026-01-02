@@ -403,17 +403,28 @@
 
                 <!-- Supir -->
                 <div>
-                    <label for="supir" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="supir_search" class="block text-sm font-medium text-gray-700 mb-2">
                         Supir
                     </label>
-                    <select name="supir" 
-                            id="supir"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                        <option value="">Pilih Supir</option>
-                        @foreach($karyawans ?? [] as $karyawan)
-                            <option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }} - {{ $karyawan->nik ?? '' }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <input type="text" 
+                               id="supir_search"
+                               autocomplete="off"
+                               placeholder="Ketik untuk mencari supir..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <input type="hidden" name="supir" id="supir">
+                        <div id="supir_dropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <div class="py-1">
+                                @foreach($karyawans ?? [] as $karyawan)
+                                    <div class="supir-option px-3 py-2 hover:bg-gray-100 cursor-pointer" 
+                                         data-value="{{ $karyawan->nama_panggilan }}"
+                                         data-nik="{{ $karyawan->nik ?? '' }}">
+                                        {{ $karyawan->nama_panggilan }} @if($karyawan->nik)- {{ $karyawan->nik }}@endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Kenek -->
@@ -539,5 +550,71 @@
             closeTerimaBarangModal();
         }
     });
+
+    // Searchable Supir Dropdown
+    const supirSearch = document.getElementById('supir_search');
+    const supirDropdown = document.getElementById('supir_dropdown');
+    const supirHidden = document.getElementById('supir');
+    const supirOptions = document.querySelectorAll('.supir-option');
+
+    // Show dropdown on focus
+    supirSearch?.addEventListener('focus', function() {
+        supirDropdown.classList.remove('hidden');
+        filterSupirOptions('');
+    });
+
+    // Filter options as user types
+    supirSearch?.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        filterSupirOptions(searchTerm);
+    });
+
+    // Function to filter supir options
+    function filterSupirOptions(searchTerm) {
+        let hasVisibleOptions = false;
+        supirOptions.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                option.style.display = 'block';
+                hasVisibleOptions = true;
+            } else {
+                option.style.display = 'none';
+            }
+        });
+        
+        if (!hasVisibleOptions) {
+            supirDropdown.classList.add('hidden');
+        } else {
+            supirDropdown.classList.remove('hidden');
+        }
+    }
+
+    // Handle option selection
+    supirOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            const nik = this.getAttribute('data-nik');
+            
+            supirSearch.value = nik ? `${value} - ${nik}` : value;
+            supirHidden.value = value;
+            supirDropdown.classList.add('hidden');
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!supirSearch?.contains(e.target) && !supirDropdown?.contains(e.target)) {
+            supirDropdown?.classList.add('hidden');
+        }
+    });
+
+    // Reset supir search when modal closes
+    const originalCloseTerimaBarangModal = window.closeTerimaBarangModal;
+    window.closeTerimaBarangModal = function() {
+        if (supirSearch) supirSearch.value = '';
+        if (supirHidden) supirHidden.value = '';
+        if (supirDropdown) supirDropdown.classList.add('hidden');
+        originalCloseTerimaBarangModal();
+    };
 </script>
 @endpush
