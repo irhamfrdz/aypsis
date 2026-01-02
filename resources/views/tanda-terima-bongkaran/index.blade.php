@@ -401,6 +401,30 @@
                     </select>
                 </div>
 
+                <!-- Supir -->
+                <div>
+                    <label for="supir" class="block text-sm font-medium text-gray-700 mb-2">
+                        Supir
+                    </label>
+                    <input type="text" 
+                           name="supir" 
+                           id="supir"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                           placeholder="Nama supir">
+                </div>
+
+                <!-- Kenek -->
+                <div>
+                    <label for="kenek" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kenek
+                    </label>
+                    <input type="text" 
+                           name="kenek" 
+                           id="kenek"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                           placeholder="Nama kenek">
+                </div>
+
                 <!-- Keterangan -->
                 <div>
                     <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
