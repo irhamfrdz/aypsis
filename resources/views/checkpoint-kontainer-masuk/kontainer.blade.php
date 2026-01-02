@@ -251,7 +251,7 @@
             </button>
         </div>
         
-        <form id="manualForm" method="POST" action="{{ route('checkpoint-kontainer-masuk.manual-masuk', ['cabang' => $cabangSlug, 'gudang' => $gudang->id]) }}">
+        <form id="manualForm" method="POST" action="{{ route('checkpoint-kontainer-masuk.manual-masuk', ['cabangSlug' => $cabangSlug, 'gudangId' => $gudang->id]) }}">
             @csrf
             
             <div class="space-y-4">
