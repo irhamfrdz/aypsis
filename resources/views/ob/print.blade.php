@@ -184,12 +184,9 @@
                 <th style="width: 3%;">No</th>
                 <th style="width: 14%;">Kontainer</th>
                 <th style="width: 5%;">Status</th>
-                <th style="width: 15%;">Barang</th>
                 <th style="width: 10%;">Asal Kontainer</th>
                 <th style="width: 10%;">Ke</th>
-                <th style="width: 8%;">Tipe</th>
                 <th style="width: 6%;">Size</th>
-                <th style="width: 8%;">Tgl OB</th>
                 <th style="width: 13%;">Supir OB</th>
                 <th style="width: 12%;">Keterangan</th>
             </tr>
@@ -240,9 +237,6 @@
                     <strong>{{ $status }}</strong>
                 </td>
                 <td>
-                    {{ isset($bls) ? ($item->nama_barang ?? '-') : ($item->jenis_barang ?? '-') }}
-                </td>
-                <td>
                     @if($item->asal_kontainer)
                         {{ $item->asal_kontainer }}
                     @elseif(request('kegiatan') === 'bongkar')
@@ -260,24 +254,11 @@
                         -
                     @endif
                 </td>
-                <td>
-                    {{ $item->tipe_kontainer }}
-                    @if(isset($item->tipe_kontainer_detail) && $item->tipe_kontainer_detail)
-                    <br><span style="color: #666; font-size: 8pt;">{{ $item->tipe_kontainer_detail }}</span>
-                    @endif
-                </td>
                 <td style="text-align: center;">
                     @php
                         $size = $item->size_kontainer ?? $item->ukuran_kontainer ?? null;
                     @endphp
                     {{ $size ? $size . '"' : '-' }}
-                </td>
-                <td style="text-align: center;">
-                    @if($item->tanggal_ob)
-                        {{ \Carbon\Carbon::parse($item->tanggal_ob)->format('d/m/Y') }}
-                    @else
-                        <span style="color: #999;">-</span>
-                    @endif
                 </td>
                 <td>
                     @php
@@ -296,7 +277,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="11" style="text-align: center; padding: 20px; color: #999;">
+                <td colspan="8" style="text-align: center; padding: 20px; color: #999;">
                     Tidak ada data kontainer
                 </td>
             </tr>
