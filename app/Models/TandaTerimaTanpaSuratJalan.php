@@ -109,7 +109,8 @@ class TandaTerimaTanpaSuratJalan extends Model
               ->orWhere('penerima', 'like', "%{$search}%")
               ->orWhere('pengirim', 'like', "%{$search}%")
               ->orWhere('jenis_barang', 'like', "%{$search}%")
-              ->orWhere('tujuan_pengambilan', 'like', "%{$search}%")
+              ->orWhere('no_kontainer', 'like', "%{$search}%")
+              ->orWhere('nama_barang', 'like', "%{$search}%")
               ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
         });
     }
