@@ -45,6 +45,16 @@
             font-weight: bold;
         }
         
+        /* Nomor Halaman */
+        .page-number {
+            position: absolute;
+            top: 5mm;  /* 0.5cm dari atas */
+            right: 5mm;  /* 0.5cm dari kanan */
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        
         /* No Plat Section */
         .no-plat {
             position: absolute;
@@ -271,6 +281,13 @@
     </div>
 
     <div class="container">
+        <!-- Nomor Halaman -->
+        @if(isset($totalPages) && $totalPages > 1)
+        <div class="page-number">
+            {{ $pageNumber }}/{{ $totalPages }}
+        </div>
+        @endif
+        
         <!-- SESI 1: HEADER -->
         <div class="date-header">
             {{ $suratJalanBongkaran->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalanBongkaran->tanggal_surat_jalan)->format('d-M-Y') : '' }}

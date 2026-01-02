@@ -804,7 +804,29 @@ class SuratJalanBongkaranController extends Controller
         // Eager load relations useful for the print view
         $suratJalanBongkaran->load(['inputBy', 'bl']);
 
-        return view('surat-jalan-bongkaran.print', compact('suratJalanBongkaran'));
+        // Hitung posisi surat jalan dalam grup BL yang sama
+        $pageNumber = 1;
+        $totalPages = 1;
+        
+        if ($suratJalanBongkaran->bl_id) {
+            // Ambil semua surat jalan untuk BL yang sama, diurutkan berdasarkan created_at
+            $suratJalansForSameBl = SuratJalanBongkaran::where('bl_id', $suratJalanBongkaran->bl_id)
+                ->orderBy('created_at', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+            
+            $totalPages = $suratJalansForSameBl->count();
+            
+            // Cari posisi surat jalan saat ini
+            foreach ($suratJalansForSameBl as $index => $sj) {
+                if ($sj->id == $suratJalanBongkaran->id) {
+                    $pageNumber = $index + 1;
+                    break;
+                }
+            }
+        }
+
+        return view('surat-jalan-bongkaran.print', compact('suratJalanBongkaran', 'pageNumber', 'totalPages'));
     }
 
     /**
