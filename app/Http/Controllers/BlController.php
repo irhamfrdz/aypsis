@@ -142,12 +142,20 @@ class BlController extends Controller
             }
         }
 
-        // Get distinct kapal names from bls table instead of master_kapals
-        $masterKapals = Bl::whereNotNull('nama_kapal')
-            ->select('nama_kapal')
-            ->distinct()
-            ->orderBy('nama_kapal')
-            ->get();
+        // Get distinct kapal names from bls table with normalization
+        $masterKapals = Bl::select('nama_kapal')
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->get()
+            ->map(function($item) {
+                // Normalize: remove dots after KM/KMP, trim spaces, uppercase
+                $normalized = trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                // Return object with nama_kapal property for compatibility with blade
+                return (object)['nama_kapal' => $normalized];
+            })
+            ->unique('nama_kapal')
+            ->sortBy('nama_kapal')
+            ->values();
             
         return view('bl.select', compact('masterKapals'));
     }
