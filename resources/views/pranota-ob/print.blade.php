@@ -189,19 +189,19 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                        <div style="margin-bottom: 40px; height: 1px;"></div>
                         <div style="font-size: 9px;">
                             (Pemohon)
                         </div>
                     </td>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                        <div style="margin-bottom: 40px; height: 1px;"></div>
                         <div style="font-size: 9px;">
                             (Pemeriksa)
                         </div>
                     </td>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                        <div style="margin-bottom: 40px; height: 1px;"></div>
                         <div style="font-size: 9px;">
                             (Kasir)
                         </div>
