@@ -3318,6 +3318,27 @@ class UserController extends Controller
                         }
                     }
 
+                    // Handle tanda-terima-bongkaran permissions explicitly
+                    if ($module === 'tanda-terima-bongkaran' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'tanda-terima-bongkaran-view',
+                            'create' => 'tanda-terima-bongkaran-create',
+                            'update' => 'tanda-terima-bongkaran-update',
+                            'delete' => 'tanda-terima-bongkaran-delete',
+                            'print' => 'tanda-terima-bongkaran-print',
+                            'export' => 'tanda-terima-bongkaran-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Handle gate-in permissions explicitly
                     if ($module === 'gate-in' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                         $actionMap = [
