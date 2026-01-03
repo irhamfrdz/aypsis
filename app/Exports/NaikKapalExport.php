@@ -58,7 +58,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             // Ambil tanggal tanda terima dari prospek
             $tanggalTandaTerima = '-';
             if ($prospek && $prospek->tandaTerima && $prospek->tandaTerima->tanggal) {
-                $tanggalTandaTerima = $prospek->tandaTerima->tanggal->format('d/m/Y');
+                $tanggalTandaTerima = $prospek->tandaTerima->tanggal->format('dmMY');
             }
 
             return [
