@@ -21,7 +21,6 @@ class InvoiceAktivitasLain extends Model
         'nomor_voyage',
         'surat_jalan_id',
         'jenis_penyesuaian',
-        'jumlah_retur',
         'tipe_penyesuaian',
         'penerima',
         'total',

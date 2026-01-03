@@ -199,7 +199,6 @@
                         <option value="pengembalian penuh" {{ old('jenis_penyesuaian') == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
                         <option value="pengembalian sebagian" {{ old('jenis_penyesuaian') == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
                         <option value="penambahan" {{ old('jenis_penyesuaian') == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
-                        <option value="retur galon" {{ old('jenis_penyesuaian') == 'retur galon' ? 'selected' : '' }}>Retur Galon</option>
                     </select>
                     @error('jenis_penyesuaian')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -557,14 +556,6 @@
             } else if (jenisPenyesuaian === 'penambahan') {
                 tipePenyesuaianWrapper.classList.remove('hidden');
                 initializeTipePenyesuaianInputs();
-            } else if (jenisPenyesuaian === 'retur galon') {
-                // Show jumlah retur field
-                if (jumlahReturWrapper) {
-                    jumlahReturWrapper.classList.remove('hidden');
-                    if (jumlahReturInput) {
-                        jumlahReturInput.setAttribute('required', 'required');
-                    }
-                }
             } else {
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
@@ -601,6 +592,7 @@
                         <option value="parkir" ${existingTipe === 'parkir' ? 'selected' : ''}>Parkir</option>
                         <option value="pelancar" ${existingTipe === 'pelancar' ? 'selected' : ''}>Pelancar</option>
                         <option value="kawalan" ${existingTipe === 'kawalan' ? 'selected' : ''}>Kawalan</option>
+                        <option value="retur galon" ${existingTipe === 'retur galon' ? 'selected' : ''}>Retur Galon</option>
                     </select>
                 </div>
                 <div class="flex-1">

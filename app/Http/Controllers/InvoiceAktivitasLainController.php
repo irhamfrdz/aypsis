@@ -156,7 +156,6 @@ class InvoiceAktivitasLainController extends Controller
             'nomor_voyage' => 'nullable|string',
             'surat_jalan_id' => 'nullable|integer',
             'jenis_penyesuaian' => 'nullable|string',
-            'jumlah_retur' => 'nullable|integer|min:1',
             'tipe_penyesuaian_detail' => 'nullable|array',
             'tipe_penyesuaian_detail.*.tipe' => 'required_with:tipe_penyesuaian_detail|string',
             'tipe_penyesuaian_detail.*.nominal' => 'required_with:tipe_penyesuaian_detail|numeric|min:0',
@@ -165,15 +164,6 @@ class InvoiceAktivitasLainController extends Controller
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
         ]);
-        
-        // Additional validation for retur galon
-        if (isset($validated['jenis_penyesuaian']) && $validated['jenis_penyesuaian'] === 'retur galon') {
-            if (!isset($validated['jumlah_retur']) || $validated['jumlah_retur'] < 1) {
-                return redirect()->back()
-                    ->withErrors(['jumlah_retur' => 'Jumlah retur harus diisi untuk jenis penyesuaian retur galon.'])
-                    ->withInput();
-            }
-        }
         
         // Convert tipe_penyesuaian_detail array to JSON for storage
         if (isset($validated['tipe_penyesuaian_detail'])) {
