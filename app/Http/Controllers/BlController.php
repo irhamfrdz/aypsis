@@ -1525,7 +1525,7 @@ class BlController extends Controller
                         $value = $bl->alamat_pengiriman ? strip_tags($bl->alamat_pengiriman) : '';
                         break;
                     case 'no_surat_jalan':
-                        $value = ($bl->prospek && $bl->prospek->suratJalan) ? $bl->prospek->suratJalan->nomor_surat_jalan : '';
+                        $value = ($bl->prospek && $bl->prospek->suratJalan) ? $bl->prospek->suratJalan->no_surat_jalan : '';
                         break;
                     default:
                         // Handle all other fields safely

@@ -442,7 +442,7 @@
                                             <a href="{{ route('surat-jalan.show', $bl->prospek->suratJalan->id) }}" 
                                                class="text-blue-600 hover:text-blue-800 hover:underline" 
                                                title="Lihat detail surat jalan">
-                                                {{ $bl->prospek->suratJalan->nomor_surat_jalan }}
+                                                {{ $bl->prospek->suratJalan->no_surat_jalan }}
                                             </a>
                                         @else
                                             <span class="text-gray-400 italic">-</span>
