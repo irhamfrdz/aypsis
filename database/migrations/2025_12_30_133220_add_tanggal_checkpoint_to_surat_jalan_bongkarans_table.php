@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('surat_jalan_bongkarans', function (Blueprint $table) {
-            $table->date('tanggal_checkpoint')->nullable()->after('status');
+            if (!Schema::hasColumn('surat_jalan_bongkarans', 'tanggal_checkpoint')) {
+                $table->date('tanggal_checkpoint')->nullable()->after('status');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('surat_jalan_bongkarans', function (Blueprint $table) {
-            $table->dropColumn('tanggal_checkpoint');
+            if (Schema::hasColumn('surat_jalan_bongkarans', 'tanggal_checkpoint')) {
+                $table->dropColumn('tanggal_checkpoint');
+            }
         });
     }
 };
