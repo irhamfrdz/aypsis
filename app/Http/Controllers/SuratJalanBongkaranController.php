@@ -884,7 +884,7 @@ class SuratJalanBongkaranController extends Controller
         $printData->no_kontainer = $bl->nomor_kontainer;
         $printData->jenis_pengiriman = $bl->jenis_pengiriman ?? '';
         $printData->jenis_barang = $bl->nama_barang;
-        $printData->pengirim = $bl->pengirim ?? '';
+        $printData->penerima = $bl->penerima ?? '';
         $printData->tujuan_pengambilan = ''; // Will be empty until filled
         $printData->no_seal = $bl->no_seal;
         $printData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
