@@ -310,6 +310,9 @@
                                 Penerima
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                No. Surat Jalan
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_barang', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Nama Barang
@@ -431,6 +434,19 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->penerima ?: '-' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        @if($bl->prospek && $bl->prospek->suratJalan)
+                                            <a href="{{ route('surat-jalan.show', $bl->prospek->suratJalan->id) }}" 
+                                               class="text-blue-600 hover:text-blue-800 hover:underline" 
+                                               title="Lihat detail surat jalan">
+                                                {{ $bl->prospek->suratJalan->nomor_surat_jalan }}
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400 italic">-</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
@@ -921,6 +937,11 @@
                             <input type="checkbox" name="columns[]" value="penerima" 
                                    class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
                             <span class="ml-2 text-sm text-gray-700">Penerima</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="no_surat_jalan" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">No. Surat Jalan</span>
                         </label>
                         <!-- alamat_penerima export option removed -->
                         <label class="flex items-center">

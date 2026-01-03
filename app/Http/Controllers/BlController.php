@@ -55,7 +55,7 @@ class BlController extends Controller
             'all_params' => $request->all()
         ]);
 
-        $query = Bl::with('prospek');
+        $query = Bl::with(['prospek.suratJalan']);
 
         // Filter berdasarkan search
         if ($request->filled('search')) {
@@ -525,7 +525,7 @@ class BlController extends Controller
             'no_voyage' => 'required|string',
         ]);
 
-        $bls = Bl::with('prospek')
+        $bls = Bl::with(['prospek.suratJalan'])
             ->where('nama_kapal', $request->nama_kapal)
             ->where('no_voyage', $request->no_voyage)
             ->orderBy('created_at', 'desc')
@@ -1395,7 +1395,7 @@ class BlController extends Controller
             }
         }
 
-        $query = Bl::with('prospek');
+        $query = Bl::with(['prospek.suratJalan']);
 
         // Apply filters
         if ($request->filled('nama_kapal')) {
@@ -1438,6 +1438,7 @@ class BlController extends Controller
             'satuan' => 'Satuan',
             'term' => 'Term',
             'penerima' => 'Penerima',
+            'no_surat_jalan' => 'No. Surat Jalan',
             'alamat_pengiriman' => 'Alamat Pengiriman',
             'contact_person' => 'Contact Person',
             'supir_ob' => 'Supir OB',
@@ -1522,6 +1523,9 @@ class BlController extends Controller
                         break;
                     case 'alamat_pengiriman':
                         $value = $bl->alamat_pengiriman ? strip_tags($bl->alamat_pengiriman) : '';
+                        break;
+                    case 'no_surat_jalan':
+                        $value = ($bl->prospek && $bl->prospek->suratJalan) ? $bl->prospek->suratJalan->nomor_surat_jalan : '';
                         break;
                     default:
                         // Handle all other fields safely
