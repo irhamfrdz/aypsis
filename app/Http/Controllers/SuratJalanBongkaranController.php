@@ -119,17 +119,26 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('no_voyage', $selectedVoyage);
             }
 
-            // Search in surat jalan bongkaran
+            // Search in surat jalan bongkaran (ignore punctuation)
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                // Remove all punctuation from search term
+                $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+                
+                $query->where(function($q) use ($search, $searchClean) {
+                    // Normal search (with punctuation)
                     $q->where('nomor_surat_jalan', 'like', "%{$search}%")
                       ->orWhere('no_kontainer', 'like', "%{$search}%")
                       ->orWhere('no_seal', 'like', "%{$search}%")
                       ->orWhere('term', 'like', "%{$search}%")
                       ->orWhere('jenis_barang', 'like', "%{$search}%")
                       ->orWhere('supir', 'like', "%{$search}%")
-                      ->orWhere('no_plat', 'like', "%{$search}%");
+                      ->orWhere('no_plat', 'like', "%{$search}%")
+                      // Search without punctuation
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
                 });
             }
 
@@ -155,10 +164,14 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('bls.no_voyage', $selectedVoyage);
             }
 
-            // Search in BL data
+            // Search in BL data (ignore punctuation)
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                // Remove all punctuation from search term
+                $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+                
+                $query->where(function($q) use ($search, $searchClean) {
+                    // Normal search (with punctuation)
                     $q->where('nomor_bl', 'like', "%{$search}%")
                       ->orWhere('nomor_kontainer', 'like', "%{$search}%")
                       ->orWhere('no_seal', 'like', "%{$search}%")
@@ -167,7 +180,11 @@ class SuratJalanBongkaranController extends Controller
                       ->orWhere('penerima', 'like', "%{$search}%")
                       ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
                           $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
-                      });
+                      })
+                      // Search without punctuation
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_bl, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
                 });
             }
 
