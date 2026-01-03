@@ -114,8 +114,8 @@
             font-size: 16px;
             font-weight: bold;
         }
-        /* Pengirim: posisi absolute (atas 3.5cm, kiri 11cm) */
-        .pengirim-abs {
+        /* Penerima: posisi absolute (atas 3.5cm, kiri 11cm) */
+        .penerima-abs {
             position: absolute;
             top: 3.5cm; /* 3.5cm dari atas */
             left: 11cm; /* 11cm dari kiri */
@@ -211,9 +211,9 @@
             {{ strtoupper($printData->jenis_barang ?? '') }}
         </div>
         
-        <!-- Pengirim (posisi top 3.5cm, left 11cm) -->
-        <div class="pengirim-abs">
-            {{ strtoupper($printData->pengirim ?? '') }}
+        <!-- Penerima (posisi top 3.5cm, left 11cm) -->
+        <div class="penerima-abs">
+            {{ strtoupper($printData->penerima ?? '') }}
         </div>
         
         <!-- Tujuan Pengambilan (posisi top 14.5cm, left 10.5cm) -->
