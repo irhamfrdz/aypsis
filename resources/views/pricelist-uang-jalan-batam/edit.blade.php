@@ -76,6 +76,22 @@
                 @enderror
             </div>
 
+            <!-- Rute -->
+            <div>
+                <label for="rute" class="block text-sm font-medium text-gray-700 mb-2">
+                    Rute <span class="text-gray-500">(Opsional)</span>
+                </label>
+                <input type="text" 
+                       name="rute" 
+                       id="rute" 
+                       value="{{ old('rute', $pricelistUangJalanBatam->rute) }}"
+                       placeholder="Contoh: Batam - Tanjung Uncang"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('rute') border-red-300 @enderror">
+                @error('rute')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Size -->
             <div>
                 <label for="size" class="block text-sm font-medium text-gray-700 mb-2">
