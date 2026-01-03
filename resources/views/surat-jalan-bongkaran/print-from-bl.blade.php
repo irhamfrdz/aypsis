@@ -53,9 +53,9 @@
         /* Nomor BL: posisi absolute sesuai permintaan */
         .no-bl {
             position: absolute;
-            top: 4.25cm; /* 4.25cm dari atas */
+            top: 4.8cm; /* 4.8cm dari atas (diturunkan dari 4.25cm) */
             left: 13cm;   /* 13cm dari kiri */
-            font-size: 14px;
+            font-size: 18px; /* diperbesar dari 14px */
             font-weight: bold;
         }
         /* Nomor Kontainer: posisi absolute sesuai permintaan */
@@ -167,7 +167,7 @@
         
         <!-- Nomor BL (posisi top 4.25cm, left 13cm) -->
         <div class="no-bl">
-            {{ strtoupper($printData->no_bl ?? '') }}
+            BL - {{ strtoupper($printData->no_bl ?? '') }}
         </div>
         
         <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
