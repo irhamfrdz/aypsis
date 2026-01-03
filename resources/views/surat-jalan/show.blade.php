@@ -249,11 +249,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-600">No. Accurate (Pranota)</label>
                             <p class="text-sm text-gray-900 font-mono">
-                                @if($suratJalan->uangJalan && $suratJalan->uangJalan->pranotaUangJalan->isNotEmpty())
-                                    {{ $suratJalan->uangJalan->pranotaUangJalan->first()->nomor_pranota ?? 'N/A' }}
-                                @else
-                                    N/A
-                                @endif
+                                {{ $suratJalan->pembayaranPranotaUangJalan?->nomor_accurate ?? 'N/A' }}
                             </p>
                         </div>
                         <div>
