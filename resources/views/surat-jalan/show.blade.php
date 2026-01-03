@@ -243,6 +243,20 @@
                             <p class="text-sm text-gray-900 font-semibold">{{ $suratJalan->formatted_uang_jalan }}</p>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-600">Tanggal Uang Jalan</label>
+                            <p class="text-sm text-gray-900">{{ $suratJalan->uangJalan?->tanggal_uang_jalan?->format('d-m-Y') ?? 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">No. Accurate (Pranota)</label>
+                            <p class="text-sm text-gray-900 font-mono">
+                                @if($suratJalan->uangJalan && $suratJalan->uangJalan->pranotaUangJalan->isNotEmpty())
+                                    {{ $suratJalan->uangJalan->pranotaUangJalan->first()->nomor_pranota ?? 'N/A' }}
+                                @else
+                                    N/A
+                                @endif
+                            </p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-600">No. Pemesanan</label>
                             <p class="text-sm text-gray-900 font-mono">{{ $suratJalan->no_pemesanan ?? 'N/A' }}</p>
                         </div>

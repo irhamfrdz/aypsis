@@ -442,7 +442,7 @@ class SuratJalanController extends Controller
      */
     public function show($id)
     {
-        $suratJalan = SuratJalan::with('order')->findOrFail($id);
+        $suratJalan = SuratJalan::with(['order', 'uangJalan.pranotaUangJalan'])->findOrFail($id);
         return view('surat-jalan.show', compact('suratJalan'));
     }
 
