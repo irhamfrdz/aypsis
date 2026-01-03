@@ -247,7 +247,7 @@
                             <p class="text-sm text-gray-900">{{ $suratJalan->uangJalan?->tanggal_uang_jalan?->format('d-m-Y') ?? 'N/A' }}</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600">No. Accurate (Pranota)</label>
+                            <label class="block text-sm font-medium text-gray-600">No. Accurate</label>
                             <p class="text-sm text-gray-900 font-mono">
                                 {{ $suratJalan->pembayaranPranotaUangJalan?->nomor_accurate ?? 'N/A' }}
                             </p>
