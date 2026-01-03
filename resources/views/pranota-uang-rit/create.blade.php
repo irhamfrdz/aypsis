@@ -299,6 +299,12 @@
                                 
                                 // Add regular surat jalans
                                 foreach($suratJalans as $sj) {
+                                    // Prioritas tanggal: checkpoint -> tanda terima
+                                    $tanggalDisplay = $sj->tanggal_checkpoint;
+                                    if (!$tanggalDisplay && $sj->tandaTerima) {
+                                        $tanggalDisplay = $sj->tandaTerima->tanggal_terima;
+                                    }
+                                    
                                     $allSuratJalans->push([
                                         'type' => 'regular',
                                         'id' => $sj->id,
@@ -308,7 +314,7 @@
                                         'tanggal_checkpoint' => $sj->tanggal_checkpoint,
                                         'tandaTerima' => $sj->tandaTerima,
                                         'kegiatan' => $sj->kegiatan,
-                                        'tanggal_untuk_display' => $sj->tanggal_checkpoint,
+                                        'tanggal_untuk_display' => $tanggalDisplay,
                                         'approvals' => $sj->approvals,
                                         'data' => $sj
                                     ]);
@@ -317,6 +323,15 @@
                                 // Add surat jalan bongkarans if available
                                 if(isset($suratJalanBongkarans)) {
                                     foreach($suratJalanBongkarans as $sjb) {
+                                        // Prioritas tanggal: checkpoint -> tanda terima -> tanda terima bongkaran
+                                        $tanggalDisplay = $sjb->tanggal_checkpoint;
+                                        if (!$tanggalDisplay && $sjb->tandaTerima) {
+                                            $tanggalDisplay = $sjb->tandaTerima->tanggal_terima;
+                                        }
+                                        if (!$tanggalDisplay && isset($sjb->tandaTerimaBongkaran)) {
+                                            $tanggalDisplay = $sjb->tandaTerimaBongkaran->tanggal_terima;
+                                        }
+                                        
                                         $allSuratJalans->push([
                                             'type' => 'bongkaran',
                                             'id' => $sjb->id,
@@ -326,7 +341,7 @@
                                             'tanggal_checkpoint' => $sjb->tanggal_checkpoint,
                                             'tandaTerima' => $sjb->tandaTerima,
                                             'kegiatan' => $sjb->kegiatan,
-                                            'tanggal_untuk_display' => $sjb->tanggal_checkpoint,
+                                            'tanggal_untuk_display' => $tanggalDisplay,
                                             'approvals' => null,
                                             'data' => $sjb
                                         ]);
