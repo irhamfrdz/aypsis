@@ -323,13 +323,10 @@
                                 // Add surat jalan bongkarans if available
                                 if(isset($suratJalanBongkarans)) {
                                     foreach($suratJalanBongkarans as $sjb) {
-                                        // Prioritas tanggal: checkpoint -> tanda terima -> tanda terima bongkaran
+                                        // Prioritas tanggal: checkpoint -> tanda terima bongkaran
                                         $tanggalDisplay = $sjb->tanggal_checkpoint;
                                         if (!$tanggalDisplay && $sjb->tandaTerima) {
-                                            $tanggalDisplay = $sjb->tandaTerima->tanggal_terima;
-                                        }
-                                        if (!$tanggalDisplay && isset($sjb->tandaTerimaBongkaran)) {
-                                            $tanggalDisplay = $sjb->tandaTerimaBongkaran->tanggal_terima;
+                                            $tanggalDisplay = $sjb->tandaTerima->tanggal_tanda_terima;
                                         }
                                         
                                         $allSuratJalans->push([
@@ -366,8 +363,8 @@
                                                data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
                                                data-supir_nama="{{ $item['supir'] }}"
                                                data-tanggal_checkpoint="{{ $item['tanggal_checkpoint'] ?? '' }}"
-                                               data-tanggal_tanda_terima="{{ $item['tandaTerima']->tanggal_terima ?? '' }}"
-                                               data-tanggal_tanda_terima_bongkaran="{{ $item['type'] === 'bongkaran' && isset($item['data']->tandaTerimaBongkaran) ? $item['data']->tandaTerimaBongkaran->tanggal_terima : '' }}">
+                                               data-tanggal_tanda_terima="{{ $item['type'] === 'regular' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_terima : '' }}"
+                                               data-tanggal_tanda_terima_bongkaran="{{ $item['type'] === 'bongkaran' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_tanda_terima : '' }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][no_surat_jalan]" value="{{ $item['no_surat_jalan'] }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][supir_nama]" value="{{ $item['supir'] }}">
                                     </td>
