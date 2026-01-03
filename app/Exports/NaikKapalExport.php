@@ -28,7 +28,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
     public function collection()
     {
         // Ambil semua data dari kapal dan voyage yang dipilih tanpa filter
-        $query = NaikKapal::with(['prospek'])
+        $query = NaikKapal::with(['prospek.suratJalan', 'prospek.tandaTerima'])
             ->where('nama_kapal', $this->kapalNama)
             ->where('no_voyage', $this->noVoyage)
             ->orderBy('created_at', 'desc');
@@ -47,6 +47,20 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $noSeal = $prospek->no_seal;
             }
 
+            // Ambil data surat jalan dari prospek
+            $noSuratJalan = '-';
+            if ($prospek && $prospek->suratJalan) {
+                $noSuratJalan = $prospek->suratJalan->no_surat_jalan;
+            } elseif ($prospek && $prospek->no_surat_jalan) {
+                $noSuratJalan = $prospek->no_surat_jalan;
+            }
+
+            // Ambil tanggal tanda terima dari prospek
+            $tanggalTandaTerima = '-';
+            if ($prospek && $prospek->tandaTerima && $prospek->tandaTerima->tanggal) {
+                $tanggalTandaTerima = $prospek->tandaTerima->tanggal->format('d/m/Y');
+            }
+
             return [
                 $index + 1,
                 $naikKapal->nomor_kontainer ?: '-',
@@ -54,6 +68,8 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $naikKapal->jenis_barang ?: '-',
                 $naikKapal->tipe_kontainer ?: '-',
                 $prospek ? $prospek->nama_supir : '-',
+                $noSuratJalan,
+                $tanggalTandaTerima,
             ];
         });
     }
@@ -66,7 +82,9 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             'Nomor Seal',
             'Jenis Barang',
             'Tipe Kontainer',
-            'Nama Supir'
+            'Nama Supir',
+            'No. Surat Jalan',
+            'Tanggal Tanda Terima',
         ];
     }
 
@@ -75,7 +93,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Style header row
-                $event->sheet->getStyle('A1:F1')->applyFromArray([
+                $event->sheet->getStyle('A1:H1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -113,6 +131,8 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $event->sheet->getStyle('A2:A' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No
                 $event->sheet->getStyle('C2:C' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Nomor Seal
                 $event->sheet->getStyle('E2:E' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tipe Kontainer
+                $event->sheet->getStyle('G2:G' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No. Surat Jalan
+                $event->sheet->getStyle('H2:H' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tanggal Tanda Terima
 
                 // Set row height for header
                 $event->sheet->getRowDimension(1)->setRowHeight(25);
