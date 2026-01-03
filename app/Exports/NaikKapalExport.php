@@ -61,6 +61,12 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $tanggalTandaTerima = $prospek->tandaTerima->tanggal->format('d M Y');
             }
 
+            // Ambil PT Pengirim dari prospek
+            $ptPengirim = '-';
+            if ($prospek && $prospek->pt_pengirim) {
+                $ptPengirim = $prospek->pt_pengirim;
+            }
+
             return [
                 $index + 1,
                 $naikKapal->nomor_kontainer ?: '-',
@@ -70,6 +76,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $prospek ? $prospek->nama_supir : '-',
                 $noSuratJalan,
                 $tanggalTandaTerima,
+                $ptPengirim,
             ];
         });
     }
@@ -85,6 +92,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             'Nama Supir',
             'No. Surat Jalan',
             'Tanggal Tanda Terima',
+            'PT Pengirim',
         ];
     }
 
@@ -93,7 +101,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Style header row
-                $event->sheet->getStyle('A1:H1')->applyFromArray([
+                $event->sheet->getStyle('A1:I1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -137,8 +145,9 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 // Set row height for header
                 $event->sheet->getRowDimension(1)->setRowHeight(25);
 
-                // Auto-wrap text for jenis barang column
-                $event->sheet->getStyle('D2:D' . $highestRow)->getAlignment()->setWrapText(true);
+                // Auto-wrap text for jenis barang and PT pengirim columns
+                $event->sheet->getStyle('D2:D' . $highestRow)->getAlignment()->setWrapText(true); // Jenis Barang
+                $event->sheet->getStyle('I2:I' . $highestRow)->getAlignment()->setWrapText(true); // PT Pengirim
             },
         ];
     }
