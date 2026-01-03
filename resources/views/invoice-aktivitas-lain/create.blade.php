@@ -199,6 +199,7 @@
                         <option value="pengembalian penuh" {{ old('jenis_penyesuaian') == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
                         <option value="pengembalian sebagian" {{ old('jenis_penyesuaian') == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
                         <option value="penambahan" {{ old('jenis_penyesuaian') == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
+                        <option value="retur galon" {{ old('jenis_penyesuaian') == 'retur galon' ? 'selected' : '' }}>Retur Galon</option>
                     </select>
                     @error('jenis_penyesuaian')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
