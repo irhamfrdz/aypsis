@@ -1149,16 +1149,37 @@ class PranotaUangRitController extends Controller
             $sheet->setCellValue('B' . $row, $data['no_surat_jalan'] ?? '-');
             $sheet->setCellValue('C' . $row, $data['supir'] ?? '-');
             
-            // Format tanggal checkpoint
-            $tanggalCheckpoint = '-';
+            // Format tanggal dengan prioritas: checkpoint -> tanda terima -> tanda terima bongkaran
+            $tanggalDisplay = '-';
+            
+            // Coba ambil dari tanggal checkpoint dulu
             if (!empty($data['tanggal_checkpoint'])) {
                 try {
-                    $tanggalCheckpoint = \Carbon\Carbon::parse($data['tanggal_checkpoint'])->format('d/m/Y');
+                    $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_checkpoint'])->format('d/m/Y');
                 } catch (\Exception $e) {
-                    $tanggalCheckpoint = '-';
+                    $tanggalDisplay = '-';
                 }
             }
-            $sheet->setCellValue('D' . $row, $tanggalCheckpoint);
+            
+            // Jika checkpoint tidak ada, coba tanda terima
+            if ($tanggalDisplay === '-' && !empty($data['tanggal_tanda_terima'])) {
+                try {
+                    $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_tanda_terima'])->format('d/m/Y');
+                } catch (\Exception $e) {
+                    $tanggalDisplay = '-';
+                }
+            }
+            
+            // Jika masih tidak ada, coba tanda terima bongkaran
+            if ($tanggalDisplay === '-' && !empty($data['tanggal_tanda_terima_bongkaran'])) {
+                try {
+                    $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_tanda_terima_bongkaran'])->format('d/m/Y');
+                } catch (\Exception $e) {
+                    $tanggalDisplay = '-';
+                }
+            }
+            
+            $sheet->setCellValue('D' . $row, $tanggalDisplay);
             
             // Add border to data rows
             $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
