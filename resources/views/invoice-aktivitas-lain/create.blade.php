@@ -224,6 +224,25 @@
                     </button>
                 </div>
 
+                <!-- Jumlah Retur Galon (conditional for Adjustment with 'retur galon') -->
+                <div id="jumlah_retur_wrapper" class="hidden">
+                    <label for="jumlah_retur" class="block text-sm font-medium text-gray-700 mb-2">
+                        Jumlah Retur <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="jumlah_retur" 
+                           id="jumlah_retur" 
+                           value="{{ old('jumlah_retur') }}"
+                           min="1"
+                           step="1"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jumlah_retur') border-red-500 @enderror"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan jumlah galon">
+                    @error('jumlah_retur')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Penerima -->
                 <div>
                     <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
@@ -506,6 +525,20 @@
         function toggleTipePenyesuaian() {
             const jenisPenyesuaian = jenisPenyesuaianSelect.value;
             const totalInput = document.getElementById('total');
+            const jumlahReturWrapper = document.getElementById('jumlah_retur_wrapper');
+            const jumlahReturInput = document.getElementById('jumlah_retur');
+            
+            // Hide all conditional fields first
+            tipePenyesuaianWrapper.classList.add('hidden');
+            clearTipePenyesuaianInputs();
+            
+            if (jumlahReturWrapper) {
+                jumlahReturWrapper.classList.add('hidden');
+                if (jumlahReturInput) {
+                    jumlahReturInput.removeAttribute('required');
+                    jumlahReturInput.value = '';
+                }
+            }
             
             if (jenisPenyesuaian === 'pengembalian penuh') {
                 tipePenyesuaianWrapper.classList.add('hidden');
@@ -524,6 +557,14 @@
             } else if (jenisPenyesuaian === 'penambahan') {
                 tipePenyesuaianWrapper.classList.remove('hidden');
                 initializeTipePenyesuaianInputs();
+            } else if (jenisPenyesuaian === 'retur galon') {
+                // Show jumlah retur field
+                if (jumlahReturWrapper) {
+                    jumlahReturWrapper.classList.remove('hidden');
+                    if (jumlahReturInput) {
+                        jumlahReturInput.setAttribute('required', 'required');
+                    }
+                }
             } else {
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
