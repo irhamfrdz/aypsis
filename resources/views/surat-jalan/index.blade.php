@@ -43,78 +43,98 @@ use Illuminate\Support\Str;
 
         <!-- Search Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <form method="GET" action="{{ route('surat-jalan.index') }}" class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        Pencarian
-                    </label>
-                    <input type="text" name="search" id="search" value="{{ request('search') }}"
-                           placeholder="No. Surat Jalan, Pengirim, No. Kontainer, Tipe Kontainer, Tujuan..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+            <form method="GET" action="{{ route('surat-jalan.index') }}">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-4">
+                    <!-- Pencarian -->
+                    <div class="md:col-span-2 lg:col-span-2 xl:col-span-2">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Pencarian
+                        </label>
+                        <input type="text" name="search" id="search" value="{{ request('search') }}"
+                               placeholder="No. Surat Jalan, Pengirim, No. Kontainer, Tujuan..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Pembayaran -->
+                    <div>
+                        <label for="status_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
+                        <select name="status_pembayaran" id="status_pembayaran" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all" {{ request('status_pembayaran') == 'all' ? 'selected' : '' }}>Semua</option>
+                            <option value="belum_masuk_pranota" {{ request('status_pembayaran') == 'belum_masuk_pranota' ? 'selected' : '' }}>Belum Masuk Pranota</option>
+                            <option value="belum_dibayar" {{ request('status_pembayaran') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
+                            <option value="sudah_dibayar" {{ request('status_pembayaran') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
+                        </select>
+                    </div>
+
+                    <!-- Tipe Kontainer -->
+                    <div>
+                        <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
+                        <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="" {{ request('tipe_kontainer') == '' ? 'selected' : '' }}>Semua Tipe</option>
+                            <option value="Dry Container" {{ request('tipe_kontainer') == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
+                            <option value="High Cube" {{ request('tipe_kontainer') == 'High Cube' ? 'selected' : '' }}>High Cube</option>
+                            <option value="Reefer" {{ request('tipe_kontainer') == 'Reefer' ? 'selected' : '' }}>Reefer</option>
+                            <option value="Open Top" {{ request('tipe_kontainer') == 'Open Top' ? 'selected' : '' }}>Open Top</option>
+                            <option value="Flat Rack" {{ request('tipe_kontainer') == 'Flat Rack' ? 'selected' : '' }}>Flat Rack</option>
+                            <option value="HC" {{ request('tipe_kontainer') == 'HC' ? 'selected' : '' }}>HC</option>
+                            <option value="STD" {{ request('tipe_kontainer') == 'STD' ? 'selected' : '' }}>STD</option>
+                            <option value="RF" {{ request('tipe_kontainer') == 'RF' ? 'selected' : '' }}>RF</option>
+                            <option value="OT" {{ request('tipe_kontainer') == 'OT' ? 'selected' : '' }}>OT</option>
+                            <option value="FR" {{ request('tipe_kontainer') == 'FR' ? 'selected' : '' }}>FR</option>
+                            <option value="cargo" {{ request('tipe_kontainer') == 'cargo' ? 'selected' : '' }}>Cargo</option>
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Mulai -->
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+                        <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Tanggal Akhir -->
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
+                        <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
                 </div>
-                <div class="sm:w-48">
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
-                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
-                </div>
-                <div class="sm:w-48">
-                    <label for="status_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
-                    <select name="status_pembayaran" id="status_pembayaran" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all" {{ request('status_pembayaran') == 'all' ? 'selected' : '' }}>Semua Status</option>
-                        <option value="belum_masuk_pranota" {{ request('status_pembayaran') == 'belum_masuk_pranota' ? 'selected' : '' }}>Belum Masuk Pranota</option>
-                        <option value="belum_dibayar" {{ request('status_pembayaran') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
-                        <option value="sudah_dibayar" {{ request('status_pembayaran') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
-                    </select>
-                </div>
-                <div class="sm:w-48">
-                    <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
-                    <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="" {{ request('tipe_kontainer') == '' ? 'selected' : '' }}>Semua Tipe</option>
-                        <option value="Dry Container" {{ request('tipe_kontainer') == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
-                        <option value="High Cube" {{ request('tipe_kontainer') == 'High Cube' ? 'selected' : '' }}>High Cube</option>
-                        <option value="Reefer" {{ request('tipe_kontainer') == 'Reefer' ? 'selected' : '' }}>Reefer</option>
-                        <option value="Open Top" {{ request('tipe_kontainer') == 'Open Top' ? 'selected' : '' }}>Open Top</option>
-                        <option value="Flat Rack" {{ request('tipe_kontainer') == 'Flat Rack' ? 'selected' : '' }}>Flat Rack</option>
-                        <option value="HC" {{ request('tipe_kontainer') == 'HC' ? 'selected' : '' }}>HC</option>
-                        <option value="STD" {{ request('tipe_kontainer') == 'STD' ? 'selected' : '' }}>STD</option>
-                        <option value="RF" {{ request('tipe_kontainer') == 'RF' ? 'selected' : '' }}>RF</option>
-                        <option value="OT" {{ request('tipe_kontainer') == 'OT' ? 'selected' : '' }}>OT</option>
-                        <option value="FR" {{ request('tipe_kontainer') == 'FR' ? 'selected' : '' }}>FR</option>
-                        <option value="cargo" {{ request('tipe_kontainer') == 'cargo' ? 'selected' : '' }}>Cargo</option>
-                    </select>
-                </div>
-                <div class="sm:w-40">
-                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="sm:w-40">
-                    <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
-                    <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="flex items-end gap-2">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         Filter
                     </button>
+                    
                     @if(request()->hasAny(['search', 'status', 'status_pembayaran', 'tipe_kontainer', 'start_date', 'end_date']))
-                        <a href="{{ route('surat-jalan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        <a href="{{ route('surat-jalan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
                             Reset
                         </a>
                     @endif
+
                     @can('surat-jalan-export')
-                    <a href="{{ route('surat-jalan.export') }}?{{ http_build_query(request()->only(['search','status','status_pembayaran','tipe_kontainer','start_date','end_date'])) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
+                    <a href="{{ route('surat-jalan.export') }}?{{ http_build_query(request()->only(['search','status','status_pembayaran','tipe_kontainer','start_date','end_date'])) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
