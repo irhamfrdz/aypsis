@@ -86,10 +86,22 @@
                                 </div>
                                 
                                 @if($jumlahProspek > 0)
+                                    @php
+                                        // Case-insensitive filtering untuk tipe
+                                        $fclCount = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'FCL';
+                                        })->count();
+                                        $lclCount = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'LCL';
+                                        })->count();
+                                        $cargoCount = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'CARGO';
+                                        })->count();
+                                    @endphp
                                     <div class="mt-3 text-xs text-gray-500">
-                                        <div>FCL: {{ $prospekPerTujuan->where('tipe', 'FCL')->count() }}</div>
-                                        <div>LCL: {{ $prospekPerTujuan->where('tipe', 'LCL')->count() }}</div>
-                                        <div>CARGO: {{ $prospekPerTujuan->where('tipe', 'CARGO')->count() }}</div>
+                                        <div>FCL: {{ $fclCount }}</div>
+                                        <div>LCL: {{ $lclCount }}</div>
+                                        <div>CARGO: {{ $cargoCount }}</div>
                                     </div>
                                 @endif
                             </div>
