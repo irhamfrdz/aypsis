@@ -677,6 +677,39 @@ Route::middleware([
              ->name('pricelist-rit.destroy')
              ->middleware('can:master-pricelist-rit-delete');
 
+        // Pricelist Buruh Management - Separate routes to avoid middleware conflicts
+        Route::get('pricelist-buruh', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'index'])
+             ->name('pricelist-buruh.index')
+             ->middleware('can:master-pricelist-buruh-view');
+        
+        Route::get('pricelist-buruh/create', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'create'])
+             ->name('pricelist-buruh.create')
+             ->middleware('can:master-pricelist-buruh-create');
+        
+        Route::post('pricelist-buruh', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'store'])
+             ->name('pricelist-buruh.store')
+             ->middleware('can:master-pricelist-buruh-create');
+        
+        Route::get('pricelist-buruh/{pricelistBuruh}', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'show'])
+             ->name('pricelist-buruh.show')
+             ->middleware('can:master-pricelist-buruh-view');
+        
+        Route::get('pricelist-buruh/{pricelistBuruh}/edit', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'edit'])
+             ->name('pricelist-buruh.edit')
+             ->middleware('can:master-pricelist-buruh-update');
+        
+        Route::put('pricelist-buruh/{pricelistBuruh}', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'update'])
+             ->name('pricelist-buruh.update')
+             ->middleware('can:master-pricelist-buruh-update');
+        
+        Route::patch('pricelist-buruh/{pricelistBuruh}', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'update'])
+             ->name('pricelist-buruh.update')
+             ->middleware('can:master-pricelist-buruh-update');
+        
+        Route::delete('pricelist-buruh/{pricelistBuruh}', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'destroy'])
+             ->name('pricelist-buruh.destroy')
+             ->middleware('can:master-pricelist-buruh-delete');
+
         // Master pricelist gate in routes - granular permissions
         // Import/Export routes (must be BEFORE resource routes)
         Route::get('pricelist-gate-in/import', [\App\Http\Controllers\PricelistGateInController::class, 'import'])
@@ -1350,6 +1383,10 @@ Route::middleware([
 
     Route::post('master/klasifikasi-biaya-import', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'import'])
          ->name('klasifikasi-biaya.import')
+         ->middleware('can:master-klasifikasi-biaya-create');
+
+    Route::get('master/klasifikasi-biaya-get-next-kode', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'getNextKode'])
+         ->name('klasifikasi-biaya.get-next-kode')
          ->middleware('can:master-klasifikasi-biaya-create');
 
     Route::resource('master/klasifikasi-biaya', KlasifikasiBiayaController::class)

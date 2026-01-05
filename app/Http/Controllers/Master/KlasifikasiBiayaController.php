@@ -30,20 +30,65 @@ class KlasifikasiBiayaController extends Controller
         return view('master.klasifikasi_biaya.create');
     }
 
+    /**
+     * Get next kode (AJAX endpoint)
+     */
+    public function getNextKode()
+    {
+        try {
+            // Get last kode
+            $lastKode = KlasifikasiBiaya::orderBy('kode', 'desc')->first();
+            
+            if ($lastKode && preg_match('/^KB(\d+)$/', $lastKode->kode, $matches)) {
+                // Extract number and increment
+                $nextNumber = (int)$matches[1] + 1;
+            } else {
+                // First kode
+                $nextNumber = 1;
+            }
+            
+            $kode = 'KB' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            
+            return response()->json([
+                'success' => true,
+                'kode' => $kode
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate kode: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'kode' => 'required|string|max:50|unique:klasifikasi_biayas,kode',
-            'nama' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'is_active' => 'nullable|boolean'
-        ]);
+        try {
+            $data = $request->validate([
+                'kode' => 'required|string|max:50|unique:klasifikasi_biayas,kode',
+                'nama' => 'required|string|max:255',
+                'deskripsi' => 'nullable|string',
+            ], [
+                'kode.required' => 'Kode wajib diisi.',
+                'kode.unique' => 'Kode sudah digunakan, silakan gunakan kode lain.',
+                'kode.max' => 'Kode maksimal 50 karakter.',
+                'nama.required' => 'Nama klasifikasi biaya wajib diisi.',
+                'nama.max' => 'Nama maksimal 255 karakter.',
+            ]);
 
-        $data['is_active'] = $request->has('is_active');
+            $data['is_active'] = $request->has('is_active');
 
-        KlasifikasiBiaya::create($data);
+            KlasifikasiBiaya::create($data);
 
-        return redirect()->route('klasifikasi-biaya.index')->with('success', 'Klasifikasi biaya berhasil ditambahkan.');
+            return redirect()->route('klasifikasi-biaya.index')->with('success', 'Klasifikasi biaya berhasil ditambahkan.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            \Log::error('Error saving klasifikasi biaya: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan klasifikasi biaya: ' . $e->getMessage());
+        }
     }
 
     public function edit(KlasifikasiBiaya $klasifikasiBiaya)
@@ -53,18 +98,32 @@ class KlasifikasiBiayaController extends Controller
 
     public function update(Request $request, KlasifikasiBiaya $klasifikasiBiaya)
     {
-        $data = $request->validate([
-            'kode' => 'required|string|max:50|unique:klasifikasi_biayas,kode,' . $klasifikasiBiaya->id,
-            'nama' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'is_active' => 'nullable|boolean'
-        ]);
+        try {
+            $data = $request->validate([
+                'kode' => 'required|string|max:50|unique:klasifikasi_biayas,kode,' . $klasifikasiBiaya->id,
+                'nama' => 'required|string|max:255',
+                'deskripsi' => 'nullable|string',
+            ], [
+                'kode.required' => 'Kode wajib diisi.',
+                'kode.unique' => 'Kode sudah digunakan, silakan gunakan kode lain.',
+                'kode.max' => 'Kode maksimal 50 karakter.',
+                'nama.required' => 'Nama klasifikasi biaya wajib diisi.',
+                'nama.max' => 'Nama maksimal 255 karakter.',
+            ]);
 
-        $data['is_active'] = $request->has('is_active');
+            $data['is_active'] = $request->has('is_active');
 
-        $klasifikasiBiaya->update($data);
+            $klasifikasiBiaya->update($data);
 
-        return redirect()->route('klasifikasi-biaya.index')->with('success', 'Klasifikasi biaya berhasil diperbarui.');
+            return redirect()->route('klasifikasi-biaya.index')->with('success', 'Klasifikasi biaya berhasil diperbarui.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            \Log::error('Error updating klasifikasi biaya: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui klasifikasi biaya: ' . $e->getMessage());
+        }
     }
 
     public function destroy(KlasifikasiBiaya $klasifikasiBiaya)

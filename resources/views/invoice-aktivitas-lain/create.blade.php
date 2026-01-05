@@ -43,14 +43,14 @@
                     </label>
                     <div class="relative">
                         <input type="text" 
-                               name="nomor_invoice" 
-                               id="nomor_invoice" 
-                               value="{{ old('nomor_invoice') }}"
-                               class="w-full border-gray-300 rounded-md shadow-sm bg-gray-50 @error('nomor_invoice') border-red-500 @enderror"
-                               style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                               placeholder="Loading..."
-                               readonly
-                               required>
+                                   name="nomor_invoice" 
+                                   id="nomor_invoice" 
+                                   value="{{ old('nomor_invoice') }}"
+                                   class="w-full {{ $errors->has('nomor_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm bg-gray-50"
+                                   style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                   placeholder="Loading..."
+                                   readonly
+                                   required>
                         <div id="invoice_loader" class="absolute right-3 top-1/2 -translate-y-1/2">
                             <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -72,7 +72,7 @@
                            name="tanggal_invoice" 
                            id="tanggal_invoice" 
                            value="{{ old('tanggal_invoice', date('Y-m-d')) }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('tanggal_invoice') border-red-500 @enderror"
+                           class="w-full {{ $errors->has('tanggal_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            required>
                     @error('tanggal_invoice')
@@ -87,7 +87,7 @@
                     </label>
                     <select name="jenis_aktivitas" 
                             id="jenis_aktivitas" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_aktivitas') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('jenis_aktivitas') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                             required>
                         <option value="">Pilih Jenis Aktivitas</option>
@@ -108,7 +108,7 @@
                     </label>
                     <select name="sub_jenis_kendaraan" 
                             id="sub_jenis_kendaraan" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('sub_jenis_kendaraan') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('sub_jenis_kendaraan') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Sub Jenis Kendaraan</option>
                         <option value="STNK" {{ old('sub_jenis_kendaraan') == 'STNK' ? 'selected' : '' }}>STNK</option>
@@ -128,7 +128,7 @@
                     </label>
                     <select name="nomor_polisi" 
                             id="nomor_polisi" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nomor_polisi') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('nomor_polisi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Nomor Polisi</option>
                         @foreach($mobils as $mobil)
@@ -170,7 +170,7 @@
                     </label>
                     <select name="bl_id" 
                             id="bl_select" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('bl_id') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('bl_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih BL</option>
                         @foreach($bls as $bl)
@@ -191,7 +191,7 @@
                     </label>
                     <select name="surat_jalan_id" 
                             id="surat_jalan_select" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('surat_jalan_id') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('surat_jalan_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Surat Jalan</option>
                         @foreach($suratJalans as $sj)
@@ -214,7 +214,7 @@
                     </label>
                     <select name="jenis_penyesuaian" 
                             id="jenis_penyesuaian_select" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_penyesuaian') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('jenis_penyesuaian') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Jenis Penyesuaian</option>
                         <option value="pengembalian penuh" {{ old('jenis_penyesuaian') == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
@@ -255,7 +255,7 @@
                            value="{{ old('jumlah_retur') }}"
                            min="1"
                            step="1"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jumlah_retur') border-red-500 @enderror"
+                           class="w-full {{ $errors->has('jumlah_retur') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan jumlah galon">
                     @error('jumlah_retur')
@@ -270,7 +270,7 @@
                     </label>
                     <select name="penerima" 
                             id="penerima" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('penerima') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('penerima') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                             required>
                         <option value="">Pilih Penerima</option>
@@ -296,7 +296,7 @@
                                name="total" 
                                id="total" 
                                value="{{ old('total') }}"
-                               class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('total') border-red-500 @enderror"
+                               class="w-full pl-10 {{ $errors->has('total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                placeholder="0"
                                required>
@@ -316,7 +316,7 @@
                 <textarea name="deskripsi" 
                           id="deskripsi" 
                           rows="4"
-                          class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('deskripsi') border-red-500 @enderror"
+                          class="w-full {{ $errors->has('deskripsi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           style="padding: 8px 12px; font-size: 14px; line-height: 1.5; border: 1px solid #d1d5db; border-radius: 6px;"
                           placeholder="Masukkan deskripsi invoice (opsional)">{{ old('deskripsi') }}</textarea>
                 @error('deskripsi')
@@ -332,7 +332,7 @@
                 <textarea name="catatan" 
                           id="catatan" 
                           rows="3"
-                          class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('catatan') border-red-500 @enderror"
+                          class="w-full {{ $errors->has('catatan') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           style="padding: 8px 12px; font-size: 14px; line-height: 1.5; border: 1px solid #d1d5db; border-radius: 6px;"
                           placeholder="Masukkan catatan tambahan (opsional)">{{ old('catatan') }}</textarea>
                 @error('catatan')

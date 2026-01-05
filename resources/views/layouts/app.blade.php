@@ -283,6 +283,7 @@
                         $user->can('master-kegiatan-view') ||
                         $user->can('master-pelabuhan-view') ||
                         $user->can('master-pricelist-gate-in-view') ||
+                        $user->can('master-pricelist-buruh-view') ||
                         $user->can('master-user-view') ||
                         $user->can('master-karyawan-view') ||
                         $user->can('master-divisi-view') ||
@@ -592,6 +593,11 @@
                                 @if($user && $user->can('master-pricelist-rit-view'))
                                     <a href="{{ route('master.pricelist-rit.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist Rit</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('master-pricelist-buruh-view'))
+                                    <a href="{{ route('master.pricelist-buruh.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-buruh.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Pricelist Buruh</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-kelola-bbm-view'))
