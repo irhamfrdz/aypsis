@@ -153,14 +153,17 @@
                             @endphp
                             @forelse($breakdownSupir as $breakdown)
                             <tr>
-                                <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{{ $breakdown['supir'] ?? '-' }}</td>
-                                <td class="px-3 py-2 whitespace-nowrap text-center text-xs text-gray-900">{{ $breakdown['items'] ?? 0 }}</td>
-                                <td class="px-3 py-2 whitespace-nowrap text-right text-xs font-semibold text-gray-900">Rp {{ number_format($breakdown['biaya'] ?? 0, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                                    {{ $breakdown['nama_supir'] ?? ($breakdown['supir'] ?? '-') }}
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-center text-xs text-gray-900">{{ $breakdown['jumlah_item'] ?? ($breakdown['items'] ?? 0) }}</td>
+                                <td class="px-3 py-2 whitespace-nowrap text-right text-xs font-semibold text-gray-900">Rp {{ number_format($breakdown['total_biaya'] ?? ($breakdown['biaya'] ?? 0), 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-right text-xs text-green-700">Rp {{ number_format($breakdown['dp'] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-right text-xs text-red-700">Rp {{ number_format($breakdown['sisa'] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-right text-xs">
                                     @php
-                                        $supirSlug = \Illuminate\Support\Str::slug($breakdown['supir'] ?? '');
+                                        $supirName = $breakdown['nama_supir'] ?? ($breakdown['supir'] ?? 'Unknown');
+                                        $supirSlug = \Illuminate\Support\Str::slug($supirName);
                                     @endphp
                                     <input type="number" 
                                            class="potongan-utang w-24 px-2 py-1 text-xs border border-gray-300 rounded focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
@@ -201,8 +204,8 @@
                         <tfoot class="bg-gray-50">
                             <tr>
                                 <td class="px-3 py-2 text-left text-xs font-bold text-gray-800">Total</td>
-                                <td class="px-3 py-2 text-center text-xs font-bold text-gray-800" id="total-items">{{ array_sum(array_column($breakdownSupir, 'items')) }}</td>
-                                <td class="px-3 py-2 text-right text-xs font-bold text-gray-800" id="total-biaya">Rp {{ number_format(array_sum(array_column($breakdownSupir, 'biaya')), 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 text-center text-xs font-bold text-gray-800" id="total-items">{{ array_sum(array_map(function($b) { return $b['jumlah_item'] ?? ($b['items'] ?? 0); }, $breakdownSupir)) }}</td>
+                                <td class="px-3 py-2 text-right text-xs font-bold text-gray-800" id="total-biaya">Rp {{ number_format(array_sum(array_map(function($b) { return $b['total_biaya'] ?? ($b['biaya'] ?? 0); }, $breakdownSupir)), 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right text-xs font-bold text-green-800" id="total-dp">Rp {{ number_format(array_sum(array_column($breakdownSupir, 'dp')), 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right text-xs font-bold text-red-800" id="total-sisa">Rp {{ number_format(array_sum(array_column($breakdownSupir, 'sisa')), 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right text-xs font-bold text-orange-800" id="total-pot-utang">Rp {{ number_format(array_sum(array_column($breakdownSupir, 'potongan_utang')), 0, ',', '.') }}</td>
@@ -289,7 +292,8 @@
         function updateGrandTotal(supirSlug) {
             const breakdown = getCurrentBreakdown();
             const supirData = breakdown.find(item => {
-                const itemSlug = item.supir.toLowerCase().replace(/\s+/g, '-');
+                const supirName = item.nama_supir || item.supir || 'Unknown';
+                const itemSlug = supirName.toLowerCase().replace(/\s+/g, '-');
                 return itemSlug === supirSlug;
             });
             
@@ -313,7 +317,9 @@
                 const existingBreakdown = JSON.parse(breakdownHidden.value || '[]');
                 
                 existingBreakdown.forEach(item => {
-                    const supirSlug = item.supir.toLowerCase().replace(/\s+/g, '-');
+                    // Support both field names
+                    const supirName = item.nama_supir || item.supir || 'Unknown';
+                    const supirSlug = supirName.toLowerCase().replace(/\s+/g, '-');
                     const potUtang = parseFloat(document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`)?.value) || 0;
                     const potTabungan = parseFloat(document.querySelector(`.potongan-tabungan[data-supir="${supirSlug}"]`)?.value) || 0;
                     const potBpjs = parseFloat(document.querySelector(`.potongan-bpjs[data-supir="${supirSlug}"]`)?.value) || 0;
