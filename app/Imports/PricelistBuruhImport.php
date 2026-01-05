@@ -17,13 +17,21 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
     */
     public function model(array $row)
     {
+        // Normalize tipe value - ignore "-" or empty values
+        $tipe = null;
+        if (!empty($row['tipe']) && $row['tipe'] !== '-') {
+            if (in_array($row['tipe'], ['Full', 'Empty'])) {
+                $tipe = $row['tipe'];
+            }
+        }
+
         return new PricelistBuruh([
             'barang' => $row['barang'],
-            'size' => $row['size'] ?? null,
-            'tipe' => !empty($row['tipe']) && in_array($row['tipe'], ['Full', 'Empty']) ? $row['tipe'] : null,
+            'size' => !empty($row['size']) && $row['size'] !== '-' ? $row['size'] : null,
+            'tipe' => $tipe,
             'tarif' => $row['tarif'],
             'is_active' => isset($row['status']) && strtolower($row['status']) === 'aktif',
-            'keterangan' => $row['keterangan'] ?? null,
+            'keterangan' => !empty($row['keterangan']) && $row['keterangan'] !== '-' ? $row['keterangan'] : null,
             'created_by' => Auth::id(),
         ]);
     }
@@ -36,7 +44,6 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'barang' => 'required|string|max:255',
             'size' => 'nullable|string|max:255',
-            'tipe' => 'nullable|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',
             'status' => 'nullable|string',
             'keterangan' => 'nullable|string',
