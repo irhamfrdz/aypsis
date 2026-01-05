@@ -237,25 +237,57 @@ function removeFromContainer(lclId, containerNumber, lclNumber) {
             })
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('HTTP error! status: ' + response.status);
-            }
-            return response.json();
+            // Parse response as JSON first
+            return response.json().then(data => {
+                // Return both status and data
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            });
         })
-        .then(data => {
-            if (data.success) {
+        .then(result => {
+            if (result.ok && result.data.success) {
                 // Show success message
-                alert(data.message || 'Tanda terima berhasil dikeluarkan dari kontainer');
+                alert(result.data.message || 'Tanda terima berhasil dikeluarkan dari kontainer');
                 
                 // Reload page to update the list
                 window.location.reload();
             } else {
-                throw new Error(data.message || 'Terjadi kesalahan');
+                // Handle error responses
+                let errorMessage = 'Gagal mengeluarkan tanda terima dari kontainer.\n\n';
+                
+                if (result.status === 404) {
+                    errorMessage += 'Data tidak ditemukan atau sudah dihapus sebelumnya.';
+                } else if (result.status === 403) {
+                    errorMessage += 'Anda tidak memiliki izin untuk melakukan tindakan ini.';
+                } else if (result.status === 500) {
+                    errorMessage += 'Terjadi kesalahan pada server.\n';
+                    errorMessage += result.data.message ? `Detail: ${result.data.message}` : 'Silakan hubungi administrator.';
+                } else {
+                    errorMessage += result.data.message || 'Terjadi kesalahan yang tidak diketahui.';
+                }
+                
+                throw new Error(errorMessage);
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error: ' + error.message);
+            console.error('Error removing from container:', error);
+            
+            // Show descriptive error message
+            let displayMessage = 'Gagal mengeluarkan tanda terima dari kontainer.\n\n';
+            
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                displayMessage += 'Koneksi ke server terputus. Periksa koneksi internet Anda dan coba lagi.';
+            } else if (error.message.includes('Gagal mengeluarkan')) {
+                // Error message already formatted from server
+                displayMessage = error.message;
+            } else {
+                displayMessage += `Detail error: ${error.message}`;
+            }
+            
+            alert(displayMessage);
             
             // Reset button
             button.innerHTML = originalHTML;
