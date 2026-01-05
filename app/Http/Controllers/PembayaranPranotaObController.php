@@ -312,16 +312,94 @@ class PembayaranPranotaObController extends Controller
 
     public function edit($id)
     {
-        // Placeholder for future implementation
-        return redirect()->route('pembayaran-pranota-ob.index')
-            ->with('info', 'Fitur edit sedang dalam pengembangan');
+        $pembayaran = PembayaranPranotaOb::with('pembayaranOb')->findOrFail($id);
+        
+        return view('pembayaran-pranota-ob.edit', compact('pembayaran'));
     }
 
     public function update(Request $request, $id)
     {
-        // Placeholder for future implementation
-        return redirect()->route('pembayaran-pranota-ob.index')
-            ->with('info', 'Fitur update sedang dalam pengembangan');
+        $validated = $request->validate([
+            'nomor_accurate' => 'nullable|string|max:255',
+            'tanggal_kas' => 'required|date',
+            'bank' => 'required|string|max:255',
+            'jenis_transaksi' => 'required|in:debit,credit',
+            'penyesuaian' => 'nullable|string',
+            'alasan_penyesuaian' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+            'breakdown_supir' => 'nullable|json',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PembayaranPranotaOb::findOrFail($id);
+
+            // Parse penyesuaian from formatted string to number
+            $penyesuaian = 0;
+            if (!empty($validated['penyesuaian'])) {
+                $penyesuaian = floatval(str_replace(['.', ','], ['', '.'], $validated['penyesuaian']));
+            }
+
+            // Parse breakdown_supir to calculate total
+            $breakdownSupir = [];
+            if (!empty($validated['breakdown_supir'])) {
+                $breakdownSupir = json_decode($validated['breakdown_supir'], true) ?? [];
+            }
+
+            // Calculate total from breakdown_supir
+            $totalPembayaran = 0;
+            if (!empty($breakdownSupir)) {
+                foreach ($breakdownSupir as $breakdown) {
+                    $totalPembayaran += (float)($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
+                }
+            } else {
+                // If no breakdown, keep original total
+                $totalPembayaran = $pembayaran->total_pembayaran;
+            }
+
+            // Update pembayaran record
+            $updateData = [
+                'nomor_accurate' => $validated['nomor_accurate'],
+                'tanggal_kas' => $validated['tanggal_kas'],
+                'bank' => $validated['bank'],
+                'jenis_transaksi' => $validated['jenis_transaksi'],
+                'total_pembayaran' => $totalPembayaran,
+                'penyesuaian' => $penyesuaian,
+                'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
+                'alasan_penyesuaian' => $validated['alasan_penyesuaian'],
+                'keterangan' => $validated['keterangan'],
+                'breakdown_supir' => !empty($breakdownSupir) ? json_encode($breakdownSupir) : null,
+                'updated_by' => Auth::id(),
+            ];
+
+            $pembayaran->update($updateData);
+
+            // Log COA transaction update
+            if ($pembayaran->nomor_pembayaran) {
+                $this->coaTransactionService->logTransaction([
+                    'kode_transaksi' => $pembayaran->nomor_pembayaran,
+                    'tanggal' => $validated['tanggal_kas'],
+                    'keterangan' => 'Update Pembayaran Pranota OB - ' . ($validated['keterangan'] ?? ''),
+                    'tipe_transaksi' => $validated['jenis_transaksi'],
+                    'bank' => $validated['bank'],
+                    'jumlah' => $totalPembayaran + $penyesuaian,
+                    'user_id' => Auth::id(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-pranota-ob.index')
+                ->with('success', 'Pembayaran pranota OB berhasil diupdate.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating pembayaran pranota OB: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat mengupdate pembayaran: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)
