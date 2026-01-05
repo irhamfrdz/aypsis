@@ -65,6 +65,22 @@
 
         <div class="mb-3">
             <h4 class="text-xs font-medium mb-1">Ringkasan Per Supir</h4>
+            @php
+                // Calculate totals before rendering table
+                $totalFull20 = 0;
+                $totalEmpty20 = 0;
+                $totalFull40 = 0;
+                $totalEmpty40 = 0;
+                
+                foreach($perSupirCounts as $supirName => $counts) {
+                    $totalFull20 += $counts['sizes']['20']['full'] ?? 0;
+                    $totalEmpty20 += $counts['sizes']['20']['empty'] ?? 0;
+                    $totalFull40 += $counts['sizes']['40']['full'] ?? 0;
+                    $totalEmpty40 += $counts['sizes']['40']['empty'] ?? 0;
+                }
+                
+                $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
+            @endphp
             <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
                 <thead>
                     <tr>
@@ -88,16 +104,10 @@
                     {{-- Baris 20" --}}
                     <tr>
                         <td class="border px-2 py-1 text-center">20"</td>
-                        @php 
-                            $totalFull20 = 0;
-                            $totalEmpty20 = 0;
-                        @endphp
                         @foreach($perSupirCounts as $supirName => $counts)
                             @php
                                 $full20 = $counts['sizes']['20']['full'] ?? 0;
                                 $empty20 = $counts['sizes']['20']['empty'] ?? 0;
-                                $totalFull20 += $full20;
-                                $totalEmpty20 += $empty20;
                             @endphp
                             <td class="border px-2 py-1 text-center">{{ $full20 > 0 ? $full20 : '-' }}</td>
                             <td class="border px-2 py-1 text-center">{{ $empty20 > 0 ? $empty20 : '-' }}</td>
@@ -110,16 +120,10 @@
                     {{-- Baris 40" --}}
                     <tr>
                         <td class="border px-2 py-1 text-center">40"</td>
-                        @php 
-                            $totalFull40 = 0;
-                            $totalEmpty40 = 0;
-                        @endphp
                         @foreach($perSupirCounts as $supirName => $counts)
                             @php
                                 $full40 = $counts['sizes']['40']['full'] ?? 0;
                                 $empty40 = $counts['sizes']['40']['empty'] ?? 0;
-                                $totalFull40 += $full40;
-                                $totalEmpty40 += $empty40;
                             @endphp
                             <td class="border px-2 py-1 text-center">{{ $full40 > 0 ? $full40 : '-' }}</td>
                             <td class="border px-2 py-1 text-center">{{ $empty40 > 0 ? $empty40 : '-' }}</td>
@@ -167,7 +171,7 @@
                 <tbody>
                     <tr>
                         <td class="px-2 py-1 text-xs font-medium">Total Kontainer</td>
-                        <td class="px-2 py-1 text-xs">{{ array_sum(array_map(function($c){ return array_sum(array_map('array_sum', array_column($c['sizes'], null))); }, $perSupirCounts)) ?? 0 }}</td>
+                        <td class="px-2 py-1 text-xs">{{ $grandTotalKontainer }}</td>
                     </tr>
                     <tr>
                         <td class="px-2 py-1 text-xs font-medium">Total Biaya</td>

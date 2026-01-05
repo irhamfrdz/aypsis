@@ -163,6 +163,27 @@
                     @enderror
                 </div>
 
+                <!-- BL (conditional for Pembayaran Kapal) -->
+                <div id="bl_wrapper" class="hidden">
+                    <label for="bl_select" class="block text-sm font-medium text-gray-700 mb-2">
+                        BL <span class="text-red-500">*</span>
+                    </label>
+                    <select name="bl_id" 
+                            id="bl_select" 
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('bl_id') border-red-500 @enderror"
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="">Pilih BL</option>
+                        @foreach($bls as $bl)
+                            <option value="{{ $bl->id }}" {{ old('bl_id') == $bl->id ? 'selected' : '' }}>
+                                {{ $bl->nomor_bl }} - {{ $bl->pengirim ?? 'N/A' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('bl_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Surat Jalan (conditional for Adjustment) -->
                 <div id="surat_jalan_wrapper" class="hidden">
                     <label for="surat_jalan_select" class="block text-sm font-medium text-gray-700 mb-2">
@@ -430,6 +451,7 @@
         $('#sub_jenis_kendaraan').select2({ placeholder: 'Pilih Sub Jenis Kendaraan', allowClear: true, width: '100%' });
         $('#nomor_polisi').select2({ placeholder: 'Pilih Nomor Polisi', allowClear: true, width: '100%' });
         $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
+        $('#bl_select').select2({ placeholder: 'Pilih BL', allowClear: true, width: '100%' });
         $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
         $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
         $('#penerima').select2({ placeholder: 'Pilih Penerima', allowClear: true, width: '100%' });
@@ -458,6 +480,8 @@
         const nomorPolisiSelect = document.getElementById('nomor_polisi');
         const nomorVoyageWrapper = document.getElementById('nomor_voyage_wrapper');
         const nomorVoyageSelect = document.getElementById('nomor_voyage');
+        const blWrapper = document.getElementById('bl_wrapper');
+        const blSelect = document.getElementById('bl_select');
         const suratJalanWrapper = document.getElementById('surat_jalan_wrapper');
         const suratJalanSelect = document.getElementById('surat_jalan_select');
         const jenisPenyesuaianWrapper = document.getElementById('jenis_penyesuaian_wrapper');
@@ -479,6 +503,10 @@
             nomorVoyageWrapper.classList.add('hidden');
             nomorVoyageSelect.removeAttribute('required');
             $('#nomor_voyage').val('').trigger('change');
+            
+            blWrapper.classList.add('hidden');
+            blSelect.removeAttribute('required');
+            $('#bl_select').val('').trigger('change');
             
             suratJalanWrapper.classList.add('hidden');
             suratJalanSelect.removeAttribute('required');
@@ -504,9 +532,12 @@
             } else if (jenisVal === 'Pembayaran Kapal') {
                 nomorVoyageWrapper.classList.remove('hidden');
                 nomorVoyageSelect.setAttribute('required', 'required');
+                blWrapper.classList.remove('hidden');
+                blSelect.setAttribute('required', 'required');
                 
                 setTimeout(() => {
                     $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
+                    $('#bl_select').select2({ placeholder: 'Pilih BL', allowClear: true, width: '100%' });
                 }, 100);
             } else if (jenisVal === 'Pembayaran Adjustment Uang Jalan') {
                 suratJalanWrapper.classList.remove('hidden');

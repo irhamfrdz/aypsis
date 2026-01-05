@@ -100,7 +100,15 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('no_surat_jalan')
             ->get();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans'));
+        // Get BLs for pembayaran kapal
+        $bls = \DB::table('bls')
+            ->select('id', 'nomor_bl', 'pengirim')
+            ->whereNotNull('nomor_bl')
+            ->where('nomor_bl', '!=', '')
+            ->orderBy('nomor_bl')
+            ->get();
+        
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls'));
     }
 
     /**
