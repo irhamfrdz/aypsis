@@ -108,7 +108,13 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('nomor_bl')
             ->get();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls'));
+        // Get klasifikasi biaya for pembayaran kapal
+        $klasifikasiBiayas = \DB::table('klasifikasi_biayas')
+            ->select('id', 'nama_biaya')
+            ->orderBy('nama_biaya')
+            ->get();
+        
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas'));
     }
 
     /**
