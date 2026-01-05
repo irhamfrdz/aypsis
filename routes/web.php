@@ -677,6 +677,18 @@ Route::middleware([
              ->name('pricelist-rit.destroy')
              ->middleware('can:master-pricelist-rit-delete');
 
+        // Pricelist Buruh Import/Export routes (must be BEFORE resource routes)
+        Route::get('pricelist-buruh/export', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'export'])
+             ->name('pricelist-buruh.export')
+             ->middleware('can:master-pricelist-buruh-view');
+        
+        Route::get('pricelist-buruh/template', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'downloadTemplate'])
+             ->name('pricelist-buruh.template');
+        
+        Route::post('pricelist-buruh/import', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'import'])
+             ->name('pricelist-buruh.import')
+             ->middleware('can:master-pricelist-buruh-create');
+
         // Pricelist Buruh Management - Separate routes to avoid middleware conflicts
         Route::get('pricelist-buruh', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'index'])
              ->name('pricelist-buruh.index')

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Models\PricelistBuruh;
 use Illuminate\Http\Request;
+use App\Exports\PricelistBuruhExport;
+use App\Imports\PricelistBuruhImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PricelistBuruhController extends Controller
 {
@@ -50,10 +53,12 @@ class PricelistBuruhController extends Controller
             $data = $request->validate([
                 'barang' => 'required|string|max:255',
                 'size' => 'nullable|string|max:255',
+                'tipe' => 'nullable|in:Full,Empty',
                 'tarif' => 'required|numeric|min:0',
                 'keterangan' => 'nullable|string',
             ], [
                 'barang.required' => 'Nama barang wajib diisi.',
+                'tipe.in' => 'Tipe harus Full atau Empty.',
                 'tarif.required' => 'Tarif wajib diisi.',
                 'tarif.numeric' => 'Tarif harus berupa angka.',
                 'tarif.min' => 'Tarif tidak boleh kurang dari 0.',
@@ -100,19 +105,15 @@ class PricelistBuruhController extends Controller
             $data = $request->validate([
                 'barang' => 'required|string|max:255',
                 'size' => 'nullable|string|max:255',
+                'tipe' => 'nullable|in:Full,Empty',
                 'tarif' => 'required|numeric|min:0',
-                'full' => 'nullable|numeric|min:0',
-                'empty' => 'nullable|numeric|min:0',
                 'keterangan' => 'nullable|string',
             ], [
                 'barang.required' => 'Nama barang wajib diisi.',
+                'tipe.in' => 'Tipe harus Full atau Empty.',
                 'tarif.required' => 'Tarif wajib diisi.',
                 'tarif.numeric' => 'Tarif harus berupa angka.',
                 'tarif.min' => 'Tarif tidak boleh kurang dari 0.',
-                'full.numeric' => 'Tarif full harus berupa angka.',
-                'full.min' => 'Tarif full tidak boleh kurang dari 0.',
-                'empty.numeric' => 'Tarif empty harus berupa angka.',
-                'empty.min' => 'Tarif empty tidak boleh kurang dari 0.',
             ]);
 
             $data['is_active'] = $request->has('is_active');
@@ -142,6 +143,107 @@ class PricelistBuruhController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error deleting pricelist buruh: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menghapus pricelist buruh: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export pricelist buruh to Excel
+     */
+    public function export()
+    {
+        return Excel::download(new PricelistBuruhExport, 'pricelist-buruh-' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Download template Excel for import
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Barang',
+            'Size',
+            'Tipe',
+            'Tarif',
+            'Status',
+            'Keterangan',
+        ];
+
+        $sampleData = [
+            ['Bongkar Muat', '20', 'Full', 150000, 'Aktif', 'Contoh data'],
+            ['Bongkar Muat', '20', 'Empty', 100000, 'Aktif', ''],
+            ['Stuffing', '40', 'Full', 200000, 'Aktif', ''],
+        ];
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $col++;
+        }
+
+        // Add sample data
+        $row = 2;
+        foreach ($sampleData as $data) {
+            $col = 'A';
+            foreach ($data as $value) {
+                $sheet->setCellValue($col . $row, $value);
+                $col++;
+            }
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'template-pricelist-buruh.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Import pricelist buruh from Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ], [
+            'file.required' => 'File Excel wajib dipilih.',
+            'file.mimes' => 'File harus berformat Excel (xlsx, xls, csv).',
+            'file.max' => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        try {
+            Excel::import(new PricelistBuruhImport, $request->file('file'));
+
+            return redirect()->route('master.pricelist-buruh.index')
+                ->with('success', 'Data berhasil diimport dari Excel.');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            
+            foreach ($failures as $failure) {
+                $errors[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+
+            return redirect()->back()
+                ->with('error', 'Gagal import data: ' . implode('<br>', $errors));
+        } catch (\Exception $e) {
+            \Log::error('Error importing pricelist buruh: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal import data: ' . $e->getMessage());
         }
     }
 }

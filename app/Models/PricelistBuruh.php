@@ -14,9 +14,8 @@ class PricelistBuruh extends Model
     protected $fillable = [
         'barang',
         'size',
+        'tipe',
         'tarif',
-        'full',
-        'empty',
         'is_active',
         'keterangan',
         'created_by',
