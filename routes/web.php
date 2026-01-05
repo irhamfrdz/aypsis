@@ -4065,6 +4065,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::post('bl/validate-containers', [\App\Http\Controllers\BlController::class, 'validateContainers'])->name('bl.validate-containers')
                ->middleware('can:bl-edit');
                
+          Route::post('bl/get-pt-pengirim', [\App\Http\Controllers\BlController::class, 'getPtPengirim'])->name('bl.get-pt-pengirim')
+               ->middleware('can:bl-edit');
+               
           Route::post('bl/bulk-split', [\App\Http\Controllers\BlController::class, 'bulkSplit'])->name('bl.bulk-split')
                ->middleware('can:bl-edit');
                

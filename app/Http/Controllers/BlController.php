@@ -384,6 +384,54 @@ class BlController extends Controller
             'selected_count' => $bls->count()
         ]);
     }
+    
+    /**
+     * Get PT Pengirim list from tanda_terima based on selected BL container numbers
+     */
+    public function getPtPengirim(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada BL yang dipilih.'
+            ]);
+        }
+        
+        // Get BLs and their container numbers
+        $bls = Bl::whereIn('id', $ids)->get();
+        $nomorKontainers = $bls->pluck('nomor_kontainer')->filter()->unique()->values();
+        
+        if ($nomorKontainers->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'BL yang dipilih tidak memiliki nomor kontainer.'
+            ]);
+        }
+        
+        // Get PT Pengirim from tanda_terima based on container numbers
+        $ptList = \DB::table('tanda_terima')
+            ->select(
+                'pengirim',
+                'nama_barang',
+                \DB::raw('COUNT(*) as jumlah_kontainer'),
+                \DB::raw('SUM(tonase) as total_tonnage'),
+                \DB::raw('SUM(meter_kubik) as total_volume')
+            )
+            ->whereIn('no_kontainer', $nomorKontainers)
+            ->whereNotNull('pengirim')
+            ->where('pengirim', '!=', '')
+            ->groupBy('pengirim', 'nama_barang')
+            ->orderBy('pengirim')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'pt_list' => $ptList,
+            'container_numbers' => $nomorKontainers
+        ]);
+    }
 
     /**
      * Bulk split selected BL records - create new BL with same container but different tonnage
@@ -407,6 +455,7 @@ class BlController extends Controller
 
         $request->validate([
             'ids' => 'required|string',
+            'pt_pengirim' => 'required|string',
             'tonnage_dipindah' => 'required|numeric|min:0.01',
             'volume_dipindah' => 'required|numeric|min:0.001',
             'nama_barang_dipindah' => 'required|string',
@@ -422,9 +471,10 @@ class BlController extends Controller
 
         $tonnageDipindah = $request->tonnage_dipindah;
         $volumeDipindah = $request->volume_dipindah;
+        $ptPengirim = $request->pt_pengirim;
         $processedCount = 0;
         
-        DB::transaction(function () use ($ids, $request, $tonnageDipindah, $volumeDipindah, &$processedCount) {
+        DB::transaction(function () use ($ids, $request, $tonnageDipindah, $volumeDipindah, $ptPengirim, &$processedCount) {
             
             foreach ($ids as $originalId) {
                 $originalBl = Bl::findOrFail($originalId);
@@ -452,12 +502,13 @@ class BlController extends Controller
                     'no_seal' => $originalBl->no_seal,                 // Same seal
                     'nama_kapal' => $originalBl->nama_kapal,
                     'no_voyage' => $originalBl->no_voyage,
+                    'pengirim' => $ptPengirim,                         // PT Pengirim from tanda_terima
                     'nama_barang' => $request->nama_barang_dipindah,   // Different cargo name
                     'tonnage' => $tonnageDipindah,                     // Split tonnage
                     'volume' => $volumeDipindah,                       // Split volume
                     'term' => $request->term_baru ?: $originalBl->term, // New term or same as original
                     'prospek_id' => $originalBl->prospek_id,
-                    'keterangan' => $request->keterangan,
+                    'keterangan' => $request->keterangan . ' [PT: ' . $ptPengirim . ']',
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id()
                 ]);
@@ -469,7 +520,7 @@ class BlController extends Controller
                 $originalBl->update([
                     'tonnage' => max(0, $remainingTonnage),
                     'volume' => max(0, $remainingVolume),
-                    'keterangan' => ($originalBl->keterangan ?? '') . ' [SEBAGIAN DIPINDAH KE: ' . $newNomorBl . ']',
+                    'keterangan' => ($originalBl->keterangan ?? '') . ' [SEBAGIAN DIPINDAH KE: ' . $newNomorBl . ' - PT: ' . $ptPengirim . ']',
                     'updated_by' => Auth::id(),
                 ]);
                 

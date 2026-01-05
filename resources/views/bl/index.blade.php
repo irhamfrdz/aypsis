@@ -694,6 +694,22 @@
                 <input type="hidden" id="splitSelectedIdsInput" name="ids" value="">
                 
                 <div class="mb-6">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Pilih PT Pengirim yang Dipindahkan</h4>
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="mb-4">
+                            <label for="pt_pengirim" class="block text-sm font-medium text-gray-700 mb-2">
+                                PT Pengirim <span class="text-red-500">*</span>
+                            </label>
+                            <select name="pt_pengirim" id="pt_pengirim" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="">Pilih PT Pengirim</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">PT dan barang ini akan dipindahkan ke BL baru</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
                     <h4 class="text-md font-medium text-gray-900 mb-4">Informasi Barang yang Dipindahkan</h4>
                     <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
                         <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
@@ -1128,11 +1144,87 @@ function validateContainerNumbers(selectedIds) {
 
 function openSplitModal(selectedIds) {
     document.getElementById('splitSelectedIdsInput').value = JSON.stringify(selectedIds);
+    
+    // Reset form fields
+    const form = document.getElementById('splitForm');
+    form.reset();
+    
+    // Load PT Pengirim options based on selected BLs
+    loadPtPengirim(selectedIds);
+    
     document.getElementById('splitModal').classList.remove('hidden');
     
-    // Focus on first input in the form
-    const firstInput = document.getElementById('tonnageDipindah');
-    if (firstInput) firstInput.focus();
+    // Focus on PT dropdown
+    const ptSelect = document.getElementById('pt_pengirim');
+    if (ptSelect) {
+        setTimeout(() => ptSelect.focus(), 100);
+    }
+}
+
+function loadPtPengirim(selectedIds) {
+    const ptSelect = document.getElementById('pt_pengirim');
+    ptSelect.innerHTML = '<option value="">Loading...</option>';
+    
+    fetch('{{ route("bl.get-pt-pengirim") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            ids: selectedIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        ptSelect.innerHTML = '<option value="">Pilih PT Pengirim</option>';
+        
+        if (data.success && data.pt_list && data.pt_list.length > 0) {
+            data.pt_list.forEach(pt => {
+                const option = document.createElement('option');
+                option.value = pt.pengirim;
+                option.textContent = `${pt.pengirim} - ${pt.nama_barang} (${pt.jumlah_kontainer} kontainer)`;
+                option.dataset.namaBarang = pt.nama_barang;
+                option.dataset.tonnage = pt.total_tonnage;
+                option.dataset.volume = pt.total_volume;
+                ptSelect.appendChild(option);
+            });
+            
+            // Add event listener for PT selection
+            ptSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    // Update nama barang field with PT's barang
+                    const namaBarangInput = document.getElementById('nama_barang_dipindah');
+                    if (namaBarangInput) {
+                        namaBarangInput.value = selectedOption.dataset.namaBarang || '';
+                    }
+                    
+                    // Update tonnage info (optional - untuk info saja)
+                    const tonnageInput = document.getElementById('tonnage_dipindah');
+                    if (tonnageInput && selectedOption.dataset.tonnage) {
+                        tonnageInput.placeholder = `Max: ${selectedOption.dataset.tonnage} ton`;
+                    }
+                    
+                    // Update volume info (optional - untuk info saja)
+                    const volumeInput = document.getElementById('volume_dipindah');
+                    if (volumeInput && selectedOption.dataset.volume) {
+                        volumeInput.placeholder = `Max: ${selectedOption.dataset.volume} m³`;
+                    }
+                }
+            });
+        } else {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Tidak ada data PT untuk BL yang dipilih';
+            option.disabled = true;
+            ptSelect.appendChild(option);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading PT:', error);
+        ptSelect.innerHTML = '<option value="">Error loading data</option>';
+    });
 }
 
 function closeSplitModal() {
@@ -1140,6 +1232,9 @@ function closeSplitModal() {
     // Reset form
     const form = document.getElementById('splitForm');
     form.reset();
+    // Reset PT select
+    const ptSelect = document.getElementById('pt_pengirim');
+    ptSelect.innerHTML = '<option value="">Pilih PT Pengirim</option>';
 }
 
 function showNotification(message, type) {
