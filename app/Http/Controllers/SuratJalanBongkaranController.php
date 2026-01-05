@@ -969,6 +969,7 @@ class SuratJalanBongkaranController extends Controller
                 'term' => $suratJalan->term ?? '',
                 'aktifitas' => $suratJalan->aktifitas ?? '',
                 'pengirim' => $suratJalan->pengirim ?? '',
+                'penerima' => $suratJalan->penerima ?? '',
                 'jenis_barang' => $suratJalan->jenis_barang ?? '',
                 'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
                 'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
