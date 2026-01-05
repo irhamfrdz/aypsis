@@ -411,34 +411,40 @@ class BlController extends Controller
                 ]);
             }
             
-            // Query from tanda_terimas table
+            // Query from tanda_terimas table (regular tanda terima)
             $ptListTerimas = \DB::table('tanda_terimas')
                 ->select(
                     'pengirim',
                     'nama_barang',
                     \DB::raw('COUNT(*) as jumlah_kontainer'),
-                    \DB::raw('SUM(tonase) as total_tonnage'),
-                    \DB::raw('SUM(meter_kubik) as total_volume')
+                    \DB::raw('COALESCE(SUM(tonase), 0) as total_tonnage'),
+                    \DB::raw('COALESCE(SUM(meter_kubik), 0) as total_volume')
                 )
                 ->whereIn('no_kontainer', $nomorKontainers)
                 ->whereNotNull('pengirim')
                 ->where('pengirim', '!=', '')
+                ->whereNotNull('nama_barang')
+                ->where('nama_barang', '!=', '')
                 ->groupBy('pengirim', 'nama_barang')
                 ->get();
             
-            // Query from tanda_terimas_lcl table
-            $ptListLcl = \DB::table('tanda_terimas_lcl')
+            // Query from tanda_terimas_lcl - join with kontainer pivot and items
+            $ptListLcl = \DB::table('tanda_terimas_lcl as tt')
+                ->join('tanda_terima_lcl_kontainer_pivot as pivot', 'tt.id', '=', 'pivot.tanda_terima_lcl_id')
+                ->join('tanda_terima_lcl_items as items', 'tt.id', '=', 'items.tanda_terima_lcl_id')
                 ->select(
-                    'pengirim',
-                    'nama_barang',
-                    \DB::raw('COUNT(*) as jumlah_kontainer'),
-                    \DB::raw('SUM(tonase) as total_tonnage'),
-                    \DB::raw('SUM(meter_kubik) as total_volume')
+                    'tt.nama_pengirim as pengirim',
+                    'items.nama_barang',
+                    \DB::raw('COUNT(DISTINCT pivot.nomor_kontainer) as jumlah_kontainer'),
+                    \DB::raw('COALESCE(SUM(items.tonase), 0) as total_tonnage'),
+                    \DB::raw('COALESCE(SUM(items.meter_kubik), 0) as total_volume')
                 )
-                ->whereIn('no_kontainer', $nomorKontainers)
-                ->whereNotNull('pengirim')
-                ->where('pengirim', '!=', '')
-                ->groupBy('pengirim', 'nama_barang')
+                ->whereIn('pivot.nomor_kontainer', $nomorKontainers)
+                ->whereNotNull('tt.nama_pengirim')
+                ->where('tt.nama_pengirim', '!=', '')
+                ->whereNotNull('items.nama_barang')
+                ->where('items.nama_barang', '!=', '')
+                ->groupBy('tt.nama_pengirim', 'items.nama_barang')
                 ->get();
             
             // Query from tanda_terima_tanpa_surat_jalan table
@@ -447,12 +453,14 @@ class BlController extends Controller
                     'pengirim',
                     'nama_barang',
                     \DB::raw('COUNT(*) as jumlah_kontainer'),
-                    \DB::raw('SUM(tonase) as total_tonnage'),
-                    \DB::raw('SUM(meter_kubik) as total_volume')
+                    \DB::raw('COALESCE(SUM(tonase), 0) as total_tonnage'),
+                    \DB::raw('COALESCE(SUM(meter_kubik), 0) as total_volume')
                 )
                 ->whereIn('no_kontainer', $nomorKontainers)
                 ->whereNotNull('pengirim')
                 ->where('pengirim', '!=', '')
+                ->whereNotNull('nama_barang')
+                ->where('nama_barang', '!=', '')
                 ->groupBy('pengirim', 'nama_barang')
                 ->get();
             
@@ -467,8 +475,8 @@ class BlController extends Controller
                     'pengirim' => $group->first()->pengirim,
                     'nama_barang' => $group->first()->nama_barang,
                     'jumlah_kontainer' => $group->sum('jumlah_kontainer'),
-                    'total_tonnage' => $group->sum('total_tonnage'),
-                    'total_volume' => $group->sum('total_volume'),
+                    'total_tonnage' => round($group->sum('total_tonnage'), 2),
+                    'total_volume' => round($group->sum('total_volume'), 2),
                 ];
             })->values()->sortBy('pengirim')->values();
             
@@ -478,6 +486,10 @@ class BlController extends Controller
                 'container_numbers' => $nomorKontainers
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error in getPtPengirim: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
