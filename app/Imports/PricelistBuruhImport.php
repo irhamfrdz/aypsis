@@ -15,6 +15,11 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function prepareForValidation($data, $index)
     {
+        // Convert barang to uppercase
+        if (isset($data['barang'])) {
+            $data['barang'] = strtoupper($data['barang']);
+        }
+        
         // Convert size to string if it's numeric (Excel reads numbers as numeric type)
         if (isset($data['size']) && !is_string($data['size'])) {
             $data['size'] = (string) $data['size'];
@@ -25,16 +30,32 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
             $data['size'] = null;
         }
         
-        return $data;
-    }
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
-    public function model(array $row)
-    {
-        // Normalize tipe value - ignore "-" or empty values
+        // Convert size to uppercase if not null
+        if (isset($data['size']) && $data['size'] !== null) {
+            $data['size'] = strtoupper($data['size']);
+        }
+        
+        // Convert tipe to uppercase
+        if (isset($data['tipe']) && $data['tipe'] !== '-') {
+            // Accept both uppercase and proper case after prepareForValidation converted to uppercase
+            if (in_array(strtoupper($row['tipe']), ['FULL', 'EMPTY'])) {
+                $tipe = ucfirst(strtolower($row['tipe'])); // Store as 'Full' or 'Empty' for consistency
+            }
+        }
+
+        // Convert size to string (Excel may read it as numeric)
+        $size = null;
+        if (!empty($row['size']) && $row['size'] !== '-') {
+            $size = strtoupper((string) $row['size']);
+        }
+
+        return new PricelistBuruh([
+            'barang' => strtoupper($row['barang']),
+            'size' => $size,
+            'tipe' => $tipe,
+            'tarif' => $row['tarif'],
+            'is_active' => isset($row['status']) && strtolower($row['status']) === 'aktif',
+            'keterangan' => !empty($row['keterangan']) && $row['keterangan'] !== '-' ? strtoupper($row['keterangan'])
         $tipe = null;
         if (!empty($row['tipe']) && $row['tipe'] !== '-') {
             if (in_array($row['tipe'], ['Full', 'Empty'])) {
