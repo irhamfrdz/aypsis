@@ -1175,7 +1175,12 @@ function loadPtPengirim(selectedIds) {
             ids: selectedIds
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         ptSelect.innerHTML = '<option value="">Pilih PT Pengirim</option>';
         
@@ -1216,7 +1221,7 @@ function loadPtPengirim(selectedIds) {
         } else {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = 'Tidak ada data PT untuk BL yang dipilih';
+            option.textContent = data.message || 'Tidak ada data PT untuk BL yang dipilih';
             option.disabled = true;
             ptSelect.appendChild(option);
         }
@@ -1224,6 +1229,7 @@ function loadPtPengirim(selectedIds) {
     .catch(error => {
         console.error('Error loading PT:', error);
         ptSelect.innerHTML = '<option value="">Error loading data</option>';
+        alert('Error loading PT Pengirim: ' + error.message + '\n\nSilakan refresh halaman dan coba lagi.');
     });
 }
 

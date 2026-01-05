@@ -390,47 +390,54 @@ class BlController extends Controller
      */
     public function getPtPengirim(Request $request)
     {
-        $ids = $request->input('ids', []);
-        
-        if (empty($ids)) {
+        try {
+            $ids = $request->input('ids', []);
+            
+            if (empty($ids)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada BL yang dipilih.'
+                ]);
+            }
+            
+            // Get BLs and their container numbers
+            $bls = Bl::whereIn('id', $ids)->get();
+            $nomorKontainers = $bls->pluck('nomor_kontainer')->filter()->unique()->values();
+            
+            if ($nomorKontainers->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'BL yang dipilih tidak memiliki nomor kontainer.'
+                ]);
+            }
+            
+            // Get PT Pengirim from tanda_terima based on container numbers
+            $ptList = \DB::table('tanda_terima')
+                ->select(
+                    'pengirim',
+                    'nama_barang',
+                    \DB::raw('COUNT(*) as jumlah_kontainer'),
+                    \DB::raw('SUM(tonase) as total_tonnage'),
+                    \DB::raw('SUM(meter_kubik) as total_volume')
+                )
+                ->whereIn('no_kontainer', $nomorKontainers)
+                ->whereNotNull('pengirim')
+                ->where('pengirim', '!=', '')
+                ->groupBy('pengirim', 'nama_barang')
+                ->orderBy('pengirim')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'pt_list' => $ptList,
+                'container_numbers' => $nomorKontainers
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak ada BL yang dipilih.'
-            ]);
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Get BLs and their container numbers
-        $bls = Bl::whereIn('id', $ids)->get();
-        $nomorKontainers = $bls->pluck('nomor_kontainer')->filter()->unique()->values();
-        
-        if ($nomorKontainers->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'BL yang dipilih tidak memiliki nomor kontainer.'
-            ]);
-        }
-        
-        // Get PT Pengirim from tanda_terima based on container numbers
-        $ptList = \DB::table('tanda_terima')
-            ->select(
-                'pengirim',
-                'nama_barang',
-                \DB::raw('COUNT(*) as jumlah_kontainer'),
-                \DB::raw('SUM(tonase) as total_tonnage'),
-                \DB::raw('SUM(meter_kubik) as total_volume')
-            )
-            ->whereIn('no_kontainer', $nomorKontainers)
-            ->whereNotNull('pengirim')
-            ->where('pengirim', '!=', '')
-            ->groupBy('pengirim', 'nama_barang')
-            ->orderBy('pengirim')
-            ->get();
-        
-        return response()->json([
-            'success' => true,
-            'pt_list' => $ptList,
-            'container_numbers' => $nomorKontainers
-        ]);
     }
 
     /**
