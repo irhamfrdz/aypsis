@@ -37,6 +37,27 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
         
         // Convert tipe to uppercase
         if (isset($data['tipe']) && $data['tipe'] !== '-') {
+            $data['tipe'] = strtoupper($data['tipe']);
+        }
+        
+        // Convert keterangan to uppercase
+        if (isset($data['keterangan']) && $data['keterangan'] !== '-') {
+            $data['keterangan'] = strtoupper($data['keterangan']);
+        }
+        
+        return $data;
+    }
+
+    /**
+    * @param array $row
+    *
+    * @return \Illuminate\Database\Eloquent\Model|null
+    */
+    public function model(array $row)
+    {
+        // Normalize tipe value - ignore "-" or empty values
+        $tipe = null;
+        if (!empty($row['tipe']) && $row['tipe'] !== '-') {
             // Accept both uppercase and proper case after prepareForValidation converted to uppercase
             if (in_array(strtoupper($row['tipe']), ['FULL', 'EMPTY'])) {
                 $tipe = ucfirst(strtolower($row['tipe'])); // Store as 'Full' or 'Empty' for consistency
@@ -55,27 +76,7 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
             'tipe' => $tipe,
             'tarif' => $row['tarif'],
             'is_active' => isset($row['status']) && strtolower($row['status']) === 'aktif',
-            'keterangan' => !empty($row['keterangan']) && $row['keterangan'] !== '-' ? strtoupper($row['keterangan'])
-        $tipe = null;
-        if (!empty($row['tipe']) && $row['tipe'] !== '-') {
-            if (in_array($row['tipe'], ['Full', 'Empty'])) {
-                $tipe = $row['tipe'];
-            }
-        }
-
-        // Convert size to string (Excel may read it as numeric)
-        $size = null;
-        if (!empty($row['size']) && $row['size'] !== '-') {
-            $size = (string) $row['size'];
-        }
-
-        return new PricelistBuruh([
-            'barang' => $row['barang'],
-            'size' => $size,
-            'tipe' => $tipe,
-            'tarif' => $row['tarif'],
-            'is_active' => isset($row['status']) && strtolower($row['status']) === 'aktif',
-            'keterangan' => !empty($row['keterangan']) && $row['keterangan'] !== '-' ? $row['keterangan'] : null,
+            'keterangan' => !empty($row['keterangan']) && $row['keterangan'] !== '-' ? strtoupper($row['keterangan']) : null,
             'created_by' => Auth::id(),
         ]);
     }
