@@ -25,9 +25,15 @@ class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
             }
         }
 
+        // Convert size to string (Excel may read it as numeric)
+        $size = null;
+        if (!empty($row['size']) && $row['size'] !== '-') {
+            $size = (string) $row['size'];
+        }
+
         return new PricelistBuruh([
             'barang' => $row['barang'],
-            'size' => !empty($row['size']) && $row['size'] !== '-' ? $row['size'] : null,
+            'size' => $size,
             'tipe' => $tipe,
             'tarif' => $row['tarif'],
             'is_active' => isset($row['status']) && strtolower($row['status']) === 'aktif',
