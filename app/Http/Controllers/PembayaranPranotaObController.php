@@ -375,18 +375,9 @@ class PembayaranPranotaObController extends Controller
 
             $pembayaran->update($updateData);
 
-            // Log COA transaction update
-            if ($pembayaran->nomor_pembayaran) {
-                $this->coaTransactionService->logTransaction([
-                    'kode_transaksi' => $pembayaran->nomor_pembayaran,
-                    'tanggal' => $validated['tanggal_kas'],
-                    'keterangan' => 'Update Pembayaran Pranota OB - ' . ($validated['keterangan'] ?? ''),
-                    'tipe_transaksi' => $validated['jenis_transaksi'],
-                    'bank' => $validated['bank'],
-                    'jumlah' => $totalPembayaran + $penyesuaian,
-                    'user_id' => Auth::id(),
-                ]);
-            }
+            // Note: COA transaction update tidak dilakukan di sini
+            // karena perubahan hanya pada data pembayaran, bukan transaksi baru
+            // Jika diperlukan reversal dan re-record, implementasi terpisah
 
             DB::commit();
 
