@@ -142,6 +142,11 @@
                                     <i class="fas fa-eye"></i> Lihat Detail
                                 </a>
                                 <span class="text-gray-300">|</span>
+                                <a href="{{ route('pembayaran-pranota-ob.edit', $pembayaran->id) }}"
+                                   class="text-yellow-600 hover:text-yellow-900 mr-3">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <span class="text-gray-300">|</span>
                                 <a href="{{ route('pembayaran-pranota-ob.print', $pembayaran->id) }}"
                                    class="text-green-600 hover:text-green-900 mr-3" target="_blank">
                                     <i class="fas fa-print"></i> Print
