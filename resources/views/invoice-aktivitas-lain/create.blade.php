@@ -196,7 +196,7 @@
                         <option value="">Pilih Klasifikasi Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
                             <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
-                                {{ $klasifikasi->nama_biaya }}
+                                {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
                     </select>

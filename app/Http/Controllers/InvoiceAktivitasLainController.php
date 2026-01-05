@@ -110,8 +110,9 @@ class InvoiceAktivitasLainController extends Controller
         
         // Get klasifikasi biaya for pembayaran kapal
         $klasifikasiBiayas = \DB::table('klasifikasi_biayas')
-            ->select('id', 'nama_biaya')
-            ->orderBy('nama_biaya')
+            ->select('id', 'nama')
+            ->where('is_active', true)
+            ->orderBy('nama')
             ->get();
         
         return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas'));
