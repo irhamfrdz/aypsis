@@ -4065,6 +4065,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::patch('bl/{bl}/status-bongkar', [\App\Http\Controllers\BlController::class, 'updateStatusBongkar'])->name('bl.update-status-bongkar')
                ->middleware('can:bl-edit');
                
+          Route::patch('bl/{bl}/size-kontainer', [\App\Http\Controllers\BlController::class, 'updateSizeKontainer'])->name('bl.update-size-kontainer')
+               ->middleware('can:bl-edit');
+               
           // BL Bulk Operations
           Route::post('bl/validate-containers', [\App\Http\Controllers\BlController::class, 'validateContainers'])->name('bl.validate-containers')
                ->middleware('can:bl-edit');

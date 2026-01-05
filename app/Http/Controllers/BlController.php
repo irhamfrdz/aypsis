@@ -337,6 +337,49 @@ class BlController extends Controller
     }
 
     /**
+     * Update size kontainer for a BL
+     */
+    public function updateSizeKontainer(Request $request, Bl $bl)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            
+            if (!$hasPermission) {
+                return response()->json(['error' => 'Tidak memiliki akses untuk mengupdate BL'], 403);
+            }
+        }
+
+        // Validate input
+        $request->validate([
+            'size_kontainer' => 'nullable|in:20,40',
+        ]);
+
+        try {
+            $bl->update([
+                'size_kontainer' => $request->size_kontainer
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Size kontainer berhasil diupdate',
+                'size_kontainer' => $bl->size_kontainer
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate size kontainer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Validate containers for bulk operations
      */
     public function validateContainers(Request $request)

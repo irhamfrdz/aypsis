@@ -460,8 +460,27 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">
-                                        {{ $bl->size_kontainer ?: '-' }}
+                                    <div class="size-kontainer-container" data-bl-id="{{ $bl->id }}">
+                                        <!-- Display Mode -->
+                                        <div class="size-kontainer-display cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition">
+                                            <span class="text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</span>
+                                            <i class="fas fa-edit text-xs text-gray-400 ml-1"></i>
+                                        </div>
+                                        
+                                        <!-- Edit Mode -->
+                                        <div class="size-kontainer-edit hidden flex items-center gap-1">
+                                            <select class="size-kontainer-select text-xs border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" style="padding: 0.25rem 0.5rem; min-width: 80px;">
+                                                <option value="">-</option>
+                                                <option value="20" {{ $bl->size_kontainer == '20' ? 'selected' : '' }}>20</option>
+                                                <option value="40" {{ $bl->size_kontainer == '40' ? 'selected' : '' }}>40</option>
+                                            </select>
+                                            <button type="button" class="save-size-kontainer text-green-600 hover:text-green-800 text-xs p-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="cancel-size-kontainer text-red-600 hover:text-red-800 text-xs p-1">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -1447,6 +1466,88 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Reset select value
             select.value = originalValue;
+            
+            // Hide edit, show display
+            edit.classList.add('hidden');
+            display.classList.remove('hidden');
+        });
+    });
+    
+    // ===== Size Kontainer Inline Editing =====
+    
+    // Handle display click to show edit mode
+    document.querySelectorAll('.size-kontainer-display').forEach(function(element) {
+        element.addEventListener('click', function() {
+            const container = this.closest('.size-kontainer-container');
+            this.classList.add('hidden');
+            container.querySelector('.size-kontainer-edit').classList.remove('hidden');
+            container.querySelector('.size-kontainer-select').focus();
+        });
+    });
+
+    // Handle save button click
+    document.querySelectorAll('.save-size-kontainer').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const container = this.closest('.size-kontainer-container');
+            const blId = container.dataset.blId;
+            const select = container.querySelector('.size-kontainer-select');
+            const sizeKontainer = select.value;
+            
+            // Disable button during request
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Send AJAX request
+            fetch(`/bl/${blId}/size-kontainer`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    size_kontainer: sizeKontainer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update display
+                    const display = container.querySelector('.size-kontainer-display span');
+                    display.textContent = data.size_kontainer || '-';
+                    
+                    // Hide edit, show display
+                    container.querySelector('.size-kontainer-edit').classList.add('hidden');
+                    container.querySelector('.size-kontainer-display').classList.remove('hidden');
+                    
+                    // Show success message
+                    showNotification('Size kontainer berhasil diupdate', 'success');
+                } else {
+                    showNotification(data.message || 'Gagal mengupdate size kontainer', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Terjadi kesalahan saat mengupdate size kontainer', 'error');
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+            });
+        });
+    });
+
+    // Handle cancel button click
+    document.querySelectorAll('.cancel-size-kontainer').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const container = this.closest('.size-kontainer-container');
+            const display = container.querySelector('.size-kontainer-display');
+            const edit = container.querySelector('.size-kontainer-edit');
+            const select = container.querySelector('.size-kontainer-select');
+            const originalValue = display.querySelector('span').textContent;
+            
+            // Reset select value
+            select.value = originalValue === '-' ? '' : originalValue;
             
             // Hide edit, show display
             edit.classList.add('hidden');
