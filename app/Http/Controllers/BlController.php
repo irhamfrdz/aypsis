@@ -411,8 +411,8 @@ class BlController extends Controller
                 ]);
             }
             
-            // Get PT Pengirim from tanda_terima based on container numbers
-            $ptList = \DB::table('tanda_terima')
+            // Query from tanda_terimas table
+            $ptListTerimas = \DB::table('tanda_terimas')
                 ->select(
                     'pengirim',
                     'nama_barang',
@@ -424,12 +424,57 @@ class BlController extends Controller
                 ->whereNotNull('pengirim')
                 ->where('pengirim', '!=', '')
                 ->groupBy('pengirim', 'nama_barang')
-                ->orderBy('pengirim')
                 ->get();
+            
+            // Query from tanda_terimas_lcl table
+            $ptListLcl = \DB::table('tanda_terimas_lcl')
+                ->select(
+                    'pengirim',
+                    'nama_barang',
+                    \DB::raw('COUNT(*) as jumlah_kontainer'),
+                    \DB::raw('SUM(tonase) as total_tonnage'),
+                    \DB::raw('SUM(meter_kubik) as total_volume')
+                )
+                ->whereIn('no_kontainer', $nomorKontainers)
+                ->whereNotNull('pengirim')
+                ->where('pengirim', '!=', '')
+                ->groupBy('pengirim', 'nama_barang')
+                ->get();
+            
+            // Query from tanda_terima_tanpa_surat_jalan table
+            $ptListTanpaSJ = \DB::table('tanda_terima_tanpa_surat_jalan')
+                ->select(
+                    'pengirim',
+                    'nama_barang',
+                    \DB::raw('COUNT(*) as jumlah_kontainer'),
+                    \DB::raw('SUM(tonase) as total_tonnage'),
+                    \DB::raw('SUM(meter_kubik) as total_volume')
+                )
+                ->whereIn('no_kontainer', $nomorKontainers)
+                ->whereNotNull('pengirim')
+                ->where('pengirim', '!=', '')
+                ->groupBy('pengirim', 'nama_barang')
+                ->get();
+            
+            // Merge all results
+            $ptList = $ptListTerimas->merge($ptListLcl)->merge($ptListTanpaSJ);
+            
+            // Group by pengirim and nama_barang again after merge to combine duplicates
+            $ptListGrouped = $ptList->groupBy(function($item) {
+                return $item->pengirim . '|' . $item->nama_barang;
+            })->map(function($group) {
+                return [
+                    'pengirim' => $group->first()->pengirim,
+                    'nama_barang' => $group->first()->nama_barang,
+                    'jumlah_kontainer' => $group->sum('jumlah_kontainer'),
+                    'total_tonnage' => $group->sum('total_tonnage'),
+                    'total_volume' => $group->sum('total_volume'),
+                ];
+            })->values()->sortBy('pengirim')->values();
             
             return response()->json([
                 'success' => true,
-                'pt_list' => $ptList,
+                'pt_list' => $ptListGrouped,
                 'container_numbers' => $nomorKontainers
             ]);
         } catch (\Exception $e) {
