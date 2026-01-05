@@ -11,6 +11,23 @@ use Illuminate\Support\Facades\Auth;
 class PricelistBuruhImport implements ToModel, WithHeadingRow, WithValidation
 {
     /**
+     * Prepare data for validation - convert size to string before validation
+     */
+    public function prepareForValidation($data, $index)
+    {
+        // Convert size to string if it's numeric (Excel reads numbers as numeric type)
+        if (isset($data['size']) && !is_string($data['size'])) {
+            $data['size'] = (string) $data['size'];
+        }
+        
+        // Convert "-" to null for size validation
+        if (isset($data['size']) && $data['size'] === '-') {
+            $data['size'] = null;
+        }
+        
+        return $data;
+    }
+    /**
     * @param array $row
     *
     * @return \Illuminate\Database\Eloquent\Model|null
