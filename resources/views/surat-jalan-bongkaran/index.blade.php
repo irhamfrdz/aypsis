@@ -1651,7 +1651,7 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_term').value = data.term || '';
             document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
             document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
-            document.getElementById('edit_modal_penerima').value = data.penerima || data.pengirim || '';
+            document.getElementById('edit_modal_penerima').value = data.penerima || '';
             document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
             document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
             document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';

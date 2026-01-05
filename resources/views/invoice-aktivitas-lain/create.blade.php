@@ -195,9 +195,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Klasifikasi Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
-                            <option value="{{ $klasifikasi->id }}" 
-                                    data-nama="{{ strtolower($klasifikasi->nama) }}"
-                                    {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
+                            <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
                                 {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
@@ -205,88 +203,6 @@
                     @error('klasifikasi_biaya_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                </div>
-
-                <!-- Detail Buruh (conditional for Klasifikasi Biaya Buruh) -->
-                <div id="detail_buruh_wrapper" class="hidden md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Detail Kontainer Buruh <span class="text-red-500">*</span>
-                    </label>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-r">Jenis Barang</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r">20 Full</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r">20 Empty</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r">40 Full</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r">40 Empty</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Lain-lain</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-4 py-3 border-r">
-                                        <select name="detail_buruh[0][jenis_barang]" 
-                                                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 detail-buruh-select"
-                                                style="height: 38px; padding: 6px 12px; font-size: 14px; min-width: 150px;">
-                                            <option value="">Pilih Barang</option>
-                                            <option value="BONGKAR">BONGKAR</option>
-                                            <option value="MUAT">MUAT</option>
-                                            <option value="STUFFING">STUFFING</option>
-                                            <option value="STRIPPING">STRIPPING</option>
-                                        </select>
-                                    </td>
-                                    <td class="px-4 py-3 text-center border-r">
-                                        <input type="number" 
-                                               name="detail_buruh[0][qty_20_full]" 
-                                               min="0"
-                                               step="1"
-                                               value="0"
-                                               class="w-20 text-center border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                               style="height: 38px; padding: 6px 12px; font-size: 14px;">
-                                    </td>
-                                    <td class="px-4 py-3 text-center border-r">
-                                        <input type="number" 
-                                               name="detail_buruh[0][qty_20_empty]" 
-                                               min="0"
-                                               step="1"
-                                               value="0"
-                                               class="w-20 text-center border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                               style="height: 38px; padding: 6px 12px; font-size: 14px;">
-                                    </td>
-                                    <td class="px-4 py-3 text-center border-r">
-                                        <input type="number" 
-                                               name="detail_buruh[0][qty_40_full]" 
-                                               min="0"
-                                               step="1"
-                                               value="0"
-                                               class="w-20 text-center border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                               style="height: 38px; padding: 6px 12px; font-size: 14px;">
-                                    </td>
-                                    <td class="px-4 py-3 text-center border-r">
-                                        <input type="number" 
-                                               name="detail_buruh[0][qty_40_empty]" 
-                                               min="0"
-                                               step="1"
-                                               value="0"
-                                               class="w-20 text-center border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                               style="height: 38px; padding: 6px 12px; font-size: 14px;">
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <input type="number" 
-                                               name="detail_buruh[0][qty_lain]" 
-                                               min="0"
-                                               step="1"
-                                               value="0"
-                                               class="w-20 text-center border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                               style="height: 38px; padding: 6px 12px; font-size: 14px;">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="mt-2 text-xs text-gray-500">Masukkan jumlah kontainer untuk setiap jenis barang dan ukuran</p>
                 </div>
 
                 <!-- Surat Jalan (conditional for Adjustment) -->
@@ -590,7 +506,6 @@
         const blSelect = document.getElementById('bl_select');
         const klasifikasiBiayaWrapper = document.getElementById('klasifikasi_biaya_wrapper');
         const klasifikasiBiayaSelect = document.getElementById('klasifikasi_biaya_select');
-        const detailBuruhWrapper = document.getElementById('detail_buruh_wrapper');
         const suratJalanWrapper = document.getElementById('surat_jalan_wrapper');
         const suratJalanSelect = document.getElementById('surat_jalan_select');
         const jenisPenyesuaianWrapper = document.getElementById('jenis_penyesuaian_wrapper');
@@ -620,8 +535,6 @@
             klasifikasiBiayaWrapper.classList.add('hidden');
             klasifikasiBiayaSelect.removeAttribute('required');
             $('#klasifikasi_biaya_select').val('').trigger('change');
-            
-            detailBuruhWrapper.classList.add('hidden');
             
             suratJalanWrapper.classList.add('hidden');
             suratJalanSelect.removeAttribute('required');
@@ -820,30 +733,6 @@
         if (jenisPenyesuaianSelect) {
             $('#jenis_penyesuaian_select').on('change', function() {
                 toggleTipePenyesuaian();
-            });
-        }
-        
-        // Klasifikasi biaya change event
-        if (klasifikasiBiayaSelect) {
-            $('#klasifikasi_biaya_select').on('change', function() {
-                const selectedOption = $(this).find('option:selected');
-                const namaBiaya = selectedOption.data('nama') || '';
-                
-                // Check if klasifikasi biaya is "buruh"
-                if (namaBiaya.includes('buruh')) {
-                    detailBuruhWrapper.classList.remove('hidden');
-                    
-                    // Initialize Select2 for detail buruh select
-                    setTimeout(() => {
-                        $('.detail-buruh-select').select2({
-                            placeholder: 'Pilih Barang',
-                            allowClear: true,
-                            width: '100%'
-                        });
-                    }, 100);
-                } else {
-                    detailBuruhWrapper.classList.add('hidden');
-                }
             });
         }
         
