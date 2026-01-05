@@ -175,7 +175,7 @@
                         <option value="">Pilih BL</option>
                         @foreach($bls as $bl)
                             <option value="{{ $bl->id }}" {{ old('bl_id') == $bl->id ? 'selected' : '' }}>
-                                {{ $bl->nomor_bl }} - {{ $bl->pengirim ?? 'N/A' }}
+                                {{ $bl->nomor_bl }} - {{ $bl->nomor_kontainer ?? 'N/A' }} ({{ $bl->pengirim ?? 'N/A' }})
                             </option>
                         @endforeach
                     </select>
