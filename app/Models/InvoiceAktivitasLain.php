@@ -19,12 +19,17 @@ class InvoiceAktivitasLain extends Model
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
+        'bl_id',
+        'klasifikasi_biaya_id',
+        'barang_detail',
         'surat_jalan_id',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
         'penerima',
         'total',
         'status',
+        'deskripsi',
+        'catatan',
         'keterangan',
         'created_by',
         'approved_by',
@@ -73,5 +78,56 @@ class InvoiceAktivitasLain extends Model
             'pembayaran_invoice_aktivitas_lain_id'
         )->withPivot('jumlah_dibayar')
           ->withTimestamps();
+    }
+
+    /**
+     * Relationship dengan BL
+     */
+    public function bl()
+    {
+        return $this->belongsTo(Bl::class, 'bl_id');
+    }
+
+    /**
+     * Relationship dengan KlasifikasiBiaya
+     */
+    public function klasifikasiBiaya()
+    {
+        return $this->belongsTo(KlasifikasiBiaya::class, 'klasifikasi_biaya_id');
+    }
+
+    /**
+     * Accessor untuk barang detail dengan join pricelist_buruh
+     */
+    public function getBarangDetailArrayAttribute()
+    {
+        if (!$this->barang_detail) {
+            return [];
+        }
+
+        $barangDetail = json_decode($this->barang_detail, true);
+        if (!is_array($barangDetail)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($barangDetail as $item) {
+            if (isset($item['pricelist_buruh_id'])) {
+                $pricelist = \App\Models\PricelistBuruh::find($item['pricelist_buruh_id']);
+                if ($pricelist) {
+                    $result[] = [
+                        'pricelist_buruh_id' => $item['pricelist_buruh_id'],
+                        'jumlah' => $item['jumlah'] ?? 0,
+                        'nama_barang' => $pricelist->nama_barang,
+                        'size' => $pricelist->size,
+                        'tipe' => $pricelist->tipe,
+                        'tarif' => $pricelist->tarif,
+                        'subtotal' => ($item['jumlah'] ?? 0) * $pricelist->tarif
+                    ];
+                }
+            }
+        }
+
+        return $result;
     }
 }

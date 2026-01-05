@@ -118,6 +118,113 @@
                         <p class="text-gray-900">{{ $invoice->keterangan }}</p>
                     </div>
                     @endif
+
+                    <!-- BL Information -->
+                    @if($invoice->bl)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Informasi BL</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
+                                <p class="text-gray-900 font-semibold">{{ $invoice->bl->nomor_bl }}</p>
+                            </div>
+                            @if($invoice->bl->nomor_kontainer)
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
+                                <p class="text-gray-900">{{ $invoice->bl->nomor_kontainer }}</p>
+                            </div>
+                            @endif
+                            @if($invoice->bl->no_voyage)
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Voyage</label>
+                                <p class="text-gray-900">{{ $invoice->bl->no_voyage }}</p>
+                            </div>
+                            @endif
+                            @if($invoice->bl->nama_kapal)
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
+                                <p class="text-gray-900">{{ $invoice->bl->nama_kapal }}</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Klasifikasi Biaya & Barang Detail -->
+                    @if($invoice->klasifikasiBiaya)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Klasifikasi Biaya</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Klasifikasi</label>
+                            <p class="text-gray-900 font-semibold">{{ $invoice->klasifikasiBiaya->nama }}</p>
+                        </div>
+
+                        @php
+                            $barangDetails = $invoice->barang_detail_array;
+                        @endphp
+
+                        @if(count($barangDetails) > 0)
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Detail Barang</label>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Barang</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
+                                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($barangDetails as $index => $barang)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $index + 1 }}</td>
+                                            <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ $barang['nama_barang'] }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $barang['size'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $barang['tipe'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900 text-right">Rp {{ number_format($barang['tarif'], 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900 text-center">{{ $barang['jumlah'] }}</td>
+                                            <td class="px-4 py-2 text-sm font-semibold text-gray-900 text-right">Rp {{ number_format($barang['subtotal'], 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                                        <tr>
+                                            <td colspan="6" class="px-4 py-2 text-right text-sm font-semibold text-gray-900">Total Barang:</td>
+                                            <td class="px-4 py-2 text-right text-sm font-bold text-gray-900">
+                                                Rp {{ number_format(array_sum(array_column($barangDetails, 'subtotal')), 0, ',', '.') }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Deskripsi & Catatan -->
+                    @if($invoice->deskripsi || $invoice->catatan)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Informasi Tambahan</h3>
+                        @if($invoice->deskripsi)
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                            <p class="text-gray-900 text-sm">{{ $invoice->deskripsi }}</p>
+                        </div>
+                        @endif
+                        @if($invoice->catatan)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                            <p class="text-gray-900 text-sm">{{ $invoice->catatan }}</p>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
 

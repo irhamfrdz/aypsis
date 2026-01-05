@@ -195,7 +195,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Klasifikasi Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
-                            <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
+                            <option value="{{ $klasifikasi->id }}" data-nama="{{ $klasifikasi->nama }}" {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
                                 {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
@@ -203,6 +203,24 @@
                     @error('klasifikasi_biaya_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Nama Barang dan Jumlah (conditional for Klasifikasi Biaya "buruh") -->
+                <div id="barang_wrapper" class="hidden md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Daftar Barang <span class="text-red-500">*</span>
+                    </label>
+                    <div id="barang_container" class="space-y-3">
+                        <!-- Dynamic barang inputs will be added here -->
+                    </div>
+                    <button type="button" 
+                            id="add_barang_btn" 
+                            class="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Barang
+                    </button>
                 </div>
 
                 <!-- Surat Jalan (conditional for Adjustment) -->
@@ -474,6 +492,7 @@
         $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
         $('#bl_select').select2({ placeholder: 'Pilih BL', allowClear: true, width: '100%' });
         $('#klasifikasi_biaya_select').select2({ placeholder: 'Pilih Klasifikasi Biaya', allowClear: true, width: '100%' });
+        $('#nama_barang_select').select2({ placeholder: 'Pilih Nama Barang', allowClear: true, width: '100%' });
         $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
         $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
         $('#penerima').select2({ placeholder: 'Pilih Penerima', allowClear: true, width: '100%' });
@@ -506,6 +525,7 @@
         const blSelect = document.getElementById('bl_select');
         const klasifikasiBiayaWrapper = document.getElementById('klasifikasi_biaya_wrapper');
         const klasifikasiBiayaSelect = document.getElementById('klasifikasi_biaya_select');
+        const barangWrapper = document.getElementById('barang_wrapper');
         const suratJalanWrapper = document.getElementById('surat_jalan_wrapper');
         const suratJalanSelect = document.getElementById('surat_jalan_select');
         const jenisPenyesuaianWrapper = document.getElementById('jenis_penyesuaian_wrapper');
@@ -535,6 +555,9 @@
             klasifikasiBiayaWrapper.classList.add('hidden');
             klasifikasiBiayaSelect.removeAttribute('required');
             $('#klasifikasi_biaya_select').val('').trigger('change');
+            
+            barangWrapper.classList.add('hidden');
+            clearBarangInputs();
             
             suratJalanWrapper.classList.add('hidden');
             suratJalanSelect.removeAttribute('required');
@@ -570,6 +593,9 @@
                     $('#bl_select').select2({ placeholder: 'Pilih BL', allowClear: true, width: '100%' });
                     $('#klasifikasi_biaya_select').select2({ placeholder: 'Pilih Klasifikasi Biaya', allowClear: true, width: '100%' });
                 }, 100);
+                
+                // Setup klasifikasi biaya change event
+                setupKlasifikasiBiayaToggle();
             } else if (jenisVal === 'Pembayaran Adjustment Uang Jalan') {
                 suratJalanWrapper.classList.remove('hidden');
                 suratJalanSelect.setAttribute('required', 'required');
@@ -722,6 +748,137 @@
             }
         }
 
+        function setupKlasifikasiBiayaToggle() {
+            $('#klasifikasi_biaya_select').off('change').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const namaKlasifikasi = selectedOption.data('nama');
+                
+                if (namaKlasifikasi && namaKlasifikasi.toLowerCase().includes('buruh')) {
+                    barangWrapper.classList.remove('hidden');
+                    initializeBarangInputs();
+                } else {
+                    barangWrapper.classList.add('hidden');
+                    clearBarangInputs();
+                }
+            });
+        }
+        
+        // Barang management functions
+        function initializeBarangInputs() {
+            const container = document.getElementById('barang_container');
+            container.innerHTML = '';
+            addBarangInput();
+        }
+        
+        function clearBarangInputs() {
+            const container = document.getElementById('barang_container');
+            if (container) container.innerHTML = '';
+        }
+        
+        function addBarangInput(existingBarangId = '', existingJumlah = '') {
+            const container = document.getElementById('barang_container');
+            const index = container.children.length;
+            
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
+            inputGroup.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Barang</label>
+                    <select name="barang_detail[${index}][pricelist_buruh_id]" 
+                            class="barang-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                            required>
+                        <option value="">Pilih Nama Barang</option>
+                        @foreach($pricelistBuruh as $pricelist)
+                            <option value="{{ $pricelist->id }}" 
+                                    data-tarif="{{ $pricelist->tarif }}"
+                                    ${existingBarangId == '{{ $pricelist->id }}' ? 'selected' : ''}>
+                                {{ $pricelist->barang }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="w-32">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+                    <input type="number" 
+                           name="barang_detail[${index}][jumlah]" 
+                           value="${existingJumlah || '1'}"
+                           min="1" 
+                           step="1"
+                           class="jumlah-input w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           required>
+                </div>
+                <div class="flex-shrink-0">
+                    <button type="button" 
+                            onclick="removeBarangInput(this)" 
+                            class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(inputGroup);
+            
+            // Initialize Select2 for new select
+            setTimeout(() => {
+                $(inputGroup).find('.barang-select').select2({
+                    placeholder: 'Pilih Nama Barang',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
+            
+            // Add event listeners for auto-calculation
+            const barangSelect = inputGroup.querySelector('.barang-select');
+            const jumlahInput = inputGroup.querySelector('.jumlah-input');
+            
+            $(barangSelect).on('change', function() {
+                calculateTotalFromBarang();
+            });
+            
+            jumlahInput.addEventListener('input', function() {
+                calculateTotalFromBarang();
+            });
+        }
+        
+        window.removeBarangInput = function(button) {
+            const container = document.getElementById('barang_container');
+            if (container.children.length > 1) {
+                button.closest('.flex.items-end.gap-3').remove();
+                calculateTotalFromBarang();
+            }
+        };
+        
+        function calculateTotalFromBarang() {
+            const container = document.getElementById('barang_container');
+            const barangSelects = container.querySelectorAll('.barang-select');
+            const jumlahInputs = container.querySelectorAll('.jumlah-input');
+            let total = 0;
+            
+            barangSelects.forEach((select, index) => {
+                const selectedOption = $(select).find('option:selected');
+                const tarif = parseFloat(selectedOption.data('tarif')) || 0;
+                const jumlah = parseInt(jumlahInputs[index].value) || 0;
+                total += tarif * jumlah;
+            });
+            
+            if (total > 0) {
+                const totalInput = document.getElementById('total');
+                totalInput.value = total.toLocaleString('id-ID');
+            }
+        }
+        
+        // Add button for barang
+        const addBarangBtn = document.getElementById('add_barang_btn');
+        if (addBarangBtn) {
+            addBarangBtn.addEventListener('click', function() {
+                addBarangInput();
+            });
+        }
+        
         if (jenisAktivitasSelect) {
             $('#jenis_aktivitas').on('change', function() {
                 jenisAktivitasSelect.value = this.value;

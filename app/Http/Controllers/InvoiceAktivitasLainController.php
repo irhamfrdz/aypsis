@@ -14,7 +14,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function index(Request $request)
     {
-        $query = InvoiceAktivitasLain::query();
+        $query = InvoiceAktivitasLain::query()->with(['bl', 'klasifikasiBiaya']);
 
         // Filter by nomor_invoice
         if ($request->filled('nomor_invoice')) {
@@ -115,7 +115,14 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('nama')
             ->get();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas'));
+        // Get pricelist buruh for pembayaran kapal with klasifikasi biaya "buruh"
+        $pricelistBuruh = \DB::table('pricelist_buruh')
+            ->select('id', 'barang', 'size', 'tipe', 'tarif')
+            ->where('is_active', true)
+            ->orderBy('barang')
+            ->get();
+        
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh'));
     }
 
     /**
@@ -169,6 +176,11 @@ class InvoiceAktivitasLainController extends Controller
             'sub_jenis_kendaraan' => 'nullable|string',
             'nomor_polisi' => 'nullable|string',
             'nomor_voyage' => 'nullable|string',
+            'bl_id' => 'nullable|integer|exists:bls,id',
+            'klasifikasi_biaya_id' => 'nullable|integer|exists:klasifikasi_biayas,id',
+            'barang_detail' => 'nullable|array',
+            'barang_detail.*.pricelist_buruh_id' => 'required_with:barang_detail|integer|exists:pricelist_buruh,id',
+            'barang_detail.*.jumlah' => 'required_with:barang_detail|integer|min:1',
             'surat_jalan_id' => 'nullable|integer',
             'jenis_penyesuaian' => 'nullable|string',
             'tipe_penyesuaian_detail' => 'nullable|array',
@@ -179,6 +191,11 @@ class InvoiceAktivitasLainController extends Controller
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
         ]);
+        
+        // Convert barang_detail array to JSON for storage
+        if (isset($validated['barang_detail'])) {
+            $validated['barang_detail'] = json_encode($validated['barang_detail']);
+        }
         
         // Convert tipe_penyesuaian_detail array to JSON for storage
         if (isset($validated['tipe_penyesuaian_detail'])) {
@@ -200,7 +217,10 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function show(string $id)
     {
-        return view('invoice-aktivitas-lain.show', compact('id'));
+        $invoice = InvoiceAktivitasLain::with(['bl', 'klasifikasiBiaya', 'items.pembayaran'])
+            ->findOrFail($id);
+        
+        return view('invoice-aktivitas-lain.show', compact('invoice'));
     }
 
     /**
