@@ -2368,6 +2368,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tanda-terima-lcl/show-container/{nomor_kontainer}', [\App\Http\Controllers\TandaTerimaLclController::class, 'showContainer'])
          ->name('tanda-terima-lcl.show-container')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+    
+    Route::post('tanda-terima-lcl/{id}/remove-from-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'removeFromContainer'])
+         ->name('tanda-terima-lcl.remove-from-container')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-edit');
 
     // Download image route for LCL (must be before resource route)
     Route::get('tanda-terima-lcl/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}', 

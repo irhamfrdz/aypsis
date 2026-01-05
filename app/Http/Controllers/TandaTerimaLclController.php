@@ -1839,6 +1839,59 @@ class TandaTerimaLclController extends Controller
     }
     
     /**
+     * Remove LCL from container (unstuffing)
+     */
+    public function removeFromContainer(Request $request, $id)
+    {
+        try {
+            $tandaTerima = TandaTerimaLcl::findOrFail($id);
+            $nomorKontainer = $request->nomor_kontainer;
+            
+            // Find and delete the pivot record
+            $deleted = TandaTerimaLclKontainerPivot::where('tanda_terima_lcl_id', $id)
+                ->where('nomor_kontainer', $nomorKontainer)
+                ->delete();
+            
+            if ($deleted) {
+                // Update status if no more containers assigned
+                $remainingContainers = TandaTerimaLclKontainerPivot::where('tanda_terima_lcl_id', $id)->count();
+                
+                if ($remainingContainers === 0) {
+                    $tandaTerima->status_stuffing = 'belum_stuffing';
+                    $tandaTerima->save();
+                }
+                
+                \Log::info('LCL removed from container', [
+                    'lcl_id' => $id,
+                    'nomor_kontainer' => $nomorKontainer,
+                    'user_id' => auth()->id()
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tanda terima berhasil dikeluarkan dari kontainer ' . $nomorKontainer
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan atau sudah dihapus'
+                ], 404);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error removing LCL from container: ' . $e->getMessage(), [
+                'lcl_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
      * Get barang data from selected containers by nomor kontainer
      */
     public function getBarangFromContainersByNomor(Request $request)

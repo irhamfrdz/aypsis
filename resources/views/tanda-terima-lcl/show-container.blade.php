@@ -104,6 +104,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berat (ton)</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Stuffing</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -184,6 +185,19 @@
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ $pivot->assignedByUser->name ?? '-' }}</div>
                                 </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if($pivot->tandaTerima)
+                                        <button type="button"
+                                                onclick="removeFromContainer({{ $pivot->tanda_terima_lcl_id }}, '{{ $containerData['nomor_kontainer'] }}', '{{ $pivot->tandaTerima->nomor_tanda_terima ?? 'TT-LCL-' . $pivot->tanda_terima_lcl_id }}')"
+                                                class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors shadow-sm"
+                                                title="Keluarkan dari kontainer">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                            Keluarkan
+                                        </button>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -192,7 +206,7 @@
                             <td colspan="4" class="px-6 py-3 text-right text-sm font-bold text-gray-900">Total:</td>
                             <td class="px-6 py-3 text-sm font-bold text-purple-600">{{ number_format($containerData['total_volume'], 3) }} m³</td>
                             <td class="px-6 py-3 text-sm font-bold text-orange-600">{{ number_format($containerData['total_berat'], 3) }} ton</td>
-                            <td colspan="2"></td>
+                            <td colspan="3"></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -200,4 +214,54 @@
         </div>
     </div>
 </div>
+
+<script>
+function removeFromContainer(lclId, containerNumber, lclNumber) {
+    if (confirm(`Apakah Anda yakin ingin mengeluarkan ${lclNumber} dari kontainer ${containerNumber}?\n\nTanda terima akan dikembalikan ke status "Belum Stuffing" dan dapat dimasukkan ke kontainer lain.`)) {
+        // Show loading
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        button.disabled = true;
+
+        // Send AJAX request
+        fetch(`/tanda-terima-lcl/${lclId}/remove-from-container`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                nomor_kontainer: containerNumber
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alert(data.message || 'Tanda terima berhasil dikeluarkan dari kontainer');
+                
+                // Reload page to update the list
+                window.location.reload();
+            } else {
+                throw new Error(data.message || 'Terjadi kesalahan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+            
+            // Reset button
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+        });
+    }
+}
+</script>
 @endsection
