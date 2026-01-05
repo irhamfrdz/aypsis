@@ -164,24 +164,21 @@
                 </div>
 
                 <!-- BL (conditional for Pembayaran Kapal) -->
-                <div id="bl_wrapper" class="hidden">
-                    <label for="bl_select" class="block text-sm font-medium text-gray-700 mb-2">
-                        BL <span class="text-red-500">*</span>
+                <div id="bl_wrapper" class="hidden md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Daftar BL <span class="text-red-500">*</span>
                     </label>
-                    <select name="bl_id" 
-                            id="bl_select" 
-                            class="w-full {{ $errors->has('bl_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
-                        <option value="">Pilih BL</option>
-                        @foreach($bls as $bl)
-                            <option value="{{ $bl->id }}" {{ old('bl_id') == $bl->id ? 'selected' : '' }}>
-                                {{ $bl->nomor_bl }} - {{ $bl->nomor_kontainer ?? 'N/A' }} ({{ $bl->pengirim ?? 'N/A' }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('bl_id')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <div id="bl_container" class="space-y-3">
+                        <!-- Dynamic BL inputs will be added here -->
+                    </div>
+                    <button type="button" 
+                            id="add_bl_btn" 
+                            class="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah BL
+                    </button>
                 </div>
 
                 <!-- Klasifikasi Biaya (conditional for Pembayaran Kapal) -->
@@ -490,7 +487,6 @@
         $('#sub_jenis_kendaraan').select2({ placeholder: 'Pilih Sub Jenis Kendaraan', allowClear: true, width: '100%' });
         $('#nomor_polisi').select2({ placeholder: 'Pilih Nomor Polisi', allowClear: true, width: '100%' });
         $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
-        $('#bl_select').select2({ placeholder: 'Pilih BL', allowClear: true, width: '100%' });
         $('#klasifikasi_biaya_select').select2({ placeholder: 'Pilih Klasifikasi Biaya', allowClear: true, width: '100%' });
         $('#nama_barang_select').select2({ placeholder: 'Pilih Nama Barang', allowClear: true, width: '100%' });
         $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
@@ -522,7 +518,6 @@
         const nomorVoyageWrapper = document.getElementById('nomor_voyage_wrapper');
         const nomorVoyageSelect = document.getElementById('nomor_voyage');
         const blWrapper = document.getElementById('bl_wrapper');
-        const blSelect = document.getElementById('bl_select');
         const klasifikasiBiayaWrapper = document.getElementById('klasifikasi_biaya_wrapper');
         const klasifikasiBiayaSelect = document.getElementById('klasifikasi_biaya_select');
         const barangWrapper = document.getElementById('barang_wrapper');
@@ -549,8 +544,7 @@
             $('#nomor_voyage').val('').trigger('change');
             
             blWrapper.classList.add('hidden');
-            blSelect.removeAttribute('required');
-            $('#bl_select').val('').trigger('change');
+            clearBlInputs();
             
             klasifikasiBiayaWrapper.classList.add('hidden');
             klasifikasiBiayaSelect.removeAttribute('required');
@@ -584,13 +578,12 @@
                 nomorVoyageWrapper.classList.remove('hidden');
                 nomorVoyageSelect.setAttribute('required', 'required');
                 blWrapper.classList.remove('hidden');
-                blSelect.setAttribute('required', 'required');
+                initializeBlInputs();
                 klasifikasiBiayaWrapper.classList.remove('hidden');
                 klasifikasiBiayaSelect.setAttribute('required', 'required');
                 
                 setTimeout(() => {
                     $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
-                    $('#bl_select').select2({ placeholder: 'Pilih BL', allowClear: true, width: '100%' });
                     $('#klasifikasi_biaya_select').select2({ placeholder: 'Pilih Klasifikasi Biaya', allowClear: true, width: '100%' });
                 }, 100);
                 
@@ -760,6 +753,78 @@
                     barangWrapper.classList.add('hidden');
                     clearBarangInputs();
                 }
+            });
+        }
+        
+        // BL management functions
+        function initializeBlInputs() {
+            const container = document.getElementById('bl_container');
+            container.innerHTML = '';
+            addBlInput();
+        }
+        
+        function clearBlInputs() {
+            const container = document.getElementById('bl_container');
+            if (container) container.innerHTML = '';
+        }
+        
+        function addBlInput(existingBlId = '') {
+            const container = document.getElementById('bl_container');
+            const index = container.children.length;
+            
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
+            inputGroup.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
+                    <select name="bl_details[${index}][bl_id]" 
+                            class="bl-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                            required>
+                        <option value="">Pilih BL</option>
+                        @foreach($bls as $bl)
+                            <option value="{{ $bl->id }}" 
+                                    ${existingBlId == '{{ $bl->id }}' ? 'selected' : ''}>
+                                {{ $bl->nomor_bl }} - {{ $bl->nomor_kontainer ?? 'N/A' }} ({{ $bl->pengirim ?? 'N/A' }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex-shrink-0">
+                    <button type="button" 
+                            onclick="removeBlInput(this)" 
+                            class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(inputGroup);
+            
+            // Initialize Select2 for new select
+            setTimeout(() => {
+                $(inputGroup).find('.bl-select').select2({
+                    placeholder: 'Pilih BL',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
+        }
+        
+        window.removeBlInput = function(button) {
+            const container = document.getElementById('bl_container');
+            if (container.children.length > 1) {
+                button.closest('.flex.items-end.gap-3').remove();
+            }
+        };
+        
+        // Add button for BL
+        const addBlBtn = document.getElementById('add_bl_btn');
+        if (addBlBtn) {
+            addBlBtn.addEventListener('click', function() {
+                addBlInput();
             });
         }
         

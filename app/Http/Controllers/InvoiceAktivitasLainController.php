@@ -14,7 +14,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function index(Request $request)
     {
-        $query = InvoiceAktivitasLain::query()->with(['bl', 'klasifikasiBiaya']);
+        $query = InvoiceAktivitasLain::query()->with(['klasifikasiBiaya']);
 
         // Filter by nomor_invoice
         if ($request->filled('nomor_invoice')) {
@@ -176,7 +176,8 @@ class InvoiceAktivitasLainController extends Controller
             'sub_jenis_kendaraan' => 'nullable|string',
             'nomor_polisi' => 'nullable|string',
             'nomor_voyage' => 'nullable|string',
-            'bl_id' => 'nullable|integer|exists:bls,id',
+            'bl_details' => 'nullable|array',
+            'bl_details.*.bl_id' => 'required_with:bl_details|integer|exists:bls,id',
             'klasifikasi_biaya_id' => 'nullable|integer|exists:klasifikasi_biayas,id',
             'barang_detail' => 'nullable|array',
             'barang_detail.*.pricelist_buruh_id' => 'required_with:barang_detail|integer|exists:pricelist_buruh,id',
@@ -191,6 +192,11 @@ class InvoiceAktivitasLainController extends Controller
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
         ]);
+        
+        // Convert bl_details array to JSON for storage
+        if (isset($validated['bl_details'])) {
+            $validated['bl_details'] = json_encode($validated['bl_details']);
+        }
         
         // Convert barang_detail array to JSON for storage
         if (isset($validated['barang_detail'])) {
@@ -217,7 +223,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function show(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['bl', 'klasifikasiBiaya', 'items.pembayaran'])
+        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'items.pembayaran'])
             ->findOrFail($id);
         
         return view('invoice-aktivitas-lain.show', compact('invoice'));

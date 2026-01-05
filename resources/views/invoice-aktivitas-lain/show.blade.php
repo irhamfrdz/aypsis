@@ -120,32 +120,47 @@
                     @endif
 
                     <!-- BL Information -->
-                    @if($invoice->bl)
+                    @php
+                        $blDetails = $invoice->bl_details_array;
+                    @endphp
+                    @if(count($blDetails) > 0)
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Informasi BL</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
-                                <p class="text-gray-900 font-semibold">{{ $invoice->bl->nomor_bl }}</p>
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Informasi BL ({{ count($blDetails) }} BL)</h3>
+                        <div class="space-y-4">
+                            @foreach($blDetails as $index => $bl)
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">BL #{{ $index + 1 }} - Nomor BL</label>
+                                        <p class="text-gray-900 font-semibold">{{ $bl['nomor_bl'] }}</p>
+                                    </div>
+                                    @if($bl['nomor_kontainer'])
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer</label>
+                                        <p class="text-gray-900">{{ $bl['nomor_kontainer'] }}</p>
+                                    </div>
+                                    @endif
+                                    @if($bl['no_voyage'])
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">No. Voyage</label>
+                                        <p class="text-gray-900">{{ $bl['no_voyage'] }}</p>
+                                    </div>
+                                    @endif
+                                    @if($bl['nama_kapal'])
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Nama Kapal</label>
+                                        <p class="text-gray-900">{{ $bl['nama_kapal'] }}</p>
+                                    </div>
+                                    @endif
+                                    @if($bl['pengirim'])
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Pengirim</label>
+                                        <p class="text-gray-900">{{ $bl['pengirim'] }}</p>
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
-                            @if($invoice->bl->nomor_kontainer)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
-                                <p class="text-gray-900">{{ $invoice->bl->nomor_kontainer }}</p>
-                            </div>
-                            @endif
-                            @if($invoice->bl->no_voyage)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Voyage</label>
-                                <p class="text-gray-900">{{ $invoice->bl->no_voyage }}</p>
-                            </div>
-                            @endif
-                            @if($invoice->bl->nama_kapal)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
-                                <p class="text-gray-900">{{ $invoice->bl->nama_kapal }}</p>
-                            </div>
-                            @endif
+                            @endforeach
                         </div>
                     </div>
                     @endif

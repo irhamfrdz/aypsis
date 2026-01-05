@@ -164,10 +164,18 @@
                                 <div class="text-sm text-gray-900">{{ $invoice->jenis_aktivitas ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                @if($invoice->bl)
-                                    <div class="text-sm font-medium text-gray-900">BL: {{ $invoice->bl->nomor_bl }}</div>
-                                    @if($invoice->bl->nomor_kontainer)
-                                        <div class="text-xs text-gray-500">{{ $invoice->bl->nomor_kontainer }}</div>
+                                @php
+                                    $blDetails = $invoice->bl_details_array;
+                                @endphp
+                                @if(count($blDetails) > 0)
+                                    <div class="text-sm font-medium text-gray-900">
+                                        BL: {{ $blDetails[0]['nomor_bl'] }}
+                                        @if($blDetails[0]['nomor_kontainer'])
+                                            <div class="text-xs text-gray-500">{{ $blDetails[0]['nomor_kontainer'] }}</div>
+                                        @endif
+                                    </div>
+                                    @if(count($blDetails) > 1)
+                                        <div class="text-xs text-blue-600 mt-1">+{{ count($blDetails) - 1 }} BL lainnya</div>
                                     @endif
                                 @elseif($invoice->klasifikasiBiaya)
                                     <div class="text-sm text-gray-900">{{ $invoice->klasifikasiBiaya->nama }}</div>

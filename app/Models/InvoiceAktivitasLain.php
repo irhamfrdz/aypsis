@@ -19,7 +19,7 @@ class InvoiceAktivitasLain extends Model
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
-        'bl_id',
+        'bl_details',
         'klasifikasi_biaya_id',
         'barang_detail',
         'surat_jalan_id',
@@ -81,11 +81,37 @@ class InvoiceAktivitasLain extends Model
     }
 
     /**
-     * Relationship dengan BL
+     * Accessor untuk bl details dengan join bls table
      */
-    public function bl()
+    public function getBlDetailsArrayAttribute()
     {
-        return $this->belongsTo(Bl::class, 'bl_id');
+        if (!$this->bl_details) {
+            return [];
+        }
+
+        $blDetails = json_decode($this->bl_details, true);
+        if (!is_array($blDetails)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($blDetails as $item) {
+            if (isset($item['bl_id'])) {
+                $bl = \App\Models\Bl::find($item['bl_id']);
+                if ($bl) {
+                    $result[] = [
+                        'bl_id' => $item['bl_id'],
+                        'nomor_bl' => $bl->nomor_bl,
+                        'nomor_kontainer' => $bl->nomor_kontainer,
+                        'no_voyage' => $bl->no_voyage,
+                        'nama_kapal' => $bl->nama_kapal,
+                        'pengirim' => $bl->pengirim
+                    ];
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
