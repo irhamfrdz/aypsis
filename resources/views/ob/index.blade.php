@@ -831,28 +831,20 @@ function openPranotaModal() {
         return false;
     });
     
-    // Filter out TL containers
-    const tlItems = selectedItems.filter(item => item.sudah_tl === '1' || item.sudah_tl === true);
-    
     // Filter out non-OB containers
     const nonObItems = selectedItems.filter(item => item.sudah_ob !== '1' && item.sudah_ob !== true);
     
     selectedItems = selectedItems.filter(item => {
         if (item.tipe === 'CARGO') return false;
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
-        if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
         if (item.sudah_ob !== '1' && item.sudah_ob !== true) return false;
         return true;
     });
     
-    // Show warning if CARGO, TL, or non-OB items were filtered out
+    // Show warning if CARGO or non-OB items were filtered out
     let warningMsg = '';
     if (cargoItems.length > 0) {
         warningMsg += `${cargoItems.length} kontainer CARGO tidak akan dimasukkan ke pranota.\nKontainer CARGO: ${cargoItems.map(item => item.nomor_kontainer).join(', ')}`;
-    }
-    if (tlItems.length > 0) {
-        if (warningMsg) warningMsg += '\n\n';
-        warningMsg += `${tlItems.length} kontainer TL tidak akan dimasukkan ke pranota.\nKontainer TL: ${tlItems.map(item => item.nomor_kontainer).join(', ')}`;
     }
     if (nonObItems.length > 0) {
         if (warningMsg) warningMsg += '\n\n';
@@ -887,7 +879,10 @@ function openPranotaModal() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50';
                 let biayaDisplay = '';
-                if (item.biaya === null || item.biaya === undefined || item.biaya === '') {
+                // Check if TL container first
+                if (item.sudah_tl === '1' || item.sudah_tl === true) {
+                    biayaDisplay = `<span class="text-blue-600">Tidak ada biaya (TL)</span>`;
+                } else if (item.biaya === null || item.biaya === undefined || item.biaya === '') {
                     biayaDisplay = `<span class="text-red-600">Biaya belum diatur</span>`;
                 } else {
                     const v = Number(item.biaya);
@@ -1269,15 +1264,13 @@ function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
     if (!stored) return [];
     
-    // Parse and filter out CARGO containers (by type or container number), TL containers, and non-OB containers
+    // Parse and filter out CARGO containers (by type or container number) and non-OB containers
     const items = JSON.parse(stored);
     return items.filter(item => {
         // Filter by type
         if (item.tipe === 'CARGO') return false;
         // Filter by container number containing 'CARGO'
         if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
-        // Filter by TL status
-        if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
         // Filter by OB status
         if (item.sudah_ob !== '1' && item.sudah_ob !== true) return false;
         return true;
@@ -1291,22 +1284,15 @@ function saveSelectedItems(items) {
 function loadSelectedCheckboxes() {
     const selectedItems = getSelectedItems();
     checkboxes.forEach(cb => {
-        // Skip disabled checkboxes (CARGO or TL)
+        // Skip disabled checkboxes (CARGO)
         if (cb.disabled) {
-            cb.checked = false; // Ensure CARGO and TL are never checked
+            cb.checked = false; // Ensure CARGO is never checked
             return;
         }
         
         // Skip if container number contains CARGO
         const nomorKontainer = cb.getAttribute('data-nomor-kontainer');
         if (nomorKontainer && nomorKontainer.toUpperCase().includes('CARGO')) {
-            cb.checked = false;
-            return;
-        }
-        
-        // Skip if TL
-        const sudahTl = cb.getAttribute('data-sudah-tl');
-        if (sudahTl === '1' || sudahTl === 'true') {
             cb.checked = false;
             return;
         }
@@ -1319,7 +1305,7 @@ function loadSelectedCheckboxes() {
         }
         
         const item = selectedItems.find(item => item.id === cb.value);
-        if (item && item.tipe !== 'CARGO' && item.sudah_tl !== '1' && item.sudah_tl !== true && (item.sudah_ob === '1' || item.sudah_ob === true)) {
+        if (item && item.tipe !== 'CARGO' && (item.sudah_ob === '1' || item.sudah_ob === true)) {
             cb.checked = true;
         }
     });
@@ -1370,16 +1356,7 @@ function checkSelected() {
 }
 
 checkboxes.forEach(cb => {
-    // Prevent TL checkboxes from being checked
     cb.addEventListener('change', function(e) {
-        const sudahTl = this.getAttribute('data-sudah-tl');
-        if (sudahTl === '1' || sudahTl === 'true' || sudahTl === true) {
-            e.preventDefault();
-            this.checked = false;
-            this.disabled = true;
-            alert('Kontainer TL tidak bisa dimasukkan ke pranota!');
-            return false;
-        }
         checkSelected();
     });
 });
@@ -1387,16 +1364,15 @@ checkboxes.forEach(cb => {
 selectAll.addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     checkboxes.forEach(cb => {
-        // Only check/uncheck if checkbox is not disabled (skip CARGO and TL)
-        const sudahTl = cb.getAttribute('data-sudah-tl');
-        if (!cb.disabled && sudahTl !== '1' && sudahTl !== 'true' && sudahTl !== true) {
+        // Only check/uncheck if checkbox is not disabled (skip CARGO)
+        if (!cb.disabled) {
             cb.checked = this.checked;
         }
     });
     checkSelected();
 });
 
-// Clean CARGO, TL, and non-OB from localStorage on page load
+// Clean CARGO and non-OB from localStorage on page load
 function cleanCargoFromStorage() {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
@@ -1406,16 +1382,14 @@ function cleanCargoFromStorage() {
             if (item.tipe === 'CARGO') return false;
             // Filter by container number containing 'CARGO'
             if (item.nomor_kontainer && item.nomor_kontainer.toUpperCase().includes('CARGO')) return false;
-            // Filter by TL status
-            if (item.sudah_tl === '1' || item.sudah_tl === true) return false;
             // Filter by OB status
             if (item.sudah_ob !== '1' && item.sudah_ob !== true) return false;
             return true;
         });
         if (cleanedItems.length !== items.length) {
-            // CARGO, TL, or non-OB found and removed, update storage
+            // CARGO or non-OB found and removed, update storage
             localStorage.setItem(storageKey, JSON.stringify(cleanedItems));
-            console.log(`Removed ${items.length - cleanedItems.length} CARGO/TL/non-OB containers from selection`);
+            console.log(`Removed ${items.length - cleanedItems.length} CARGO/non-OB containers from selection`);
         }
     }
 }
@@ -1424,16 +1398,6 @@ function cleanCargoFromStorage() {
 document.addEventListener('DOMContentLoaded', function() {
     cleanCargoFromStorage(); // Clean first
     loadSelectedCheckboxes(); // Then load
-    
-    // FORCE uncheck and disable all TL checkboxes on page load
-    document.querySelectorAll('.row-checkbox').forEach(cb => {
-        const sudahTl = cb.getAttribute('data-sudah-tl');
-        if (sudahTl === '1' || sudahTl === 'true' || sudahTl === true) {
-            cb.checked = false;
-            cb.disabled = true;
-            console.log('TL checkbox disabled:', cb.getAttribute('data-nomor-kontainer'));
-        }
-    });
 });
 
 document.getElementById('btnMasukPranota').addEventListener('click', function() {

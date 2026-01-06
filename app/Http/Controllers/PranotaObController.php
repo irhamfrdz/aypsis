@@ -96,7 +96,14 @@ class PranotaObController extends Controller
         $totalBiaya = 0;
         $perSupir = []; // total biaya per supir
         $perSupirCounts = []; // per supir counts for status and size
+        $totalTlContainers = 0; // count TL containers
         foreach ($displayItems as $item) {
+            // Check if container is TL (sudah_tl = 1 or true)
+            $isTl = ($item['sudah_tl'] ?? false) === 1 || ($item['sudah_tl'] ?? false) === true || ($item['sudah_tl'] ?? false) === '1';
+            if ($isTl) {
+                $totalTlContainers++;
+            }
+            
             $amount = (float)($item['biaya'] ?? 0);
             $totalBiaya += $amount;
             $key = trim($item['supir'] ?? 'Perusahaan');
@@ -187,7 +194,7 @@ class PranotaObController extends Controller
         // Pass pranotaItems for print view
         $pranotaItems = $displayItems;
 
-        return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts', 'pranotaItems', 'biayaPerSize'));
+        return view('pranota-ob.print', compact('pranota', 'displayItems', 'totalBiaya', 'perSupir', 'perSupirCounts', 'pranotaItems', 'biayaPerSize', 'totalTlContainers'));
     }
 
     public function inputDp($id)
