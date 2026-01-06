@@ -1312,21 +1312,29 @@ class ObController extends Controller
                         $itemsToSave[$idx]['nomor_kontainer'] = $bl->nomor_kontainer ?? null;
                         $itemsToSave[$idx]['nama_barang'] = $bl->nama_barang ?? null;
                         $itemsToSave[$idx]['size'] = $bl->size_kontainer ?? null;
-                        // Use biaya from request if provided, otherwise from DB
-                        $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null);
                         
-                        // Recalculate status from biaya to ensure accuracy
-                        $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
-                        // Normalize size - remove 'ft' suffix if present, then add it back
-                        $sizeRaw = preg_replace('/ft$/i', '', $bl->size_kontainer ?? '');
-                        $sizeStr = $sizeRaw . 'ft';
-                        $mapKey = $biaya . '|' . $sizeStr;
-                        \Log::info("BL lookup: biaya=$biaya, size=$sizeStr, key=$mapKey, found=" . (isset($reverseMap[$mapKey]) ? $reverseMap[$mapKey] : 'NOT FOUND'));
-                        if (isset($reverseMap[$mapKey])) {
-                            $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
+                        // Check if TL container - TL containers should have no biaya
+                        $isTL = ($bl->sudah_tl === 1 || $bl->sudah_tl === true || $bl->sudah_tl === '1');
+                        if ($isTL) {
+                            $itemsToSave[$idx]['biaya'] = null; // TL containers have no cost
+                            $itemsToSave[$idx]['status'] = 'full'; // Default status for TL
                         } else {
-                            // Fallback to request status or default
-                            $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                            // Use biaya from request if provided, otherwise from DB
+                            $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null);
+                            
+                            // Recalculate status from biaya to ensure accuracy
+                            $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
+                            // Normalize size - remove 'ft' suffix if present, then add it back
+                            $sizeRaw = preg_replace('/ft$/i', '', $bl->size_kontainer ?? '');
+                            $sizeStr = $sizeRaw . 'ft';
+                            $mapKey = $biaya . '|' . $sizeStr;
+                            \Log::info("BL lookup: biaya=$biaya, size=$sizeStr, key=$mapKey, found=" . (isset($reverseMap[$mapKey]) ? $reverseMap[$mapKey] : 'NOT FOUND'));
+                            if (isset($reverseMap[$mapKey])) {
+                                $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
+                            } else {
+                                // Fallback to request status or default
+                                $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                            }
                         }
                         
                         if (!empty($bl->supir_id)) {
@@ -1340,21 +1348,29 @@ class ObController extends Controller
                         $itemsToSave[$idx]['nomor_kontainer'] = $nk->nomor_kontainer ?? null;
                         $itemsToSave[$idx]['nama_barang'] = $nk->jenis_barang ?? ($nk->nama_barang ?? null);
                         $itemsToSave[$idx]['size'] = $nk->size_kontainer ?? ($nk->ukuran_kontainer ?? null);
-                        // Use biaya from request if provided, otherwise from DB
-                        $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null);
                         
-                        // Recalculate status from biaya to ensure accuracy
-                        $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
-                        // Normalize size - remove 'ft' suffix if present, then add it back
-                        $sizeRaw = preg_replace('/ft$/i', '', $nk->size_kontainer ?? $nk->ukuran_kontainer ?? '');
-                        $sizeStr = $sizeRaw . 'ft';
-                        $mapKey = $biaya . '|' . $sizeStr;
-                        \Log::info("NK lookup: biaya=$biaya, size=$sizeStr, key=$mapKey, found=" . (isset($reverseMap[$mapKey]) ? $reverseMap[$mapKey] : 'NOT FOUND'));
-                        if (isset($reverseMap[$mapKey])) {
-                            $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
+                        // Check if TL container - TL containers should have no biaya
+                        $isTL = ($nk->is_tl === 1 || $nk->is_tl === true || $nk->is_tl === '1');
+                        if ($isTL) {
+                            $itemsToSave[$idx]['biaya'] = null; // TL containers have no cost
+                            $itemsToSave[$idx]['status'] = 'full'; // Default status for TL
                         } else {
-                            // Fallback to request status or default
-                            $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                            // Use biaya from request if provided, otherwise from DB
+                            $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null);
+                            
+                            // Recalculate status from biaya to ensure accuracy
+                            $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
+                            // Normalize size - remove 'ft' suffix if present, then add it back
+                            $sizeRaw = preg_replace('/ft$/i', '', $nk->size_kontainer ?? $nk->ukuran_kontainer ?? '');
+                            $sizeStr = $sizeRaw . 'ft';
+                            $mapKey = $biaya . '|' . $sizeStr;
+                            \Log::info("NK lookup: biaya=$biaya, size=$sizeStr, key=$mapKey, found=" . (isset($reverseMap[$mapKey]) ? $reverseMap[$mapKey] : 'NOT FOUND'));
+                            if (isset($reverseMap[$mapKey])) {
+                                $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
+                            } else {
+                                // Fallback to request status or default
+                                $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                            }
                         }
                         
                         if (!empty($nk->supir_id)) {
