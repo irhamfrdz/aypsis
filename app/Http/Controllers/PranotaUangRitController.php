@@ -297,6 +297,7 @@ class PranotaUangRitController extends Controller
                     $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
                           ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                 })
+                ->where('lokasi', 'Jakarta') // Filter: hanya lokasi Jakarta
                 ->where(function($q) {
                     // Filter: rit = menggunakan_rit ATAU rit is NULL (default dianggap menggunakan rit)
                     $q->where('rit', 'menggunakan_rit')
