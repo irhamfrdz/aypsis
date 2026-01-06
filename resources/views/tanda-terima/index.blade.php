@@ -929,6 +929,14 @@
         if (confirm(confirmMessage)) {
             const form = document.getElementById('deleteSuratJalanForm');
             form.action = '/surat-jalan/' + suratJalanId;
+            
+            // Add redirect parameter to return to tanda-terima page
+            const redirectInput = document.createElement('input');
+            redirectInput.type = 'hidden';
+            redirectInput.name = 'redirect_to';
+            redirectInput.value = 'tanda-terima';
+            form.appendChild(redirectInput);
+            
             form.submit();
         }
     }
