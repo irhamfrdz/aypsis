@@ -30,7 +30,7 @@
         /* Header Section */
         .date-header {
             position: absolute;
-            top: 10mm;  /* 1cm dari atas */
+            top: 15mm;  /* 1.5cm dari atas */
             left: 100mm;  /* 10cm dari kiri */
             font-size: 16px;
             font-weight: bold;
