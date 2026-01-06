@@ -156,8 +156,8 @@
                                              data-tipe="{{ $prospek->tipe }}"
                                              data-supir="{{ $prospek->nama_supir }}"
                                              data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}"
-                                             data-pengirim="{{ $prospek->pengirim ?? '-' }}"
-                                             data-barang="{{ $prospek->jenis_barang ?? '-' }}">
+                                             data-pengirim="{{ $prospek->pt_pengirim ?? '-' }}"
+                                             data-barang="{{ $prospek->barang ?? '-' }}">
                                             <div class="font-medium text-gray-900 {{ !$prospek->nomor_kontainer ? 'text-orange-600' : '' }}">
                                                 {{ $displayText }}
                                             </div>
