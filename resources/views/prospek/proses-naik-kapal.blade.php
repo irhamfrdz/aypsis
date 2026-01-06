@@ -155,7 +155,9 @@
                                              data-text="{{ $displayText }}"
                                              data-tipe="{{ $prospek->tipe }}"
                                              data-supir="{{ $prospek->nama_supir }}"
-                                             data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}">
+                                             data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}"
+                                             data-pengirim="{{ $prospek->pengirim ?? '-' }}"
+                                             data-barang="{{ $prospek->jenis_barang ?? '-' }}">
                                             <div class="font-medium text-gray-900 {{ !$prospek->nomor_kontainer ? 'text-orange-600' : '' }}">
                                                 {{ $displayText }}
                                             </div>
@@ -240,6 +242,8 @@
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer - Seal</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PT. Pengirim</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -501,11 +505,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const tipe = this.getAttribute('data-tipe');
             const supir = this.getAttribute('data-supir');
             const tanggal = this.getAttribute('data-tanggal');
+            const pengirim = this.getAttribute('data-pengirim');
+            const barang = this.getAttribute('data-barang');
             
             if (!selectedProspeks.find(p => p.id === id)) {
-                selectedProspeks.push({ id, text, tipe, supir, tanggal });
+                selectedProspeks.push({ id, text, tipe, pengirim, barang, supir, tanggal });
                 addChip(id, text, tanggal);
-                addTableRow(id, text, tipe, supir, tanggal);
+                addTableRow(id, text, tipe, pengirim, barang, supir, tanggal);
                 updateSelectedCount();
                 updateHiddenInputs();
                 updateTableVisibility();
@@ -531,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedChips.appendChild(chip);
     }
     
-    function addTableRow(id, text, tipe, supir, tanggal) {
+    function addTableRow(id, text, tipe, pengirim, barang, supir, tanggal) {
         const rowIndex = selectedProspeks.length;
         const row = document.createElement('tr');
         row.setAttribute('data-id', id);
@@ -545,6 +551,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${tipe}
                 </span>
             </td>
+            <td class="px-4 py-3 text-sm text-gray-900">${pengirim}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${barang}</td>
             <td class="px-4 py-3 text-sm text-gray-900">${supir}</td>
             <td class="px-4 py-3 text-sm text-gray-600">${tanggal}</td>
             <td class="px-4 py-3 text-sm">
@@ -579,12 +587,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const tipe = option.getAttribute('data-tipe');
             const supir = option.getAttribute('data-supir');
             const tanggal = option.getAttribute('data-tanggal');
+            const pengirim = option.getAttribute('data-pengirim');
+            const barang = option.getAttribute('data-barang');
             
             // Only add if not already selected
             if (!selectedProspeks.find(p => p.id === id)) {
-                selectedProspeks.push({ id, text, tipe, supir, tanggal });
+                selectedProspeks.push({ id, text, tipe, pengirim, barang, supir, tanggal });
                 addChip(id, text, tanggal);
-                addTableRow(id, text, tipe, supir, tanggal);
+                addTableRow(id, text, tipe, pengirim, barang, supir, tanggal);
                 option.classList.add('selected');
             }
         });
