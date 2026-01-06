@@ -255,7 +255,9 @@
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
                         <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->nama_barang }}">{{ $bl->nama_barang ?: '-' }}</td>
-                        <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->pt_pengirim ?? $bl->pengirim }}">{{ $bl->pt_pengirim ?? $bl->pengirim ?? '-' }}</td>
+                        <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ request('kegiatan') === 'muat' ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}">
+                            {{ request('kegiatan') === 'muat' ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}
+                        </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs">
                             @php
                                 $barangUpper = strtoupper($bl->nama_barang ?? '');
@@ -457,7 +459,9 @@
                             <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->jenis_barang }}">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
                             </td>
-                            <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->pt_pengirim ?? $naikKapal->pengirim }}">{{ $naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-' }}</td>
+                            <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ request('kegiatan') === 'muat' ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}">
+                                {{ request('kegiatan') === 'muat' ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}
+                            </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs">
                                 @php
                                     $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
