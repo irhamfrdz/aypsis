@@ -30,7 +30,7 @@ echo "Pastikan Anda sudah backup database sebelum melanjutkan.\n\n";
 // Cek data yang akan dihapus
 echo "Mencari data BL dengan voyage {$voyageNumber}...\n\n";
 
-$bls = DB::table('bl')
+$bls = DB::table('bls')
     ->where('no_voyage', $voyageNumber)
     ->get();
 
@@ -62,7 +62,7 @@ echo "\n🔄 Memulai proses penghapusan...\n";
 try {
     DB::beginTransaction();
     
-    $deletedCount = DB::table('bl')
+    $deletedCount = DB::table('bls')
         ->where('no_voyage', $voyageNumber)
         ->delete();
     
