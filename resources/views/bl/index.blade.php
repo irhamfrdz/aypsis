@@ -729,59 +729,15 @@
                 </div>
                 
                 <div class="mb-6">
-                    <h4 class="text-md font-medium text-gray-900 mb-4">Informasi Barang yang Dipindahkan</h4>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Informasi Pemecahan BL</h4>
                     <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700">
                             <div class="flex items-start">
                                 <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div>
-                                    <strong>Catatan:</strong> Kontainer yang dipilih akan tetap sama (nomor dan tipe). Yang akan berubah hanya tonnage, volume, dan nama barang untuk membedakan pecahan.
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label for="tonnageDipindah" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Tonnage Dipindah (Ton) <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" id="tonnageDipindah" name="tonnage_dipindah" step="0.001" min="0.001"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="0.000" required>
-                                <p class="text-xs text-gray-500 mt-1">Masukkan jumlah tonnage yang akan dipindahkan dari BL ini</p>
-                            </div>
-                            <div>
-                                <label for="volumeDipindah" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Volume Dipindah (m³) <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" id="volumeDipindah" name="volume_dipindah" step="0.001" min="0.001"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="0.000" required>
-                                <p class="text-xs text-gray-500 mt-1">Masukkan jumlah volume yang akan dipindahkan dari BL ini</p>
-                            </div>
-                            <div>
-                                <label for="namaBarangDipindah" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Nama Barang untuk BL Baru <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="namaBarangDipindah" name="nama_barang_dipindah"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="Nama barang untuk BL yang baru" required>
-                                <p class="text-xs text-gray-500 mt-1">Nama barang untuk membedakan BL baru dengan BL asli</p>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="termBaru" class="block text-sm font-medium text-gray-700 mb-1">
-                                        Term untuk BL Baru
-                                    </label>
-                                    <input type="text" id="termBaru" name="term_baru"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="Kosongkan jika sama dengan BL asli">
-                                    <p class="text-xs text-gray-500 mt-1">Opsional: Term khusus untuk BL baru, jika kosong akan sama dengan BL asli</p>
+                                    <strong>Catatan:</strong> Data tonnage, volume, term, dan nama barang akan otomatis mengikuti PT Pengirim yang dipilih. Kontainer yang dipilih akan tetap sama (nomor dan tipe).
                                 </div>
                             </div>
                         </div>
@@ -1208,34 +1164,7 @@ function loadPtPengirim(selectedIds) {
                 const option = document.createElement('option');
                 option.value = pt.pengirim;
                 option.textContent = `${pt.pengirim} - ${pt.nama_barang} (${pt.jumlah_kontainer} kontainer)`;
-                option.dataset.namaBarang = pt.nama_barang;
-                option.dataset.tonnage = pt.total_tonnage;
-                option.dataset.volume = pt.total_volume;
                 ptSelect.appendChild(option);
-            });
-            
-            // Add event listener for PT selection
-            ptSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption.value) {
-                    // Update nama barang field with PT's barang
-                    const namaBarangInput = document.getElementById('nama_barang_dipindah');
-                    if (namaBarangInput) {
-                        namaBarangInput.value = selectedOption.dataset.namaBarang || '';
-                    }
-                    
-                    // Update tonnage info (optional - untuk info saja)
-                    const tonnageInput = document.getElementById('tonnage_dipindah');
-                    if (tonnageInput && selectedOption.dataset.tonnage) {
-                        tonnageInput.placeholder = `Max: ${selectedOption.dataset.tonnage} ton`;
-                    }
-                    
-                    // Update volume info (optional - untuk info saja)
-                    const volumeInput = document.getElementById('volume_dipindah');
-                    if (volumeInput && selectedOption.dataset.volume) {
-                        volumeInput.placeholder = `Max: ${selectedOption.dataset.volume} m³`;
-                    }
-                }
             });
         } else {
             const option = document.createElement('option');
