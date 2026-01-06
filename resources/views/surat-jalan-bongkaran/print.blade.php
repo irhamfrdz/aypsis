@@ -130,7 +130,7 @@
         /* No. Voyage at top-left */
         .no-voyage {
             position: absolute;
-            top: 45mm; /* 4.5cm */
+            top: 55mm; /* 5.5cm */
             left: 35mm; /* 3.5cm */
             font-size: 14px;
             font-weight: bold;
