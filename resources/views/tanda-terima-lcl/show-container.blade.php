@@ -187,19 +187,17 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     @if($pivot->tandaTerima)
-                                        @can('tanda-terima-tanpa-surat-jalan-edit')
-                                            <button type="button"
-                                                    onclick="removeFromContainer({{ $pivot->tanda_terima_lcl_id }}, '{{ $containerData['nomor_kontainer'] }}', '{{ $pivot->tandaTerima->nomor_tanda_terima ?? 'TT-LCL-' . $pivot->tanda_terima_lcl_id }}')"
-                                                    class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors shadow-sm"
-                                                    title="Keluarkan dari kontainer">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
-                                                Keluarkan
-                                            </button>
-                                        @else
-                                            <span class="text-xs text-gray-400 italic">Tidak ada aksi</span>
-                                        @endcan
+                                        <button type="button"
+                                                onclick="removeFromContainer({{ $pivot->tanda_terima_lcl_id }}, '{{ $containerData['nomor_kontainer'] }}', '{{ $pivot->tandaTerima->nomor_tanda_terima ?? 'TT-LCL-' . $pivot->tanda_terima_lcl_id }}')"
+                                                class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors shadow-sm"
+                                                title="Keluarkan dari kontainer">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                            Keluarkan
+                                        </button>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">-</span>
                                     @endif
                                 </td>
                             </tr>
