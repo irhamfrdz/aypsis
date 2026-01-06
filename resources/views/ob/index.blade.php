@@ -38,9 +38,6 @@
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                     <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
                 </a>
-                <a href="{{ route('tagihan-ob.index', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->has('kegiatan') ? ['kegiatan' => request('kegiatan')] : [])) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-file-invoice mr-2"></i>Tagihan OB
-                </a>
             </div>
         </div>
     </div>
