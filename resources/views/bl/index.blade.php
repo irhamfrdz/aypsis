@@ -197,6 +197,99 @@
         </div>
     @endif
 
+    @if(session('split_success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-r mb-4 shadow-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-2xl mr-3"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Pecah BL Berhasil!</h3>
+                    <p class="text-sm">{{ session('split_success') }}</p>
+                    @if(session('new_bl_numbers'))
+                        <div class="mt-3 p-3 bg-white border border-green-200 rounded-md">
+                            <p class="text-sm font-semibold text-green-800 mb-2">
+                                <i class="fas fa-file-contract mr-1"></i>BL Baru yang Dibuat:
+                            </p>
+                            <ul class="list-disc list-inside text-xs space-y-1">
+                                @foreach(session('new_bl_numbers') as $blNumber)
+                                    <li class="text-green-700">{{ $blNumber }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-green-500 hover:text-green-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('split_error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-r mb-4 shadow-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-2xl mr-3"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Pecah BL Gagal!</h3>
+                    <p class="text-sm">{{ session('split_error') }}</p>
+                    @if(session('split_errors'))
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-sm font-semibold hover:text-red-900">
+                                <i class="fas fa-list mr-1"></i>Lihat detail error ({{ count(session('split_errors')) }} error)
+                            </summary>
+                            <div class="mt-2 ml-4 text-xs space-y-1 max-h-60 overflow-y-auto">
+                                @foreach(session('split_errors') as $error)
+                                    <div class="flex items-start py-1">
+                                        <i class="fas fa-circle text-xs mr-2 mt-1"></i>
+                                        <span>{{ $error }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('split_warning'))
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 px-6 py-4 rounded-r mb-4 shadow-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-2xl mr-3"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Peringatan Pecah BL</h3>
+                    <p class="text-sm">{{ session('split_warning') }}</p>
+                    @if(session('split_warnings'))
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-sm font-semibold hover:text-yellow-900">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Lihat detail peringatan ({{ count(session('split_warnings')) }} peringatan)
+                            </summary>
+                            <div class="mt-2 ml-4 text-xs space-y-1 max-h-60 overflow-y-auto">
+                                @foreach(session('split_warnings') as $warn)
+                                    <div class="flex items-start py-1">
+                                        <i class="fas fa-exclamation-circle text-xs mr-2 mt-1 text-yellow-600"></i>
+                                        <span>{{ $warn }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-yellow-600 hover:text-yellow-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
     {{-- Filters --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <form method="GET" action="{{ route('bl.index') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
