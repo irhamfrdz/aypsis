@@ -1323,7 +1323,7 @@ function checkSelected() {
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
-    // Save to storage - collect all selected items (exclude CARGO, TL, and non-OB)
+    // Save to storage - collect all selected items (exclude CARGO and non-OB)
     const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
         .filter(cb => {
             // Filter by type
@@ -1331,9 +1331,6 @@ function checkSelected() {
             // Filter by container number containing 'CARGO'
             const nomorKontainer = cb.getAttribute('data-nomor-kontainer');
             if (nomorKontainer && nomorKontainer.toUpperCase().includes('CARGO')) return false;
-            // Filter by TL status
-            const sudahTl = cb.getAttribute('data-sudah-tl');
-            if (sudahTl === '1' || sudahTl === 'true') return false;
             // Filter by OB status
             const sudahOb = cb.getAttribute('data-sudah-ob');
             if (sudahOb !== '1' && sudahOb !== 'true') return false;
