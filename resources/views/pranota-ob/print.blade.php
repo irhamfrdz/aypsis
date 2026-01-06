@@ -53,11 +53,11 @@
 
 @section('content')
     <div class="p-2 bg-white print-container">
-        <div style="margin-bottom: 3px;">
-            <div style="line-height: 0.8;">
-                <h2 class="font-semibold" style="margin: 0; font-size: 11px;">Pranota OB</h2>
-                <p style="margin: 0; font-size: 7px;">Nomor: {{ $pranota->nomor_pranota ?? '-' }} | Kapal: {{ $pranota->nama_kapal ?? '-' }} | Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
-            </div>
+        <div style="margin-bottom: 4px;">
+            <h2 class="font-semibold" style="margin: 0 0 1px 0; font-size: 11px;">Pranota OB</h2>
+            <p style="margin: 0; font-size: 7px; line-height: 1.3;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
+            <p style="margin: 0; font-size: 7px; line-height: 1.3;">Kapal: {{ $pranota->nama_kapal ?? '-' }}</p>
+            <p style="margin: 0; font-size: 7px; line-height: 1.3;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
         </div>
 
         <div class="mb-2">
