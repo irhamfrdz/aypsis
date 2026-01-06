@@ -263,6 +263,13 @@
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
                             Submit
                         </button>
+                        <button type="button" 
+                                id="exportExcelBtn"
+                                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                            <i class="fas fa-file-excel mr-2"></i>
+                            Export Excel
+                        </button>
                         <a href="{{ route('prospek.pilih-tujuan') }}" 
                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
                             Cancel
@@ -631,8 +638,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateTableVisibility() {
         if (selectedProspeks.length > 0) {
             selectedProspeksTable.classList.remove('hidden');
+            // Enable export button when there are selected prospeks
+            document.getElementById('exportExcelBtn').disabled = false;
         } else {
             selectedProspeksTable.classList.add('hidden');
+            // Disable export button when no prospeks selected
+            document.getElementById('exportExcelBtn').disabled = true;
         }
     }
     
@@ -684,6 +695,42 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!confirm(`Apakah Anda yakin ingin memproses ${selectedProspeks.length} prospek?`)) {
             e.preventDefault();
         }
+    });
+    
+    // Handle Export Excel
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    exportExcelBtn.addEventListener('click', function() {
+        if (selectedProspeks.length === 0) {
+            alert('Silakan pilih minimal 1 prospek untuk di-export');
+            return;
+        }
+        
+        // Create form to submit prospek IDs
+        const exportForm = document.createElement('form');
+        exportForm.method = 'GET';
+        exportForm.action = '{{ route("prospek.export-excel") }}';
+        exportForm.target = '_blank';
+        
+        // Add prospek IDs as hidden inputs
+        selectedProspeks.forEach(prospek => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'prospek_ids[]';
+            input.value = prospek.id;
+            exportForm.appendChild(input);
+        });
+        
+        // Add tujuan information
+        const tujuanInput = document.createElement('input');
+        tujuanInput.type = 'hidden';
+        tujuanInput.name = 'tujuan_id';
+        tujuanInput.value = '{{ $tujuanId }}';
+        exportForm.appendChild(tujuanInput);
+        
+        // Submit form
+        document.body.appendChild(exportForm);
+        exportForm.submit();
+        document.body.removeChild(exportForm);
     });
 });
 </script>
