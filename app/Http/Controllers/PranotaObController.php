@@ -98,8 +98,11 @@ class PranotaObController extends Controller
         $perSupirCounts = []; // per supir counts for status and size
         $totalTlContainers = 0; // count TL containers
         foreach ($displayItems as $item) {
-            // Check if container is TL (sudah_tl = 1 or true)
-            $isTl = ($item['sudah_tl'] ?? false) === 1 || ($item['sudah_tl'] ?? false) === true || ($item['sudah_tl'] ?? false) === '1';
+            // Check if container is TL - check both is_tl flag and biaya === null
+            $isTl = ($item['is_tl'] ?? false) === 1 || 
+                    ($item['is_tl'] ?? false) === true || 
+                    ($item['is_tl'] ?? false) === '1' ||
+                    (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) === 0);
             if ($isTl) {
                 $totalTlContainers++;
             }

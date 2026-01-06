@@ -1315,6 +1315,7 @@ class ObController extends Controller
                         
                         // Check if TL container - TL containers should have no biaya
                         $isTL = ($bl->sudah_tl === 1 || $bl->sudah_tl === true || $bl->sudah_tl === '1');
+                        $itemsToSave[$idx]['is_tl'] = $isTL; // Store TL flag
                         if ($isTL) {
                             $itemsToSave[$idx]['biaya'] = null; // TL containers have no cost
                             $itemsToSave[$idx]['status'] = 'full'; // Default status for TL
@@ -1351,6 +1352,7 @@ class ObController extends Controller
                         
                         // Check if TL container - TL containers should have no biaya
                         $isTL = ($nk->is_tl === 1 || $nk->is_tl === true || $nk->is_tl === '1');
+                        $itemsToSave[$idx]['is_tl'] = $isTL; // Store TL flag
                         if ($isTL) {
                             $itemsToSave[$idx]['biaya'] = null; // TL containers have no cost
                             $itemsToSave[$idx]['status'] = 'full'; // Default status for TL
