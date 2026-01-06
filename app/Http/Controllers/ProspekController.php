@@ -111,8 +111,9 @@ class ProspekController extends Controller
     {
         try {
             $filters = $request->query();
+            $prospekIds = $request->input('prospek_ids', []);
             $fileName = 'prospek_export_' . date('Ymd_His') . '.xlsx';
-            $export = new ProspekExport($filters, []);
+            $export = new ProspekExport($filters, $prospekIds);
 
             return Excel::download($export, $fileName);
         } catch (\Exception $e) {
