@@ -52,19 +52,16 @@
 @endpush
 
 @section('content')
-    <div class="p-4 bg-white print-container">
-        <div class="flex justify-between items-start mb-1">
-            <div style="line-height: 0.9;">
-                <h2 class="text-xl font-semibold" style="margin-bottom: 1px;">Pranota OB</h2>
-                <p class="text-xs" style="margin-bottom: 0px;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-                <p class="text-xs" style="margin-bottom: 0px;">Kapal: {{ $pranota->nama_kapal ?? '-' }}</p>
-                <p class="text-xs" style="margin-bottom: 0;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
+    <div class="p-2 bg-white print-container">
+        <div style="margin-bottom: 3px;">
+            <div style="line-height: 0.8;">
+                <h2 class="font-semibold" style="margin: 0; font-size: 11px;">Pranota OB</h2>
+                <p style="margin: 0; font-size: 7px;">Nomor: {{ $pranota->nomor_pranota ?? '-' }} | Kapal: {{ $pranota->nama_kapal ?? '-' }} | Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
             </div>
-            <!-- Right column removed as per request (no print of Tanggal Cetak / Pembuat) -->
         </div>
 
-        <div class="mb-3">
-            <h4 class="text-xs font-medium mb-1">Ringkasan Per Supir</h4>
+        <div class="mb-2">
+            <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 8px;">Ringkasan Per Supir</h4>
             @php
                 // Calculate totals before rendering table
                 $totalFull20 = 0;
@@ -176,7 +173,7 @@
             </table>
         </div>
 
-        <div class="mt-3">
+        <div style="margin-top: 8px;">
             <table class="min-w-full table-auto border-collapse">
                 <tbody>
                     <tr>
@@ -195,32 +192,31 @@
             </table>
         </div>
 
-        <div class="mt-4 flex justify-between" style="font-size: 9px;">
+        <div class="flex justify-between" style="font-size: 8px; margin-top: 6px;">
             <div>
-                <p>Catatan:</p>
-                <p>{{ $pranota->catatan ?? '-' }}</p>
+                <p style="margin: 0;">Catatan: {{ $pranota->catatan ?? '-' }}</p>
             </div>
         </div>
 
         <!-- Signature Section with 3 signatures -->
-        <div style="margin-top: 30px;">
+        <div style="margin-top: 15px;">
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="margin-bottom: 40px; height: 1px;"></div>
-                        <div style="font-size: 9px;">
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
+                        <div style="margin-bottom: 30px; height: 1px;"></div>
+                        <div style="font-size: 8px;">
                             (Pemohon)
                         </div>
                     </td>
-                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="margin-bottom: 40px; height: 1px;"></div>
-                        <div style="font-size: 9px;">
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
+                        <div style="margin-bottom: 30px; height: 1px;"></div>
+                        <div style="font-size: 8px;">
                             (Pemeriksa)
                         </div>
                     </td>
-                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="margin-bottom: 40px; height: 1px;"></div>
-                        <div style="font-size: 9px;">
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
+                        <div style="margin-bottom: 30px; height: 1px;"></div>
+                        <div style="font-size: 8px;">
                             (Kasir)
                         </div>
                     </td>
