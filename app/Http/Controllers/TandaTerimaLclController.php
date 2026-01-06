@@ -1853,14 +1853,6 @@ class TandaTerimaLclController extends Controller
                 ->delete();
             
             if ($deleted) {
-                // Update status if no more containers assigned
-                $remainingContainers = TandaTerimaLclKontainerPivot::where('tanda_terima_lcl_id', $id)->count();
-                
-                if ($remainingContainers === 0) {
-                    $tandaTerima->status_stuffing = 'belum_stuffing';
-                    $tandaTerima->save();
-                }
-                
                 \Log::info('LCL removed from container', [
                     'lcl_id' => $id,
                     'nomor_kontainer' => $nomorKontainer,
