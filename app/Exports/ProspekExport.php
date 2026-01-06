@@ -65,8 +65,6 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
             return [
                 $p->no_surat_jalan,
                 $p->tanggal ? (is_string($p->tanggal) ? \Carbon\Carbon::parse($p->tanggal)->format('d/M/Y') : $p->tanggal->format('d/M/Y')) : '-',
-                ($p->suratJalan && $p->suratJalan->tanggal_checkpoint) ? (is_string($p->suratJalan->tanggal_checkpoint) ? \Carbon\Carbon::parse($p->suratJalan->tanggal_checkpoint)->format('d/M/Y') : $p->suratJalan->tanggal_checkpoint->format('d/M/Y')) : '-',
-                $p->nama_supir,
                 $p->barang,
                 $p->pt_pengirim,
                 $p->tipe,
@@ -86,8 +84,6 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         return [
             'No. Surat Jalan',
             'Tanggal',
-            'Tanggal Checkpoint',
-            'Nama Supir',
             'Barang',
             'PT/Pengirim',
             'Tipe',
@@ -104,7 +100,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:J1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
         ];
     }
