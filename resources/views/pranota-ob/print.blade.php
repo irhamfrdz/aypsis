@@ -53,12 +53,12 @@
 
 @section('content')
     <div class="p-4 bg-white print-container">
-        <div class="flex justify-between items-start mb-4">
-            <div>
-                <h2 class="text-xl font-semibold">Pranota OB</h2>
-                <p class="text-xs">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-                <p class="text-xs">Kapal: {{ $pranota->nama_kapal ?? '-' }}</p>
-                <p class="text-xs">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
+        <div class="flex justify-between items-start mb-2">
+            <div style="line-height: 1.2;">
+                <h2 class="text-xl font-semibold" style="margin-bottom: 2px;">Pranota OB</h2>
+                <p class="text-xs" style="margin-bottom: 1px;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
+                <p class="text-xs" style="margin-bottom: 1px;">Kapal: {{ $pranota->nama_kapal ?? '-' }}</p>
+                <p class="text-xs" style="margin-bottom: 0;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
             </div>
             <!-- Right column removed as per request (no print of Tanggal Cetak / Pembuat) -->
         </div>
