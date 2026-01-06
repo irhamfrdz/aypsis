@@ -232,6 +232,18 @@
                 <input type="hidden" name="tanda_terima_ids" id="bulkExportIds">
             </form>
 
+            <!-- Delete Surat Jalan Form (Hidden) -->
+            <form id="deleteSuratJalanForm" method="POST" style="display: none;">
+                @csrf
+                @method('DELETE')
+            </form>
+
+            <!-- Delete Surat Jalan Form (Hidden) -->
+            <form id="deleteSuratJalanForm" method="POST" style="display: none;">
+                @csrf
+                @method('DELETE')
+            </form>
+
             <!-- Table -->
             <div class="overflow-x-auto">
                 @if(($mode ?? request('mode')) === 'missing')
@@ -336,10 +348,19 @@
                                 </span>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center">
-                                <a href="{{ route('tanda-terima.create', ['surat_jalan_id' => $suratJalan->id]) }}"
-                                   class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150">
-                                    <i class="fas fa-plus mr-1"></i> Buat
-                                </a>
+                                <div class="flex items-center justify-center gap-1">
+                                    <a href="{{ route('tanda-terima.create', ['surat_jalan_id' => $suratJalan->id]) }}"
+                                       class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150"
+                                       title="Buat Tanda Terima">
+                                        <i class="fas fa-plus text-xs"></i>
+                                    </a>
+                                    <button type="button"
+                                            onclick="deleteSuratJalan({{ $suratJalan->id }}, '{{ $suratJalan->no_surat_jalan }}')"
+                                            class="inline-flex items-center px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition duration-150"
+                                            title="Hapus Surat Jalan">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -404,6 +425,12 @@
                                        title="Edit Tanda Terima">
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
+                                    <button type="button"
+                                            onclick="deleteSuratJalan({{ $item->surat_jalan_id }}, '{{ $item->no_surat_jalan }}')"
+                                            class="inline-flex items-center px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition duration-150"
+                                            title="Hapus Surat Jalan">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -892,6 +919,17 @@
         if (confirm(confirmMessage)) {
             document.getElementById('bulkDeleteIds').value = JSON.stringify(ids);
             document.getElementById('bulkDeleteForm').submit();
+        }
+    }
+
+    // Function to delete surat jalan
+    function deleteSuratJalan(suratJalanId, noSuratJalan) {
+        const confirmMessage = `Apakah Anda yakin ingin menghapus Surat Jalan ${noSuratJalan}?\n\nTindakan ini tidak dapat dibatalkan!`;
+        
+        if (confirm(confirmMessage)) {
+            const form = document.getElementById('deleteSuratJalanForm');
+            form.action = '/surat-jalan/' + suratJalanId;
+            form.submit();
         }
     }
 
