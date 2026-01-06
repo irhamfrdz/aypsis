@@ -35,7 +35,7 @@
         /* Nama Kapal: posisi absolute sesuai permintaan */
         .nama-kapal {
             position: absolute;
-            top: 5cm;    /* 5cm dari atas */
+            top: 4.8cm;    /* 4.8cm dari atas - sejajar dengan nomor BL */
             left: 3.5cm;   /* 3.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
