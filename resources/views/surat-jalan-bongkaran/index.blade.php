@@ -789,6 +789,20 @@
                                    placeholder="Masukkan nomor surat jalan">
                         </div>
 
+                        <!-- Lokasi -->
+                        <div>
+                            <label for="edit_modal_lokasi" class="block text-sm font-medium text-gray-700 mb-1">
+                                Lokasi <span class="text-red-500">*</span>
+                            </label>
+                            <select name="lokasi" id="edit_modal_lokasi" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Pilih Lokasi --</option>
+                                <option value="Jakarta">Jakarta</option>
+                                <option value="Batam">Batam</option>
+                                <option value="Tanjung Pinang">Tanjung Pinang</option>
+                            </select>
+                        </div>
+
                         <!-- Tanggal Surat Jalan -->
                         <div>
                             <label for="edit_modal_tanggal_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
@@ -1468,6 +1482,7 @@ function handleFormSubmit(event) {
 function getFieldLabel(fieldName) {
     const labels = {
         'nomor_surat_jalan': 'Nomor Surat Jalan',
+        'lokasi': 'Lokasi',
         'tanggal_surat_jalan': 'Tanggal Surat Jalan',
         'term': 'Term',
         'aktifitas': 'Aktifitas',
@@ -1647,6 +1662,7 @@ function openEditModal(suratJalanId) {
             
             // Populate form fields
             document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
+            document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
             document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
             document.getElementById('edit_modal_term').value = data.term || '';
             document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
