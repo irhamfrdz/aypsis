@@ -218,6 +218,7 @@
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Nama Barang</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">PT. Pengirim</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
@@ -254,6 +255,7 @@
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
                         <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->nama_barang }}">{{ $bl->nama_barang ?: '-' }}</td>
+                        <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->pt_pengirim ?? $bl->pengirim }}">{{ $bl->pt_pengirim ?? $bl->pengirim ?? '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs">
                             @php
                                 $barangUpper = strtoupper($bl->nama_barang ?? '');
@@ -393,7 +395,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="14" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                        <td colspan="15" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -410,6 +412,7 @@
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Jenis Barang</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">PT. Pengirim</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
@@ -454,6 +457,7 @@
                             <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->jenis_barang }}">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
                             </td>
+                            <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->pt_pengirim ?? $naikKapal->pengirim }}">{{ $naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-' }}</td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs">
                                 @php
                                     $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
