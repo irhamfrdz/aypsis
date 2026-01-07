@@ -186,7 +186,13 @@
                     <tr class="hover:bg-gray-50 transition duration-150">
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $suratJalans->firstItem() + $key }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {{ $sj->tanggal_surat_jalan ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : ($sj->order && $sj->order->tanggal_order ? \Carbon\Carbon::parse($sj->order->tanggal_order)->format('d/m/Y') : '-') }}
+                            @if($sj->tanggal_surat_jalan)
+                                {{ is_string($sj->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : $sj->tanggal_surat_jalan->format('d/m/Y') }}
+                            @elseif($sj->order && $sj->order->tanggal_order)
+                                {{ is_string($sj->order->tanggal_order) ? \Carbon\Carbon::parse($sj->order->tanggal_order)->format('d/m/Y') : $sj->order->tanggal_order->format('d/m/Y') }}
+                            @else
+                                -
+                            @endif
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
                             {{ $sj->no_surat_jalan ?: ($sj->order ? $sj->order->nomor_order : '-') }}
