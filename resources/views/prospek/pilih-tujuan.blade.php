@@ -90,26 +90,30 @@
                                         // Hitung berdasarkan ukuran dan tipe kontainer
                                         $lcl20ft = $prospekPerTujuan->filter(function($p) {
                                             return strtoupper($p->tipe ?? '') === 'LCL' && 
-                                                   (stripos($p->ukuran_container ?? '', '20') !== false || 
-                                                    stripos($p->ukuran_container ?? '', "20'") !== false);
+                                                   (stripos($p->ukuran ?? '', '20') !== false || 
+                                                    $p->ukuran == '20' ||
+                                                    stripos($p->ukuran ?? '', "20'") !== false);
                                         })->count();
                                         
                                         $fcl20ft = $prospekPerTujuan->filter(function($p) {
                                             return strtoupper($p->tipe ?? '') === 'FCL' && 
-                                                   (stripos($p->ukuran_container ?? '', '20') !== false || 
-                                                    stripos($p->ukuran_container ?? '', "20'") !== false);
+                                                   (stripos($p->ukuran ?? '', '20') !== false || 
+                                                    $p->ukuran == '20' ||
+                                                    stripos($p->ukuran ?? '', "20'") !== false);
                                         })->count();
                                         
                                         $lcl40ft = $prospekPerTujuan->filter(function($p) {
                                             return strtoupper($p->tipe ?? '') === 'LCL' && 
-                                                   (stripos($p->ukuran_container ?? '', '40') !== false || 
-                                                    stripos($p->ukuran_container ?? '', "40'") !== false);
+                                                   (stripos($p->ukuran ?? '', '40') !== false || 
+                                                    $p->ukuran == '40' ||
+                                                    stripos($p->ukuran ?? '', "40'") !== false);
                                         })->count();
                                         
                                         $fcl40ft = $prospekPerTujuan->filter(function($p) {
                                             return strtoupper($p->tipe ?? '') === 'FCL' && 
-                                                   (stripos($p->ukuran_container ?? '', '40') !== false || 
-                                                    stripos($p->ukuran_container ?? '', "40'") !== false);
+                                                   (stripos($p->ukuran ?? '', '40') !== false || 
+                                                    $p->ukuran == '40' ||
+                                                    stripos($p->ukuran ?? '', "40'") !== false);
                                         })->count();
                                         
                                         $cargoCount = $prospekPerTujuan->filter(function($p) {
