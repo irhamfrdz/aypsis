@@ -351,24 +351,26 @@
     </div>
 </div>
 
-@endsection
-
-@section('scripts')
 <script>
-// Import Modal Functions (Global scope untuk onclick handler)
-function openImportModal() {
+// Import Modal Functions - Defined immediately for inline onclick handlers
+window.openImportModal = function() {
     document.getElementById('importModal').classList.remove('hidden');
     document.getElementById('importModal').classList.add('flex');
 }
 
-function closeImportModal() {
+window.closeImportModal = function() {
     document.getElementById('importModal').classList.add('hidden');
     document.getElementById('importModal').classList.remove('flex');
     // Reset form
     const fileInput = document.getElementById('import_file');
     if (fileInput) fileInput.value = '';
 }
+</script>
 
+@endsection
+
+@section('scripts')
+<script>
 // Editable BL Number functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Close modal on outside click
@@ -376,10 +378,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (importModal) {
         importModal.addEventListener('click', function(e) {
             if (e.target === this) {
-                closeImportModal();
+                window.closeImportModal();
             }
         });
     }
+    
     const editableCells = document.querySelectorAll('.editable-bl');
     
     editableCells.forEach(cell => {
