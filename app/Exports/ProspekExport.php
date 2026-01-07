@@ -72,9 +72,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                 $p->tipe,
                 $p->ukuran,
                 $p->nomor_kontainer,
-                $p->no_seal,
-                $p->tujuan_pengiriman,
-                $p->status
+                $p->no_seal
             ];
         });
 
@@ -93,9 +91,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
             'Tipe',
             'Ukuran',
             'No. Kontainer',
-            'No. Seal',
-            'Tujuan',
-            'Status'
+            'No. Seal'
         ];
     }
 
@@ -104,7 +100,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:J1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
         ];
     }
