@@ -3897,6 +3897,8 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 
     // Manifest
     Route::get('manifests/select-ship', [App\Http\Controllers\ManifestController::class, 'selectShip'])->name('manifests.select-ship');
+    Route::get('manifests/download-template', [App\Http\Controllers\ManifestController::class, 'downloadTemplate'])->name('manifests.download-template');
+    Route::post('manifests/import', [App\Http\Controllers\ManifestController::class, 'import'])->name('manifests.import');
     Route::post('manifests/{id}/update-nomor-bl', [App\Http\Controllers\ManifestController::class, 'updateNomorBl'])->name('manifests.update-nomor-bl');
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 });

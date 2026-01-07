@@ -19,7 +19,14 @@
                     <p class="mt-1 text-sm text-gray-600">Kelola data manifest pengiriman kontainer</p>
                 </div>
                 @can('manifest-create')
-                <div>
+                <div class="flex gap-2">
+                    <button onclick="openImportModal()"
+                       class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Import Excel
+                    </button>
                     <a href="{{ route('report.manifests.create') }}"
                        class="inline-flex items-center justify-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,10 +249,133 @@
         </div>
     </div>
 </div>
+
+<!-- Import Modal -->
+<div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-900">Import Manifest</h3>
+            </div>
+            <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form action="{{ route('report.manifests.import') }}" method="POST" enctype="multipart/form-data" class="p-6">
+            @csrf
+            <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
+            <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+
+            <!-- Info Banner -->
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-sm text-blue-800">
+                        <p class="font-semibold mb-1">Format File:</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>File CSV dengan delimiter semicolon (;)</li>
+                            <li>Encoding: UTF-8</li>
+                            <li>Maksimal 10MB</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Template -->
+            <div class="mb-4">
+                <a href="{{ route('report.manifests.download-template') }}" 
+                   class="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 font-medium">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download Template
+                </a>
+            </div>
+
+            <!-- File Upload -->
+            <div class="mb-6">
+                <label for="import_file" class="block text-sm font-medium text-gray-700 mb-2">
+                    Pilih File CSV
+                </label>
+                <div class="relative">
+                    <input type="file" 
+                           name="file" 
+                           id="import_file" 
+                           accept=".csv,.txt"
+                           required
+                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+                <p class="mt-1 text-xs text-gray-500">File CSV dengan delimiter semicolon (;)</p>
+            </div>
+
+            <!-- Ship Info Display -->
+            <div class="mb-6 p-3 bg-gray-50 rounded-lg">
+                <div class="text-sm text-gray-600 space-y-1">
+                    <div class="flex justify-between">
+                        <span class="font-medium">Nama Kapal:</span>
+                        <span class="text-gray-900">{{ $namaKapal }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">No. Voyage:</span>
+                        <span class="text-gray-900">{{ $noVoyage }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-2">
+                <button type="button" 
+                        onclick="closeImportModal()"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    Upload & Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script>
+// Import Modal Functions
+function openImportModal() {
+    document.getElementById('importModal').classList.remove('hidden');
+    document.getElementById('importModal').classList.add('flex');
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').classList.add('hidden');
+    document.getElementById('importModal').classList.remove('flex');
+    // Reset form
+    document.getElementById('import_file').value = '';
+}
+
+// Close modal on outside click
+document.getElementById('importModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeImportModal();
+    }
+});
+
+// Editable BL Number functionality
 document.addEventListener('DOMContentLoaded', function() {
     const editableCells = document.querySelectorAll('.editable-bl');
     

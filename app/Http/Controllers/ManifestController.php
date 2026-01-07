@@ -251,4 +251,104 @@ class ManifestController extends Controller
             'nomor_bl' => $manifest->nomor_bl
         ]);
     }
+
+    /**
+     * Import manifests from Excel/CSV file
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $namaKapal = $request->input('nama_kapal');
+            $noVoyage = $request->input('no_voyage');
+
+            $import = new \App\Imports\ManifestImport($namaKapal, $noVoyage);
+            $result = $import->import($file);
+
+            if ($result === false) {
+                return redirect()->back()
+                    ->with('error', 'Import gagal: ' . implode(', ', $import->getErrors()));
+            }
+
+            $successCount = $result['success_count'];
+            $errors = $result['errors'];
+
+            if ($successCount > 0 && empty($errors)) {
+                return redirect()->route('report.manifests.index', [
+                    'nama_kapal' => $namaKapal,
+                    'no_voyage' => $noVoyage
+                ])->with('success', "Berhasil import {$successCount} data manifest");
+            } elseif ($successCount > 0 && !empty($errors)) {
+                return redirect()->route('report.manifests.index', [
+                    'nama_kapal' => $namaKapal,
+                    'no_voyage' => $noVoyage
+                ])->with('warning', "Import selesai dengan {$successCount} data berhasil, namun ada " . count($errors) . " error: " . implode('; ', array_slice($errors, 0, 3)));
+            } else {
+                return redirect()->back()
+                    ->with('error', 'Import gagal: ' . implode('; ', array_slice($errors, 0, 5)));
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download template Excel untuk import
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'No BL',
+            'No Manifest',
+            'No Kontainer',
+            'No Seal',
+            'Tipe Kontainer',
+            'Size Kontainer',
+            'Nama Barang',
+            'Pengirim',
+            'Penerima',
+            'Term'
+        ];
+
+        $filename = 'template_import_manifest.csv';
+        
+        $callback = function() use ($headers) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for Excel UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write headers
+            fputcsv($file, $headers, ';');
+            
+            // Write example data
+            fputcsv($file, [
+                'BL001',
+                'MN001',
+                'CONT001',
+                'SEAL001',
+                'Dry Container',
+                '20',
+                'Barang Contoh',
+                'PT Pengirim',
+                'PT Penerima',
+                'FOB'
+            ], ';');
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    }
 }
+
