@@ -4,22 +4,39 @@
 @section('page_title', 'Pilih Kapal - Manifest')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 py-12">
+<div class="py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header Card -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-purple-100">
-            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-8">
-                <div class="flex items-center justify-center">
-                    <div class="bg-white/20 backdrop-blur-sm rounded-full p-4 mr-4">
-                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
+        <div class="rounded-2xl shadow-xl overflow-hidden mb-8" style="background: linear-gradient(to right, #7c3aed, #4f46e5);">
+            <div class="px-8 py-6">
+                <div class="flex items-center justify-between gap-6">
+                    <!-- Left Side: Icon + Title -->
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div style="background: rgba(255,255,255,0.2);" class="rounded-full p-3 mr-4 flex-shrink-0">
+                            <svg class="w-8 h-8" style="color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h1 class="text-2xl font-bold" style="color: white;">Manifest Pengiriman</h1>
+                            <p style="color: #c4b5fd;" class="text-sm mt-1">Pilih kapal dan voyage untuk melihat data manifest</p>
+                        </div>
                     </div>
-                    <div class="text-white">
-                        <h1 class="text-3xl font-bold">Manifest Pengiriman</h1>
-                        <p class="text-purple-100 mt-2">Pilih kapal dan voyage untuk melihat data manifest</p>
+                    
+                    <!-- Right Side: Button -->
+                    @can('manifest-create')
+                    <div class="flex-shrink-0">
+                        <button onclick="openBulkImportModal()" 
+                                style="background: white; color: #7c3aed;"
+                                class="hover:bg-gray-50 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl whitespace-nowrap text-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            Import Excel
+                        </button>
                     </div>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -136,6 +153,178 @@
         @endif
     </div>
 </div>
+
+<!-- Bulk Import Modal -->
+<div id="bulkImportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div class="flex items-center">
+                <div class="bg-green-100 rounded-full p-3 mr-3">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Import Manifest (Bulk)</h3>
+                    <p class="text-sm text-gray-500">Upload file Excel dengan data lengkap</p>
+                </div>
+            </div>
+            <button onclick="closeBulkImportModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form action="{{ route('report.manifests.bulk-import') }}" method="POST" enctype="multipart/form-data" class="p-6">
+            @csrf
+
+            <!-- Info Banner -->
+            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-sm text-blue-800">
+                        <p class="font-semibold mb-2">Format File Excel:</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs text-blue-700">
+                            <li>File harus berisi kolom: <strong>Nama Kapal</strong> dan <strong>No Voyage</strong></li>
+                            <li>Data manifest akan dikelompokkan otomatis per kapal dan voyage</li>
+                            <li>Format: .xlsx atau .xls (maksimal 10MB)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Template -->
+            <div class="mb-6">
+                <a href="{{ route('report.manifests.download-bulk-template') }}" 
+                   class="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 font-semibold transition-colors bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-lg">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download Template Excel
+                </a>
+            </div>
+
+            <!-- File Upload -->
+            <div class="mb-6">
+                <label for="bulk_import_file" class="block text-sm font-semibold text-gray-700 mb-3">
+                    Pilih File Excel <span class="text-red-500">*</span>
+                </label>
+                <div class="relative border-2 border-dashed border-gray-300 rounded-xl hover:border-green-400 transition-colors">
+                    <input type="file" 
+                           name="file" 
+                           id="bulk_import_file" 
+                           accept=".xlsx,.xls"
+                           required
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="p-6 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-semibold text-green-600">Klik untuk upload</span>
+                            atau drag & drop
+                        </p>
+                        <p class="mt-1 text-xs text-gray-500">Excel (.xlsx, .xls) maksimal 10MB</p>
+                        <p id="fileName" class="mt-2 text-sm font-medium text-green-600"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Example Table -->
+            <div class="mb-6 bg-gray-50 rounded-xl p-4">
+                <p class="text-xs font-semibold text-gray-700 mb-2">Contoh format Excel (24 kolom):</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs border border-gray-300">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="border border-gray-300 px-2 py-1">Nama Kapal</th>
+                                <th class="border border-gray-300 px-2 py-1">No Voyage</th>
+                                <th class="border border-gray-300 px-2 py-1">No BL</th>
+                                <th class="border border-gray-300 px-2 py-1">No Manifest</th>
+                                <th class="border border-gray-300 px-2 py-1">No Tanda Terima</th>
+                                <th class="border border-gray-300 px-2 py-1">No Kontainer</th>
+                                <th class="border border-gray-300 px-2 py-1">...</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-2 py-1">KM EXAMPLE</td>
+                                <td class="border border-gray-300 px-2 py-1">001</td>
+                                <td class="border border-gray-300 px-2 py-1">BL001</td>
+                                <td class="border border-gray-300 px-2 py-1">MN001</td>
+                                <td class="border border-gray-300 px-2 py-1">TT001</td>
+                                <td class="border border-gray-300 px-2 py-1">CONT001</td>
+                                <td class="border border-gray-300 px-2 py-1">...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-gray-600 mt-2">
+                    <strong>Total 24 kolom:</strong> Nama Kapal, No Voyage, No BL, No Manifest, No Tanda Terima, 
+                    No Kontainer, No Seal, Tipe, Size, Nama Barang, Pengirim, Alamat Pengirim, 
+                    Penerima, Alamat Penerima, Contact Person, Term, Tonnage, Volume, Satuan, 
+                    Kuantitas, Pelabuhan Muat, Pelabuhan Bongkar, Asal Kontainer, Ke
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button type="button" 
+                        onclick="closeBulkImportModal()"
+                        class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl">
+                    <div class="flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Upload & Import
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Bulk Import Modal Functions
+window.openBulkImportModal = function() {
+    document.getElementById('bulkImportModal').classList.remove('hidden');
+    document.getElementById('bulkImportModal').classList.add('flex');
+}
+
+window.closeBulkImportModal = function() {
+    document.getElementById('bulkImportModal').classList.add('hidden');
+    document.getElementById('bulkImportModal').classList.remove('flex');
+    document.getElementById('bulk_import_file').value = '';
+    document.getElementById('fileName').textContent = '';
+}
+
+// Show selected filename
+document.getElementById('bulk_import_file')?.addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name || '';
+    const fileNameDisplay = document.getElementById('fileName');
+    if (fileName) {
+        fileNameDisplay.textContent = '📄 ' + fileName;
+    } else {
+        fileNameDisplay.textContent = '';
+    }
+});
+
+// Close modal on outside click
+document.getElementById('bulkImportModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        window.closeBulkImportModal();
+    }
+});
+</script>
 
 @push('scripts')
 <script>

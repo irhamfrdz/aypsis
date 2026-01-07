@@ -365,5 +365,288 @@ class ManifestController extends Controller
         $writer->save('php://output');
         exit;
     }
+
+    /**
+     * Bulk import manifests from Excel (with ship and voyage in file)
+     */
+    public function bulkImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
+        ]);
+
+        try {
+            $file = $request->file('file');
+            
+            // Parse Excel to get all data
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = [];
+
+            foreach ($worksheet->getRowIterator() as $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false);
+                $rowData = [];
+
+                foreach ($cellIterator as $cell) {
+                    $rowData[] = $cell->getValue();
+                }
+
+                $rows[] = $rowData;
+            }
+
+            if (empty($rows) || count($rows) < 2) {
+                return redirect()->back()->with('error', 'File Excel kosong atau tidak valid');
+            }
+
+            // Remove header row
+            $header = array_shift($rows);
+            
+            $successCount = 0;
+            $errors = [];
+            $shipsProcessed = [];
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 2;
+                
+                // Extract data - sekarang dengan 24 kolom lengkap
+                $namaKapal = trim($row[0] ?? '');
+                $noVoyage = trim($row[1] ?? '');
+                $nomorBl = trim($row[2] ?? '');
+                $nomorManifest = trim($row[3] ?? '');
+                $nomorTandaTerima = trim($row[4] ?? '');
+                $nomorKontainer = trim($row[5] ?? '');
+                $noSeal = trim($row[6] ?? '');
+                $tipeKontainer = trim($row[7] ?? '');
+                $sizeKontainer = trim($row[8] ?? '');
+                $namaBarang = trim($row[9] ?? '');
+                $pengirim = trim($row[10] ?? '');
+                $alamatPengirim = trim($row[11] ?? '');
+                $penerima = trim($row[12] ?? '');
+                $alamatPenerima = trim($row[13] ?? '');
+                $contactPerson = trim($row[14] ?? '');
+                $term = trim($row[15] ?? '');
+                $tonnage = trim($row[16] ?? '');
+                $volume = trim($row[17] ?? '');
+                $satuan = trim($row[18] ?? '');
+                $kuantitas = trim($row[19] ?? '');
+                $pelabuhanMuat = trim($row[20] ?? '');
+                $pelabuhanBongkar = trim($row[21] ?? '');
+                $asalKontainer = trim($row[22] ?? '');
+                $ke = trim($row[23] ?? '');
+
+                // Validate required fields
+                if (empty($namaKapal) || empty($noVoyage) || empty($nomorBl) || empty($nomorKontainer)) {
+                    $errors[] = "Baris {$rowNumber}: Nama Kapal, No Voyage, No BL, dan No Kontainer wajib diisi";
+                    continue;
+                }
+
+                try {
+                    // Check if manifest already exists
+                    $existing = Manifest::where('nomor_bl', $nomorBl)
+                        ->where('nomor_kontainer', $nomorKontainer)
+                        ->where('nama_kapal', $namaKapal)
+                        ->where('no_voyage', $noVoyage)
+                        ->first();
+
+                    if ($existing) {
+                        // Update existing
+                        $existing->update([
+                            'nomor_manifest' => $nomorManifest ?: $existing->nomor_manifest,
+                            'nomor_tanda_terima' => $nomorTandaTerima ?: $existing->nomor_tanda_terima,
+                            'no_seal' => $noSeal ?: $existing->no_seal,
+                            'tipe_kontainer' => $tipeKontainer ?: $existing->tipe_kontainer,
+                            'size_kontainer' => $sizeKontainer ?: $existing->size_kontainer,
+                            'nama_barang' => $namaBarang ?: $existing->nama_barang,
+                            'pengirim' => $pengirim ?: $existing->pengirim,
+                            'alamat_pengirim' => $alamatPengirim ?: $existing->alamat_pengirim,
+                            'penerima' => $penerima ?: $existing->penerima,
+                            'alamat_penerima' => $alamatPenerima ?: $existing->alamat_penerima,
+                            'contact_person' => $contactPerson ?: $existing->contact_person,
+                            'term' => $term ?: $existing->term,
+                            'tonnage' => $tonnage ?: $existing->tonnage,
+                            'volume' => $volume ?: $existing->volume,
+                            'satuan' => $satuan ?: $existing->satuan,
+                            'kuantitas' => $kuantitas ?: $existing->kuantitas,
+                            'pelabuhan_muat' => $pelabuhanMuat ?: $existing->pelabuhan_muat,
+                            'pelabuhan_bongkar' => $pelabuhanBongkar ?: $existing->pelabuhan_bongkar,
+                            'asal_kontainer' => $asalKontainer ?: $existing->asal_kontainer,
+                            'ke' => $ke ?: $existing->ke,
+                        ]);
+                    } else {
+                        // Create new
+                        Manifest::create([
+                            'nomor_bl' => $nomorBl,
+                            'nomor_manifest' => $nomorManifest,
+                            'nomor_tanda_terima' => $nomorTandaTerima,
+                            'nomor_kontainer' => $nomorKontainer,
+                            'no_seal' => $noSeal,
+                            'nama_kapal' => $namaKapal,
+                            'no_voyage' => $noVoyage,
+                            'tipe_kontainer' => $tipeKontainer,
+                            'size_kontainer' => $sizeKontainer,
+                            'nama_barang' => $namaBarang,
+                            'pengirim' => $pengirim,
+                            'alamat_pengirim' => $alamatPengirim,
+                            'penerima' => $penerima,
+                            'alamat_penerima' => $alamatPenerima,
+                            'contact_person' => $contactPerson,
+                            'term' => $term,
+                            'tonnage' => $tonnage ?: null,
+                            'volume' => $volume ?: null,
+                            'satuan' => $satuan,
+                            'kuantitas' => $kuantitas ?: null,
+                            'pelabuhan_muat' => $pelabuhanMuat,
+                            'pelabuhan_bongkar' => $pelabuhanBongkar,
+                            'asal_kontainer' => $asalKontainer,
+                            'ke' => $ke,
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
+
+                    $successCount++;
+                    
+                    // Track ships processed
+                    $shipKey = $namaKapal . '|' . $noVoyage;
+                    if (!isset($shipsProcessed[$shipKey])) {
+                        $shipsProcessed[$shipKey] = [
+                            'nama_kapal' => $namaKapal,
+                            'no_voyage' => $noVoyage,
+                            'count' => 0
+                        ];
+                    }
+                    $shipsProcessed[$shipKey]['count']++;
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                }
+            }
+
+            // Build success message with ship summary
+            $shipSummary = '';
+            if (!empty($shipsProcessed)) {
+                $shipSummary = ' (' . implode(', ', array_map(function($ship) {
+                    return $ship['nama_kapal'] . ' - ' . $ship['no_voyage'] . ': ' . $ship['count'] . ' manifest';
+                }, $shipsProcessed)) . ')';
+            }
+
+            if ($successCount > 0 && empty($errors)) {
+                // Redirect to first ship's manifest page
+                $firstShip = reset($shipsProcessed);
+                return redirect()->route('report.manifests.index', [
+                    'nama_kapal' => $firstShip['nama_kapal'],
+                    'no_voyage' => $firstShip['no_voyage']
+                ])->with('success', "Berhasil import {$successCount} data manifest{$shipSummary}");
+            } elseif ($successCount > 0 && !empty($errors)) {
+                $firstShip = reset($shipsProcessed);
+                return redirect()->route('report.manifests.index', [
+                    'nama_kapal' => $firstShip['nama_kapal'],
+                    'no_voyage' => $firstShip['no_voyage']
+                ])->with('warning', "Import selesai dengan {$successCount} data berhasil{$shipSummary}, namun ada " . count($errors) . " error");
+            } else {
+                return redirect()->back()
+                    ->with('error', 'Import gagal: ' . implode('; ', array_slice($errors, 0, 5)));
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download bulk template Excel (with ship and voyage columns)
+     */
+    public function downloadBulkTemplate()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers - kolom lengkap untuk table manifests
+        $headers = [
+            'Nama Kapal',
+            'No Voyage',
+            'No BL',
+            'No Manifest',
+            'No Tanda Terima',
+            'No Kontainer',
+            'No Seal',
+            'Tipe Kontainer',
+            'Size Kontainer',
+            'Nama Barang',
+            'Pengirim',
+            'Alamat Pengirim',
+            'Penerima',
+            'Alamat Penerima',
+            'Contact Person',
+            'Term',
+            'Tonnage',
+            'Volume',
+            'Satuan',
+            'Kuantitas',
+            'Pelabuhan Muat',
+            'Pelabuhan Bongkar',
+            'Asal Kontainer',
+            'Ke'
+        ];
+
+        // Write headers in row 1
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->getStyle($col . '1')->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFE0E0E0');
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
+
+        // Write example data in row 2
+        $exampleData = [
+            'KM EXAMPLE',           // Nama Kapal
+            '001',                  // No Voyage
+            'BL001',               // No BL
+            'MN001',               // No Manifest
+            'TT001',               // No Tanda Terima
+            'CONT001',             // No Kontainer
+            'SEAL001',             // No Seal
+            'Dry Container',       // Tipe Kontainer
+            '20',                  // Size Kontainer
+            'Barang Contoh',       // Nama Barang
+            'PT Pengirim',         // Pengirim
+            'Jl. Pengirim No.1',  // Alamat Pengirim
+            'PT Penerima',         // Penerima
+            'Jl. Penerima No.2',  // Alamat Penerima
+            '08123456789',         // Contact Person
+            'FOB',                 // Term
+            '10.500',              // Tonnage
+            '25.000',              // Volume
+            'M3',                  // Satuan
+            '100',                 // Kuantitas
+            'Jakarta',             // Pelabuhan Muat
+            'Surabaya',            // Pelabuhan Bongkar
+            'Jakarta',             // Asal Kontainer
+            'Gudang A'             // Ke
+        ];
+
+        $col = 'A';
+        foreach ($exampleData as $data) {
+            $sheet->setCellValue($col . '2', $data);
+            $col++;
+        }
+
+        // Create Excel file
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'template_bulk_import_manifest.xlsx';
+
+        // Set headers for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
 }
 
