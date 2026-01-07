@@ -3883,6 +3883,11 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/pembayaran', [App\Http\Controllers\ReportPembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('/pembayaran/export', [App\Http\Controllers\ReportPembayaranController::class, 'export'])->name('pembayaran.export');
     Route::get('/pembayaran/print', [App\Http\Controllers\ReportPembayaranController::class, 'print'])->name('pembayaran.print');
+
+    // Report Rit
+    Route::get('/rit', [App\Http\Controllers\ReportRitController::class, 'index'])->name('rit.index');
+    Route::get('/rit/print', [App\Http\Controllers\ReportRitController::class, 'print'])->name('rit.print');
+    Route::get('/rit/export', [App\Http\Controllers\ReportRitController::class, 'export'])->name('rit.export');
 });
 
 // ═══════════════════════════════════════════════════════════════════════

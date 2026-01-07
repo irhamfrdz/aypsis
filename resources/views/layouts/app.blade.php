@@ -1499,14 +1499,15 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*');
     // Check if user has view permissions for tagihan, pranota, or pembayaran modules
     $hasReportPermission = $user && (
         $isAdmin ||
         $user->can('tagihan-kontainer-view') ||
         $user->can('pranota-tagihan-view') ||
         $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
-        $user->can('pembayaran-pranota-cat-view')
+        $user->can('pembayaran-pranota-cat-view') ||
+        $user->can('surat-jalan-view')
     );
 @endphp
 @if($hasReportPermission)
@@ -1553,6 +1554,14 @@
             @if(!Route::has('report.pembayaran.index'))
                 <span class="ml-auto text-xs text-gray-400 italic">(soon)</span>
             @endif
+        </a>
+
+        {{-- Report Rit --}}
+        <a href="{{ route('report.rit.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.rit.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Report Rit
         </a>
     </div>
 </div>
