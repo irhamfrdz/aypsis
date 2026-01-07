@@ -69,42 +69,6 @@
                     </div>
                 </div>
 
-                {{-- Optional Filters --}}
-                <div class="border-t pt-6 mt-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Tambahan (Opsional)</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {{-- Kegiatan Filter --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Kegiatan</label>
-                            <select name="kegiatan"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Semua Kegiatan</option>
-                                <option value="muat">Muat</option>
-                                <option value="bongkar">Bongkar</option>
-                            </select>
-                        </div>
-
-                        {{-- Supir Filter --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Supir</label>
-                            <input type="text"
-                                   name="supir"
-                                   placeholder="Nama supir..."
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-
-                        {{-- Search --}}
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                            <input type="text"
-                                   name="search"
-                                   placeholder="No SJ, supir, plat, pengirim, penerima..."
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                </div>
-
                 {{-- Submit Button --}}
                 <div class="flex justify-center gap-4 pt-6">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md transition duration-200 inline-flex items-center text-lg font-medium">
