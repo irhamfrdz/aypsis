@@ -74,9 +74,6 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 ? $sj->tipe_kontainer 
                 : ($sj->size ? $sj->size : ($sj->order ? $sj->order->tipe_kontainer : '-'));
 
-            // Jumlah (Rit)
-            $jumlah = $sj->rit ? $sj->rit : '-';
-
             return [
                 $index + 1,
                 $tanggal,
@@ -88,7 +85,6 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $penerima,
                 $jenisBarang,
                 $tipe,
-                $jumlah,
             ];
         });
     }
@@ -106,7 +102,6 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             'Penerima',
             'Jenis Barang',
             'Tipe',
-            'Jumlah',
         ];
     }
 
@@ -115,7 +110,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Style header
-                $event->sheet->getStyle('A1:K1')->applyFromArray([
+                $event->sheet->getStyle('A1:J1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -138,7 +133,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
                 // Add borders to all cells with data
                 $lastRow = $event->sheet->getHighestRow();
-                $event->sheet->getStyle('A1:K' . $lastRow)->applyFromArray([
+                $event->sheet->getStyle('A1:J' . $lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -155,10 +150,10 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $event->sheet->setCellValue('A1', 'REPORT RIT');
                 $event->sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
                 
-                $event->sheet->mergeCells('A1:K1');
-                $event->sheet->mergeCells('A2:K2');
+                $event->sheet->mergeCells('A1:J1');
+                $event->sheet->mergeCells('A2:J2');
                 
-                $event->sheet->getStyle('A1:K1')->applyFromArray([
+                $event->sheet->getStyle('A1:J1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 14,
@@ -169,7 +164,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                     ],
                 ]);
 
-                $event->sheet->getStyle('A2:K2')->applyFromArray([
+                $event->sheet->getStyle('A2:J2')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ],
