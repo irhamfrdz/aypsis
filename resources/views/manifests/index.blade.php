@@ -355,7 +355,7 @@
 
 @section('scripts')
 <script>
-// Import Modal Functions
+// Import Modal Functions (Global scope untuk onclick handler)
 function openImportModal() {
     document.getElementById('importModal').classList.remove('hidden');
     document.getElementById('importModal').classList.add('flex');
@@ -365,18 +365,21 @@ function closeImportModal() {
     document.getElementById('importModal').classList.add('hidden');
     document.getElementById('importModal').classList.remove('flex');
     // Reset form
-    document.getElementById('import_file').value = '';
+    const fileInput = document.getElementById('import_file');
+    if (fileInput) fileInput.value = '';
 }
-
-// Close modal on outside click
-document.getElementById('importModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeImportModal();
-    }
-});
 
 // Editable BL Number functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Close modal on outside click
+    const importModal = document.getElementById('importModal');
+    if (importModal) {
+        importModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImportModal();
+            }
+        });
+    }
     const editableCells = document.querySelectorAll('.editable-bl');
     
     editableCells.forEach(cell => {
