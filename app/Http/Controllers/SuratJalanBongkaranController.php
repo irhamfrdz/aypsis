@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBongkaran;
 use App\Models\Order;
-
-
+use App\Models\Manifest;
 use App\Models\MasterKapal;
-use App\Models\Bl;
 use App\Models\User;
 use App\Models\TujuanKegiatanUtama;
 use App\Models\MasterKegiatan;
@@ -33,8 +31,8 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectShip(Request $request)
     {
-        // Get unique kapal names from BL table with normalization
-        $kapals = Bl::select('nama_kapal')
+        // Get unique kapal names from Manifest table with normalization
+        $kapals = Manifest::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
                     ->where('nama_kapal', '!=', '')
                     ->get()
@@ -49,7 +47,7 @@ class SuratJalanBongkaranController extends Controller
         // Get voyages for selected kapal
         $voyages = collect();
         if ($request->filled('nama_kapal')) {
-            $voyages = Bl::where('nama_kapal', 'LIKE', '%' . str_replace(['KM ', 'KMP '], ['%', '%'], $request->nama_kapal) . '%')
+            $voyages = Manifest::where('nama_kapal', 'LIKE', '%' . str_replace(['KM ', 'KMP '], ['%', '%'], $request->nama_kapal) . '%')
                         ->select('no_voyage')
                         ->whereNotNull('no_voyage')
                         ->distinct()
@@ -75,7 +73,7 @@ class SuratJalanBongkaranController extends Controller
         // Normalize the search term for flexible matching
         $kapalClean = strtolower(str_replace('.', '', $nama_kapal));
 
-        $voyages = Bl::select('no_voyage')
+        $voyages = Manifest::select('no_voyage')
                     ->where(function($q) use ($nama_kapal, $kapalClean) {
                         $q->where('nama_kapal', $nama_kapal)
                           ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
@@ -143,28 +141,28 @@ class SuratJalanBongkaranController extends Controller
             }
 
             $suratJalans = $query->orderBy('created_at', 'desc')->paginate(25);
-            $bls = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for BL mode
+            $manifests = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Manifest mode
         } else {
-            // Show BL (Bill of Lading) data - default mode
-            $query = Bl::query();
+            // Show Manifest data - default mode
+            $query = Manifest::query();
             // Join with terms table to fetch human friendly term name
-            $query->leftJoin('terms as t', 'bls.term', '=', 't.kode')
-                ->select('bls.*', 't.nama_status as term_nama')
+            $query->leftJoin('terms as t', 'manifests.term', '=', 't.kode')
+                ->select('manifests.*', 't.nama_status as term_nama')
                 ->with('suratJalanBongkaran');
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
                 $query->where(function($q) use ($selectedKapal, $kapalClean) {
-                    $q->where('bls.nama_kapal', $selectedKapal)
-                      ->orWhereRaw("LOWER(REPLACE(bls.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                    $q->where('manifests.nama_kapal', $selectedKapal)
+                      ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
-                $query->where('bls.no_voyage', $selectedVoyage);
+                $query->where('manifests.no_voyage', $selectedVoyage);
             }
 
-            // Search in BL data (ignore punctuation)
+            // Search in Manifest data (ignore punctuation)
             if ($request->filled('search')) {
                 $search = $request->search;
                 // Remove all punctuation from search term
@@ -188,7 +186,7 @@ class SuratJalanBongkaranController extends Controller
                 });
             }
 
-            $bls = $query->orderBy('bls.created_at', 'desc')->paginate(25);
+            $manifests = $query->orderBy('manifests.created_at', 'desc')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
         }
 
@@ -214,7 +212,7 @@ class SuratJalanBongkaranController extends Controller
 
         $terms = \App\Models\Term::orderBy('kode')->get();
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalans', 'bls', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
+        return view('surat-jalan-bongkaran.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
     }
 
     /**
@@ -540,6 +538,7 @@ class SuratJalanBongkaranController extends Controller
             'kenek' => 'nullable|string|max:255',
             'krani' => 'nullable|string|max:255',
             'no_kontainer' => 'nullable|string|max:100',
+            'manifest_id' => 'nullable|integer|exists:manifests,id',
             'bl_id' => 'nullable|integer|exists:bls,id',
             'no_seal' => 'nullable|string|max:100',
             'size' => 'nullable|string|max:50',
@@ -585,8 +584,17 @@ class SuratJalanBongkaranController extends Controller
             throw $e;
         }
 
-        // If bl_id is present, ensure we store the actual BL number (nomor_bl) instead of container number
-        if ($request->filled('bl_id')) {
+        // If manifest_id is present, ensure we store the actual BL number (nomor_bl) from manifest
+        if ($request->filled('manifest_id')) {
+            $manifest = Manifest::find($request->manifest_id);
+            if ($manifest && isset($manifest->nomor_bl)) {
+                $validatedData['no_bl'] = $manifest->nomor_bl;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
+                    $validatedData['manifest_id'] = $request->manifest_id;
+                }
+            }
+        } elseif ($request->filled('bl_id')) {
+            // Backward compatibility: If bl_id is present
             $bl = Bl::find($request->bl_id);
             if ($bl && isset($bl->nomor_bl)) {
                 $validatedData['no_bl'] = $bl->nomor_bl;
@@ -595,14 +603,20 @@ class SuratJalanBongkaranController extends Controller
                 }
             }
         } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
-            // If only container number is provided and no_bl missing, try to look up BL number by container
-            $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['nomor_bl']);
-            if ($blByContainer && isset($blByContainer->nomor_bl)) {
-                $validatedData['no_bl'] = $blByContainer->nomor_bl;
-                // If found by container, try to set bl_id as well
-                $blRecord = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
-                if ($blRecord) {
-                    if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
+            // If only container number is provided and no_bl missing, try to look up BL number from manifest first
+            $manifestByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
+            if ($manifestByContainer && isset($manifestByContainer->nomor_bl)) {
+                $validatedData['no_bl'] = $manifestByContainer->nomor_bl;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
+                    $validatedData['manifest_id'] = $manifestByContainer->id;
+                }
+            } else {
+                // Fallback to BL table for backward compatibility
+                $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['nomor_bl']);
+                if ($blByContainer && isset($blByContainer->nomor_bl)) {
+                    $validatedData['no_bl'] = $blByContainer->nomor_bl;
+                    $blRecord = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
+                    if ($blRecord && Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
                         $validatedData['bl_id'] = $blRecord->id;
                     }
                 }
@@ -725,6 +739,7 @@ class SuratJalanBongkaranController extends Controller
             'kenek' => 'nullable|string|max:255',
             'krani' => 'nullable|string|max:255',
             'no_kontainer' => 'nullable|string|max:100',
+            'manifest_id' => 'nullable|integer|exists:manifests,id',
             'bl_id' => 'nullable|integer|exists:bls,id',
             'no_seal' => 'nullable|string|max:100',
             'size' => 'nullable|string|max:50',
@@ -759,8 +774,17 @@ class SuratJalanBongkaranController extends Controller
             'dokumentasi' => 'nullable|string',
         ]);
 
-        // If bl_id is present, ensure we store the actual BL number (nomor_bl) and bl_id
-        if ($request->filled('bl_id')) {
+        // If manifest_id is present, ensure we store the actual BL number (nomor_bl) from manifest
+        if ($request->filled('manifest_id')) {
+            $manifest = Manifest::find($request->manifest_id);
+            if ($manifest && isset($manifest->nomor_bl)) {
+                $validatedData['no_bl'] = $manifest->nomor_bl;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
+                    $validatedData['manifest_id'] = $request->manifest_id;
+                }
+            }
+        } elseif ($request->filled('bl_id')) {
+            // Backward compatibility: If bl_id is present
             $bl = Bl::find($request->bl_id);
             if ($bl && isset($bl->nomor_bl)) {
                 $validatedData['no_bl'] = $bl->nomor_bl;
@@ -769,11 +793,21 @@ class SuratJalanBongkaranController extends Controller
                 }
             }
         } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
-            $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
-            if ($blByContainer && isset($blByContainer->nomor_bl)) {
-                $validatedData['no_bl'] = $blByContainer->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
-                    $validatedData['bl_id'] = $blByContainer->id;
+            // Try to look up from manifest table first
+            $manifestByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
+            if ($manifestByContainer && isset($manifestByContainer->nomor_bl)) {
+                $validatedData['no_bl'] = $manifestByContainer->nomor_bl;
+                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
+                    $validatedData['manifest_id'] = $manifestByContainer->id;
+                }
+            } else {
+                // Fallback to BL table
+                $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
+                if ($blByContainer && isset($blByContainer->nomor_bl)) {
+                    $validatedData['no_bl'] = $blByContainer->nomor_bl;
+                    if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
+                        $validatedData['bl_id'] = $blByContainer->id;
+                    }
                 }
             }
         }
@@ -1004,7 +1038,52 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
-     * Get BL data by ID (API endpoint for modal)
+     * Get Manifest data by ID (API endpoint for modal)
+     */
+    public function getManifestById($id)
+    {
+        try {
+            $manifest = Manifest::find($id);
+            
+            if (!$manifest) {
+                return response()->json(['error' => 'Manifest not found'], 404);
+            }
+
+            return response()->json([
+                'id' => $manifest->id,
+                'nomor_bl' => $manifest->nomor_bl,
+                'nomor_manifest' => $manifest->nomor_manifest,
+                'nama_kapal' => $manifest->nama_kapal,
+                'no_voyage' => $manifest->no_voyage,
+                'nomor_kontainer' => $manifest->nomor_kontainer,
+                'no_seal' => $manifest->no_seal,
+                'tipe_kontainer' => $manifest->tipe_kontainer ?? '',
+                'size_kontainer' => $manifest->size_kontainer,
+                'nama_barang' => $manifest->nama_barang,
+                'tonnage' => $manifest->tonnage ?? '',
+                'volume' => $manifest->volume ?? '',
+                'status_bongkar' => $manifest->status_bongkar ?? '',
+                'term' => $manifest->term ?? '',
+                'pengirim' => $manifest->pengirim ?? '',
+                'penerima' => $manifest->penerima ?? '',
+                'alamat_pengiriman' => $manifest->alamat_pengiriman ?? '',
+                'pelabuhan_tujuan' => $manifest->pelabuhan_tujuan ?? '',
+                'jenis_pengiriman' => $manifest->jenis_pengiriman ?? '',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching Manifest by ID: ' . $e->getMessage(), [
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to fetch Manifest data',
+                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get BL data by ID (API endpoint for modal) - Keep for backward compatibility
      */
     public function getBlById($id)
     {

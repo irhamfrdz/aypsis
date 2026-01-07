@@ -64,4 +64,9 @@ class Manifest extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function suratJalanBongkaran()
+    {
+        return $this->hasOne(SuratJalanBongkaran::class, 'manifest_id');
+    }
 }

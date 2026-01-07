@@ -71,6 +71,7 @@ class SuratJalanBongkaran extends Model
         'no_voyage',
         'no_bl',
         'bl_id',
+        'manifest_id',
         'jenis_pengiriman',
         'tanggal_ambil_barang'
     ];
@@ -114,6 +115,11 @@ class SuratJalanBongkaran extends Model
     public function bl()
     {
         return $this->belongsTo(\App\Models\Bl::class, 'bl_id');
+    }
+
+    public function manifest()
+    {
+        return $this->belongsTo(Manifest::class, 'manifest_id');
     }
 
     /**

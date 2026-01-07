@@ -1957,7 +1957,12 @@ Route::middleware(['auth'])->group(function () {
          ->middleware('can:surat-jalan-bongkaran-create');
     
     // Surat Jalan Bongkaran Management with permissions - Separate routes to avoid middleware conflicts
-    // API endpoint to fetch BL data
+    // API endpoint to fetch Manifest data (new primary method)
+    Route::get('api/manifest/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getManifestById'])
+         ->name('api.manifest.show')
+         ->middleware('can:surat-jalan-bongkaran-view');
+    
+    // API endpoint to fetch BL data (backward compatibility)
     Route::get('api/bl/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlById'])
          ->name('api.bl.show')
          ->middleware('can:surat-jalan-bongkaran-view');

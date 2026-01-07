@@ -94,7 +94,7 @@
                         <select name="mode" id="mode" 
                                 class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 onchange="this.form.submit()">
-                            <option value="bl" {{ request('mode', 'bl') == 'bl' ? 'selected' : '' }}>Bill of Lading (BL)</option>
+                            <option value="manifest" {{ request('mode', 'manifest') == 'manifest' ? 'selected' : '' }}>Manifest</option>
                             <option value="surat_jalan" {{ request('mode') == 'surat_jalan' ? 'selected' : '' }}>Surat Jalan Bongkaran</option>
                         </select>
                     </div>
@@ -118,7 +118,7 @@
                                 </svg>
                                 Cari
                             </button>
-                            <a href="{{ route('surat-jalan-bongkaran.index', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'bl')]) }}" 
+                            <a href="{{ route('surat-jalan-bongkaran.index', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'manifest')]) }}" 
                                class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -130,14 +130,14 @@
                 </div>
             </form>
 
-            <!-- Debug Info -->
+                    <!-- Debug Info -->
             @if(config('app.debug'))
                 <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
                     <strong>Debug Info:</strong><br>
                     @if(request('mode') == 'surat_jalan')
                         Total Surat Jalan: {{ $suratJalans->total() }}
                     @else
-                        Total BL: {{ $bls->total() }}
+                        Total Manifest: {{ $manifests->total() }}
                     @endif
                 </div>
             @endif
@@ -228,9 +228,9 @@
                     </table>
                     </div>
                 @else
-                    <!-- BL Table -->
+                    <!-- Manifest Table -->
                     <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200" id="blTable">
+                    <table class="min-w-full divide-y divide-gray-200" id="manifestTable">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -246,26 +246,26 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($bls as $index => $bl)
+                            @forelse($manifests as $index => $manifest)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-block text-left">
-                                            <button type="button" onclick="event.stopPropagation(); toggleDropdown('dropdown-{{ $bl->id }}')"
+                                            <button type="button" onclick="event.stopPropagation(); toggleDropdown('dropdown-{{ $manifest->id }}')"
                                                     class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                                 </svg>
                                             </button>
 
-                                            <div id="dropdown-{{ $bl->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                            <div id="dropdown-{{ $manifest->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
                                                     <!-- Opsi Buat/Tambah Surat Jalan - selalu tampil -->
-                                                    <a href="#" onclick="buatSuratJalan({{ $bl->id }}); return false;" 
+                                                    <a href="#" onclick="buatSuratJalan({{ $manifest->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
                                                         <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                                         </svg>
-                                                        @if($bl->suratJalanBongkaran)
+                                                        @if($manifest->suratJalanBongkaran)
                                                             Tambah Surat Jalan
                                                         @else
                                                             Buat Surat Jalan
@@ -273,8 +273,8 @@
                                                     </a>
                                                     
                                                     <!-- Opsi Edit - hanya tampil jika sudah ada surat jalan -->
-                                                    @if($bl->suratJalanBongkaran)
-                                                        <a href="#" onclick="editSuratJalanFromBL({{ $bl->suratJalanBongkaran->id }}); return false;" 
+                                                    @if($manifest->suratJalanBongkaran)
+                                                        <a href="#" onclick="editSuratJalanFromManifest({{ $manifest->suratJalanBongkaran->id }}); return false;" 
                                                            class="group flex items-center px-3 py-2 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900">
                                                             <svg class="mr-2 h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -282,14 +282,14 @@
                                                             Edit Surat Jalan
                                                         </a>
                                                     @endif
-                                                    <a href="#" onclick="printSJ({{ $bl->id }}); return false;" 
+                                                    <a href="#" onclick="printSJ({{ $manifest->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
                                                         <svg class="mr-2 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                                         </svg>
                                                         Print SJ
                                                     </a>
-                                                    <a href="#" onclick="printBA({{ $bl->id }}); return false;" 
+                                                    <a href="#" onclick="printBA({{ $manifest->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-green-700 hover:bg-green-50 hover:text-green-900">
                                                         <svg class="mr-2 h-4 w-4 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -301,24 +301,24 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
-                                        @if($bl->suratJalanBongkaran)
-                                            <span class="font-semibold text-blue-600">{{ $bl->suratJalanBongkaran->nomor_surat_jalan }}</span>
+                                        @if($manifest->suratJalanBongkaran)
+                                            <span class="font-semibold text-blue-600">{{ $manifest->suratJalanBongkaran->nomor_surat_jalan }}</span>
                                         @else
                                             <span class="text-orange-600 font-medium">Perlu surat jalan</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bls->firstItem() + $index }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifests->firstItem() + $index }}</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="font-semibold text-gray-900">{{ $bl->nomor_bl ?: '-' }}</span>
+                                        <span class="font-semibold text-gray-900">{{ $manifest->nomor_bl ?: '-' }}</span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->no_seal ?: '-' }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $bl->size_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nomor_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->no_seal ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->size_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
-                                        {{ $bl->term ? ($bl->term_nama ? $bl->term . ' - ' . $bl->term_nama : $bl->term) : '-' }}
+                                        {{ $manifest->term ? ($manifest->term_nama ? $manifest->term . ' - ' . $manifest->term_nama : $manifest->term) : '-' }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->nama_barang, 30) ?: '-' }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($bl->penerima, 30) ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($manifest->nama_barang, 30) ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($manifest->penerima, 30) ?: '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>
@@ -327,8 +327,8 @@
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                             </svg>
-                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data BL</h3>
-                                            <p class="text-gray-500">Belum ada data Bill of Lading yang tersedia.</p>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data Manifest</h3>
+                                            <p class="text-gray-500">Belum ada data Manifest yang tersedia.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -340,22 +340,22 @@
             </div>
 
             <!-- Pagination -->
-            @if((request('mode') == 'surat_jalan' && isset($suratJalans) && $suratJalans->hasPages()) || (request('mode') != 'surat_jalan' && isset($bls) && $bls->hasPages()))
+            @if((request('mode') == 'surat_jalan' && isset($suratJalans) && $suratJalans->hasPages()) || (request('mode') != 'surat_jalan' && isset($manifests) && $manifests->hasPages()))
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 pt-4 border-t border-gray-200">
                     <div class="text-sm text-gray-700 mb-4 sm:mb-0">
                         @if(request('mode') == 'surat_jalan')
                             Menampilkan {{ $suratJalans->firstItem() }} sampai {{ $suratJalans->lastItem() }} 
                             dari {{ $suratJalans->total() }} data
                         @else
-                            Menampilkan {{ $bls->firstItem() }} sampai {{ $bls->lastItem() }} 
-                            dari {{ $bls->total() }} data
+                            Menampilkan {{ $manifests->firstItem() }} sampai {{ $manifests->lastItem() }} 
+                            dari {{ $manifests->total() }} data
                         @endif
                     </div>
                     <div>
                         @if(request('mode') == 'surat_jalan')
                             {{ $suratJalans->appends(request()->query())->links() }}
                         @else
-                            {{ $bls->appends(request()->query())->links() }}
+                            {{ $manifests->appends(request()->query())->links() }}
                         @endif
                     </div>
                 </div>
@@ -379,6 +379,7 @@
             <!-- Modal Body -->
             <form id="formBuatSuratJalan" action="{{ route('surat-jalan-bongkaran.store') }}" method="POST" class="mt-4" onsubmit="return handleFormSubmit(event)">
                 @csrf
+                <input type="hidden" name="manifest_id" id="modal_manifest_id">
                 <input type="hidden" name="bl_id" id="modal_bl_id">
                 <input type="hidden" name="nama_kapal" id="modal_nama_kapal" value="{{ $selectedKapal }}">
                 <input type="hidden" name="no_voyage" id="modal_no_voyage" value="{{ $selectedVoyage }}">
@@ -768,6 +769,7 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="surat_jalan_id" id="edit_modal_surat_jalan_id">
+                <input type="hidden" name="manifest_id" id="edit_modal_manifest_id">
                 <input type="hidden" name="bl_id" id="edit_modal_bl_id">
                 <input type="hidden" name="nama_kapal" id="edit_modal_nama_kapal" value="{{ $selectedKapal }}">
                 <input type="hidden" name="no_voyage" id="edit_modal_no_voyage" value="{{ $selectedVoyage }}">
@@ -1158,7 +1160,8 @@ function buatSuratJalanManual() {
     // Show modal
     document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
     
-    // Clear BL ID
+    // Clear Manifest and BL IDs
+    document.getElementById('modal_manifest_id').value = '';
     document.getElementById('modal_bl_id').value = '';
     
     // Set default values
@@ -1194,13 +1197,13 @@ function buatSuratJalanManual() {
     setupModalLanjutMuatToggle();
 }
 
-// Buat Surat Jalan function - Open modal and populate with BL data
-function buatSuratJalan(blId) {
+// Buat Surat Jalan function - Open modal and populate with Manifest data
+function buatSuratJalan(manifestId) {
     // Show modal
     document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
     
-    // Fetch BL data
-    fetch(`/api/bl/${blId}`)
+    // Fetch Manifest data
+    fetch(`/api/manifest/${manifestId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1212,10 +1215,10 @@ function buatSuratJalan(blId) {
             return response.json();
         })
         .then(data => {
-            // Populate hidden BL ID
-            document.getElementById('modal_bl_id').value = blId;
+            // Populate hidden Manifest ID
+            document.getElementById('modal_manifest_id').value = manifestId;
             
-            // Populate nama kapal and no voyage from BL data
+            // Populate nama kapal and no voyage from Manifest data
             if (data.nama_kapal) {
                 document.getElementById('modal_nama_kapal').value = data.nama_kapal;
             }
@@ -1229,7 +1232,7 @@ function buatSuratJalan(blId) {
             // Set default tanggal to today
             document.getElementById('modal_tanggal_surat_jalan').value = new Date().toISOString().split('T')[0];
             
-            // Populate BL data fields (readonly)
+            // Populate Manifest data fields (readonly)
             document.getElementById('modal_no_bl').value = data.nomor_bl || '';
             document.getElementById('modal_no_kontainer').value = data.nomor_kontainer || '';
             document.getElementById('modal_no_seal').value = data.no_seal || '';
@@ -1257,9 +1260,9 @@ function buatSuratJalan(blId) {
             setupModalLanjutMuatToggle();
         })
         .catch(error => {
-            console.error('Error fetching BL data:', error);
+            console.error('Error fetching Manifest data:', error);
             closeModal();
-            alert('Gagal mengambil data BL. ' + (error.message || 'Silakan coba lagi atau hubungi administrator.'));
+            alert('Gagal mengambil data Manifest. ' + (error.message || 'Silakan coba lagi atau hubungi administrator.'));
         });
 }
 
@@ -1647,6 +1650,7 @@ function openEditModal(suratJalanId) {
         .then(data => {
             // Populate hidden ID
             document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
+            document.getElementById('edit_modal_manifest_id').value = data.manifest_id || '';
             document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
             
             // Populate nama kapal and no voyage from surat jalan data
