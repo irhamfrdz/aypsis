@@ -39,7 +39,7 @@ class ReportRitController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
         $query = SuratJalan::with(['createdBy', 'updatedBy', 'supir'])
-            ->whereBetween('tanggal', [$startDate, $endDate]);
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
@@ -62,7 +62,7 @@ class ReportRitController extends Controller
         }
 
         // Order by tanggal descending
-        $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
+        $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc');
 
         $suratJalans = $query->paginate($request->get('per_page', 50))
             ->appends($request->except('page'));
@@ -87,7 +87,7 @@ class ReportRitController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
         $query = SuratJalan::with(['createdBy', 'updatedBy', 'supir'])
-            ->whereBetween('tanggal', [$startDate, $endDate]);
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
@@ -109,7 +109,7 @@ class ReportRitController extends Controller
             $query->where('kegiatan', $request->kegiatan);
         }
 
-        $suratJalans = $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc')->get();
+        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc')->get();
 
         return view('report-rit.print', compact('suratJalans', 'startDate', 'endDate'));
     }
@@ -131,7 +131,7 @@ class ReportRitController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
         $query = SuratJalan::with(['createdBy', 'updatedBy', 'supir'])
-            ->whereBetween('tanggal', [$startDate, $endDate]);
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
@@ -153,7 +153,7 @@ class ReportRitController extends Controller
             $query->where('kegiatan', $request->kegiatan);
         }
 
-        $suratJalans = $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc')->get();
+        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc')->get();
 
         $filename = 'Report_Rit_' . $startDate->format('d-m-Y') . '_to_' . $endDate->format('d-m-Y') . '.xlsx';
 
