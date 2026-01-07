@@ -185,19 +185,31 @@
                     @forelse($suratJalans as $key => $sj)
                     <tr class="hover:bg-gray-50 transition duration-150">
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $suratJalans->firstItem() + $key }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->tanggal_surat_jalan ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $sj->no_surat_jalan ?: '-' }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {{ $sj->tanggal_surat_jalan ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : ($sj->order && $sj->order->tanggal_order ? \Carbon\Carbon::parse($sj->order->tanggal_order)->format('d/m/Y') : '-') }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                            {{ $sj->no_surat_jalan ?: ($sj->order ? $sj->order->nomor_order : '-') }}
+                        </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $sj->kegiatan == 'muat' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800' }}">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $sj->kegiatan == 'muat' ? 'bg-green-100 text-green-800' : ($sj->kegiatan == 'bongkar' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800') }}">
                                 {{ ucfirst($sj->kegiatan ?: 'tarik isi') }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->supir ?: ($sj->supir2 ?: '-') }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->no_plat ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->pengirim }}">{{ $sj->pengirim ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->tujuan_pengiriman }}">{{ $sj->tujuan_pengiriman ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->jenis_barang }}">{{ $sj->jenis_barang ?: '-' }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->tipe_kontainer ?: $sj->size ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim }}">
+                            {{ $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim ?: '-' }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman }}">
+                            {{ $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman ?: '-' }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang }}">
+                            {{ $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang ?: '-' }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {{ $sj->tipe_kontainer ?: ($sj->size ?: ($sj->order ? $sj->order->tipe_kontainer : '-')) }}
+                        </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->rit ?: '-' }}</td>
                     </tr>
                     @empty

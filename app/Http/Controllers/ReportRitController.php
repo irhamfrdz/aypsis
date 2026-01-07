@@ -67,7 +67,8 @@ class ReportRitController extends Controller
         // Order by tanggal descending
         $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc');
 
-        $suratJalans = $query->paginate($request->get('per_page', 50))
+        $suratJalans = $query->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation'])
+            ->paginate($request->get('per_page', 50))
             ->appends($request->except('page'));
 
         return view('report-rit.view', compact('suratJalans', 'startDate', 'endDate'));
