@@ -44,16 +44,20 @@ class ReportRitController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('nama_supir', 'like', "%{$search}%")
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('supir2', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%");
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('supir')) {
-            $query->where('nama_supir', 'like', "%{$request->supir}%");
+            $query->where(function($q) use ($request) {
+                $q->where('supir', 'like', "%{$request->supir}%")
+                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+            });
         }
 
         if ($request->filled('kegiatan')) {
@@ -91,16 +95,20 @@ class ReportRitController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('nama_supir', 'like', "%{$search}%")
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('supir2', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%");
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('supir')) {
-            $query->where('nama_supir', 'like', "%{$request->supir}%");
+            $query->where(function($q) use ($request) {
+                $q->where('supir', 'like', "%{$request->supir}%")
+                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+            });
         }
 
         if ($request->filled('kegiatan')) {
@@ -134,16 +142,20 @@ class ReportRitController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('nama_supir', 'like', "%{$search}%")
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('supir2', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%");
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('supir')) {
-            $query->where('nama_supir', 'like', "%{$request->supir}%");
+            $query->where(function($q) use ($request) {
+                $q->where('supir', 'like', "%{$request->supir}%")
+                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+            });
         }
 
         if ($request->filled('kegiatan')) {
