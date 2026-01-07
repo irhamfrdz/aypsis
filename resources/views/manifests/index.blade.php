@@ -283,8 +283,8 @@
                     <div class="text-sm text-blue-800">
                         <p class="font-semibold mb-1">Format File:</p>
                         <ul class="list-disc list-inside space-y-1 text-xs">
-                            <li>File CSV dengan delimiter semicolon (;)</li>
-                            <li>Encoding: UTF-8</li>
+                            <li>File Excel (.xlsx atau .xls)</li>
+                            <li>Gunakan template yang disediakan</li>
                             <li>Maksimal 10MB</li>
                         </ul>
                     </div>
@@ -305,17 +305,17 @@
             <!-- File Upload -->
             <div class="mb-6">
                 <label for="import_file" class="block text-sm font-medium text-gray-700 mb-2">
-                    Pilih File CSV
+                    Pilih File Excel
                 </label>
                 <div class="relative">
                     <input type="file" 
                            name="file" 
                            id="import_file" 
-                           accept=".csv,.txt"
+                           accept=".xlsx,.xls"
                            required
                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
                 </div>
-                <p class="mt-1 text-xs text-gray-500">File CSV dengan delimiter semicolon (;)</p>
+                <p class="mt-1 text-xs text-gray-500">File Excel dengan format .xlsx atau .xls</p>
             </div>
 
             <!-- Ship Info Display -->

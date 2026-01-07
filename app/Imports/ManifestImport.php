@@ -5,6 +5,8 @@ namespace App\Imports;
 use App\Models\Manifest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ManifestImport
 {
@@ -21,8 +23,8 @@ class ManifestImport
 
     public function import($file)
     {
-        // Handle CSV or Excel import
-        $data = $this->parseCsvFile($file);
+        // Handle Excel import
+        $data = $this->parseExcelFile($file);
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
@@ -42,23 +44,30 @@ class ManifestImport
         ];
     }
 
-    private function parseCsvFile($file)
+    private function parseExcelFile($file)
     {
-        $data = [];
-        $handle = fopen($file->getRealPath(), 'r');
+        try {
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $data = [];
 
-        // Skip BOM if present
-        $bom = fread($handle, 3);
-        if ($bom !== "\xEF\xBB\xBF") {
-            rewind($handle); // No BOM, rewind to start
+            foreach ($worksheet->getRowIterator() as $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false);
+                $rowData = [];
+
+                foreach ($cellIterator as $cell) {
+                    $rowData[] = $cell->getValue();
+                }
+
+                $data[] = $rowData;
+            }
+
+            return $data;
+        } catch (\Exception $e) {
+            $this->errors[] = 'Error membaca file Excel: ' . $e->getMessage();
+            return [];
         }
-
-        while (($row = fgetcsv($handle, 1000, ';')) !== false) {
-            $data[] = $row;
-        }
-
-        fclose($handle);
-        return $data;
     }
 
     private function processRow($row, $rowNumber)

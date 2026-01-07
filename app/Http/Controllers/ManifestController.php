@@ -253,12 +253,12 @@ class ManifestController extends Controller
     }
 
     /**
-     * Import manifests from Excel/CSV file
+     * Import manifests from Excel file
      */
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
+            'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
             'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
         ]);
@@ -304,6 +304,10 @@ class ManifestController extends Controller
      */
     public function downloadTemplate()
     {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
         $headers = [
             'No BL',
             'No Manifest',
@@ -317,38 +321,49 @@ class ManifestController extends Controller
             'Term'
         ];
 
-        $filename = 'template_import_manifest.csv';
-        
-        $callback = function() use ($headers) {
-            $file = fopen('php://output', 'w');
-            
-            // Add BOM for Excel UTF-8
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // Write headers
-            fputcsv($file, $headers, ';');
-            
-            // Write example data
-            fputcsv($file, [
-                'BL001',
-                'MN001',
-                'CONT001',
-                'SEAL001',
-                'Dry Container',
-                '20',
-                'Barang Contoh',
-                'PT Pengirim',
-                'PT Penerima',
-                'FOB'
-            ], ';');
-            
-            fclose($file);
-        };
+        // Write headers in row 1
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->getStyle($col . '1')->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFE0E0E0');
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
 
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-        ]);
+        // Write example data in row 2
+        $exampleData = [
+            'BL001',
+            'MN001',
+            'CONT001',
+            'SEAL001',
+            'Dry Container',
+            '20',
+            'Barang Contoh',
+            'PT Pengirim',
+            'PT Penerima',
+            'FOB'
+        ];
+
+        $col = 'A';
+        foreach ($exampleData as $data) {
+            $sheet->setCellValue($col . '2', $data);
+            $col++;
+        }
+
+        // Create Excel file
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'template_import_manifest.xlsx';
+
+        // Set headers for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
     }
 }
 
