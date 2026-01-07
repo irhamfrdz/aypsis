@@ -403,6 +403,9 @@
                                 Penerima
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                PT Pengirim
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 No. Surat Jalan
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -527,6 +530,17 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->penerima ?: '-' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        @php
+                                            $displayPengirim = $bl->pengirim;
+                                            if (empty($displayPengirim) && $bl->prospek) {
+                                                $displayPengirim = $bl->prospek->pengirim;
+                                            }
+                                        @endphp
+                                        {{ $displayPengirim ?: '-' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -1021,6 +1035,11 @@
                             <input type="checkbox" name="columns[]" value="penerima" 
                                    class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
                             <span class="ml-2 text-sm text-gray-700">Penerima</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="pengirim" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">PT Pengirim</span>
                         </label>
                         <label class="flex items-center">
                             <input type="checkbox" name="columns[]" value="no_surat_jalan" 
@@ -1582,41 +1601,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectAllCheckbox = document.getElementById('selectAll');
         const rowCheckboxes = document.querySelectorAll('.row-checkbox');
 
-        // Select All functionality
+        // Disable Select All checkbox (only single selection allowed)
         if (selectAllCheckbox) {
-            selectAllCheckbox.addEventListener('change', function() {
-                rowCheckboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-                updateSelectedCount();
-            });
+            selectAllCheckbox.disabled = true;
+            selectAllCheckbox.title = 'Pecah BL hanya dapat dilakukan satu per satu';
         }
 
-        // Individual checkbox functionality
+        // Individual checkbox functionality - only allow one selection
         rowCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                updateSelectAllState();
+                if (this.checked) {
+                    // Uncheck all other checkboxes
+                    rowCheckboxes.forEach(otherCheckbox => {
+                        if (otherCheckbox !== this) {
+                            otherCheckbox.checked = false;
+                        }
+                    });
+                }
                 updateSelectedCount();
             });
         });
-
-        function updateSelectAllState() {
-            if (!selectAllCheckbox) return;
-            
-            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-            const totalBoxes = rowCheckboxes.length;
-            
-            if (checkedBoxes.length === 0) {
-                selectAllCheckbox.indeterminate = false;
-                selectAllCheckbox.checked = false;
-            } else if (checkedBoxes.length === totalBoxes) {
-                selectAllCheckbox.indeterminate = false;
-                selectAllCheckbox.checked = true;
-            } else {
-                selectAllCheckbox.indeterminate = true;
-                selectAllCheckbox.checked = false;
-            }
-        }
 
         function updateSelectedCount() {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');

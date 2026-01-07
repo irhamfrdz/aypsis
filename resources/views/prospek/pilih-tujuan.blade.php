@@ -87,21 +87,59 @@
                                 
                                 @if($jumlahProspek > 0)
                                     @php
-                                        // Case-insensitive filtering untuk tipe
-                                        $fclCount = $prospekPerTujuan->filter(function($p) {
-                                            return strtoupper($p->tipe ?? '') === 'FCL';
+                                        // Hitung berdasarkan ukuran dan tipe kontainer
+                                        $lcl20ft = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'LCL' && 
+                                                   (stripos($p->ukuran_container ?? '', '20') !== false || 
+                                                    stripos($p->ukuran_container ?? '', "20'") !== false);
                                         })->count();
-                                        $lclCount = $prospekPerTujuan->filter(function($p) {
-                                            return strtoupper($p->tipe ?? '') === 'LCL';
+                                        
+                                        $fcl20ft = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'FCL' && 
+                                                   (stripos($p->ukuran_container ?? '', '20') !== false || 
+                                                    stripos($p->ukuran_container ?? '', "20'") !== false);
                                         })->count();
+                                        
+                                        $lcl40ft = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'LCL' && 
+                                                   (stripos($p->ukuran_container ?? '', '40') !== false || 
+                                                    stripos($p->ukuran_container ?? '', "40'") !== false);
+                                        })->count();
+                                        
+                                        $fcl40ft = $prospekPerTujuan->filter(function($p) {
+                                            return strtoupper($p->tipe ?? '') === 'FCL' && 
+                                                   (stripos($p->ukuran_container ?? '', '40') !== false || 
+                                                    stripos($p->ukuran_container ?? '', "40'") !== false);
+                                        })->count();
+                                        
                                         $cargoCount = $prospekPerTujuan->filter(function($p) {
                                             return strtoupper($p->tipe ?? '') === 'CARGO';
                                         })->count();
                                     @endphp
-                                    <div class="mt-3 text-xs text-gray-500">
-                                        <div>FCL: {{ $fclCount }}</div>
-                                        <div>LCL: {{ $lclCount }}</div>
-                                        <div>CARGO: {{ $cargoCount }}</div>
+                                    <div class="mt-3 text-xs text-gray-600 space-y-1">
+                                        <div class="font-semibold {{ $config['text'] }} mb-1">Detail Kontainer:</div>
+                                        <div class="flex justify-between">
+                                            <span>20ft LCL:</span>
+                                            <span class="font-semibold">{{ $lcl20ft }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>20ft FCL:</span>
+                                            <span class="font-semibold">{{ $fcl20ft }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>40ft LCL:</span>
+                                            <span class="font-semibold">{{ $lcl40ft }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>40ft FCL:</span>
+                                            <span class="font-semibold">{{ $fcl40ft }}</span>
+                                        </div>
+                                        @if($cargoCount > 0)
+                                        <div class="flex justify-between pt-1 border-t {{ $config['border'] }}">
+                                            <span>CARGO:</span>
+                                            <span class="font-semibold">{{ $cargoCount }}</span>
+                                        </div>
+                                        @endif
                                     </div>
                                 @endif
                             </div>

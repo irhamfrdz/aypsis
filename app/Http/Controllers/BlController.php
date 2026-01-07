@@ -556,106 +556,145 @@ class BlController extends Controller
                 ->exists();
             
             if (!$hasPermission) {
-                return redirect()->back()->with('error', 'Tidak memiliki akses untuk melakukan operasi ini.');
+                return redirect()->back()->with('split_error', 'Tidak memiliki akses untuk melakukan operasi ini.');
             }
         }
 
         $request->validate([
             'ids' => 'required|string',
             'pt_pengirim' => 'required|string',
-            'tonnage_dipindah' => 'required|numeric|min:0.01',
-            'volume_dipindah' => 'required|numeric|min:0.001',
-            'nama_barang_dipindah' => 'required|string',
-            'term_baru' => 'nullable|string|max:100',
             'keterangan' => 'required|string|max:1000'
         ]);
 
         $ids = json_decode($request->input('ids'), true);
         
         if (empty($ids)) {
-            return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
+            return redirect()->back()->with('split_error', 'Tidak ada item yang dipilih.');
         }
 
-        $tonnageDipindah = $request->tonnage_dipindah;
-        $volumeDipindah = $request->volume_dipindah;
         $ptPengirim = $request->pt_pengirim;
-        $processedCount = 0;
         
-        DB::transaction(function () use ($ids, $request, $tonnageDipindah, $volumeDipindah, $ptPengirim, &$processedCount) {
-            
-            foreach ($ids as $originalId) {
-                $originalBl = Bl::findOrFail($originalId);
-                
-                // Check if we have enough tonnage and volume to split
-                $currentTonnage = $originalBl->tonnage ?? 0;
-                $currentVolume = $originalBl->volume ?? 0;
-                
-                if ($currentTonnage < $tonnageDipindah) {
-                    continue; // Skip this item if not enough tonnage
-                }
-                
-                if ($currentVolume < $volumeDipindah) {
-                    continue; // Skip this item if not enough volume
-                }
-                
-                // Generate new BL number with suffix
-                $newNomorBl = ($originalBl->nomor_bl ?: 'BL-AUTO') . '-SPLIT';
-                
-                // Create new BL record for split - same container, different tonnage and cargo name
-                $newBl = Bl::create([
-                    'nomor_bl' => $newNomorBl,
-                    'nomor_kontainer' => $originalBl->nomor_kontainer, // Same container
-                    'tipe_kontainer' => $originalBl->tipe_kontainer,   // Same type
-                    'no_seal' => $originalBl->no_seal,                 // Same seal
-                    'nama_kapal' => $originalBl->nama_kapal,
-                    'no_voyage' => $originalBl->no_voyage,
-                    'pengirim' => $ptPengirim,                         // PT Pengirim from tanda_terima
-                    'nama_barang' => $request->nama_barang_dipindah,   // Different cargo name
-                    'tonnage' => $tonnageDipindah,                     // Split tonnage
-                    'volume' => $volumeDipindah,                       // Split volume
-                    'term' => $request->term_baru ?: $originalBl->term, // New term or same as original
-                    'prospek_id' => $originalBl->prospek_id,
-                    'keterangan' => $request->keterangan . ' [PT: ' . $ptPengirim . ']',
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id()
-                ]);
-                
-                // Update original BL - reduce tonnage and volume
-                $remainingTonnage = $currentTonnage - $tonnageDipindah;
-                $remainingVolume = $currentVolume - $volumeDipindah;
-                
-                $originalBl->update([
-                    'tonnage' => max(0, $remainingTonnage),
-                    'volume' => max(0, $remainingVolume),
-                    'keterangan' => ($originalBl->keterangan ?? '') . ' [SEBAGIAN DIPINDAH KE: ' . $newNomorBl . ' - PT: ' . $ptPengirim . ']',
-                    'updated_by' => Auth::id(),
-                ]);
-                
-                $processedCount++;
-            }
-        });
-
-        if ($processedCount == 0) {
-            // Get first selected item to show current capacity
-            $firstId = $ids[0] ?? null;
-            if ($firstId) {
-                $firstBl = Bl::find($firstId);
-                if ($firstBl) {
-                    $currentTonnage = $firstBl->tonnage ?? 0;
-                    $currentVolume = $firstBl->volume ?? 0;
-                    $message = "Tidak ada BL yang dapat dipecah. Kapasitas tersedia pada BL pertama: {$currentTonnage} ton, {$currentVolume} m³. Pastikan tonnage dan volume yang diminta tidak melebihi kapasitas ini.";
-                } else {
-                    $message = 'Tidak ada BL yang dapat dipecah. Pastikan tonnage dan volume yang diminta tidak melebihi kapasitas yang tersedia.';
-                }
-            } else {
-                $message = 'Tidak ada BL yang dapat dipecah. Pastikan tonnage dan volume yang diminta tidak melebihi kapasitas yang tersedia.';
-            }
-            
-            return redirect()->back()->with('error', $message);
+        // Get BL data that matches the selected PT Pengirim from the selected BLs
+        $ptMatchingBl = Bl::whereIn('id', $ids)
+            ->where(function($query) use ($ptPengirim) {
+                $query->where('pengirim', $ptPengirim)
+                      ->orWhereHas('prospek', function($q) use ($ptPengirim) {
+                          $q->where('pengirim', $ptPengirim);
+                      });
+            })
+            ->whereNotNull('tonnage')
+            ->whereNotNull('volume')
+            ->first();
+        
+        if (!$ptMatchingBl) {
+            return redirect()->back()->with('split_error', 'Tidak ada data BL yang sesuai dengan PT Pengirim "' . $ptPengirim . '" yang dipilih. Pastikan BL yang dipilih memiliki data PT Pengirim tersebut.');
         }
         
-        return redirect()->route('bl.index')
-                        ->with('success', "Berhasil memecah {$processedCount} BL. BL baru telah dibuat dengan tonnage {$tonnageDipindah} ton dan volume {$volumeDipindah} m³ (kontainer tetap sama).");
+        // Get tonnage, volume, nama_barang, and term from the matching BL
+        $tonnageDipindah = $ptMatchingBl->tonnage;
+        $volumeDipindah = $ptMatchingBl->volume;
+        $namaBarangDipindah = $ptMatchingBl->nama_barang ?? 'Barang ' . $ptPengirim;
+        $termBaru = $ptMatchingBl->term ?? null;
+        
+        $newBlNumbers = [];
+        $errors = [];
+        $warnings = [];
+        
+        DB::beginTransaction();
+        
+        try {
+            // Get ALL BLs with the same container number from selected BL
+            $firstSelectedBl = Bl::whereIn('id', $ids)->first();
+            
+            if (!$firstSelectedBl) {
+                DB::rollBack();
+                return redirect()->route('bl.index')
+                    ->with('split_error', 'BL yang dipilih tidak ditemukan.');
+            }
+            
+            $nomorKontainer = $firstSelectedBl->nomor_kontainer;
+            
+            if (!$nomorKontainer) {
+                DB::rollBack();
+                return redirect()->route('bl.index')
+                    ->with('split_error', 'BL tidak memiliki nomor kontainer.');
+            }
+            
+            // Get the specific BL record that has the selected PT Pengirim
+            $blWithPtPengirim = Bl::where('nomor_kontainer', $nomorKontainer)
+                ->where('nama_kapal', $firstSelectedBl->nama_kapal)
+                ->where('no_voyage', $firstSelectedBl->no_voyage)
+                ->where('pengirim', $ptPengirim)
+                ->first();
+            
+            if (!$blWithPtPengirim) {
+                DB::rollBack();
+                return redirect()->route('bl.index')
+                    ->with('split_error', 'Tidak ditemukan BL dengan PT Pengirim "' . $ptPengirim . '" di kontainer ini.');
+            }
+            
+            // Generate new BL number with suffix
+            $baseNomorBl = $firstSelectedBl->nomor_bl ?: 'BL-AUTO';
+            $counter = 1;
+            $newNomorBl = $baseNomorBl . '-SPLIT' . $counter;
+            
+            // Check if BL number already exists, if so increment counter
+            while (Bl::where('nomor_bl', $newNomorBl)->exists()) {
+                $counter++;
+                $newNomorBl = $baseNomorBl . '-SPLIT' . $counter;
+            }
+            
+            // Create new BL record - copy the BL with selected PT Pengirim
+            $newBl = Bl::create([
+                'nomor_bl' => $newNomorBl,
+                'nomor_kontainer' => $blWithPtPengirim->nomor_kontainer,
+                'tipe_kontainer' => $blWithPtPengirim->tipe_kontainer,
+                'size_kontainer' => $blWithPtPengirim->size_kontainer,
+                'no_seal' => $blWithPtPengirim->no_seal,
+                'nama_kapal' => $blWithPtPengirim->nama_kapal,
+                'no_voyage' => $blWithPtPengirim->no_voyage,
+                'pelabuhan_asal' => $blWithPtPengirim->pelabuhan_asal,
+                'pelabuhan_tujuan' => $blWithPtPengirim->pelabuhan_tujuan,
+                'pengirim' => $blWithPtPengirim->pengirim,
+                'penerima' => $blWithPtPengirim->penerima,
+                'nama_barang' => $blWithPtPengirim->nama_barang,
+                'tonnage' => $blWithPtPengirim->tonnage,
+                'volume' => $blWithPtPengirim->volume,
+                'kuantitas' => $blWithPtPengirim->kuantitas,
+                'satuan' => $blWithPtPengirim->satuan,
+                'term' => $blWithPtPengirim->term,
+                'prospek_id' => $blWithPtPengirim->prospek_id,
+                'keterangan' => $request->keterangan . ' [Dipecah dari kontainer: ' . $nomorKontainer . ' - PT: ' . $ptPengirim . ']',
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id()
+            ]);
+            
+            // Delete the original BL record with the selected PT Pengirim
+            // because it has been moved to the new BL
+            $blWithPtPengirim->delete();
+            
+            $newBlNumbers[] = $newNomorBl;
+            
+            DB::commit();
+            
+            if (empty($newBlNumbers)) {
+                return redirect()->route('bl.index')
+                    ->with('split_error', 'Tidak ada BL yang dapat dipecah.');
+            }
+            
+            $successMessage = 'Berhasil memecah BL dengan data PT ' . $ptPengirim . ' ke BL baru dengan nomor ' . $newNomorBl . '.';
+            
+            return redirect()->route('bl.index')
+                ->with('split_success', $successMessage)
+                ->with('new_bl_numbers', $newBlNumbers);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->route('bl.index')
+                ->with('split_error', 'Terjadi kesalahan saat memecah BL: ' . $e->getMessage())
+                ->with('split_errors', [$e->getMessage()]);
+        }
     }
 
     /**
