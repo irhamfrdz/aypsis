@@ -61,8 +61,10 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
 
         $prospeks = $query->get();
 
-        $rows = $prospeks->map(function($p) {
+        $rows = $prospeks->map(function($p, $index) {
             return [
+                $index + 1, // Nomor urut
+                $p->nama_supir ?? '-', // Nama supir
                 $p->no_surat_jalan,
                 $p->tanggal ? (is_string($p->tanggal) ? \Carbon\Carbon::parse($p->tanggal)->format('d/M/Y') : $p->tanggal->format('d/M/Y')) : '-',
                 $p->barang,
@@ -82,6 +84,8 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
     public function headings(): array
     {
         return [
+            'No',
+            'Nama Supir',
             'No. Surat Jalan',
             'Tanggal',
             'Barang',
@@ -100,7 +104,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:J1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
         ];
     }

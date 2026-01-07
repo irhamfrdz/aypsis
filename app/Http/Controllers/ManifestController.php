@@ -229,4 +229,26 @@ class ManifestController extends Controller
 
         return redirect()->route('report.manifests.index')->with('success', 'Manifest berhasil dihapus');
     }
+
+    /**
+     * Update nomor BL via AJAX
+     */
+    public function updateNomorBl(Request $request, string $id)
+    {
+        $manifest = Manifest::findOrFail($id);
+
+        $validated = $request->validate([
+            'nomor_bl' => 'required|string|max:255',
+        ]);
+
+        $validated['updated_by'] = Auth::id();
+
+        $manifest->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nomor BL berhasil diperbarui',
+            'nomor_bl' => $manifest->nomor_bl
+        ]);
+    }
 }

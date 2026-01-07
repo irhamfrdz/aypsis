@@ -158,7 +158,15 @@
                                 {{ ($manifests->currentPage() - 1) * $manifests->perPage() + $index + 1 }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                @can('manifest-edit')
+                                <div class="text-sm font-medium text-gray-900 editable-bl cursor-pointer hover:bg-yellow-50 px-2 py-1 rounded transition-colors" 
+                                     contenteditable="true" 
+                                     data-manifest-id="{{ $manifest->id }}"
+                                     data-original-value="{{ $manifest->nomor_bl }}"
+                                     title="Klik untuk edit">{{ $manifest->nomor_bl }}</div>
+                                @else
                                 <div class="text-sm font-medium text-gray-900">{{ $manifest->nomor_bl }}</div>
+                                @endcan
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $manifest->nomor_kontainer }}</div>
@@ -234,4 +242,118 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editableCells = document.querySelectorAll('.editable-bl');
+    
+    editableCells.forEach(cell => {
+        // Store original value on focus
+        cell.addEventListener('focus', function() {
+            this.dataset.originalValue = this.textContent.trim();
+        });
+        
+        // Handle blur event (when user clicks away)
+        cell.addEventListener('blur', function() {
+            const newValue = this.textContent.trim();
+            const originalValue = this.dataset.originalValue;
+            const manifestId = this.dataset.manifestId;
+            
+            // Only update if value changed
+            if (newValue !== originalValue && newValue !== '') {
+                updateNomorBl(manifestId, newValue, this);
+            } else if (newValue === '') {
+                // Restore original if empty
+                this.textContent = originalValue;
+            }
+        });
+        
+        // Handle Enter key
+        cell.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.blur();
+            }
+            // Handle Escape key to cancel
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.textContent = this.dataset.originalValue;
+                this.blur();
+            }
+        });
+    });
+    
+    function updateNomorBl(manifestId, newValue, element) {
+        // Show loading state
+        element.classList.add('opacity-50');
+        
+        fetch(`/report/manifests/${manifestId}/update-nomor-bl`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                nomor_bl: newValue
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            element.classList.remove('opacity-50');
+            
+            if (data.success) {
+                // Update the value and original value
+                element.textContent = data.nomor_bl;
+                element.dataset.originalValue = data.nomor_bl;
+                
+                // Show success feedback
+                element.classList.add('bg-green-100');
+                setTimeout(() => {
+                    element.classList.remove('bg-green-100');
+                }, 1000);
+                
+                // Show toast notification
+                showToast('success', data.message);
+            } else {
+                // Restore original value on error
+                element.textContent = element.dataset.originalValue;
+                showToast('error', 'Gagal memperbarui nomor BL');
+            }
+        })
+        .catch(error => {
+            element.classList.remove('opacity-50');
+            element.textContent = element.dataset.originalValue;
+            console.error('Error:', error);
+            showToast('error', 'Terjadi kesalahan saat memperbarui');
+        });
+    }
+    
+    function showToast(type, message) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.add('translate-x-0');
+        }, 10);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+});
+</script>
 @endsection
