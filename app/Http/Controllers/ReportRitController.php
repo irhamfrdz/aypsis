@@ -17,46 +17,57 @@ class ReportRitController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // Jika ada filter tanggal, ambil data surat jalan
-        $suratJalans = null;
-        $startDate = null;
-        $endDate = null;
+        // Tampilkan halaman select date
+        return view('report-rit.select-date');
+    }
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $startDate = Carbon::parse($request->start_date)->startOfDay();
-            $endDate = Carbon::parse($request->end_date)->endOfDay();
+    public function view(Request $request)
+    {
+        $user = Auth::user();
 
-            $query = SuratJalan::with(['createdBy', 'updatedBy', 'supir'])
-                ->whereBetween('tanggal', [$startDate, $endDate]);
-
-            // Filter tambahan jika ada
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                      ->orWhere('nama_supir', 'like', "%{$search}%")
-                      ->orWhere('no_plat', 'like', "%{$search}%")
-                      ->orWhere('pengirim', 'like', "%{$search}%")
-                      ->orWhere('penerima', 'like', "%{$search}%");
-                });
-            }
-
-            if ($request->filled('supir')) {
-                $query->where('nama_supir', 'like', "%{$request->supir}%");
-            }
-
-            if ($request->filled('kegiatan')) {
-                $query->where('kegiatan', $request->kegiatan);
-            }
-
-            // Order by tanggal descending
-            $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
-
-            $suratJalans = $query->paginate($request->get('per_page', 50))
-                ->appends($request->except('page'));
+        if (!$user->can('surat-jalan-view')) {
+            abort(403, 'Unauthorized');
         }
 
-        return view('report-rit.index', compact('suratJalans', 'startDate', 'endDate'));
+        // Validasi required tanggal
+        if (!$request->has('start_date') || !$request->has('end_date')) {
+            return redirect()->route('report.rit.index')
+                ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
+        }
+
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+
+        $query = SuratJalan::with(['createdBy', 'updatedBy', 'supir'])
+            ->whereBetween('tanggal', [$startDate, $endDate]);
+
+        // Filter tambahan jika ada
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('nama_supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('supir')) {
+            $query->where('nama_supir', 'like', "%{$request->supir}%");
+        }
+
+        if ($request->filled('kegiatan')) {
+            $query->where('kegiatan', $request->kegiatan);
+        }
+
+        // Order by tanggal descending
+        $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
+
+        $suratJalans = $query->paginate($request->get('per_page', 50))
+            ->appends($request->except('page'));
+
+        return view('report-rit.view', compact('suratJalans', 'startDate', 'endDate'));
     }
 
     public function print(Request $request)

@@ -3886,6 +3886,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 
     // Report Rit
     Route::get('/rit', [App\Http\Controllers\ReportRitController::class, 'index'])->name('rit.index');
+    Route::get('/rit/view', [App\Http\Controllers\ReportRitController::class, 'view'])->name('rit.view');
     Route::get('/rit/print', [App\Http\Controllers\ReportRitController::class, 'print'])->name('rit.print');
     Route::get('/rit/export', [App\Http\Controllers\ReportRitController::class, 'export'])->name('rit.export');
 });
