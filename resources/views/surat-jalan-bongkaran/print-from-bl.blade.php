@@ -54,7 +54,7 @@
         .no-bl {
             position: absolute;
             top: 4.8cm; /* 4.8cm dari atas (diturunkan dari 4.25cm) */
-            left: 13cm;   /* 13cm dari kiri */
+            left: 12cm;   /* 12cm dari kiri (digeser 1cm ke kiri) */
             font-size: 18px; /* diperbesar dari 14px */
             font-weight: bold;
         }
@@ -63,7 +63,7 @@
             position: absolute;
             top: 9cm; /* 9cm dari atas */
             left: 1cm; /* 1cm dari kiri */
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
         }
         /* Jenis Pengiriman: posisi absolute */
@@ -103,7 +103,7 @@
             position: absolute;
             top: 11.5cm; /* 11.5cm dari atas */
             left: 1cm; /* 1cm dari kiri */
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
         }
         /* Pelabuhan tujuan: posisi absolute sesuai permintaan */
