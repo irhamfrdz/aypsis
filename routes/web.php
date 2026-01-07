@@ -3889,6 +3889,10 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/rit/view', [App\Http\Controllers\ReportRitController::class, 'view'])->name('rit.view');
     Route::get('/rit/print', [App\Http\Controllers\ReportRitController::class, 'print'])->name('rit.print');
     Route::get('/rit/export', [App\Http\Controllers\ReportRitController::class, 'export'])->name('rit.export');
+
+    // Manifest
+    Route::get('manifests/select-ship', [App\Http\Controllers\ManifestController::class, 'selectShip'])->name('manifests.select-ship');
+    Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 });
 
 // ═══════════════════════════════════════════════════════════════════════
