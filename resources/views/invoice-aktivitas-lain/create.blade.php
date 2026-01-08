@@ -428,6 +428,10 @@
 
 <!-- Ensure jQuery + Select2 are available (dynamic loader with fallbacks) -->
 <script>
+// Store pricelist buruh data as JavaScript variable
+const pricelistBuruhData = @json($pricelistBuruh);
+const blsData = @json($bls);
+
 (function() {
     function loadScript(src, onload, onerror) {
         const s = document.createElement('script');
@@ -774,6 +778,16 @@
             
             const inputGroup = document.createElement('div');
             inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
+            
+            // Build options from JavaScript data
+            let blOptions = '<option value="">Pilih BL</option>';
+            blsData.forEach(bl => {
+                const selected = existingBlId == bl.id ? 'selected' : '';
+                const nomorKontainer = bl.nomor_kontainer || 'N/A';
+                const pengirim = bl.pengirim || 'N/A';
+                blOptions += `<option value="${bl.id}" ${selected}>${bl.nomor_bl} - ${nomorKontainer} (${pengirim})</option>`;
+            });
+            
             inputGroup.innerHTML = `
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
@@ -781,13 +795,7 @@
                             class="bl-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                             required>
-                        <option value="">Pilih BL</option>
-                        @foreach($bls as $bl)
-                            <option value="{{ $bl->id }}" 
-                                    ${existingBlId == '{{ $bl->id }}' ? 'selected' : ''}>
-                                {{ $bl->nomor_bl }} - {{ $bl->nomor_kontainer ?? 'N/A' }} ({{ $bl->pengirim ?? 'N/A' }})
-                            </option>
-                        @endforeach
+                        ${blOptions}
                     </select>
                 </div>
                 <div class="flex-shrink-0">
@@ -846,6 +854,15 @@
             
             const inputGroup = document.createElement('div');
             inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
+            
+            // Build options from JavaScript data
+            let barangOptions = '<option value="">Pilih Nama Barang</option>';
+            pricelistBuruhData.forEach(pricelist => {
+                const selected = existingBarangId == pricelist.id ? 'selected' : '';
+                const tipeText = pricelist.tipe ? ` - ${pricelist.tipe}` : '';
+                barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${selected}>${pricelist.barang}${tipeText}</option>`;
+            });
+            
             inputGroup.innerHTML = `
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Barang</label>
@@ -853,14 +870,7 @@
                             class="barang-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                             required>
-                        <option value="">Pilih Nama Barang</option>
-                        @foreach($pricelistBuruh as $pricelist)
-                            <option value="{{ $pricelist->id }}" 
-                                    data-tarif="{{ $pricelist->tarif }}"
-                                    ${existingBarangId == '{{ $pricelist->id }}' ? 'selected' : ''}>
-                                {{ $pricelist->barang }} @if($pricelist->tipe) - {{ $pricelist->tipe }} @endif
-                            </option>
-                        @endforeach
+                        ${barangOptions}
                     </select>
                 </div>
                 <div class="w-32">
