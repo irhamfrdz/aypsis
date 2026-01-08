@@ -283,6 +283,12 @@
                     <td>: {{ $pembayaranAktivitasLain->nomor_voyage }}</td>
                 </tr>
                 @endif
+                @if($pembayaranAktivitasLain->penerima)
+                <tr>
+                    <td>Penerima</td>
+                    <td>: {{ $pembayaranAktivitasLain->penerima }}</td>
+                </tr>
+                @endif
             </table>
         </div>
 
