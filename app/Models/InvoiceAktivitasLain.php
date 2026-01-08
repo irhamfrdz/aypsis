@@ -51,6 +51,14 @@ class InvoiceAktivitasLain extends Model
     }
 
     /**
+     * Alias for creator relationship
+     */
+    public function createdBy()
+    {
+        return $this->creator();
+    }
+
+    /**
      * Relationship dengan User (approved_by)
      */
     public function approver()
@@ -96,16 +104,30 @@ class InvoiceAktivitasLain extends Model
 
         $result = [];
         foreach ($blDetails as $item) {
-            if (isset($item['bl_id'])) {
-                $bl = \App\Models\Bl::find($item['bl_id']);
-                if ($bl) {
+            // Support both bl_id (legacy) and manifest_id (new)
+            if (isset($item['manifest_id'])) {
+                $manifest = \App\Models\Manifest::find($item['manifest_id']);
+                if ($manifest) {
+                    $result[] = [
+                        'manifest_id' => $item['manifest_id'],
+                        'nomor_bl' => $manifest->nomor_bl,
+                        'nomor_kontainer' => $manifest->nomor_kontainer,
+                        'no_voyage' => $manifest->no_voyage,
+                        'nama_kapal' => $manifest->nama_kapal,
+                        'pengirim' => $manifest->pengirim
+                    ];
+                }
+            } elseif (isset($item['bl_id'])) {
+                // Legacy support: try Manifest table with bl_id
+                $manifest = \App\Models\Manifest::find($item['bl_id']);
+                if ($manifest) {
                     $result[] = [
                         'bl_id' => $item['bl_id'],
-                        'nomor_bl' => $bl->nomor_bl,
-                        'nomor_kontainer' => $bl->nomor_kontainer,
-                        'no_voyage' => $bl->no_voyage,
-                        'nama_kapal' => $bl->nama_kapal,
-                        'pengirim' => $bl->pengirim
+                        'nomor_bl' => $manifest->nomor_bl,
+                        'nomor_kontainer' => $manifest->nomor_kontainer,
+                        'no_voyage' => $manifest->no_voyage,
+                        'nama_kapal' => $manifest->nama_kapal,
+                        'pengirim' => $manifest->pengirim
                     ];
                 }
             }

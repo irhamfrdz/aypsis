@@ -262,7 +262,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function print(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['details', 'createdBy'])->findOrFail($id);
+        $invoice = InvoiceAktivitasLain::with(['createdBy'])->findOrFail($id);
         
         return view('invoice-aktivitas-lain.print', compact('invoice'));
     }
