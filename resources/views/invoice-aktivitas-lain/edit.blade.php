@@ -866,14 +866,23 @@ console.log('Existing invoice data:', existingInvoice);
             
             // Setup auto-calculate total when vendor dokumen is selected
             $('#vendor_dokumen_select').off('change').on('change', function() {
-                const selectedOption = $(this).find('option:selected');
-                const biaya = selectedOption.data('biaya');
-                
-                if (biaya) {
-                    const totalInput = document.getElementById('total');
-                    totalInput.value = parseInt(biaya).toLocaleString('id-ID');
-                }
+                calculateTotalFromVendorDokumen();
             });
+        }
+        
+        // Calculate total from vendor dokumen × number of BLs
+        function calculateTotalFromVendorDokumen() {
+            const selectedOption = $('#vendor_dokumen_select').find('option:selected');
+            const biaya = selectedOption.data('biaya');
+            
+            if (biaya) {
+                const blContainer = document.getElementById('bl_container');
+                const blCount = blContainer ? blContainer.children.length : 0;
+                const totalBiaya = parseInt(biaya) * blCount;
+                
+                const totalInput = document.getElementById('total');
+                totalInput.value = totalBiaya.toLocaleString('id-ID');
+            }
         }
         
         // BL management functions
@@ -934,12 +943,17 @@ console.log('Existing invoice data:', existingInvoice);
                     width: '100%'
                 });
             }, 100);
+            
+            // Recalculate vendor dokumen total if vendor is already selected
+            calculateTotalFromVendorDokumen();
         }
         
         window.removeBlInput = function(button) {
             const container = document.getElementById('bl_container');
             if (container.children.length > 1) {
                 button.closest('.flex.items-end.gap-3').remove();
+                // Recalculate vendor dokumen total after removing BL
+                calculateTotalFromVendorDokumen();
             }
         };
         
