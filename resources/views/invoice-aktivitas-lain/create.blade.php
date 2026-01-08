@@ -1024,14 +1024,13 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Jenis Biaya</label>
-                    <select name="detail_pembayaran[${index}][jenis_biaya]" 
-                            class="detail-jenis-biaya w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-                        <option value="">--Pilih Jenis Biaya--</option>
-                        <option value="Uang Jalan" ${existingData.jenis_biaya === 'Uang Jalan' ? 'selected' : ''}>Uang Jalan</option>
-                        <option value="Biaya Operasional" ${existingData.jenis_biaya === 'Biaya Operasional' ? 'selected' : ''}>Biaya Operasional</option>
-                        <option value="Biaya Maintenance" ${existingData.jenis_biaya === 'Biaya Maintenance' ? 'selected' : ''}>Biaya Maintenance</option>
-                        <option value="Biaya Lain-lain" ${existingData.jenis_biaya === 'Biaya Lain-lain' ? 'selected' : ''}>Biaya Lain-lain</option>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Klasifikasi Biaya</label>
+                    <select name="detail_pembayaran[${index}][klasifikasi_biaya_id]" 
+                            class="detail-klasifikasi-biaya w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">--Pilih Klasifikasi Biaya--</option>
+                        @foreach($klasifikasiBiayas as $klasifikasi)
+                            <option value="{{ $klasifikasi->id }}" data-selected="${existingData.klasifikasi_biaya_id == {{ $klasifikasi->id }} ? 'selected' : ''}">{{ $klasifikasi->nama }}</option>
+                        @endforeach
                     </select>
                 </div>
                 
@@ -1086,8 +1085,8 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             
             // Initialize Select2 for new selects
             setTimeout(() => {
-                $(inputGroup).find('.detail-jenis-biaya').select2({
-                    placeholder: 'Pilih Jenis Biaya',
+                $(inputGroup).find('.detail-klasifikasi-biaya').select2({
+                    placeholder: 'Pilih Klasifikasi Biaya',
                     allowClear: true,
                     width: '100%'
                 });
