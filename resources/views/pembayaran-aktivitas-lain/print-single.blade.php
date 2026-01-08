@@ -252,10 +252,6 @@
                     <td>: {{ $pembayaranAktivitasLain->nomor }}</td>
                 </tr>
                 <tr>
-                    <td>Nomor Accurate</td>
-                    <td>: {{ $pembayaranAktivitasLain->nomor_accurate ?? '-' }}</td>
-                </tr>
-                <tr>
                     <td>Jenis Aktivitas</td>
                     <td>: {{ $pembayaranAktivitasLain->jenis_aktivitas }}</td>
                 </tr>
