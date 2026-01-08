@@ -166,7 +166,7 @@
                 <!-- BL (conditional for Pembayaran Kapal) -->
                 <div id="bl_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Daftar BL <span class="text-red-500">*</span>
+                        Daftar BL
                     </label>
                     <div id="bl_container" class="space-y-3">
                         <!-- Dynamic BL inputs will be added here -->
@@ -797,8 +797,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
                     <select name="bl_details[${index}][bl_id]" 
                             class="bl-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                            required>
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         ${blOptions}
                     </select>
                 </div>
