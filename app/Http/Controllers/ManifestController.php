@@ -435,9 +435,15 @@ class ManifestController extends Controller
                 $asalKontainer = trim($row[22] ?? '');
                 $ke = trim($row[23] ?? '');
 
+                // Jika nomor kontainer kosong, isi dengan "Cargo" dan set tipe kontainer menjadi "Cargo"
+                if (empty($nomorKontainer)) {
+                    $nomorKontainer = 'Cargo';
+                    $tipeKontainer = 'Cargo';
+                }
+
                 // Validate required fields
-                if (empty($namaKapal) || empty($noVoyage) || empty($nomorBl) || empty($nomorKontainer)) {
-                    $errors[] = "Baris {$rowNumber}: Nama Kapal, No Voyage, No BL, dan No Kontainer wajib diisi";
+                if (empty($namaKapal) || empty($noVoyage) || empty($nomorBl)) {
+                    $errors[] = "Baris {$rowNumber}: Nama Kapal, No Voyage, dan No BL wajib diisi";
                     continue;
                 }
 
