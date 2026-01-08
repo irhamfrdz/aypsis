@@ -344,6 +344,26 @@
 
             </div>
 
+            <!-- Detail Pembayaran Multiple -->
+            <div class="mt-6 border-t pt-6">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Detail Pembayaran (Opsional)
+                    </label>
+                    <button type="button" 
+                            id="add_detail_pembayaran_btn"
+                            class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah
+                    </button>
+                </div>
+                <div id="detail_pembayaran_container" class="space-y-3">
+                    <!-- Dynamic detail pembayaran inputs will be added here -->
+                </div>
+            </div>
+
             <!-- Deskripsi -->
             <div class="mt-6">
                 <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">
@@ -976,6 +996,131 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         if (addTipeBtn) {
             addTipeBtn.addEventListener('click', function() {
                 addTipePenyesuaianInput();
+            });
+        }
+        
+        // Detail Pembayaran management functions
+        function addDetailPembayaranInput(existingData = {}) {
+            const container = document.getElementById('detail_pembayaran_container');
+            const index = container.children.length;
+            
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200';
+            
+            inputGroup.innerHTML = `
+                <div class="md:col-span-3 flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Detail #${index + 1}</span>
+                    <button type="button" 
+                            onclick="removeDetailPembayaranInput(this)"
+                            class="text-red-600 hover:text-red-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Jenis Biaya</label>
+                    <select name="detail_pembayaran[${index}][jenis_biaya]" 
+                            class="detail-jenis-biaya w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">--Pilih Jenis Biaya--</option>
+                        <option value="Uang Jalan" ${existingData.jenis_biaya === 'Uang Jalan' ? 'selected' : ''}>Uang Jalan</option>
+                        <option value="Biaya Operasional" ${existingData.jenis_biaya === 'Biaya Operasional' ? 'selected' : ''}>Biaya Operasional</option>
+                        <option value="Biaya Maintenance" ${existingData.jenis_biaya === 'Biaya Maintenance' ? 'selected' : ''}>Biaya Maintenance</option>
+                        <option value="Biaya Lain-lain" ${existingData.jenis_biaya === 'Biaya Lain-lain' ? 'selected' : ''}>Biaya Lain-lain</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Biaya</label>
+                    <input type="text" 
+                           name="detail_pembayaran[${index}][biaya]" 
+                           value="${existingData.biaya || ''}"
+                           class="detail-biaya w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                           placeholder="0">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Keterangan</label>
+                    <input type="text" 
+                           name="detail_pembayaran[${index}][keterangan]" 
+                           value="${existingData.keterangan || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                           placeholder="Keterangan">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Kas</label>
+                    <input type="date" 
+                           name="detail_pembayaran[${index}][tanggal_kas]" 
+                           value="${existingData.tanggal_kas || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">No Bukti</label>
+                    <input type="text" 
+                           name="detail_pembayaran[${index}][no_bukti]" 
+                           value="${existingData.no_bukti || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                           placeholder="No Bukti">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Penerima</label>
+                    <select name="detail_pembayaran[${index}][penerima]" 
+                            class="detail-penerima w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">--Pilih Penerima--</option>
+                        @foreach($penerimaList ?? [] as $penerimaItem)
+                            <option value="{{ $penerimaItem }}">{{ $penerimaItem }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            `;
+            
+            container.appendChild(inputGroup);
+            
+            // Initialize Select2 for new selects
+            setTimeout(() => {
+                $(inputGroup).find('.detail-jenis-biaya').select2({
+                    placeholder: 'Pilih Jenis Biaya',
+                    allowClear: true,
+                    width: '100%'
+                });
+                $(inputGroup).find('.detail-penerima').select2({
+                    placeholder: 'Pilih Penerima',
+                    allowClear: true,
+                    width: '100%',
+                    tags: true
+                });
+            }, 100);
+            
+            // Format currency for biaya input
+            const biayaInput = inputGroup.querySelector('.detail-biaya');
+            biayaInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                if (value) value = parseInt(value).toLocaleString('id-ID');
+                e.target.value = value;
+            });
+        }
+        
+        window.removeDetailPembayaranInput = function(button) {
+            const container = document.getElementById('detail_pembayaran_container');
+            button.closest('.grid').remove();
+            
+            // Reindex detail numbers
+            const details = container.querySelectorAll('.grid');
+            details.forEach((detail, index) => {
+                const label = detail.querySelector('span');
+                if (label) label.textContent = `Detail #${index + 1}`;
+            });
+        };
+        
+        // Add button for detail pembayaran
+        const addDetailPembayaranBtn = document.getElementById('add_detail_pembayaran_btn');
+        if (addDetailPembayaranBtn) {
+            addDetailPembayaranBtn.addEventListener('click', function() {
+                addDetailPembayaranInput();
             });
         }
         

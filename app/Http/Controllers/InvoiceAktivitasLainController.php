@@ -122,7 +122,14 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('barang')
             ->get();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh'));
+        // Get list of penerima from karyawan for detail pembayaran dropdown
+        $penerimaList = Karyawan::orderBy('nama_lengkap', 'asc')
+            ->pluck('nama_lengkap')
+            ->unique()
+            ->values()
+            ->toArray();
+        
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'penerimaList'));
     }
 
     /**
@@ -187,6 +194,13 @@ class InvoiceAktivitasLainController extends Controller
             'tipe_penyesuaian_detail' => 'nullable|array',
             'tipe_penyesuaian_detail.*.tipe' => 'required_with:tipe_penyesuaian_detail|string',
             'tipe_penyesuaian_detail.*.nominal' => 'required_with:tipe_penyesuaian_detail|numeric|min:0',
+            'detail_pembayaran' => 'nullable|array',
+            'detail_pembayaran.*.jenis_biaya' => 'nullable|string',
+            'detail_pembayaran.*.biaya' => 'nullable|string',
+            'detail_pembayaran.*.keterangan' => 'nullable|string',
+            'detail_pembayaran.*.tanggal_kas' => 'nullable|date',
+            'detail_pembayaran.*.no_bukti' => 'nullable|string',
+            'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'required|string',
             'total' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
@@ -207,6 +221,17 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($validated['tipe_penyesuaian_detail'])) {
             $validated['tipe_penyesuaian'] = json_encode($validated['tipe_penyesuaian_detail']);
             unset($validated['tipe_penyesuaian_detail']);
+        }
+        
+        // Convert detail_pembayaran array to JSON for storage
+        if (isset($validated['detail_pembayaran'])) {
+            // Clean up biaya values - remove currency formatting
+            foreach ($validated['detail_pembayaran'] as &$detail) {
+                if (isset($detail['biaya'])) {
+                    $detail['biaya'] = str_replace(['.', ','], '', $detail['biaya']);
+                }
+            }
+            $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
         }
 
         // Set default status
@@ -234,7 +259,93 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function edit(string $id)
     {
-        return view('invoice-aktivitas-lain.edit', compact('id'));
+        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'suratJalan'])->findOrFail($id);
+        
+        $karyawans = Karyawan::orderBy('nama_lengkap', 'asc')->get();
+        $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
+        
+        // Get voyages from both bls and pergerakan_kapal tables
+        $voyagesBl = \DB::table('bls')
+            ->select('no_voyage as voyage', 'nama_kapal')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->orderBy('no_voyage')
+            ->get();
+            
+        $voyagesPergerakan = \DB::table('pergerakan_kapal')
+            ->select('voyage', 'nama_kapal')
+            ->whereNotNull('voyage')
+            ->where('voyage', '!=', '')
+            ->distinct()
+            ->orderBy('voyage')
+            ->get();
+            
+        // Combine and deduplicate voyages
+        $allVoyages = collect();
+        
+        foreach ($voyagesBl as $voyage) {
+            $allVoyages->push((object)[
+                'voyage' => $voyage->voyage,
+                'nama_kapal' => $voyage->nama_kapal,
+                'source' => 'BL'
+            ]);
+        }
+        
+        foreach ($voyagesPergerakan as $voyage) {
+            // Only add if not already exists
+            $exists = $allVoyages->where('voyage', $voyage->voyage)
+                                ->where('nama_kapal', $voyage->nama_kapal)
+                                ->first();
+            if (!$exists) {
+                $allVoyages->push((object)[
+                    'voyage' => $voyage->voyage,
+                    'nama_kapal' => $voyage->nama_kapal,
+                    'source' => 'Pergerakan Kapal'
+                ]);
+            }
+        }
+        
+        $voyages = $allVoyages->sortBy('voyage')->values();
+        
+        // Get surat jalans for adjustment payments
+        $suratJalans = \DB::table('surat_jalans')
+            ->select('id', 'no_surat_jalan', 'tujuan_pengiriman', 'uang_jalan')
+            ->whereNotNull('no_surat_jalan')
+            ->where('no_surat_jalan', '!=', '')
+            ->orderBy('no_surat_jalan')
+            ->get();
+        
+        // Get BLs for pembayaran kapal
+        $bls = \DB::table('bls')
+            ->select('id', 'nomor_bl', 'nomor_kontainer', 'pengirim')
+            ->whereNotNull('nomor_bl')
+            ->where('nomor_bl', '!=', '')
+            ->orderBy('nomor_bl')
+            ->get();
+        
+        // Get klasifikasi biaya for pembayaran kapal
+        $klasifikasiBiayas = \DB::table('klasifikasi_biayas')
+            ->select('id', 'nama')
+            ->where('is_active', true)
+            ->orderBy('nama')
+            ->get();
+        
+        // Get pricelist buruh for pembayaran kapal with klasifikasi biaya "buruh"
+        $pricelistBuruh = \DB::table('pricelist_buruh')
+            ->select('id', 'barang', 'size', 'tipe', 'tarif')
+            ->where('is_active', true)
+            ->orderBy('barang')
+            ->get();
+        
+        // Get list of penerima from karyawan for detail pembayaran dropdown
+        $penerimaList = Karyawan::orderBy('nama_lengkap', 'asc')
+            ->pluck('nama_lengkap')
+            ->unique()
+            ->values()
+            ->toArray();
+        
+        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'penerimaList'));
     }
 
     /**
@@ -242,8 +353,69 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // TODO: Implement update logic
-        return redirect()->route('invoice-aktivitas-lain.index')
+        $invoice = InvoiceAktivitasLain::findOrFail($id);
+        
+        $validated = $request->validate([
+            'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice,' . $id,
+            'tanggal_invoice' => 'required|date',
+            'jenis_aktivitas' => 'required|string',
+            'sub_jenis_kendaraan' => 'nullable|string',
+            'nomor_polisi' => 'nullable|string',
+            'nomor_voyage' => 'nullable|string',
+            'bl_details' => 'nullable|array',
+            'bl_details.*.bl_id' => 'nullable|integer|exists:bls,id',
+            'klasifikasi_biaya_id' => 'nullable|integer|exists:klasifikasi_biayas,id',
+            'barang_detail' => 'nullable|array',
+            'barang_detail.*.pricelist_buruh_id' => 'required_with:barang_detail|integer|exists:pricelist_buruh,id',
+            'barang_detail.*.jumlah' => 'required_with:barang_detail|numeric|min:0',
+            'surat_jalan_id' => 'nullable|integer',
+            'jenis_penyesuaian' => 'nullable|string',
+            'tipe_penyesuaian_detail' => 'nullable|array',
+            'tipe_penyesuaian_detail.*.tipe' => 'required_with:tipe_penyesuaian_detail|string',
+            'tipe_penyesuaian_detail.*.nominal' => 'required_with:tipe_penyesuaian_detail|numeric|min:0',
+            'detail_pembayaran' => 'nullable|array',
+            'detail_pembayaran.*.jenis_biaya' => 'nullable|string',
+            'detail_pembayaran.*.biaya' => 'nullable|string',
+            'detail_pembayaran.*.keterangan' => 'nullable|string',
+            'detail_pembayaran.*.tanggal_kas' => 'nullable|date',
+            'detail_pembayaran.*.no_bukti' => 'nullable|string',
+            'detail_pembayaran.*.penerima' => 'nullable|string',
+            'penerima' => 'required|string',
+            'total' => 'required|numeric|min:0',
+            'deskripsi' => 'nullable|string',
+            'catatan' => 'nullable|string',
+        ]);
+        
+        // Convert bl_details array to JSON for storage
+        if (isset($validated['bl_details'])) {
+            $validated['bl_details'] = json_encode($validated['bl_details']);
+        }
+        
+        // Convert barang_detail array to JSON for storage
+        if (isset($validated['barang_detail'])) {
+            $validated['barang_detail'] = json_encode($validated['barang_detail']);
+        }
+        
+        // Convert tipe_penyesuaian_detail array to JSON for storage
+        if (isset($validated['tipe_penyesuaian_detail'])) {
+            $validated['tipe_penyesuaian'] = json_encode($validated['tipe_penyesuaian_detail']);
+            unset($validated['tipe_penyesuaian_detail']);
+        }
+        
+        // Convert detail_pembayaran array to JSON for storage
+        if (isset($validated['detail_pembayaran'])) {
+            // Clean up biaya values - remove currency formatting
+            foreach ($validated['detail_pembayaran'] as &$detail) {
+                if (isset($detail['biaya'])) {
+                    $detail['biaya'] = str_replace(['.', ','], '', $detail['biaya']);
+                }
+            }
+            $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
+        }
+
+        $invoice->update($validated);
+
+        return redirect()->route('invoice-aktivitas-lain.show', $id)
             ->with('success', 'Invoice berhasil diupdate.');
     }
 

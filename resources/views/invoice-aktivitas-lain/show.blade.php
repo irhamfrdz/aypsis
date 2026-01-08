@@ -222,6 +222,67 @@
                     </div>
                     @endif
 
+                    <!-- Detail Pembayaran -->
+                    @php
+                        $detailPembayaran = $invoice->detail_pembayaran_array;
+                    @endphp
+                    @if(!empty($detailPembayaran))
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Detail Pembayaran</h3>
+                        <div class="overflow-x-auto">
+                            <div class="inline-block min-w-full align-middle">
+                                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">No</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jenis Biaya</th>
+                                            <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Biaya</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Keterangan</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal Kas</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">No Bukti</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penerima</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($detailPembayaran as $index => $detail)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $index + 1 }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $detail['jenis_biaya'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900 text-right font-medium">
+                                                @if(isset($detail['biaya']) && $detail['biaya'])
+                                                    Rp {{ number_format($detail['biaya'], 0, ',', '.') }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $detail['keterangan'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                @if(isset($detail['tanggal_kas']) && $detail['tanggal_kas'])
+                                                    {{ \Carbon\Carbon::parse($detail['tanggal_kas'])->format('d/m/Y') }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $detail['no_bukti'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $detail['penerima'] ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                                        <tr>
+                                            <td colspan="2" class="px-4 py-2 text-right text-sm font-semibold text-gray-900">Total Detail Pembayaran:</td>
+                                            <td class="px-4 py-2 text-right text-sm font-bold text-gray-900">
+                                                Rp {{ number_format(array_sum(array_map(function($d) { return is_numeric($d['biaya'] ?? 0) ? $d['biaya'] : 0; }, $detailPembayaran)), 0, ',', '.') }}
+                                            </td>
+                                            <td colspan="4"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Deskripsi & Catatan -->
                     @if($invoice->deskripsi || $invoice->catatan)
                     <div class="mt-6 pt-6 border-t border-gray-200">

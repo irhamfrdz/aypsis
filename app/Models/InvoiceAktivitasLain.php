@@ -25,6 +25,7 @@ class InvoiceAktivitasLain extends Model
         'surat_jalan_id',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
+        'detail_pembayaran',
         'penerima',
         'total',
         'status',
@@ -177,5 +178,22 @@ class InvoiceAktivitasLain extends Model
         }
 
         return $result;
+    }
+    
+    /**
+     * Accessor untuk detail pembayaran array
+     */
+    public function getDetailPembayaranArrayAttribute()
+    {
+        if (!$this->detail_pembayaran) {
+            return [];
+        }
+
+        $detailPembayaran = json_decode($this->detail_pembayaran, true);
+        if (!is_array($detailPembayaran)) {
+            return [];
+        }
+
+        return $detailPembayaran;
     }
 }
