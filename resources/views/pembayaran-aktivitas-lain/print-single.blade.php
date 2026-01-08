@@ -184,7 +184,7 @@
         }
 
         .signature-table td {
-            width: 50%;
+            width: 33.33%;
             border: 1px solid #333;
             padding: 12px 8px;
             text-align: center;
@@ -420,11 +420,15 @@
                 <tr>
                     <td>
                         <div style="margin-bottom: 40px;"><strong>Dibuat Oleh:</strong></div>
-                        <div>{{ $pembayaranAktivitasLain->creator->name ?? '-' }}</div>
+                        <div>___________</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Diperiksa Oleh:</strong></div>
+                        <div>___________</div>
                     </td>
                     <td>
                         <div style="margin-bottom: 40px;"><strong>Disetujui Oleh:</strong></div>
-                        <div>{{ $pembayaranAktivitasLain->approver->name ?? '___________' }}</div>
+                        <div>___________</div>
                     </td>
                 </tr>
             </table>
