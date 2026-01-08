@@ -145,6 +145,13 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('barang')
             ->get();
         
+        // Get pricelist biaya dokumen for klasifikasi biaya "biaya dokumen"
+        $pricelistBiayaDokumen = \DB::table('pricelist_biaya_dokumen')
+            ->select('id', 'nama_vendor', 'biaya')
+            ->where('status', 'aktif')
+            ->orderBy('nama_vendor')
+            ->get();
+        
         // Get list of penerima from karyawan for detail pembayaran dropdown
         $penerimaList = Karyawan::orderBy('nama_lengkap', 'asc')
             ->pluck('nama_lengkap')
@@ -152,7 +159,7 @@ class InvoiceAktivitasLainController extends Controller
             ->values()
             ->toArray();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'penerimaList'));
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList'));
     }
 
     /**
@@ -384,6 +391,13 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('barang')
             ->get();
         
+        // Get pricelist biaya dokumen for klasifikasi biaya "biaya dokumen"
+        $pricelistBiayaDokumen = \DB::table('pricelist_biaya_dokumen')
+            ->select('id', 'nama_vendor', 'biaya')
+            ->where('status', 'aktif')
+            ->orderBy('nama_vendor')
+            ->get();
+        
         // Get list of penerima from karyawan for detail pembayaran dropdown
         $penerimaList = Karyawan::orderBy('nama_lengkap', 'asc')
             ->pluck('nama_lengkap')
@@ -391,7 +405,7 @@ class InvoiceAktivitasLainController extends Controller
             ->values()
             ->toArray();
         
-        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'penerimaList'));
+        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList'));
     }
 
     /**

@@ -472,6 +472,7 @@
 <script>
 // Store pricelist buruh data as JavaScript variable (v2)
 const pricelistBuruhData = @json($pricelistBuruh);
+const pricelistBiayaDokumenData = @json($pricelistBiayaDokumen);
 const blsData = @json($bls);
 
 // Debug: Check for duplicates
@@ -538,6 +539,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         $('#nomor_polisi').select2({ placeholder: 'Pilih Nomor Polisi', allowClear: true, width: '100%' });
         $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
         $('#klasifikasi_biaya_select').select2({ placeholder: 'Pilih Klasifikasi Biaya', allowClear: true, width: '100%' });
+        $('#vendor_dokumen_select').select2({ placeholder: 'Pilih Vendor Dokumen', allowClear: true, width: '100%' });
         $('#nama_barang_select').select2({ placeholder: 'Pilih Nama Barang', allowClear: true, width: '100%' });
         $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
         $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
@@ -572,6 +574,8 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         const blWrapper = document.getElementById('bl_wrapper');
         const klasifikasiBiayaWrapper = document.getElementById('klasifikasi_biaya_wrapper');
         const klasifikasiBiayaSelect = document.getElementById('klasifikasi_biaya_select');
+        const vendorDokumenWrapper = document.getElementById('vendor_dokumen_wrapper');
+        const vendorDokumenSelect = document.getElementById('vendor_dokumen_select');
         const barangWrapper = document.getElementById('barang_wrapper');
         const suratJalanWrapper = document.getElementById('surat_jalan_wrapper');
         const suratJalanSelect = document.getElementById('surat_jalan_select');
@@ -607,6 +611,10 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             klasifikasiBiayaWrapper.classList.add('hidden');
             klasifikasiBiayaSelect.removeAttribute('required');
             $('#klasifikasi_biaya_select').val('').trigger('change');
+            
+            vendorDokumenWrapper.classList.add('hidden');
+            vendorDokumenSelect.removeAttribute('required');
+            $('#vendor_dokumen_select').val('').trigger('change');
             
             barangWrapper.classList.add('hidden');
             clearBarangInputs();
@@ -811,14 +819,38 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         function setupKlasifikasiBiayaToggle() {
             $('#klasifikasi_biaya_select').off('change').on('change', function() {
                 const selectedOption = $(this).find('option:selected');
-                const namaKlasifikasi = selectedOption.data('nama');
+                const namaKlasifikasi = selectedOption.text().toLowerCase();
                 
-                if (namaKlasifikasi && namaKlasifikasi.toLowerCase().includes('buruh')) {
+                // Hide all conditional fields first
+                barangWrapper.classList.add('hidden');
+                clearBarangInputs();
+                vendorDokumenWrapper.classList.add('hidden');
+                vendorDokumenSelect.removeAttribute('required');
+                $('#vendor_dokumen_select').val('').trigger('change');
+                
+                // Show relevant field based on klasifikasi biaya
+                if (namaKlasifikasi.includes('buruh')) {
                     barangWrapper.classList.remove('hidden');
                     initializeBarangInputs();
-                } else {
-                    barangWrapper.classList.add('hidden');
-                    clearBarangInputs();
+                } else if (namaKlasifikasi.includes('biaya dokumen') || namaKlasifikasi.includes('dokumen')) {
+                    vendorDokumenWrapper.classList.remove('hidden');
+                    vendorDokumenSelect.setAttribute('required', 'required');
+                    
+                    // Re-initialize Select2
+                    setTimeout(() => {
+                        $('#vendor_dokumen_select').select2({ placeholder: 'Pilih Vendor Dokumen', allowClear: true, width: '100%' });
+                    }, 100);
+                }
+            });
+            
+            // Setup auto-calculate total when vendor dokumen is selected
+            $('#vendor_dokumen_select').off('change').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const biaya = selectedOption.data('biaya');
+                
+                if (biaya) {
+                    const totalInput = document.getElementById('total');
+                    totalInput.value = parseInt(biaya).toLocaleString('id-ID');
                 }
             });
         }
