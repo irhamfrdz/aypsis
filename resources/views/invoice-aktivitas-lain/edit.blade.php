@@ -451,12 +451,12 @@ const pricelistBuruhData = @json($pricelistBuruh);
 const blsData = @json($bls);
 
 // Store existing invoice data for pre-population
-const existingInvoice = @json([
-    'bl_details' => $invoice->bl_details_array ?? [],
-    'barang_detail' => json_decode($invoice->barang_detail, true) ?? [],
-    'tipe_penyesuaian' => json_decode($invoice->tipe_penyesuaian, true) ?? [],
-    'detail_pembayaran' => json_decode($invoice->detail_pembayaran, true) ?? []
-]);
+const existingInvoice = {
+    bl_details: @json($invoice->bl_details_array ?? []),
+    barang_detail: @json(json_decode($invoice->barang_detail, true) ?? []),
+    tipe_penyesuaian: @json(json_decode($invoice->tipe_penyesuaian, true) ?? []),
+    detail_pembayaran: @json(json_decode($invoice->detail_pembayaran, true) ?? [])
+};
 
 // Debug: Check for duplicates
 console.log('Total pricelist buruh:', pricelistBuruhData.length);
