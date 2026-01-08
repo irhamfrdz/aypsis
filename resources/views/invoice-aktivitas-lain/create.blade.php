@@ -428,9 +428,13 @@
 
 <!-- Ensure jQuery + Select2 are available (dynamic loader with fallbacks) -->
 <script>
-// Store pricelist buruh data as JavaScript variable
+// Store pricelist buruh data as JavaScript variable (v2)
 const pricelistBuruhData = @json($pricelistBuruh);
 const blsData = @json($bls);
+
+// Debug: Check for duplicates
+console.log('Total pricelist buruh:', pricelistBuruhData.length);
+console.log('Pricelist buruh data:', pricelistBuruhData);
 
 (function() {
     function loadScript(src, onload, onerror) {
