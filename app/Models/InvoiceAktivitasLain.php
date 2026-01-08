@@ -14,6 +14,7 @@ class InvoiceAktivitasLain extends Model
 
     protected $fillable = [
         'nomor_invoice',
+        'invoice_vendor',
         'tanggal_invoice',
         'jenis_aktivitas',
         'sub_jenis_kendaraan',

@@ -549,6 +549,8 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         const nomorPolisiSelect = document.getElementById('nomor_polisi');
         const nomorVoyageWrapper = document.getElementById('nomor_voyage_wrapper');
         const nomorVoyageSelect = document.getElementById('nomor_voyage');
+        const invoiceVendorWrapper = document.getElementById('invoice_vendor_wrapper');
+        const invoiceVendorInput = document.getElementById('invoice_vendor');
         const blWrapper = document.getElementById('bl_wrapper');
         const klasifikasiBiayaWrapper = document.getElementById('klasifikasi_biaya_wrapper');
         const klasifikasiBiayaSelect = document.getElementById('klasifikasi_biaya_select');
@@ -575,6 +577,9 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             nomorVoyageWrapper.classList.add('hidden');
             nomorVoyageSelect.removeAttribute('required');
             $('#nomor_voyage').val('').trigger('change');
+            
+            invoiceVendorWrapper.classList.add('hidden');
+            if (invoiceVendorInput) invoiceVendorInput.value = '';
             
             blWrapper.classList.add('hidden');
             clearBlInputs();
@@ -613,6 +618,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             } else if (jenisVal === 'Pembayaran Kapal') {
                 nomorVoyageWrapper.classList.remove('hidden');
                 nomorVoyageSelect.setAttribute('required', 'required');
+                invoiceVendorWrapper.classList.remove('hidden');
                 blWrapper.classList.remove('hidden');
                 initializeBlInputs();
                 klasifikasiBiayaWrapper.classList.remove('hidden');

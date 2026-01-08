@@ -157,6 +157,23 @@
                     @enderror
                 </div>
 
+                <!-- Invoice Vendor (conditional for Pembayaran Kapal) -->
+                <div id="invoice_vendor_wrapper" class="hidden">
+                    <label for="invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Invoice Vendor
+                    </label>
+                    <input type="text" 
+                           name="invoice_vendor" 
+                           id="invoice_vendor" 
+                           value="{{ old('invoice_vendor', $invoice->invoice_vendor) }}"
+                           class="w-full {{ $errors->has('invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan nomor invoice vendor">
+                    @error('invoice_vendor')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- BL (conditional for Pembayaran Kapal) -->
                 <div id="bl_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -552,6 +569,8 @@ console.log('Existing invoice data:', existingInvoice);
         const nomorPolisiSelect = document.getElementById('nomor_polisi');
         const nomorVoyageWrapper = document.getElementById('nomor_voyage_wrapper');
         const nomorVoyageSelect = document.getElementById('nomor_voyage');
+        const invoiceVendorWrapper = document.getElementById('invoice_vendor_wrapper');
+        const invoiceVendorInput = document.getElementById('invoice_vendor');
         const blWrapper = document.getElementById('bl_wrapper');
         const klasifikasiBiayaWrapper = document.getElementById('klasifikasi_biaya_wrapper');
         const klasifikasiBiayaSelect = document.getElementById('klasifikasi_biaya_select');
@@ -578,6 +597,9 @@ console.log('Existing invoice data:', existingInvoice);
             nomorVoyageWrapper.classList.add('hidden');
             nomorVoyageSelect.removeAttribute('required');
             $('#nomor_voyage').val('').trigger('change');
+            
+            invoiceVendorWrapper.classList.add('hidden');
+            if (invoiceVendorInput) invoiceVendorInput.value = '';
             
             blWrapper.classList.add('hidden');
             clearBlInputs();
@@ -616,6 +638,7 @@ console.log('Existing invoice data:', existingInvoice);
             } else if (jenisVal === 'Pembayaran Kapal') {
                 nomorVoyageWrapper.classList.remove('hidden');
                 nomorVoyageSelect.setAttribute('required', 'required');
+                invoiceVendorWrapper.classList.remove('hidden');
                 blWrapper.classList.remove('hidden');
                 initializeBlInputs();
                 klasifikasiBiayaWrapper.classList.remove('hidden');
