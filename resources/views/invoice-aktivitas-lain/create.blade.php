@@ -858,7 +858,7 @@
                             <option value="{{ $pricelist->id }}" 
                                     data-tarif="{{ $pricelist->tarif }}"
                                     ${existingBarangId == '{{ $pricelist->id }}' ? 'selected' : ''}>
-                                {{ $pricelist->barang }}
+                                {{ $pricelist->barang }} @if($pricelist->tipe) - {{ $pricelist->tipe }} @endif
                             </option>
                         @endforeach
                     </select>
