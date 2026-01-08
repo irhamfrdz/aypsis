@@ -809,6 +809,14 @@
         $user->can('approval-dashboard') ||
         $user->can('approval') ||
         $user->can('permohonan.approve') ||
+        $user->can('pembayaran-aktivitas-lain-view') ||
+        $user->can('pembayaran-aktivitas-lain-create') ||
+        $user->can('pembayaran-aktivitas-lain-update') ||
+        $user->can('pembayaran-aktivitas-lain-delete') ||
+        $user->can('invoice-aktivitas-lain-view') ||
+        $user->can('invoice-aktivitas-lain-create') ||
+        $user->can('invoice-aktivitas-lain-update') ||
+        $user->can('invoice-aktivitas-lain-delete') ||
         $user->can('realisasi-uang-muka-view') ||
         $user->can('realisasi-uang-muka-create') ||
         $user->can('realisasi-uang-muka-update') ||
