@@ -290,8 +290,51 @@
         @php
             // Debug: Check if invoices relation exists
             $hasInvoices = isset($pembayaranAktivitasLain->invoices) && $pembayaranAktivitasLain->invoices->count() > 0;
+            $isPembayaranKapal = stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Kapal') !== false;
         @endphp
-        @if($hasInvoices)
+        
+        @if($hasInvoices && $isPembayaranKapal)
+        <!-- Detail Pembayaran untuk Pembayaran Kapal -->
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Pembayaran Biaya Kapal:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 25%;">Nomor Invoice</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 30%;">Klasifikasi Biaya</th>
+                        <th style="width: 25%;">Biaya</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php 
+                        $totalDetailPembayaran = 0; 
+                        $rowNumber = 1;
+                    @endphp
+                    @foreach($pembayaranAktivitasLain->invoices as $invoice)
+                        @if($invoice->detailPembayaran && $invoice->detailPembayaran->count() > 0)
+                            @foreach($invoice->detailPembayaran as $detail)
+                                @php $totalDetailPembayaran += $detail->biaya; @endphp
+                                <tr>
+                                    <td class="text-center">{{ $rowNumber++ }}</td>
+                                    <td>{{ $invoice->nomor_invoice }}</td>
+                                    <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
+                                    <td>{{ $detail->klasifikasiBiaya->nama ?? '-' }}</td>
+                                    <td class="text-right">Rp {{ number_format($detail->biaya, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        @endif
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right"><strong>TOTAL DETAIL PEMBAYARAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalDetailPembayaran, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @elseif($hasInvoices)
+        <!-- Daftar Invoice yang Dibayar (Non-Kapal) -->
         <div style="margin-bottom: 12px;">
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Daftar Invoice yang Dibayar ({{ $pembayaranAktivitasLain->invoices->count() }} invoice):</strong>
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
