@@ -347,15 +347,14 @@ class InvoiceAktivitasLainController extends Controller
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
         $suratJalansBongkar = \DB::table('surat_jalan_bongkarans')
             ->select(
+                'id',
                 \DB::raw('nomor_surat_jalan as no_surat_jalan'),
-                'no_surat_jalan',
                 'tujuan_pengiriman',
                 'uang_jalan',
                 \DB::raw("'bongkar' as source")
             )
             ->whereNotNull('nomor_surat_jalan')
             ->where('nomor_surat_jalan', '!=', '')
-            ->where('no_surat_jalan', '!=', '')
             ->get();
         
         // Combine both surat jalans
