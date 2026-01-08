@@ -342,8 +342,8 @@
 
             </div>
 
-            <!-- Detail Pembayaran Multiple -->
-            <div class="mt-6 border-t pt-6">
+            <!-- Detail Pembayaran Multiple (conditional for Pembayaran Kapal) -->
+            <div id="detail_pembayaran_wrapper" class="mt-6 border-t pt-6 hidden">
                 <div class="flex justify-between items-center mb-3">
                     <label class="block text-sm font-medium text-gray-700">
                         Detail Pembayaran (Opsional)
@@ -561,6 +561,7 @@ console.log('Existing invoice data:', existingInvoice);
         const jenisPenyesuaianWrapper = document.getElementById('jenis_penyesuaian_wrapper');
         const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
         const tipePenyesuaianWrapper = document.getElementById('tipe_penyesuaian_wrapper');
+        const detailPembayaranWrapper = document.getElementById('detail_pembayaran_wrapper');
 
         function toggleConditionalFields() {
             const jenisVal = jenisAktivitasSelect.value;
@@ -599,6 +600,9 @@ console.log('Existing invoice data:', existingInvoice);
             tipePenyesuaianWrapper.classList.add('hidden');
             clearTipePenyesuaianInputs();
             
+            detailPembayaranWrapper.classList.add('hidden');
+            clearDetailPembayaranInputs();
+            
             // Show relevant fields based on jenis aktivitas
             if (jenisVal === 'Pembayaran Kendaraan') {
                 subJenisKendaraanWrapper.classList.remove('hidden');
@@ -624,6 +628,9 @@ console.log('Existing invoice data:', existingInvoice);
                 
                 // Setup klasifikasi biaya change event
                 setupKlasifikasiBiayaToggle();
+                
+                // Show detail pembayaran section
+                detailPembayaranWrapper.classList.remove('hidden');
             } else if (jenisVal === 'Pembayaran Adjustment Uang Jalan') {
                 suratJalanWrapper.classList.remove('hidden');
                 suratJalanSelect.setAttribute('required', 'required');
@@ -875,6 +882,11 @@ console.log('Existing invoice data:', existingInvoice);
         
         function clearBarangInputs() {
             const container = document.getElementById('barang_container');
+            if (container) container.innerHTML = '';
+        }
+        
+        function clearDetailPembayaranInputs() {
+            const container = document.getElementById('detail_pembayaran_container');
             if (container) container.innerHTML = '';
         }
         
