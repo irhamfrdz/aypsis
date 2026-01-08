@@ -149,7 +149,7 @@
                     </label>
                     <select name="nomor_voyage" 
                             id="nomor_voyage" 
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nomor_voyage') border-red-500 @enderror"
+                            class="w-full {{ $errors->has('nomor_voyage') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Nomor Voyage</option>
                         @foreach($voyages as $voyage)

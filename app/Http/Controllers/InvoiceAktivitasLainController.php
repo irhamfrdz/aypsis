@@ -352,6 +352,7 @@ class InvoiceAktivitasLainController extends Controller
                 'tujuan_pengiriman',
                 'uang_jalan',
                 \DB::raw("'bongkar' as source")
+            )
             ->whereNotNull('nomor_surat_jalan')
             ->where('nomor_surat_jalan', '!=', '')
             ->where('no_surat_jalan', '!=', '')
