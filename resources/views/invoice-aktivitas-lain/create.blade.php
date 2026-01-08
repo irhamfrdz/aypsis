@@ -233,8 +233,12 @@
                         @foreach($suratJalans as $sj)
                             <option value="{{ $sj->id }}" 
                                     data-uang-jalan="{{ $sj->uang_jalan }}" 
+                                    data-source="{{ $sj->source }}"
                                     {{ old('surat_jalan_id') == $sj->id ? 'selected' : '' }}>
                                 {{ $sj->no_surat_jalan }} - {{ $sj->tujuan_pengiriman }} (Rp {{ number_format($sj->uang_jalan, 0, ',', '.') }})
+                                @if(isset($sj->source))
+                                    - [{{ $sj->source == 'regular' ? 'Regular' : 'Bongkar' }}]
+                                @endif
                             </option>
                         @endforeach
                     </select>
