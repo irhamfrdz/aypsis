@@ -80,22 +80,8 @@
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
                 </div>
 
-                <!-- Kegiatan -->
-                <div class="md:col-span-2">
-                    <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">Kegiatan</label>
-                    <select name="kegiatan" 
-                            id="kegiatan"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                        <option value="">Semua Kegiatan</option>
-                        <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
-                        <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
-                        <option value="stuffing" {{ request('kegiatan') == 'stuffing' ? 'selected' : '' }}>Stuffing</option>
-                        <option value="stripping" {{ request('kegiatan') == 'stripping' ? 'selected' : '' }}>Stripping</option>
-                    </select>
-                </div>
-
                 <!-- Status -->
-                <div class="md:col-span-2">
+                <div class="md:col-span-3">
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select name="status" 
                             id="status"
@@ -137,7 +123,6 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -163,9 +148,6 @@
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                                 {{ $tandaTerima->gudang->nama_gudang ?? '-' }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                <span class="capitalize">{{ $tandaTerima->kegiatan ?? '-' }}</span>
-                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm">
                                 @if($tandaTerima->status == 'pending')
                                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Pending</span>
@@ -186,7 +168,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-3 py-8 text-center">
+                            <td colspan="8" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 font-medium">Tidak ada data tanda terima bongkaran</p>
@@ -209,7 +191,6 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal TT</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -243,9 +224,6 @@
                                 @endif
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                {{ $suratJalan->kegiatan ?? '-' }}
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                                 @if($suratJalan->tandaTerima && $suratJalan->tandaTerima->tanggal_tanda_terima)
                                     {{ $suratJalan->tandaTerima->tanggal_tanda_terima->format('d/m/Y') }}
                                 @else
@@ -273,7 +251,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-3 py-8 text-center">
+                            <td colspan="10" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 font-medium">Tidak ada data surat jalan bongkaran</p>
@@ -494,10 +472,6 @@
 <script>
     // Auto-submit form on filter change
     document.getElementById('tipe')?.addEventListener('change', function() {
-        this.form.submit();
-    });
-    
-    document.getElementById('kegiatan')?.addEventListener('change', function() {
         this.form.submit();
     });
     
