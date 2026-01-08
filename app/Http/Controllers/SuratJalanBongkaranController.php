@@ -221,7 +221,7 @@ class SuratJalanBongkaranController extends Controller
     public function selectKapal(Request $request)
     {
         // Get unique kapal names from BLs table
-        $kapals = Bl::select('nama_kapal')
+        $kapals = Manifest::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
                     ->distinct()
                     ->orderBy('nama_kapal')
@@ -236,7 +236,7 @@ class SuratJalanBongkaranController extends Controller
         // Get BL data based on selected kapal
         $bls = collect();
         if ($request->filled('nama_kapal')) {
-            $bls = Bl::where('nama_kapal', $request->nama_kapal)
+            $bls = Manifest::where('nama_kapal', $request->nama_kapal)
                 // Exclude BLs with nama_barang that are placeholders
                 ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
                 ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
@@ -259,7 +259,7 @@ class SuratJalanBongkaranController extends Controller
         }
 
         // Get kapal name from BLs table using incremental ID
-        $kapals = Bl::select('nama_kapal')
+        $kapals = Manifest::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
                     ->distinct()
                     ->orderBy('nama_kapal')
@@ -278,7 +278,7 @@ class SuratJalanBongkaranController extends Controller
         }
 
         // Get BL data for this kapal with container information
-          $bls = Bl::where('nama_kapal', $selectedKapalName)
+          $bls = Manifest::where('nama_kapal', $selectedKapalName)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
               // Exclude BLs with nama_barang indicating empty values
@@ -338,7 +338,7 @@ class SuratJalanBongkaranController extends Controller
         ]);
 
         // Get unique kapal names from BLs table
-        $kapals = Bl::select('nama_kapal')
+        $kapals = Manifest::select('nama_kapal')
                     ->whereNotNull('nama_kapal')
                     ->distinct()
                     ->orderBy('nama_kapal')
@@ -396,7 +396,7 @@ class SuratJalanBongkaranController extends Controller
 
         // If bl_id is passed, use it directly to fetch selectedBl and container data
         if ($request->filled('bl_id') && $selectedKapalName) {
-            $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+            $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
                               ->where('no_voyage', $noVoyage)
                               ->where('id', $request->bl_id)
                               ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
@@ -424,7 +424,7 @@ class SuratJalanBongkaranController extends Controller
             $rawNoBlInput = $request->filled('no_kontainer') ? $request->no_kontainer : $request->no_bl;
 
             // 1) Try to find by container number first
-            $selectedContainer = Bl::where('nama_kapal', $selectedKapalName)
+            $selectedContainer = Manifest::where('nama_kapal', $selectedKapalName)
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $rawNoBlInput)
                                    ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
@@ -443,13 +443,13 @@ class SuratJalanBongkaranController extends Controller
                 ]);
 
                 // Fill selectedBl from the container row
-                $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
                                  ->where('no_voyage', $noVoyage)
                                  ->where('nomor_kontainer', $rawNoBlInput)
                                  ->first(['id', 'nomor_bl']);
             } else {
                 // 2) Fallback: try to find by BL number (nomor_bl)
-                $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
                                  ->where('no_voyage', $noVoyage)
                                  ->where('nomor_bl', $rawNoBlInput)
                                  ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
@@ -493,7 +493,7 @@ class SuratJalanBongkaranController extends Controller
             ];
             // If we only have URL params and a no_bl in the params, attempt to load BL record as selectedBl
             if ($request->filled('no_bl') && $selectedKapalName) {
-                $selectedBl = Bl::where('nama_kapal', $selectedKapalName)
+                $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
                                  ->where('no_voyage', $noVoyage)
                                  ->where('nomor_kontainer', $request->no_bl)
                                  ->first(['id', 'nomor_bl']);
@@ -595,7 +595,7 @@ class SuratJalanBongkaranController extends Controller
             }
         } elseif ($request->filled('bl_id')) {
             // Backward compatibility: If bl_id is present
-            $bl = Bl::find($request->bl_id);
+            $bl = Manifest::find($request->bl_id);
             if ($bl && isset($bl->nomor_bl)) {
                 $validatedData['no_bl'] = $bl->nomor_bl;
                 if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
@@ -612,10 +612,10 @@ class SuratJalanBongkaranController extends Controller
                 }
             } else {
                 // Fallback to BL table for backward compatibility
-                $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['nomor_bl']);
+                $blByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['nomor_bl']);
                 if ($blByContainer && isset($blByContainer->nomor_bl)) {
                     $validatedData['no_bl'] = $blByContainer->nomor_bl;
-                    $blRecord = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
+                    $blRecord = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
                     if ($blRecord && Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
                         $validatedData['bl_id'] = $blRecord->id;
                     }
@@ -785,7 +785,7 @@ class SuratJalanBongkaranController extends Controller
             }
         } elseif ($request->filled('bl_id')) {
             // Backward compatibility: If bl_id is present
-            $bl = Bl::find($request->bl_id);
+            $bl = Manifest::find($request->bl_id);
             if ($bl && isset($bl->nomor_bl)) {
                 $validatedData['no_bl'] = $bl->nomor_bl;
                 if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
@@ -802,7 +802,7 @@ class SuratJalanBongkaranController extends Controller
                 }
             } else {
                 // Fallback to BL table
-                $blByContainer = Bl::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
+                $blByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
                 if ($blByContainer && isset($blByContainer->nomor_bl)) {
                     $validatedData['no_bl'] = $blByContainer->nomor_bl;
                     if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
@@ -899,71 +899,71 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
-     * Print SJ directly from BL data (without creating surat jalan first)
+     * Print SJ directly from Manifest data (without creating surat jalan first)
      */
-    public function printFromBl(Bl $bl)
+    public function printFromBl(Manifest $manifest)
     {
-        // Create a temporary object with BL data to pass to print view
+        // Create a temporary object with Manifest data to pass to print view
         // This allows printing even if surat jalan hasn't been created yet
         $printData = new \stdClass();
         
         // Get current date for tanggal_surat_jalan
         $printData->tanggal_surat_jalan = now()->format('Y-m-d');
         
-        // BL data
-        $printData->no_voyage = $bl->no_voyage;
-        $printData->nama_kapal = $bl->nama_kapal;
+        // Manifest data
+        $printData->no_voyage = $manifest->no_voyage;
+        $printData->nama_kapal = $manifest->nama_kapal;
         $printData->no_plat = ''; // Will be empty until filled
-        $printData->no_bl = $bl->nomor_bl;
-        $printData->no_kontainer = $bl->nomor_kontainer;
-        $printData->jenis_pengiriman = $bl->jenis_pengiriman ?? '';
-        $printData->jenis_barang = $bl->nama_barang;
-        $printData->penerima = $bl->penerima ?? '';
+        $printData->no_bl = $manifest->nomor_bl;
+        $printData->no_kontainer = $manifest->nomor_kontainer;
+        $printData->jenis_pengiriman = $manifest->jenis_pengiriman ?? '';
+        $printData->jenis_barang = $manifest->nama_barang;
+        $printData->penerima = $manifest->penerima ?? '';
         $printData->tujuan_pengambilan = ''; // Will be empty until filled
-        $printData->no_seal = $bl->no_seal;
-        $printData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
-        $printData->tujuan_pengiriman = $bl->pelabuhan_tujuan ?? '';
-        $printData->size_kontainer = $bl->size_kontainer ?? '';
-        $printData->tipe_kontainer = $bl->tipe_kontainer ?? '';
+        $printData->no_seal = $manifest->no_seal;
+        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';
+        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';
+        $printData->size_kontainer = $manifest->size_kontainer ?? '';
+        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? '';
         
         // Create fake bl relation for compatibility with existing print view
-        $printData->bl = $bl;
+        $printData->bl = $manifest;
         $printData->kapal = null;
 
         return view('surat-jalan-bongkaran.print-from-bl', compact('printData'));
     }
 
     /**
-     * Print Berita Acara (BA) directly from BL data
+     * Print Berita Acara (BA) directly from Manifest data
      */
-    public function printBa(Bl $bl)
+    public function printBa(Manifest $manifest)
     {
         // This allows printing BA even if surat jalan hasn't been created yet
         $baData = new \stdClass();
         
         // Generate BA number if not exists
-        $baData->id = $bl->id;
-        $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($bl->id, 4, '0', STR_PAD_LEFT);
+        $baData->id = $manifest->id;
+        $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
         $baData->tanggal_ba = now()->format('Y-m-d');
         
         // Ship data
-        $baData->nama_kapal = $bl->nama_kapal;
-        $baData->no_voyage = $bl->no_voyage;
-        $baData->pelabuhan_asal = $bl->pelabuhan_asal ?? '';
-        $baData->pelabuhan_tujuan = $bl->pelabuhan_tujuan ?? '';
-        $baData->tujuan_pengiriman = $bl->pelabuhan_tujuan ?? '';
+        $baData->nama_kapal = $manifest->nama_kapal;
+        $baData->no_voyage = $manifest->no_voyage;
+        $baData->pelabuhan_asal = $manifest->pelabuhan_asal ?? '';
+        $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';
+        $baData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';
         
         // Container data
-        $baData->no_bl = $bl->nomor_bl;
-        $baData->no_kontainer = $bl->nomor_kontainer;
-        $baData->no_seal = $bl->no_seal;
-        $baData->size = $bl->size_kontainer;
-        $baData->size_kontainer = $bl->size_kontainer; // Add this for compatibility
+        $baData->no_bl = $manifest->nomor_bl;
+        $baData->no_kontainer = $manifest->nomor_kontainer;
+        $baData->no_seal = $manifest->no_seal;
+        $baData->size = $manifest->size_kontainer;
+        $baData->size_kontainer = $manifest->size_kontainer; // Add this for compatibility
         
         // Cargo data
-        $baData->jenis_barang = $bl->nama_barang;
-        $baData->pengirim = $bl->pengirim ?? '';
-        $baData->penerima = $bl->penerima ?? '';
+        $baData->jenis_barang = $manifest->nama_barang;
+        $baData->pengirim = $manifest->pengirim ?? '';
+        $baData->penerima = $manifest->penerima ?? '';
         
         // Transportation data (will be empty until surat jalan is created)
         $baData->no_plat = '';
@@ -1082,48 +1082,5 @@ class SuratJalanBongkaranController extends Controller
         }
     }
 
-    /**
-     * Get BL data by ID (API endpoint for modal) - Keep for backward compatibility
-     */
-    public function getBlById($id)
-    {
-        try {
-            $bl = Bl::find($id);
-            
-            if (!$bl) {
-                return response()->json(['error' => 'BL not found'], 404);
-            }
-
-            return response()->json([
-                'id' => $bl->id,
-                'nomor_bl' => $bl->nomor_bl,
-                'nama_kapal' => $bl->nama_kapal,
-                'no_voyage' => $bl->no_voyage,
-                'nomor_kontainer' => $bl->nomor_kontainer,
-                'no_seal' => $bl->no_seal,
-                'tipe_kontainer' => $bl->tipe_kontainer,
-                'size_kontainer' => $bl->size_kontainer,
-                'nama_barang' => $bl->nama_barang,
-                'tonnage' => $bl->tonnage,
-                'volume' => $bl->volume,
-                'status_bongkar' => $bl->status_bongkar,
-                'term' => $bl->term ?? '',
-                'pengirim' => $bl->pengirim ?? '',
-                'penerima' => $bl->penerima ?? '',
-                'alamat_pengiriman' => $bl->alamat_pengiriman ?? '',
-                'pelabuhan_tujuan' => $bl->pelabuhan_tujuan ?? '',
-                'jenis_pengiriman' => $bl->jenis_pengiriman ?? '',
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error fetching BL by ID: ' . $e->getMessage(), [
-                'id' => $id,
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json([
-                'error' => 'Failed to fetch BL data',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            ], 500);
-        }
-    }
 }
 
