@@ -1293,6 +1293,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Biaya Dokumen --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Biaya Dokumen</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-dokumen][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-dokumen']['view']) && $userMatrixPermissions['master-pricelist-biaya-dokumen']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-dokumen][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-dokumen']['create']) && $userMatrixPermissions['master-pricelist-biaya-dokumen']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-dokumen][edit]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-dokumen']['edit']) && $userMatrixPermissions['master-pricelist-biaya-dokumen']['edit']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-dokumen][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-dokumen']['delete']) && $userMatrixPermissions['master-pricelist-biaya-dokumen']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Vendor/Bengkel --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
