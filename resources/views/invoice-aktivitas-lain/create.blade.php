@@ -1099,12 +1099,14 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 });
             }, 100);
             
-            // Format currency for biaya input
+            // Format currency for biaya input and add auto-calculation
             const biayaInput = inputGroup.querySelector('.detail-biaya');
             biayaInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/[^0-9]/g, '');
                 if (value) value = parseInt(value).toLocaleString('id-ID');
                 e.target.value = value;
+                // Auto-calculate total from detail pembayaran
+                calculateTotalFromDetailPembayaran();
             });
         }
         
@@ -1118,7 +1120,27 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 const label = detail.querySelector('span');
                 if (label) label.textContent = `Detail #${index + 1}`;
             });
+            
+            // Recalculate total after removing
+            calculateTotalFromDetailPembayaran();
         };
+        
+        function calculateTotalFromDetailPembayaran() {
+            const container = document.getElementById('detail_pembayaran_container');
+            const biayaInputs = container.querySelectorAll('.detail-biaya');
+            let total = 0;
+            
+            biayaInputs.forEach(input => {
+                const value = input.value.replace(/\./g, '').replace(/,/g, '');
+                const numValue = parseFloat(value) || 0;
+                total += numValue;
+            });
+            
+            if (total > 0) {
+                const totalInput = document.getElementById('total');
+                totalInput.value = total.toLocaleString('id-ID');
+            }
+        }
         
         // Add button for detail pembayaran
         const addDetailPembayaranBtn = document.getElementById('add_detail_pembayaran_btn');
