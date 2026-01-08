@@ -406,6 +406,11 @@
         </div>
         @endif
 
+        <!-- Keterangan -->
+        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
+            <strong>Keterangan:</strong><br>
+        </div>
+
         <!-- Signature Section -->
         <div class="signature-section">
             <table class="signature-table">
