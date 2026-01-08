@@ -137,6 +137,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
             // Add column headers
             $rows->push([
                 'CONTAINER_NO',
+                'SEAL',
                 'SIZE',
                 'TIPE',
                 'STATUS',
@@ -151,6 +152,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
             foreach ($groupedTandaTerimas as $tandaTerima) {
                 $rows->push([
                     $tandaTerima->no_kontainer ?? '',           // CONTAINER_NO
+                    $tandaTerima->no_seal ?? '',                // SEAL
                     $tandaTerima->size ?? '',                   // SIZE
                     $this->getContainerType($tandaTerima->no_kontainer), // TIPE
                     $this->getStatus($tandaTerima->kegiatan),   // STATUS (F/E)
@@ -226,15 +228,15 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
                     if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {
-                        $sheet->getStyle("A{$row}:I{$row}")->applyFromArray($headerStyle);
+                        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray($headerStyle);
                         // Set wrap text and center alignment for header
-                        $sheet->getStyle("A{$row}:I{$row}")->getAlignment()->setWrapText(true);
+                        $sheet->getStyle("A{$row}:J{$row}")->getAlignment()->setWrapText(true);
                         $sheet->getRowDimension($row)->setRowHeight(22);
                     }
                 }
 
                 // Optionally set column widths minimum or rely on ShouldAutoSize
-                foreach (range('A', 'I') as $col) {
+                foreach (range('A', 'J') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },

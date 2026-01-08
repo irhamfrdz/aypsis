@@ -56,6 +56,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                     $s->no_surat_jalan,
                     $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/M/Y') : '-',
                     $s->no_kontainer,
+                    $s->no_seal ?? '-',
                     $s->supir,
                     $s->no_plat,
                     $s->kegiatan,
@@ -98,6 +99,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                     $t->no_surat_jalan,
                     $tanggal,
                     $t->no_kontainer,
+                    $t->no_seal ?? '-',
                     $t->jenis_barang,
                     $tujuanAmbil,
                     $t->tujuan_pengiriman ?: '-',
@@ -140,6 +142,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                     $s->no_surat_jalan,
                     $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/M/Y') : '-',
                     $s->no_kontainer,
+                    $s->no_seal ?? '-',
                     '-',
                     optional($s->order->pengirim)->nama_pengirim ?? '-',
                     '-',
@@ -184,6 +187,7 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $t->no_surat_jalan,
                 $tanggal,
                 $t->no_kontainer,
+                $t->no_seal ?? '-',
                 $t->jenis_barang,
                 $tujuanAmbil,
                 $t->tujuan_pengiriman ?: '-',
@@ -199,11 +203,11 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
     public function headings(): array
     {
         if ($this->mode === 'missing') {
-            return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim'];
+            return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim'];
         }
 
         // For Tanda Terima and combined mode, use the Tanda Terima heading layout
-        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim'];
+        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim'];
     }
 
     public function registerEvents(): array
