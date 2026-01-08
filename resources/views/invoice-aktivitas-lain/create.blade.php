@@ -863,8 +863,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             let barangOptions = '<option value="">Pilih Nama Barang</option>';
             pricelistBuruhData.forEach(pricelist => {
                 const selected = existingBarangId == pricelist.id ? 'selected' : '';
-                const tipeText = pricelist.tipe ? ` - ${pricelist.tipe}` : '';
-                barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${selected}>${pricelist.barang}${tipeText}</option>`;
+                barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${selected}>${pricelist.barang}</option>`;
             });
             
             inputGroup.innerHTML = `
