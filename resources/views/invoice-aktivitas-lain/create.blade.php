@@ -881,10 +881,11 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     <input type="number" 
                            name="barang_detail[${index}][jumlah]" 
                            value="${existingJumlah || '1'}"
-                           min="1" 
-                           step="1"
+                           min="0" 
+                           step="0.01"
                            class="jumlah-input w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Contoh: 1.5"
                            required>
                 </div>
                 <div class="flex-shrink-0">
@@ -939,7 +940,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             barangSelects.forEach((select, index) => {
                 const selectedOption = $(select).find('option:selected');
                 const tarif = parseFloat(selectedOption.data('tarif')) || 0;
-                const jumlah = parseInt(jumlahInputs[index].value) || 0;
+                const jumlah = parseFloat(jumlahInputs[index].value) || 0;
                 total += tarif * jumlah;
             });
             
