@@ -71,8 +71,9 @@
         }
 
         .container {
-            width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
-            padding: 10mm 10mm 18mm 10mm;
+            width: 100%;
+            max-width: {{ $currentPaper['containerWidth'] }};
+            padding: 0;
             margin: 0 auto;
             box-sizing: border-box;
             min-height: calc({{ $currentPaper['height'] }} - 20mm);
