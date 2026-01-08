@@ -219,6 +219,29 @@
                     @enderror
                 </div>
 
+                <!-- Vendor Dokumen (conditional for Klasifikasi Biaya "biaya dokumen") -->
+                <div id="vendor_dokumen_wrapper" class="hidden">
+                    <label for="vendor_dokumen_select" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor Dokumen <span class="text-red-500">*</span>
+                    </label>
+                    <select name="pricelist_biaya_dokumen_id" 
+                            id="vendor_dokumen_select" 
+                            class="w-full {{ $errors->has('pricelist_biaya_dokumen_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="">Pilih Vendor Dokumen</option>
+                        @foreach($pricelistBiayaDokumen as $pricelist)
+                            <option value="{{ $pricelist->id }}" 
+                                    data-biaya="{{ $pricelist->biaya }}" 
+                                    {{ old('pricelist_biaya_dokumen_id') == $pricelist->id ? 'selected' : '' }}>
+                                {{ $pricelist->nama_vendor }} - Rp {{ number_format($pricelist->biaya, 0, ',', '.') }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('pricelist_biaya_dokumen_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Nama Barang dan Jumlah (conditional for Klasifikasi Biaya "buruh") -->
                 <div id="barang_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
