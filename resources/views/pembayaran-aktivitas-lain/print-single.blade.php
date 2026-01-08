@@ -300,11 +300,13 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
-                        <th style="width: 25%;">Nomor Invoice</th>
-                        <th style="width: 15%;">Tanggal</th>
-                        <th style="width: 30%;">Klasifikasi Biaya</th>
-                        <th style="width: 25%;">Biaya</th>
+                        <th style="width: 4%;">No</th>
+                        <th style="width: 18%;">Nomor Invoice</th>
+                        <th style="width: 10%;">Tanggal</th>
+                        <th style="width: 12%;">Nama Kapal</th>
+                        <th style="width: 10%;">No. Voyage</th>
+                        <th style="width: 23%;">Klasifikasi Biaya</th>
+                        <th style="width: 23%;">Biaya</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -315,12 +317,14 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $invoice->nomor_invoice }}</td>
                             <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
+                            <td>{{ $invoice->voyage->kapal->nama_kapal ?? '-' }}</td>
+                            <td class="text-center">{{ $invoice->nomor_voyage ?? '-' }}</td>
                             <td>{{ $invoice->klasifikasiBiaya->nama ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
