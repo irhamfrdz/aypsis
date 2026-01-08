@@ -261,29 +261,29 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($invoice->items as $index => $item)
+                            @forelse($invoice->pembayarans as $index => $pembayaran)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $item->pembayaran->nomor ?? '-' }}</div>
-                                        @if($item->pembayaran->nomor_accurate)
-                                            <div class="text-xs text-gray-500">Accurate: {{ $item->pembayaran->nomor_accurate }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $pembayaran->nomor ?? '-' }}</div>
+                                        @if($pembayaran->nomor_accurate)
+                                            <div class="text-xs text-gray-500">Accurate: {{ $pembayaran->nomor_accurate }}</div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $item->pembayaran->tanggal->format('d/m/Y') ?? '-' }}</div>
+                                        <div class="text-sm text-gray-900">{{ $pembayaran->tanggal->format('d/m/Y') ?? '-' }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $item->pembayaran->jenis_aktivitas ?? '-' }}</div>
-                                        @if($item->pembayaran->sub_jenis_kendaraan)
-                                            <div class="text-xs text-gray-500">{{ $item->pembayaran->sub_jenis_kendaraan }}</div>
+                                        <div class="text-sm text-gray-900">{{ $pembayaran->jenis_aktivitas ?? '-' }}</div>
+                                        @if($pembayaran->sub_jenis_kendaraan)
+                                            <div class="text-xs text-gray-500">{{ $pembayaran->sub_jenis_kendaraan }}</div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $item->pembayaran->penerima ?? '-' }}</div>
+                                        <div class="text-sm text-gray-900">{{ $pembayaran->penerima ?? '-' }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                                        Rp {{ number_format($item->jumlah ?? 0, 0, ',', '.') }}
+                                        Rp {{ number_format($pembayaran->pivot->jumlah_dibayar ?? 0, 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @empty

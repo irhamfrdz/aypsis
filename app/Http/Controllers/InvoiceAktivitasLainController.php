@@ -223,7 +223,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function show(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'items.pembayaran'])
+        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'pembayarans', 'creator'])
             ->findOrFail($id);
         
         return view('invoice-aktivitas-lain.show', compact('invoice'));
