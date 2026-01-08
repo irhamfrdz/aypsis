@@ -294,7 +294,7 @@
         @endphp
         
         @if($hasInvoices && $isPembayaranKapal)
-        <!-- Detail Pembayaran untuk Pembayaran Kapal -->
+        <!-- Daftar Invoice untuk Pembayaran Kapal -->
         <div style="margin-bottom: 12px;">
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Pembayaran Biaya Kapal:</strong>
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
@@ -308,27 +308,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php 
-                        $totalDetailPembayaran = 0; 
-                        $rowNumber = 1;
-                    @endphp
-                    @foreach($pembayaranAktivitasLain->invoices as $invoice)
-                        @if($invoice->detailPembayaran && $invoice->detailPembayaran->count() > 0)
-                            @foreach($invoice->detailPembayaran as $detail)
-                                @php $totalDetailPembayaran += $detail->biaya; @endphp
-                                <tr>
-                                    <td class="text-center">{{ $rowNumber++ }}</td>
-                                    <td>{{ $invoice->nomor_invoice }}</td>
-                                    <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
-                                    <td>{{ $detail->klasifikasiBiaya->nama ?? '-' }}</td>
-                                    <td class="text-right">Rp {{ number_format($detail->biaya, 0, ',', '.') }}</td>
-                                </tr>
-                            @endforeach
-                        @endif
+                    @php $totalInvoices = 0; @endphp
+                    @foreach($pembayaranAktivitasLain->invoices as $index => $invoice)
+                        @php $totalInvoices += $invoice->total; @endphp
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $invoice->nomor_invoice }}</td>
+                            <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
+                            <td>{{ $invoice->klasifikasiBiaya->nama ?? '-' }}</td>
+                            <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
+                        </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL DETAIL PEMBAYARAN</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($totalDetailPembayaran, 0, ',', '.') }}</strong></td>
+                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
