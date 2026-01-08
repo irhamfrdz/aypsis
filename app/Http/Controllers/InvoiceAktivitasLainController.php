@@ -125,7 +125,7 @@ class InvoiceAktivitasLainController extends Controller
         
         // Get BLs for pembayaran kapal
         $bls = \DB::table('bls')
-            ->select('id', 'nomor_bl', 'nomor_kontainer', 'pengirim')
+            ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'no_voyage', 'pengirim')
             ->whereNotNull('nomor_bl')
             ->where('nomor_bl', '!=', '')
             ->orderBy('nomor_bl')
@@ -371,7 +371,7 @@ class InvoiceAktivitasLainController extends Controller
         
         // Get BLs for pembayaran kapal
         $bls = \DB::table('bls')
-            ->select('id', 'nomor_bl', 'nomor_kontainer', 'pengirim')
+            ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'no_voyage', 'pengirim')
             ->whereNotNull('nomor_bl')
             ->where('nomor_bl', '!=', '')
             ->orderBy('nomor_bl')

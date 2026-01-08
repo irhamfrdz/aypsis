@@ -202,7 +202,7 @@
                             <input type="text" 
                                    id="bl_search"
                                    class="border-0 focus:ring-0 outline-none p-0 text-sm w-full"
-                                   placeholder="Cari nomor BL..." 
+                                   placeholder="Cari kontainer atau seal..." 
                                    autocomplete="off">
                         </div>
                         
@@ -214,9 +214,10 @@
                                      data-id="{{ $bl->id }}"
                                      data-text="{{ $bl->nomor_bl }}"
                                      data-kontainer="{{ $bl->nomor_kontainer ?? 'N/A' }}"
-                                     data-pengirim="{{ $bl->pengirim ?? 'N/A' }}">
-                                    <div class="font-medium text-gray-900">{{ $bl->nomor_bl }}</div>
-                                    <div class="text-xs text-gray-600">Kontainer: {{ $bl->nomor_kontainer ?? 'N/A' }} | Pengirim: {{ $bl->pengirim ?? 'N/A' }}</div>
+                                     data-seal="{{ $bl->no_seal ?? 'N/A' }}"
+                                     data-voyage="{{ $bl->no_voyage ?? '' }}">
+                                    <div class="font-medium text-gray-900">{{ $bl->nomor_kontainer ?? 'N/A' }}</div>
+                                    <div class="text-xs text-gray-600">Seal: {{ $bl->no_seal ?? 'N/A' }}</div>
                                 </div>
                             @endforeach
                         </div>
@@ -1032,11 +1033,20 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         
         function filterBLOptions() {
             const searchTerm = blSearch.value.toLowerCase();
+            const selectedVoyage = $('#nomor_voyage').val();
+            
             blOptions.forEach(option => {
-                const text = option.getAttribute('data-text').toLowerCase();
                 const kontainer = option.getAttribute('data-kontainer').toLowerCase();
-                const pengirim = option.getAttribute('data-pengirim').toLowerCase();
-                const shouldShow = text.includes(searchTerm) || kontainer.includes(searchTerm) || pengirim.includes(searchTerm);
+                const seal = option.getAttribute('data-seal').toLowerCase();
+                const voyage = option.getAttribute('data-voyage');
+                
+                // Filter by search term
+                const matchesSearch = kontainer.includes(searchTerm) || seal.includes(searchTerm);
+                
+                // Filter by selected voyage (if any)
+                const matchesVoyage = !selectedVoyage || voyage === selectedVoyage;
+                
+                const shouldShow = matchesSearch && matchesVoyage;
                 option.style.display = shouldShow ? 'block' : 'none';
             });
         }
@@ -1045,13 +1055,12 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         blOptions.forEach(option => {
             option.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
-                const text = this.getAttribute('data-text');
                 const kontainer = this.getAttribute('data-kontainer');
-                const pengirim = this.getAttribute('data-pengirim');
+                const seal = this.getAttribute('data-seal');
                 
                 if (!selectedBLs.find(bl => bl.id === id)) {
-                    selectedBLs.push({ id, text, kontainer, pengirim });
-                    addBLChip(id, text, kontainer);
+                    selectedBLs.push({ id, kontainer, seal });
+                    addBLChip(id, kontainer, seal);
                     updateBLSelectedCount();
                     updateBLHiddenInputs();
                     this.classList.add('selected');
@@ -1063,14 +1072,14 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             });
         });
         
-        function addBLChip(id, text, kontainer) {
+        function addBLChip(id, kontainer, seal) {
             const chip = document.createElement('span');
             chip.className = 'bl-selected-chip';
             chip.setAttribute('data-id', id);
             chip.innerHTML = `
                 <div class="flex flex-col">
-                    <span class="font-medium">${text}</span>
-                    <span class="text-xs opacity-75">${kontainer}</span>
+                    <span class="font-medium">${kontainer}</span>
+                    <span class="text-xs opacity-75">Seal: ${seal}</span>
                 </div>
                 <span class="remove-chip" onclick="removeBLChip('${id}')">&times;</span>
             `;
@@ -1092,15 +1101,20 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         // Select All button
         if (blSelectAllBtn) {
             blSelectAllBtn.addEventListener('click', function() {
+                const selectedVoyage = $('#nomor_voyage').val();
+                
                 blOptions.forEach(option => {
                     const id = option.getAttribute('data-id');
-                    const text = option.getAttribute('data-text');
                     const kontainer = option.getAttribute('data-kontainer');
-                    const pengirim = option.getAttribute('data-pengirim');
+                    const seal = option.getAttribute('data-seal');
+                    const voyage = option.getAttribute('data-voyage');
                     
-                    if (!selectedBLs.find(bl => bl.id === id)) {
-                        selectedBLs.push({ id, text, kontainer, pengirim });
-                        addBLChip(id, text, kontainer);
+                    // Only select BLs matching the selected voyage
+                    const matchesVoyage = !selectedVoyage || voyage === selectedVoyage;
+                    
+                    if (matchesVoyage && !selectedBLs.find(bl => bl.id === id)) {
+                        selectedBLs.push({ id, kontainer, seal });
+                        addBLChip(id, kontainer, seal);
                         option.classList.add('selected');
                     }
                 });
@@ -1280,6 +1294,16 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 toggleConditionalFields();
             });
             toggleConditionalFields();
+        }
+        
+        // Add event listener for voyage change to filter BL options
+        if (nomorVoyageSelect) {
+            $('#nomor_voyage').on('change', function() {
+                // Clear BL selections when voyage changes
+                clearBlInputs();
+                // Refilter BL options based on new voyage
+                if (blSearch) filterBLOptions();
+            });
         }
         
         if (jenisPenyesuaianSelect) {
