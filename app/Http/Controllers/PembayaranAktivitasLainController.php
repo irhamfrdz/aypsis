@@ -239,13 +239,13 @@ class PembayaranAktivitasLainController extends Controller
         $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->select(
                 'id',
-                'no_surat_jalan',
+                DB::raw('nomor_surat_jalan as no_surat_jalan'),
                 'tujuan_pengiriman',
                 'uang_jalan',
                 DB::raw("'bongkar' as source")
             )
-            ->whereNotNull('no_surat_jalan')
-            ->where('no_surat_jalan', '!=', '')
+            ->whereNotNull('nomor_surat_jalan')
+            ->where('nomor_surat_jalan', '!=', '')
             ->get();
         
         // Combine both surat jalans
