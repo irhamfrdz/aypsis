@@ -406,14 +406,6 @@
         </div>
         @endif
 
-        <!-- Keterangan -->
-        @if($pembayaranAktivitasLain->keterangan)
-        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
-            <strong>Keterangan:</strong><br>
-            {{ $pembayaranAktivitasLain->keterangan }}
-        </div>
-        @endif
-
         <!-- Signature Section -->
         <div class="signature-section">
             <table class="signature-table">
