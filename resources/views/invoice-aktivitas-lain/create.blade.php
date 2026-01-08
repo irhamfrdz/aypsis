@@ -163,6 +163,23 @@
                     @enderror
                 </div>
 
+                <!-- Invoice Vendor (conditional for Pembayaran Kapal) -->
+                <div id="invoice_vendor_wrapper" class="hidden">
+                    <label for="invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                        Invoice Vendor
+                    </label>
+                    <input type="text" 
+                           name="invoice_vendor" 
+                           id="invoice_vendor" 
+                           value="{{ old('invoice_vendor') }}"
+                           class="w-full {{ $errors->has('invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan nomor invoice vendor">
+                    @error('invoice_vendor')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- BL (conditional for Pembayaran Kapal) -->
                 <div id="bl_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -211,6 +228,7 @@
                         <!-- Dynamic barang inputs will be added here -->
                     </div>
                     <button type="button" 
+
                             id="add_barang_btn" 
                             class="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -578,8 +596,10 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             nomorVoyageSelect.removeAttribute('required');
             $('#nomor_voyage').val('').trigger('change');
             
-            invoiceVendorWrapper.classList.add('hidden');
-            if (invoiceVendorInput) invoiceVendorInput.value = '';
+            if (invoiceVendorWrapper) {
+                invoiceVendorWrapper.classList.add('hidden');
+                if (invoiceVendorInput) invoiceVendorInput.value = '';
+            }
             
             blWrapper.classList.add('hidden');
             clearBlInputs();
@@ -618,7 +638,9 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             } else if (jenisVal === 'Pembayaran Kapal') {
                 nomorVoyageWrapper.classList.remove('hidden');
                 nomorVoyageSelect.setAttribute('required', 'required');
-                invoiceVendorWrapper.classList.remove('hidden');
+                if (invoiceVendorWrapper) {
+                    invoiceVendorWrapper.classList.remove('hidden');
+                }
                 blWrapper.classList.remove('hidden');
                 initializeBlInputs();
                 klasifikasiBiayaWrapper.classList.remove('hidden');
