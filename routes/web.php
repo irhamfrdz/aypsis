@@ -722,6 +722,39 @@ Route::middleware([
              ->name('pricelist-buruh.destroy')
              ->middleware('can:master-pricelist-buruh-delete');
 
+        // Master pricelist biaya dokumen routes - granular permissions
+        Route::get('pricelist-biaya-dokumen', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'index'])
+             ->name('pricelist-biaya-dokumen.index')
+             ->middleware('can:master-pricelist-biaya-dokumen-view');
+        
+        Route::get('pricelist-biaya-dokumen/create', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'create'])
+             ->name('pricelist-biaya-dokumen.create')
+             ->middleware('can:master-pricelist-biaya-dokumen-create');
+        
+        Route::post('pricelist-biaya-dokumen', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'store'])
+             ->name('pricelist-biaya-dokumen.store')
+             ->middleware('can:master-pricelist-biaya-dokumen-create');
+        
+        Route::get('pricelist-biaya-dokumen/{pricelistBiayaDokumen}', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'show'])
+             ->name('pricelist-biaya-dokumen.show')
+             ->middleware('can:master-pricelist-biaya-dokumen-view');
+        
+        Route::get('pricelist-biaya-dokumen/{pricelistBiayaDokumen}/edit', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'edit'])
+             ->name('pricelist-biaya-dokumen.edit')
+             ->middleware('can:master-pricelist-biaya-dokumen-edit');
+        
+        Route::put('pricelist-biaya-dokumen/{pricelistBiayaDokumen}', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'update'])
+             ->name('pricelist-biaya-dokumen.update')
+             ->middleware('can:master-pricelist-biaya-dokumen-edit');
+        
+        Route::patch('pricelist-biaya-dokumen/{pricelistBiayaDokumen}', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'update'])
+             ->name('pricelist-biaya-dokumen.update')
+             ->middleware('can:master-pricelist-biaya-dokumen-edit');
+        
+        Route::delete('pricelist-biaya-dokumen/{pricelistBiayaDokumen}', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'destroy'])
+             ->name('pricelist-biaya-dokumen.destroy')
+             ->middleware('can:master-pricelist-biaya-dokumen-delete');
+
         // Master pricelist gate in routes - granular permissions
         // Import/Export routes (must be BEFORE resource routes)
         Route::get('pricelist-gate-in/import', [\App\Http\Controllers\PricelistGateInController::class, 'import'])
