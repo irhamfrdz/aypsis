@@ -185,17 +185,60 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Daftar BL
                     </label>
-                    <div id="bl_container" class="space-y-3">
-                        <!-- Dynamic BL inputs will be added here -->
+                    
+                    <!-- Hidden inputs for selected BL values -->
+                    <div id="bl_hidden_inputs"></div>
+                    
+                    <!-- Search input with dropdown -->
+                    <div class="relative">
+                        <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white cursor-text" 
+                             id="bl_container"
+                             onclick="document.getElementById('bl_search').focus()">
+                             
+                            <!-- Selected items (chips) -->
+                            <div id="bl_selected_chips" class="flex flex-wrap gap-1 mb-1"></div>
+                            
+                            <!-- Search input -->
+                            <input type="text" 
+                                   id="bl_search"
+                                   class="border-0 focus:ring-0 outline-none p-0 text-sm w-full"
+                                   placeholder="Cari nomor BL..." 
+                                   autocomplete="off">
+                        </div>
+                        
+                        <!-- Dropdown list -->
+                        <div id="bl_dropdown" 
+                             class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
+                            @foreach($bls as $bl)
+                                <div class="bl-option px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100"
+                                     data-id="{{ $bl->id }}"
+                                     data-text="{{ $bl->nomor_bl }}"
+                                     data-kontainer="{{ $bl->nomor_kontainer ?? 'N/A' }}"
+                                     data-pengirim="{{ $bl->pengirim ?? 'N/A' }}">
+                                    <div class="font-medium text-gray-900">{{ $bl->nomor_bl }}</div>
+                                    <div class="text-xs text-gray-600">Kontainer: {{ $bl->nomor_kontainer ?? 'N/A' }} | Pengirim: {{ $bl->pengirim ?? 'N/A' }}</div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <button type="button" 
-                            id="add_bl_btn" 
-                            class="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Tambah BL
-                    </button>
+                    
+                    <div class="mt-2 flex justify-between items-center">
+                        <span id="bl_selectedCount" class="text-sm text-blue-600">
+                            Terpilih: 0 dari {{ count($bls) }} BL
+                        </span>
+                        <div class="flex gap-2">
+                            <button type="button" 
+                                    id="bl_selectAllBtn"
+                                    class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition">
+                                Pilih Semua
+                            </button>
+                            <button type="button" 
+                                    id="bl_clearAllBtn"
+                                    class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition">
+                                Hapus Semua
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Klasifikasi Biaya (conditional for Pembayaran Kapal) -->
@@ -488,6 +531,61 @@
 }
 .select2-results__option--highlighted {
     background-color: #3b82f6 !important;
+}
+
+/* BL Multi-Select Styling */
+#bl_container {
+    transition: all 0.15s ease;
+}
+
+#bl_container:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.bl-selected-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 1px;
+    gap: 6px;
+}
+
+.bl-selected-chip .remove-chip {
+    margin-left: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.bl-selected-chip .remove-chip:hover {
+    opacity: 1;
+}
+
+.bl-option {
+    transition: background-color 0.15s ease;
+}
+
+.bl-option:hover {
+    background-color: #eff6ff !important;
+}
+
+.bl-option.selected {
+    background-color: #dbeafe;
+    opacity: 0.6;
+}
+
+#bl_search::placeholder {
+    color: #9ca3af;
+}
+
+#bl_dropdown {
+    border-top: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 </style>
 
@@ -899,72 +997,158 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             if (container) container.innerHTML = '';
         }
         
-        function addBlInput(existingBlId = '') {
-            const container = document.getElementById('bl_container');
-            const index = container.children.length;
-            
-            const inputGroup = document.createElement('div');
-            inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
-            
-            // Build options from JavaScript data
-            let blOptions = '<option value="">Pilih BL</option>';
-            blsData.forEach(bl => {
-                const selected = existingBlId == bl.id ? 'selected' : '';
-                const nomorKontainer = bl.nomor_kontainer || 'N/A';
-                const pengirim = bl.pengirim || 'N/A';
-                blOptions += `<option value="${bl.id}" ${selected}>${bl.nomor_bl} - ${nomorKontainer} (${pengirim})</option>`;
+
+        // BL Searchable Multi-Select Management
+        let selectedBLs = [];
+        
+        const blSearch = document.getElementById('bl_search');
+        const blDropdown = document.getElementById('bl_dropdown');
+        const blSelectedChips = document.getElementById('bl_selected_chips');
+        const blHiddenInputs = document.getElementById('bl_hidden_inputs');
+        const blSelectAllBtn = document.getElementById('bl_selectAllBtn');
+        const blClearAllBtn = document.getElementById('bl_clearAllBtn');
+        const blOptions = document.querySelectorAll('.bl-option');
+        const blSelectedCount = document.getElementById('bl_selectedCount');
+        
+        // Show dropdown on focus
+        if (blSearch) {
+            blSearch.addEventListener('focus', function() {
+                blDropdown.classList.remove('hidden');
+                filterBLOptions();
             });
             
-            inputGroup.innerHTML = `
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
-                    <select name="bl_details[${index}][bl_id]" 
-                            class="bl-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
-                        ${blOptions}
-                    </select>
+            // Search/filter options
+            blSearch.addEventListener('input', function() {
+                filterBLOptions();
+            });
+        }
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#bl_container') && !e.target.closest('#bl_dropdown')) {
+                if (blDropdown) blDropdown.classList.add('hidden');
+            }
+        });
+        
+        function filterBLOptions() {
+            const searchTerm = blSearch.value.toLowerCase();
+            blOptions.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                const kontainer = option.getAttribute('data-kontainer').toLowerCase();
+                const pengirim = option.getAttribute('data-pengirim').toLowerCase();
+                const shouldShow = text.includes(searchTerm) || kontainer.includes(searchTerm) || pengirim.includes(searchTerm);
+                option.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+        
+        // Handle option selection
+        blOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const text = this.getAttribute('data-text');
+                const kontainer = this.getAttribute('data-kontainer');
+                const pengirim = this.getAttribute('data-pengirim');
+                
+                if (!selectedBLs.find(bl => bl.id === id)) {
+                    selectedBLs.push({ id, text, kontainer, pengirim });
+                    addBLChip(id, text, kontainer);
+                    updateBLSelectedCount();
+                    updateBLHiddenInputs();
+                    this.classList.add('selected');
+                    calculateTotalFromVendorDokumen();
+                }
+                
+                blSearch.value = '';
+                blDropdown.classList.add('hidden');
+            });
+        });
+        
+        function addBLChip(id, text, kontainer) {
+            const chip = document.createElement('span');
+            chip.className = 'bl-selected-chip';
+            chip.setAttribute('data-id', id);
+            chip.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="font-medium">${text}</span>
+                    <span class="text-xs opacity-75">${kontainer}</span>
                 </div>
-                <div class="flex-shrink-0">
-                    <button type="button" 
-                            onclick="removeBlInput(this)" 
-                            class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                </div>
+                <span class="remove-chip" onclick="removeBLChip('${id}')">&times;</span>
             `;
-            
-            container.appendChild(inputGroup);
-            
-            // Initialize Select2 for new select
-            setTimeout(() => {
-                $(inputGroup).find('.bl-select').select2({
-                    placeholder: 'Pilih BL',
-                    allowClear: true,
-                    width: '100%'
+            blSelectedChips.appendChild(chip);
+        }
+        
+        // Remove chip function (global scope for onclick)
+        window.removeBLChip = function(id) {
+            selectedBLs = selectedBLs.filter(bl => bl.id !== id);
+            const chipEl = document.querySelector(`[data-id="${id}"].bl-selected-chip`);
+            if (chipEl) chipEl.remove();
+            const optionEl = document.querySelector(`[data-id="${id}"].bl-option`);
+            if (optionEl) optionEl.classList.remove('selected');
+            updateBLSelectedCount();
+            updateBLHiddenInputs();
+            calculateTotalFromVendorDokumen();
+        };
+        
+        // Select All button
+        if (blSelectAllBtn) {
+            blSelectAllBtn.addEventListener('click', function() {
+                blOptions.forEach(option => {
+                    const id = option.getAttribute('data-id');
+                    const text = option.getAttribute('data-text');
+                    const kontainer = option.getAttribute('data-kontainer');
+                    const pengirim = option.getAttribute('data-pengirim');
+                    
+                    if (!selectedBLs.find(bl => bl.id === id)) {
+                        selectedBLs.push({ id, text, kontainer, pengirim });
+                        addBLChip(id, text, kontainer);
+                        option.classList.add('selected');
+                    }
                 });
-            }, 100);
-            
-            // Recalculate vendor dokumen total if vendor is already selected
+                
+                updateBLSelectedCount();
+                updateBLHiddenInputs();
+                calculateTotalFromVendorDokumen();
+            });
+        }
+        
+        // Clear All button  
+        if (blClearAllBtn) {
+            blClearAllBtn.addEventListener('click', function() {
+                clearBlInputs();
+            });
+        }
+        
+        function updateBLHiddenInputs() {
+            blHiddenInputs.innerHTML = '';
+            selectedBLs.forEach(bl => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'bl_details[]';
+                input.value = bl.id;
+                blHiddenInputs.appendChild(input);
+            });
+        }
+        
+        function updateBLSelectedCount() {
+            if (blSelectedCount) {
+                blSelectedCount.textContent = `Terpilih: ${selectedBLs.length} dari ${blOptions.length} BL`;
+            }
+        }
+        
+        function clearBlInputs() {
+            selectedBLs = [];
+            if (blSelectedChips) blSelectedChips.innerHTML = '';
+            if (blHiddenInputs) blHiddenInputs.innerHTML = '';
+            blOptions.forEach(option => {
+                option.classList.remove('selected');
+            });
+            updateBLSelectedCount();
             calculateTotalFromVendorDokumen();
         }
         
-        window.removeBlInput = function(button) {
-            const container = document.getElementById('bl_container');
-            if (container.children.length > 1) {
-                button.closest('.flex.items-end.gap-3').remove();
-                // Recalculate vendor dokumen total after removing BL
-                calculateTotalFromVendorDokumen();
-            }
-        };
-        
-        // Add button for BL
-        const addBlBtn = document.getElementById('add_bl_btn');
-        if (addBlBtn) {
-            addBlBtn.addEventListener('click', function() {
-                addBlInput();
-            });
+        function initializeBlInputs() {
+            // Clear any existing selections
+            clearBlInputs();
         }
         
         // Barang management functions
