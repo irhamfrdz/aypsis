@@ -937,7 +937,10 @@ class TandaTerimaController extends Controller
         // Get kranes for dropdown (krani divisi) - alias for kenek pengganti
         $kranes = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
 
-        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims', 'tujuanKirims', 'jenisBarangs', 'kranes', 'sudahMasukBl'));
+        // Get master penerima list for dropdown
+        $masterPenerimaList = \App\Models\MasterPenerima::where('status', 'active')->orderBy('nama')->get();
+
+        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims', 'tujuanKirims', 'jenisBarangs', 'kranes', 'sudahMasukBl', 'masterPenerimaList'));
     }
 
     /**
@@ -1265,13 +1268,12 @@ class TandaTerimaController extends Controller
                 if ($suratJalan) {
                     $suratJalanUpdateData = [];
                     
-                    // Update nomor kontainer jika ada perubahan
-                    if (isset($updateData['no_kontainer']) && $updateData['no_kontainer'] != $suratJalan->no_kontainer) {
+                    // ALWAYS update nomor kontainer dan seal ke surat jalan (force sync)
+                    if (isset($updateData['no_kontainer'])) {
                         $suratJalanUpdateData['no_kontainer'] = $updateData['no_kontainer'];
                     }
                     
-                    // Update nomor seal jika ada perubahan
-                    if (isset($updateData['no_seal']) && $updateData['no_seal'] != $suratJalan->no_seal) {
+                    if (isset($updateData['no_seal'])) {
                         $suratJalanUpdateData['no_seal'] = $updateData['no_seal'];
                     }
                     
@@ -1302,6 +1304,19 @@ class TandaTerimaController extends Controller
                             $karyawanKenek = \App\Models\Karyawan::where('nama_lengkap', $updateData['kenek_pengganti'])->first();
                             if ($karyawanKenek) {
                                 $suratJalanUpdateData['kenek'] = $karyawanKenek->nama_lengkap;
+                            }
+                        }
+                    }
+                    
+                    // Update krani pengganti jika ada perubahan
+                    if (isset($updateData['krani_pengganti']) && $updateData['krani_pengganti'] != $suratJalan->krani_pengganti) {
+                        $suratJalanUpdateData['krani_pengganti'] = $updateData['krani_pengganti'];
+                        
+                        // Update the krani field in surat jalan when krani pengganti is changed
+                        if (!empty($updateData['krani_pengganti'])) {
+                            $karyawanKrani = \App\Models\Karyawan::where('nama_lengkap', $updateData['krani_pengganti'])->first();
+                            if ($karyawanKrani) {
+                                $suratJalanUpdateData['krani'] = $karyawanKrani->nama_lengkap;
                             }
                         }
                     }

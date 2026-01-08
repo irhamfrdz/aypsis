@@ -253,6 +253,27 @@
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Nama Krani</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
+                                   value="{{ $tandaTerima->suratJalan->krani ?? '-' }}" readonly disabled>
+                        </div>
+                        <div>
+                            <label for="krani_pengganti" class="block text-xs font-medium text-gray-500 mb-2">Krani Pengganti</label>
+                            <select name="krani_pengganti" id="krani_pengganti"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm select2-krani-pengganti @error('krani_pengganti') border-red-500 @enderror">
+                                <option value="">-- Pilih Krani Pengganti --</option>
+                                @foreach($kranis as $krani)
+                                    <option value="{{ $krani->nama_lengkap }}"
+                                            {{ old('krani_pengganti', $tandaTerima->krani_pengganti) == $krani->nama_lengkap ? 'selected' : '' }}>
+                                        {{ $krani->nama_lengkap }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('krani_pengganti')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -671,7 +692,7 @@
         
         jQuery(document).ready(function($) {
             if (typeof $.fn.select2 !== 'undefined') {
-                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek-pengganti').select2({
+                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek-pengganti, .select2-krani-pengganti').select2({
                     placeholder: function() {
                         return $(this).data('placeholder') || '-- Pilih --';
                     },
