@@ -222,12 +222,36 @@ class PembayaranAktivitasLainController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
         
-        $suratJalans = DB::table('surat_jalans')
-            ->select('id', 'no_surat_jalan', 'tujuan_pengiriman', 'uang_jalan')
+        // Get surat jalans for adjustment payments from surat_jalans table
+        $suratJalansRegular = DB::table('surat_jalans')
+            ->select(
+                'id',
+                'no_surat_jalan',
+                'tujuan_pengiriman',
+                'uang_jalan',
+                DB::raw("'regular' as source")
+            )
             ->whereNotNull('no_surat_jalan')
             ->where('no_surat_jalan', '!=', '')
-            ->orderBy('no_surat_jalan')
             ->get();
+        
+        // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
+        $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
+            ->select(
+                'id',
+                'no_surat_jalan',
+                'tujuan_pengiriman',
+                'uang_jalan',
+                DB::raw("'bongkar' as source")
+            )
+            ->whereNotNull('no_surat_jalan')
+            ->where('no_surat_jalan', '!=', '')
+            ->get();
+        
+        // Combine both surat jalans
+        $suratJalans = $suratJalansRegular->merge($suratJalansBongkar)
+            ->sortBy('no_surat_jalan')
+            ->values();
         
         return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
     }

@@ -149,8 +149,14 @@
                     <select name="no_surat_jalan" id="surat_jalan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('no_surat_jalan') border-red-500 @enderror">
                         <option value="">Pilih Surat Jalan</option>
                         @foreach($suratJalans as $suratJalan)
-                            <option value="{{ $suratJalan->no_surat_jalan }}" data-uang-jalan="{{ $suratJalan->uang_jalan }}" {{ old('no_surat_jalan') == $suratJalan->no_surat_jalan ? 'selected' : '' }}>
+                            <option value="{{ $suratJalan->no_surat_jalan }}" 
+                                    data-uang-jalan="{{ $suratJalan->uang_jalan }}" 
+                                    data-source="{{ $suratJalan->source }}"
+                                    {{ old('no_surat_jalan') == $suratJalan->no_surat_jalan ? 'selected' : '' }}>
                                 {{ $suratJalan->no_surat_jalan }} - {{ $suratJalan->tujuan_pengiriman }}
+                                @if(isset($suratJalan->source))
+                                    - [{{ $suratJalan->source == 'regular' ? 'Regular' : 'Bongkar' }}]
+                                @endif
                             </option>
                         @endforeach
                     </select>
