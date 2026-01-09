@@ -274,86 +274,108 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
-                        <th style="width: 25%;">Nama Kapal</th>
-                        <th style="width: 15%;">Tanggal</th>
-                        <th style="width: 15%;">No. Voyage</th>
-                        @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-                        <th style="width: 25%;">Detail Barang</th>
-                        @else
-                        <th style="width: 25%;">Keterangan</th>
-                        @endif
-                        <th style="width: 15%;">Biaya</th>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 32%;">Nama Kapal</th>
+                        <th style="width: 20%;">Tanggal</th>
+                        <th style="width: 20%;">No. Voyage</th>
+                        <th style="width: 20%;">Biaya</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php
                         // Untuk biaya buruh (KB024), ambil kapal dan voyage dari barangDetails
                         if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
-                            $namaKapals = $biayaKapal->barangDetails->pluck('kapal')->unique()->filter()->values()->toArray();
-                            $noVoyages = $biayaKapal->barangDetails->pluck('voyage')->unique()->filter()->values()->toArray();
-                        } else {
-                            $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
-                            $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
-                        }
-                        $maxCount = max(count($namaKapals), count($noVoyages), 1);
-                    @endphp
-                    
-                    @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-                        {{-- Kelompokkan berdasarkan kombinasi kapal + voyage --}}
-                        @php
                             $groupedDetails = $biayaKapal->barangDetails->groupBy(function($item) {
                                 return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
                             });
-                            $rowNumber = 0;
-                            $totalGroups = $groupedDetails->count();
-                            $groupIndex = 0;
-                        @endphp
-                        
+                        } else {
+                            $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
+                            $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
+                            $groupedDetails = null;
+                        }
+                    @endphp
+                    
+                    @if($groupedDetails)
+                        {{-- Biaya Buruh: Tampilkan per grup kapal + voyage --}}
+                        @php $rowNumber = 0; @endphp
                         @foreach($groupedDetails as $groupKey => $details)
                             @php
+                                $rowNumber++;
                                 list($groupKapal, $groupVoyage) = explode('|', $groupKey);
                                 $groupSubtotal = $details->sum('subtotal');
-                                $groupIndex++;
                             @endphp
-                            @foreach($details as $detailIndex => $detail)
-                            @php $rowNumber++; @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
-                                @if($detailIndex === 0)
-                                {{-- Tampilkan kapal, tanggal, voyage untuk grup ini --}}
-                                <td rowspan="{{ $details->count() }}">{{ $groupKapal }}</td>
-                                <td class="text-center" rowspan="{{ $details->count() }}">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
-                                <td class="text-center" rowspan="{{ $details->count() }}">{{ $groupVoyage }}</td>
-                                @endif
-                                <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
-                                @if($detailIndex === 0)
-                                <td class="text-right" rowspan="{{ $details->count() }}">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
-                                @endif
+                                <td>{{ $groupKapal }}</td>
+                                <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                                <td class="text-center">{{ $groupVoyage }}</td>
+                                <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                             </tr>
-                            @endforeach
                         @endforeach
                     @else
                         {{-- Jika tidak ada detail barang, tampilkan per kapal/voyage --}}
+                        @php $maxCount = max(count($namaKapals ?? []), count($noVoyages ?? []), 1); @endphp
                         @for($i = 0; $i < $maxCount; $i++)
                         <tr>
                             <td class="text-center">{{ $i + 1 }}</td>
                             <td>{{ $namaKapals[$i] ?? ($i == 0 ? '-' : '') }}</td>
                             <td class="text-center">{{ $i == 0 ? \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') : '' }}</td>
                             <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
-                            <td>{{ $i == 0 ? ($biayaKapal->keterangan ?? '-') : '' }}</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                         </tr>
                         @endfor
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
+        <!-- Detail Barang (Gabungan Semua Kapal) -->
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 52%;">Jenis Barang</th>
+                        <th style="width: 15%;">Jumlah</th>
+                        <th style="width: 25%;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        // Gabungkan semua barang yang sama
+                        $combinedBarang = $biayaKapal->barangDetails->groupBy('pricelist_buruh_id')->map(function($items) {
+                            $first = $items->first();
+                            return [
+                                'barang' => $first->pricelistBuruh->barang ?? '-',
+                                'jumlah' => $items->sum('jumlah'),
+                                'subtotal' => $items->sum('subtotal'),
+                            ];
+                        })->values();
+                    @endphp
+                    @foreach($combinedBarang as $index => $item)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $item['barang'] }}</td>
+                        <td class="text-center">{{ $item['jumlah'] }}</td>
+                        <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="2" class="text-right"><strong>TOTAL</strong></td>
+                        <td class="text-center"><strong>{{ $combinedBarang->sum('jumlah') }}</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($combinedBarang->sum('subtotal'), 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @endif
 
         <!-- Keterangan -->
         <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
