@@ -355,7 +355,7 @@
                             $first = $items->first();
                             return [
                                 'barang' => $first->pricelistBuruh->barang ?? '-',
-                                'harga_satuan' => $first->pricelistBuruh->harga ?? 0,
+                                'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
                                 'jumlah' => $items->sum('jumlah'),
                                 'subtotal' => $items->sum('subtotal'),
                             ];
