@@ -879,9 +879,13 @@
                     // Create option list
                     let html = '';
                     Object.keys(availableBls).sort((a, b) => {
-                        return availableBls[a].kontainer.localeCompare(availableBls[b].kontainer);
+                        const kontainerA = availableBls[a]?.kontainer || '';
+                        const kontainerB = availableBls[b]?.kontainer || '';
+                        return kontainerA.localeCompare(kontainerB);
                     }).forEach(blId => {
                         const blData = availableBls[blId];
+                        if (!blData || !blData.kontainer || !blData.seal) return; // Skip invalid data
+                        
                         const isSelected = selectedBls.hasOwnProperty(blId) ? 'selected' : '';
                         html += `
                             <div class="bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 ${isSelected}"
