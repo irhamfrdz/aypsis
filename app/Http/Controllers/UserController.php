@@ -859,6 +859,35 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for biaya-kapal permissions (biaya-kapal-view, biaya-kapal-create, etc.) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'biaya-kapal-') === 0) {
+                $module = 'biaya-kapal';
+                $action = str_replace('biaya-kapal-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map biaya-kapal actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'store' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'destroy' => 'delete',
+                    'approve' => 'approve',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Special handling for master-kapal permissions (master-kapal-view, master-kapal-create, etc.) - MUST BE BEFORE Pattern 3
             if (strpos($permissionName, 'master-kapal-') === 0) {
                 $module = 'master-kapal';
@@ -1693,29 +1722,6 @@ class UserController extends Controller
                                     'delete' => 'master-mobil-delete',
                                     'print' => 'master-mobil-print',
                                     'export' => 'master-mobil-export'
-                                ];
-
-                                if (isset($actionMap[$action])) {
-                                    $permissionName = $actionMap[$action];
-                                    $directPermission = Permission::where('name', $permissionName)->first();
-                                    if ($directPermission) {
-                                        $permissionIds[] = $directPermission->id;
-                                        $found = true;
-                                        continue; // Skip to next action
-                                    }
-                                }
-                            }
-
-                            // DIRECT FIX: Handle biaya-kapal permissions explicitly
-                            if ($module === 'biaya-kapal' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
-                                // Map action to correct permission name
-                                $actionMap = [
-                                    'view' => 'biaya-kapal-view',
-                                    'create' => 'biaya-kapal-create',
-                                    'update' => 'biaya-kapal-update',
-                                    'delete' => 'biaya-kapal-delete',
-                                    'print' => 'biaya-kapal-print',
-                                    'export' => 'biaya-kapal-export'
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2630,6 +2636,30 @@ class UserController extends Controller
 
                         if (isset($directActionMap[$action])) {
                             $permissionName = 'pembayaran-pranota-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for biaya-kapal module
+                    if ($module === 'biaya-kapal') {
+                        // For biaya-kapal, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'biaya-kapal-view',
+                            'create' => 'biaya-kapal-create',
+                            'update' => 'biaya-kapal-update',
+                            'delete' => 'biaya-kapal-delete',
+                            'approve' => 'biaya-kapal-approve',
+                            'print' => 'biaya-kapal-print',
+                            'export' => 'biaya-kapal-export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
