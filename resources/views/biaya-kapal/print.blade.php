@@ -343,10 +343,7 @@
         <!-- Keterangan -->
         <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
             <strong>Keterangan:</strong><br>
-            @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-                {{-- Jika ada detail barang, tampilkan keterangan di sini --}}
-                {{ $biayaKapal->keterangan ?? '' }}
-            @endif
+            {{-- Kosong untuk ditulis manual --}}
         </div>
 
         <!-- Signature Section -->
