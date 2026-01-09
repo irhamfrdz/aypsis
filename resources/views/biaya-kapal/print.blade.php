@@ -241,7 +241,7 @@
             <div class="header-meta">
                 <span><strong>Tanggal: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d-M-Y') }}</strong></span>
             </div>
-            <h1>BIAYA OPERASIONAL KAPAL</h1>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Info Section -->
