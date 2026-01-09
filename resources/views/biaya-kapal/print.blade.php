@@ -261,6 +261,12 @@
                     <td>: {{ $biayaKapal->nomor_referensi }}</td>
                 </tr>
                 @endif
+                @if($biayaKapal->penerima)
+                <tr>
+                    <td>Penerima</td>
+                    <td>: {{ $biayaKapal->penerima }}</td>
+                </tr>
+                @endif
             </table>
         </div>
 
