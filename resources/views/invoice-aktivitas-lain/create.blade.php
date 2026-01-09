@@ -665,7 +665,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         $('#nama_barang_select').select2({ placeholder: 'Pilih Nama Barang', allowClear: true, width: '100%' });
         $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
         $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
-        $('#penerima').select2({ placeholder: 'Pilih Penerima', allowClear: true, width: '100%' });
+        $('#penerima').select2({ placeholder: 'Pilih atau ketik nama penerima', allowClear: true, width: '100%', tags: true });
 
         // Format currency input
         const totalInput = document.getElementById('total');
