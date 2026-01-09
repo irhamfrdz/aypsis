@@ -352,6 +352,27 @@
                     @enderror
                 </div>
 
+                <!-- Penerima -->
+                <div>
+                    <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                        Penerima <span class="text-red-500">*</span>
+                    </label>
+                    <select id="penerima" 
+                            name="penerima" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('penerima') border-red-500 @enderror"
+                            required>
+                        <option value="">-- Pilih atau ketik nama penerima --</option>
+                        @foreach($karyawans as $karyawan)
+                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima') == $karyawan->nama_lengkap ? 'selected' : '' }}>
+                                {{ $karyawan->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('penerima')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- PPN (for Biaya Penumpukan) -->
                 <div id="ppn_wrapper" class="hidden">
                     <label for="ppn" class="block text-sm font-medium text-gray-700 mb-2">
@@ -491,6 +512,7 @@
 </div>
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     // Store pricelist buruh data
     const pricelistBuruhData = @json($pricelistBuruh);
@@ -742,6 +764,48 @@
     if (addBarangBtn) {
         addBarangBtn.addEventListener('click', function() {
             addBarangInput();
+        });
+    }
+
+    // ============= PENERIMA SELECT2 INITIALIZATION =============
+    // Load Select2 if jQuery is available
+    if (typeof jQuery !== 'undefined') {
+        // Check if Select2 is loaded
+        function initPenerimaSelect2() {
+            if (typeof jQuery.fn.select2 !== 'undefined') {
+                jQuery('#penerima').select2({
+                    placeholder: '-- Pilih atau ketik nama penerima --',
+                    allowClear: true,
+                    tags: true,
+                    width: '100%'
+                });
+            } else {
+                // Load Select2 CSS
+                if (!document.querySelector('link[href*="select2"]')) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css';
+                    document.head.appendChild(link);
+                }
+                
+                // Load Select2 JS
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+                script.onload = function() {
+                    jQuery('#penerima').select2({
+                        placeholder: '-- Pilih atau ketik nama penerima --',
+                        allowClear: true,
+                        tags: true,
+                        width: '100%'
+                    });
+                };
+                document.head.appendChild(script);
+            }
+        }
+        
+        // Initialize on DOM ready
+        jQuery(document).ready(function() {
+            initPenerimaSelect2();
         });
     }
 
@@ -1355,6 +1419,34 @@
 
 @push('styles')
 <style>
+    /* Select2 Styling */
+    .select2-container {
+        width: 100% !important;
+    }
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+        padding: 6px 12px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.5rem !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        padding-left: 0 !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.5rem !important;
+    }
+    .select2-container--open .select2-selection--single {
+        border-color: #3b82f6 !important;
+    }
+    .select2-results__option--highlighted {
+        background-color: #3b82f6 !important;
+    }
+
     /* Searchable Multi-Select Styling */
     #kapal_container, #voyage_container_input {
         transition: all 0.15s ease;

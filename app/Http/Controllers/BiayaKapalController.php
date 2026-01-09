@@ -7,6 +7,7 @@ use App\Models\MasterKapal;
 use App\Models\KlasifikasiBiaya;
 use App\Models\PricelistBuruh;
 use App\Models\BiayaKapalBarang;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -99,7 +100,10 @@ class BiayaKapalController extends Controller
         // Get active pricelist buruh for barang selection
         $pricelistBuruh = PricelistBuruh::where('is_active', true)->orderBy('barang')->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh'));
+        // Get karyawans for penerima dropdown
+        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans'));
     }
 
     /**
