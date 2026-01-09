@@ -114,8 +114,18 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $biaya->tanggal ? \Carbon\Carbon::parse($biaya->tanggal)->format('d/M/Y') : '-' }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap">
-                                <span class="text-xs font-semibold text-gray-900">{{ $biaya->nama_kapal ?: '-' }}</span>
+                            <td class="px-3 py-2">
+                                @php
+                                    $namaKapals = is_array($biaya->nama_kapal) ? $biaya->nama_kapal : ($biaya->nama_kapal ? [$biaya->nama_kapal] : []);
+                                @endphp
+                                @if(count($namaKapals) > 0)
+                                    <span class="text-xs font-semibold text-gray-900">{{ $namaKapals[0] }}</span>
+                                    @if(count($namaKapals) > 1)
+                                        <span class="text-xs text-blue-600">+{{ count($namaKapals) - 1 }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-gray-500">-</span>
+                                @endif
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs">
                                 @php

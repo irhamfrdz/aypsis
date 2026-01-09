@@ -41,7 +41,14 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Nama Kapal</label>
-                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->nama_kapal }}</p>
+                @php
+                    $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
+                @endphp
+                <div class="flex flex-wrap gap-2">
+                    @foreach($namaKapals as $kapal)
+                        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full">{{ $kapal }}</span>
+                    @endforeach
+                </div>
             </div>
 
             <div>
