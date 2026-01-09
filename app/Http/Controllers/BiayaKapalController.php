@@ -111,6 +111,13 @@ class BiayaKapalController extends Controller
      */
     public function store(Request $request)
     {
+        // Clean up nominal value before validation (remove thousand separator)
+        if ($request->has('nominal')) {
+            $request->merge([
+                'nominal' => str_replace('.', '', $request->nominal)
+            ]);
+        }
+        
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'nomor_invoice' => 'required|string|unique:biaya_kapals,nomor_invoice|max:20',
@@ -131,10 +138,6 @@ class BiayaKapalController extends Controller
 
         try {
             DB::beginTransaction();
-
-            // Remove formatting from nominal (remove dots, convert comma to dot)
-            $nominal = str_replace(['.', ','], ['', '.'], $validated['nominal']);
-            $validated['nominal'] = $nominal;
 
             // Handle file upload
             if ($request->hasFile('bukti')) {
