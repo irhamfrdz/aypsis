@@ -1218,8 +1218,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     <input type="number" 
                            name="barang_detail[${index}][jumlah]" 
                            value="${existingJumlah || '1'}"
-                           min="0" 
-                           step="0.01"
+                           min="1" 
                            class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
                            placeholder="0" 
                            required>
@@ -1280,13 +1279,13 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             barangSelects.forEach((select, index) => {
                 const selectedOption = $(select).find('option:selected');
                 const tarif = parseFloat(selectedOption.data('tarif')) || 0;
-                const jumlah = parseFloat(jumlahInputs[index].value) || 0;
+                const jumlah = parseInt(jumlahInputs[index].value) || 0;
                 total += tarif * jumlah;
             });
             
             if (total > 0) {
                 const totalInput = document.getElementById('total');
-                totalInput.value = Math.round(total).toLocaleString('id-ID');
+                totalInput.value = total.toLocaleString('id-ID');
             }
         }
         
