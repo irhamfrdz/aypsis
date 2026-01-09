@@ -253,8 +253,12 @@
         <div class="info-section">
             <table class="info-table">
                 <tr>
-                    <td>Nomor Invoice</td>
+                    <td>Nomor</td>
                     <td>: {{ $biayaKapal->nomor_invoice }}</td>
+                </tr>
+                <tr>
+                    <td>Jenis Biaya</td>
+                    <td>: {{ $biayaKapal->jenis_biaya_label }}</td>
                 </tr>
                 @if($biayaKapal->nomor_referensi)
                 <tr>
@@ -262,80 +266,75 @@
                     <td>: {{ $biayaKapal->nomor_referensi }}</td>
                 </tr>
                 @endif
-                <tr>
-                    <td>Nama Kapal</td>
-                    <td>: 
-                        @php
-                            $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
-                        @endphp
-                        {{ implode(', ', $namaKapals) }}
-                    </td>
-                </tr>
-                @if($biayaKapal->no_voyage && count($biayaKapal->no_voyage) > 0)
-                <tr>
-                    <td>Nomor Voyage</td>
-                    <td>: 
-                        @php
-                            $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : [$biayaKapal->no_voyage];
-                        @endphp
-                        {{ implode(', ', $noVoyages) }}
-                    </td>
-                </tr>
-                @endif
-                <tr>
-                    <td>Jenis Biaya</td>
-                    <td>: {{ $biayaKapal->jenis_biaya_label }}</td>
-                </tr>
             </table>
         </div>
 
-        <!-- Detail Barang (if Biaya Buruh) -->
-        @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
+        <!-- Detail Biaya Kapal -->
         <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang:</strong>
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya Kapal:</strong>
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 45%;">Nama Barang</th>
-                        <th style="width: 15%;">Jumlah</th>
-                        <th style="width: 17%;">Tarif</th>
-                        <th style="width: 18%;">Subtotal</th>
+                        <th style="width: 25%;">Nama Kapal</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 15%;">No. Voyage</th>
+                        @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
+                        <th style="width: 25%;">Detail Barang</th>
+                        @else
+                        <th style="width: 25%;">Keterangan</th>
+                        @endif
+                        <th style="width: 15%;">Biaya</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($biayaKapal->barangDetails as $index => $detail)
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ $detail->pricelistBuruh->barang ?? '-' }}</td>
-                        <td class="text-center">{{ $detail->jumlah }}</td>
-                        <td class="text-right">Rp {{ number_format($detail->tarif, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
+                    @php
+                        $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
+                        $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
+                        $maxCount = max(count($namaKapals), count($noVoyages), 1);
+                    @endphp
+                    
+                    @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
+                        {{-- Jika ada detail barang, tampilkan per barang --}}
+                        @foreach($biayaKapal->barangDetails as $index => $detail)
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $namaKapals[0] ?? '-' }}@if(count($namaKapals) > 1), +{{ count($namaKapals) - 1 }} kapal@endif</td>
+                            <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</td>
+                            <td class="text-center">{{ $noVoyages[0] ?? '-' }}@if(count($noVoyages) > 1), +{{ count($noVoyages) - 1 }}@endif</td>
+                            <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
+                            <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                    @else
+                        {{-- Jika tidak ada detail barang, tampilkan per kapal/voyage --}}
+                        @for($i = 0; $i < $maxCount; $i++)
+                        <tr>
+                            <td class="text-center">{{ $i + 1 }}</td>
+                            <td>{{ $namaKapals[$i] ?? ($i == 0 ? '-' : '') }}</td>
+                            <td class="text-center">{{ $i == 0 ? \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') : '' }}</td>
+                            <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
+                            <td>{{ $i == 0 ? ($biayaKapal->keterangan ?? '-') : '' }}</td>
+                            <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
+                        </tr>
+                        @endfor
+                    @endif
+                    
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                        <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        @else
-        <!-- Show Nominal if no detail barang -->
-        <div style="margin-bottom: 12px;">
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
-                <tr class="total-row">
-                    <td style="width: 70%; text-align: right;"><strong>TOTAL BIAYA</strong></td>
-                    <td style="width: 30%; text-align: right;"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
-                </tr>
-            </table>
-        </div>
-        @endif
 
         <!-- Keterangan -->
         <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
             <strong>Keterangan:</strong><br>
-            {{ $biayaKapal->keterangan ?? '' }}
+            @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
+                {{-- Jika ada detail barang, tampilkan keterangan di sini --}}
+                {{ $biayaKapal->keterangan ?? '' }}
+            @endif
         </div>
 
         <!-- Signature Section -->
