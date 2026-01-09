@@ -255,12 +255,10 @@
                     <td>Jenis Biaya</td>
                     <td>: {{ $biayaKapal->jenis_biaya_label }}</td>
                 </tr>
-                @if($biayaKapal->nomor_referensi)
                 <tr>
                     <td>Nomor Referensi</td>
-                    <td>: {{ $biayaKapal->nomor_referensi }}</td>
+                    <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
                 </tr>
-                @endif
                 @if($biayaKapal->penerima)
                 <tr>
                     <td>Penerima</td>
