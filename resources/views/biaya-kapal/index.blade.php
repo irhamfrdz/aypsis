@@ -164,6 +164,15 @@
                                     </a>
                                     @endcan
                                     
+                                    @can('biaya-kapal-view')
+                                    <a href="{{ route('biaya-kapal.print', $biaya->id) }}"
+                                       class="inline-flex items-center px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded transition duration-150"
+                                       title="Print"
+                                       target="_blank">
+                                        <i class="fas fa-print text-xs"></i>
+                                    </a>
+                                    @endcan
+                                    
                                     @can('biaya-kapal-update')
                                     <a href="{{ route('biaya-kapal.edit', $biaya->id) }}"
                                        class="inline-flex items-center px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded transition duration-150"

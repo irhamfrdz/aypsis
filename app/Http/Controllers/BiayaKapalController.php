@@ -156,6 +156,15 @@ class BiayaKapalController extends Controller
     }
 
     /**
+     * Print biaya kapal detail.
+     */
+    public function print(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
+        return view('biaya-kapal.print', compact('biayaKapal'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(BiayaKapal $biayaKapal)
