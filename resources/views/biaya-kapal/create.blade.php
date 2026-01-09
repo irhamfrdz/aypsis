@@ -750,7 +750,7 @@
         
         let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
         allKapalsData.forEach(kapal => {
-            kapalOptions += `<option value="${kapal.nama}">${kapal.nama}</option>`;
+            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
         });
         
         section.innerHTML = `
