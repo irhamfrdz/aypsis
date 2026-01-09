@@ -11,6 +11,8 @@ class BiayaKapalBarang extends Model
     protected $fillable = [
         'biaya_kapal_id',
         'pricelist_buruh_id',
+        'kapal',
+        'voyage',
         'jumlah',
         'tarif',
         'subtotal',

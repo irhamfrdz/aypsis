@@ -126,14 +126,27 @@ class BiayaKapalController extends Controller
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
             'no_voyage.*' => 'string',
+            'no_bl' => 'nullable|array',
+            'no_bl.*' => 'string',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
             'penerima' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'ppn' => 'nullable|numeric|min:0',
+            'pph' => 'nullable|numeric|min:0',
+            'total_biaya' => 'nullable|numeric|min:0',
+            // Old structure (for backward compatibility)
             'barang' => 'nullable|array',
-            'barang.*.barang_id' => 'required|exists:pricelist_buruh,id',
-            'barang.*.jumlah' => 'required|numeric|min:0',
+            'barang.*.barang_id' => 'required_with:barang|exists:pricelist_buruh,id',
+            'barang.*.jumlah' => 'required_with:barang|numeric|min:0',
+            // New kapal sections structure
+            'kapal_sections' => 'nullable|array',
+            'kapal_sections.*.kapal' => 'required_with:kapal_sections|string|max:255',
+            'kapal_sections.*.voyage' => 'required_with:kapal_sections|string|max:255',
+            'kapal_sections.*.barang' => 'required_with:kapal_sections|array',
+            'kapal_sections.*.barang.*.barang_id' => 'required|exists:pricelist_buruh,id',
+            'kapal_sections.*.barang.*.jumlah' => 'required|numeric|min:0',
         ]);
 
         try {
@@ -150,9 +163,41 @@ class BiayaKapalController extends Controller
             // Create BiayaKapal record
             $biayaKapal = BiayaKapal::create($validated);
 
-            // Store barang details in separate table if exists
-            if ($request->has('barang') && !empty($request->barang)) {
-                $barangDetails = [];
+            // Store barang details - Handle both old and new structure
+            $barangDetails = [];
+            
+            // NEW STRUCTURE: kapal sections (for multi-kapal biaya buruh)
+            if ($request->has('kapal_sections') && !empty($request->kapal_sections)) {
+                foreach ($request->kapal_sections as $sectionIndex => $section) {
+                    $kapalName = $section['kapal'];
+                    $voyageName = $section['voyage'];
+                    
+                    if (isset($section['barang']) && is_array($section['barang'])) {
+                        foreach ($section['barang'] as $item) {
+                            $barang = PricelistBuruh::find($item['barang_id']);
+                            if ($barang) {
+                                $subtotal = $barang->tarif * $item['jumlah'];
+                                
+                                // Save to biaya_kapal_barang table with kapal and voyage info
+                                BiayaKapalBarang::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'pricelist_buruh_id' => $barang->id,
+                                    'kapal' => $kapalName,
+                                    'voyage' => $voyageName,
+                                    'jumlah' => $item['jumlah'],
+                                    'tarif' => $barang->tarif,
+                                    'subtotal' => $subtotal,
+                                ]);
+
+                                // Build keterangan string with kapal and voyage info
+                                $barangDetails[] = "[$kapalName - Voyage $voyageName] " . $barang->barang . ' x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
+                            }
+                        }
+                    }
+                }
+            }
+            // OLD STRUCTURE: flat barang array (for backward compatibility)
+            elseif ($request->has('barang') && !empty($request->barang)) {
                 foreach ($request->barang as $item) {
                     $barang = PricelistBuruh::find($item['barang_id']);
                     if ($barang) {
@@ -171,15 +216,15 @@ class BiayaKapalController extends Controller
                         $barangDetails[] = $barang->barang . ' x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
                     }
                 }
-                
-                // Update keterangan with barang details
-                if (!empty($barangDetails)) {
-                    $keteranganBarang = "Detail Barang Buruh:\n" . implode("\n", $barangDetails);
-                    $biayaKapal->keterangan = $biayaKapal->keterangan 
-                        ? $biayaKapal->keterangan . "\n\n" . $keteranganBarang 
-                        : $keteranganBarang;
-                    $biayaKapal->save();
-                }
+            }
+            
+            // Update keterangan with barang details
+            if (!empty($barangDetails)) {
+                $keteranganBarang = "Detail Barang Buruh:\n" . implode("\n", $barangDetails);
+                $biayaKapal->keterangan = $biayaKapal->keterangan 
+                    ? $biayaKapal->keterangan . "\n\n" . $keteranganBarang 
+                    : $keteranganBarang;
+                $biayaKapal->save();
             }
 
             DB::commit();
