@@ -53,14 +53,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Biaya</label>
-                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
-                    @if($biayaKapal->jenis_biaya == 'bahan_bakar') bg-red-100 text-red-800
-                    @elseif($biayaKapal->jenis_biaya == 'pelabuhan') bg-blue-100 text-blue-800
-                    @elseif($biayaKapal->jenis_biaya == 'perbaikan') bg-yellow-100 text-yellow-800
-                    @elseif($biayaKapal->jenis_biaya == 'awak_kapal') bg-green-100 text-green-800
-                    @elseif($biayaKapal->jenis_biaya == 'asuransi') bg-purple-100 text-purple-800
-                    @else bg-gray-100 text-gray-800
-                    @endif">
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
                     {{ $biayaKapal->jenis_biaya_label }}
                 </div>
             </div>

@@ -128,28 +128,8 @@
                                 @endif
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs">
-                                @php
-                                    $badgeColors = [
-                                        'bahan_bakar' => 'bg-yellow-100 text-yellow-800',
-                                        'pelabuhan' => 'bg-blue-100 text-blue-800',
-                                        'perbaikan' => 'bg-red-100 text-red-800',
-                                        'awak_kapal' => 'bg-green-100 text-green-800',
-                                        'asuransi' => 'bg-purple-100 text-purple-800',
-                                        'lainnya' => 'bg-gray-100 text-gray-800',
-                                    ];
-                                    $jenisLabels = [
-                                        'bahan_bakar' => 'Bahan Bakar',
-                                        'pelabuhan' => 'Pelabuhan',
-                                        'perbaikan' => 'Perbaikan',
-                                        'awak_kapal' => 'Awak Kapal',
-                                        'asuransi' => 'Asuransi',
-                                        'lainnya' => 'Lainnya',
-                                    ];
-                                    $colorClass = $badgeColors[$biaya->jenis_biaya] ?? 'bg-gray-100 text-gray-800';
-                                    $label = $jenisLabels[$biaya->jenis_biaya] ?? ucfirst($biaya->jenis_biaya);
-                                @endphp
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                                    {{ $label }}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ $biaya->jenis_biaya_label }}
                                 </span>
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">

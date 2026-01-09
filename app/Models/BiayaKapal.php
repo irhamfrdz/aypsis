@@ -38,16 +38,8 @@ class BiayaKapal extends Model
 
     public function getJenisBiayaLabelAttribute()
     {
-        $labels = [
-            'bahan_bakar' => 'Bahan Bakar',
-            'pelabuhan' => 'Pelabuhan',
-            'perbaikan' => 'Perbaikan',
-            'awak_kapal' => 'Awak Kapal',
-            'asuransi' => 'Asuransi',
-            'lainnya' => 'Lainnya',
-        ];
-
-        return $labels[$this->jenis_biaya] ?? $this->jenis_biaya;
+        // Use relationship to get nama from klasifikasi_biayas table
+        return $this->klasifikasiBiaya->nama ?? $this->jenis_biaya;
     }
 
     public function getBuktiFotoAttribute()
