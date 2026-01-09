@@ -1186,7 +1186,7 @@
                                 <td><input type="checkbox" name="permissions[biaya-kapal][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['create']) && $userMatrixPermissions['biaya-kapal']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['update']) && $userMatrixPermissions['biaya-kapal']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['delete']) && $userMatrixPermissions['biaya-kapal']['delete']) checked @endif></td>
-                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[biaya-kapal][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['approve']) && $userMatrixPermissions['biaya-kapal']['approve']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['print']) && $userMatrixPermissions['biaya-kapal']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['export']) && $userMatrixPermissions['biaya-kapal']['export']) checked @endif></td>
                             </tr>
