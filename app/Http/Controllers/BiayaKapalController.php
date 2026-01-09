@@ -19,7 +19,7 @@ class BiayaKapalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = BiayaKapal::with('klasifikasiBiaya');
+        $query = BiayaKapal::with(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -246,6 +246,7 @@ class BiayaKapalController extends Controller
      */
     public function show(BiayaKapal $biayaKapal)
     {
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
         return view('biaya-kapal.show', compact('biayaKapal'));
     }
 
