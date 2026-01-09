@@ -294,17 +294,27 @@
                     @endphp
                     
                     @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-                        {{-- Jika ada detail barang, tampilkan per barang --}}
-                        @foreach($biayaKapal->barangDetails as $index => $detail)
+                        {{-- Jika ada detail barang, gabung semua barang dalam 1 row --}}
                         <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $namaKapals[0] ?? '-' }}{{ count($namaKapals) > 1 ? ', +' . (count($namaKapals) - 1) . ' kapal' : '' }}</td>
+                            <td class="text-center">1</td>
+                            <td>
+                                @foreach($namaKapals as $index => $kapal)
+                                    {{ $kapal }}{{ $index < count($namaKapals) - 1 ? ', ' : '' }}
+                                @endforeach
+                            </td>
                             <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
-                            <td class="text-center">{{ $noVoyages[0] ?? '-' }}{{ count($noVoyages) > 1 ? ', +' . (count($noVoyages) - 1) : '' }}</td>
-                            <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
-                            <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                            <td class="text-center">
+                                @foreach($noVoyages as $index => $voyage)
+                                    {{ $voyage }}{{ $index < count($noVoyages) - 1 ? ', ' : '' }}
+                                @endforeach
+                            </td>
+                            <td>
+                                @foreach($biayaKapal->barangDetails as $index => $detail)
+                                    {{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x){{ $index < $biayaKapal->barangDetails->count() - 1 ? ', ' : '' }}
+                                @endforeach
+                            </td>
+                            <td class="text-right">Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</td>
                         </tr>
-                        @endforeach
                     @else
                         {{-- Jika tidak ada detail barang, tampilkan per kapal/voyage --}}
                         @for($i = 0; $i < $maxCount; $i++)
