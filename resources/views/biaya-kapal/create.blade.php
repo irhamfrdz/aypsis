@@ -123,7 +123,7 @@
                 </div>
 
                 <!-- Nama Kapal -->
-                <div>
+                <div id="kapal_wrapper">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Kapal <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">✓ Multi-Select</span>
                     </label>
@@ -188,7 +188,7 @@
                 </div>
 
                 <!-- Nomor Voyage -->
-                <div>
+                <div id="voyage_wrapper">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Voyage <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">✓ Multi-Select</span>
                     </label>
@@ -535,6 +535,8 @@
     const pphInput = document.getElementById('pph');
     const totalBiayaInput = document.getElementById('total_biaya');
     const blWrapper = document.querySelector('#bl_container_input').closest('div').parentElement;
+    const kapalWrapper = document.getElementById('kapal_wrapper');
+    const voyageWrapper = document.getElementById('voyage_wrapper');
 
     // Format nominal input with thousand separator
     
@@ -629,6 +631,12 @@
             barangWrapper.classList.remove('hidden');
             initializeKapalSections();
             
+            // Hide Nama Kapal and Nomor Voyage fields (already in section)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            
             // Hide BL wrapper for Biaya Buruh
             blWrapper.classList.add('hidden');
             clearBlSelections();
@@ -647,6 +655,10 @@
             ppnWrapper.classList.remove('hidden');
             pphWrapper.classList.remove('hidden');
             totalBiayaWrapper.classList.remove('hidden');
+            
+            // Show Nama Kapal and Nomor Voyage fields
+            kapalWrapper.classList.remove('hidden');
+            voyageWrapper.classList.remove('hidden');
             
             // Show BL wrapper for Biaya Penumpukan
             blWrapper.classList.remove('hidden');
@@ -668,6 +680,10 @@
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
             
+            // Show Nama Kapal and Nomor Voyage fields for other types
+            kapalWrapper.classList.remove('hidden');
+            voyageWrapper.classList.remove('hidden');
+            
             // Show BL wrapper for other types
             blWrapper.classList.remove('hidden');
         }
@@ -681,6 +697,25 @@
         const blOptions = document.querySelectorAll('.bl-option');
         blOptions.forEach(option => option.classList.remove('selected'));
         updateBlSelectedCount();
+    }
+    
+    // Function to clear Kapal selections
+    function clearKapalSelections() {
+        selectedKapals = [];
+        selectedKapalChips.innerHTML = '';
+        hiddenKapalInputs.innerHTML = '';
+        kapalOptions.forEach(option => option.classList.remove('selected'));
+        updateKapalSelectedCount();
+    }
+    
+    // Function to clear Voyage selections
+    function clearVoyageSelections() {
+        selectedVoyages = [];
+        selectedVoyageChips.innerHTML = '';
+        hiddenVoyageInputs.innerHTML = '';
+        const voyageOptions = document.querySelectorAll('.voyage-option');
+        voyageOptions.forEach(option => option.classList.remove('selected'));
+        updateVoyageSelectedCount();
     }
 
     // ============= NEW KAPAL SECTIONS MANAGEMENT =============
