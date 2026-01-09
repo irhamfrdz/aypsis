@@ -125,7 +125,7 @@
                 <!-- Nama Kapal -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Kapal <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
+                        Nama Kapal <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">✓ Multi-Select</span>
                     </label>
                     
                     {{-- Hidden inputs for selected kapal --}}
@@ -190,7 +190,7 @@
                 <!-- Nomor Voyage -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Voyage <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
+                        Nomor Voyage <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">✓ Multi-Select</span>
                     </label>
                     
                     {{-- Hidden inputs for selected voyage --}}
@@ -247,7 +247,7 @@
                 <!-- Nomor BL -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor BL <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
+                        Nomor BL <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">✓ Multi-Select</span>
                     </label>
                     
                     {{-- Hidden inputs for selected BL --}}
@@ -486,6 +486,9 @@
                         <h4 class="text-sm font-semibold text-blue-800">Informasi:</h4>
                         <ul class="mt-2 text-xs text-blue-700 list-disc list-inside space-y-1">
                             <li>Field yang bertanda <span class="text-red-500">*</span> wajib diisi</li>
+                            <li><strong>Kapal, Voyage, dan BL mendukung multi-select</strong> - klik untuk menambahkan lebih dari satu</li>
+                            <li>Gunakan tombol "Select All" untuk memilih semua atau "Clear Semua" untuk menghapus pilihan</li>
+                            <li>Dropdown tetap terbuka untuk memudahkan memilih banyak item sekaligus</li>
                             <li>Nominal akan otomatis diformat dengan pemisah ribuan</li>
                             <li>Upload bukti bersifat opsional namun direkomendasikan untuk dokumentasi</li>
                             <li>Pastikan data yang diinput sudah benar sebelum menyimpan</li>
@@ -826,6 +829,21 @@
     kapalSearch.addEventListener('focus', function() {
         kapalDropdown.classList.remove('hidden');
         filterKapalOptions();
+        
+        // Show hint on first focus
+        if (!localStorage.getItem('kapal_multiselect_hint_shown')) {
+            const hint = document.createElement('div');
+            hint.className = 'px-3 py-2 bg-green-50 border-b border-green-200 text-xs text-green-700 font-medium';
+            hint.innerHTML = '<i class="fas fa-lightbulb mr-1"></i> Tip: Klik beberapa item untuk memilih lebih dari 1 kapal';
+            kapalDropdown.insertBefore(hint, kapalDropdown.firstChild);
+            localStorage.setItem('kapal_multiselect_hint_shown', 'true');
+            
+            setTimeout(() => {
+                hint.style.transition = 'opacity 0.5s';
+                hint.style.opacity = '0';
+                setTimeout(() => hint.remove(), 500);
+            }, 5000);
+        }
     });
     
     // Hide dropdown when clicking outside
@@ -865,10 +883,17 @@
                 updateKapalSelectedCount();
                 updateVoyages();
                 this.classList.add('selected');
+            } else {
+                // If already selected, show visual feedback
+                this.style.backgroundColor = '#fee2e2';
+                setTimeout(() => {
+                    this.style.backgroundColor = '';
+                }, 300);
             }
             
             kapalSearch.value = '';
-            kapalDropdown.classList.add('hidden');
+            // Don't hide dropdown to allow multiple selections
+            // kapalDropdown.classList.add('hidden');
         });
     });
     
@@ -955,6 +980,25 @@
         if (selectedKapals.length > 0) {
             voyageDropdown.classList.remove('hidden');
             filterVoyageOptions();
+            
+            // Show hint on first focus
+            if (!localStorage.getItem('voyage_multiselect_hint_shown')) {
+                setTimeout(() => {
+                    const hint = document.createElement('div');
+                    hint.className = 'px-3 py-2 bg-green-50 border-b border-green-200 text-xs text-green-700 font-medium';
+                    hint.innerHTML = '<i class="fas fa-lightbulb mr-1"></i> Tip: Klik beberapa voyage untuk memilih lebih dari 1';
+                    if (voyageDropdown.firstChild && !voyageDropdown.firstChild.textContent.includes('Memuat')) {
+                        voyageDropdown.insertBefore(hint, voyageDropdown.firstChild);
+                        localStorage.setItem('voyage_multiselect_hint_shown', 'true');
+                        
+                        setTimeout(() => {
+                            hint.style.transition = 'opacity 0.5s';
+                            hint.style.opacity = '0';
+                            setTimeout(() => hint.remove(), 500);
+                        }, 5000);
+                    }
+                }, 500);
+            }
         }
     });
     
@@ -1101,10 +1145,17 @@
                                 updateVoyageSelectedCount();
                                 updateBls();
                                 this.classList.add('selected');
+                            } else {
+                                // If already selected, show visual feedback
+                                this.style.backgroundColor = '#fee2e2';
+                                setTimeout(() => {
+                                    this.style.backgroundColor = '';
+                                }, 300);
                             }
                             
                             voyageSearch.value = '';
-                            voyageDropdown.classList.add('hidden');
+                            // Don't hide dropdown to allow multiple selections
+                            // voyageDropdown.classList.add('hidden');
                         });
                     });
                 } else {
@@ -1135,6 +1186,25 @@
         if (selectedVoyages.length > 0) {
             blDropdown.classList.remove('hidden');
             filterBlOptions();
+            
+            // Show hint on first focus
+            if (!localStorage.getItem('bl_multiselect_hint_shown')) {
+                setTimeout(() => {
+                    const hint = document.createElement('div');
+                    hint.className = 'px-3 py-2 bg-green-50 border-b border-green-200 text-xs text-green-700 font-medium';
+                    hint.innerHTML = '<i class="fas fa-lightbulb mr-1"></i> Tip: Klik beberapa kontainer untuk memilih lebih dari 1';
+                    if (blDropdown.firstChild && !blDropdown.firstChild.textContent.includes('Memuat')) {
+                        blDropdown.insertBefore(hint, blDropdown.firstChild);
+                        localStorage.setItem('bl_multiselect_hint_shown', 'true');
+                        
+                        setTimeout(() => {
+                            hint.style.transition = 'opacity 0.5s';
+                            hint.style.opacity = '0';
+                            setTimeout(() => hint.remove(), 500);
+                        }, 5000);
+                    }
+                }, 500);
+            }
         }
     });
     
@@ -1299,10 +1369,17 @@
                                 updateBlHiddenInputs();
                                 updateBlSelectedCount();
                                 this.classList.add('selected');
+                            } else {
+                                // If already selected, show visual feedback
+                                this.style.backgroundColor = '#fee2e2';
+                                setTimeout(() => {
+                                    this.style.backgroundColor = '';
+                                }, 300);
                             }
                             
                             blSearch.value = '';
-                            blDropdown.classList.add('hidden');
+                            // Don't hide dropdown to allow multiple selections
+                            // blDropdown.classList.add('hidden');
                         });
                     });
                 } else {
@@ -1480,17 +1557,28 @@
         opacity: 1;
     }
     
-    .kapal-option, .voyage-option {
+    .kapal-option, .voyage-option, .bl-option {
         transition: background-color 0.15s ease;
+        position: relative;
     }
     
-    .kapal-option:hover, .voyage-option:hover {
+    .kapal-option:hover, .voyage-option:hover, .bl-option:hover {
         background-color: #eff6ff !important;
     }
     
-    .kapal-option.selected, .voyage-option.selected {
-        background-color: #dbeafe;
-        opacity: 0.6;
+    .kapal-option.selected, .voyage-option.selected, .bl-option.selected {
+        background-color: #dbeafe !important;
+        border-left: 3px solid #3b82f6;
+        padding-left: 9px;
+    }
+    
+    .kapal-option.selected::after, .voyage-option.selected::after, .bl-option.selected::after {
+        content: '\u2713';
+        position: absolute;
+        right: 12px;
+        color: #3b82f6;
+        font-weight: bold;
+        font-size: 1rem;
     }
     
     #kapal_search::placeholder, #voyage_search::placeholder {
