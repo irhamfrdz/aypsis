@@ -294,9 +294,9 @@
                         @foreach($biayaKapal->barangDetails as $index => $detail)
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $namaKapals[0] ?? '-' }}@if(count($namaKapals) > 1), +{{ count($namaKapals) - 1 }} kapal@endif</td>
+                            <td>{{ $namaKapals[0] ?? '-' }}{{ count($namaKapals) > 1 ? ', +' . (count($namaKapals) - 1) . ' kapal' : '' }}</td>
                             <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</td>
-                            <td class="text-center">{{ $noVoyages[0] ?? '-' }}@if(count($noVoyages) > 1), +{{ count($noVoyages) - 1 }}@endif</td>
+                            <td class="text-center">{{ $noVoyages[0] ?? '-' }}{{ count($noVoyages) > 1 ? ', +' . (count($noVoyages) - 1) : '' }}</td>
                             <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
                             <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                         </tr>
