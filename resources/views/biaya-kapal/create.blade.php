@@ -441,6 +441,9 @@
     const jenisBiayaSelect = document.getElementById('jenis_biaya');
     const barangWrapper = document.getElementById('barang_wrapper');
     const addBarangBtn = document.getElementById('add_barang_btn');
+    
+    // Get BL wrapper element
+    const blWrapper = document.querySelector('#bl_container_input').closest('div').parentElement;
 
     // Toggle barang wrapper based on jenis biaya
     jenisBiayaSelect.addEventListener('change', function() {
@@ -451,13 +454,30 @@
         if (selectedText.toLowerCase().includes('buruh')) {
             barangWrapper.classList.remove('hidden');
             initializeBarangInputs();
+            
+            // Hide BL wrapper for Biaya Buruh
+            blWrapper.classList.add('hidden');
+            clearBlSelections();
         } else {
             barangWrapper.classList.add('hidden');
             clearBarangInputs();
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
+            
+            // Show BL wrapper for other types
+            blWrapper.classList.remove('hidden');
         }
     });
+    
+    // Function to clear BL selections
+    function clearBlSelections() {
+        selectedBls = {};
+        selectedBlChips.innerHTML = '';
+        hiddenBlInputs.innerHTML = '';
+        const blOptions = document.querySelectorAll('.bl-option');
+        blOptions.forEach(option => option.classList.remove('selected'));
+        updateBlSelectedCount();
+    }
 
     // Barang management functions
     function initializeBarangInputs() {
