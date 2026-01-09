@@ -226,6 +226,11 @@
                     <div class="info-value">{{ $biayaKapal->tanggal->format('d/m/Y') }}</div>
                 </div>
 
+                <div class="info-item">
+                    <div class="info-label">Nomor Invoice:</div>
+                    <div class="info-value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></div>
+                </div>
+
                 @if($biayaKapal->nomor_referensi)
                 <div class="info-item">
                     <div class="info-label">Nomor Referensi:</div>

@@ -1185,6 +1185,9 @@ Route::middleware([
          ]);
 
     // 💰 Biaya Kapal (Ship Costs) Management with permissions
+    Route::get('biaya-kapal/get-next-invoice-number', [\App\Http\Controllers\BiayaKapalController::class, 'getNextInvoiceNumber'])
+         ->name('biaya-kapal.get-next-invoice-number')
+         ->middleware('can:biaya-kapal-create');
     Route::get('biaya-kapal/get-voyages/{namaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'getVoyagesByShip'])
          ->name('biaya-kapal.get-voyages');
     Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])

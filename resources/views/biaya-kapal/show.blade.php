@@ -40,6 +40,11 @@
             @endif
 
             <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Nomor Invoice</label>
+                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->nomor_invoice }}</p>
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Nama Kapal</label>
                 @php
                     $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];

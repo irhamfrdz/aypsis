@@ -52,6 +52,23 @@
                 @enderror
             </div>
 
+            <!-- Nomor Invoice -->
+            <div>
+                <label for="nomor_invoice" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nomor Invoice <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       name="nomor_invoice" 
+                       id="nomor_invoice" 
+                       value="{{ old('nomor_invoice', $biayaKapal->nomor_invoice) }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_invoice') border-red-500 @enderror"
+                       readonly
+                       required>
+                @error('nomor_invoice')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Nomor Referensi -->
             <div>
                 <label for="nomor_referensi" class="block text-sm font-medium text-gray-700 mb-2">

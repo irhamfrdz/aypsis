@@ -44,6 +44,46 @@ class BiayaKapalController extends Controller
     }
 
     /**
+     * Generate next invoice number
+     */
+    public function getNextInvoiceNumber()
+    {
+        try {
+            $currentMonth = date('m');
+            $currentYear = date('y');
+            $prefix = 'BKP';
+            
+            // Get last invoice for current month and year
+            $lastInvoice = BiayaKapal::where('nomor_invoice', 'like', "{$prefix}-{$currentMonth}-{$currentYear}-%")
+                ->orderBy('nomor_invoice', 'desc')
+                ->first();
+            
+            if ($lastInvoice) {
+                // Extract running number from last invoice
+                $parts = explode('-', $lastInvoice->nomor_invoice);
+                $lastNumber = intval(end($parts));
+                $newNumber = $lastNumber + 1;
+            } else {
+                // First invoice of the month
+                $newNumber = 1;
+            }
+            
+            // Format: BKP-MM-YY-NNNNNN
+            $invoiceNumber = sprintf("%s-%s-%s-%06d", $prefix, $currentMonth, $currentYear, $newNumber);
+            
+            return response()->json([
+                'success' => true,
+                'invoice_number' => $invoiceNumber
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor invoice: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -69,6 +109,7 @@ class BiayaKapalController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'nomor_invoice' => 'required|string|unique:biaya_kapals,nomor_invoice|max:20',
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'required|array|min:1',
             'nama_kapal.*' => 'string|max:255',
@@ -187,6 +228,7 @@ class BiayaKapalController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'nomor_invoice' => 'required|string|max:20|unique:biaya_kapals,nomor_invoice,' . $biayaKapal->id,
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'required|string|max:255',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',

@@ -80,6 +80,32 @@
                     @enderror
                 </div>
 
+                <!-- Nomor Invoice (Auto-generated) -->
+                <div>
+                    <label for="nomor_invoice" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Invoice <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="nomor_invoice" 
+                               name="nomor_invoice" 
+                               value="{{ old('nomor_invoice') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_invoice') border-red-500 @enderror"
+                               placeholder="Loading..."
+                               readonly
+                               required>
+                        <div id="invoice_loader" class="absolute right-3 top-3">
+                            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    @error('nomor_invoice')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Nomor Referensi -->
                 <div>
                     <label for="nomor_referensi" class="block text-sm font-medium text-gray-700 mb-2">
@@ -1142,6 +1168,53 @@
             }
         }, 1000);
     }
+
+    // Generate Invoice Number
+    async function generateInvoiceNumber() {
+        const invoiceInput = document.getElementById('nomor_invoice');
+        const loader = document.getElementById('invoice_loader');
+        
+        try {
+            const response = await fetch("{{ route('biaya-kapal.get-next-invoice-number') }}", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                invoiceInput.value = data.invoice_number;
+            } else {
+                // Fallback if server generation fails
+                const now = new Date();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = String(now.getFullYear()).slice(-2);
+                invoiceInput.value = `BKP-${month}-${year}-000001`;
+                console.warn('Failed to generate invoice number from server, using fallback');
+            }
+        } catch (error) {
+            // Fallback if fetch fails
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            invoiceInput.value = `BKP-${month}-${year}-000001`;
+            console.error('Error generating invoice number:', error);
+        } finally {
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        }
+    }
+
+    // Generate invoice number on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        generateInvoiceNumber();
+    });
 </script>
 @endpush
 @endsection

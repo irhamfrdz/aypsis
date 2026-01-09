@@ -98,6 +98,7 @@
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Invoice</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kapal</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Voyage</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Biaya</th>
@@ -114,6 +115,9 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $biaya->tanggal ? \Carbon\Carbon::parse($biaya->tanggal)->format('d/M/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                                {{ $biaya->nomor_invoice }}
                             </td>
                             <td class="px-3 py-2">
                                 @php
@@ -197,7 +201,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-3 py-8 text-center">
+                            <td colspan="9" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-ship text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada data biaya kapal</p>
