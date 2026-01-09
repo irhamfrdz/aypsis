@@ -690,7 +690,7 @@
             </div>
             <div class="w-32">
                 <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah</label>
-                <input type="number" name="barang[${index}][jumlah]" value="${existingJumlah}" min="0" step="0.01" class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="0" required>
+                <input type="number" name="barang[${index}][jumlah]" value="${existingJumlah}" min="1" class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="0" required>
             </div>
             <button type="button" onclick="removeBarangInput(this)" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition">
                 <i class="fas fa-trash"></i>
@@ -729,12 +729,12 @@
         barangSelects.forEach((select, index) => {
             const selectedOption = select.options[select.selectedIndex];
             const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
-            const jumlah = parseFloat(jumlahInputs[index].value) || 0;
+            const jumlah = parseInt(jumlahInputs[index].value) || 0;
             total += tarif * jumlah;
         });
         
         if (total > 0) {
-            nominalInput.value = Math.round(total).toLocaleString('id-ID');
+            nominalInput.value = total.toLocaleString('id-ID');
         }
     }
 
