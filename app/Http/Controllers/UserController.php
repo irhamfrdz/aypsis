@@ -1706,6 +1706,29 @@ class UserController extends Controller
                                 }
                             }
 
+                            // DIRECT FIX: Handle biaya-kapal permissions explicitly
+                            if ($module === 'biaya-kapal' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'biaya-kapal-view',
+                                    'create' => 'biaya-kapal-create',
+                                    'update' => 'biaya-kapal-update',
+                                    'delete' => 'biaya-kapal-delete',
+                                    'print' => 'biaya-kapal-print',
+                                    'export' => 'biaya-kapal-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
                             // DIRECT FIX: Handle master-pengirim-penerima permissions explicitly
                             if ($module === 'master-pengirim-penerima' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                                 // Map action to correct permission name
