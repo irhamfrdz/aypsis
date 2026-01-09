@@ -6,8 +6,10 @@ use App\Models\BiayaKapal;
 use App\Models\MasterKapal;
 use App\Models\KlasifikasiBiaya;
 use App\Models\PricelistBuruh;
+use App\Models\BiayaKapalBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class BiayaKapalController extends Controller
 {
@@ -81,6 +83,8 @@ class BiayaKapalController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+
             // Remove formatting from nominal (remove dots, convert comma to dot)
             $nominal = str_replace(['.', ','], ['', '.'], $validated['nominal']);
             $validated['nominal'] = $nominal;
@@ -93,30 +97,48 @@ class BiayaKapalController extends Controller
                 $validated['bukti'] = $filePath;
             }
 
-            // Store barang data in keterangan if exists
+            // Create BiayaKapal record
+            $biayaKapal = BiayaKapal::create($validated);
+
+            // Store barang details in separate table if exists
             if ($request->has('barang') && !empty($request->barang)) {
                 $barangDetails = [];
                 foreach ($request->barang as $item) {
                     $barang = PricelistBuruh::find($item['barang_id']);
                     if ($barang) {
                         $subtotal = $barang->tarif * $item['jumlah'];
-                        $barangDetails[] = $barang->barang . ' (' . $barang->size . ' - ' . $barang->tipe . ') x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
+                        
+                        // Save to biaya_kapal_barang table
+                        BiayaKapalBarang::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'pricelist_buruh_id' => $barang->id,
+                            'jumlah' => $item['jumlah'],
+                            'tarif' => $barang->tarif,
+                            'subtotal' => $subtotal,
+                        ]);
+
+                        // Build keterangan string
+                        $barangDetails[] = $barang->barang . ' x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
                     }
                 }
+                
+                // Update keterangan with barang details
                 if (!empty($barangDetails)) {
-                    $keteranganBarang = "Detail Barang:\n" . implode("\n", $barangDetails);
-                    $validated['keterangan'] = $validated['keterangan'] 
-                        ? $validated['keterangan'] . "\n\n" . $keteranganBarang 
+                    $keteranganBarang = "Detail Barang Buruh:\n" . implode("\n", $barangDetails);
+                    $biayaKapal->keterangan = $biayaKapal->keterangan 
+                        ? $biayaKapal->keterangan . "\n\n" . $keteranganBarang 
                         : $keteranganBarang;
+                    $biayaKapal->save();
                 }
             }
 
-            BiayaKapal::create($validated);
+            DB::commit();
 
             return redirect()
                 ->route('biaya-kapal.index')
                 ->with('success', 'Data biaya kapal berhasil ditambahkan.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()
                 ->back()
                 ->withInput()

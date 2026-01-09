@@ -105,4 +105,15 @@ class BiayaKapal extends Model
     {
         return $query->whereBetween('tanggal', [$startDate, $endDate]);
     }
+
+    // Relationships
+    public function barangDetails()
+    {
+        return $this->hasMany(BiayaKapalBarang::class, 'biaya_kapal_id');
+    }
+
+    public function klasifikasiBiaya()
+    {
+        return $this->belongsTo(KlasifikasiBiaya::class, 'jenis_biaya', 'kode');
+    }
 }
