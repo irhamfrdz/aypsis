@@ -1220,6 +1220,9 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                            value="${existingJumlah || '1'}"
                            min="0" 
                            step="0.01"
+                           class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                           placeholder="0" 
+                           required>
                            class="jumlah-input w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Contoh: 1.5"
