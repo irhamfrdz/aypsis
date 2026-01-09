@@ -320,15 +320,18 @@
                     @enderror
                 </div>
 
-                <!-- Barang (for Biaya Buruh) -->
+                <!-- Barang (for Biaya Buruh) - NEW MULTI KAPAL SYSTEM -->
                 <div id="barang_wrapper" class="md:col-span-2 hidden">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Barang <span class="text-red-500">*</span>
-                    </label>
-                    <div id="barang_container"></div>
-                    <button type="button" id="add_barang_btn" class="mt-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition">
-                        <i class="fas fa-plus mr-1"></i> Tambah Barang
-                    </button>
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Kapal & Barang <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" id="add_kapal_section_btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Kapal</span>
+                        </button>
+                    </div>
+                    <div id="kapal_sections_container"></div>
                 </div>
 
                 <!-- Nominal -->
@@ -624,7 +627,7 @@
         // Show barang wrapper if "Biaya Buruh" is selected
         if (selectedText.toLowerCase().includes('buruh')) {
             barangWrapper.classList.remove('hidden');
-            initializeBarangInputs();
+            initializeKapalSections();
             
             // Hide BL wrapper for Biaya Buruh
             blWrapper.classList.add('hidden');
@@ -640,7 +643,7 @@
         } else if (selectedText.toLowerCase().includes('penumpukan')) {
             // Show PPN/PPH fields for Biaya Penumpukan
             barangWrapper.classList.add('hidden');
-            clearBarangInputs();
+            clearAllKapalSections();
             ppnWrapper.classList.remove('hidden');
             pphWrapper.classList.remove('hidden');
             totalBiayaWrapper.classList.remove('hidden');
@@ -652,7 +655,7 @@
             calculateTotalBiaya();
         } else {
             barangWrapper.classList.add('hidden');
-            clearBarangInputs();
+            clearAllKapalSections();
             
             // Hide PPN/PPH fields for other types
             ppnWrapper.classList.add('hidden');
@@ -680,7 +683,196 @@
         updateBlSelectedCount();
     }
 
-    // Barang management functions
+    // ============= NEW KAPAL SECTIONS MANAGEMENT =============
+    let kapalSectionCounter = 0;
+    const kapalSectionsContainer = document.getElementById('kapal_sections_container');
+    const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
+    const allKapalsData = @json($kapals);
+    
+    function initializeKapalSections() {
+        kapalSectionsContainer.innerHTML = '';
+        kapalSectionCounter = 0;
+        addKapalSection();
+    }
+    
+    function clearAllKapalSections() {
+        kapalSectionsContainer.innerHTML = '';
+        kapalSectionCounter = 0;
+        nominalInput.value = '';
+    }
+    
+    addKapalSectionBtn.addEventListener('click', function() {
+        addKapalSection();
+    });
+    
+    function addKapalSection() {
+        kapalSectionCounter++;
+        const sectionIndex = kapalSectionCounter;
+        
+        const section = document.createElement('div');
+        section.className = 'kapal-section mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50';
+        section.setAttribute('data-section-index', sectionIndex);
+        
+        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptions += `<option value="${kapal.nama}">${kapal.nama}</option>`;
+        });
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex}</h3>
+                ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                    <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required>
+                        ${kapalOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
+                    <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="block text-xs font-medium text-gray-700 mb-2">Detail Barang</label>
+                <div class="barang-container-section" data-section="${sectionIndex}"></div>
+                <button type="button" onclick="addBarangToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg transition">
+                    <i class="fas fa-plus mr-1"></i> Tambah Barang
+                </button>
+            </div>
+        `;
+        
+        kapalSectionsContainer.appendChild(section);
+        
+        // Setup kapal change listener
+        const kapalSelect = section.querySelector('.kapal-select');
+        kapalSelect.addEventListener('change', function() {
+            loadVoyagesForSection(sectionIndex, this.value);
+        });
+        
+        // Add first barang input
+        addBarangToSection(sectionIndex);
+    }
+    
+    window.removeKapalSection = function(sectionIndex) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        if (section) {
+            section.remove();
+            calculateTotalFromAllSections();
+        }
+    };
+    
+    function loadVoyagesForSection(sectionIndex, kapalNama) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const voyageSelect = section.querySelector('.voyage-select');
+        
+        if (!kapalNama) {
+            voyageSelect.disabled = true;
+            voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            return;
+        }
+        
+        voyageSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.voyages) {
+                    let html = '<option value="">-- Pilih Voyage --</option>';
+                    data.voyages.forEach(voyage => {
+                        html += `<option value="${voyage}">${voyage}</option>`;
+                    });
+                    voyageSelect.innerHTML = html;
+                    voyageSelect.disabled = false;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching voyages:', error);
+                voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+            });
+    }
+    
+    window.addBarangToSection = function(sectionIndex) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.barang-container-section');
+        const barangIndex = container.children.length;
+        
+        let barangOptions = '<option value="">Pilih Nama Barang</option>';
+        pricelistBuruhData.forEach(pricelist => {
+            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}">${pricelist.barang}</option>`;
+        });
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][barang][${barangIndex}][barang_id]" class="barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" required>
+                    ${barangOptions}
+                </select>
+            </div>
+            <div class="w-24">
+                <input type="number" name="kapal_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" min="0" step="0.01" class="jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Jumlah" required>
+            </div>
+            <button type="button" onclick="removeBarangFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        // Add event listeners
+        const barangSelect = inputGroup.querySelector('.barang-select-item');
+        const jumlahInput = inputGroup.querySelector('.jumlah-input-item');
+        
+        barangSelect.addEventListener('change', function() {
+            calculateTotalFromAllSections();
+        });
+        
+        jumlahInput.addEventListener('input', function() {
+            calculateTotalFromAllSections();
+        });
+    };
+    
+    window.removeBarangFromSection = function(button) {
+        const container = button.closest('.barang-container-section');
+        if (container.children.length > 1) {
+            button.closest('.flex').remove();
+            calculateTotalFromAllSections();
+        }
+    };
+    
+    function calculateTotalFromAllSections() {
+        let grandTotal = 0;
+        
+        document.querySelectorAll('.kapal-section').forEach(section => {
+            const barangSelects = section.querySelectorAll('.barang-select-item');
+            const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+            
+            barangSelects.forEach((select, index) => {
+                const selectedOption = select.options[select.selectedIndex];
+                const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+                const jumlah = parseFloat(jumlahInputs[index].value) || 0;
+                grandTotal += tarif * jumlah;
+            });
+        });
+        
+        if (grandTotal > 0) {
+            nominalInput.value = Math.round(grandTotal).toLocaleString('id-ID');
+        } else {
+            nominalInput.value = '';
+        }
+    }
+
+    // Barang management functions (OLD - keep for backward compatibility)
     function initializeBarangInputs() {
         const container = document.getElementById('barang_container');
         container.innerHTML = '';
