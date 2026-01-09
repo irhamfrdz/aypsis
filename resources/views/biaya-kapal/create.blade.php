@@ -125,7 +125,7 @@
                 <!-- Nama Kapal -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Kapal <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
+                        Nama Kapal <span class="text-xs text-gray-500">(Bisa pilih lebih dari 1)</span>
                     </label>
                     
                     {{-- Hidden inputs for selected kapal --}}

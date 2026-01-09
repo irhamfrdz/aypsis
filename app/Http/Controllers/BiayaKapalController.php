@@ -115,7 +115,7 @@ class BiayaKapalController extends Controller
             'tanggal' => 'required|date',
             'nomor_invoice' => 'required|string|unique:biaya_kapals,nomor_invoice|max:20',
             'nomor_referensi' => 'nullable|string|max:100',
-            'nama_kapal' => 'required|array|min:1',
+            'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
             'no_voyage.*' => 'string',
