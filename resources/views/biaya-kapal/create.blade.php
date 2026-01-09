@@ -278,6 +278,17 @@
                     @enderror
                 </div>
 
+                <!-- Barang (for Biaya Buruh) -->
+                <div id="barang_wrapper" class="md:col-span-2 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nama Barang <span class="text-red-500">*</span>
+                    </label>
+                    <div id="barang_container"></div>
+                    <button type="button" id="add_barang_btn" class="mt-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition">
+                        <i class="fas fa-plus mr-1"></i> Tambah Barang
+                    </button>
+                </div>
+
                 <!-- Nominal -->
                 <div>
                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-2">
@@ -380,6 +391,9 @@
 
 @push('scripts')
 <script>
+    // Store pricelist buruh data
+    const pricelistBuruhData = @json($pricelistBuruh);
+
     // Format nominal input with thousand separator
     const nominalInput = document.getElementById('nominal');
     
@@ -422,6 +436,118 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    // ============= JENIS BIAYA TOGGLE =============
+    const jenisBiayaSelect = document.getElementById('jenis_biaya');
+    const barangWrapper = document.getElementById('barang_wrapper');
+    const addBarangBtn = document.getElementById('add_barang_btn');
+
+    // Toggle barang wrapper based on jenis biaya
+    jenisBiayaSelect.addEventListener('change', function() {
+        const selectedValue = this.value;
+        const selectedText = this.options[this.selectedIndex].text;
+        
+        // Show barang wrapper if "Biaya Buruh" is selected
+        if (selectedText.toLowerCase().includes('buruh')) {
+            barangWrapper.classList.remove('hidden');
+            initializeBarangInputs();
+        } else {
+            barangWrapper.classList.add('hidden');
+            clearBarangInputs();
+            // Clear calculated total when switching away from Biaya Buruh
+            nominalInput.value = '';
+        }
+    });
+
+    // Barang management functions
+    function initializeBarangInputs() {
+        const container = document.getElementById('barang_container');
+        container.innerHTML = '';
+        addBarangInput();
+    }
+
+    function clearBarangInputs() {
+        const container = document.getElementById('barang_container');
+        if (container) container.innerHTML = '';
+    }
+
+    function addBarangInput(existingBarangId = '', existingJumlah = '') {
+        const container = document.getElementById('barang_container');
+        const index = container.children.length;
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md mb-2';
+        
+        // Build options from pricelist buruh data
+        let barangOptions = '<option value="">Pilih Nama Barang</option>';
+        pricelistBuruhData.forEach(pricelist => {
+            const selected = existingBarangId == pricelist.id ? 'selected' : '';
+            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${selected}>${pricelist.barang} - ${pricelist.size} (${pricelist.tipe})</option>`;
+        });
+        
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Nama Barang</label>
+                <select name="barang[${index}][barang_id]" class="barang-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    ${barangOptions}
+                </select>
+            </div>
+            <div class="w-32">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Jumlah</label>
+                <input type="number" name="barang[${index}][jumlah]" value="${existingJumlah}" min="1" class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="0" required>
+            </div>
+            <button type="button" onclick="removeBarangInput(this)" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        // Add event listeners for auto-calculation
+        const barangSelect = inputGroup.querySelector('.barang-select');
+        const jumlahInput = inputGroup.querySelector('.jumlah-input');
+        
+        barangSelect.addEventListener('change', function() {
+            calculateTotalFromBarang();
+        });
+        
+        jumlahInput.addEventListener('input', function() {
+            calculateTotalFromBarang();
+        });
+    }
+
+    window.removeBarangInput = function(button) {
+        const container = document.getElementById('barang_container');
+        if (container.children.length > 1) {
+            button.closest('.flex').remove();
+            calculateTotalFromBarang();
+        }
+    };
+
+    function calculateTotalFromBarang() {
+        const container = document.getElementById('barang_container');
+        const barangSelects = container.querySelectorAll('.barang-select');
+        const jumlahInputs = container.querySelectorAll('.jumlah-input');
+        let total = 0;
+        
+        barangSelects.forEach((select, index) => {
+            const selectedOption = select.options[select.selectedIndex];
+            const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+            const jumlah = parseInt(jumlahInputs[index].value) || 0;
+            total += tarif * jumlah;
+        });
+        
+        if (total > 0) {
+            nominalInput.value = total.toLocaleString('id-ID');
+        }
+    }
+
+    // Add button for barang
+    if (addBarangBtn) {
+        addBarangBtn.addEventListener('click', function() {
+            addBarangInput();
+        });
+    }
 
     // ============= KAPAL MULTI-SELECT =============
     const kapalSearch = document.getElementById('kapal_search');

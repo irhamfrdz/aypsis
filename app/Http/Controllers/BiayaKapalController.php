@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BiayaKapal;
 use App\Models\MasterKapal;
 use App\Models\KlasifikasiBiaya;
+use App\Models\PricelistBuruh;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -53,7 +54,10 @@ class BiayaKapalController extends Controller
         // Get active klasifikasi biaya for jenis biaya dropdown
         $klasifikasiBiayas = KlasifikasiBiaya::where('is_active', true)->orderBy('nama')->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas'));
+        // Get active pricelist buruh for barang selection
+        $pricelistBuruh = PricelistBuruh::where('is_active', true)->orderBy('barang')->get();
+
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh'));
     }
 
     /**
@@ -71,6 +75,9 @@ class BiayaKapalController extends Controller
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'barang' => 'nullable|array',
+            'barang.*.barang_id' => 'required|exists:pricelist_buruh,id',
+            'barang.*.jumlah' => 'required|integer|min:1',
         ]);
 
         try {
@@ -84,6 +91,24 @@ class BiayaKapalController extends Controller
                 $fileName = time() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('biaya-kapal', $fileName, 'public');
                 $validated['bukti'] = $filePath;
+            }
+
+            // Store barang data in keterangan if exists
+            if ($request->has('barang') && !empty($request->barang)) {
+                $barangDetails = [];
+                foreach ($request->barang as $item) {
+                    $barang = PricelistBuruh::find($item['barang_id']);
+                    if ($barang) {
+                        $subtotal = $barang->tarif * $item['jumlah'];
+                        $barangDetails[] = $barang->barang . ' (' . $barang->size . ' - ' . $barang->tipe . ') x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
+                    }
+                }
+                if (!empty($barangDetails)) {
+                    $keteranganBarang = "Detail Barang:\n" . implode("\n", $barangDetails);
+                    $validated['keterangan'] = $validated['keterangan'] 
+                        ? $validated['keterangan'] . "\n\n" . $keteranganBarang 
+                        : $keteranganBarang;
+                }
             }
 
             BiayaKapal::create($validated);
