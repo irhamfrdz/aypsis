@@ -740,8 +740,8 @@
     const selectAllBlBtn = document.getElementById('selectAllBlBtn');
     const clearAllBlBtn = document.getElementById('clearAllBlBtn');
     
-    let selectedBls = [];
-    let availableBls = [];
+    let selectedBls = {}; // Changed to object to store {id: {kontainer, seal}}
+    let availableBls = {}; // Changed to object to store {id: {kontainer, seal}}
     const oldBlValue = @json(old('no_bl', []));
     
     // Show BL dropdown on focus
@@ -768,29 +768,33 @@
         const searchTerm = blSearch.value.toLowerCase();
         const blOptions = blDropdown.querySelectorAll('.bl-option');
         blOptions.forEach(option => {
-            const bl = option.getAttribute('data-bl').toLowerCase();
-            const shouldShow = bl.includes(searchTerm);
+            const kontainer = option.getAttribute('data-kontainer').toLowerCase();
+            const seal = option.getAttribute('data-seal').toLowerCase();
+            const shouldShow = kontainer.includes(searchTerm) || seal.includes(searchTerm);
             option.style.display = shouldShow ? 'block' : 'none';
         });
     }
     
-    function addBlChip(bl) {
+    function addBlChip(blId, kontainer, seal) {
         const chip = document.createElement('span');
         chip.className = 'selected-chip';
-        chip.setAttribute('data-bl', bl);
+        chip.setAttribute('data-bl', blId);
         chip.innerHTML = `
-            <span class="font-medium">${bl}</span>
-            <span class="remove-chip" onclick="removeBlChip('${bl.replace(/'/g, "\\'")}')">&times;</span>
+            <div class="flex flex-col">
+                <span class="font-medium">${kontainer}</span>
+                <span class="text-xs opacity-75">Seal: ${seal}</span>
+            </div>
+            <span class="remove-chip" onclick="removeBlChip('${blId}')">&times;</span>
         `;
         selectedBlChips.appendChild(chip);
     }
     
-    window.removeBlChip = function(bl) {
-        selectedBls = selectedBls.filter(b => b !== bl);
-        const chip = document.querySelector(`[data-bl="${bl}"].selected-chip`);
+    window.removeBlChip = function(blId) {
+        delete selectedBls[blId];
+        const chip = document.querySelector(`[data-bl="${blId}"].selected-chip`);
         if (chip) chip.remove();
         
-        const option = blDropdown.querySelector(`[data-bl="${bl}"].bl-option`);
+        const option = blDropdown.querySelector(`[data-bl="${blId}"].bl-option`);
         if (option) option.classList.remove('selected');
         
         updateBlHiddenInputs();
@@ -798,10 +802,11 @@
     };
     
     selectAllBlBtn.addEventListener('click', function() {
-        selectedBls = [...availableBls];
+        selectedBls = {...availableBls};
         selectedBlChips.innerHTML = '';
-        availableBls.forEach(bl => {
-            addBlChip(bl);
+        Object.keys(availableBls).forEach(blId => {
+            const blData = availableBls[blId];
+            addBlChip(blId, blData.kontainer, blData.seal);
         });
         
         const blOptions = blDropdown.querySelectorAll('.bl-option');
@@ -812,7 +817,7 @@
     });
     
     clearAllBlBtn.addEventListener('click', function() {
-        selectedBls = [];
+        selectedBls = {};
         selectedBlChips.innerHTML = '';
         hiddenBlInputs.innerHTML = '';
         
@@ -824,17 +829,17 @@
     
     function updateBlHiddenInputs() {
         hiddenBlInputs.innerHTML = '';
-        selectedBls.forEach(bl => {
+        Object.keys(selectedBls).forEach(blId => {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'no_bl[]';
-            input.value = bl;
+            input.value = blId;
             hiddenBlInputs.appendChild(input);
         });
     }
     
     function updateBlSelectedCount() {
-        blSelectedCount.textContent = `Terpilih: ${selectedBls.length} BL`;
+        blSelectedCount.textContent = `Terpilih: ${Object.keys(selectedBls).length} kontainer`;
     }
     
     // Function to fetch and display BLs for selected voyages
@@ -843,7 +848,7 @@
             blSearch.disabled = true;
             blSearch.placeholder = '--Pilih Voyage Terlebih Dahulu--';
             blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Pilih voyage terlebih dahulu</p>';
-            selectedBls = [];
+            selectedBls = {};
             selectedBlChips.innerHTML = '';
             hiddenBlInputs.innerHTML = '';
             updateBlSelectedCount();
@@ -851,8 +856,8 @@
         }
         
         blSearch.disabled = false;
-        blSearch.placeholder = '--Pilih BL--';
-        blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat BL...</p>';
+        blSearch.placeholder = '--Cari Kontainer--';
+        blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat kontainer...</p>';
         
         // Fetch BLs for all selected voyages
         fetch('{{ url('biaya-kapal/get-bls-by-voyages') }}', {
@@ -868,17 +873,23 @@
         .then(response => response.json())
         .then(data => {
             if (data.success && data.bls) {
-                availableBls = data.bls.sort();
+                availableBls = data.bls; // Now an object with {id: {kontainer, seal}}
                 
-                if (availableBls.length > 0) {
+                if (Object.keys(availableBls).length > 0) {
                     // Create option list
                     let html = '';
-                    availableBls.forEach(bl => {
-                        const isSelected = selectedBls.includes(bl) ? 'selected' : '';
+                    Object.keys(availableBls).sort((a, b) => {
+                        return availableBls[a].kontainer.localeCompare(availableBls[b].kontainer);
+                    }).forEach(blId => {
+                        const blData = availableBls[blId];
+                        const isSelected = selectedBls.hasOwnProperty(blId) ? 'selected' : '';
                         html += `
                             <div class="bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 ${isSelected}"
-                                 data-bl="${bl}">
-                                <div class="font-medium text-gray-900">${bl}</div>
+                                 data-bl="${blId}" 
+                                 data-kontainer="${blData.kontainer}" 
+                                 data-seal="${blData.seal}">
+                                <div class="font-medium text-gray-900">${blData.kontainer}</div>
+                                <div class="text-xs text-gray-500">Seal: ${blData.seal}</div>
                             </div>
                         `;
                     });
@@ -888,11 +899,13 @@
                     const blOptions = blDropdown.querySelectorAll('.bl-option');
                     blOptions.forEach(option => {
                         option.addEventListener('click', function() {
-                            const bl = this.getAttribute('data-bl');
+                            const blId = this.getAttribute('data-bl');
+                            const kontainer = this.getAttribute('data-kontainer');
+                            const seal = this.getAttribute('data-seal');
                             
-                            if (!selectedBls.includes(bl)) {
-                                selectedBls.push(bl);
-                                addBlChip(bl);
+                            if (!selectedBls.hasOwnProperty(blId)) {
+                                selectedBls[blId] = { kontainer, seal };
+                                addBlChip(blId, kontainer, seal);
                                 updateBlHiddenInputs();
                                 updateBlSelectedCount();
                                 this.classList.add('selected');
@@ -903,15 +916,15 @@
                         });
                     });
                 } else {
-                    blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada BL untuk voyage yang dipilih</p>';
+                    blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada kontainer untuk voyage yang dipilih</p>';
                 }
             } else {
-                blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada BL tersedia</p>';
+                blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada kontainer tersedia</p>';
             }
         })
         .catch(error => {
             console.error('Error fetching BLs:', error);
-            blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-red-600">Gagal memuat BL. Silakan coba lagi.</p>';
+            blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-red-600">Gagal memuat kontainer. Silakan coba lagi.</p>';
         });
     }
     
