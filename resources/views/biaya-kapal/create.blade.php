@@ -872,11 +872,8 @@
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Response from API:', data); // Debug log
-            
             if (data.success && data.bls) {
                 availableBls = data.bls; // Now an object with {id: {kontainer, seal}}
-                console.log('Available BLs:', availableBls); // Debug log
                 
                 if (Object.keys(availableBls).length > 0) {
                     // Create option list

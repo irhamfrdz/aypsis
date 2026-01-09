@@ -251,16 +251,19 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
-            // Get distinct no_bl from bls table for the selected voyages
+            // Get BL data with kontainer and seal from bls table for the selected voyages
             $bls = \DB::table('bls')
-                ->select('nomor_bl')
+                ->select('id', 'nomor_kontainer', 'no_seal')
                 ->whereIn('no_voyage', $voyages)
-                ->whereNotNull('nomor_bl')
-                ->where('nomor_bl', '!=', '')
-                ->distinct()
-                ->pluck('nomor_bl')
-                ->sort()
-                ->values();
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->get()
+                ->mapWithKeys(function($bl) {
+                    return [$bl->id => [
+                        'kontainer' => $bl->nomor_kontainer ?? 'N/A',
+                        'seal' => $bl->no_seal ?? 'N/A'
+                    ]];
+                });
 
             return response()->json([
                 'success' => true,
