@@ -18,19 +18,24 @@ class NaikKapalController extends Controller
      */
     public function index(Request $request)
     {
-        // Redirect to select page if required parameters are missing
-        if (!$request->filled('kapal_id') || !$request->filled('no_voyage')) {
+        // Allow show_all parameter to view all data without filtering
+        $showAll = $request->filled('show_all') && $request->show_all == 1;
+        
+        // Redirect to select page if required parameters are missing (unless show_all is set)
+        if (!$showAll && (!$request->filled('kapal_id') || !$request->filled('no_voyage'))) {
             return redirect()->route('naik-kapal.select')
                 ->with('info', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
         
         $query = NaikKapal::with(['prospek', 'createdBy']);
         
-        // Filter by kapal and voyage
-        $kapal = \App\Models\MasterKapal::find($request->kapal_id);
-        if ($kapal) {
-            $query->where('nama_kapal', $kapal->nama_kapal)
-                  ->where('no_voyage', $request->no_voyage);
+        // Filter by kapal and voyage only if not showing all
+        if (!$showAll) {
+            $kapal = \App\Models\MasterKapal::find($request->kapal_id);
+            if ($kapal) {
+                $query->where('nama_kapal', $kapal->nama_kapal)
+                      ->where('no_voyage', $request->no_voyage);
+            }
         }
         
         // Search functionality
