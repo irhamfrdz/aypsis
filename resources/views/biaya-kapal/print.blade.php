@@ -288,8 +288,8 @@
                 </thead>
                 <tbody>
                     @php
-                        // Untuk biaya buruh, ambil kapal dan voyage dari barangDetails
-                        if ($biayaKapal->jenis_biaya === 'Biaya Buruh' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
+                        // Untuk biaya buruh (KB024), ambil kapal dan voyage dari barangDetails
+                        if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
                             $namaKapals = $biayaKapal->barangDetails->pluck('kapal')->unique()->filter()->values()->toArray();
                             $noVoyages = $biayaKapal->barangDetails->pluck('voyage')->unique()->filter()->values()->toArray();
                         } else {
