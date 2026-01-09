@@ -74,6 +74,30 @@
             </div>
         @endif
 
+        <!-- Pengembalian Kontainer Sewa -->
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg shadow-sm border-2 border-purple-200 p-4 sm:p-6 mb-4 sm:mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-start">
+                    <div class="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl shadow-lg mr-4 flex-shrink-0">
+                        <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pengembalian Kontainer Sewa</h3>
+                        <p class="text-sm text-gray-600">Proses pengembalian kontainer yang disewa dari gudang {{ $gudang->nama_gudang }}</p>
+                    </div>
+                </div>
+                <button onclick="openPengembalianModal()" 
+                        class="inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl touch-manipulation active:scale-95">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Pengembalian Kontainer
+                </button>
+            </div>
+        </div>
+
         <!-- Data Kontainer -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="bg-gray-50 px-3 sm:px-4 py-3 border-b border-gray-200">
@@ -281,6 +305,94 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- Modal Pengembalian Kontainer -->
+<div id="pengembalianModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Pengembalian Kontainer Sewa</h3>
+            <button onclick="closePengembalianModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="pengembalianKontainerForm" method="POST" action="{{ route('pengembalian-kontainer.store') }}">
+            @csrf
+            <input type="hidden" name="gudangs_id" value="{{ $gudang->id }}">
+            <input type="hidden" name="cabang" value="{{ $cabangSlug }}">
+            
+            <div class="bg-purple-50 rounded-lg p-4 mb-4 border border-purple-200">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="text-sm text-purple-800">
+                        <p class="font-medium mb-1">Informasi:</p>
+                        <p class="text-xs">Pilih kontainer yang akan dikembalikan ke pemilik sewa</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="kontainer_search" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nomor Kontainer <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <input type="text" id="kontainer_search" placeholder="Cari nomor kontainer..." required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                           autocomplete="off">
+                    <input type="hidden" id="kontainer_id" name="kontainer_id" required>
+                    <div id="kontainer_dropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                        <div class="py-1" id="kontainer_options">
+                            @php
+                                $allKontainers = $kontainers->merge($stockKontainers);
+                            @endphp
+                            @foreach($allKontainers as $k)
+                                <div class="px-3 py-2 hover:bg-purple-50 cursor-pointer kontainer-option" 
+                                     data-id="{{ $k->id }}"
+                                     data-tipe="{{ $k instanceof \App\Models\Kontainer ? 'kontainer' : 'stock' }}"
+                                     data-text="{{ $k->nomor_seri_gabungan }} - {{ $k->ukuran }} - {{ $k->tipe_kontainer }}">
+                                    <div class="text-sm font-medium text-gray-900">{{ $k->nomor_seri_gabungan }}</div>
+                                    <div class="text-xs text-gray-500">{{ $k->ukuran }} • {{ $k->tipe_kontainer }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="tanggal_pengembalian" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tanggal Pengembalian <span class="text-red-500">*</span>
+                </label>
+                <input type="date" id="tanggal_pengembalian" name="tanggal_pengembalian" required
+                       value="{{ date('Y-m-d') }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="keterangan_pengembalian" class="block text-sm font-medium text-gray-700 mb-2">
+                    Keterangan
+                </label>
+                <textarea id="keterangan_pengembalian" name="keterangan" rows="3" placeholder="Catatan tambahan (opsional)"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3">
+                <button type="button" onclick="closePengembalianModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    Proses Pengembalian
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -556,6 +668,90 @@ if (searchKontainers) {
         });
     });
 }
+
+// Pengembalian Modal Functions
+function openPengembalianModal() {
+    document.getElementById('pengembalianModal').classList.remove('hidden');
+}
+
+function closePengembalianModal() {
+    document.getElementById('pengembalianModal').classList.add('hidden');
+    document.getElementById('pengembalianKontainerForm').reset();
+    kontainerSearchInput.value = '';
+    kontainerHiddenInput.value = '';
+}
+
+// Close modal when clicking outside
+document.getElementById('pengembalianModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePengembalianModal();
+    }
+});
+
+// Searchable Kontainer Dropdown for Pengembalian
+const kontainerSearchInput = document.getElementById('kontainer_search');
+const kontainerHiddenInput = document.getElementById('kontainer_id');
+const kontainerDropdown = document.getElementById('kontainer_dropdown');
+const kontainerOptions = document.querySelectorAll('.kontainer-option');
+
+// Show dropdown when input is focused
+kontainerSearchInput?.addEventListener('focus', function() {
+    kontainerDropdown.classList.remove('hidden');
+    filterKontainer();
+});
+
+// Hide dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (kontainerSearchInput && !kontainerSearchInput.contains(e.target) && !kontainerDropdown.contains(e.target)) {
+        kontainerDropdown.classList.add('hidden');
+    }
+});
+
+// Filter options based on search input
+kontainerSearchInput?.addEventListener('input', filterKontainer);
+
+function filterKontainer() {
+    const searchTerm = kontainerSearchInput.value.toLowerCase();
+    let hasVisibleOption = false;
+    
+    kontainerOptions.forEach(option => {
+        const text = option.getAttribute('data-text').toLowerCase();
+        if (text.includes(searchTerm)) {
+            option.style.display = '';
+            hasVisibleOption = true;
+        } else {
+            option.style.display = 'none';
+        }
+    });
+    
+    if (!hasVisibleOption) {
+        document.getElementById('kontainer_options').innerHTML = '<div class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>';
+    }
+}
+
+// Handle option selection for Kontainer
+kontainerOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const tipe = this.getAttribute('data-tipe');
+        const text = this.getAttribute('data-text');
+        
+        kontainerHiddenInput.value = id;
+        // Store tipe in a hidden field
+        let tipeInput = document.getElementById('kontainer_tipe');
+        if (!tipeInput) {
+            tipeInput = document.createElement('input');
+            tipeInput.type = 'hidden';
+            tipeInput.id = 'kontainer_tipe';
+            tipeInput.name = 'kontainer_tipe';
+            document.getElementById('pengembalianKontainerForm').appendChild(tipeInput);
+        }
+        tipeInput.value = tipe;
+        
+        kontainerSearchInput.value = text;
+        kontainerDropdown.classList.add('hidden');
+    });
+});
 </script>
 
 @endsection

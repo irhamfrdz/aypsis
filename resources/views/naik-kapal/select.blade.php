@@ -92,6 +92,24 @@
                             Lihat Data Prospek
                         </button>
                     </div>
+
+                    <div class="pt-3">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500">atau</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3">
+                        <a href="{{ route('naik-kapal.index', ['show_all' => 1]) }}" class="w-full inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-200 font-medium text-lg">
+                            <i class="fas fa-list mr-2"></i>
+                            Lihat Semua Data
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
