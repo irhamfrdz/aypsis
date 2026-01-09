@@ -495,8 +495,20 @@
     // Store pricelist buruh data
     const pricelistBuruhData = @json($pricelistBuruh);
 
-    // Format nominal input with thousand separator
+    // Declare all input elements at the top
     const nominalInput = document.getElementById('nominal');
+    const jenisBiayaSelect = document.getElementById('jenis_biaya');
+    const barangWrapper = document.getElementById('barang_wrapper');
+    const addBarangBtn = document.getElementById('add_barang_btn');
+    const ppnWrapper = document.getElementById('ppn_wrapper');
+    const pphWrapper = document.getElementById('pph_wrapper');
+    const totalBiayaWrapper = document.getElementById('total_biaya_wrapper');
+    const ppnInput = document.getElementById('ppn');
+    const pphInput = document.getElementById('pph');
+    const totalBiayaInput = document.getElementById('total_biaya');
+    const blWrapper = document.querySelector('#bl_container_input').closest('div').parentElement;
+
+    // Format nominal input with thousand separator
     
     nominalInput.addEventListener('input', function(e) {
         // Remove all non-numeric characters
@@ -579,19 +591,6 @@
     }, 5000);
 
     // ============= JENIS BIAYA TOGGLE =============
-    const jenisBiayaSelect = document.getElementById('jenis_biaya');
-    const barangWrapper = document.getElementById('barang_wrapper');
-    const addBarangBtn = document.getElementById('add_barang_btn');
-    const ppnWrapper = document.getElementById('ppn_wrapper');
-    const pphWrapper = document.getElementById('pph_wrapper');
-    const totalBiayaWrapper = document.getElementById('total_biaya_wrapper');
-    const ppnInput = document.getElementById('ppn');
-    const pphInput = document.getElementById('pph');
-    const totalBiayaInput = document.getElementById('total_biaya');
-    
-    // Get BL wrapper element
-    const blWrapper = document.querySelector('#bl_container_input').closest('div').parentElement;
-
     // Toggle barang wrapper based on jenis biaya
     jenisBiayaSelect.addEventListener('change', function() {
         const selectedValue = this.value;
