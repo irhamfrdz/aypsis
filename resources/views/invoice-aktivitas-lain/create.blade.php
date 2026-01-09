@@ -676,10 +676,17 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 e.target.value = value;
             });
             totalInput.closest('form').addEventListener('submit', function(e) {
+                // Strip formatting from total
                 const plainValue = totalInput.value.replace(/\./g, '');
                 totalInput.value = plainValue;
                 
-                // No need to collect tipe penyesuaian data - it's already in the form as tipe_penyesuaian_detail array
+                // Strip formatting from all detail_biaya inputs
+                const detailBiayaInputs = document.querySelectorAll('.detail-biaya');
+                detailBiayaInputs.forEach(input => {
+                    if (input.value) {
+                        input.value = input.value.replace(/\./g, '').replace(/,/g, '');
+                    }
+                });
             });
         }
 
@@ -1276,7 +1283,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             
             if (total > 0) {
                 const totalInput = document.getElementById('total');
-                totalInput.value = total.toLocaleString('id-ID');
+                totalInput.value = Math.round(total).toLocaleString('id-ID');
             }
         }
         
