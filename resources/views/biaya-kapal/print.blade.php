@@ -239,7 +239,7 @@
                 </div>
             </div>
             <div class="header-meta">
-                <span><strong>Tanggal: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d-M-Y') }}</strong></span>
+                <span><strong>Tanggal: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</strong></span>
             </div>
             <h1>PERMOHONAN TRANSFER</h1>
         </div>
@@ -301,7 +301,7 @@
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $namaKapals[0] ?? '-' }}{{ count($namaKapals) > 1 ? ', +' . (count($namaKapals) - 1) . ' kapal' : '' }}</td>
-                            <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</td>
+                            <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
                             <td class="text-center">{{ $noVoyages[0] ?? '-' }}{{ count($noVoyages) > 1 ? ', +' . (count($noVoyages) - 1) : '' }}</td>
                             <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
                             <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
@@ -313,7 +313,7 @@
                         <tr>
                             <td class="text-center">{{ $i + 1 }}</td>
                             <td>{{ $namaKapals[$i] ?? ($i == 0 ? '-' : '') }}</td>
-                            <td class="text-center">{{ $i == 0 ? \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') : '' }}</td>
+                            <td class="text-center">{{ $i == 0 ? \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') : '' }}</td>
                             <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
                             <td>{{ $i == 0 ? ($biayaKapal->keterangan ?? '-') : '' }}</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
