@@ -352,6 +352,65 @@
                     @enderror
                 </div>
 
+                <!-- PPN (for Biaya Penumpukan) -->
+                <div id="ppn_wrapper" class="hidden">
+                    <label for="ppn" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPN
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               id="ppn" 
+                               name="ppn" 
+                               value="{{ old('ppn', '0') }}"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ppn') border-red-500 @enderror"
+                               placeholder="0">
+                    </div>
+                    @error('ppn')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- PPH (for Biaya Penumpukan) -->
+                <div id="pph_wrapper" class="hidden">
+                    <label for="pph" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPH
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               id="pph" 
+                               name="pph" 
+                               value="{{ old('pph', '0') }}"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pph') border-red-500 @enderror"
+                               placeholder="0">
+                    </div>
+                    @error('pph')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Total Biaya (for Biaya Penumpukan) -->
+                <div id="total_biaya_wrapper" class="hidden">
+                    <label for="total_biaya" class="block text-sm font-medium text-gray-700 mb-2">
+                        Total Biaya <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               id="total_biaya" 
+                               name="total_biaya" 
+                               value="{{ old('total_biaya') }}"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('total_biaya') border-red-500 @enderror"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Total = Nominal + PPN - PPH</p>
+                    @error('total_biaya')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Keterangan -->
                 <div class="md:col-span-2">
                     <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -449,12 +508,52 @@
         }
         
         this.value = value;
+        
+        // Recalculate total if Biaya Penumpukan is selected
+        const selectedText = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        if (selectedText.toLowerCase().includes('penumpukan')) {
+            calculateTotalBiaya();
+        }
     });
+    
+    // Format PPN input
+    ppnInput.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        this.value = value;
+        calculateTotalBiaya();
+    });
+    
+    // Format PPH input
+    pphInput.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        this.value = value;
+        calculateTotalBiaya();
+    });
+    
+    // Calculate Total Biaya = Nominal + PPN - PPH
+    function calculateTotalBiaya() {
+        const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
+        const ppn = parseInt(ppnInput.value.replace(/\D/g, '') || 0);
+        const pph = parseInt(pphInput.value.replace(/\D/g, '') || 0);
+        
+        const total = nominal + ppn - pph;
+        totalBiayaInput.value = total > 0 ? total.toLocaleString('id-ID') : '';
+    }
 
-    // Before form submit, remove formatting from nominal
+    // Before form submit, remove formatting from all currency fields
     document.querySelector('form').addEventListener('submit', function(e) {
-        const nominalInput = document.getElementById('nominal');
         nominalInput.value = nominalInput.value.replace(/\./g, '');
+        ppnInput.value = ppnInput.value.replace(/\./g, '');
+        pphInput.value = pphInput.value.replace(/\./g, '');
+        if (totalBiayaInput.value) {
+            totalBiayaInput.value = totalBiayaInput.value.replace(/\./g, '');
+        }
     });
 
     // Update file name display
@@ -483,6 +582,12 @@
     const jenisBiayaSelect = document.getElementById('jenis_biaya');
     const barangWrapper = document.getElementById('barang_wrapper');
     const addBarangBtn = document.getElementById('add_barang_btn');
+    const ppnWrapper = document.getElementById('ppn_wrapper');
+    const pphWrapper = document.getElementById('pph_wrapper');
+    const totalBiayaWrapper = document.getElementById('total_biaya_wrapper');
+    const ppnInput = document.getElementById('ppn');
+    const pphInput = document.getElementById('pph');
+    const totalBiayaInput = document.getElementById('total_biaya');
     
     // Get BL wrapper element
     const blWrapper = document.querySelector('#bl_container_input').closest('div').parentElement;
@@ -500,9 +605,39 @@
             // Hide BL wrapper for Biaya Buruh
             blWrapper.classList.add('hidden');
             clearBlSelections();
+            
+            // Hide PPN/PPH fields for Biaya Buruh
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+        } else if (selectedText.toLowerCase().includes('penumpukan')) {
+            // Show PPN/PPH fields for Biaya Penumpukan
+            barangWrapper.classList.add('hidden');
+            clearBarangInputs();
+            ppnWrapper.classList.remove('hidden');
+            pphWrapper.classList.remove('hidden');
+            totalBiayaWrapper.classList.remove('hidden');
+            
+            // Show BL wrapper for Biaya Penumpukan
+            blWrapper.classList.remove('hidden');
+            
+            // Calculate initial total
+            calculateTotalBiaya();
         } else {
             barangWrapper.classList.add('hidden');
             clearBarangInputs();
+            
+            // Hide PPN/PPH fields for other types
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
             
