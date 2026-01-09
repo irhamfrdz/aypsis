@@ -88,8 +88,6 @@
 
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
-        .header h1 {
-            font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
             margin-bottom: 5px;
         }
@@ -168,9 +166,6 @@
             text-align: center;
         }
 
-        .total-row td {
-            background-color: #e9ecef !important;
-            font-weight: bold;
         .total-row td {
             background-color: #e9ecef !important;
             font-weight: bold !important;
