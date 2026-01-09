@@ -1,9 +1,51 @@
 <!DOCTYPE html>
 <html lang="id">
+@php
+    $paperSize = request('paper_size', 'Half-A4');
+    $paperMap = [
+        'Folio' => [
+            'size' => '215.9mm 330.2mm',
+            'width' => '215.9mm',
+            'height' => '330.2mm',
+            'containerWidth' => '215.9mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+        ],
+        'Half-Folio' => [
+            'size' => '215.9mm 165.1mm',
+            'width' => '215.9mm',
+            'height' => '165.1mm',
+            'containerWidth' => '215.9mm',
+            'fontSize' => '12px',
+            'headerH1' => '18px',
+            'tableFont' => '10px',
+        ],
+        'A4' => [
+            'size' => 'A4',
+            'width' => '210mm',
+            'height' => '297mm',
+            'containerWidth' => '210mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+        ],
+        'Half-A4' => [
+            'size' => '210mm 148.5mm',
+            'width' => '210mm',
+            'height' => '148.5mm',
+            'containerWidth' => '210mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '7px',
+        ]
+    ];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
+@endphp
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Biaya Kapal - {{ $biayaKapal->tanggal->format('d/m/Y') }}</title>
+    <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
+    <title>Biaya Kapal - {{ $biayaKapal->nomor_invoice }}</title>
     <style>
         * {
             margin: 0;
@@ -11,336 +53,317 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            font-size: 12px;
-            line-height: 1.5;
+        @page {
+            size: {{ $currentPaper['size'] }} portrait;
+            margin: 10mm;
+        }
+
+        html, body {
+            width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
+            font-family: Arial, sans-serif;
+            font-size: {{ $currentPaper['fontSize'] }};
+            line-height: 1.2;
             color: #333;
-            padding: 20px;
+            background: white;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
-            max-width: 800px;
+            width: 100%;
+            max-width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
+            padding: 0 10mm;
             margin: 0 auto;
+            box-sizing: border-box;
+            min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #333;
-            padding-bottom: 20px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
         }
 
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-            color: #1a1a1a;
-        }
-
-        .header p {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 16px;
+            font-size: {{ $currentPaper['headerH1'] }};
+        .header h1 {
+            font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e0e0;
-            color: #1a1a1a;
+            margin-bottom: 5px;
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .info-item {
+        .header-info {
             display: flex;
-            padding: 8px 0;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 10px;
         }
 
-        .info-label {
-            font-weight: bold;
-            width: 150px;
-            color: #555;
+        .header-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 10px;
         }
 
-        .info-value {
-            flex: 1;
-            color: #333;
+        .info-section {
+            margin-bottom: 12px;
+            font-size: 9px;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .badge-blue {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-green {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .nominal-box {
-            background-color: #f0fdf4;
-            border: 2px solid #86efac;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .nominal-label {
-            font-size: 12px;
-            color: #166534;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .nominal-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #15803d;
-        }
-
-        .keterangan-box {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .barang-table {
+        .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-bottom: 12px;
         }
 
-        .barang-table th,
-        .barang-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+        .info-table td {
+            padding: 4px 8px;
+            font-size: {{ $currentPaper['tableFont'] }};
+            vertical-align: top;
+        }
+
+        .info-table td:first-child {
+            width: 30%;
+            font-weight: bold;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12mm;
+            table-layout: fixed;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #333;
+            padding: 2mm 3mm;
             text-align: left;
+            vertical-align: middle;
         }
 
-        .barang-table th {
-            background-color: #f3f4f6;
+        .table th {
+            background-color: #f8f9fa;
+            color: #333;
             font-weight: bold;
-            color: #374151;
-        }
-
-        .barang-table tr:nth-child(even) {
-            background-color: #f9fafb;
-        }
-
-        .barang-table tfoot td {
-            background-color: #e5e7eb;
-            font-weight: bold;
-        }
-
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
+            font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
-            font-size: 11px;
-            color: #666;
+            border: 2px solid #333;
         }
 
-        .bukti-section {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #fef3c7;
-            border-radius: 8px;
-            border-left: 4px solid #f59e0b;
+        .table td {
+            font-size: {{ $currentPaper['tableFont'] }};
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total-row td {
+            background-color: #e9ecef !important;
+            font-weight: bold;
+        .total-row td {
+            background-color: #e9ecef !important;
+            font-weight: bold !important;
+            border: 2px solid #333 !important;
+        }
+
+        .signature-section {
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #333;
+        }
+
+        .signature-table td {
+            width: 33.33%;
+            border: 1px solid #333;
+            padding: 12px 8px;
+            text-align: center;
+            vertical-align: top;
+            height: 60px;
         }
 
         @media print {
-            body {
-                padding: 0;
-            }
-
             .no-print {
-                display: none;
+                display: none !important;
             }
-
-            @page {
-                margin: 1cm;
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
 
-        .print-button {
+        .no-print {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .print-button:hover {
-            background-color: #2563eb;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
-    <button onclick="window.print()" class="print-button no-print">
-        <i class="fas fa-print"></i> Print
-    </button>
+    <!-- Paper Size Selector (hidden when printing) -->
+    <div class="no-print" style="min-width: 160px; display: flex; gap: 8px; align-items: flex-end;">
+        @include('components.paper-selector', ['selectedSize' => $paperSize ?? 'Half-A4'])
+        <div style="margin-top: 6px; font-size: 12px; color: #444;">
+            <strong>Current: {{ $paperSize }}</strong><br>
+            <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
+        </div>
+        <div style="margin-left: 6px;">
+            <button id="startPrint" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Print</button>
+        </div>
+    </div>
 
     <div class="container">
         <!-- Header -->
         <div class="header">
+            <div class="header-info">
+                <div>
+                    <strong>PT. ALEXINDO YAKINPRIMA</strong><br>
+                    <span>Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
+                </div>
+            </div>
+            <div class="header-meta">
+                <span><strong>Tanggal: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d-M-Y') }}</strong></span>
+            </div>
             <h1>BIAYA OPERASIONAL KAPAL</h1>
-            <p>Detail Pengeluaran Operasional</p>
         </div>
 
-        <!-- Informasi Umum -->
-        <div class="section">
-            <div class="section-title">Informasi Umum</div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Tanggal:</div>
-                    <div class="info-value">{{ $biayaKapal->tanggal->format('d/m/Y') }}</div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-label">Nomor Invoice:</div>
-                    <div class="info-value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></div>
-                </div>
-
+        <!-- Info Section -->
+        <div class="info-section">
+            <table class="info-table">
+                <tr>
+                    <td>Nomor Invoice</td>
+                    <td>: {{ $biayaKapal->nomor_invoice }}</td>
+                </tr>
                 @if($biayaKapal->nomor_referensi)
-                <div class="info-item">
-                    <div class="info-label">Nomor Referensi:</div>
-                    <div class="info-value">{{ $biayaKapal->nomor_referensi }}</div>
-                </div>
+                <tr>
+                    <td>Nomor Referensi</td>
+                    <td>: {{ $biayaKapal->nomor_referensi }}</td>
+                </tr>
                 @endif
-
-                <div class="info-item">
-                    <div class="info-label">Nama Kapal:</div>
-                    <div class="info-value">
+                <tr>
+                    <td>Nama Kapal</td>
+                    <td>: 
                         @php
                             $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
                         @endphp
-                        @foreach($namaKapals as $index => $kapal)
-                            <span class="badge badge-blue">{{ $kapal }}</span>{{ $index < count($namaKapals) - 1 ? ' ' : '' }}
-                        @endforeach
-                    </div>
-                </div>
-
+                        {{ implode(', ', $namaKapals) }}
+                    </td>
+                </tr>
                 @if($biayaKapal->no_voyage && count($biayaKapal->no_voyage) > 0)
-                <div class="info-item">
-                    <div class="info-label">Nomor Voyage:</div>
-                    <div class="info-value">
+                <tr>
+                    <td>Nomor Voyage</td>
+                    <td>: 
                         @php
                             $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : [$biayaKapal->no_voyage];
                         @endphp
-                        @foreach($noVoyages as $index => $voyage)
-                            <span class="badge badge-green">{{ $voyage }}</span>{{ $index < count($noVoyages) - 1 ? ' ' : '' }}
-                        @endforeach
-                    </div>
-                </div>
+                        {{ implode(', ', $noVoyages) }}
+                    </td>
+                </tr>
                 @endif
-
-                <div class="info-item">
-                    <div class="info-label">Jenis Biaya:</div>
-                    <div class="info-value">
-                        <span class="badge badge-blue">{{ $biayaKapal->jenis_biaya_label }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nominal -->
-        <div class="section">
-            <div class="nominal-box">
-                <div class="nominal-label">TOTAL NOMINAL</div>
-                <div class="nominal-value">{{ $biayaKapal->formatted_nominal }}</div>
-            </div>
+                <tr>
+                    <td>Jenis Biaya</td>
+                    <td>: {{ $biayaKapal->jenis_biaya_label }}</td>
+                </tr>
+            </table>
         </div>
 
         <!-- Detail Barang (if Biaya Buruh) -->
         @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-        <div class="section">
-            <div class="section-title">Detail Barang</div>
-            <table class="barang-table">
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th>Nama Barang</th>
-                        <th style="width: 15%; text-align: center;">Jumlah</th>
-                        <th style="width: 20%; text-align: right;">Tarif</th>
-                        <th style="width: 20%; text-align: right;">Subtotal</th>
+                        <th style="width: 45%;">Nama Barang</th>
+                        <th style="width: 15%;">Jumlah</th>
+                        <th style="width: 17%;">Tarif</th>
+                        <th style="width: 18%;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($biayaKapal->barangDetails as $index => $detail)
                     <tr>
-                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $detail->pricelistBuruh->barang ?? '-' }}</td>
-                        <td style="text-align: center;">{{ $detail->jumlah }}</td>
-                        <td style="text-align: right;">Rp {{ number_format($detail->tarif, 0, ',', '.') }}</td>
-                        <td style="text-align: right;">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $detail->jumlah }}</td>
+                        <td class="text-right">Rp {{ number_format($detail->tarif, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="4" style="text-align: right;">TOTAL:</td>
-                        <td style="text-align: right;">Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</td>
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
-                </tfoot>
+                </tbody>
+            </table>
+        </div>
+        @else
+        <!-- Show Nominal if no detail barang -->
+        <div style="margin-bottom: 12px;">
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <tr class="total-row">
+                    <td style="width: 70%; text-align: right;"><strong>TOTAL BIAYA</strong></td>
+                    <td style="width: 30%; text-align: right;"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
+                </tr>
             </table>
         </div>
         @endif
 
         <!-- Keterangan -->
-        @if($biayaKapal->keterangan)
-        <div class="section">
-            <div class="section-title">Keterangan</div>
-            <div class="keterangan-box">
-                {{ $biayaKapal->keterangan }}
-            </div>
+        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
+            <strong>Keterangan:</strong><br>
+            {{ $biayaKapal->keterangan ?? '' }}
         </div>
-        @endif
 
-        <!-- Bukti -->
-        @if($biayaKapal->bukti)
-        <div class="bukti-section">
-            <strong><i class="fas fa-paperclip"></i> Bukti Dokumen:</strong> Tersedia
-        </div>
-        @endif
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
-            <p>Sistem Manajemen Biaya Operasional Kapal</p>
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Dibuat Oleh:</strong></div>
+                        <div>___________</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Diperiksa Oleh:</strong></div>
+                        <div>___________</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 40px;"><strong>Disetujui Oleh:</strong></div>
+                        <div>___________</div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
     <script>
+        document.getElementById('startPrint')?.addEventListener('click', function() {
+            window.print();
+        });
+        
         // Auto print on load (optional)
         // window.onload = function() { window.print(); }
     </script>
