@@ -300,29 +300,38 @@
                     @endphp
                     
                     @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-                        {{-- Jika ada detail barang, tampilkan per barang dalam row terpisah --}}
-                        @foreach($biayaKapal->barangDetails as $index => $detail)
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            @if($index === 0)
-                            {{-- Tampilkan kapal, tanggal, voyage hanya di row pertama --}}
-                            <td rowspan="{{ $biayaKapal->barangDetails->count() }}">
-                                @foreach($namaKapals as $kapalIndex => $kapal)
-                                    {{ $kapal }}{{ $kapalIndex < count($namaKapals) - 1 ? ', ' : '' }}
-                                @endforeach
-                            </td>
-                            <td class="text-center" rowspan="{{ $biayaKapal->barangDetails->count() }}">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
-                            <td class="text-center" rowspan="{{ $biayaKapal->barangDetails->count() }}">
-                                @foreach($noVoyages as $voyageIndex => $voyage)
-                                    {{ $voyage }}{{ $voyageIndex < count($noVoyages) - 1 ? ', ' : '' }}
-                                @endforeach
-                            </td>
-                            @endif
-                            <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
-                            @if($index === 0)
-                            <td class="text-right" rowspan="{{ $biayaKapal->barangDetails->count() }}">Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</td>
-                            @endif
-                        </tr>
+                        {{-- Kelompokkan berdasarkan kombinasi kapal + voyage --}}
+                        @php
+                            $groupedDetails = $biayaKapal->barangDetails->groupBy(function($item) {
+                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                            });
+                            $rowNumber = 0;
+                            $totalGroups = $groupedDetails->count();
+                            $groupIndex = 0;
+                        @endphp
+                        
+                        @foreach($groupedDetails as $groupKey => $details)
+                            @php
+                                list($groupKapal, $groupVoyage) = explode('|', $groupKey);
+                                $groupSubtotal = $details->sum('subtotal');
+                                $groupIndex++;
+                            @endphp
+                            @foreach($details as $detailIndex => $detail)
+                            @php $rowNumber++; @endphp
+                            <tr>
+                                <td class="text-center">{{ $rowNumber }}</td>
+                                @if($detailIndex === 0)
+                                {{-- Tampilkan kapal, tanggal, voyage untuk grup ini --}}
+                                <td rowspan="{{ $details->count() }}">{{ $groupKapal }}</td>
+                                <td class="text-center" rowspan="{{ $details->count() }}">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                                <td class="text-center" rowspan="{{ $details->count() }}">{{ $groupVoyage }}</td>
+                                @endif
+                                <td>{{ $detail->pricelistBuruh->barang ?? '-' }} ({{ $detail->jumlah }}x)</td>
+                                @if($detailIndex === 0)
+                                <td class="text-right" rowspan="{{ $details->count() }}">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
+                                @endif
+                            </tr>
+                            @endforeach
                         @endforeach
                     @else
                         {{-- Jika tidak ada detail barang, tampilkan per kapal/voyage --}}
