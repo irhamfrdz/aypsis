@@ -99,6 +99,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kapal</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Voyage</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Biaya</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                             <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
@@ -122,6 +123,19 @@
                                     <span class="text-xs font-semibold text-gray-900">{{ $namaKapals[0] }}</span>
                                     @if(count($namaKapals) > 1)
                                         <span class="text-xs text-blue-600">+{{ count($namaKapals) - 1 }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-gray-500">-</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2">
+                                @php
+                                    $noVoyages = is_array($biaya->no_voyage) ? $biaya->no_voyage : ($biaya->no_voyage ? [$biaya->no_voyage] : []);
+                                @endphp
+                                @if(count($noVoyages) > 0)
+                                    <span class="text-xs text-gray-900">{{ $noVoyages[0] }}</span>
+                                    @if(count($noVoyages) > 1)
+                                        <span class="text-xs text-blue-600">+{{ count($noVoyages) - 1 }}</span>
                                     @endif
                                 @else
                                     <span class="text-xs text-gray-500">-</span>

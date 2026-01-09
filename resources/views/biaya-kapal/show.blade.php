@@ -51,6 +51,20 @@
                 </div>
             </div>
 
+            @if($biayaKapal->no_voyage && count($biayaKapal->no_voyage) > 0)
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Nomor Voyage</label>
+                @php
+                    $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : [$biayaKapal->no_voyage];
+                @endphp
+                <div class="flex flex-wrap gap-2">
+                    @foreach($noVoyages as $voyage)
+                        <span class="inline-block px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">{{ $voyage }}</span>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Biaya</label>
                 <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
