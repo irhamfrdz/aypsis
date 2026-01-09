@@ -288,8 +288,14 @@
                 </thead>
                 <tbody>
                     @php
-                        $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
-                        $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
+                        // Untuk biaya buruh, ambil kapal dan voyage dari barangDetails
+                        if ($biayaKapal->jenis_biaya === 'Biaya Buruh' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
+                            $namaKapals = $biayaKapal->barangDetails->pluck('kapal')->unique()->filter()->values()->toArray();
+                            $noVoyages = $biayaKapal->barangDetails->pluck('voyage')->unique()->filter()->values()->toArray();
+                        } else {
+                            $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
+                            $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
+                        }
                         $maxCount = max(count($namaKapals), count($noVoyages), 1);
                     @endphp
                     

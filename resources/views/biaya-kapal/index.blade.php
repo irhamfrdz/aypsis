@@ -121,7 +121,12 @@
                             </td>
                             <td class="px-3 py-2">
                                 @php
-                                    $namaKapals = is_array($biaya->nama_kapal) ? $biaya->nama_kapal : ($biaya->nama_kapal ? [$biaya->nama_kapal] : []);
+                                    // Untuk biaya buruh, ambil kapal dari barangDetails
+                                    if ($biaya->jenis_biaya === 'Biaya Buruh' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
+                                        $namaKapals = $biaya->barangDetails->pluck('kapal')->unique()->filter()->values()->toArray();
+                                    } else {
+                                        $namaKapals = is_array($biaya->nama_kapal) ? $biaya->nama_kapal : ($biaya->nama_kapal ? [$biaya->nama_kapal] : []);
+                                    }
                                 @endphp
                                 @if(count($namaKapals) > 0)
                                     <span class="text-xs font-semibold text-gray-900">{{ $namaKapals[0] }}</span>
@@ -134,7 +139,12 @@
                             </td>
                             <td class="px-3 py-2">
                                 @php
-                                    $noVoyages = is_array($biaya->no_voyage) ? $biaya->no_voyage : ($biaya->no_voyage ? [$biaya->no_voyage] : []);
+                                    // Untuk biaya buruh, ambil voyage dari barangDetails
+                                    if ($biaya->jenis_biaya === 'Biaya Buruh' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
+                                        $noVoyages = $biaya->barangDetails->pluck('voyage')->unique()->filter()->values()->toArray();
+                                    } else {
+                                        $noVoyages = is_array($biaya->no_voyage) ? $biaya->no_voyage : ($biaya->no_voyage ? [$biaya->no_voyage] : []);
+                                    }
                                 @endphp
                                 @if(count($noVoyages) > 0)
                                     <span class="text-xs text-gray-900">{{ $noVoyages[0] }}</span>
