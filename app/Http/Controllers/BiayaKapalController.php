@@ -121,7 +121,7 @@ class BiayaKapalController extends Controller
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
             'barang' => 'nullable|array',
             'barang.*.barang_id' => 'required|exists:pricelist_buruh,id',
-            'barang.*.jumlah' => 'required|integer|min:1',
+            'barang.*.jumlah' => 'required|numeric|min:0',
         ]);
 
         try {
