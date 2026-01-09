@@ -80,6 +80,22 @@
                     @enderror
                 </div>
 
+                <!-- Nomor Referensi -->
+                <div>
+                    <label for="nomor_referensi" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Referensi
+                    </label>
+                    <input type="text" 
+                           id="nomor_referensi" 
+                           name="nomor_referensi" 
+                           value="{{ old('nomor_referensi') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_referensi') border-red-500 @enderror"
+                           placeholder="Masukkan nomor referensi (opsional)">
+                    @error('nomor_referensi')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Nama Kapal -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">

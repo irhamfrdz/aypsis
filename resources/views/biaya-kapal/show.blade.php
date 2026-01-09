@@ -32,6 +32,13 @@
                 <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->tanggal->format('d/m/Y') }}</p>
             </div>
 
+            @if($biayaKapal->nomor_referensi)
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Nomor Referensi</label>
+                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->nomor_referensi }}</p>
+            </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Nama Kapal</label>
                 <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->nama_kapal }}</p>

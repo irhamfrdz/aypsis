@@ -69,6 +69,7 @@ class BiayaKapalController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'required|array|min:1',
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
@@ -177,6 +178,7 @@ class BiayaKapalController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'required|string|max:255',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
