@@ -121,6 +121,7 @@ class BiayaKapalController extends Controller
             'no_voyage.*' => 'string',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
+            'penerima' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
             'barang' => 'nullable|array',

@@ -20,6 +20,7 @@ class BiayaKapal extends Model
         'no_voyage',
         'jenis_biaya',
         'nominal',
+        'penerima',
         'keterangan',
         'bukti',
     ];
