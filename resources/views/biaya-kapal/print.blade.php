@@ -341,10 +341,11 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 8%;">No</th>
-                        <th style="width: 52%;">Jenis Barang</th>
-                        <th style="width: 15%;">Jumlah</th>
-                        <th style="width: 25%;">Subtotal</th>
+                        <th style="width: 6%;">No</th>
+                        <th style="width: 37%;">Jenis Barang</th>
+                        <th style="width: 17%;">Harga Satuan</th>
+                        <th style="width: 12%;">Jumlah</th>
+                        <th style="width: 18%;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -354,6 +355,7 @@
                             $first = $items->first();
                             return [
                                 'barang' => $first->pricelistBuruh->barang ?? '-',
+                                'harga_satuan' => $first->pricelistBuruh->harga ?? 0,
                                 'jumlah' => $items->sum('jumlah'),
                                 'subtotal' => $items->sum('subtotal'),
                             ];
@@ -363,13 +365,13 @@
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $item['barang'] }}</td>
+                        <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                         <td class="text-center">{{ $item['jumlah'] }}</td>
                         <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="2" class="text-right"><strong>TOTAL</strong></td>
-                        <td class="text-center"><strong>{{ $combinedBarang->sum('jumlah') }}</strong></td>
+                        <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($combinedBarang->sum('subtotal'), 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
