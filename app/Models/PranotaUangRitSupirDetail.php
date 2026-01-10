@@ -13,6 +13,7 @@ class PranotaUangRitSupirDetail extends Model
     protected $fillable = [
         'no_pranota',
         'supir_nama',
+        'jumlah_rit',
         'total_uang_supir',
         'hutang',
         'tabungan',
@@ -21,6 +22,7 @@ class PranotaUangRitSupirDetail extends Model
     ];
 
     protected $casts = [
+        'jumlah_rit' => 'integer',
         'total_uang_supir' => 'decimal:2',
         'hutang' => 'decimal:2',
         'tabungan' => 'decimal:2',

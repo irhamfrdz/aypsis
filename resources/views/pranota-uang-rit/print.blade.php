@@ -174,8 +174,8 @@
         </tbody>
         <tfoot>
             <tr class="total-row">
-                <td colspan="3" center"><strong>{{ $supirDetails ? $supirDetails->sum('jumlah_rit') : count(explode(', ', $pranotaUangRit->no_surat_jalan)) }}</strong></td>
-                <td class="text-class="text-center"><strong>TOTAL</strong></td>
+                <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
+                <td class="text-center"><strong>{{ $supirDetails ? $supirDetails->sum('jumlah_rit') : count(explode(', ', $pranotaUangRit->no_surat_jalan)) }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}</strong></td>
