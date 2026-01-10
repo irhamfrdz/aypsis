@@ -2,32 +2,32 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex items-center justify-between">
+    <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center">
-                <i class="fas fa-ship mr-3 text-orange-600 text-2xl"></i>
+                <i class="fas fa-ship mr-2 md:mr-3 text-orange-600 text-xl md:text-2xl"></i>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">OB (Operasional Bongkaran)</h1>
-                    <p class="text-gray-600">Pilih kapal dan nomor voyage untuk mulai operasional</p>
+                    <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB (Operasional Bongkaran)</h1>
+                    <p class="text-xs md:text-base text-gray-600">Pilih kapal dan nomor voyage untuk mulai operasional</p>
                 </div>
             </div>
-            <div>
-                <a href="{{ route('tagihan-ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md mr-2">
-                    Ke Tagihan OB
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('tagihan-ob.index') }}" class="flex-1 md:flex-none bg-gray-500 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-md text-xs md:text-sm text-center">
+                    <i class="fas fa-file-invoice md:mr-2"></i><span class="md:inline">Ke Tagihan OB</span>
                 </a>
-                <a href="{{ route('pranota-ob.index') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-                    Ke Pranota OB
+                <a href="{{ route('pranota-ob.index') }}" class="flex-1 md:flex-none bg-blue-500 hover:bg-blue-600 text-white px-3 md:px-4 py-2 rounded-md text-xs md:text-sm text-center">
+                    <i class="fas fa-file-alt md:mr-2"></i><span class="md:inline">Ke Pranota OB</span>
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="bg-white rounded-lg shadow-sm p-3 md:p-6">
         <form id="obSelectForm" method="GET">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="space-y-4 md:space-y-0 md:grid md:grid-cols-1 md:grid-cols-3 md:gap-6">
                 <div>
-                    <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">Kegiatan <span class="text-red-500">*</span></label>
-                    <select id="kegiatan" name="kegiatan" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                    <label for="kegiatan" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Kegiatan <span class="text-red-500">*</span></label>
+                    <select id="kegiatan" name="kegiatan" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required>
                         <option value="">--Pilih Kegiatan--</option>
                         <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
                         <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
@@ -35,22 +35,22 @@
                 </div>
 
                 <div>
-                    <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Kapal <span class="text-red-500">*</span></label>
-                    <select id="nama_kapal" name="nama_kapal" class="w-full px-3 py-2 border border-gray-300 rounded-md" required disabled>
+                    <label for="nama_kapal" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Kapal <span class="text-red-500">*</span></label>
+                    <select id="nama_kapal" name="nama_kapal" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required disabled>
                         <option value="">--Pilih Kegiatan Terlebih Dahulu--</option>
                     </select>
                 </div>
 
                 <div>
-                    <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">No Voyage <span class="text-red-500">*</span></label>
-                    <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2 border border-gray-300 rounded-md" required disabled>
+                    <label for="no_voyage" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">No Voyage <span class="text-red-500">*</span></label>
+                    <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required disabled>
                         <option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>
                     </select>
                 </div>
             </div>
 
-            <div class="mt-6">
-                <button type="button" id="goToOBIndex" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">
+            <div class="mt-4 md:mt-6">
+                <button type="button" id="goToOBIndex" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 md:py-2 rounded-md text-sm md:text-base font-medium shadow-sm hover:shadow-md transition-all">
                     <i class="fas fa-arrow-right mr-2"></i>Lanjutkan ke OB
                 </button>
             </div>
@@ -58,13 +58,13 @@
     </div>
 
     <!-- Info Section -->
-    <div class="bg-blue-50 rounded-lg border border-blue-200 p-4 mt-6">
+    <div class="bg-blue-50 rounded-lg border border-blue-200 p-3 md:p-4 mt-4 md:mt-6">
         <div class="flex items-start">
-            <i class="fas fa-info-circle text-blue-500 mr-3 mt-1"></i>
+            <i class="fas fa-info-circle text-blue-500 mr-2 md:mr-3 mt-0.5 md:mt-1 text-sm md:text-base"></i>
             <div>
-                <h3 class="text-sm font-medium text-blue-900">Informasi OB (Operasional Bongkaran)</h3>
-                <p class="text-sm text-blue-700 mt-1">Setelah memilih kapal dan voyage, Anda dapat:</p>
-                <ul class="text-sm text-blue-700 mt-2 space-y-1">
+                <h3 class="text-xs md:text-sm font-medium text-blue-900">Informasi OB (Operasional Bongkaran)</h3>
+                <p class="text-xs md:text-sm text-blue-700 mt-1">Setelah memilih kapal dan voyage, Anda dapat:</p>
+                <ul class="text-xs md:text-sm text-blue-700 mt-2 space-y-1">
                     <li>• <strong>Tagihan OB:</strong> Mengelola tagihan operasional bongkaran</li>
                     <li>• <strong>Pranota OB:</strong> Membuat dan mengelola pranota untuk tagihan OB</li>
                 </ul>
