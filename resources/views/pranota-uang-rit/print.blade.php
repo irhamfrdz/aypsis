@@ -125,14 +125,12 @@
             <tr>
                 <th style="width: 5%;">No</th>
                 <th style="width: 10%;">NIK</th>
-                <th style="width: 25%;">Supir</th>
-                <th style="width: 8%;">Jumlah Rit</th>
-                <th style="width: 5%;"></th>
+                <th style="width: 35%;">Supir</th>
                 <th style="width: 12%;">Total Uang</th>
                 <th style="width: 10%;">Hutang</th>
                 <th style="width: 10%;">Tabungan</th>
                 <th style="width: 10%;">BPJS</th>
-                <th style="width: 12%;">Grand Total</th>
+                <th style="width: 18%;">Grand Total</th>
             </tr>
         </thead>
         <tbody>
@@ -143,8 +141,6 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper($detail->supir_nama) }}</td>
-                    <td class="text-center">{{ $detail->jumlah_rit }}</td>
-                    <td class="text-center">Rit</td>
                     <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
@@ -164,11 +160,8 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper(trim($supir)) }}</td>
-                    <td class="text-center">
-                        {{ array_count_values($supirArray)[trim($supir)] ?? 1 }}
-                    </td>
-                    <td class="text-center">Rit</td>
                     <td class="text-right">{{ number_format($pranotaUangRit->uang_rit_supir / count($uniqueSupir), 0, ',', '.') }}</td>
+                    <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right">{{ number_format($pranotaUangRit->grand_total_bersih / count($uniqueSupir), 0, ',', '.') }}</td>
@@ -179,16 +172,6 @@
         <tfoot>
             <tr class="total-row">
                 <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
-                <td class="text-center">
-                    <strong>
-                        @if($supirDetails && $supirDetails->count() > 0)
-                            {{ $supirDetails->sum('jumlah_rit') }}
-                        @else
-                            {{ count(explode(', ', $pranotaUangRit->no_surat_jalan)) }}
-                        @endif
-                    </strong>
-                </td>
-                <td class="text-center"><strong></strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}</strong></td>
