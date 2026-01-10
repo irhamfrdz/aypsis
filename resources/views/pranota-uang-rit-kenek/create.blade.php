@@ -187,6 +187,12 @@
                                 </svg>
                                 Batal Pilih
                             </button>
+                            <button type="button" id="downloadExcelBtn" class="inline-flex items-center px-2 py-1.5 border border-green-300 rounded-md text-xs text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors" title="Download data yang dipilih ke Excel">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Download Excel
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1064,6 +1070,58 @@ document.addEventListener('DOMContentLoaded', function () {
             bpjsInput.name = `kenek_details[${kenekNama}][bpjs]`;
             bpjsInput.value = bpjsValue;
             kenekDetailsContainer.appendChild(bpjsInput);
+        });
+    }
+
+    // Download Excel functionality
+    const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+    if (downloadExcelBtn) {
+        downloadExcelBtn.addEventListener('click', function() {
+            const checkedCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:checked');
+            
+            if (checkedCheckboxes.length === 0) {
+                alert('Silakan pilih minimal satu surat jalan untuk download Excel.');
+                return;
+            }
+
+            // Collect selected surat jalan IDs and types
+            const selectedData = [];
+            checkedCheckboxes.forEach(checkbox => {
+                selectedData.push({
+                    id: checkbox.dataset.id,
+                    type: checkbox.dataset.type,
+                    no_surat_jalan: checkbox.dataset.nomor || '-',
+                    tanggal_surat_jalan: checkbox.dataset.tanggal || '-',
+                    kenek_nama: checkbox.dataset.kenek_nama || '-',
+                    no_plat: checkbox.dataset.plat || '-',
+                    uang_rit_kenek: checkbox.closest('tr').querySelector('.uang-rit-Kenek-input')?.value || 0,
+                    tujuan_pengambilan: checkbox.dataset.tujuan_pengambilan || '-'
+                });
+            });
+
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("pranota-uang-rit-kenek.export-excel") }}';
+            form.target = '_blank';
+
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // Add selected data as JSON
+            const dataInput = document.createElement('input');
+            dataInput.type = 'hidden';
+            dataInput.name = 'selected_data';
+            dataInput.value = JSON.stringify(selectedData);
+            form.appendChild(dataInput);
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
         });
     }
 
