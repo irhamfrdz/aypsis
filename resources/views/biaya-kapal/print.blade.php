@@ -343,8 +343,8 @@
                     <tr>
                         <th style="width: 6%;">No</th>
                         <th style="width: 37%;">Jenis Barang</th>
-                        <th style="width: 17%;">Harga Satuan</th>
                         <th style="width: 12%;">Jumlah</th>
+                        <th style="width: 17%;">Harga Satuan</th>
                         <th style="width: 18%;">Subtotal</th>
                     </tr>
                 </thead>
@@ -365,8 +365,8 @@
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $item['barang'] }}</td>
-                        <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                         <td class="text-center">{{ $item['jumlah'] }}</td>
+                        <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
