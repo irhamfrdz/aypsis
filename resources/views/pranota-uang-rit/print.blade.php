@@ -142,7 +142,7 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper($detail->supir_nama) }}</td>
-                    <td class="text-center">{{ $detail->jumlah_rit ?? 0 }}</td>
+                    <td class="text-center">{{ $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0 }}</td>
                     <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
@@ -158,12 +158,15 @@
                     $uniqueSupir = array_unique($supirArray);
                 @endphp
                 @foreach($uniqueSupir as $index => $supir)
+                @php
+                    $totalUangSupir = $pranotaUangRit->uang_rit_supir / count($uniqueSupir);
+                @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper(trim($supir)) }}</td>
-                    <td class="text-center">{{ count(array_keys($supirArray, $supir)) }}</td>
-                    <td class="text-right">{{ number_format($pranotaUangRit->uang_rit_supir / count($uniqueSupir), 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $totalUangSupir > 0 ? round($totalUangSupir / 85000) : 0 }}</td>
+                    <td class="text-right">{{ number_format($totalUangSupir, 0, ',', '.') }}</td>
                     <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right">-</td>
@@ -172,7 +175,7 @@
                 @endforeach
             @endif
         </tbody>
-        <tfoot>
+        <tfoot>pranotaUangRit->total_uang > 0 ? round($pranotaUangRit->total_uang / 85000) : 0
             <tr class="total-row">
                 <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
                 <td class="text-center"><strong>{{ $supirDetails ? $supirDetails->sum('jumlah_rit') : count(explode(', ', $pranotaUangRit->no_surat_jalan)) }}</strong></td>
