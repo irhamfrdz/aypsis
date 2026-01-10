@@ -229,7 +229,7 @@
                     </div>
                 </div>
                 <div class="px-4 py-3 text-xs text-gray-600">
-                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
+                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, memiliki <strong>Kenek</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> dan memiliki <strong>Kenek</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
@@ -299,6 +299,11 @@
                                 
                                 // Add regular surat jalans
                                 foreach($suratJalans as $sj) {
+                                    // Skip surat jalan yang tidak memiliki kenek
+                                    if (empty($sj->kenek)) {
+                                        continue;
+                                    }
+                                    
                                     // Prioritas tanggal: checkpoint -> tanda terima
                                     $tanggalDisplay = $sj->tanggal_checkpoint;
                                     if (!$tanggalDisplay && $sj->tandaTerima) {
@@ -323,6 +328,11 @@
                                 // Add surat jalan bongkarans if available
                                 if(isset($suratJalanBongkarans)) {
                                     foreach($suratJalanBongkarans as $sjb) {
+                                        // Skip surat jalan bongkaran yang tidak memiliki kenek
+                                        if (empty($sjb->kenek)) {
+                                            continue;
+                                        }
+                                        
                                         // Prioritas tanggal: checkpoint -> tanda terima bongkaran
                                         $tanggalDisplay = $sjb->tanggal_checkpoint;
                                         if (!$tanggalDisplay && $sjb->tandaTerima) {
