@@ -78,7 +78,13 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pranotaUangRitTable">
                         <thead class="bg-gray-50">
-                            <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Surat Jalan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Uang Rit<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
+                            <tr>
+                                <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th>
+                                <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
+                                <th class="resizable-th px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Uang Rit<div class="resize-handle"></div></th>
+                                <th class="resizable-th px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($pranotaUangRits as $item)
@@ -92,7 +98,6 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->no_surat_jalan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">Rp {{ number_format($item->grand_total_bersih, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     @if($item->status === 'draft')
