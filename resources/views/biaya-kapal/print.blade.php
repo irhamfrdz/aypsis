@@ -252,10 +252,6 @@
                     <td>: {{ $biayaKapal->nomor_invoice }}</td>
                 </tr>
                 <tr>
-                    <td>Jenis Biaya</td>
-                    <td>: {{ $biayaKapal->jenis_biaya_label }}</td>
-                </tr>
-                <tr>
                     <td>Nomor Referensi</td>
                     <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
                 </tr>
