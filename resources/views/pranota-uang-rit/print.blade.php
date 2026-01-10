@@ -143,12 +143,7 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper($detail->supir_nama) }}</td>
-                    <td class="text-center">
-                        @php
-                            $jumlahRit = $groupedPranota->where('supir_nama', $detail->supir_nama)->count();
-                        @endphp
-                        {{ $jumlahRit }}
-                    </td>
+                    <td class="text-center">{{ $detail->jumlah_rit }}</td>
                     <td class="text-center">Rit</td>
                     <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
@@ -187,7 +182,7 @@
                 <td class="text-center">
                     <strong>
                         @if($supirDetails && $supirDetails->count() > 0)
-                            {{ $groupedPranota->count() }}
+                            {{ $supirDetails->sum('jumlah_rit') }}
                         @else
                             {{ count(explode(', ', $pranotaUangRit->no_surat_jalan)) }}
                         @endif

@@ -545,6 +545,7 @@ class PranotaUangRitController extends Controller
                 if (!isset($supirTotals[$supirNama])) {
                     $supirTotals[$supirNama] = [
                         'total_uang_supir' => 0.0,
+                        'jumlah_rit' => 0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
@@ -552,6 +553,7 @@ class PranotaUangRitController extends Controller
                 }
                 
                 $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
+                $supirTotals[$supirNama]['jumlah_rit'] += 1;
                 $totalUangSupirKeseluruhan += $uangSupir;
             }
 
@@ -565,6 +567,7 @@ class PranotaUangRitController extends Controller
                 if (!isset($supirTotals[$supirNama])) {
                     $supirTotals[$supirNama] = [
                         'total_uang_supir' => 0.0,
+                        'jumlah_rit' => 0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
@@ -572,6 +575,7 @@ class PranotaUangRitController extends Controller
                 }
                 
                 $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
+                $supirTotals[$supirNama]['jumlah_rit'] += 1;
                 $totalUangSupirKeseluruhan += $uangSupir;
             }
 
@@ -686,6 +690,7 @@ class PranotaUangRitController extends Controller
                 PranotaUangRitSupirDetail::create([
                     'no_pranota' => $nomorPranota,
                     'supir_nama' => $supirNama,
+                    'jumlah_rit' => intval($totals['jumlah_rit']),
                     'total_uang_supir' => floatval($totals['total_uang_supir']),
                     'hutang' => floatval($totals['hutang']),
                     'tabungan' => floatval($totals['tabungan']),
