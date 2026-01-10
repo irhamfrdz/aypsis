@@ -3,6 +3,44 @@
 @section('title', 'Form Pembayaran Pranota OB')
 @section('page_title', 'Form Pembayaran Pranota OB')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        background-color: #f9fafb;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 38px;
+        padding-left: 12px;
+        font-size: 0.875rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+    }
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 6px 12px;
+        font-size: 0.875rem;
+    }
+    .select2-results__option {
+        font-size: 0.875rem;
+        padding: 8px 12px;
+    }
+</style>
+@endpush
+
 @section('content')
     @php
         use App\Models\PembayaranPranotaOb;
@@ -787,4 +825,42 @@
         }
     });
 </script>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 on bank dropdown
+        $('#bank').select2({
+            placeholder: '-- Pilih Bank --',
+            allowClear: true,
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "Tidak ada hasil yang ditemukan";
+                },
+                searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+        
+        // Update nomor pembayaran when bank changes
+        $('#bank').on('select2:select', function(e) {
+            const selectedOption = e.params.data.element;
+            const kode = selectedOption.getAttribute('data-kode') || '000';
+            const counter = {{ $obPaymentCounter }};
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2);
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const running = counter.toString().padStart(6, '0');
+            const print = '1';
+            const nomor = kode + print + year + month + running;
+            document.getElementById('nomor_pembayaran').value = nomor;
+            document.getElementById('nomor_pembayaran_hidden').value = nomor;
+        });
+    });
+</script>
+@endpush
+
 @endsection
