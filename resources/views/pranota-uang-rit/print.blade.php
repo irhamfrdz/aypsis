@@ -175,10 +175,10 @@
                 @endforeach
             @endif
         </tbody>
-        <tfoot>pranotaUangRit->total_uang > 0 ? round($pranotaUangRit->total_uang / 85000) : 0
+        <tfoot>
             <tr class="total-row">
                 <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
-                <td class="text-center"><strong>{{ $supirDetails ? $supirDetails->sum('jumlah_rit') : count(explode(', ', $pranotaUangRit->no_surat_jalan)) }}</strong></td>
+                <td class="text-center"><strong>{{ $pranotaUangRit->total_uang > 0 ? round($pranotaUangRit->total_uang / 85000) : 0 }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}</strong></td>
