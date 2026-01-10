@@ -96,7 +96,7 @@
     </div>
 
     {{-- Filter Section --}}
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
         <form method="GET" action="{{ route('ob.index') }}">
             <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
             <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
@@ -107,22 +107,22 @@
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div class="space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-6 md:gap-4">
                 {{-- Search --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                    <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Pencarian</label>
                     <input type="text"
                            name="search"
                            value="{{ request('search') }}"
                            placeholder="No kontainer, seal, barang..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 {{-- Tipe Kontainer Filter --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
+                    <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Tipe Kontainer</label>
                     <select name="tipe_kontainer"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Tipe</option>
                         <option value="FCL" {{ request('tipe_kontainer') == 'FCL' ? 'selected' : '' }}>FCL</option>
                         <option value="LCL" {{ request('tipe_kontainer') == 'LCL' ? 'selected' : '' }}>LCL</option>
@@ -132,9 +132,9 @@
 
                 {{-- Status OB Filter --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status OB</label>
+                    <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Status OB</label>
                     <select name="status_ob"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Status</option>
                         <option value="sudah" {{ request('status_ob') == 'sudah' ? 'selected' : '' }}>Sudah OB</option>
                         <option value="belum" {{ request('status_ob') == 'belum' ? 'selected' : '' }}>Belum OB</option>
@@ -143,10 +143,10 @@
 
                 {{-- Asal Kontainer Input --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Asal Kontainer (Semua)</label>
+                    <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Asal Kontainer (Semua)</label>
                     @if(request('kegiatan') === 'muat')
                         <select id="bulk_asal_kontainer"
-                                class="select2-gudang w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                class="select2-gudang w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Pilih gudang...</option>
                             @foreach($gudangs as $gudang)
                                 <option value="{{ $gudang->nama_gudang }}">
@@ -159,35 +159,35 @@
                                id="bulk_asal_kontainer"
                                value="{{ $namaKapal }}"
                                placeholder="Isi untuk mengubah semua"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     @endif
-                    <p class="text-xs text-gray-500 mt-1">Isi untuk mengubah semua asal kontainer</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">Isi untuk mengubah semua asal kontainer</p>
                 </div>
 
                 {{-- Ke Input --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Ke (Semua)</label>
+                    <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Ke (Semua)</label>
                     <input type="text"
                            id="bulk_ke"
                            placeholder="Isi untuk mengubah semua"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="text-xs text-gray-500 mt-1">Isi untuk mengubah tujuan semua kontainer</p>
+                           class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">Isi untuk mengubah tujuan semua kontainer</p>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mt-4">
-                <div class="flex gap-2">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mt-3 md:mt-4">
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
                         <i class="fas fa-search mr-2"></i>
                         Filter
                     </button>
-                    <a href="{{ route('ob.index', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->has('kegiatan') ? ['kegiatan' => request('kegiatan')] : [])) }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                    <a href="{{ route('ob.index', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->has('kegiatan') ? ['kegiatan' => request('kegiatan')] : [])) }}" class="flex-1 md:flex-none bg-gray-500 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
                         <i class="fas fa-times mr-2"></i>
                         Reset
                     </a>
                 </div>
-                <div>
-                    <button type="button" id="btnSaveAsalKe" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                <div class="w-full md:w-auto">
+                    <button type="button" id="btnSaveAsalKe" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
                         <i class="fas fa-save mr-2"></i>
                         Simpan Asal & Ke
                     </button>
