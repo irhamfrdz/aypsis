@@ -1102,4 +1102,106 @@ class PranotaUangRitKenekController extends Controller
             
         return view('pranota-uang-rit-kenek.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
     }
+
+    /**
+     * Export selected surat jalan to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $request->validate([
+            'selected_data' => 'required|json'
+        ]);
+
+        $selectedData = json_decode($request->selected_data, true);
+
+        if (empty($selectedData)) {
+            return back()->with('error', 'Tidak ada surat jalan yang dipilih.');
+        }
+
+        // Create Excel file using PhpSpreadsheet
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'No. Surat Jalan');
+        $sheet->setCellValue('C1', 'Nama Kenek');
+        $sheet->setCellValue('D1', 'Tanggal Tanda Terima');
+        $sheet->setCellValue('E1', 'No. Plat');
+        $sheet->setCellValue('F1', 'Uang Rit Kenek');
+        $sheet->setCellValue('G1', 'Tujuan Pengambilan');
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+        ];
+        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(25);
+        $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(30);
+
+        // Fill data
+        $row = 2;
+        foreach ($selectedData as $index => $data) {
+            $sheet->setCellValue('A' . $row, $index + 1);
+            $sheet->setCellValue('B' . $row, $data['no_surat_jalan'] ?? '-');
+            $sheet->setCellValue('C' . $row, $data['kenek_nama'] ?? '-');
+            
+            // Format tanggal
+            $tanggalDisplay = '-';
+            if (!empty($data['tanggal_surat_jalan'])) {
+                try {
+                    $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_surat_jalan'])->format('d/m/Y');
+                } catch (\Exception $e) {
+                    $tanggalDisplay = '-';
+                }
+            }
+            
+            $sheet->setCellValue('D' . $row, $tanggalDisplay);
+            $sheet->setCellValue('E' . $row, $data['no_plat'] ?? '-');
+            $sheet->setCellValue('F' . $row, $data['uang_rit_kenek'] ?? 0);
+            $sheet->setCellValue('G' . $row, $data['tujuan_pengambilan'] ?? '-');
+            
+            // Add border to data rows
+            $sheet->getStyle('A' . $row . ':G' . $row)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ]);
+            
+            $row++;
+        }
+
+        // Add border to header
+        $sheet->getStyle('A1:G1')->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => 'FFFFFF']
+                ]
+            ]
+        ]);
+
+        // Create writer and download
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'Surat_Jalan_Kenek_' . date('YmdHis') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
 }

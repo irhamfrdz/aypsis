@@ -2213,6 +2213,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-rit-kenek.print')
          ->middleware('can:pranota-uang-rit-view');
 
+    Route::post('pranota-uang-rit-kenek/export-excel', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportExcel'])
+         ->name('pranota-uang-rit-kenek.export-excel')
+         ->middleware('can:pranota-uang-rit-view');
+
     // ═══════════════════════════════════════════════════════════════════════
     // �🚚 PRANOTA UANG KENEK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
