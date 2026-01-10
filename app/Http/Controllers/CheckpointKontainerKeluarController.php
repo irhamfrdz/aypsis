@@ -342,4 +342,51 @@ class CheckpointKontainerKeluarController extends Controller
             return redirect()->back()->with('error', 'Gagal mengirim kontainer: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Store pengembalian kontainer sewa
+     */
+    public function storePengembalian(Request $request)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-create');
+
+        $request->validate([
+            'gudangs_id' => 'required|exists:gudangs,id',
+            'kontainer_id' => 'required',
+            'kontainer_tipe' => 'required|in:kontainer,stock',
+            'tanggal_pengembalian' => 'required|date',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Get kontainer record based on type
+            if ($request->kontainer_tipe === 'kontainer') {
+                $kontainer = Kontainer::findOrFail($request->kontainer_id);
+            } else {
+                $kontainer = StockKontainer::findOrFail($request->kontainer_id);
+            }
+
+            // Update kontainer - set gudangs_id to null (dikembalikan)
+            $kontainer->update([
+                'gudangs_id' => null,
+                'keterangan' => ($kontainer->keterangan ? $kontainer->keterangan . ' | ' : '') . 
+                               'Dikembalikan pada ' . Carbon::parse($request->tanggal_pengembalian)->format('d/m/Y') . 
+                               ($request->keterangan ? ': ' . $request->keterangan : ''),
+            ]);
+
+            // Optional: Create a log or history record here if needed
+            // Example: PengembalianKontainerLog::create([...]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Kontainer berhasil dikembalikan');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal mengembalikan kontainer: ' . $e->getMessage());
+        }
+    }
 }

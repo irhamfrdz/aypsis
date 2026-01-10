@@ -2545,6 +2545,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('checkpoint-kontainer-keluar.kirim')
          ->middleware('can:checkpoint-kontainer-keluar-create');
 
+    Route::post('pengembalian-kontainer', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'storePengembalian'])
+         ->name('pengembalian-kontainer.store')
+         ->middleware('can:checkpoint-kontainer-keluar-create');
+
     // 📦 KONTAINER DALAM PERJALANAN ROUTES
     // ═══════════════════════════════════════════════════════════════════════
     Route::get('kontainer-perjalanan', [\App\Http\Controllers\KontainerPerjalananController::class, 'index'])
