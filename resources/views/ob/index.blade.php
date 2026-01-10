@@ -11,32 +11,32 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
     {{-- Header --}}
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex items-center justify-between">
+    <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center">
-                <i class="fas fa-ship mr-3 text-orange-600 text-2xl"></i>
+                <i class="fas fa-ship mr-2 md:mr-3 text-orange-600 text-xl md:text-2xl"></i>
                 <div>
                     @if(isset($bls) && $bls->count() > 0)
-                    <h1 class="text-2xl font-bold text-gray-800">OB - Data Bongkaran</h1>
+                    <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB - Data Bongkaran</h1>
                     @else
-                    <h1 class="text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
+                    <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
                     @endif
-                    <p class="text-gray-600">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
-                    <p class="text-xs text-gray-500 mt-1">Last updated: {{ now()->format('d/m/Y H:i:s') }}</p>
+                    <p class="text-xs md:text-sm text-gray-600">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
+                    <p class="text-[10px] md:text-xs text-gray-500 mt-1">Last updated: {{ now()->format('d/m/Y H:i:s') }}</p>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+            <div class="flex flex-wrap gap-2">
+                <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
-                <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-print mr-2"></i>Print
+                <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-print md:mr-2"></i><span class="hidden md:inline">Print</span>
                 </a>
-                <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'search']))) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-file-excel mr-2"></i>Export Excel
+                <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'search']))) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-file-excel md:mr-2"></i><span class="hidden md:inline">Export Excel</span>
                 </a>
-                <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-arrow-left mr-2"></i>Pilih Kapal Lain
+                <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">Pilih Kapal Lain</span>
                 </a>
             </div>
         </div>
@@ -57,39 +57,39 @@
     @endif
 
     {{-- Statistics Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 border-l-4 border-blue-500">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
-                    <i class="fas fa-boxes text-2xl text-blue-600"></i>
+                <div class="flex-shrink-0 bg-blue-100 rounded-full p-2 md:p-3">
+                    <i class="fas fa-boxes text-lg md:text-2xl text-blue-600"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Kontainer</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $totalKontainer }}</p>
+                <div class="ml-3 md:ml-4">
+                    <p class="text-xs md:text-sm font-medium text-gray-500">Total Kontainer</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900">{{ $totalKontainer }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+        <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 border-l-4 border-green-500">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
-                    <i class="fas fa-check text-2xl text-green-600"></i>
+                <div class="flex-shrink-0 bg-green-100 rounded-full p-2 md:p-3">
+                    <i class="fas fa-check text-lg md:text-2xl text-green-600"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Sudah OB</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $sudahOB }}</p>
+                <div class="ml-3 md:ml-4">
+                    <p class="text-xs md:text-sm font-medium text-gray-500">Sudah OB</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900">{{ $sudahOB }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+        <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 border-l-4 border-yellow-500">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-yellow-100 rounded-full p-3">
-                    <i class="fas fa-clock text-2xl text-yellow-600"></i>
+                <div class="flex-shrink-0 bg-yellow-100 rounded-full p-2 md:p-3">
+                    <i class="fas fa-clock text-lg md:text-2xl text-yellow-600"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Belum OB</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $belumOB }}</p>
+                <div class="ml-3 md:ml-4">
+                    <p class="text-xs md:text-sm font-medium text-gray-500">Belum OB</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900">{{ $belumOB }}</p>
                 </div>
             </div>
         </div>
@@ -198,12 +198,249 @@
 
     {{-- Table Section --}}
     {{-- Bulk Actions --}}
-    <div id="bulk-actions" class="hidden bg-gray-50 px-4 py-3 border-b border-gray-200 mb-4">
-        <button type="button" id="btnMasukPranota" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+    <div id="bulk-actions" class="hidden bg-gray-50 px-4 py-3 border-b border-gray-200 mb-4 rounded-lg">
+        <button type="button" id="btnMasukPranota" class="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-md text-sm">
             <i class="fas fa-plus mr-2"></i>Masukan ke Pranota
         </button>
     </div>
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    
+    {{-- Mobile Card View (visible only on mobile) --}}
+    <div class="md:hidden space-y-3 mb-4">
+        @if(isset($bls))
+            @forelse($bls as $key => $bl)
+                @php
+                    $isTL = ($bl->sudah_tl === true || $bl->sudah_tl === 1 || $bl->sudah_tl === '1');
+                    $isOB = ($bl->sudah_ob === true || $bl->sudah_ob === 1 || $bl->sudah_ob === '1');
+                    $isCARGO = ($bl->tipe_kontainer == 'CARGO');
+                    $shouldDisable = $isCARGO || !$isOB;
+                    $barangUpper = strtoupper($bl->nama_barang ?? '');
+                    $isEmpty = str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')));
+                @endphp
+                <div class="bg-white rounded-lg shadow-sm border {{ $isCARGO ? 'border-red-200 bg-gray-50' : 'border-gray-200' }} p-3">
+                    {{-- Card Header with Checkbox and Status --}}
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" class="row-checkbox mt-1" value="{{ $bl->id }}" 
+                                   data-type="bl" 
+                                   data-nomor-kontainer="{{ $bl->nomor_kontainer }}" 
+                                   data-nama-barang="{{ $bl->nama_barang }}" 
+                                   data-tipe="{{ $bl->tipe_kontainer }}" 
+                                   data-size="{{ $bl->size_kontainer }}" 
+                                   data-biaya="{{ $bl->biaya ?? '' }}" 
+                                   data-status="{{ $bl->detected_status ?? 'full' }}" 
+                                   data-supir="{{ $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '') : '' }}" 
+                                   data-sudah-tl="{{ $isTL ? '1' : '0' }}" 
+                                   data-sudah-ob="{{ $isOB ? '1' : '0' }}" 
+                                   {{ $shouldDisable ? 'disabled' : '' }}>
+                            <div>
+                                <div class="font-mono text-sm font-bold text-gray-900">{{ $bl->nomor_kontainer ?: '-' }}</div>
+                                <div class="text-xs text-gray-500">No. BL: {{ $bl->nomor_bl ?: '-' }}</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            @if($isOB)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1 text-[10px]"></i>OB
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-clock mr-1 text-[10px]"></i>Belum
+                                </span>
+                            @endif
+                            @if($isTL)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-exchange-alt mr-1 text-[10px]"></i>TL
+                                </span>
+                            @endif
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ $isEmpty ? 'Empty' : 'Full' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {{-- Card Content --}}
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Barang:</span>
+                            <span class="font-medium text-gray-900 text-right">{{ $bl->nama_barang ?: '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Pengirim:</span>
+                            <span class="font-medium text-gray-900 text-right">{{ request('kegiatan') === 'muat' ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">No. Seal:</span>
+                            <span class="font-mono text-gray-900">{{ $bl->no_seal ?: '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tipe/Size:</span>
+                            <span class="font-medium text-gray-900">{{ $bl->tipe_kontainer ?: '-' }} / {{ $bl->size_kontainer ?: '-' }}</span>
+                        </div>
+                        @if($isOB && $bl->supir)
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Supir:</span>
+                                <span class="font-medium text-gray-900">{{ $bl->supir->nama_panggilan }} {{ $bl->supir->plat ? '(' . $bl->supir->plat . ')' : '' }}</span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Created:</span>
+                            <span class="text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/y') : '-' }}</span>
+                        </div>
+                    </div>
+                    
+                    {{-- Card Actions --}}
+                    <div class="mt-3 pt-3 border-t border-gray-200 flex flex-wrap items-center gap-2">
+                        @if(!$isOB)
+                            <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                   class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-check mr-1"></i>Tandai OB
+                            </button>
+                            @if(!$isTL)
+                            <button type="button" onclick="prosesTLBongkar({{ $bl->id }})"
+                                   class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-exchange-alt mr-1"></i>TL
+                            </button>
+                            @endif
+                        @else
+                            <button type="button" onclick="unmarkOB('bl', {{ $bl->id }})"
+                                   class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-undo mr-1"></i>Batalkan OB
+                            </button>
+                        @endif
+                        @if($isTL)
+                        <button type="button" onclick="clearTL('bl', {{ $bl->id }})"
+                               class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                            <i class="fas fa-times-circle mr-1"></i>Clear TL
+                        </button>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <p>Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</p>
+                </div>
+            @endforelse
+        @else
+            @forelse($naikKapals as $key => $naikKapal)
+                @php
+                    $isTL = ($naikKapal->is_tl === true || $naikKapal->is_tl === 1 || $naikKapal->is_tl === '1');
+                    $isOB = ($naikKapal->sudah_ob === true || $naikKapal->sudah_ob === 1 || $naikKapal->sudah_ob === '1');
+                    $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
+                    $shouldDisable = $isCARGO || !$isOB;
+                    $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
+                    $isEmpty = str_contains($barangUpper, 'EMPTY');
+                @endphp
+                <div class="bg-white rounded-lg shadow-sm border {{ $isCARGO ? 'border-red-200 bg-gray-50' : 'border-gray-200' }} p-3">
+                    {{-- Card Header with Checkbox and Status --}}
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" class="row-checkbox mt-1" value="{{ $naikKapal->id }}" 
+                                   data-type="naik_kapal" 
+                                   data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" 
+                                   data-nama-barang="{{ $naikKapal->jenis_barang }}" 
+                                   data-tipe="{{ $naikKapal->tipe_kontainer }}" 
+                                   data-size="{{ $naikKapal->size_kontainer }}" 
+                                   data-biaya="{{ $naikKapal->biaya ?? '' }}" 
+                                   data-status="{{ $naikKapal->detected_status ?? 'full' }}" 
+                                   data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" 
+                                   data-sudah-tl="{{ $isTL ? '1' : '0' }}" 
+                                   data-sudah-ob="{{ $isOB ? '1' : '0' }}" 
+                                   {{ $shouldDisable ? 'disabled' : '' }}>
+                            <div>
+                                <div class="font-mono text-sm font-bold text-gray-900">{{ $naikKapal->nomor_kontainer ?: '-' }}</div>
+                                <div class="text-xs text-gray-500">#{{ $naikKapals->firstItem() + $key }}</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            @if($isOB)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1 text-[10px]"></i>OB
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-clock mr-1 text-[10px]"></i>Belum
+                                </span>
+                            @endif
+                            @if($isTL)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-exchange-alt mr-1 text-[10px]"></i>TL
+                                </span>
+                            @endif
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ $isEmpty ? 'Empty' : 'Full' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {{-- Card Content --}}
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Barang:</span>
+                            <span class="font-medium text-gray-900 text-right">{{ $naikKapal->jenis_barang ?: '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Pengirim:</span>
+                            <span class="font-medium text-gray-900 text-right">{{ request('kegiatan') === 'muat' ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">No. Seal:</span>
+                            <span class="font-mono text-gray-900">{{ $naikKapal->no_seal ?: '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tipe/Size:</span>
+                            <span class="font-medium text-gray-900">{{ $naikKapal->tipe_kontainer ?: '-' }} / {{ $naikKapal->size_kontainer ?: '-' }}</span>
+                        </div>
+                        @if($isOB && $naikKapal->supir)
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Supir:</span>
+                                <span class="font-medium text-gray-900">{{ $naikKapal->supir->nama_panggilan }} {{ $naikKapal->supir->plat ? '(' . $naikKapal->supir->plat . ')' : '' }}</span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tgl Muat:</span>
+                            <span class="text-gray-900">{{ $naikKapal->created_at ? $naikKapal->created_at->format('d/m/y') : '-' }}</span>
+                        </div>
+                    </div>
+                    
+                    {{-- Card Actions --}}
+                    <div class="mt-3 pt-3 border-t border-gray-200 flex flex-wrap items-center gap-2">
+                        @if(!$isOB)
+                            <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                                   class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-check mr-1"></i>Tandai OB
+                            </button>
+                            @if(!$isTL)
+                            <button type="button" onclick="prosesTL({{ $naikKapal->id }})"
+                                   class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-exchange-alt mr-1"></i>TL
+                            </button>
+                            @endif
+                        @else
+                            <button type="button" onclick="unmarkOB('naik_kapal', {{ $naikKapal->id }})"
+                                   class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-undo mr-1"></i>Batalkan OB
+                            </button>
+                        @endif
+                        @if($isTL)
+                        <button type="button" onclick="clearTL('naik_kapal', {{ $naikKapal->id }})"
+                               class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                            <i class="fas fa-times-circle mr-1"></i>Clear TL
+                        </button>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <p>Tidak ada data Naik Kapal untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</p>
+                </div>
+            @endforelse
+        @endif
+    </div>
+    
+    {{-- Desktop Table View (hidden on mobile) --}}
+    <div class="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             @if(isset($bls))
             <table class="min-w-full table-auto text-xs">
@@ -639,8 +876,10 @@
         </div>
 
         @endif
+    </div>
 
-        {{-- Modern Pagination --}}
+    {{-- Pagination (visible on both mobile and desktop) --}}
+    <div class="mt-4">
         @if(isset($bls))
             @include('components.modern-pagination', ['paginator' => $bls])
         @else
