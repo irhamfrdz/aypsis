@@ -364,7 +364,9 @@
                                                data-supir_nama="{{ $item['supir'] }}"
                                                data-tanggal_checkpoint="{{ $item['tanggal_checkpoint'] ?? '' }}"
                                                data-tanggal_tanda_terima="{{ $item['type'] === 'regular' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_terima : '' }}"
-                                               data-tanggal_tanda_terima_bongkaran="{{ $item['type'] === 'bongkaran' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_tanda_terima : '' }}">
+                                               data-tanggal_tanda_terima_bongkaran="{{ $item['type'] === 'bongkaran' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_tanda_terima : '' }}"
+                                               data-pengirim="{{ $item['type'] === 'regular' ? ($item['data']->pengirim ?? $item['data']->pengirim_nama ?? '-') : ($item['data']->pengirim ?? '-') }}"
+                                               data-tujuan_pengambilan="{{ $item['type'] === 'regular' ? ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_pengambilan ?? '-') : ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_tujuan ?? '-') }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][no_surat_jalan]" value="{{ $item['no_surat_jalan'] }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][supir_nama]" value="{{ $item['supir'] }}">
                                     </td>
@@ -1105,7 +1107,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     supir: checkbox.dataset.supir_nama,
                     tanggal_checkpoint: checkbox.dataset.tanggal_checkpoint || '',
                     tanggal_tanda_terima: checkbox.dataset.tanggal_tanda_terima || '',
-                    tanggal_tanda_terima_bongkaran: checkbox.dataset.tanggal_tanda_terima_bongkaran || ''
+                    tanggal_tanda_terima_bongkaran: checkbox.dataset.tanggal_tanda_terima_bongkaran || '',
+                    pengirim: checkbox.dataset.pengirim || '-',
+                    tujuan_pengambilan: checkbox.dataset.tujuan_pengambilan || '-'
                 });
             });
 
