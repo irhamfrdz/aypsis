@@ -8,6 +8,70 @@
 @section('page_title', 'OB - Data Naik Kapal')
 @endif
 
+@push('styles')
+<style>
+    /* Select2 Mobile Optimization */
+    @media (max-width: 768px) {
+        .select2-container--default .select2-selection--single {
+            height: 42px !important;
+            padding: 8px 12px !important;
+            font-size: 16px !important; /* Prevents zoom on iOS */
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 26px !important;
+            padding-left: 0 !important;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+        }
+        
+        .select2-dropdown {
+            font-size: 16px !important;
+        }
+        
+        .select2-results__option {
+            padding: 12px 16px !important;
+            min-height: 48px !important; /* Touch-friendly */
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        .select2-search--dropdown .select2-search__field {
+            height: 44px !important;
+            font-size: 16px !important;
+            padding: 8px 12px !important;
+        }
+        
+        /* Make modal more mobile-friendly */
+        #supirModal .relative {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+        }
+    }
+    
+    /* General Select2 Styling for Supir Dropdown */
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #3b82f6 !important;
+    }
+    
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.375rem !important;
+    }
+    
+    .select2-container--default .select2-selection--single:focus,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #3b82f6 !important;
+        outline: 2px solid transparent !important;
+        outline-offset: 2px !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
     {{-- Header --}}
@@ -912,7 +976,7 @@
                         Supir <span class="text-red-500">*</span>
                     </label>
                     <select id="supir_id" name="supir_id" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="select2-supir w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Supir</option>
                         @foreach($supirs as $supir)
                             <option value="{{ $supir->id }}">
@@ -1041,14 +1105,27 @@ function changePerPage(perPage) {
 function openSupirModal(type, id) {
     document.getElementById('record_type').value = type;
     document.getElementById('record_id').value = id;
-    document.getElementById('supir_id').value = '';
+    
+    // Reset Select2 supir dropdown
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery('#supir_id').val('').trigger('change');
+    } else {
+        document.getElementById('supir_id').value = '';
+    }
+    
     document.getElementById('catatan').value = '';
+    document.getElementById('retur_barang').value = '';
     document.getElementById('supirModal').classList.remove('hidden');
 }
 
 function closeSupirModal() {
     document.getElementById('supirModal').classList.add('hidden');
     document.getElementById('formMarkOB').reset();
+    
+    // Reset Select2 on close
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery('#supir_id').val('').trigger('change');
+    }
 }
 
 // Close modal when clicking outside
@@ -1206,6 +1283,33 @@ document.addEventListener('DOMContentLoaded', function() {
             placeholder: 'Pilih gudang asal...',
             allowClear: true,
             width: '100%'
+        });
+        
+        // Initialize Select2 for supir dropdown with mobile optimization
+        jQuery('.select2-supir').select2({
+            placeholder: 'Cari supir...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: jQuery('#supirModal'),
+            language: {
+                noResults: function() {
+                    return "Supir tidak ditemukan";
+                },
+                searching: function() {
+                    return "Mencari...";
+                },
+                inputTooShort: function() {
+                    return "Ketik untuk mencari supir";
+                }
+            },
+            // Mobile-friendly configuration
+            minimumResultsForSearch: 0, // Always show search box
+            closeOnSelect: true,
+            templateResult: function(data) {
+                if (!data.id) return data.text;
+                // Format hasil dengan styling yang lebih baik
+                return jQuery('<span style="display: block; padding: 2px 0;">' + data.text + '</span>');
+            }
         });
     }
 
