@@ -194,11 +194,41 @@
                         @endphp
                     @endif
                 </strong></td>
-                <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}</strong></td>
-                <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}</strong></td>
-                <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}</strong></td>
-                <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}</strong></td>
-                <td class="text-right"><strong>{{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}</strong></td>
+                <td class="text-right"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ number_format($supirDetails->sum('total_uang_supir'), 0, ',', '.') }}
+                    @else
+                        {{ number_format($pranotaUangRit->uang_rit_supir, 0, ',', '.') }}
+                    @endif
+                </strong></td>
+                <td class="text-right"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ number_format($supirDetails->sum('hutang'), 0, ',', '.') }}
+                    @else
+                        {{ number_format(0, 0, ',', '.') }}
+                    @endif
+                </strong></td>
+                <td class="text-right"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ number_format($supirDetails->sum('tabungan'), 0, ',', '.') }}
+                    @else
+                        {{ number_format(0, 0, ',', '.') }}
+                    @endif
+                </strong></td>
+                <td class="text-right"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ number_format($supirDetails->sum('bpjs'), 0, ',', '.') }}
+                    @else
+                        {{ number_format(0, 0, ',', '.') }}
+                    @endif
+                </strong></td>
+                <td class="text-right"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ number_format($supirDetails->sum('grand_total'), 0, ',', '.') }}
+                    @else
+                        {{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}
+                    @endif
+                </strong></td>
             </tr>
         </tfoot>
     </table>
