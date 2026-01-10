@@ -348,8 +348,12 @@
                                                class="surat-jalan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded"
                                                data-id="{{ $item['id'] }}"
                                                data-type="{{ $item['type'] }}"
+                                               data-nomor="{{ $item['no_surat_jalan'] }}"
                                                data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
-                                               data-kenek_nama="{{ $item['kenek'] }}">
+                                               data-kenek_nama="{{ $item['kenek'] }}"
+                                               data-tanggal="{{ $item['tanggal_tanda_terima'] ? \Carbon\Carbon::parse($item['tanggal_tanda_terima'])->format('Y-m-d') : '' }}"
+                                               data-plat="{{ $item['type'] === 'regular' ? ($item['data']->no_plat ?? '-') : ($item['data']->no_plat ?? '-') }}"
+                                               data-tujuan_pengambilan="{{ $item['type'] === 'regular' ? ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_pengambilan ?? '-') : ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_tujuan ?? '-') }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][no_surat_jalan]" value="{{ $item['no_surat_jalan'] }}">
                                         <input type="hidden" name="{{ $inputPrefix }}[{{ $item['id'] }}][kenek_nama]" value="{{ $item['kenek'] }}">
                                     </td>
@@ -1087,17 +1091,20 @@ document.addEventListener('DOMContentLoaded', function () {
             // Collect selected surat jalan IDs and types
             const selectedData = [];
             checkedCheckboxes.forEach(checkbox => {
+                const uangKenekInput = checkbox.closest('tr').querySelector('.uang-rit-kenek-input');
                 selectedData.push({
                     id: checkbox.dataset.id,
                     type: checkbox.dataset.type,
-                    no_surat_jalan: checkbox.dataset.nomor || '-',
+                    no_surat_jalan: checkbox.dataset.no_surat_jalan || '-',
                     tanggal_surat_jalan: checkbox.dataset.tanggal || '-',
                     kenek_nama: checkbox.dataset.kenek_nama || '-',
                     no_plat: checkbox.dataset.plat || '-',
-                    uang_rit_kenek: checkbox.closest('tr').querySelector('.uang-rit-Kenek-input')?.value || 0,
+                    uang_rit_kenek: uangKenekInput ? uangKenekInput.value : 0,
                     tujuan_pengambilan: checkbox.dataset.tujuan_pengambilan || '-'
                 });
             });
+            
+            console.log('Selected data for export:', selectedData);
 
             // Create form and submit
             const form = document.createElement('form');
