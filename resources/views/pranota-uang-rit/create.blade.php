@@ -1051,6 +1051,30 @@ document.addEventListener('DOMContentLoaded', function () {
         // Clear existing inputs
         supirDetailsContainer.innerHTML = '';
         
+        // Calculate jumlah_rit for each supir from checked checkboxes
+        const supirRitCount = {};
+        suratJalanCheckboxes.forEach((checkbox, index) => {
+            if (checkbox.checked) {
+                const row = checkbox.closest('tr');
+                const supirCell = row.querySelector('td:nth-child(4)');
+                if (supirCell) {
+                    const supirNama = supirCell.textContent.trim();
+                    if (supirNama) {
+                        supirRitCount[supirNama] = (supirRitCount[supirNama] || 0) + 1;
+                    }
+                }
+            }
+        });
+        
+        // Create hidden inputs for each supir's jumlah_rit
+        Object.keys(supirRitCount).forEach(supirNama => {
+            const ritCountInput = document.createElement('input');
+            ritCountInput.type = 'hidden';
+            ritCountInput.name = `supir_details[${supirNama}][jumlah_rit]`;
+            ritCountInput.value = supirRitCount[supirNama];
+            supirDetailsContainer.appendChild(ritCountInput);
+        });
+        
         // Create hidden inputs for each supir's hutang, tabungan, and bpjs
         personUtangInputs.forEach(input => {
             const supirNama = input.dataset.person;
