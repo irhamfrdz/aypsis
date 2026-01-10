@@ -178,7 +178,22 @@
         <tfoot>
             <tr class="total-row">
                 <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
-                <td class="text-center"><strong>{{ $pranotaUangRit->total_uang > 0 ? round($pranotaUangRit->total_uang / 85000) : 0 }}</strong></td>
+                <td class="text-center"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ $supirDetails->sum(function($detail) { return $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0; }) }}
+                    @else
+                        @php
+                            $totalRit = 0;
+                            $supirArray = explode(', ', $pranotaUangRit->supir_nama);
+                            $uniqueSupir = array_unique($supirArray);
+                            foreach($uniqueSupir as $supir) {
+                                $totalUangSupir = $pranotaUangRit->uang_rit_supir / count($uniqueSupir);
+                                $totalRit += $totalUangSupir > 0 ? round($totalUangSupir / 85000) : 0;
+                            }
+                            echo $totalRit;
+                        @endphp
+                    @endif
+                </strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_hutang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRit->total_tabungan, 0, ',', '.') }}</strong></td>
