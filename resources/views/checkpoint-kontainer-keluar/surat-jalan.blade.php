@@ -75,22 +75,24 @@
         @endif
 
         <!-- Pengembalian Kontainer Sewa -->
-        <div class="bg-gradient-to-r from-purple-50 via-purple-50 to-indigo-50 rounded-xl shadow-md border border-purple-300 p-5 sm:p-6 mb-4 sm:mb-6">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div class="flex items-start gap-3 sm:gap-4 flex-1">
-                    <div class="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-md flex-shrink-0">
-                        <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-gradient-to-r from-purple-50 via-purple-50 to-indigo-50 rounded-xl shadow-md border border-purple-300 p-4 sm:p-6 mb-4 sm:mb-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <!-- Icon & Text -->
+                <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div class="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-md flex-shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
                         </svg>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mb-1.5 leading-tight">Pengembalian Kontainer Sewa</h3>
-                        <p class="text-xs sm:text-sm text-gray-700 leading-relaxed">Proses pengembalian kontainer yang disewa dari gudang <span class="font-semibold text-purple-700">{{ $gudang->nama_gudang }}</span></p>
+                    <div class="min-w-0">
+                        <h3 class="text-sm sm:text-base lg:text-lg font-bold text-gray-900 leading-tight">Pengembalian Kontainer Sewa</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-0.5">Proses pengembalian kontainer yang disewa dari gudang <span class="font-semibold text-purple-700">{{ $gudang->nama_gudang }}</span></p>
                     </div>
                 </div>
+                <!-- Button -->
                 <button onclick="openPengembalianModal()" 
-                        class="inline-flex items-center justify-center w-full lg:w-auto px-5 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm sm:text-base font-semibold rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-md hover:shadow-lg touch-manipulation active:scale-95 flex-shrink-0">
-                    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-md hover:shadow-lg touch-manipulation active:scale-95 flex-shrink-0">
+                    <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                     </svg>
                     <span class="whitespace-nowrap">Pengembalian Kontainer</span>
