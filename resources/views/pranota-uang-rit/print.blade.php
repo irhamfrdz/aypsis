@@ -126,9 +126,9 @@
                 <th style="width: 5%;">No</th>
                 <th style="width: 10%;">NIK</th>
                 <th style="width: 25%;">Supir</th>
-                <th style="width: 8%;">Total</th>
-                <th style="width: 5%;">Rit</th>
-                <th style="width: 12%;">Total</th>
+                <th style="width: 8%;">Jumlah Rit</th>
+                <th style="width: 5%;"></th>
+                <th style="width: 12%;">Total Uang</th>
                 <th style="width: 10%;">Hutang</th>
                 <th style="width: 10%;">Tabungan</th>
                 <th style="width: 10%;">BPJS</th>
