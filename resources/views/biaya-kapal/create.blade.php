@@ -3,7 +3,7 @@
 @section('title', 'Tambah Biaya Kapal')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8 min-h-screen">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between">
@@ -1986,6 +1986,16 @@
     #kapal_dropdown, #voyage_dropdown {
         border-top: none;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Ensure form is fully visible and scrollable */
+    .container {
+        max-width: 100% !important;
+    }
+    
+    /* Fix for content being cut off */
+    body {
+        overflow-y: auto !important;
     }
 </style>
 @endpush
