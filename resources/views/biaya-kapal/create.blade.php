@@ -3,7 +3,7 @@
 @section('title', 'Tambah Biaya Kapal')
 
 @section('content')
-<div class="container mx-auto px-4 py-8 min-h-screen">
+<div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between">
@@ -316,6 +316,29 @@
                         @endforeach
                     </select>
                     @error('jenis_biaya')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Vendor (for Biaya Dokumen) -->
+                <div id="vendor_wrapper" class="hidden">
+                    <label for="vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor <span class="text-red-500">*</span>
+                    </label>
+                    <select id="vendor" 
+                            name="vendor_id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">-- Pilih Vendor --</option>
+                        @foreach($pricelistBiayaDokumen as $pricelist)
+                            <option value="{{ $pricelist->id }}" 
+                                    data-biaya="{{ $pricelist->biaya }}"
+                                    {{ old('vendor_id') == $pricelist->id ? 'selected' : '' }}>
+                                {{ $pricelist->nama_vendor }} - Rp {{ number_format($pricelist->biaya, 0, ',', '.') }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Pilih vendor untuk biaya dokumen</p>
+                    @error('vendor_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -670,16 +693,6 @@
         if (totalBiayaInput.value) {
             totalBiayaInput.value = totalBiayaInput.value.replace(/\./g, '');
         }
-        
-        // Remove formatting from section fields
-        document.querySelectorAll('.kapal-section').forEach(section => {
-            const totalNominal = section.querySelector('.total-nominal-section');
-            const dp = section.querySelector('.dp-section');
-            const sisa = section.querySelector('.sisa-pembayaran-section');
-            if (totalNominal) totalNominal.value = totalNominal.value.replace(/\./g, '');
-            if (dp) dp.value = dp.value.replace(/\./g, '');
-            if (sisa) sisa.value = sisa.value.replace(/\./g, '');
-        });
     });
 
     // Update file name display
@@ -772,6 +785,10 @@
             pphInput.value = '0';
             totalBiayaInput.value = '';
             
+            // Hide vendor wrapper for Biaya Buruh
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
             // Show DP fields for Biaya Buruh
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
@@ -789,6 +806,10 @@
             sisaPembayaranWrapper.classList.add('hidden');
             dpInput.value = '0';
             sisaPembayaranInput.value = '0';
+            
+            // Hide vendor wrapper for Biaya Penumpukan
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
             
             // Show Nama Kapal and Nomor Voyage fields
             kapalWrapper.classList.remove('hidden');
@@ -925,30 +946,6 @@
                     <i class="fas fa-plus mr-1"></i> Tambah Barang
                 </button>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 pt-3 border-t border-blue-300">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Total Nominal</label>
-                    <div class="relative">
-                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                        <input type="text" name="kapal_sections[${sectionIndex}][total_nominal]" class="total-nominal-section w-full pl-8 pr-2 py-1.5 border border-gray-300 rounded text-sm bg-gray-50" readonly value="0">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">DP / Uang Muka</label>
-                    <div class="relative">
-                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                        <input type="text" name="kapal_sections[${sectionIndex}][dp]" class="dp-section w-full pl-8 pr-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" value="0">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1 text-blue-700 font-semibold">Sisa Pembayaran</label>
-                    <div class="relative">
-                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-medium">Rp</span>
-                        <input type="text" name="kapal_sections[${sectionIndex}][sisa_pembayaran]" class="sisa-pembayaran-section w-full pl-8 pr-2 py-1.5 border border-blue-400 rounded text-sm bg-blue-50 font-semibold text-blue-700" readonly value="0">
-                    </div>
-                </div>
-            </div>
         `;
         
         kapalSectionsContainer.appendChild(section);
@@ -959,18 +956,6 @@
             loadVoyagesForSection(sectionIndex, this.value);
         });
         
-        // Setup DP input listener
-        const dpInput = section.querySelector('.dp-section');
-        dpInput.addEventListener('input', function(e) {
-            let value = this.value.replace(/\D/g, '');
-            if (value) {
-                value = parseInt(value).toLocaleString('id-ID');
-            }
-            this.value = value;
-            calculateSectionTotals(sectionIndex);
-            calculateGrandTotals();
-        });
-        
         // Add first barang input
         addBarangToSection(sectionIndex);
     }
@@ -979,7 +964,7 @@
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         if (section) {
             section.remove();
-            calculateGrandTotals();
+            calculateTotalFromAllSections();
         }
     };
     
@@ -1049,78 +1034,44 @@
         const jumlahInput = inputGroup.querySelector('.jumlah-input-item');
         
         barangSelect.addEventListener('change', function() {
-            calculateSectionTotals(sectionIndex);
-            calculateGrandTotals();
+            calculateTotalFromAllSections();
         });
         
         jumlahInput.addEventListener('input', function() {
-            calculateSectionTotals(sectionIndex);
-            calculateGrandTotals();
+            calculateTotalFromAllSections();
         });
     };
     
     window.removeBarangFromSection = function(button) {
         const container = button.closest('.barang-container-section');
         if (container.children.length > 1) {
-            const section = button.closest('.kapal-section');
-            const sectionIndex = section.getAttribute('data-section-index');
             button.closest('.flex').remove();
-            calculateSectionTotals(sectionIndex);
-            calculateGrandTotals();
+            calculateTotalFromAllSections();
         }
     };
     
-    // Calculate totals for a specific section
-    function calculateSectionTotals(sectionIndex) {
-        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
-        if (!section) return;
-        
-        const barangSelects = section.querySelectorAll('.barang-select-item');
-        const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
-        const totalNominalInput = section.querySelector('.total-nominal-section');
-        const dpInput = section.querySelector('.dp-section');
-        const sisaPembayaranInput = section.querySelector('.sisa-pembayaran-section');
-        
-        let sectionTotal = 0;
-        barangSelects.forEach((select, index) => {
-            const selectedOption = select.options[select.selectedIndex];
-            const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
-            const jumlah = parseFloat(jumlahInputs[index].value) || 0;
-            sectionTotal += tarif * jumlah;
-        });
-        
-        totalNominalInput.value = sectionTotal > 0 ? Math.round(sectionTotal).toLocaleString('id-ID') : '0';
-        
-        // Calculate sisa pembayaran for this section
-        const dp = parseInt(dpInput.value.replace(/\D/g, '') || 0);
-        const sisa = sectionTotal - dp;
-        sisaPembayaranInput.value = sisa > 0 ? Math.round(sisa).toLocaleString('id-ID') : '0';
-    }
-    
-    // Calculate grand totals from all sections
-    function calculateGrandTotals() {
-        let grandTotalNominal = 0;
-        let grandTotalDp = 0;
-        let grandTotalSisa = 0;
+    function calculateTotalFromAllSections() {
+        let grandTotal = 0;
         
         document.querySelectorAll('.kapal-section').forEach(section => {
-            const totalNominal = parseInt(section.querySelector('.total-nominal-section').value.replace(/\D/g, '') || 0);
-            const dp = parseInt(section.querySelector('.dp-section').value.replace(/\D/g, '') || 0);
-            const sisa = parseInt(section.querySelector('.sisa-pembayaran-section').value.replace(/\D/g, '') || 0);
+            const barangSelects = section.querySelectorAll('.barang-select-item');
+            const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
             
-            grandTotalNominal += totalNominal;
-            grandTotalDp += dp;
-            grandTotalSisa += sisa;
+            barangSelects.forEach((select, index) => {
+                const selectedOption = select.options[select.selectedIndex];
+                const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+                const jumlah = parseFloat(jumlahInputs[index].value) || 0;
+                grandTotal += tarif * jumlah;
+            });
         });
         
-        // Update global nominal field
-        nominalInput.value = grandTotalNominal > 0 ? grandTotalNominal.toLocaleString('id-ID') : '';
-        
-        // Update global DP field
-        dpInput.value = grandTotalDp > 0 ? grandTotalDp.toLocaleString('id-ID') : '0';
-        
-        // Update global sisa pembayaran
-        sisaPembayaranInput.value = grandTotalSisa > 0 ? grandTotalSisa.toLocaleString('id-ID') : '0';
+        if (grandTotal > 0) {
+            nominalInput.value = Math.round(grandTotal).toLocaleString('id-ID');
+            // Recalculate sisa pembayaran after nominal changes
+            calculateSisaPembayaran();
+        } else {
+            nominalInput.value = '';
+        }
     }
 
     // Barang management functions (OLD - keep for backward compatibility)
@@ -2031,16 +1982,6 @@
     #kapal_dropdown, #voyage_dropdown {
         border-top: none;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Ensure form is fully visible and scrollable */
-    .container {
-        max-width: 100% !important;
-    }
-    
-    /* Fix for content being cut off */
-    body {
-        overflow-y: auto !important;
     }
 </style>
 @endpush
