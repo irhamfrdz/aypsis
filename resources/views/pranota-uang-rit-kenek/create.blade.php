@@ -352,6 +352,18 @@
                                     data-nomor="{{ strtolower($item['no_surat_jalan'] ?? '') }}"
                                     data-kenek="{{ strtolower($item['kenek'] ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        @php
+                                            // Get NIK for this kenek from karyawans table
+                                            $kenekNik = '-';
+                                            if (!empty($item['kenek'])) {
+                                                $karyawan = \App\Models\Karyawan::where('nama_lengkap', $item['kenek'])
+                                                    ->orWhere('nama_panggilan', $item['kenek'])
+                                                    ->first();
+                                                if ($karyawan && $karyawan->nik) {
+                                                    $kenekNik = $karyawan->nik;
+                                                }
+                                            }
+                                        @endphp
                                         <input type="checkbox"
                                                name="{{ $inputPrefix }}[{{ $item['id'] }}][selected]"
                                                value="1"
@@ -361,6 +373,7 @@
                                                data-nomor="{{ $item['no_surat_jalan'] }}"
                                                data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
                                                data-kenek_nama="{{ $item['kenek'] }}"
+                                               data-kenek_nik="{{ $kenekNik }}"
                                                data-tanggal="{{ $item['tanggal_tanda_terima'] ? \Carbon\Carbon::parse($item['tanggal_tanda_terima'])->format('Y-m-d') : '' }}"
                                                data-plat="{{ $item['type'] === 'regular' ? ($item['data']->no_plat ?? '-') : ($item['data']->no_plat ?? '-') }}"
                                                data-tujuan_pengambilan="{{ $item['type'] === 'regular' ? ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_pengambilan ?? '-') : ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_tujuan ?? '-') }}">
@@ -1122,6 +1135,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     no_surat_jalan: checkbox.dataset.no_surat_jalan || '-',
                     tanggal_surat_jalan: checkbox.dataset.tanggal || '-',
                     kenek_nama: checkbox.dataset.kenek_nama || '-',
+                    kenek_nik: checkbox.dataset.kenek_nik || '-',
                     no_plat: checkbox.dataset.plat || '-',
                     uang_rit_kenek: uangKenekInput ? uangKenekInput.value : 0,
                     tujuan_pengambilan: checkbox.dataset.tujuan_pengambilan || '-'
