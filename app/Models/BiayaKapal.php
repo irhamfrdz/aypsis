@@ -18,18 +18,30 @@ class BiayaKapal extends Model
         'nomor_referensi',
         'nama_kapal',
         'no_voyage',
+        'no_bl',
         'jenis_biaya',
         'nominal',
+        'dp',
+        'sisa_pembayaran',
         'penerima',
         'keterangan',
         'bukti',
+        'ppn',
+        'pph',
+        'total_biaya',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'nominal' => 'decimal:2',
+        'dp' => 'decimal:2',
+        'sisa_pembayaran' => 'decimal:2',
+        'ppn' => 'decimal:2',
+        'pph' => 'decimal:2',
+        'total_biaya' => 'decimal:2',
         'nama_kapal' => 'array',
         'no_voyage' => 'array',
+        'no_bl' => 'array',
     ];
 
     // Accessors

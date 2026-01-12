@@ -136,6 +136,8 @@ class BiayaKapalController extends Controller
             'ppn' => 'nullable|numeric|min:0',
             'pph' => 'nullable|numeric|min:0',
             'total_biaya' => 'nullable|numeric|min:0',
+            'dp' => 'nullable|numeric|min:0',
+            'sisa_pembayaran' => 'nullable|numeric|min:0',
             // Old structure (for backward compatibility)
             'barang' => 'nullable|array',
             'barang.*.barang_id' => 'required_with:barang|exists:pricelist_buruh,id',
@@ -147,6 +149,9 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.barang' => 'required_with:kapal_sections|array',
             'kapal_sections.*.barang.*.barang_id' => 'required|exists:pricelist_buruh,id',
             'kapal_sections.*.barang.*.jumlah' => 'required|numeric|min:0',
+            'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'kapal_sections.*.dp' => 'nullable|numeric|min:0',
+            'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -171,6 +176,9 @@ class BiayaKapalController extends Controller
                 foreach ($request->kapal_sections as $sectionIndex => $section) {
                     $kapalName = $section['kapal'];
                     $voyageName = $section['voyage'];
+                    $sectionTotalNominal = isset($section['total_nominal']) ? str_replace('.', '', $section['total_nominal']) : 0;
+                    $sectionDp = isset($section['dp']) ? str_replace('.', '', $section['dp']) : 0;
+                    $sectionSisa = isset($section['sisa_pembayaran']) ? str_replace('.', '', $section['sisa_pembayaran']) : 0;
                     
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
@@ -178,7 +186,7 @@ class BiayaKapalController extends Controller
                             if ($barang) {
                                 $subtotal = $barang->tarif * $item['jumlah'];
                                 
-                                // Save to biaya_kapal_barang table with kapal and voyage info
+                                // Save to biaya_kapal_barang table with kapal, voyage, and DP info
                                 BiayaKapalBarang::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
                                     'pricelist_buruh_id' => $barang->id,
@@ -187,11 +195,21 @@ class BiayaKapalController extends Controller
                                     'jumlah' => $item['jumlah'],
                                     'tarif' => $barang->tarif,
                                     'subtotal' => $subtotal,
+                                    'total_nominal' => $sectionTotalNominal,
+                                    'dp' => $sectionDp,
+                                    'sisa_pembayaran' => $sectionSisa,
                                 ]);
 
-                                // Build keterangan string with kapal and voyage info
+                                // Build keterangan string with kapal, voyage, and DP info
                                 $barangDetails[] = "[$kapalName - Voyage $voyageName] " . $barang->barang . ' x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
                             }
+                        }
+                        
+                        // Add section summary to barang details
+                        if ($sectionDp > 0 || $sectionSisa > 0) {
+                            $barangDetails[] = "  → Total: Rp " . number_format($sectionTotalNominal, 0, ',', '.') . 
+                                             " | DP: Rp " . number_format($sectionDp, 0, ',', '.') . 
+                                             " | Sisa: Rp " . number_format($sectionSisa, 0, ',', '.');
                         }
                     }
                 }

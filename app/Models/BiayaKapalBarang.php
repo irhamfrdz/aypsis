@@ -16,11 +16,17 @@ class BiayaKapalBarang extends Model
         'jumlah',
         'tarif',
         'subtotal',
+        'total_nominal',
+        'dp',
+        'sisa_pembayaran',
     ];
 
     protected $casts = [
         'tarif' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'total_nominal' => 'decimal:2',
+        'dp' => 'decimal:2',
+        'sisa_pembayaran' => 'decimal:2',
     ];
 
     // Relationship to BiayaKapal
