@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\PranotaUangRit;
-use App\Models\PranotaUangRitSupirDetail;
+use App\Models\PranotaUangRitKenek;
+use App\Models\PranotaUangRitKenekDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
 use Illuminate\Http\Request;
@@ -27,7 +27,7 @@ class PranotaUangRitKenekController extends Controller
             ]);
         }
 
-        $query = PranotaUangRit::with(['suratJalan', 'creator', 'approver']);
+        $query = PranotaUangRitKenek::with(['suratJalan', 'creator', 'approver']);
 
         // Filter by search
         if ($request->filled('search')) {
@@ -101,7 +101,7 @@ class PranotaUangRitKenekController extends Controller
                 $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
                 
                 // Logging for debugging
-                Log::info('PranotaUangRit::create date filters', [
+                Log::info('PranotaUangRitKenek::create date filters', [
                     'start' => $startDateObj->toDateString(), 
                     'end' => $endDateObj->toDateString(),
                     'start_input' => $startDate,
@@ -633,7 +633,7 @@ class PranotaUangRitKenekController extends Controller
             Log::info("Creating SINGLE Pranota with values - Nomor: {$nomorPranota}, Total Uang: {$totalUangKenekKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalValue}");
             
             // Buat satu record pranota untuk semua surat jalan
-            $pranotaUangRit = PranotaUangRit::create([
+            $pranotaUangRit = PranotaUangRitKenek::create([
                 'no_pranota' => $nomorPranota,
                 'tanggal' => $request->tanggal,
                 'surat_jalan_id' => $firstSuratJalanId, // Referensi ke surat jalan pertama (bisa null jika hanya bongkaran)
@@ -652,7 +652,7 @@ class PranotaUangRitKenekController extends Controller
                 'total_bpjs' => $totalBpjsKeseluruhan,
                 'grand_total_bersih' => $grandTotalValue,
                 'keterangan' => $request->keterangan,
-                'status' => PranotaUangRit::STATUS_DRAFT,
+                'status' => PranotaUangRitKenek::STATUS_DRAFT,
                 'created_by' => Auth::id(),
             ]);
 
@@ -717,14 +717,14 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PranotaUangRit $pranotaUangRit)
+    public function show(PranotaUangRitKenek $pranotaUangRitKenek)
     {
         // Load necessary relationships
-        $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
+        $pranotaUangRitKenek->load(['suratJalan', 'creator', 'updater', 'approver']);
         
         // Parse multiple surat jalan from combined field (since we now store combined data)
-        $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
-        $suratJalanSupirs = explode(', ', $pranotaUangRit->kenek_nama);
+        $suratJalanNomors = explode(', ', $pranotaUangRitKenek->no_surat_jalan);
+        $suratJalanSupirs = explode(', ', $pranotaUangRitKenek->kenek_nama);
         
         // Create grouped pranota data from the combined stored data
         $groupedPranota = collect();
@@ -733,13 +733,13 @@ class PranotaUangRitKenekController extends Controller
             $groupedPranota->push((object)[
                 'no_surat_jalan' => trim($nomor),
                 'kenek_nama' => trim($supir),
-                'tanggal' => $pranotaUangRit->tanggal,
-                'uang_rit_supir' => $pranotaUangRit->uang_rit_supir / count($suratJalanNomors), // Split evenly
+                'tanggal' => $pranotaUangRitKenek->tanggal,
+                'uang_rit_supir' => $pranotaUangRitKenek->uang_rit_supir / count($suratJalanNomors), // Split evenly
             ]);
         }
             
         // Get supir details for this pranota
-        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+        $supirDetails = PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
             ->orderBy('kenek_nama')
             ->get();
             
@@ -749,16 +749,16 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PranotaUangRit $pranotaUangRit)
+    public function edit(PranotaUangRitKenek $pranotaUangRitKenek)
     {
         // Only allow editing if status is draft or submitted
-        if (!in_array($pranotaUangRit->status, [PranotaUangRit::STATUS_DRAFT, PranotaUangRit::STATUS_SUBMITTED])) {
+        if (!in_array($pranotaUangRitKenek->status, [PranotaUangRitKenek::STATUS_DRAFT, PranotaUangRitKenek::STATUS_SUBMITTED])) {
             return redirect()->route('pranota-uang-rit-kenek.index')
-                ->with('error', 'Pranota Uang Rit Kenek dengan status ' . $pranotaUangRit->status_label . ' tidak dapat diedit.');
+                ->with('error', 'Pranota Uang Rit Kenek dengan status ' . $pranotaUangRitKenek->status_label . ' tidak dapat diedit.');
         }
 
         // Get surat jalan numbers from the combined field
-        $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
+        $suratJalanNomors = explode(', ', $pranotaUangRitKenek->no_surat_jalan);
         
         // Get surat jalans that are part of this pranota
         $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
@@ -766,7 +766,7 @@ class PranotaUangRitKenekController extends Controller
             ->get();
         
         // Get supir details for this pranota
-        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+        $supirDetails = PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
             ->orderBy('kenek_nama')
             ->get();
 
@@ -776,12 +776,12 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PranotaUangRit $pranotaUangRit)
+    public function update(Request $request, PranotaUangRitKenek $pranotaUangRitKenek)
     {
         // Only allow updating if status is draft or submitted
-        if (!in_array($pranotaUangRit->status, [PranotaUangRit::STATUS_DRAFT, PranotaUangRit::STATUS_SUBMITTED])) {
+        if (!in_array($pranotaUangRitKenek->status, [PranotaUangRitKenek::STATUS_DRAFT, PranotaUangRitKenek::STATUS_SUBMITTED])) {
             return redirect()->route('pranota-uang-rit-kenek.index')
-                ->with('error', 'Pranota Uang Rit Kenek dengan status ' . $pranotaUangRit->status_label . ' tidak dapat diupdate.');
+                ->with('error', 'Pranota Uang Rit Kenek dengan status ' . $pranotaUangRitKenek->status_label . ' tidak dapat diupdate.');
         }
 
         $request->validate([
@@ -807,7 +807,7 @@ class PranotaUangRitKenekController extends Controller
                 $bpjs = floatval($details['bpjs'] ?? 0);
                 
                 // Update detail per supir
-                PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+                PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
                     ->where('kenek_nama', $supirNama)
                     ->update([
                         'hutang' => $hutang,
@@ -822,10 +822,10 @@ class PranotaUangRitKenekController extends Controller
             }
             
             // Calculate new grand total
-            $grandTotalBersih = $pranotaUangRit->total_uang - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
+            $grandTotalBersih = $pranotaUangRitKenek->total_uang - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
             
             // Update pranota
-            $pranotaUangRit->update([
+            $pranotaUangRitKenek->update([
                 'tanggal' => $request->tanggal,
                 'total_hutang' => $totalHutangKeseluruhan,
                 'total_tabungan' => $totalTabunganKeseluruhan,
@@ -836,8 +836,8 @@ class PranotaUangRitKenekController extends Controller
             ]);
 
             Log::info('Pranota Uang Rit Kenek updated', [
-                'pranota_id' => $pranotaUangRit->id,
-                'no_pranota' => $pranotaUangRit->no_pranota,
+                'pranota_id' => $pranotaUangRitKenek->id,
+                'no_pranota' => $pranotaUangRitKenek->no_pranota,
                 'updated_by' => Auth::user()->name,
             ]);
 
@@ -856,20 +856,20 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PranotaUangRit $pranotaUangRit)
+    public function destroy(PranotaUangRitKenek $pranotaUangRitKenek)
     {
         // Only allow deletion if status is draft
-        if ($pranotaUangRit->status !== PranotaUangRit::STATUS_DRAFT) {
+        if ($pranotaUangRitKenek->status !== PranotaUangRitKenek::STATUS_DRAFT) {
             return redirect()->route('pranota-uang-rit-kenek.index')
                 ->with('error', 'Hanya Pranota Uang Rit Kenek dengan status Draft yang dapat dihapus.');
         }
 
         try {
-            $pranotaUangRit->delete();
+            $pranotaUangRitKenek->delete();
 
             Log::info('Pranota Uang Rit Kenek deleted', [
-                'pranota_id' => $pranotaUangRit->id,
-                'no_pranota' => $pranotaUangRit->no_pranota,
+                'pranota_id' => $pranotaUangRitKenek->id,
+                'no_pranota' => $pranotaUangRitKenek->no_pranota,
                 'deleted_by' => Auth::user()->name,
             ]);
 
@@ -885,29 +885,29 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Submit pranota for approval
      */
-    public function submit(PranotaUangRit $pranotaUangRit)
+    public function submit(PranotaUangRitKenek $pranotaUangRitKenek)
     {
-        if ($pranotaUangRit->status !== PranotaUangRit::STATUS_DRAFT) {
+        if ($pranotaUangRitKenek->status !== PranotaUangRitKenek::STATUS_DRAFT) {
             return redirect()->route('pranota-uang-rit-kenek.index')
                 ->with('error', 'Hanya Pranota Uang Rit Kenek dengan status Draft yang dapat disubmit.');
         }
 
         try {
-            $pranotaUangRit->update([
-                'status' => PranotaUangRit::STATUS_SUBMITTED,
+            $pranotaUangRitKenek->update([
+                'status' => PranotaUangRitKenek::STATUS_SUBMITTED,
                 'updated_by' => Auth::id(),
             ]);
 
             // Update status surat jalan
-            if ($pranotaUangRit->suratJalan) {
-                $pranotaUangRit->suratJalan->update([
+            if ($pranotaUangRitKenek->suratJalan) {
+                $pranotaUangRitKenek->suratJalan->update([
                     'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_PRANOTA_SUBMITTED
                 ]);
             }
 
             Log::info('Pranota Uang Rit Kenek submitted', [
-                'pranota_id' => $pranotaUangRit->id,
-                'no_pranota' => $pranotaUangRit->no_pranota,
+                'pranota_id' => $pranotaUangRitKenek->id,
+                'no_pranota' => $pranotaUangRitKenek->no_pranota,
                 'submitted_by' => Auth::user()->name,
             ]);
 
@@ -923,31 +923,31 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Approve pranota
      */
-    public function approve(PranotaUangRit $pranotaUangRit)
+    public function approve(PranotaUangRitKenek $pranotaUangRitKenek)
     {
-        if ($pranotaUangRit->status !== PranotaUangRit::STATUS_SUBMITTED) {
+        if ($pranotaUangRitKenek->status !== PranotaUangRitKenek::STATUS_SUBMITTED) {
             return redirect()->route('pranota-uang-rit-kenek.index')
                 ->with('error', 'Hanya Pranota Uang Rit Kenek dengan status Submitted yang dapat diapprove.');
         }
 
         try {
-            $pranotaUangRit->update([
-                'status' => PranotaUangRit::STATUS_APPROVED,
+            $pranotaUangRitKenek->update([
+                'status' => PranotaUangRitKenek::STATUS_APPROVED,
                 'approved_by' => Auth::id(),
                 'approved_at' => now(),
                 'updated_by' => Auth::id(),
             ]);
 
             // Update status surat jalan
-            if ($pranotaUangRit->suratJalan) {
-                $pranotaUangRit->suratJalan->update([
+            if ($pranotaUangRitKenek->suratJalan) {
+                $pranotaUangRitKenek->suratJalan->update([
                     'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_PRANOTA_APPROVED
                 ]);
             }
 
             Log::info('Pranota Uang Rit Kenek approved', [
-                'pranota_id' => $pranotaUangRit->id,
-                'no_pranota' => $pranotaUangRit->no_pranota,
+                'pranota_id' => $pranotaUangRitKenek->id,
+                'no_pranota' => $pranotaUangRitKenek->no_pranota,
                 'approved_by' => Auth::user()->name,
             ]);
 
@@ -963,9 +963,9 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Mark pranota as paid
      */
-    public function markAsPaid(Request $request, PranotaUangRit $pranotaUangRit)
+    public function markAsPaid(Request $request, PranotaUangRitKenek $pranotaUangRitKenek)
     {
-        if ($pranotaUangRit->status !== PranotaUangRit::STATUS_APPROVED) {
+        if ($pranotaUangRitKenek->status !== PranotaUangRitKenek::STATUS_APPROVED) {
             return redirect()->route('pranota-uang-rit-kenek.index')
                 ->with('error', 'Hanya Pranota Uang Rit Kenek dengan status Approved yang dapat dimark sebagai Paid.');
         }
@@ -975,22 +975,22 @@ class PranotaUangRitKenekController extends Controller
         ]);
 
         try {
-            $pranotaUangRit->update([
-                'status' => PranotaUangRit::STATUS_PAID,
+            $pranotaUangRitKenek->update([
+                'status' => PranotaUangRitKenek::STATUS_PAID,
                 'tanggal_bayar' => $request->tanggal_bayar,
                 'updated_by' => Auth::id(),
             ]);
 
             // Update status surat jalan menjadi dibayar
-            if ($pranotaUangRit->suratJalan) {
-                $pranotaUangRit->suratJalan->update([
+            if ($pranotaUangRitKenek->suratJalan) {
+                $pranotaUangRitKenek->suratJalan->update([
                     'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR
                 ]);
             }
 
             Log::info('Pranota Uang Rit Kenek marked as paid', [
-                'pranota_id' => $pranotaUangRit->id,
-                'no_pranota' => $pranotaUangRit->no_pranota,
+                'pranota_id' => $pranotaUangRitKenek->id,
+                'no_pranota' => $pranotaUangRitKenek->no_pranota,
                 'tanggal_bayar' => $request->tanggal_bayar,
                 'updated_by' => Auth::user()->name,
             ]);
@@ -1019,7 +1019,7 @@ class PranotaUangRitKenekController extends Controller
         $tahun = $date->format('y'); // 2 digit tahun
         
         // Cari nomor tertinggi yang sudah ada di database untuk format bulan-tahun ini
-        $lastExisting = PranotaUangRit::where('no_pranota', 'like', "PURK-{$bulan}-{$tahun}-%")
+        $lastExisting = PranotaUangRitKenek::where('no_pranota', 'like', "PURK-{$bulan}-{$tahun}-%")
             ->orderBy('no_pranota', 'desc')
             ->first();
             
@@ -1054,7 +1054,7 @@ class PranotaUangRitKenekController extends Controller
         $nomorPranota = "PURK-{$bulan}-{$tahun}-{$sequence}";
         
         // Double check - jika masih ada duplicate, increment lagi
-        while (PranotaUangRit::where('no_pranota', $nomorPranota)->exists()) {
+        while (PranotaUangRitKenek::where('no_pranota', $nomorPranota)->exists()) {
             $nomorBaru++;
             $sequence = str_pad($nomorBaru, 6, '0', STR_PAD_LEFT);
             $nomorPranota = "PURK-{$bulan}-{$tahun}-{$sequence}";
@@ -1072,14 +1072,14 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Print ritasi supir format
      */
-    public function print(PranotaUangRit $pranotaUangRit)
+    public function print(PranotaUangRitKenek $pranotaUangRitKenek)
     {
         // Load necessary relationships
-        $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
+        $pranotaUangRitKenek->load(['suratJalan', 'creator', 'updater', 'approver']);
         
         // Parse multiple surat jalan from combined field (since we now store combined data)
-        $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
-        $suratJalanSupirs = explode(', ', $pranotaUangRit->kenek_nama);
+        $suratJalanNomors = explode(', ', $pranotaUangRitKenek->no_surat_jalan);
+        $suratJalanSupirs = explode(', ', $pranotaUangRitKenek->kenek_nama);
         
         // Create grouped pranota data from the combined stored data
         $groupedPranota = collect();
@@ -1088,13 +1088,13 @@ class PranotaUangRitKenekController extends Controller
             $groupedPranota->push((object)[
                 'no_surat_jalan' => trim($nomor),
                 'kenek_nama' => trim($supir),
-                'tanggal' => $pranotaUangRit->tanggal,
-                'uang_rit_supir' => $pranotaUangRit->uang_rit_supir / count($suratJalanNomors), // Split evenly
+                'tanggal' => $pranotaUangRitKenek->tanggal,
+                'uang_rit_supir' => $pranotaUangRitKenek->uang_rit_supir / count($suratJalanNomors), // Split evenly
             ]);
         }
             
         // Get supir details for this pranota
-        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+        $supirDetails = PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
             ->orderBy('kenek_nama')
             ->get();
             
@@ -1203,3 +1203,5 @@ class PranotaUangRitKenekController extends Controller
         exit;
     }
 }
+
+

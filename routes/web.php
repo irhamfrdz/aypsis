@@ -2197,19 +2197,19 @@ Route::middleware(['auth'])->group(function () {
          ]);
 
     // Additional Pranota Uang Rit Kenek routes for workflow
-    Route::post('pranota-uang-rit-kenek/{pranotaUangRit}/submit', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'submit'])
+    Route::post('pranota-uang-rit-kenek/{pranotaUangRitKenek}/submit', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'submit'])
          ->name('pranota-uang-rit-kenek.submit')
          ->middleware('can:pranota-uang-rit-update');
 
-    Route::post('pranota-uang-rit-kenek/{pranotaUangRit}/approve', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'approve'])
+    Route::post('pranota-uang-rit-kenek/{pranotaUangRitKenek}/approve', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'approve'])
          ->name('pranota-uang-rit-kenek.approve')
          ->middleware('can:pranota-uang-rit-approve');
 
-    Route::post('pranota-uang-rit-kenek/{pranotaUangRit}/mark-as-paid', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'markAsPaid'])
+    Route::post('pranota-uang-rit-kenek/{pranotaUangRitKenek}/mark-as-paid', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'markAsPaid'])
          ->name('pranota-uang-rit-kenek.mark-as-paid')
          ->middleware('can:pranota-uang-rit-mark-paid');
 
-    Route::get('pranota-uang-rit-kenek/{pranotaUangRit}/print', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'print'])
+    Route::get('pranota-uang-rit-kenek/{pranotaUangRitKenek}/print', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'print'])
          ->name('pranota-uang-rit-kenek.print')
          ->middleware('can:pranota-uang-rit-view');
 

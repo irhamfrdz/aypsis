@@ -38,10 +38,10 @@ class PranotaUangRitKenekDetail extends Model
     }
 
     /**
-     * Get the pranota uang rit that owns this detail
+     * Get the pranota uang rit kenek that owns this detail
      */
-    public function pranotaUangRit()
+    public function pranotaUangRitKenek()
     {
-        return $this->belongsTo(PranotaUangRit::class, 'no_pranota', 'no_pranota');
+        return $this->belongsTo(PranotaUangRitKenek::class, 'no_pranota', 'no_pranota');
     }
 }
