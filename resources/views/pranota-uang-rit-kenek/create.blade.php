@@ -533,7 +533,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const suratJalanCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
-    const uangRitKenekInputs = document.querySelectorAll('.uang-rit-Kenek-input');
+    const uangRitKenekInputs = document.querySelectorAll('.uang-rit-kenek-input');
     const jumlahSuratJalanDisplay = document.getElementById('jumlah_surat_jalan_display');
     const jumlahKenekDisplay = document.getElementById('jumlah_Kenek_display');
     const totalUangRitDisplay = document.getElementById('total_uang_rit_display');
@@ -1025,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Check if all selected items have valid values
             let hasEmptyValues = false;
             checkedCheckboxes.forEach(checkbox => {
-                const uangRitKenekInput = document.querySelector(`input[name*="[${checkbox.dataset.id}][uang_rit_Kenek]"]`);
+                const uangRitKenekInput = document.querySelector(`input[name*="[${checkbox.dataset.id}][uang_rit_kenek]"]`);
                 
                 if (uangRitKenekInput && (!uangRitKenekInput.value || parseFloat(uangRitKenekInput.value) < 0)) {
                     hasEmptyValues = true;
