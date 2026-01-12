@@ -391,10 +391,19 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs">
                                         @php
-                                            // Ambil nilai rit dari data surat jalan
-                                            $ritValue = $item['data']->rit ?? 0;
+                                            // Inisialisasi dengan 0
+                                            $ritValue = 0;
                                             
-                                            // Jika rit kosong atau 0, ambil dari pricelist_rit tabel dengan tujuan = 'Kenek'
+                                            // Untuk surat jalan regular, cek field rit
+                                            if ($item['type'] === 'regular') {
+                                                $ritValue = $item['data']->rit ?? 0;
+                                            }
+                                            // Untuk bongkaran, cek field rit_kenek atau rit
+                                            else if ($item['type'] === 'bongkaran') {
+                                                $ritValue = $item['data']->rit_kenek ?? $item['data']->rit ?? 0;
+                                            }
+                                            
+                                            // Jika rit masih kosong atau 0, coba ambil dari pricelist_rit
                                             if (!$ritValue || $ritValue == 0) {
                                                 try {
                                                     // Query langsung ke tabel pricelist_rit untuk tujuan 'Kenek'
@@ -404,25 +413,30 @@
                                                         ->first();
                                                     
                                                     if ($pricelistRit) {
-                                                        $ritValue = $pricelistRit->tarif ?? 0;
+                                                        $ritValue = $pricelistRit->tarif ?? 50000;
                                                     }
                                                 } catch (\Exception $e) {
                                                     // Jika query gagal, gunakan default
-                                                    $ritValue = 0;
+                                                    $ritValue = 50000;
                                                 }
                                             }
                                             
-                                            // Konversi ke numeric dan default ke 50000 jika masih 0
+                                            // Pastikan nilai minimal 50000
                                             $ritValue = (float) ($ritValue ?: 50000);
+                                            
+                                            // Ensure minimum value
+                                            if ($ritValue < 50000) {
+                                                $ritValue = 50000;
+                                            }
                                         @endphp
                                         <input type="number" 
                                                name="{{ $inputPrefix }}[{{ $item['id'] }}][uang_rit_kenek]" 
                                                class="uang-rit-kenek-input w-20 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-right"
-                                               placeholder="{{ number_format($ritValue, 0, ',', '') }}" 
+                                               placeholder="50000" 
                                                value="{{ $ritValue }}"
                                                min="0" 
                                                step="1000"
-                                               title="Rit: {{ $item['data']->rit ?? 'Dari Pricelist' }}">
+                                               title="Uang Kenek: {{ $item['type'] === 'bongkaran' ? 'Bongkaran' : 'Regular' }} - {{ number_format($ritValue, 0, ',', '.') }}">
                                     </td>
                                 </tr>
                             @empty
