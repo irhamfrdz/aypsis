@@ -718,18 +718,25 @@
     }, 5000);
 
     // Auto-fill nominal from vendor selection
-    if (vendorSelect) {
-        vendorSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const biaya = selectedOption.getAttribute('data-biaya');
+    vendorSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const biaya = selectedOption.getAttribute('data-biaya');
+        
+        console.log('Vendor selected:', this.value);
+        console.log('Biaya from vendor:', biaya);
+        
+        if (biaya && biaya !== '' && biaya !== '0') {
+            // Format biaya with thousand separator
+            const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
+            nominalInput.value = formattedBiaya;
+            nominalInput.focus();
             
-            if (biaya && nominalInput) {
-                // Format biaya with thousand separator
-                const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
-                nominalInput.value = formattedBiaya;
-            }
-        });
-    }
+            console.log('Nominal set to:', formattedBiaya);
+        } else {
+            // Clear nominal if no vendor selected or biaya is 0
+            nominalInput.value = '';
+        }
+    });
 
     // ============= JENIS BIAYA TOGGLE =============
     // Toggle barang wrapper based on jenis biaya
