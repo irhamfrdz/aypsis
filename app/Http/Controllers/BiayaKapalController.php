@@ -103,7 +103,13 @@ class BiayaKapalController extends Controller
         // Get karyawans for penerima dropdown
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans'));
+        // Get active pricelist biaya dokumen for vendor selection
+        $pricelistBiayaDokumen = \DB::table('pricelist_biaya_dokumen')
+            ->where('status', 'aktif')
+            ->orderBy('nama_vendor')
+            ->get();
+
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen'));
     }
 
     /**
@@ -129,6 +135,7 @@ class BiayaKapalController extends Controller
             'no_bl' => 'nullable|array',
             'no_bl.*' => 'string',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
+            'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
             'nominal' => 'required|numeric|min:0',
             'penerima' => 'required|string|max:255',
             'keterangan' => 'nullable|string',

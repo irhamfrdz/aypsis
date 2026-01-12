@@ -20,6 +20,7 @@ class BiayaKapal extends Model
         'no_voyage',
         'no_bl',
         'jenis_biaya',
+        'vendor_id',
         'nominal',
         'dp',
         'sisa_pembayaran',
@@ -122,5 +123,10 @@ class BiayaKapal extends Model
     public function klasifikasiBiaya()
     {
         return $this->belongsTo(KlasifikasiBiaya::class, 'jenis_biaya', 'kode');
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(\App\Models\PricelistBiayaDokumen::class, 'vendor_id');
     }
 }

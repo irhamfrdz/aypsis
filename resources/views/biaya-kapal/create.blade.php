@@ -582,6 +582,8 @@
     const sisaPembayaranWrapper = document.getElementById('sisa_pembayaran_wrapper');
     const dpInput = document.getElementById('dp');
     const sisaPembayaranInput = document.getElementById('sisa_pembayaran');
+    const vendorWrapper = document.getElementById('vendor_wrapper');
+    const vendorSelect = document.getElementById('vendor');
 
     // Format nominal input with thousand separator
     
@@ -702,14 +704,53 @@
         });
     }, 5000);
 
+    // Auto-fill nominal from vendor selection
+    if (vendorSelect) {
+        vendorSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const biaya = selectedOption.getAttribute('data-biaya');
+            
+            if (biaya && nominalInput) {
+                // Format biaya with thousand separator
+                const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
+                nominalInput.value = formattedBiaya;
+            }
+        });
+    }
+
     // ============= JENIS BIAYA TOGGLE =============
     // Toggle barang wrapper based on jenis biaya
     jenisBiayaSelect.addEventListener('change', function() {
         const selectedValue = this.value;
         const selectedText = this.options[this.selectedIndex].text;
         
+        // Show vendor wrapper if "Biaya Dokumen" is selected
+        if (selectedText.toLowerCase().includes('dokumen')) {
+            vendorWrapper.classList.remove('hidden');
+            
+            // Hide other type-specific fields
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            
+            // Show standard fields
+            kapalWrapper.classList.remove('hidden');
+            voyageWrapper.classList.remove('hidden');
+            blWrapper.classList.remove('hidden');
+            
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+        }
         // Show barang wrapper if "Biaya Buruh" is selected
-        if (selectedText.toLowerCase().includes('buruh')) {
+        else if (selectedText.toLowerCase().includes('buruh')) {
             barangWrapper.classList.remove('hidden');
             initializeKapalSections();
             
@@ -775,6 +816,10 @@
             sisaPembayaranWrapper.classList.add('hidden');
             dpInput.value = '0';
             sisaPembayaranInput.value = '0';
+            
+            // Hide vendor wrapper for other types
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
             
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
