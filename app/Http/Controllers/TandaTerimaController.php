@@ -938,7 +938,7 @@ class TandaTerimaController extends Controller
         $kranes = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
 
         // Get master penerima list for dropdown
-        $masterPenerimaList = \App\Models\MasterPenerima::where('status', 'active')->orderBy('nama')->get();
+        $masterPenerimaList = \App\Models\MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
 
         return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims', 'tujuanKirims', 'jenisBarangs', 'kranes', 'sudahMasukBl', 'masterPenerimaList'));
     }
