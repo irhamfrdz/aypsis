@@ -237,13 +237,14 @@
 
             <!-- Example Table -->
             <div class="mb-6 bg-gray-50 rounded-xl p-4">
-                <p class="text-xs font-semibold text-gray-700 mb-2">Contoh format Excel (24 kolom):</p>
+                <p class="text-xs font-semibold text-gray-700 mb-2">Contoh format Excel (25 kolom):</p>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs border border-gray-300">
                         <thead class="bg-gray-200">
                             <tr>
                                 <th class="border border-gray-300 px-2 py-1">Nama Kapal</th>
                                 <th class="border border-gray-300 px-2 py-1">No Voyage</th>
+                                <th class="border border-gray-300 px-2 py-1">Tanggal Berangkat</th>
                                 <th class="border border-gray-300 px-2 py-1">No BL</th>
                                 <th class="border border-gray-300 px-2 py-1">No Manifest</th>
                                 <th class="border border-gray-300 px-2 py-1">No Tanda Terima</th>
@@ -255,6 +256,7 @@
                             <tr class="bg-white">
                                 <td class="border border-gray-300 px-2 py-1">KM EXAMPLE</td>
                                 <td class="border border-gray-300 px-2 py-1">001</td>
+                                <td class="border border-gray-300 px-2 py-1">2026-01-15</td>
                                 <td class="border border-gray-300 px-2 py-1">BL001</td>
                                 <td class="border border-gray-300 px-2 py-1">MN001</td>
                                 <td class="border border-gray-300 px-2 py-1">TT001</td>
@@ -265,8 +267,8 @@
                     </table>
                 </div>
                 <p class="text-xs text-gray-600 mt-2">
-                    <strong>Total 24 kolom:</strong> Nama Kapal, No Voyage, No BL, No Manifest, No Tanda Terima, 
-                    No Kontainer, No Seal, Tipe, Size, Nama Barang, Pengirim, Alamat Pengirim, 
+                    <strong>Total 25 kolom:</strong> Nama Kapal, No Voyage, Tanggal Berangkat, No BL, No Manifest, No Tanda Terima, 
+                    No Kontainer, No Seal, Tipe Kontainer, Size Kontainer, Nama Barang, Pengirim, Alamat Pengirim, 
                     Penerima, Alamat Penerima, Contact Person, Term, Tonnage, Volume, Satuan, 
                     Kuantitas, Pelabuhan Muat, Pelabuhan Bongkar, Asal Kontainer, Ke
                 </p>

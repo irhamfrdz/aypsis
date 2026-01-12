@@ -409,31 +409,49 @@ class ManifestController extends Controller
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2;
                 
-                // Extract data - sekarang dengan 24 kolom lengkap
+                // Extract data - sekarang dengan 25 kolom lengkap
                 $namaKapal = trim($row[0] ?? '');
                 $noVoyage = trim($row[1] ?? '');
-                $nomorBl = trim($row[2] ?? '');
-                $nomorManifest = trim($row[3] ?? '');
-                $nomorTandaTerima = trim($row[4] ?? '');
-                $nomorKontainer = trim($row[5] ?? '');
-                $noSeal = trim($row[6] ?? '');
-                $tipeKontainer = trim($row[7] ?? '');
-                $sizeKontainer = trim($row[8] ?? '');
-                $namaBarang = trim($row[9] ?? '');
-                $pengirim = trim($row[10] ?? '');
-                $alamatPengirim = trim($row[11] ?? '');
-                $penerima = trim($row[12] ?? '');
-                $alamatPenerima = trim($row[13] ?? '');
-                $contactPerson = trim($row[14] ?? '');
-                $term = trim($row[15] ?? '');
-                $tonnage = trim($row[16] ?? '');
-                $volume = trim($row[17] ?? '');
-                $satuan = trim($row[18] ?? '');
-                $kuantitas = trim($row[19] ?? '');
-                $pelabuhanMuat = trim($row[20] ?? '');
-                $pelabuhanBongkar = trim($row[21] ?? '');
-                $asalKontainer = trim($row[22] ?? '');
-                $ke = trim($row[23] ?? '');
+                $tanggalBerangkat = trim($row[2] ?? '');
+                $nomorBl = trim($row[3] ?? '');
+                $nomorManifest = trim($row[4] ?? '');
+                $nomorTandaTerima = trim($row[5] ?? '');
+                $nomorKontainer = trim($row[6] ?? '');
+                $noSeal = trim($row[7] ?? '');
+                $tipeKontainer = trim($row[8] ?? '');
+                $sizeKontainer = trim($row[9] ?? '');
+                $namaBarang = trim($row[10] ?? '');
+                $pengirim = trim($row[11] ?? '');
+                $alamatPengirim = trim($row[12] ?? '');
+                $penerima = trim($row[13] ?? '');
+                $alamatPenerima = trim($row[14] ?? '');
+                $contactPerson = trim($row[15] ?? '');
+                $term = trim($row[16] ?? '');
+                $tonnage = trim($row[17] ?? '');
+                $volume = trim($row[18] ?? '');
+                $satuan = trim($row[19] ?? '');
+                $kuantitas = trim($row[20] ?? '');
+                $pelabuhanMuat = trim($row[21] ?? '');
+                $pelabuhanBongkar = trim($row[22] ?? '');
+                $asalKontainer = trim($row[23] ?? '');
+                $ke = trim($row[24] ?? '');
+                
+                // Parse tanggal berangkat
+                if (!empty($tanggalBerangkat)) {
+                    try {
+                        if (is_numeric($tanggalBerangkat)) {
+                            // Excel date format (serial number)
+                            $tanggalBerangkat = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tanggalBerangkat)->format('Y-m-d');
+                        } else {
+                            // String date format
+                            $tanggalBerangkat = date('Y-m-d', strtotime($tanggalBerangkat));
+                        }
+                    } catch (\Exception $e) {
+                        $tanggalBerangkat = null;
+                    }
+                } else {
+                    $tanggalBerangkat = null;
+                }
 
                 // Jika nomor kontainer kosong, isi dengan "Cargo" dan set tipe kontainer menjadi "Cargo"
                 if (empty($nomorKontainer)) {
@@ -458,6 +476,7 @@ class ManifestController extends Controller
                     if ($existing) {
                         // Update existing
                         $existing->update([
+                            'tanggal_berangkat' => $tanggalBerangkat ?: $existing->tanggal_berangkat,
                             'nomor_manifest' => $nomorManifest ?: $existing->nomor_manifest,
                             'nomor_tanda_terima' => $nomorTandaTerima ?: $existing->nomor_tanda_terima,
                             'no_seal' => $noSeal ?: $existing->no_seal,
@@ -489,6 +508,7 @@ class ManifestController extends Controller
                             'no_seal' => $noSeal,
                             'nama_kapal' => $namaKapal,
                             'no_voyage' => $noVoyage,
+                            'tanggal_berangkat' => $tanggalBerangkat,
                             'tipe_kontainer' => $tipeKontainer,
                             'size_kontainer' => $sizeKontainer,
                             'nama_barang' => $namaBarang,
@@ -572,6 +592,7 @@ class ManifestController extends Controller
         $headers = [
             'Nama Kapal',
             'No Voyage',
+            'Tanggal Berangkat',
             'No BL',
             'No Manifest',
             'No Tanda Terima',
@@ -612,6 +633,7 @@ class ManifestController extends Controller
         $exampleData = [
             'KM EXAMPLE',           // Nama Kapal
             '001',                  // No Voyage
+            '2026-01-15',          // Tanggal Berangkat
             'BL001',               // No BL
             'MN001',               // No Manifest
             'TT001',               // No Tanda Terima
