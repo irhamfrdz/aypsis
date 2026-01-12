@@ -483,17 +483,16 @@ class PranotaUangRitKenekController extends Controller
             'surat_jalan_data.*.selected' => 'required',
             'surat_jalan_data.*.no_surat_jalan' => 'required|string|max:255',
             'surat_jalan_data.*.kenek_nama' => 'required|string|max:255',
-            'surat_jalan_data.*.kenek_nama' => 'nullable|string|max:255',
-            'surat_jalan_data.*.uang_rit_supir' => 'required|numeric|min:0',
+            'surat_jalan_data.*.uang_rit_kenek' => 'required|numeric|min:0',
             'surat_jalan_bongkaran_data' => 'sometimes|array',
             'surat_jalan_bongkaran_data.*.selected' => 'required',
             'surat_jalan_bongkaran_data.*.no_surat_jalan' => 'required|string|max:255',
             'surat_jalan_bongkaran_data.*.kenek_nama' => 'required|string|max:255',
-            'surat_jalan_bongkaran_data.*.uang_rit_supir' => 'required|numeric|min:0',
-            'supir_details' => 'sometimes|array', // Data hutang, tabungan, dan BPJS per supir
-            'supir_details.*.hutang' => 'nullable|numeric|min:0',
-            'supir_details.*.tabungan' => 'nullable|numeric|min:0',
-            'supir_details.*.bpjs' => 'nullable|numeric|min:0',
+            'surat_jalan_bongkaran_data.*.uang_rit_kenek' => 'required|numeric|min:0',
+            'kenek_details' => 'sometimes|array', // Data hutang, tabungan, dan BPJS per kenek
+            'kenek_details.*.hutang' => 'nullable|numeric|min:0',
+            'kenek_details.*.tabungan' => 'nullable|numeric|min:0',
+            'kenek_details.*.bpjs' => 'nullable|numeric|min:0',
         ], [
             'surat_jalan_data.required' => 'Silakan pilih minimal satu surat jalan.',
             'surat_jalan_data.min' => 'Silakan pilih minimal satu surat jalan.',
@@ -524,9 +523,9 @@ class PranotaUangRitKenekController extends Controller
             // Generate nomor pranota DALAM transaksi yang sama
             $nomorPranota = $this->generateNomorPranota();
             
-            // Hitung total per supir dan total keseluruhan
-            $supirTotals = [];
-            $totalUangSupirKeseluruhan = 0.0; // Initialize as float
+            // Hitung total per kenek dan total keseluruhan
+            $kenekTotals = [];
+            $totalUangKenekKeseluruhan = 0.0; // Initialize as float
             $totalHutangKeseluruhan = 0.0;
             $totalTabunganKeseluruhan = 0.0;
             $totalBpjsKeseluruhan = 0.0;
@@ -534,70 +533,70 @@ class PranotaUangRitKenekController extends Controller
             // Debug: Log the selected data
             Log::info('Selected Data for Pranota Creation:', $selectedData);
 
-            // Hitung total Uang Kenek per supir
+            // Hitung total Uang Kenek per kenek
             foreach ($selectedData as $suratJalanId => $data) {
-                $supirNama = $data['kenek_nama'];
-                $uangSupir = floatval($data['uang_rit_supir'] ?? 0); // Ensure it's a number
+                $kenekNama = $data['kenek_nama'];
+                $uangKenek = floatval($data['uang_rit_kenek'] ?? 0); // Ensure it's a number
                 
-                Log::info("Processing Regular Supir: {$supirNama}, Uang Kenek: {$uangSupir}");
+                Log::info("Processing Regular Kenek: {$kenekNama}, Uang Kenek: {$uangKenek}");
                 
-                if (!isset($supirTotals[$supirNama])) {
-                    $supirTotals[$supirNama] = [
-                        'total_uang_supir' => 0.0,
+                if (!isset($kenekTotals[$kenekNama])) {
+                    $kenekTotals[$kenekNama] = [
+                        'total_uang_kenek' => 0.0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
                     ];
                 }
                 
-                $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
-                $totalUangSupirKeseluruhan += $uangSupir;
+                $kenekTotals[$kenekNama]['total_uang_kenek'] += $uangKenek;
+                $totalUangKenekKeseluruhan += $uangKenek;
             }
 
-            // Hitung total Uang Kenek per supir untuk bongkaran
+            // Hitung total Uang Kenek per kenek untuk bongkaran
             foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
-                $supirNama = $data['kenek_nama'];
-                $uangSupir = floatval($data['uang_rit_supir'] ?? 0);
+                $kenekNama = $data['kenek_nama'];
+                $uangKenek = floatval($data['uang_rit_kenek'] ?? 0);
                 
-                Log::info("Processing Bongkaran Supir: {$supirNama}, Uang Kenek: {$uangSupir}");
+                Log::info("Processing Bongkaran Kenek: {$kenekNama}, Uang Kenek: {$uangKenek}");
                 
-                if (!isset($supirTotals[$supirNama])) {
-                    $supirTotals[$supirNama] = [
-                        'total_uang_supir' => 0.0,
+                if (!isset($kenekTotals[$kenekNama])) {
+                    $kenekTotals[$kenekNama] = [
+                        'total_uang_kenek' => 0.0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
                     ];
                 }
                 
-                $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
-                $totalUangSupirKeseluruhan += $uangSupir;
+                $kenekTotals[$kenekNama]['total_uang_kenek'] += $uangKenek;
+                $totalUangKenekKeseluruhan += $uangKenek;
             }
 
-            Log::info("Total Uang Kenek Keseluruhan after calculation: {$totalUangSupirKeseluruhan}");
+            Log::info("Total Uang Kenek Keseluruhan after calculation: {$totalUangKenekKeseluruhan}");
 
             // Ambil data hutang, tabungan, dan BPJS dari frontend
-            $supirDetails = $request->input('supir_details', []);
-            Log::info('Supir Details from request:', $supirDetails);
+            $kenekDetails = $request->input('kenek_details', []);
+            Log::info('Kenek Details from request:', $kenekDetails);
             
-            foreach ($supirDetails as $supirNama => $details) {
-                if (isset($supirTotals[$supirNama])) {
-                    $supirTotals[$supirNama]['hutang'] = floatval($details['hutang'] ?? 0);
-                    $supirTotals[$supirNama]['tabungan'] = floatval($details['tabungan'] ?? 0);
-                    $supirTotals[$supirNama]['bpjs'] = floatval($details['bpjs'] ?? 0);
+            foreach ($kenekDetails as $kenekNama => $details) {
+                if (isset($kenekTotals[$kenekNama])) {
+                    $kenekTotals[$kenekNama]['hutang'] = floatval($details['hutang'] ?? 0);
+                    $kenekTotals[$kenekNama]['tabungan'] = floatval($details['tabungan'] ?? 0);
+                    $kenekTotals[$kenekNama]['bpjs'] = floatval($details['bpjs'] ?? 0);
                     
-                    $totalHutangKeseluruhan += $supirTotals[$supirNama]['hutang'];
-                    $totalTabunganKeseluruhan += $supirTotals[$supirNama]['tabungan'];
-                    $totalBpjsKeseluruhan += $supirTotals[$supirNama]['bpjs'];
+                    $totalHutangKeseluruhan += $kenekTotals[$kenekNama]['hutang'];
+                    $totalTabunganKeseluruhan += $kenekTotals[$kenekNama]['tabungan'];
+                    $totalBpjsKeseluruhan += $kenekTotals[$kenekNama]['bpjs'];
                 }
             }
 
-            $grandTotalBersih = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
+            $grandTotalBersih = $totalUangKenekKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
             
-            Log::info("Final calculations - Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalBersih}");
+            Log::info("Final calculations - Total Uang: {$totalUangKenekKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalBersih}");
 
             // Buat SATU pranota untuk SEMUA surat jalan yang dipilih
-            $grandTotalValue = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
+            $grandTotalValue = $totalUangKenekKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
             
             // Gabungkan informasi dari semua surat jalan
             $allNoSuratJalan = [];
@@ -612,9 +611,6 @@ class PranotaUangRitKenekController extends Controller
                     $firstSuratJalanId = $suratJalanId; // Gunakan ID surat jalan pertama sebagai referensi
                 }
                 $allNoSuratJalan[] = $data['no_surat_jalan'];
-                if (!in_array($data['kenek_nama'], $allSupirNama)) {
-                    $allSupirNama[] = $data['kenek_nama'];
-                }
                 if (!empty($data['kenek_nama']) && !in_array($data['kenek_nama'], $allKenekNama)) {
                     $allKenekNama[] = $data['kenek_nama'];
                 }
@@ -625,17 +621,16 @@ class PranotaUangRitKenekController extends Controller
                     $firstSuratJalanBongkaranId = $suratJalanBongkaranId;
                 }
                 $allNoSuratJalan[] = $data['no_surat_jalan'] . ' (Bongkaran)';
-                if (!in_array($data['kenek_nama'], $allSupirNama)) {
-                    $allSupirNama[] = $data['kenek_nama'];
+                if (!empty($data['kenek_nama']) && !in_array($data['kenek_nama'], $allKenekNama)) {
+                    $allKenekNama[] = $data['kenek_nama'];
                 }
             }
             
             // Gabungkan menjadi string
             $combinedNoSuratJalan = implode(', ', $allNoSuratJalan);
-            $combinedSupirNama = implode(', ', $allSupirNama);
             $combinedKenekNama = implode(', ', array_filter($allKenekNama));
             
-            Log::info("Creating SINGLE Pranota with values - Nomor: {$nomorPranota}, Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalValue}");
+            Log::info("Creating SINGLE Pranota with values - Nomor: {$nomorPranota}, Total Uang: {$totalUangKenekKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalValue}");
             
             // Buat satu record pranota untuk semua surat jalan
             $pranotaUangRit = PranotaUangRit::create([
@@ -644,11 +639,14 @@ class PranotaUangRitKenekController extends Controller
                 'surat_jalan_id' => $firstSuratJalanId, // Referensi ke surat jalan pertama (bisa null jika hanya bongkaran)
                 'surat_jalan_bongkaran_id' => $firstSuratJalanBongkaranId, // Referensi ke surat jalan bongkaran pertama
                 'no_surat_jalan' => $combinedNoSuratJalan,
-                'kenek_nama' => $combinedSupirNama,
+                'supir_nama' => '', // Kosong untuk pranota kenek
                 'kenek_nama' => $combinedKenekNama ?: null,
-                'uang_rit_supir' => $totalUangSupirKeseluruhan,
-                'total_rit' => $totalUangSupirKeseluruhan,
-                'total_uang' => $totalUangSupirKeseluruhan,
+                'no_plat' => '', // Kosong untuk pranota kenek
+                'uang_jalan' => 0, // Kosong untuk pranota kenek
+                'uang_rit' => 0, // Kosong untuk pranota kenek
+                'uang_rit_kenek' => $totalUangKenekKeseluruhan,
+                'total_rit' => $totalUangKenekKeseluruhan,
+                'total_uang' => $totalUangKenekKeseluruhan,
                 'total_hutang' => $totalHutangKeseluruhan,
                 'total_tabungan' => $totalTabunganKeseluruhan,
                 'total_bpjs' => $totalBpjsKeseluruhan,
@@ -680,12 +678,12 @@ class PranotaUangRitKenekController extends Controller
                 }
             }
 
-            // Simpan detail per supir
-            foreach ($supirTotals as $supirNama => $totals) {
-                PranotaUangRitSupirDetail::create([
+            // Simpan detail per kenek
+            foreach ($kenekTotals as $kenekNama => $totals) {
+                \App\Models\PranotaUangRitKenekDetail::create([
                     'no_pranota' => $nomorPranota,
-                    'kenek_nama' => $supirNama,
-                    'total_uang_supir' => floatval($totals['total_uang_supir']),
+                    'kenek_nama' => $kenekNama,
+                    'total_uang_kenek' => floatval($totals['total_uang_kenek']),
                     'hutang' => floatval($totals['hutang']),
                     'tabungan' => floatval($totals['tabungan']),
                     'bpjs' => floatval($totals['bpjs']),
@@ -697,14 +695,14 @@ class PranotaUangRitKenekController extends Controller
             foreach ($selectedData as $suratJalanId => $data) {
                 // Buat record detail surat jalan jika ada model untuk itu
                 // Atau bisa menggunakan tabel pivot/relation table
-                Log::info("Pranota {$nomorPranota} includes Surat Jalan: {$data['no_surat_jalan']} - {$data['kenek_nama']} - Rp " . number_format($data['uang_rit_supir']));
+                Log::info("Pranota {$nomorPranota} includes Surat Jalan: {$data['no_surat_jalan']} - {$data['kenek_nama']} - Rp " . number_format($data['uang_rit_kenek']));
             }
 
             DB::commit();
             
-            $jumlahSuratJalan = count($selectedData);
-            $jumlahSupir = count($supirTotals);
-            $message = "Pranota Uang Rit Kenek {$nomorPranota} berhasil dibuat untuk {$jumlahSuratJalan} surat jalan dengan {$jumlahSupir} supir!";
+            $jumlahSuratJalan = count($selectedData) + count($selectedBongkaranData);
+            $jumlahKenek = count($kenekTotals);
+            $message = "Pranota Uang Rit Kenek {$nomorPranota} berhasil dibuat untuk {$jumlahSuratJalan} surat jalan dengan {$jumlahKenek} kenek!";
                 
             return redirect()->route('pranota-uang-rit-kenek.index')->with('success', $message);
 

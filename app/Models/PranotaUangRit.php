@@ -20,7 +20,11 @@ class PranotaUangRit extends Model
         'no_surat_jalan',
         'supir_nama',
         'kenek_nama',
+        'no_plat',
+        'uang_jalan',
+        'uang_rit',
         'uang_rit_supir',
+        'uang_rit_kenek',
         'total_rit',
         'total_uang',
         'total_hutang',
@@ -40,7 +44,10 @@ class PranotaUangRit extends Model
         'tanggal' => 'date',
         'tanggal_bayar' => 'date',
         'approved_at' => 'datetime',
+        'uang_jalan' => 'decimal:2',
+        'uang_rit' => 'decimal:2',
         'uang_rit_supir' => 'decimal:2',
+        'uang_rit_kenek' => 'decimal:2',
         'total_rit' => 'decimal:2',
         'total_uang' => 'decimal:2',
         'total_hutang' => 'decimal:2',
@@ -105,6 +112,14 @@ class PranotaUangRit extends Model
     public function supirDetails()
     {
         return $this->hasMany(PranotaUangRitSupirDetail::class, 'no_pranota', 'no_pranota');
+    }
+
+    /**
+     * Get the kenek details for this pranota
+     */
+    public function kenekDetails()
+    {
+        return $this->hasMany(PranotaUangRitKenekDetail::class, 'no_pranota', 'no_pranota');
     }
 
     /**
