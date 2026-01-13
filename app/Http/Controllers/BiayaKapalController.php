@@ -521,12 +521,18 @@ class BiayaKapalController extends Controller
             }
 
             // Get BL data for the selected kapal and voyage
+            // Exclude CARGO containers from calculation
             $bls = \DB::table('bls')
-                ->select('nama_barang', 'size_kontainer')
+                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer')
                 ->where('nama_kapal', $kapalNama)
                 ->where('no_voyage', $voyage)
                 ->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
+                ->where('nomor_kontainer', '!=', 'CARGO')
+                ->where(function($query) {
+                    $query->where('tipe_kontainer', '!=', 'CARGO')
+                          ->orWhereNull('tipe_kontainer');
+                })
                 ->get();
 
             // Count containers by size and type (FULL/EMPTY)
