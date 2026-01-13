@@ -30,6 +30,8 @@ class BiayaKapal extends Model
         'ppn',
         'pph',
         'total_biaya',
+        'pph_dokumen',
+        'grand_total_dokumen',
     ];
 
     protected $casts = [
@@ -40,6 +42,8 @@ class BiayaKapal extends Model
         'ppn' => 'decimal:2',
         'pph' => 'decimal:2',
         'total_biaya' => 'decimal:2',
+        'pph_dokumen' => 'decimal:2',
+        'grand_total_dokumen' => 'decimal:2',
         'nama_kapal' => 'array',
         'no_voyage' => 'array',
         'no_bl' => 'array',
