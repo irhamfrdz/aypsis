@@ -900,10 +900,16 @@ class SuratJalanBongkaranController extends Controller
 
     /**
      * Print SJ directly from Manifest data (without creating surat jalan first)
+     * 
+     * IMPORTANT: Semua data diambil dari tabel MANIFESTS, BUKAN dari tabel BLS
+     * Data source: App\Models\Manifest (table: manifests)
      */
     public function printFromBl($bl)
     {
-        // Find manifest by ID
+        // ========================================
+        // DATA SOURCE: TABLE MANIFESTS
+        // ========================================
+        // Find manifest by ID from manifests table
         $manifest = Manifest::findOrFail($bl);
         
         // Create a temporary object with Manifest data to pass to print view
@@ -913,21 +919,25 @@ class SuratJalanBongkaranController extends Controller
         // Get current date for tanggal_surat_jalan
         $printData->tanggal_surat_jalan = now()->format('Y-m-d');
         
-        // Manifest data - mapped from table columns
-        $printData->no_voyage = $manifest->no_voyage ?? '';
-        $printData->nama_kapal = $manifest->nama_kapal ?? '';
-        $printData->no_plat = ''; // Will be empty until filled
-        $printData->no_bl = $manifest->nomor_bl ?? '';
-        $printData->no_kontainer = $manifest->nomor_kontainer ?? '';
-        $printData->jenis_pengiriman = 'IMPORT'; // Default for manifest
-        $printData->jenis_barang = $manifest->nama_barang ?? '';
-        $printData->penerima = $manifest->penerima ?? '';
-        $printData->tujuan_pengambilan = ''; // Will be empty until filled
-        $printData->no_seal = $manifest->no_seal ?? '';
-        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
-        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
-        $printData->size_kontainer = $manifest->size_kontainer ?? '';
-        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';
+        // ========================================
+        // MAPPING DATA DARI TABEL MANIFESTS
+        // ========================================
+        $printData->no_voyage = $manifest->no_voyage ?? '';                      // manifests.no_voyage
+        $printData->nama_kapal = $manifest->nama_kapal ?? '';                    // manifests.nama_kapal
+        $printData->no_plat = '';                                                // Will be empty until filled
+        $printData->no_bl = $manifest->nomor_bl ?? '';                          // manifests.nomor_bl
+        $printData->no_kontainer = $manifest->nomor_kontainer ?? '';            // manifests.nomor_kontainer
+        $printData->jenis_pengiriman = 'IMPORT';                                 // Default for manifest
+        $printData->jenis_barang = $manifest->nama_barang ?? '';                // manifests.nama_barang
+        $printData->penerima = $manifest->penerima ?? '';                       // manifests.penerima
+        $printData->tujuan_pengambilan = '';                                     // Will be empty until filled
+        $printData->no_seal = $manifest->no_seal ?? '';                         // manifests.no_seal
+        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan              // manifests.pelabuhan_tujuan
+                                    ?? $manifest->pelabuhan_bongkar ?? '';       // or manifests.pelabuhan_bongkar
+        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan             // manifests.pelabuhan_tujuan
+                                     ?? $manifest->pelabuhan_bongkar ?? '';      // or manifests.pelabuhan_bongkar
+        $printData->size_kontainer = $manifest->size_kontainer ?? '';           // manifests.size_kontainer
+        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';        // manifests.tipe_kontainer
         
         // Create fake bl relation for compatibility with existing print view
         $printData->bl = $manifest;
@@ -938,9 +948,18 @@ class SuratJalanBongkaranController extends Controller
 
     /**
      * Print Berita Acara (BA) directly from Manifest data
+     * 
+     * IMPORTANT: Semua data diambil dari tabel MANIFESTS, BUKAN dari tabel BLS
+     * Data source: App\Models\Manifest (table: manifests)
      */
-    public function printBa(Manifest $manifest)
+    public function printBa($bl)
     {
+        // ========================================
+        // DATA SOURCE: TABLE MANIFESTS
+        // ========================================
+        // Find manifest by ID from manifests table
+        $manifest = Manifest::findOrFail($bl);
+        
         // This allows printing BA even if surat jalan hasn't been created yet
         $baData = new \stdClass();
         
@@ -949,24 +968,27 @@ class SuratJalanBongkaranController extends Controller
         $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
         $baData->tanggal_ba = now()->format('Y-m-d');
         
-        // Ship data
-        $baData->nama_kapal = $manifest->nama_kapal;
-        $baData->no_voyage = $manifest->no_voyage;
-        $baData->pelabuhan_asal = $manifest->pelabuhan_asal ?? '';
-        $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';
-        $baData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';
+        // ========================================
+        // MAPPING DATA DARI TABEL MANIFESTS
+        // ========================================
+        // Ship data (manifests table)
+        $baData->nama_kapal = $manifest->nama_kapal;                            // manifests.nama_kapal
+        $baData->no_voyage = $manifest->no_voyage;                              // manifests.no_voyage
+        $baData->pelabuhan_asal = $manifest->pelabuhan_asal ?? '';              // manifests.pelabuhan_asal
+        $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';          // manifests.pelabuhan_tujuan
+        $baData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';         // manifests.pelabuhan_tujuan
         
-        // Container data
-        $baData->no_bl = $manifest->nomor_bl;
-        $baData->no_kontainer = $manifest->nomor_kontainer;
-        $baData->no_seal = $manifest->no_seal;
-        $baData->size = $manifest->size_kontainer;
-        $baData->size_kontainer = $manifest->size_kontainer; // Add this for compatibility
+        // Container data (manifests table)
+        $baData->no_bl = $manifest->nomor_bl;                                   // manifests.nomor_bl
+        $baData->no_kontainer = $manifest->nomor_kontainer;                     // manifests.nomor_kontainer
+        $baData->no_seal = $manifest->no_seal;                                  // manifests.no_seal
+        $baData->size = $manifest->size_kontainer;                              // manifests.size_kontainer
+        $baData->size_kontainer = $manifest->size_kontainer;                    // manifests.size_kontainer
         
-        // Cargo data
-        $baData->jenis_barang = $manifest->nama_barang;
-        $baData->pengirim = $manifest->pengirim ?? '';
-        $baData->penerima = $manifest->penerima ?? '';
+        // Cargo data (manifests table)
+        $baData->jenis_barang = $manifest->nama_barang;                         // manifests.nama_barang
+        $baData->pengirim = $manifest->pengirim ?? '';                          // manifests.pengirim
+        $baData->penerima = $manifest->penerima ?? '';                          // manifests.penerima
         
         // Transportation data (will be empty until surat jalan is created)
         $baData->no_plat = '';
