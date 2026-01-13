@@ -1665,9 +1665,9 @@ function checkSelected() {
     
     // Update select all for current page (exclude disabled checkboxes from count)
     const currentPageCheckboxes = Array.from(document.querySelectorAll('.row-checkbox')).filter(cb => !cb.disabled);
-    const currentPageSelected = Array.from(document.querySelectorAll('.row-checkbox:checked')).filter(cb => !cb.disabled);
-    selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
-    selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
+    const currentPageSelectedForUI = Array.from(document.querySelectorAll('.row-checkbox:checked')).filter(cb => !cb.disabled);
+    selectAll.checked = currentPageSelectedForUI.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
+    selectAll.indeterminate = currentPageSelectedForUI.length > 0 && currentPageSelectedForUI.length < currentPageCheckboxes.length;
     
     // Get existing selected items from storage
     let existingSelected = getSelectedItems();
@@ -1679,7 +1679,7 @@ function checkSelected() {
     existingSelected = existingSelected.filter(item => !currentPageIds.includes(item.id));
     
     // Add currently checked items from this page
-    const currentPageSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+    const currentPageCheckedItems = Array.from(document.querySelectorAll('.row-checkbox:checked'))
         .filter(cb => {
             // Filter by type
             if (cb.getAttribute('data-tipe') === 'CARGO') return false;
@@ -1706,7 +1706,7 @@ function checkSelected() {
         }));
     
     // Merge existing items from other pages with current page selections
-    const allSelected = [...existingSelected, ...currentPageSelected];
+    const allSelected = [...existingSelected, ...currentPageCheckedItems];
     
     // Remove duplicates by id (just in case)
     const uniqueSelected = Array.from(new Map(allSelected.map(item => [item.id, item])).values());
