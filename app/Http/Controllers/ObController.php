@@ -743,6 +743,9 @@ class ObController extends Controller
                 'catatan' => 'nullable|string'
             ]);
 
+            // Start database transaction to ensure data consistency
+            DB::beginTransaction();
+
             $naikKapal = NaikKapal::with('prospek')->findOrFail($request->naik_kapal_id);
             \Log::info("Found naik_kapal:", [
                 'id' => $naikKapal->id,
@@ -1158,6 +1161,9 @@ class ObController extends Controller
                 }
             }
 
+            // Commit transaction - all changes saved successfully
+            DB::commit();
+
             \Log::info("===== END markAsOB SUCCESS =====");
             
             return response()->json([
@@ -1165,6 +1171,9 @@ class ObController extends Controller
                 'message' => 'Kontainer berhasil ditandai sudah OB, data BL dan status prospek telah diupdate'
             ]);
         } catch (\Exception $e) {
+            // Rollback transaction on error
+            DB::rollBack();
+            
             \Log::error('❌ ERROR in markAsOB: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
@@ -1192,6 +1201,9 @@ class ObController extends Controller
                 'catatan' => 'nullable|string',
                 'retur_barang' => 'nullable|string'
             ]);
+
+            // Start database transaction
+            DB::beginTransaction();
 
             $bl = Bl::findOrFail($request->bl_id);
             
@@ -1264,11 +1276,17 @@ class ObController extends Controller
                 \Log::warning('Failed to clear NaikKapal.is_tl for container in markAsOBBl: ' . $e->getMessage());
             }
 
+            // Commit transaction
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'BL berhasil ditandai sudah OB'
             ]);
         } catch (\Exception $e) {
+            // Rollback transaction on error
+            DB::rollBack();
+            
             \Log::error('Mark as OB BL error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
