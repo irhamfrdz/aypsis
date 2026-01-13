@@ -152,6 +152,9 @@
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                            @if($type === 'asuransi')
+                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan Asuransi</th>
+                            @endif
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Jatuh Tempo</th>
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa Hari</th>
                             <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -197,6 +200,9 @@
                             </td>
                             <td class="py-2 px-3 text-sm">{{ $asset->merek ?? '-' }}</td>
                             <td class="py-2 px-3 text-sm">{{ $asset->jenis ?? '-' }}</td>
+                            @if($type === 'asuransi')
+                            <td class="py-2 px-3 text-sm">{{ $asset->asuransi ?? '-' }}</td>
+                            @endif
                             <td class="py-2 px-3 text-sm">{{ $formattedDate }}</td>
                             <td class="py-2 px-3">
                                 @if($diffDays <= 7)
@@ -272,6 +278,9 @@
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                            @if($type === 'asuransi')
+                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan Asuransi</th>
+                            @endif
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Jatuh Tempo</th>
                             <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lewat</th>
                             <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -317,6 +326,9 @@
                             </td>
                             <td class="py-2 px-3 text-sm">{{ $asset->merek ?? '-' }}</td>
                             <td class="py-2 px-3 text-sm">{{ $asset->jenis ?? '-' }}</td>
+                            @if($type === 'asuransi')
+                            <td class="py-2 px-3 text-sm">{{ $asset->asuransi ?? '-' }}</td>
+                            @endif
                             <td class="py-2 px-3 text-sm">{{ $formattedDate }}</td>
                             <td class="py-2 px-3">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
