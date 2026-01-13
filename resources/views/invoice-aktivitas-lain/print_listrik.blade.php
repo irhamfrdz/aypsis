@@ -195,79 +195,6 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 5%;">No</th>
-                    <th style="width: 60%;">Deskripsi</th>
-                    <th style="width: 35%;">Jumlah</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center">1</td>
-                    <td>
-                        <strong>Biaya Listrik</strong>
-                        @if($invoice->klasifikasiBiayaUmum)
-                            <br><em>{{ $invoice->klasifikasiBiayaUmum->nama }}</em>
-                        @endif
-                        @if($invoice->deskripsi)
-                            <br>{{ $invoice->deskripsi }}
-                        @endif
-                        @if($invoice->catatan)
-                            <br><small style="color: #666;">Catatan: {{ $invoice->catatan }}</small>
-                        @endif
-                    </td>
-                    <td class="text-right" style="font-size: 14px; font-weight: 600;">
-                        Rp {{ number_format($invoice->total, 0, ',', '.') }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <!-- Total Section with PPH -->
-        <div class="total-section">
-            <!-- Subtotal -->
-            <div class="total-row subtotal">
-                <span class="total-label">Subtotal:</span>
-                <span style="font-weight: 600;">Rp {{ number_format($invoice->total, 0, ',', '.') }}</span>
-            </div>
-            
-            <!-- PPH 2% -->
-            <div class="total-row pph">
-                <span class="total-label">PPH (2%):</span>
-                <span style="font-weight: 700;">- Rp {{ number_format($invoice->pph ?? 0, 0, ',', '.') }}</span>
-            </div>
-            
-            <!-- Grand Total -->
-            <div class="total-row grand-total">
-                <span class="total-label">GRAND TOTAL:</span>
-                <span style="font-size: 17px;">Rp {{ number_format($invoice->grand_total ?? ($invoice->total - ($invoice->pph ?? 0)), 0, ',', '.') }}</span>
-            </div>
-        </div>
-        
-        <div style="clear: both;">
-            <div class="pph-note">
-                * PPH 2% dipotong sesuai peraturan perpajakan yang berlaku
-            </div>
-        </div>
-        
-        <!-- Notes -->
-        @if($invoice->catatan || $invoice->deskripsi)
-        <div class="notes">
-            <div class="notes-title">📝 Catatan:</div>
-            <div>
-                @if($invoice->deskripsi)
-                    <strong>Deskripsi:</strong> {{ $invoice->deskripsi }}<br>
-                @endif
-                @if($invoice->catatan)
-                    <strong>Catatan:</strong> {{ $invoice->catatan }}
-                @endif
-            </div>
-        </div>
-        @endif
-        
-        <!-- Invoice Details Table -->
-        <table>
-            <thead>
-                <tr>
                     <th style="width: 3%;">No</th>
                     <th style="width: 10%;">Tgl Req</th>
                     <th style="width: 37%;">Referensi</th>
@@ -283,7 +210,7 @@
                     <td>LISTRIK BULAN {{ strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
                     <td></td>
                     <td>PPH</td>
-                    <td class="text-right">-{{ number_format($invoice->pph ?? 0, 2, '.', ',') }}</td>
+                    <td class="text-right">{{ number_format(-($invoice->pph ?? 0), 2, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <td class="text-center">2</td>
@@ -291,11 +218,11 @@
                     <td>LISTRIK BULAN {{ strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
                     <td></td>
                     <td>Biaya Listrik</td>
-                    <td class="text-right">{{ number_format($invoice->total, 2, '.', ',') }}</td>
+                    <td class="text-right">{{ number_format($invoice->total, 2, ',', '.') }}</td>
                 </tr>
                 <tr class="total-row">
                     <td colspan="5" class="text-right"><strong>Total</strong></td>
-                    <td class="text-right"><strong>{{ number_format($invoice->grand_total ?? ($invoice->total - ($invoice->pph ?? 0)), 2, '.', ',') }}</strong></td>
+                    <td class="text-right"><strong>{{ number_format($invoice->grand_total ?? ($invoice->total - ($invoice->pph ?? 0)), 2, ',', '.') }}</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -312,7 +239,7 @@
         <div class="signature-section">
             <div class="signature-box">
                 <div class="signature-title">(Pemohon)</div>
-                <div class="signature-line">{{ $invoice->createdBy->name ?? '' }}</div>
+                <div class="signature-line"></div>
             </div>
             <div class="signature-box">
                 <div class="signature-title">(Pemeriksa)</div>
