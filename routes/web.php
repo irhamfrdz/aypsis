@@ -3710,6 +3710,8 @@ Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middle
          ->middleware('can:invoice-aktivitas-lain-view');
     Route::get('/get-next-number', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'getNextInvoiceNumber'])->name('get-next-number')
          ->middleware('can:invoice-aktivitas-lain-create');
+    Route::post('/bulk-delete', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'bulkDelete'])->name('bulk-delete')
+         ->middleware('can:invoice-aktivitas-lain-delete');
     Route::get('/create', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'create'])->name('create')
          ->middleware('can:invoice-aktivitas-lain-create');
     Route::post('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'store'])->name('store')

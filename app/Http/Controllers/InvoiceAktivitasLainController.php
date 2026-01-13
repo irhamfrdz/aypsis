@@ -490,9 +490,42 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function destroy(string $id)
     {
-        // TODO: Implement delete logic
-        return redirect()->route('invoice-aktivitas-lain.index')
-            ->with('success', 'Invoice berhasil dihapus.');
+        try {
+            $invoice = InvoiceAktivitasLain::findOrFail($id);
+            $invoice->delete();
+            
+            return redirect()->route('invoice-aktivitas-lain.index')
+                ->with('success', 'Invoice berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('invoice-aktivitas-lain.index')
+                ->with('error', 'Gagal menghapus invoice: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk delete invoices
+     */
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+            
+            if (empty($ids)) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada invoice yang dipilih.'], 400);
+            }
+            
+            $deleted = InvoiceAktivitasLain::whereIn('id', $ids)->delete();
+            
+            return response()->json([
+                'success' => true, 
+                'message' => $deleted . ' invoice berhasil dihapus.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Gagal menghapus invoice: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

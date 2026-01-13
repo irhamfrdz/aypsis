@@ -357,8 +357,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (confirm(`Apakah Anda yakin ingin menghapus ${checkedBoxes.length} invoice?`)) {
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
-            // Implement bulk delete functionality here
-            console.log('Delete IDs:', ids);
+            
+            fetch('{{ route("invoice-aktivitas-lain.bulk-delete") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Gagal: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus invoice.');
+            });
         }
     });
 
