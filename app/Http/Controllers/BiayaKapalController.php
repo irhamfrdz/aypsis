@@ -502,4 +502,71 @@ class BiayaKapalController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get container counts (FULL/EMPTY) grouped by size from BLs
+     * Empty containers are determined by nama_barang containing "empty" or "kosong"
+     */
+    public function getContainerCounts(Request $request)
+    {
+        try {
+            $kapalNama = $request->input('kapal');
+            $voyage = $request->input('voyage');
+            
+            if (empty($kapalNama) || empty($voyage)) {
+                return response()->json([
+                    'success' => true,
+                    'counts' => []
+                ]);
+            }
+
+            // Get BL data for the selected kapal and voyage
+            $bls = \DB::table('bls')
+                ->select('nama_barang', 'size_kontainer')
+                ->where('nama_kapal', $kapalNama)
+                ->where('no_voyage', $voyage)
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->get();
+
+            // Count containers by size and type (FULL/EMPTY)
+            $counts = [
+                '20' => ['full' => 0, 'empty' => 0],
+                '40' => ['full' => 0, 'empty' => 0],
+            ];
+
+            foreach ($bls as $bl) {
+                // Determine size (default to 20 if not specified)
+                $size = '20';
+                if (!empty($bl->size_kontainer)) {
+                    if (str_contains($bl->size_kontainer, '40')) {
+                        $size = '40';
+                    }
+                }
+
+                // Determine if EMPTY based on nama_barang
+                $namaBarang = strtolower($bl->nama_barang ?? '');
+                $isEmpty = str_contains($namaBarang, 'empty') || 
+                           str_contains($namaBarang, 'kosong') ||
+                           str_contains($namaBarang, 'mty') ||
+                           str_contains($namaBarang, 'mt container');
+
+                if ($isEmpty) {
+                    $counts[$size]['empty']++;
+                } else {
+                    $counts[$size]['full']++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'counts' => $counts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghitung kontainer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

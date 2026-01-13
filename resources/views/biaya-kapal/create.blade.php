@@ -1143,9 +1143,153 @@
             loadVoyagesForSection(sectionIndex, this.value);
         });
         
+        // Setup voyage change listener for auto-fill barang
+        const voyageSelect = section.querySelector('.voyage-select');
+        voyageSelect.addEventListener('change', function() {
+            const kapalNama = kapalSelect.value;
+            const voyageValue = this.value;
+            if (kapalNama && voyageValue) {
+                autoFillBarangForSection(sectionIndex, kapalNama, voyageValue);
+            }
+        });
+        
         // Add first barang input
         addBarangToSection(sectionIndex);
     }
+    
+    // Auto-fill barang based on container counts from BL table
+    function autoFillBarangForSection(sectionIndex, kapalNama, voyage) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.barang-container-section');
+        
+        // Show loading
+        container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</div>';
+        
+        fetch('{{ url("biaya-kapal/get-container-counts") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                kapal: kapalNama,
+                voyage: voyage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.counts) {
+                container.innerHTML = '';
+                let barangAdded = false;
+                
+                // Pricelist IDs mapping
+                const pricelistIds = {
+                    '20_full': null,
+                    '20_empty': null,
+                    '40_full': null,
+                    '40_empty': null
+                };
+                
+                // Find pricelist IDs from pricelistBuruhData
+                pricelistBuruhData.forEach(p => {
+                    const barangLower = p.barang.toLowerCase();
+                    if (barangLower.includes('kontainer') && barangLower.includes('20') && barangLower.includes('full')) {
+                        pricelistIds['20_full'] = p.id;
+                    } else if (barangLower.includes('kontainer') && barangLower.includes('20') && barangLower.includes('empty')) {
+                        pricelistIds['20_empty'] = p.id;
+                    } else if (barangLower.includes('kontainer') && barangLower.includes('40') && barangLower.includes('full')) {
+                        pricelistIds['40_full'] = p.id;
+                    } else if (barangLower.includes('kontainer') && barangLower.includes('40') && barangLower.includes('empty')) {
+                        pricelistIds['40_empty'] = p.id;
+                    }
+                });
+                
+                // Add 20' FULL if count > 0
+                if (data.counts['20'] && data.counts['20'].full > 0 && pricelistIds['20_full']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['20_full'], data.counts['20'].full);
+                    barangAdded = true;
+                }
+                
+                // Add 20' EMPTY if count > 0
+                if (data.counts['20'] && data.counts['20'].empty > 0 && pricelistIds['20_empty']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['20_empty'], data.counts['20'].empty);
+                    barangAdded = true;
+                }
+                
+                // Add 40' FULL if count > 0
+                if (data.counts['40'] && data.counts['40'].full > 0 && pricelistIds['40_full']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['40_full'], data.counts['40'].full);
+                    barangAdded = true;
+                }
+                
+                // Add 40' EMPTY if count > 0
+                if (data.counts['40'] && data.counts['40'].empty > 0 && pricelistIds['40_empty']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['40_empty'], data.counts['40'].empty);
+                    barangAdded = true;
+                }
+                
+                // If no containers found, add empty barang input
+                if (!barangAdded) {
+                    addBarangToSection(sectionIndex);
+                }
+                
+                // Recalculate total
+                calculateTotalFromAllSections();
+            } else {
+                // Fallback to empty input
+                container.innerHTML = '';
+                addBarangToSection(sectionIndex);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching container counts:', error);
+            container.innerHTML = '';
+            addBarangToSection(sectionIndex);
+        });
+    }
+    
+    // Add barang to section with pre-filled values
+    window.addBarangToSectionWithValue = function(sectionIndex, barangId, jumlah) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.barang-container-section');
+        const barangIndex = container.children.length;
+        
+        let barangOptions = '<option value="">Pilih Nama Barang</option>';
+        pricelistBuruhData.forEach(pricelist => {
+            const selected = pricelist.id == barangId ? 'selected' : '';
+            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${selected}>${pricelist.barang}</option>`;
+        });
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][barang][${barangIndex}][barang_id]" class="barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" required>
+                    ${barangOptions}
+                </select>
+            </div>
+            <div class="w-24">
+                <input type="number" name="kapal_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" value="${jumlah}" min="0" step="0.01" class="jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Jumlah" required>
+            </div>
+            <button type="button" onclick="removeBarangFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        // Add event listeners
+        const barangSelect = inputGroup.querySelector('.barang-select-item');
+        const jumlahInput = inputGroup.querySelector('.jumlah-input-item');
+        
+        barangSelect.addEventListener('change', function() {
+            calculateTotalFromAllSections();
+        });
+        
+        jumlahInput.addEventListener('input', function() {
+            calculateTotalFromAllSections();
+        });
+    };
     
     window.removeKapalSection = function(sectionIndex) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);

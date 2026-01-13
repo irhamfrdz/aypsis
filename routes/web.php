@@ -1192,6 +1192,8 @@ Route::middleware([
          ->name('biaya-kapal.get-voyages');
     Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])
          ->name('biaya-kapal.get-bls-by-voyages');
+    Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])
+         ->name('biaya-kapal.get-container-counts');
     Route::get('biaya-kapal/{biayaKapal}/print', [\App\Http\Controllers\BiayaKapalController::class, 'print'])
          ->name('biaya-kapal.print')
          ->middleware('can:biaya-kapal-view');
