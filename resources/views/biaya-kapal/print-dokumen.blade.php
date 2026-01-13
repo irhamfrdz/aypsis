@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $paperSize = request('paper_size', 'A4');
+    $paperSize = request('paper_size', 'Half Folio');
     $paperMap = [
+        'Half Folio' => [
+            'size' => '215.9mm 165.1mm',
+            'width' => '215.9mm',
+            'height' => '165.1mm',
+            'containerWidth' => '215.9mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
+        ],
         'Folio' => [
             'size' => '215.9mm 330.2mm',
             'width' => '215.9mm',
@@ -22,7 +31,7 @@
             'tableFont' => '9px',
         ],
     ];
-    $currentPaper = $paperMap[$paperSize] ?? $paperMap['A4'];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -37,7 +46,7 @@
 
         @page {
             size: {{ $currentPaper['size'] }} portrait;
-            margin: 15mm;
+            margin: 10mm;
         }
 
         html, body {
@@ -54,42 +63,42 @@
 
         .container {
             width: 100%;
-            max-width: calc({{ $currentPaper['containerWidth'] }} - 30mm);
-            padding: 0 15mm;
+            max-width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
+            padding: 0 10mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 30mm);
+            min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 3px double #000;
-            padding-bottom: 15px;
+            margin-bottom: 8px;
+            border-bottom: 2px double #000;
+            padding-bottom: 6px;
         }
 
         .header h1 {
-            font-size: 22px;
+            font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 3px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .header p {
-            font-size: 12px;
+            font-size: {{ $currentPaper['fontSize'] }};
             color: #555;
-            margin: 3px 0;
+            margin: 1px 0;
         }
 
         .document-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 15px;
+            margin-bottom: 8px;
+            padding: 6px 8px;
             background-color: #f8f9fa;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 2px;
         }
 
         .document-info .left,
@@ -100,32 +109,34 @@
         .document-info .label {
             font-weight: bold;
             display: inline-block;
-            width: 120px;
-            margin-bottom: 5px;
+            width: 100px;
+            margin-bottom: 1px;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .document-info .value {
             display: inline-block;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .section-title {
-            font-size: 14px;
+            font-size: {{ $currentPaper['fontSize'] }};
             font-weight: bold;
-            margin: 20px 0 10px;
-            padding: 8px 12px;
+            margin: 8px 0 5px;
+            padding: 4px 8px;
             background-color: #e9ecef;
-            border-left: 4px solid #0066cc;
+            border-left: 3px solid #0066cc;
         }
 
         .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
         .info-table td {
-            padding: 8px 12px;
-            font-size: 11px;
+            padding: 3px 6px;
+            font-size: {{ $currentPaper['fontSize'] }};
             vertical-align: top;
             border-bottom: 1px solid #f0f0f0;
         }
@@ -144,7 +155,7 @@
         .container-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
         .container-table thead {
@@ -155,9 +166,9 @@
         .container-table th,
         .container-table td {
             border: 1px solid #333;
-            padding: 10px;
+            padding: 4px;
             text-align: left;
-            font-size: 10px;
+            font-size: {{ $currentPaper['tableFont'] }};
         }
 
         .container-table th {
@@ -174,27 +185,26 @@
         }
 
         .summary-box {
-            float: right;
-            width: 350px;
-            margin-top: 20px;
-            border: 2px solid #333;
-            padding: 15px;
-            background-color: #f8f9fa;
+            margin-top: 8px;
+            padding: 0;
+            background-color: transparent;
+            border: none;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 11px;
+            margin-bottom: 3px;
+            font-size: {{ $currentPaper['fontSize'] }};
+            padding: 2px 0;
         }
 
         .summary-row.total {
             border-top: 2px solid #333;
-            padding-top: 10px;
-            margin-top: 10px;
+            padding-top: 4px;
+            margin-top: 4px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: calc({{ $currentPaper['fontSize'] }} + 2px);
         }
 
         .summary-row .label {
@@ -204,50 +214,50 @@
         .summary-row .value {
             font-weight: bold;
             text-align: right;
+            margin-left: 20px;
         }
 
         .footer {
-            margin-top: 40px;
+            margin-top: 12px;
             clear: both;
         }
 
         .signatures {
             display: flex;
             justify-content: space-between;
-            margin-top: 40px;
+            margin-top: 12px;
         }
 
         .signature-box {
-            width: 45%;
             text-align: center;
         }
 
         .signature-box .title {
             font-weight: bold;
-            margin-bottom: 60px;
-            font-size: 11px;
+            margin-bottom: 30px;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .signature-box .name {
             font-weight: bold;
             border-top: 1px solid #000;
-            padding-top: 5px;
+            padding-top: 2px;
             display: inline-block;
-            min-width: 200px;
-            font-size: 11px;
+            min-width: 120px;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .notes {
-            margin-top: 20px;
-            padding: 12px;
+            margin-top: 8px;
+            padding: 6px;
             background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            font-size: 10px;
+            border-left: 3px solid #ffc107;
+            font-size: {{ $currentPaper['tableFont'] }};
         }
 
         .notes strong {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         @media print {
@@ -297,8 +307,9 @@
 <body>
     <div class="print-controls no-print">
         <select id="paperSizeSelect" onchange="changePaperSize()">
-            <option value="A4" {{ $paperSize == 'A4' ? 'selected' : '' }}>A4</option>
+            <option value="Half Folio" {{ $paperSize == 'Half Folio' ? 'selected' : '' }}>Setengah Folio</option>
             <option value="Folio" {{ $paperSize == 'Folio' ? 'selected' : '' }}>Folio</option>
+            <option value="A4" {{ $paperSize == 'A4' ? 'selected' : '' }}>A4</option>
         </select>
         <button onclick="window.print()">🖨️ Cetak</button>
         <button onclick="window.close()">❌ Tutup</button>
@@ -335,10 +346,15 @@
                     <span class="label">Jenis Biaya</span>
                     <span class="value">: {{ $biayaKapal->jenis_biaya_label }}</span>
                 </div>
-                @if($biayaKapal->vendor)
+                @if($biayaKapal->vendor_id)
                 <div>
                     <span class="label">Vendor</span>
-                    <span class="value">: {{ $biayaKapal->vendor }}</span>
+                    @php
+                        $vendorData = \DB::table('pricelist_biaya_dokumen')
+                            ->where('id', $biayaKapal->vendor_id)
+                            ->first();
+                    @endphp
+                    <span class="value">: {{ $vendorData->nama_vendor ?? '-' }}</span>
                 </div>
                 @endif
                 @if($biayaKapal->penerima)
@@ -450,34 +466,32 @@
                 <span class="label">Subtotal:</span>
                 <span class="value">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</span>
             </div>
-            @if($biayaKapal->ppn)
+            @if($biayaKapal->pph_dokumen)
             <div class="summary-row">
-                <span class="label">PPN ({{ $biayaKapal->ppn_persen ?? 11 }}%):</span>
-                <span class="value">Rp {{ number_format($biayaKapal->ppn, 0, ',', '.') }}</span>
-            </div>
-            @endif
-            @if($biayaKapal->pph)
-            <div class="summary-row">
-                <span class="label">PPh ({{ $biayaKapal->pph_persen ?? 2 }}%):</span>
-                <span class="value">(Rp {{ number_format($biayaKapal->pph, 0, ',', '.') }})</span>
+                <span class="label">PPh (2%):</span>
+                <span class="value">(Rp {{ number_format($biayaKapal->pph_dokumen, 0, ',', '.') }})</span>
             </div>
             @endif
             <div class="summary-row total">
                 <span class="label">TOTAL BIAYA:</span>
-                <span class="value">Rp {{ number_format($biayaKapal->total_biaya ?? $biayaKapal->nominal, 0, ',', '.') }}</span>
+                <span class="value">Rp {{ number_format($biayaKapal->grand_total_dokumen ?? $biayaKapal->nominal, 0, ',', '.') }}</span>
             </div>
         </div>
 
         <!-- Footer with Signatures -->
         <div class="footer">
             <div class="signatures">
-                <div class="signature-box">
+                <div class="signature-box" style="width: 30%;">
                     <div class="title">Dibuat Oleh,</div>
-                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
+                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
                 </div>
-                <div class="signature-box">
+                <div class="signature-box" style="width: 30%;">
                     <div class="title">Mengetahui,</div>
-                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
+                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
+                </div>
+                <div class="signature-box" style="width: 30%;">
+                    <div class="title">Menyetujui,</div>
+                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
                 </div>
             </div>
 
