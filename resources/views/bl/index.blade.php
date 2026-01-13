@@ -288,6 +288,14 @@
     {{-- Filters --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <form method="GET" action="{{ route('bl.index') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {{-- Hidden inputs to preserve filters --}}
+            @if(request('nama_kapal'))
+                <input type="hidden" name="nama_kapal" value="{{ request('nama_kapal') }}">
+            @endif
+            @if(request('no_voyage'))
+                <input type="hidden" name="no_voyage" value="{{ request('no_voyage') }}">
+            @endif
+            
             {{-- Search --}}
             <div>
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
