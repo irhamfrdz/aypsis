@@ -903,12 +903,16 @@ class SuratJalanBongkaranController extends Controller
      */
     public function printFromBl(Manifest $manifest)
     {
-        // Debug: Check actual database columns and data
-        $manifestFromDb = \DB::table('manifests')->where('id', $manifest->id)->first();
+        // Debug: Check if manifest exists and show sample data
+        $sampleManifests = \DB::table('manifests')->limit(3)->get();
+        $manifestCount = \DB::table('manifests')->count();
+        
         dd([
-            'manifest_object' => $manifest->toArray(),
-            'manifest_from_db' => $manifestFromDb ? (array)$manifestFromDb : null,
-            'available_columns' => $manifestFromDb ? array_keys((array)$manifestFromDb) : []
+            'requested_manifest_id' => $manifest->id ?? 'NULL',
+            'manifest_exists' => $manifest->exists,
+            'total_manifests_in_db' => $manifestCount,
+            'sample_manifests' => $sampleManifests,
+            'manifest_data' => $manifest->toArray(),
         ]);
         
         // Create a temporary object with Manifest data to pass to print view
