@@ -1421,7 +1421,8 @@
                 const totalJumlah = jumlahVals.length ? jumlahVals.reduce((a, b) => a + b, 0) : parseInt(jumlahEl.value, 10) || 1;
                 jumlahEl.value = totalJumlah;
             }
-            if (satuanEl) satuanEl.value = satuanVals.length ? satuanVals.join(',') : (satuanEl.value || 'unit');
+            // Use first satuan only to avoid exceeding max length when joining multiple satuans
+            if (satuanEl) satuanEl.value = satuanVals.length ? satuanVals[0] : (satuanEl.value || 'unit');
 
             // For description and weight fields we can leave as-is or attempt to copy from available inputs
             if (keteranganEl && !keteranganEl.value && namaVals.length) {
