@@ -95,6 +95,44 @@
                     @enderror
                 </div>
 
+                <!-- Jenis Biaya (conditional for Pembayaran Lain-lain) -->
+                <div id="jenis_biaya_wrapper" class="{{ $invoice->jenis_aktivitas == 'Pembayaran Lain-lain' ? '' : 'hidden' }}">
+                    <label for="jenis_biaya_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
+                        Jenis Biaya <span class="text-red-500">*</span>
+                    </label>
+                    <select name="klasifikasi_biaya_umum_id" 
+                            id="jenis_biaya_dropdown" 
+                            class="w-full {{ $errors->has('klasifikasi_biaya_umum_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="">-- Pilih Jenis Biaya --</option>
+                        @foreach($klasifikasiBiayaUmum as $kb)
+                            <option value="{{ $kb->id }}" {{ old('klasifikasi_biaya_umum_id', $invoice->klasifikasi_biaya_umum_id) == $kb->id ? 'selected' : '' }}>
+                                {{ $kb->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('klasifikasi_biaya_umum_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Referensi (conditional for Pembayaran Lain-lain) -->
+                <div id="referensi_wrapper" class="{{ $invoice->jenis_aktivitas == 'Pembayaran Lain-lain' ? '' : 'hidden' }}">
+                    <label for="referensi" class="block text-sm font-medium text-gray-700 mb-2">
+                        Referensi
+                    </label>
+                    <input type="text" 
+                           name="referensi" 
+                           id="referensi" 
+                           value="{{ old('referensi', $invoice->referensi) }}" 
+                           class="w-full {{ $errors->has('referensi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan nomor referensi">
+                    @error('referensi')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Sub Jenis Kendaraan (conditional) -->
                 <div id="sub_jenis_kendaraan_wrapper" class="hidden">
                     <label for="sub_jenis_kendaraan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -560,6 +598,7 @@ console.log('Existing invoice data:', existingInvoice);
 
         // Initialize Select2 for dropdowns
         $('#jenis_aktivitas').select2({ placeholder: 'Pilih Jenis Aktivitas', allowClear: true, width: '100%' });
+        $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
         $('#sub_jenis_kendaraan').select2({ placeholder: 'Pilih Sub Jenis Kendaraan', allowClear: true, width: '100%' });
         $('#nomor_polisi').select2({ placeholder: 'Pilih Nomor Polisi', allowClear: true, width: '100%' });
         $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
@@ -613,6 +652,22 @@ console.log('Existing invoice data:', existingInvoice);
             const jenisVal = jenisAktivitasSelect.value;
             
             // Hide all conditional fields first
+            const jenisBiayaWrapper = document.getElementById('jenis_biaya_wrapper');
+            const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
+            const referensiWrapper = document.getElementById('referensi_wrapper');
+            const referensiInput = document.getElementById('referensi');
+            
+            if (jenisBiayaWrapper) {
+                jenisBiayaWrapper.classList.add('hidden');
+                if (jenisBiayaDropdown) jenisBiayaDropdown.removeAttribute('required');
+                $('#jenis_biaya_dropdown').val('').trigger('change');
+            }
+            
+            if (referensiWrapper) {
+                referensiWrapper.classList.add('hidden');
+                if (referensiInput) referensiInput.value = '';
+            }
+            
             subJenisKendaraanWrapper.classList.add('hidden');
             subJenisKendaraanSelect.removeAttribute('required');
             $('#sub_jenis_kendaraan').val('').trigger('change');
@@ -694,6 +749,19 @@ console.log('Existing invoice data:', existingInvoice);
                 setTimeout(() => {
                     $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
                     $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
+                }, 100);
+            } else if (jenisVal === 'Pembayaran Lain-lain') {
+                if (jenisBiayaWrapper) {
+                    jenisBiayaWrapper.classList.remove('hidden');
+                    if (jenisBiayaDropdown) jenisBiayaDropdown.setAttribute('required', 'required');
+                }
+                
+                if (referensiWrapper) {
+                    referensiWrapper.classList.remove('hidden');
+                }
+                
+                setTimeout(() => {
+                    $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
                 }, 100);
             }
         }
