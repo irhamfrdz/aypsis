@@ -504,4 +504,20 @@ class InvoiceAktivitasLainController extends Controller
         
         return view('invoice-aktivitas-lain.print', compact('invoice'));
     }
+
+    /**
+     * Print invoice khusus untuk Biaya Listrik (dengan PPH)
+     */
+    public function printListrik(string $id)
+    {
+        $invoice = InvoiceAktivitasLain::with(['createdBy', 'klasifikasiBiayaUmum'])->findOrFail($id);
+        
+        // Pastikan ini invoice biaya listrik
+        if ($invoice->klasifikasiBiayaUmum && !str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik')) {
+            return redirect()->route('invoice-aktivitas-lain.print', $id)
+                ->with('warning', 'Print khusus listrik hanya untuk invoice biaya listrik.');
+        }
+        
+        return view('invoice-aktivitas-lain.print_listrik', compact('invoice'));
+    }
 }

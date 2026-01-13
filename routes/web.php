@@ -3724,6 +3724,8 @@ Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middle
          ->middleware('can:invoice-aktivitas-lain-delete');
     Route::get('/{invoiceAktivitasLain}/print', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'print'])->name('print')
          ->middleware('can:invoice-aktivitas-lain-view');
+    Route::get('/{invoiceAktivitasLain}/print-listrik', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'printListrik'])->name('print-listrik')
+         ->middleware('can:invoice-aktivitas-lain-view');
 });
 
 // Pembayaran Uang Muka routes

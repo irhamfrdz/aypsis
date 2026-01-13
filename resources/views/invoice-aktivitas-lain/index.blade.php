@@ -236,12 +236,29 @@
                                     </a>
                                     @endcan
                                     @can('invoice-aktivitas-lain-view')
-                                    <a href="{{ route('invoice-aktivitas-lain.print', $invoice->id) }}" 
-                                       class="text-purple-600 hover:text-purple-900" title="Print" target="_blank">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                                        </svg>
-                                    </a>
+                                    <!-- Print Button - Conditional based on jenis biaya -->
+                                    @php
+                                        $isListrik = $invoice->klasifikasiBiayaUmum && 
+                                                     str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik');
+                                    @endphp
+                                    
+                                    @if($isListrik)
+                                        <!-- Print Listrik (with PPH) -->
+                                        <a href="{{ route('invoice-aktivitas-lain.print-listrik', $invoice->id) }}" 
+                                           class="text-blue-600 hover:text-blue-900" title="Print Biaya Listrik (dengan PPH)" target="_blank">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                            </svg>
+                                        </a>
+                                    @else
+                                        <!-- Print Normal -->
+                                        <a href="{{ route('invoice-aktivitas-lain.print', $invoice->id) }}" 
+                                           class="text-purple-600 hover:text-purple-900" title="Print" target="_blank">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                            </svg>
+                                        </a>
+                                    @endif
                                     @endcan
                                     @can('invoice-aktivitas-lain-update')
                                     <a href="{{ route('invoice-aktivitas-lain.edit', $invoice->id) }}" 
