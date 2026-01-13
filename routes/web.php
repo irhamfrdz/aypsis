@@ -1195,6 +1195,9 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print', [\App\Http\Controllers\BiayaKapalController::class, 'print'])
          ->name('biaya-kapal.print')
          ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-dokumen', [\App\Http\Controllers\BiayaKapalController::class, 'printDokumen'])
+         ->name('biaya-kapal.print-dokumen')
+         ->middleware('can:biaya-kapal-view');
     Route::resource('biaya-kapal', \App\Http\Controllers\BiayaKapalController::class)
          ->names('biaya-kapal')
          ->middleware([

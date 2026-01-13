@@ -281,7 +281,24 @@ class BiayaKapalController extends Controller
     public function print(BiayaKapal $biayaKapal)
     {
         $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
+        
+        // Check if it's Biaya Dokumen and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            (stripos($biayaKapal->klasifikasiBiaya->nama, 'dokumen') !== false || 
+             $biayaKapal->jenis_biaya === 'KB001')) {
+            return view('biaya-kapal.print-dokumen', compact('biayaKapal'));
+        }
+        
         return view('biaya-kapal.print', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya dokumen specifically.
+     */
+    public function printDokumen(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya']);
+        return view('biaya-kapal.print-dokumen', compact('biayaKapal'));
     }
 
     /**
