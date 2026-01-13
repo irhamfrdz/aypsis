@@ -910,21 +910,24 @@ class SuratJalanBongkaranController extends Controller
         // Get current date for tanggal_surat_jalan
         $printData->tanggal_surat_jalan = now()->format('Y-m-d');
         
-        // Manifest data
-        $printData->no_voyage = $manifest->no_voyage;
-        $printData->nama_kapal = $manifest->nama_kapal;
+        // Manifest data - mapped from table columns
+        $printData->no_voyage = $manifest->no_voyage ?? '';
+        $printData->nama_kapal = $manifest->nama_kapal ?? '';
         $printData->no_plat = ''; // Will be empty until filled
-        $printData->no_bl = $manifest->nomor_bl;
-        $printData->no_kontainer = $manifest->nomor_kontainer;
-        $printData->jenis_pengiriman = $manifest->jenis_pengiriman ?? '';
-        $printData->jenis_barang = $manifest->nama_barang;
+        $printData->no_bl = $manifest->nomor_bl ?? '';
+        $printData->no_kontainer = $manifest->nomor_kontainer ?? '';
+        $printData->jenis_pengiriman = 'IMPORT'; // Default for manifest
+        $printData->jenis_barang = $manifest->nama_barang ?? '';
         $printData->penerima = $manifest->penerima ?? '';
         $printData->tujuan_pengambilan = ''; // Will be empty until filled
-        $printData->no_seal = $manifest->no_seal;
-        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';
-        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';
+        $printData->no_seal = $manifest->no_seal ?? '';
+        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
+        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
         $printData->size_kontainer = $manifest->size_kontainer ?? '';
-        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? '';
+        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';
+        
+        // Debug: uncomment to see manifest data
+        dd($manifest->toArray(), $printData);
         
         // Create fake bl relation for compatibility with existing print view
         $printData->bl = $manifest;
