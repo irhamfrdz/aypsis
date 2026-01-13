@@ -903,6 +903,14 @@ class SuratJalanBongkaranController extends Controller
      */
     public function printFromBl(Manifest $manifest)
     {
+        // Debug: Check actual database columns and data
+        $manifestFromDb = \DB::table('manifests')->where('id', $manifest->id)->first();
+        dd([
+            'manifest_object' => $manifest->toArray(),
+            'manifest_from_db' => $manifestFromDb ? (array)$manifestFromDb : null,
+            'available_columns' => $manifestFromDb ? array_keys((array)$manifestFromDb) : []
+        ]);
+        
         // Create a temporary object with Manifest data to pass to print view
         // This allows printing even if surat jalan hasn't been created yet
         $printData = new \stdClass();
