@@ -846,6 +846,13 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             jenisBiayaDropdown.removeAttribute('required');
             $('#jenis_biaya_dropdown').val('').trigger('change');
             
+            const referensiWrapper = document.getElementById('referensi_wrapper');
+            const referensiInput = document.getElementById('referensi');
+            if (referensiWrapper) {
+                referensiWrapper.classList.add('hidden');
+                if (referensiInput) referensiInput.value = '';
+            }
+            
             subJenisKendaraanWrapper.classList.add('hidden');
             subJenisKendaraanSelect.removeAttribute('required');
             $('#sub_jenis_kendaraan').val('').trigger('change');
@@ -935,6 +942,10 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             } else if (jenisVal === 'Pembayaran Lain-lain') {
                 jenisBiayaWrapper.classList.remove('hidden');
                 jenisBiayaDropdown.setAttribute('required', 'required');
+                
+                if (referensiWrapper) {
+                    referensiWrapper.classList.remove('hidden');
+                }
                 
                 setTimeout(() => {
                     $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
