@@ -118,7 +118,7 @@ class BiayaKapalController extends Controller
     public function store(Request $request)
     {
         // Clean up all currency fields before validation (remove thousand separator)
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen'];
         foreach ($fieldsToClean as $field) {
             if ($request->has($field) && $request->$field) {
                 $request->merge([
@@ -173,6 +173,9 @@ class BiayaKapalController extends Controller
             'total_biaya' => 'nullable|numeric|min:0',
             'dp' => 'nullable|numeric|min:0',
             'sisa_pembayaran' => 'nullable|numeric|min:0',
+            // Biaya Dokumen fields
+            'pph_dokumen' => 'nullable|numeric|min:0',
+            'grand_total_dokumen' => 'nullable|numeric|min:0',
             // Old structure (for backward compatibility)
             'barang' => 'nullable|array',
             'barang.*.barang_id' => 'required_with:barang|exists:pricelist_buruh,id',

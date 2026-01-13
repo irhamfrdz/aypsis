@@ -378,6 +378,48 @@
                     @enderror
                 </div>
 
+                <!-- PPH Dokumen (for Biaya Dokumen - 2% dari nominal) -->
+                <div id="pph_dokumen_wrapper" class="hidden">
+                    <label for="pph_dokumen" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPH (2%)
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               id="pph_dokumen" 
+                               name="pph_dokumen" 
+                               value="{{ old('pph_dokumen', '0') }}"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pph_dokumen') border-red-500 @enderror"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Nominal</p>
+                    @error('pph_dokumen')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Grand Total Dokumen (for Biaya Dokumen - Nominal - PPH) -->
+                <div id="grand_total_dokumen_wrapper" class="hidden">
+                    <label for="grand_total_dokumen" class="block text-sm font-medium text-gray-700 mb-2">
+                        Grand Total
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               id="grand_total_dokumen" 
+                               name="grand_total_dokumen" 
+                               value="{{ old('grand_total_dokumen', '') }}"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-green-50 font-semibold cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('grand_total_dokumen') border-red-500 @enderror"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-green-600 font-medium">Grand Total = Nominal - PPH</p>
+                    @error('grand_total_dokumen')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- DP (for Biaya Buruh) -->
                 <div id="dp_wrapper" class="hidden">
                     <label for="dp" class="block text-sm font-medium text-gray-700 mb-2">
@@ -607,6 +649,12 @@
     const sisaPembayaranInput = document.getElementById('sisa_pembayaran');
     const vendorWrapper = document.getElementById('vendor_wrapper');
     const vendorSelect = document.getElementById('vendor');
+    
+    // Biaya Dokumen specific fields
+    const pphDokumenWrapper = document.getElementById('pph_dokumen_wrapper');
+    const grandTotalDokumenWrapper = document.getElementById('grand_total_dokumen_wrapper');
+    const pphDokumenInput = document.getElementById('pph_dokumen');
+    const grandTotalDokumenInput = document.getElementById('grand_total_dokumen');
 
     // Format nominal input with thousand separator
     
@@ -623,7 +671,9 @@
         
         // Recalculate based on jenis biaya
         const selectedText = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
-        if (selectedText.toLowerCase().includes('penumpukan')) {
+        if (selectedText.toLowerCase().includes('dokumen')) {
+            calculatePphDokumen();
+        } else if (selectedText.toLowerCase().includes('penumpukan')) {
             calculateTotalBiaya();
         } else if (selectedText.toLowerCase().includes('buruh')) {
             calculateSisaPembayaran();
@@ -669,6 +719,19 @@
         sisaPembayaranInput.value = sisa > 0 ? sisa.toLocaleString('id-ID') : '0';
     }
     
+    // Calculate PPH Dokumen (2% dari nominal) and Grand Total (for Biaya Dokumen)
+    function calculatePphDokumen() {
+        const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
+        
+        // PPH = 2% dari nominal
+        const pph = Math.round(nominal * 0.02);
+        pphDokumenInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
+        
+        // Grand Total = Nominal - PPH
+        const grandTotal = nominal - pph;
+        grandTotalDokumenInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
+    }
+    
     // Calculate Total Biaya = Nominal + PPN - PPH
     function calculateTotalBiaya() {
         const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
@@ -692,6 +755,13 @@
         }
         if (totalBiayaInput.value) {
             totalBiayaInput.value = totalBiayaInput.value.replace(/\./g, '');
+        }
+        // Clean Biaya Dokumen fields
+        if (pphDokumenInput && pphDokumenInput.value) {
+            pphDokumenInput.value = pphDokumenInput.value.replace(/\./g, '');
+        }
+        if (grandTotalDokumenInput && grandTotalDokumenInput.value) {
+            grandTotalDokumenInput.value = grandTotalDokumenInput.value.replace(/\./g, '');
         }
     });
 
@@ -739,13 +809,21 @@
             const formattedNominal = totalNominal.toLocaleString('id-ID');
             nominalInput.value = formattedNominal;
             console.log('- Total nominal:', formattedNominal);
+            
+            // Calculate PPH and Grand Total after nominal is updated
+            calculatePphDokumen();
         } else if (biaya && biaya !== '' && biaya !== '0') {
             // If vendor selected but no containers yet, show vendor tariff
             const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
             nominalInput.value = formattedBiaya;
             console.log('- No containers selected, showing vendor tariff:', formattedBiaya);
+            
+            // Calculate PPH and Grand Total after nominal is updated
+            calculatePphDokumen();
         } else {
             nominalInput.value = '';
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
         }
     }
 
@@ -788,6 +866,10 @@
         if (selectedText.toLowerCase().includes('dokumen')) {
             vendorWrapper.classList.remove('hidden');
             
+            // Show PPH Dokumen and Grand Total fields for Biaya Dokumen
+            pphDokumenWrapper.classList.remove('hidden');
+            grandTotalDokumenWrapper.classList.remove('hidden');
+            
             // Hide other type-specific fields
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
@@ -808,6 +890,11 @@
             totalBiayaInput.value = '';
             dpInput.value = '0';
             sisaPembayaranInput.value = '0';
+            
+            // Calculate PPH if nominal already filled
+            if (nominalInput.value) {
+                calculatePphDokumen();
+            }
         }
         // Show barang wrapper if "Biaya Buruh" is selected
         else if (selectedText.toLowerCase().includes('buruh')) {
@@ -836,6 +923,12 @@
             vendorWrapper.classList.add('hidden');
             if (vendorSelect) vendorSelect.value = '';
             
+            // Hide PPH Dokumen fields for Biaya Buruh
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
+            
             // Show DP fields for Biaya Buruh
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
@@ -857,6 +950,12 @@
             // Hide vendor wrapper for Biaya Penumpukan
             vendorWrapper.classList.add('hidden');
             if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide PPH Dokumen fields for Biaya Penumpukan
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
             
             // Show Nama Kapal and Nomor Voyage fields
             kapalWrapper.classList.remove('hidden');
@@ -888,6 +987,12 @@
             // Hide vendor wrapper for other types
             vendorWrapper.classList.add('hidden');
             if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide PPH Dokumen fields for other types
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
             
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
