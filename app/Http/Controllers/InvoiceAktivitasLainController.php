@@ -210,6 +210,7 @@ class InvoiceAktivitasLainController extends Controller
             'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice',
             'tanggal_invoice' => 'required|date',
             'jenis_aktivitas' => 'required|string',
+            'klasifikasi_biaya_umum_id' => 'required|integer|exists:klasifikasi_biayas,id',
             'sub_jenis_kendaraan' => 'nullable|string',
             'nomor_polisi' => 'nullable|string',
             'nomor_voyage' => 'nullable|string',
@@ -233,6 +234,8 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'required|string',
             'total' => 'required|numeric|min:0',
+            'pph' => 'nullable|numeric|min:0',
+            'grand_total' => 'nullable|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
         ]);
@@ -419,6 +422,7 @@ class InvoiceAktivitasLainController extends Controller
             'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice,' . $id,
             'tanggal_invoice' => 'required|date',
             'jenis_aktivitas' => 'required|string',
+            'klasifikasi_biaya_umum_id' => 'required|integer|exists:klasifikasi_biayas,id',
             'sub_jenis_kendaraan' => 'nullable|string',
             'nomor_polisi' => 'nullable|string',
             'nomor_voyage' => 'nullable|string',
@@ -442,6 +446,8 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'required|string',
             'total' => 'required|numeric|min:0',
+            'pph' => 'nullable|numeric|min:0',
+            'grand_total' => 'nullable|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
         ]);

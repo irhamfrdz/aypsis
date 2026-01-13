@@ -101,6 +101,28 @@
                     @enderror
                 </div>
 
+                <!-- Jenis Biaya -->
+                <div>
+                    <label for="jenis_biaya_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
+                        Jenis Biaya <span class="text-red-500">*</span>
+                    </label>
+                    <select name="klasifikasi_biaya_umum_id" 
+                            id="jenis_biaya_dropdown" 
+                            class="w-full {{ $errors->has('klasifikasi_biaya_umum_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                            required>
+                        <option value="">Pilih Jenis Biaya</option>
+                        @foreach($klasifikasiBiayas as $klasifikasi)
+                            <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_umum_id') == $klasifikasi->id ? 'selected' : '' }}>
+                                {{ $klasifikasi->nama_klasifikasi }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('klasifikasi_biaya_umum_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Sub Jenis Kendaraan (conditional) -->
                 <div id="sub_jenis_kendaraan_wrapper" class="hidden">
                     <label for="sub_jenis_kendaraan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -431,6 +453,49 @@
                     @enderror
                 </div>
 
+                <!-- PPH (for Biaya Listrik - 2% dari total) -->
+                <div id="pph_wrapper" class="hidden">
+                    <label for="pph" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPH (2%)
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               name="pph" 
+                               id="pph" 
+                               value="{{ old('pph', '0') }}"
+                               class="w-full pl-10 bg-gray-100 cursor-not-allowed {{ $errors->has('pph') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Total</p>
+                    @error('pph')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Grand Total (for Biaya Listrik - Total - PPH) -->
+                <div id="grand_total_wrapper" class="hidden">
+                    <label for="grand_total" class="block text-sm font-medium text-gray-700 mb-2">
+                        Grand Total
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               name="grand_total" 
+                               id="grand_total" 
+                               value="{{ old('grand_total', '') }}"
+                               class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed {{ $errors->has('grand_total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-green-600 font-medium">Grand Total = Total - PPH</p>
+                    @error('grand_total')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <!-- Detail Pembayaran Multiple (conditional for Pembayaran Kapal) -->
@@ -657,6 +722,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
 
         // Initialize Select2 for dropdowns
         $('#jenis_aktivitas').select2({ placeholder: 'Pilih Jenis Aktivitas', allowClear: true, width: '100%' });
+        $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
         $('#sub_jenis_kendaraan').select2({ placeholder: 'Pilih Sub Jenis Kendaraan', allowClear: true, width: '100%' });
         $('#nomor_polisi').select2({ placeholder: 'Pilih Nomor Polisi', allowClear: true, width: '100%' });
         $('#nomor_voyage').select2({ placeholder: 'Pilih Nomor Voyage', allowClear: true, width: '100%' });
@@ -669,16 +735,37 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
 
         // Format currency input
         const totalInput = document.getElementById('total');
+        const pphInput = document.getElementById('pph');
+        const grandTotalInput = document.getElementById('grand_total');
+        const pphWrapper = document.getElementById('pph_wrapper');
+        const grandTotalWrapper = document.getElementById('grand_total_wrapper');
+        const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
+
         if (totalInput) {
             totalInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/[^0-9]/g, '');
                 if (value) value = parseInt(value).toLocaleString('id-ID');
                 e.target.value = value;
+                
+                // Calculate PPh if Biaya Listrik is selected
+                const selectedJenisBiaya = $('#jenis_biaya_dropdown').find('option:selected');
+                const namaJenisBiaya = selectedJenisBiaya.text().toLowerCase();
+                if (namaJenisBiaya.includes('listrik')) {
+                    calculatePph();
+                }
             });
             totalInput.closest('form').addEventListener('submit', function(e) {
                 // Strip formatting from total
                 const plainValue = totalInput.value.replace(/\./g, '');
                 totalInput.value = plainValue;
+                
+                // Strip formatting from PPh and Grand Total
+                if (pphInput && pphInput.value) {
+                    pphInput.value = pphInput.value.replace(/\./g, '');
+                }
+                if (grandTotalInput && grandTotalInput.value) {
+                    grandTotalInput.value = grandTotalInput.value.replace(/\./g, '');
+                }
                 
                 // Strip formatting from all detail_biaya inputs
                 const detailBiayaInputs = document.querySelectorAll('.detail-biaya');
@@ -688,6 +775,19 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     }
                 });
             });
+        }
+
+        // Calculate PPh (2% dari total)
+        function calculatePph() {
+            const total = parseInt(totalInput.value.replace(/\D/g, '') || 0);
+            
+            // PPH = 2% dari total
+            const pph = Math.round(total * 0.02);
+            pphInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
+            
+            // Grand Total = Total - PPH
+            const grandTotal = total - pph;
+            grandTotalInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
         }
 
         // Toggle conditional fields
@@ -712,6 +812,31 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
         const tipePenyesuaianWrapper = document.getElementById('tipe_penyesuaian_wrapper');
         const detailPembayaranWrapper = document.getElementById('detail_pembayaran_wrapper');
+
+        // Toggle PPh fields based on jenis biaya selection
+        if (jenisBiayaDropdown) {
+            $('#jenis_biaya_dropdown').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const namaJenisBiaya = selectedOption.text().toLowerCase();
+                
+                // Show PPh fields for Biaya Listrik
+                if (namaJenisBiaya.includes('listrik')) {
+                    pphWrapper.classList.remove('hidden');
+                    grandTotalWrapper.classList.remove('hidden');
+                    
+                    // Calculate PPh if total already filled
+                    if (totalInput.value) {
+                        calculatePph();
+                    }
+                } else {
+                    // Hide PPh fields for other jenis biaya
+                    pphWrapper.classList.add('hidden');
+                    grandTotalWrapper.classList.add('hidden');
+                    pphInput.value = '0';
+                    grandTotalInput.value = '';
+                }
+            });
+        }
 
         function toggleConditionalFields() {
             const jenisVal = jenisAktivitasSelect.value;

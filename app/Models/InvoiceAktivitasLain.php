@@ -17,6 +17,7 @@ class InvoiceAktivitasLain extends Model
         'invoice_vendor',
         'tanggal_invoice',
         'jenis_aktivitas',
+        'klasifikasi_biaya_umum_id',
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
@@ -29,6 +30,8 @@ class InvoiceAktivitasLain extends Model
         'detail_pembayaran',
         'penerima',
         'total',
+        'pph',
+        'grand_total',
         'status',
         'deskripsi',
         'catatan',
@@ -41,6 +44,8 @@ class InvoiceAktivitasLain extends Model
     protected $casts = [
         'tanggal_invoice' => 'date',
         'total' => 'decimal:2',
+        'pph' => 'decimal:2',
+        'grand_total' => 'decimal:2',
         'approved_at' => 'datetime'
     ];
 
@@ -144,6 +149,14 @@ class InvoiceAktivitasLain extends Model
     public function klasifikasiBiaya()
     {
         return $this->belongsTo(KlasifikasiBiaya::class, 'klasifikasi_biaya_id');
+    }
+
+    /**
+     * Relationship dengan KlasifikasiBiaya Umum (untuk dropdown jenis biaya)
+     */
+    public function klasifikasiBiayaUmum()
+    {
+        return $this->belongsTo(KlasifikasiBiaya::class, 'klasifikasi_biaya_umum_id');
     }
 
     /**

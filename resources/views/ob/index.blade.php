@@ -1140,6 +1140,9 @@ document.addEventListener('click', function(event) {
 function openPranotaModal() {
     let selectedItems = getSelectedItems();
     
+    // Remove duplicates by id (safety check)
+    selectedItems = Array.from(new Map(selectedItems.map(item => [item.id, item])).values());
+    
     // Filter out CARGO containers (by type or container number)
     const cargoItems = selectedItems.filter(item => {
         if (item.tipe === 'CARGO') return true;
@@ -1666,8 +1669,17 @@ function checkSelected() {
     selectAll.checked = currentPageSelected.length === currentPageCheckboxes.length && currentPageCheckboxes.length > 0;
     selectAll.indeterminate = currentPageSelected.length > 0 && currentPageSelected.length < currentPageCheckboxes.length;
     
-    // Save to storage - collect all selected items (exclude CARGO and non-OB)
-    const allSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+    // Get existing selected items from storage
+    let existingSelected = getSelectedItems();
+    
+    // Get all checkboxes on current page (both checked and unchecked)
+    const currentPageIds = Array.from(document.querySelectorAll('.row-checkbox')).map(cb => cb.value);
+    
+    // Remove items from current page from existing selection (we'll re-add checked ones)
+    existingSelected = existingSelected.filter(item => !currentPageIds.includes(item.id));
+    
+    // Add currently checked items from this page
+    const currentPageSelected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
         .filter(cb => {
             // Filter by type
             if (cb.getAttribute('data-tipe') === 'CARGO') return false;
@@ -1692,7 +1704,14 @@ function checkSelected() {
             sudah_tl: cb.getAttribute('data-sudah-tl'),
             sudah_ob: cb.getAttribute('data-sudah-ob')
         }));
-    saveSelectedItems(allSelected);
+    
+    // Merge existing items from other pages with current page selections
+    const allSelected = [...existingSelected, ...currentPageSelected];
+    
+    // Remove duplicates by id (just in case)
+    const uniqueSelected = Array.from(new Map(allSelected.map(item => [item.id, item])).values());
+    
+    saveSelectedItems(uniqueSelected);
 }
 
 checkboxes.forEach(cb => {
