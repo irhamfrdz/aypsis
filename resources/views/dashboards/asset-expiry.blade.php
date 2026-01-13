@@ -510,54 +510,58 @@ function downloadExcel(tableId, filename) {
         return;
     }
     
-    const tableClone = table.cloneNode(true);
-    
-    // Remove action column from header
-    const headerRow = tableClone.querySelector('thead tr');
-    if (headerRow) {
-        const headerCells = headerRow.querySelectorAll('th');
-        if (headerCells.length > 0) {
-            headerCells[headerCells.length - 1].remove();
-        }
-    }
-    
-    // Remove action column from all rows
-    const bodyRows = tableClone.querySelectorAll('tbody tr');
-    bodyRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            cells[cells.length - 1].remove();
-        }
-    });
-    
     // Extract data
     const data = [];
     
-    // Headers
+    // Headers - Build custom headers with separated Plat and KIR columns
     const headers = [];
-    const headerCells = tableClone.querySelectorAll('thead th');
-    headerCells.forEach(cell => {
-        headers.push(cell.textContent.trim());
+    const originalHeaders = table.querySelectorAll('thead th');
+    originalHeaders.forEach((cell, index) => {
+        const headerText = cell.textContent.trim();
+        if (headerText === 'Plat/KIR') {
+            headers.push('Plat');
+            headers.push('KIR');
+        } else if (headerText !== 'Aksi') {
+            headers.push(headerText);
+        }
     });
     data.push(headers);
     
     // Body data
-    const rows = tableClone.querySelectorAll('tbody tr');
+    const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const rowData = [];
         const cells = row.querySelectorAll('td');
         
         cells.forEach((cell, index) => {
-            let cellText = cell.textContent.trim();
-            
-            if (cell.querySelector('.inline-flex')) {
-                const badges = cell.querySelectorAll('.inline-flex');
-                const badgeTexts = Array.from(badges).map(badge => badge.textContent.trim());
-                cellText = badgeTexts.join(', ');
+            // Skip action column (last column)
+            if (index === cells.length - 1) {
+                return;
             }
             
-            cellText = cellText.replace(/\s+/g, ' ').trim();
-            rowData.push(cellText);
+            // Check if this is the Plat/KIR column (index 2)
+            if (index === 2) {
+                // Extract Plat (nomor_polisi)
+                const platBadge = cell.querySelector('.bg-blue-100');
+                const platText = platBadge ? platBadge.textContent.trim() : '-';
+                rowData.push(platText);
+                
+                // Extract KIR (no_kir)
+                const kirBadge = cell.querySelector('.bg-green-100');
+                const kirText = kirBadge ? kirBadge.textContent.trim() : '-';
+                rowData.push(kirText);
+            } else {
+                let cellText = cell.textContent.trim();
+                
+                if (cell.querySelector('.inline-flex')) {
+                    const badges = cell.querySelectorAll('.inline-flex');
+                    const badgeTexts = Array.from(badges).map(badge => badge.textContent.trim());
+                    cellText = badgeTexts.join(', ');
+                }
+                
+                cellText = cellText.replace(/\s+/g, ' ').trim();
+                rowData.push(cellText);
+            }
         });
         
         data.push(rowData);
@@ -568,13 +572,15 @@ function downloadExcel(tableId, filename) {
     const ws = XLSX.utils.aoa_to_sheet(data);
     
     const colWidths = [
-        { wch: 5 },
-        { wch: 15 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 15 }
+        { wch: 5 },   // No
+        { wch: 15 },  // Kode No
+        { wch: 15 },  // Plat
+        { wch: 15 },  // KIR
+        { wch: 20 },  // Merek
+        { wch: 20 },  // Jenis
+        { wch: 20 },  // Perusahaan Asuransi (if exists)
+        { wch: 18 },  // Tanggal Jatuh Tempo
+        { wch: 12 }   // Sisa Hari/Lewat
     ];
     ws['!cols'] = colWidths;
     
@@ -596,24 +602,58 @@ function printTable(tableId) {
         return;
     }
     
-    const tableClone = tableContainer.cloneNode(true);
+    const table = tableContainer.querySelector('table');
     
-    // Remove action headers
-    const actionHeaders = tableClone.querySelectorAll('th');
-    actionHeaders.forEach((header, index) => {
-        if (header.textContent.trim() === 'Aksi') {
-            header.remove();
+    // Build custom table with separated Plat and KIR columns
+    let tableHTML = '<table>';
+    
+    // Build headers
+    tableHTML += '<thead><tr>';
+    const originalHeaders = table.querySelectorAll('thead th');
+    originalHeaders.forEach((header, index) => {
+        const headerText = header.textContent.trim();
+        if (headerText === 'Plat/KIR') {
+            tableHTML += '<th>Plat</th>';
+            tableHTML += '<th>KIR</th>';
+        } else if (headerText !== 'Aksi') {
+            tableHTML += '<th>' + headerText + '</th>';
         }
     });
+    tableHTML += '</tr></thead>';
     
-    // Remove action cells
-    const rows = tableClone.querySelectorAll('tbody tr');
+    // Build body
+    tableHTML += '<tbody>';
+    const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
+        tableHTML += '<tr>';
         const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            cells[cells.length - 1].remove();
-        }
+        
+        cells.forEach((cell, index) => {
+            // Skip action column (last column)
+            if (index === cells.length - 1) {
+                return;
+            }
+            
+            // Check if this is the Plat/KIR column (index 2)
+            if (index === 2) {
+                // Extract Plat (nomor_polisi)
+                const platBadge = cell.querySelector('.bg-blue-100');
+                const platText = platBadge ? platBadge.textContent.trim() : '-';
+                tableHTML += '<td>' + platText + '</td>';
+                
+                // Extract KIR (no_kir)
+                const kirBadge = cell.querySelector('.bg-green-100');
+                const kirText = kirBadge ? kirBadge.textContent.trim() : '-';
+                tableHTML += '<td>' + kirText + '</td>';
+            } else {
+                tableHTML += '<td>' + cell.innerHTML + '</td>';
+            }
+        });
+        
+        tableHTML += '</tr>';
     });
+    tableHTML += '</tbody>';
+    tableHTML += '</table>';
     
     // Determine table title
     let headerTitle = tableId.includes('expiring') ? 'Asset Jatuh Tempo 30 Hari Ke Depan' : 'Asset Sudah Lewat Jatuh Tempo';
@@ -650,7 +690,7 @@ function printTable(tableId) {
     });
     printWindow.document.write('<div class="print-date">Dicetak pada: ' + dateStr + '</div>');
     
-    printWindow.document.write(tableClone.innerHTML);
+    printWindow.document.write(tableHTML);
     printWindow.document.write('</body></html>');
     
     printWindow.document.close();
