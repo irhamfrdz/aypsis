@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Jalan Bongkaran - Print Preview</title>
+    <title>Surat Jalan Bongkaran - Print dari Manifest</title>
     <style>
         /* Same paper size as surat-jalan/print.blade.php */
         @page { size: 165mm 215mm; margin: 0mm; }
@@ -144,43 +144,50 @@
     
 </head>
 <body>
+    <!-- 
+        ============================================================
+        DATA DIAMBIL DARI TABLE MANIFEST
+        Print ini menggunakan data dari tabel 'manifests'
+        Controller: SuratJalanBongkaranController@printFromBl
+        ============================================================
+    -->
     <div class="container">
-        <!-- Tanggal Surat Jalan (posisi top 1.25cm, left 10cm) -->
+        <!-- Tanggal Surat Jalan (posisi top 1.25cm, left 10cm) - Data dari Manifest -->
         <div class="date-header">
             {{ $printData->tanggal_surat_jalan ? \Carbon\Carbon::parse($printData->tanggal_surat_jalan)->format('d-M-Y') : '' }}
         </div>
 
-        <!-- Nomor Voyage (posisi top 5cm, left 3.5cm) -->
+        <!-- Nomor Voyage (posisi top 5cm, left 3.5cm) - Data dari Manifest -->
         <div class="no-voyage">
             {{ strtoupper($printData->no_voyage ?? '') }}
         </div>
 
-        <!-- Nama Kapal (posisi top 6cm, left 3.5cm) -->
+        <!-- Nama Kapal (posisi top 6cm, left 3.5cm) - Data dari Manifest -->
         <div class="nama-kapal">
             {{ strtoupper($printData->nama_kapal ?? '') }}
         </div>
         
-        <!-- Nomor Plat (posisi top 4.5cm, left 8cm) -->
+        <!-- Nomor Plat (posisi top 4.5cm, left 8cm) - Data dari Manifest -->
         <div class="no-plat">
             {{ strtoupper($printData->no_plat ?? '') }}
         </div>
         
-        <!-- Nomor BL (posisi top 4.25cm, left 13cm) -->
+        <!-- Nomor BL (posisi top 4.25cm, left 13cm) - Data dari Manifest (manifest.nomor_bl) -->
         <div class="no-bl">
             BL - {{ strtoupper($printData->no_bl ?? '') }}
         </div>
         
-        <!-- Nomor Kontainer (posisi top 9cm, left 1cm) -->
+        <!-- Nomor Kontainer (posisi top 9cm, left 1cm) - Data dari Manifest (manifest.nomor_kontainer) -->
         <div class="no-kontainer">
             {{ strtoupper($printData->no_kontainer ?? '') }}
         </div>
         
-        <!-- Jenis Pengiriman (posisi top 9cm, left 6cm) -->
+        <!-- Jenis Pengiriman (posisi top 9cm, left 6cm) - Data dari Manifest -->
         <div class="jenis-pengiriman-abs">
             {{ $printData->jenis_pengiriman ? strtoupper($printData->jenis_pengiriman) : '' }}
         </div>
         
-        <!-- Tipe Kontainer (posisi top 9.5cm, left 6cm) -->
+        <!-- Tipe Kontainer (posisi top 9.5cm, left 6cm) - Data dari Manifest -->
         @php
             $tipeKontainerText = 'FCL'; // Default
             if (!empty($printData->tipe_kontainer)) {
@@ -191,7 +198,7 @@
             {{ $tipeKontainerText }}
         </div>
         
-        <!-- Ukuran Kontainer: CONT 1x + ukuran (posisi top 10cm, left 6cm) -->
+        <!-- Ukuran Kontainer: CONT 1x + ukuran (posisi top 10cm, left 6cm) - Data dari Manifest -->
         @php
             $sizeKontainer = $printData->size_kontainer ?? $printData->size ?? '';
             // Format ukuran: jika hanya angka, tambahkan 'ft'
@@ -206,27 +213,27 @@
             {{ $ukuranText }}
         </div>
         
-        <!-- Nama Barang (posisi top 9cm, left 10.5cm) -->
+        <!-- Nama Barang (posisi top 9cm, left 10.5cm) - Data dari Manifest (manifest.nama_barang) -->
         <div class="nama-barang-abs">
             {{ strtoupper($printData->jenis_barang ?? '') }}
         </div>
         
-        <!-- Penerima (posisi top 3.5cm, left 11cm) -->
+        <!-- Penerima (posisi top 3.5cm, left 11cm) - Data dari Manifest -->
         <div class="penerima-abs">
             {{ strtoupper($printData->penerima ?? '') }}
         </div>
         
-        <!-- Tujuan Pengambilan (posisi top 14.5cm, left 10.5cm) -->
+        <!-- Tujuan Pengambilan (posisi top 14.5cm, left 10.5cm) - Data dari Manifest -->
         <div class="tujuan-pengambilan-abs">
             {{ strtoupper($printData->tujuan_pengambilan ?? '') }}
         </div>
         
-        <!-- Seal number (posisi top 11.5cm, left 1cm) -->
+        <!-- Seal number (posisi top 11.5cm, left 1cm) - Data dari Manifest (manifest.no_seal) -->
         <div class="seal-abs">
             {{ $printData->no_seal ? strtoupper($printData->no_seal) : '' }}
         </div>
         
-        <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) -->
+        <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) - Data dari Manifest (manifest.pelabuhan_tujuan) -->
         <div class="pelabuhan-abs">
             {{ $printData->pelabuhan_tujuan ? strtoupper($printData->pelabuhan_tujuan) : ($printData->tujuan_pengiriman ? strtoupper($printData->tujuan_pengiriman) : '') }}
         </div>
