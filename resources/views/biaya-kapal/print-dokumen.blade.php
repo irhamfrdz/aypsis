@@ -87,7 +87,7 @@
 
         .header p {
             font-size: {{ $currentPaper['fontSize'] }};
-            color: #555;
+            color: #000;
             margin: 1px 0;
         }
 
@@ -96,8 +96,7 @@
             justify-content: space-between;
             margin-bottom: 8px;
             padding: 6px 8px;
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
+            border: 1px solid #333;
             border-radius: 2px;
         }
 
@@ -124,8 +123,7 @@
             font-weight: bold;
             margin: 8px 0 5px;
             padding: 4px 8px;
-            background-color: #e9ecef;
-            border-left: 3px solid #0066cc;
+            border-bottom: 1px solid #333;
         }
 
         .info-table {
@@ -144,7 +142,7 @@
         .info-table td:first-child {
             width: 35%;
             font-weight: bold;
-            color: #555;
+            color: #000;
         }
 
         .info-table td:nth-child(2) {
@@ -159,7 +157,7 @@
         }
 
         .container-table thead {
-            background-color: #0066cc;
+            background-color: #000;
             color: white;
         }
 
@@ -177,11 +175,11 @@
         }
 
         .container-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
+            background-color: transparent;
         }
 
         .container-table tbody tr:hover {
-            background-color: #e9ecef;
+            background-color: transparent;
         }
 
         .summary-box {
@@ -250,8 +248,7 @@
         .notes {
             margin-top: 8px;
             padding: 6px;
-            background-color: #fff3cd;
-            border-left: 3px solid #ffc107;
+            border: 1px solid #333;
             font-size: {{ $currentPaper['tableFont'] }};
         }
 
