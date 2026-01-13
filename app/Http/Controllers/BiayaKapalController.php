@@ -54,9 +54,10 @@ class BiayaKapalController extends Controller
             $currentYear = date('y');
             $prefix = 'BKP';
             
-            // Get last invoice for current month and year
-            $lastInvoice = BiayaKapal::where('nomor_invoice', 'like', "{$prefix}-{$currentMonth}-{$currentYear}-%")
-                ->orderBy('nomor_invoice', 'desc')
+            // Get last invoice for current month and year (include soft-deleted)
+            $lastInvoice = BiayaKapal::withTrashed()
+                ->where('nomor_invoice', 'like', "{$prefix}-{$currentMonth}-{$currentYear}-%")
+                ->orderByRaw('CAST(SUBSTRING_INDEX(nomor_invoice, "-", -1) AS UNSIGNED) DESC')
                 ->first();
             
             if ($lastInvoice) {
@@ -127,34 +128,8 @@ class BiayaKapalController extends Controller
             }
         }
         
-        // Generate unique invoice number if not provided or if duplicate
-        $nomorInvoice = $request->nomor_invoice;
-        if (!$nomorInvoice || BiayaKapal::where('nomor_invoice', $nomorInvoice)->exists()) {
-            $currentMonth = date('m');
-            $currentYear = date('y');
-            $prefix = 'BKP';
-            
-            // Get last invoice for current month and year
-            $lastInvoice = BiayaKapal::where('nomor_invoice', 'like', "{$prefix}-{$currentMonth}-{$currentYear}-%")
-                ->orderBy('nomor_invoice', 'desc')
-                ->lockForUpdate() // Prevent race condition
-                ->first();
-            
-            if ($lastInvoice) {
-                $parts = explode('-', $lastInvoice->nomor_invoice);
-                $lastNumber = intval(end($parts));
-                $newNumber = $lastNumber + 1;
-            } else {
-                $newNumber = 1;
-            }
-            
-            $nomorInvoice = sprintf("%s-%s-%s-%06d", $prefix, $currentMonth, $currentYear, $newNumber);
-            $request->merge(['nomor_invoice' => $nomorInvoice]);
-        }
-        
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'nomor_invoice' => 'required|string|max:20',
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
@@ -194,6 +169,30 @@ class BiayaKapalController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Generate unique invoice number inside transaction
+            $currentMonth = date('m');
+            $currentYear = date('y');
+            $prefix = 'BKP';
+            
+            // Get last invoice for current month and year with lock
+            // Use withTrashed() to include soft-deleted records (unique constraint includes them)
+            $lastInvoice = BiayaKapal::withTrashed()
+                ->where('nomor_invoice', 'like', "{$prefix}-{$currentMonth}-{$currentYear}-%")
+                ->orderByRaw('CAST(SUBSTRING_INDEX(nomor_invoice, "-", -1) AS UNSIGNED) DESC')
+                ->lockForUpdate()
+                ->first();
+            
+            if ($lastInvoice) {
+                $parts = explode('-', $lastInvoice->nomor_invoice);
+                $lastNumber = intval(end($parts));
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+            
+            $nomorInvoice = sprintf("%s-%s-%s-%06d", $prefix, $currentMonth, $currentYear, $newNumber);
+            $validated['nomor_invoice'] = $nomorInvoice;
 
             // Handle file upload
             if ($request->hasFile('bukti')) {

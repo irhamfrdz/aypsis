@@ -80,20 +80,20 @@
                     @enderror
                 </div>
 
-                <!-- Nomor Invoice (Auto-generated) -->
+                <!-- Nomor Invoice (Auto-generated - Display Only) -->
                 <div>
-                    <label for="nomor_invoice" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="nomor_invoice_display" class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Invoice <span class="text-red-500">*</span>
+                        <span class="text-xs text-gray-500 font-normal">(Otomatis dibuat oleh sistem)</span>
                     </label>
                     <div class="relative">
                         <input type="text" 
-                               id="nomor_invoice" 
-                               name="nomor_invoice" 
+                               id="nomor_invoice_display" 
                                value="{{ old('nomor_invoice') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_invoice') border-red-500 @enderror"
-                               placeholder="Loading..."
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Akan dibuat otomatis saat menyimpan..."
                                readonly
-                               required>
+                               disabled>
                         <div id="invoice_loader" class="absolute right-3 top-3">
                             <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -101,9 +101,10 @@
                             </svg>
                         </div>
                     </div>
-                    @error('nomor_invoice')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Nomor invoice akan dibuat otomatis oleh sistem saat data disimpan
+                    </p>
                 </div>
 
                 <!-- Nomor Referensi -->
@@ -369,7 +370,7 @@
                                name="nominal" 
                                value="{{ old('nominal') }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nominal') border-red-500 @enderror"
-                               placeholder="0"
+                               placeholder="0"  
                                required>
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Masukkan nominal tanpa titik atau koma</p>
@@ -1994,9 +1995,9 @@
         }, 1000);
     }
 
-    // Generate Invoice Number
+    // Generate Invoice Number (for display only)
     async function generateInvoiceNumber() {
-        const invoiceInput = document.getElementById('nomor_invoice');
+        const invoiceInput = document.getElementById('nomor_invoice_display');
         const loader = document.getElementById('invoice_loader');
         
         try {
@@ -2013,13 +2014,13 @@
             const data = await response.json();
             
             if (data.success) {
-                invoiceInput.value = data.invoice_number;
+                invoiceInput.value = data.invoice_number + ' (Preview)';
             } else {
                 // Fallback if server generation fails
                 const now = new Date();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const year = String(now.getFullYear()).slice(-2);
-                invoiceInput.value = `BKP-${month}-${year}-000001`;
+                invoiceInput.value = `BKP-${month}-${year}-XXXXXX (Preview)`;
                 console.warn('Failed to generate invoice number from server, using fallback');
             }
         } catch (error) {
@@ -2027,7 +2028,7 @@
             const now = new Date();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const year = String(now.getFullYear()).slice(-2);
-            invoiceInput.value = `BKP-${month}-${year}-000001`;
+            invoiceInput.value = `BKP-${month}-${year}-XXXXXX (Preview)`;
             console.error('Error generating invoice number:', error);
         } finally {
             if (loader) {
