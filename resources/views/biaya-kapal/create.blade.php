@@ -717,6 +717,38 @@
         });
     }, 5000);
 
+    // Function to calculate nominal for Biaya Dokumen (vendor tariff × number of containers)
+    function calculateDokumenNominal() {
+        const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        
+        // Only calculate if jenis biaya is "Biaya Dokumen"
+        if (!selectedJenisBiaya.toLowerCase().includes('dokumen')) {
+            return;
+        }
+        
+        const selectedOption = vendorSelect.options[vendorSelect.selectedIndex];
+        const biaya = selectedOption.getAttribute('data-biaya');
+        const jumlahKontainer = Object.keys(selectedBls).length;
+        
+        console.log('Calculating Dokumen Nominal:');
+        console.log('- Tarif vendor:', biaya);
+        console.log('- Jumlah kontainer:', jumlahKontainer);
+        
+        if (biaya && biaya !== '' && biaya !== '0' && jumlahKontainer > 0) {
+            const totalNominal = parseInt(biaya) * jumlahKontainer;
+            const formattedNominal = totalNominal.toLocaleString('id-ID');
+            nominalInput.value = formattedNominal;
+            console.log('- Total nominal:', formattedNominal);
+        } else if (biaya && biaya !== '' && biaya !== '0') {
+            // If vendor selected but no containers yet, show vendor tariff
+            const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
+            nominalInput.value = formattedBiaya;
+            console.log('- No containers selected, showing vendor tariff:', formattedBiaya);
+        } else {
+            nominalInput.value = '';
+        }
+    }
+
     // Auto-fill nominal from vendor selection
     vendorSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -725,16 +757,24 @@
         console.log('Vendor selected:', this.value);
         console.log('Biaya from vendor:', biaya);
         
-        if (biaya && biaya !== '' && biaya !== '0') {
-            // Format biaya with thousand separator
-            const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
-            nominalInput.value = formattedBiaya;
-            nominalInput.focus();
-            
-            console.log('Nominal set to:', formattedBiaya);
+        const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        
+        // If Biaya Dokumen, use the calculate function
+        if (selectedJenisBiaya.toLowerCase().includes('dokumen')) {
+            calculateDokumenNominal();
         } else {
-            // Clear nominal if no vendor selected or biaya is 0
-            nominalInput.value = '';
+            // For other jenis biaya, use original logic
+            if (biaya && biaya !== '' && biaya !== '0') {
+                // Format biaya with thousand separator
+                const formattedBiaya = parseInt(biaya).toLocaleString('id-ID');
+                nominalInput.value = formattedBiaya;
+                nominalInput.focus();
+                
+                console.log('Nominal set to:', formattedBiaya);
+            } else {
+                // Clear nominal if no vendor selected or biaya is 0
+                nominalInput.value = '';
+            }
         }
     });
 
@@ -1656,6 +1696,7 @@
         
         updateBlHiddenInputs();
         updateBlSelectedCount();
+        calculateDokumenNominal();
     };
     
     selectAllBlBtn.addEventListener('click', function() {
@@ -1671,6 +1712,7 @@
         
         updateBlHiddenInputs();
         updateBlSelectedCount();
+        calculateDokumenNominal();
     });
     
     clearAllBlBtn.addEventListener('click', function() {
@@ -1682,6 +1724,7 @@
         blOptions.forEach(option => option.classList.remove('selected'));
         
         updateBlSelectedCount();
+        calculateDokumenNominal();
     });
     
     function updateBlHiddenInputs() {
@@ -1769,6 +1812,7 @@
                                 addBlChip(blId, kontainer, seal);
                                 updateBlHiddenInputs();
                                 updateBlSelectedCount();
+                                calculateDokumenNominal();
                                 this.classList.add('selected');
                             } else {
                                 // If already selected, show visual feedback
