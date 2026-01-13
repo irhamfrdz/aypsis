@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('biaya_kapals', function (Blueprint $table) {
-            $table->decimal('pph_dokumen', 15, 2)->nullable()->after('total_biaya')->comment('PPH 2% untuk Biaya Dokumen');
+            $table->decimal('pph_dokumen', 15, 2)->nullable()->after('keterangan')->comment('PPH 2% untuk Biaya Dokumen');
             $table->decimal('grand_total_dokumen', 15, 2)->nullable()->after('pph_dokumen')->comment('Grand Total untuk Biaya Dokumen (Nominal - PPH)');
         });
     }
