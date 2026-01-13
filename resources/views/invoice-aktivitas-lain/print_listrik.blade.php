@@ -177,7 +177,7 @@
                 <div class="company-name">BIAYA LISTRIK</div>
                 <div class="invoice-number">{{ $invoice->nomor_invoice }}</div>
             </div>
-            <div class="invoice-date">INVOICE TGL: {{ $invoice->tanggal_invoice->format('d M Y') }}</div>
+            <div class="invoice-date">INVOICE TGL: {{ $invoice->tanggal_invoice->format('d/M/Y') }}</div>
         </div>
         
         <!-- Invoice Title -->
@@ -206,7 +206,7 @@
             <tbody>
                 <tr>
                     <td class="text-center">1</td>
-                    <td>{{ $invoice->tanggal_invoice->format('Y-m-d') }}</td>
+                    <td>{{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
                     <td>{{ $invoice->referensi ?? 'LISTRIK BULAN ' . strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
                     <td></td>
                     <td>PPH</td>
@@ -214,7 +214,7 @@
                 </tr>
                 <tr>
                     <td class="text-center">2</td>
-                    <td>{{ $invoice->tanggal_invoice->format('Y-m-d') }}</td>
+                    <td>{{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
                     <td>{{ $invoice->referensi ?? 'LISTRIK BULAN ' . strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
                     <td></td>
                     <td>Biaya Listrik</td>
