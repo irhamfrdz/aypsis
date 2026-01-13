@@ -101,16 +101,15 @@
                     @enderror
                 </div>
 
-                <!-- Jenis Biaya -->
-                <div>
+                <!-- Jenis Biaya (conditional for Pembayaran Lain-lain) -->
+                <div id="jenis_biaya_wrapper" class="hidden">
                     <label for="jenis_biaya_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
                         Jenis Biaya <span class="text-red-500">*</span>
                     </label>
                     <select name="klasifikasi_biaya_umum_id" 
                             id="jenis_biaya_dropdown" 
                             class="w-full {{ $errors->has('klasifikasi_biaya_umum_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                            required>
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Jenis Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
                             <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_umum_id') == $klasifikasi->id ? 'selected' : '' }}>
@@ -792,6 +791,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
 
         // Toggle conditional fields
         const jenisAktivitasSelect = document.getElementById('jenis_aktivitas');
+        const jenisBiayaWrapper = document.getElementById('jenis_biaya_wrapper');
         const subJenisKendaraanWrapper = document.getElementById('sub_jenis_kendaraan_wrapper');
         const subJenisKendaraanSelect = document.getElementById('sub_jenis_kendaraan');
         const nomorPolisiWrapper = document.getElementById('nomor_polisi_wrapper');
@@ -842,6 +842,10 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             const jenisVal = jenisAktivitasSelect.value;
             
             // Hide all conditional fields first
+            jenisBiayaWrapper.classList.add('hidden');
+            jenisBiayaDropdown.removeAttribute('required');
+            $('#jenis_biaya_dropdown').val('').trigger('change');
+            
             subJenisKendaraanWrapper.classList.add('hidden');
             subJenisKendaraanSelect.removeAttribute('required');
             $('#sub_jenis_kendaraan').val('').trigger('change');
@@ -927,6 +931,13 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 setTimeout(() => {
                     $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
                     $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
+                }, 100);
+            } else if (jenisVal === 'Pembayaran Lain-lain') {
+                jenisBiayaWrapper.classList.remove('hidden');
+                jenisBiayaDropdown.setAttribute('required', 'required');
+                
+                setTimeout(() => {
+                    $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
                 }, 100);
             }
         }
