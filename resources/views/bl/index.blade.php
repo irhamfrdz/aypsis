@@ -21,53 +21,48 @@
     }
     
     .bl-container .text-sm {
-        font-size: 10px !important;
+        font-size: 9px !important;
     }
     
     .bl-container .text-xs {
         font-size: 8px !important;
     }
     
-    /* Adjust padding for smaller font */
-    .bl-container .px-6 {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-    }
-    
-    .bl-container .py-4 {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
-    }
-    
-    .bl-container .py-3 {
-        padding-top: 0.375rem !important;
-        padding-bottom: 0.375rem !important;
+    /* Compact table styling */
+    .bl-container table th,
+    .bl-container table td {
+        padding: 0.375rem 0.5rem !important;
     }
     
     /* Adjust button sizes */
     .bl-container button,
     .bl-container .btn {
-        font-size: 10px !important;
-        padding: 0.375rem 0.75rem !important;
+        font-size: 9px !important;
+        padding: 0.25rem 0.5rem !important;
     }
     
     /* Adjust input sizes */
     .bl-container input,
     .bl-container select,
     .bl-container textarea {
-        font-size: 10px !important;
-        padding: 0.375rem 0.5rem !important;
+        font-size: 9px !important;
+        padding: 0.25rem 0.375rem !important;
     }
     
     /* Maintain icon sizes */
     .bl-container .fas,
     .bl-container .fa {
-        font-size: 10px !important;
+        font-size: 9px !important;
     }
     
     .bl-container .text-2xl .fas,
     .bl-container .text-2xl .fa {
         font-size: 14px !important;
+    }
+    
+    /* Compact badges */
+    .bl-container .rounded-full {
+        padding: 0.125rem 0.5rem !important;
     }
 </style>
 @endpush
@@ -320,7 +315,15 @@
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-800">Data BL</h3>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Data BL</h3>
+                    @if(request('nama_kapal') && request('no_voyage'))
+                        <p class="text-sm text-gray-600 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Menampilkan data untuk kapal <strong>{{ request('nama_kapal') }}</strong>, voyage <strong>{{ request('no_voyage') }}</strong>
+                        </p>
+                    @endif
+                </div>
                 <div class="flex items-center gap-4">
                     {{-- Action Buttons for Selected Items --}}
                     <div id="selectedActions" class="p-3 bg-blue-50 border border-blue-200 rounded-lg" style="display: none;">
@@ -351,10 +354,10 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nomor_bl', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Nomor BL
@@ -363,7 +366,7 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nomor_kontainer', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Nomor Kontainer
@@ -372,10 +375,10 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 No Seal
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_kapal', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Kapal
@@ -384,7 +387,7 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'no_voyage', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Voyage
@@ -393,22 +396,22 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Pelabuhan Asal
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Pelabuhan Tujuan
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Penerima
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 PT Pengirim
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 No. Surat Jalan
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_barang', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Nama Barang
@@ -417,28 +420,28 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tipe Kontainer
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Size Kontainer
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tonnage
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Volume
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Term
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Supir OB
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status Bongkar
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Tanggal Dibuat
@@ -447,7 +450,7 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Aksi
                             </th>
                         </tr>
@@ -455,11 +458,11 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($bls as $bl)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <input type="checkbox" name="selected_items[]" value="{{ $bl->id }}" 
                                            class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="nomor-bl-container" data-bl-id="{{ $bl->id }}">
                                         <div class="nomor-bl-display cursor-pointer" title="Klik untuk edit">
                                             <span class="text-sm font-medium text-gray-900">
@@ -483,12 +486,12 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ $bl->nomor_kontainer ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         @php
                                             $displaySeal = $bl->no_seal;
@@ -507,32 +510,32 @@
                                         {{ $displaySeal ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->nama_kapal }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->no_voyage }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->pelabuhan_asal ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->pelabuhan_tujuan ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->penerima ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         @php
                                             $displayPengirim = $bl->pengirim;
@@ -543,7 +546,7 @@
                                         {{ $displayPengirim ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         @if($bl->prospek && $bl->prospek->suratJalan)
                                             <a href="{{ route('surat-jalan.show', $bl->prospek->suratJalan->id) }}" 
@@ -556,17 +559,17 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2">
                                     <div class="text-sm text-gray-900">
                                         {{ Str::limit($bl->nama_barang, 30) }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->tipe_kontainer ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="size-kontainer-container" data-bl-id="{{ $bl->id }}">
                                         <!-- Display Mode -->
                                         <div class="size-kontainer-display cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition">
@@ -590,7 +593,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         @php
                                             $displayTonnage = $bl->tonnage;
@@ -601,7 +604,7 @@
                                         {{ $displayTonnage ? number_format($displayTonnage, 2) . ' Ton' : '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         @php
                                             $displayVolume = $bl->volume;
@@ -612,17 +615,17 @@
                                         {{ $displayVolume ? number_format($displayVolume, 3) . ' m³' : '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->term ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->supir_ob ?: '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="status-bongkar-container" data-bl-id="{{ $bl->id }}">
                                         <div class="status-bongkar-display cursor-pointer" title="Klik untuk edit">
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full 
@@ -647,12 +650,12 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->created_at->format('d/m/Y H:i') }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('bl.show', $bl) }}" 
                                            class="text-blue-600 hover:text-blue-900 transition duration-200">
