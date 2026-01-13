@@ -790,7 +790,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'nama_barang.*' => 'nullable|string|max:255',
             'jenis_barang' => 'nullable|string|max:255',
             'jumlah_barang' => 'nullable|integer|min:1',
-            'satuan_barang' => 'nullable|string|max:50',
+            'satuan_barang' => 'nullable|string|max:255',
             'keterangan_barang' => 'nullable|string',
             'berat' => 'nullable|numeric|min:0',
             'satuan_berat' => 'nullable|string|max:10',
