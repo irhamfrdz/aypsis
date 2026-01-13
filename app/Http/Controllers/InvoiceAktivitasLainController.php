@@ -14,7 +14,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function index(Request $request)
     {
-        $query = InvoiceAktivitasLain::query()->with(['klasifikasiBiaya']);
+        $query = InvoiceAktivitasLain::query()->with(['klasifikasiBiaya', 'klasifikasiBiayaUmum']);
 
         // Filter by nomor_invoice
         if ($request->filled('nomor_invoice')) {

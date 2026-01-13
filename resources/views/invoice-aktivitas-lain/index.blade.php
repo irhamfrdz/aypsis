@@ -169,16 +169,24 @@
                                 @endphp
                                 @if(count($blDetails) > 0)
                                     <div class="text-sm font-medium text-gray-900">
-                                        BL: {{ $blDetails[0]['nomor_bl'] }}
-                                        @if($blDetails[0]['nomor_kontainer'])
+                                        BL: {{ $blDetails[0]['nomor_bl'] ?? '-' }}
+                                        @if(isset($blDetails[0]['nomor_kontainer']) && $blDetails[0]['nomor_kontainer'])
                                             <div class="text-xs text-gray-500">{{ $blDetails[0]['nomor_kontainer'] }}</div>
                                         @endif
                                     </div>
                                     @if(count($blDetails) > 1)
                                         <div class="text-xs text-blue-600 mt-1">+{{ count($blDetails) - 1 }} BL lainnya</div>
                                     @endif
-                                @elseif($invoice->klasifikasiBiaya)
+                                @elseif($invoice->klasifikasiBiaya && isset($invoice->klasifikasiBiaya->nama))
                                     <div class="text-sm text-gray-900">{{ $invoice->klasifikasiBiaya->nama }}</div>
+                                    @php
+                                        $barangCount = count(json_decode($invoice->barang_detail, true) ?? []);
+                                    @endphp
+                                    @if($barangCount > 0)
+                                        <div class="text-xs text-gray-500">{{ $barangCount }} barang</div>
+                                    @endif
+                                @elseif($invoice->klasifikasiBiayaUmum && isset($invoice->klasifikasiBiayaUmum->nama))
+                                    <div class="text-sm text-gray-900">{{ $invoice->klasifikasiBiayaUmum->nama }}</div>
                                     @php
                                         $barangCount = count(json_decode($invoice->barang_detail, true) ?? []);
                                     @endphp
