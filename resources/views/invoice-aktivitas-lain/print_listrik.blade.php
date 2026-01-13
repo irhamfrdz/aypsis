@@ -243,7 +243,7 @@
             </div>
             <div class="signature-box">
                 <div class="signature-title">(Pemeriksa)</div>
-                <div class="signature-line">{{ $invoice->penerima ?? '' }}</div>
+                <div class="signature-line"></div>
             </div>
             <div class="signature-box">
                 <div class="signature-title">(Kasir)</div>
