@@ -39,39 +39,39 @@
         /* Positioned container number */
         .no-kontainer {
             position: absolute;
-            top: 11cm; /* 11cm from top */
+            top: 10.5cm; /* moved up slightly */
             left: 1cm;  /* 1cm from left */
             white-space: nowrap; /* container number single-line */
             font-weight: bold;
             font-size: 16px; /* larger to highlight container number */
         }
+        /* Positioned unit text */
+        .unit-text {
+            position: absolute;
+            top: 10.5cm; /* aligned with container number */
+            left: 5cm; /* 5cm from left */
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: bold;
+        }
         /* Positioned nama barang (jenis barang) */
         .nama-barang {
             position: absolute;
-            top: 11cm; /* 11cm from top */
+            top: 11.5cm; /* moved down to avoid overlap */
             left: 9cm; /* 1cm more to the right: 9cm */
-            max-width: 11cm;
+            max-width: 10cm; /* reduced width to prevent overflow */
             white-space: pre-wrap;
-            font-size: 14px;
+            font-size: 13px; /* slightly smaller */
             font-weight: bold;
-            line-height: 1.2;
+            line-height: 1.3;
         }
         /* Positioned kontainer info (1 kontainer + size) below nama barang */
         .kontainer-info {
             position: absolute;
-            top: 12cm; /* below nama barang */
+            top: 13.5cm; /* more space below nama barang */
             left: 9cm; /* aligned with nama barang */
             white-space: nowrap;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        /* Positioned unit text */
-        .unit-text {
-            position: absolute;
-            top: 11cm; /* aligned with container number: 11cm */
-            left: 5cm; /* 5cm from left */
-            white-space: nowrap;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
         }
         /* Positioned nama kapal */
