@@ -122,6 +122,23 @@
                     @enderror
                 </div>
 
+                <!-- Referensi (conditional for Pembayaran Lain-lain) -->
+                <div id="referensi_wrapper" class="hidden">
+                    <label for="referensi" class="block text-sm font-medium text-gray-700 mb-2">
+                        Referensi
+                    </label>
+                    <input type="text" 
+                           name="referensi" 
+                           id="referensi" 
+                           class="w-full {{ $errors->has('referensi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           value="{{ old('referensi') }}"
+                           placeholder="Masukkan referensi (opsional)">
+                    @error('referensi')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Sub Jenis Kendaraan (conditional) -->
                 <div id="sub_jenis_kendaraan_wrapper" class="hidden">
                     <label for="sub_jenis_kendaraan" class="block text-sm font-medium text-gray-700 mb-2">
