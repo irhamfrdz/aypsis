@@ -117,16 +117,44 @@ class BiayaKapalController extends Controller
      */
     public function store(Request $request)
     {
-        // Clean up nominal value before validation (remove thousand separator)
-        if ($request->has('nominal')) {
-            $request->merge([
-                'nominal' => str_replace('.', '', $request->nominal)
-            ]);
+        // Clean up all currency fields before validation (remove thousand separator)
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran'];
+        foreach ($fieldsToClean as $field) {
+            if ($request->has($field) && $request->$field) {
+                $request->merge([
+                    $field => str_replace('.', '', $request->$field)
+                ]);
+            }
+        }
+        
+        // Generate unique invoice number if not provided or if duplicate
+        $nomorInvoice = $request->nomor_invoice;
+        if (!$nomorInvoice || BiayaKapal::where('nomor_invoice', $nomorInvoice)->exists()) {
+            $currentMonth = date('m');
+            $currentYear = date('y');
+            $prefix = 'BKP';
+            
+            // Get last invoice for current month and year
+            $lastInvoice = BiayaKapal::where('nomor_invoice', 'like', "{$prefix}-{$currentMonth}-{$currentYear}-%")
+                ->orderBy('nomor_invoice', 'desc')
+                ->lockForUpdate() // Prevent race condition
+                ->first();
+            
+            if ($lastInvoice) {
+                $parts = explode('-', $lastInvoice->nomor_invoice);
+                $lastNumber = intval(end($parts));
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+            
+            $nomorInvoice = sprintf("%s-%s-%s-%06d", $prefix, $currentMonth, $currentYear, $newNumber);
+            $request->merge(['nomor_invoice' => $nomorInvoice]);
         }
         
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'nomor_invoice' => 'required|string|unique:biaya_kapals,nomor_invoice|max:20',
+            'nomor_invoice' => 'required|string|max:20',
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
