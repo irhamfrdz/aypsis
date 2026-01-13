@@ -207,7 +207,7 @@
                 <tr>
                     <td class="text-center">1</td>
                     <td>{{ $invoice->tanggal_invoice->format('Y-m-d') }}</td>
-                    <td>LISTRIK BULAN {{ strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
+                    <td>{{ $invoice->referensi ?? 'LISTRIK BULAN ' . strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
                     <td></td>
                     <td>PPH</td>
                     <td class="text-right">{{ number_format(-($invoice->pph ?? 0), 2, ',', '.') }}</td>
@@ -215,7 +215,7 @@
                 <tr>
                     <td class="text-center">2</td>
                     <td>{{ $invoice->tanggal_invoice->format('Y-m-d') }}</td>
-                    <td>LISTRIK BULAN {{ strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
+                    <td>{{ $invoice->referensi ?? 'LISTRIK BULAN ' . strtoupper($invoice->tanggal_invoice->format('F Y')) }}</td>
                     <td></td>
                     <td>Biaya Listrik</td>
                     <td class="text-right">{{ number_format($invoice->total, 2, ',', '.') }}</td>
