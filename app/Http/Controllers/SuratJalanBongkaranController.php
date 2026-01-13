@@ -901,23 +901,10 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Print SJ directly from Manifest data (without creating surat jalan first)
      */
-    public function printFromBl(Manifest $manifest)
+    public function printFromBl($bl)
     {
-        // Debug: Show sample manifests data structure
-        $sampleManifests = \DB::table('manifests')
-            ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_voyage', 'nama_kapal', 'nama_barang', 'penerima', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pelabuhan_tujuan')
-            ->limit(5)
-            ->get()
-            ->toArray();
-        
-        dd([
-            'requested_manifest_id' => request()->route('manifest') ?? 'NULL from route',
-            'manifest_object_id' => $manifest->id ?? 'NULL',
-            'manifest_exists' => $manifest->exists,
-            'total_manifests_in_db' => \DB::table('manifests')->count(),
-            'sample_manifests_with_data' => $sampleManifests,
-            'route_parameters' => request()->route()->parameters(),
-        ]);
+        // Find manifest by ID
+        $manifest = Manifest::findOrFail($bl);
         
         // Create a temporary object with Manifest data to pass to print view
         // This allows printing even if surat jalan hasn't been created yet
@@ -941,9 +928,6 @@ class SuratJalanBongkaranController extends Controller
         $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
         $printData->size_kontainer = $manifest->size_kontainer ?? '';
         $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';
-        
-        // Debug: uncomment to see manifest data
-        dd($manifest->toArray(), $printData);
         
         // Create fake bl relation for compatibility with existing print view
         $printData->bl = $manifest;
