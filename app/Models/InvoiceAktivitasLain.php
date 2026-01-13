@@ -18,6 +18,7 @@ class InvoiceAktivitasLain extends Model
         'tanggal_invoice',
         'jenis_aktivitas',
         'klasifikasi_biaya_umum_id',
+        'referensi',
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
