@@ -208,9 +208,7 @@
     <button class="print-button no-print" onclick="window.print()">🖨️ Cetak Invoice</button>
 
     <div class="header">
-        <h1>INVOICE BIAYA LISTRIK</h1>
-        <p>PT. YOUR COMPANY NAME<br>
-        Alamat Perusahaan | Telp: (021) xxx-xxxx | Email: info@company.com</p>
+        <h1>PERMOHONAN TRANSFER</h1>
     </div>
 
     <div class="invoice-info">
@@ -222,12 +220,7 @@
         <div class="info-item">
             <span class="info-label">Tanggal Invoice</span>
             <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Jenis Aktivitas</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->jenis_aktivitas }}</span>
+            <span class="info-value">{{ $invoice->tanggal_invoice->format('d/M/Y') }}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Jenis Biaya</span>
