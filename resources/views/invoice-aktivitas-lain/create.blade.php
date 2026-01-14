@@ -448,6 +448,26 @@
                     @enderror
                 </div>
 
+                <!-- Biaya Listrik Multiple Entries -->
+                <div id="biaya_listrik_wrapper" class="hidden md:col-span-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Biaya Listrik <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" 
+                                id="add_biaya_listrik_btn"
+                                class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Tambah Biaya Listrik
+                        </button>
+                    </div>
+                    <div id="biaya_listrik_container" class="space-y-4">
+                        <!-- Biaya listrik entries will be added here dynamically -->
+                    </div>
+                </div>
+
                 <!-- LWBP Baru (for Biaya Listrik) -->
                 <div id="lwbp_baru_wrapper" class="hidden">
                     <label for="lwbp_baru" class="block text-sm font-medium text-gray-700 mb-2">
@@ -1213,6 +1233,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
         const tipePenyesuaianWrapper = document.getElementById('tipe_penyesuaian_wrapper');
         const detailPembayaranWrapper = document.getElementById('detail_pembayaran_wrapper');
+        const biayaListrikWrapper = document.getElementById('biaya_listrik_wrapper');
 
         // Toggle PPh fields based on jenis biaya selection
         if (jenisBiayaDropdown) {
@@ -1222,6 +1243,11 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 
                 // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
+                    // Show biaya listrik wrapper
+                    if (biayaListrikWrapper) {
+                        biayaListrikWrapper.classList.remove('hidden');
+                        initializeBiayaListrikInputs();
+                    }
                     // HIDE total field for biaya listrik (not needed, use DPP instead)
                     if (totalWrapper) {
                         totalWrapper.classList.add('hidden');
@@ -1283,6 +1309,12 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     // Setup DPP auto-calculation
                     setupDppCalculation();
                 } else {
+                    // Hide biaya listrik wrapper for other jenis biaya
+                    if (biayaListrikWrapper) {
+                        biayaListrikWrapper.classList.add('hidden');
+                        clearBiayaListrikInputs();
+                    }
+                    
                     // Show total field for other jenis biaya
                     if (totalWrapper) {
                         totalWrapper.classList.remove('hidden');
@@ -2017,6 +2049,394 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         if (addTipeBtn) {
             addTipeBtn.addEventListener('click', function() {
                 addTipePenyesuaianInput();
+            });
+        }
+        
+        // Biaya Listrik Management Functions
+        function initializeBiayaListrikInputs() {
+            const container = document.getElementById('biaya_listrik_container');
+            container.innerHTML = '';
+            addBiayaListrikInput();
+        }
+        
+        function clearBiayaListrikInputs() {
+            const container = document.getElementById('biaya_listrik_container');
+            if (container) container.innerHTML = '';
+        }
+        
+        function addBiayaListrikInput(existingData = {}) {
+            const container = document.getElementById('biaya_listrik_container');
+            const index = container.children.length;
+            
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-blue-50 rounded-lg border-2 border-blue-200';
+            inputGroup.setAttribute('data-bl-index', index);
+            
+            const removeButton = container.children.length > 0 ? `
+                <button type="button" 
+                        onclick="removeBiayaListrikInput(this)"
+                        class="text-red-600 hover:text-red-800 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            ` : '';
+            
+            inputGroup.innerHTML = `
+                <div class="md:col-span-3 flex justify-between items-center border-b-2 border-blue-300 pb-2 mb-2">
+                    <span class="text-sm font-bold text-blue-700">Biaya Listrik #${index + 1}</span>
+                    ${removeButton}
+                </div>
+                
+                <!-- LWBP Baru -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP Baru <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp_baru]" 
+                           class="bl-lwbp-baru w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.lwbp_baru || ''}"
+                           required>
+                </div>
+                
+                <!-- LWBP Lama -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP Lama <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp_lama]" 
+                           class="bl-lwbp-lama w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.lwbp_lama || ''}"
+                           required>
+                </div>
+                
+                <!-- WBP (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        WBP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][wbp]" 
+                           class="bl-wbp w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.wbp || ''}">
+                </div>
+                
+                <!-- LWBP (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp]" 
+                           class="bl-lwbp w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.lwbp || ''}">
+                </div>
+                
+                <!-- LWBP Tarif -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP Tarif <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp_tarif]" 
+                           class="bl-lwbp-tarif w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="1982"
+                           step="0.01"
+                           value="${existingData.lwbp_tarif || '1982'}"
+                           required>
+                </div>
+                
+                <!-- WBP Tarif -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        WBP Tarif <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][wbp_tarif]" 
+                           class="bl-wbp-tarif w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="2975"
+                           step="0.01"
+                           value="${existingData.wbp_tarif || '2975'}"
+                           required>
+                </div>
+                
+                <!-- Tarif 1 (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tarif 1 <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][tarif_1]" 
+                           class="bl-tarif-1 w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.tarif_1 || ''}">
+                </div>
+                
+                <!-- Tarif 2 (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tarif 2 <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][tarif_2]" 
+                           class="bl-tarif-2 w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.tarif_2 || ''}">
+                </div>
+                
+                <!-- Biaya Beban -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Biaya Beban <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][biaya_beban]" 
+                           class="bl-biaya-beban w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="893200"
+                           step="0.01"
+                           value="${existingData.biaya_beban || '893200'}"
+                           required>
+                </div>
+                
+                <!-- PPJU (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        PPJU <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][ppju]" 
+                           class="bl-ppju w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.ppju || ''}">
+                </div>
+                
+                <!-- DPP (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        DPP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][dpp]" 
+                           class="bl-dpp w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.dpp || ''}">
+                </div>
+                
+                <!-- PPH 10% (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        PPH 10% <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][pph]" 
+                           class="bl-pph w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.pph || ''}">
+                </div>
+                
+                <!-- Grand Total (Auto-calculated) -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Grand Total <small class="text-gray-500">(DPP - PPH)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][grand_total]" 
+                           class="bl-grand-total w-full px-3 py-2 text-sm border-2 border-green-400 rounded-md bg-green-50 font-bold"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.grand_total || ''}">
+                </div>
+            `;
+            
+            container.appendChild(inputGroup);
+            
+            // Setup auto-calculations for this entry
+            setupBiayaListrikCalculations(inputGroup);
+            
+            // Update total invoice
+            updateTotalFromBiayaListrik();
+        }
+        
+        window.removeBiayaListrikInput = function(button) {
+            const container = document.getElementById('biaya_listrik_container');
+            if (container.children.length > 1) {
+                button.closest('.grid').remove();
+                
+                // Reindex entries
+                const entries = container.querySelectorAll('.grid');
+                entries.forEach((entry, index) => {
+                    entry.setAttribute('data-bl-index', index);
+                    const label = entry.querySelector('span.text-blue-700');
+                    if (label) label.textContent = `Biaya Listrik #${index + 1}`;
+                    
+                    // Update input names
+                    entry.querySelectorAll('input').forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name && name.startsWith('biaya_listrik[')) {
+                            const fieldName = name.substring(name.indexOf('][') + 2, name.lastIndexOf(']'));
+                            input.setAttribute('name', `biaya_listrik[${index}][${fieldName}]`);
+                        }
+                    });
+                });
+                
+                // Update total
+                updateTotalFromBiayaListrik();
+            }
+        };
+        
+        function setupBiayaListrikCalculations(entry) {
+            const lwbpBaruInput = entry.querySelector('.bl-lwbp-baru');
+            const lwbpLamaInput = entry.querySelector('.bl-lwbp-lama');
+            const wbpInput = entry.querySelector('.bl-wbp');
+            const lwbpInput = entry.querySelector('.bl-lwbp');
+            const lwbpTarifInput = entry.querySelector('.bl-lwbp-tarif');
+            const wbpTarifInput = entry.querySelector('.bl-wbp-tarif');
+            const tarif1Input = entry.querySelector('.bl-tarif-1');
+            const tarif2Input = entry.querySelector('.bl-tarif-2');
+            const biayaBebanInput = entry.querySelector('.bl-biaya-beban');
+            const ppjuInput = entry.querySelector('.bl-ppju');
+            const dppInput = entry.querySelector('.bl-dpp');
+            const pphInput = entry.querySelector('.bl-pph');
+            const grandTotalInput = entry.querySelector('.bl-grand-total');
+            
+            function calculateWBP() {
+                const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+                const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+                const wbp = Math.round((lwbpBaru - lwbpLama) * 0.17);
+                wbpInput.value = wbp;
+                calculateLWBP();
+                calculateTarif2();
+            }
+            
+            function calculateLWBP() {
+                const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+                const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+                const wbp = parseFloat(wbpInput.value) || 0;
+                const lwbp = lwbpBaru - lwbpLama - wbp;
+                lwbpInput.value = lwbp;
+                calculateTarif1();
+            }
+            
+            function calculateTarif1() {
+                const lwbp = parseFloat(lwbpInput.value) || 0;
+                const lwbpTarif = parseFloat(lwbpTarifInput.value) || 0;
+                const tarif1 = lwbp * lwbpTarif;
+                tarif1Input.value = tarif1;
+                calculatePPJU();
+            }
+            
+            function calculateTarif2() {
+                const wbp = parseFloat(wbpInput.value) || 0;
+                const wbpTarif = parseFloat(wbpTarifInput.value) || 0;
+                const tarif2 = wbp * wbpTarif;
+                tarif2Input.value = tarif2;
+                calculatePPJU();
+            }
+            
+            function calculatePPJU() {
+                const tarif1 = parseFloat(tarif1Input.value) || 0;
+                const tarif2 = parseFloat(tarif2Input.value) || 0;
+                const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+                const ppju = Math.round((tarif1 + tarif2 + biayaBeban) * 0.03);
+                ppjuInput.value = ppju;
+                calculateDPP();
+            }
+            
+            function calculateDPP() {
+                const tarif1 = parseFloat(tarif1Input.value) || 0;
+                const tarif2 = parseFloat(tarif2Input.value) || 0;
+                const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+                const ppju = parseFloat(ppjuInput.value) || 0;
+                const dpp = tarif1 + tarif2 + biayaBeban + ppju;
+                dppInput.value = dpp;
+                calculatePPH();
+            }
+            
+            function calculatePPH() {
+                const dpp = parseFloat(dppInput.value) || 0;
+                const pph = Math.round(dpp * 0.10);
+                pphInput.value = pph;
+                calculateGrandTotal();
+            }
+            
+            function calculateGrandTotal() {
+                const dpp = parseFloat(dppInput.value) || 0;
+                const pph = parseFloat(pphInput.value) || 0;
+                const grandTotal = dpp - pph;
+                grandTotalInput.value = grandTotal;
+                updateTotalFromBiayaListrik();
+            }
+            
+            // Add event listeners
+            lwbpBaruInput.addEventListener('input', calculateWBP);
+            lwbpLamaInput.addEventListener('input', calculateWBP);
+            lwbpTarifInput.addEventListener('input', calculateTarif1);
+            wbpTarifInput.addEventListener('input', calculateTarif2);
+            biayaBebanInput.addEventListener('input', calculatePPJU);
+        }
+        
+        function updateTotalFromBiayaListrik() {
+            const container = document.getElementById('biaya_listrik_container');
+            const entries = container.querySelectorAll('.grid');
+            let totalGrand = 0;
+            
+            entries.forEach(entry => {
+                const grandTotal = parseFloat(entry.querySelector('.bl-grand-total').value) || 0;
+                totalGrand += grandTotal;
+            });
+            
+            // Update main total input if exists
+            const totalInput = document.getElementById('total');
+            if (totalInput) {
+                totalInput.value = totalGrand > 0 ? Math.round(totalGrand).toLocaleString('id-ID') : '';
+            }
+            
+            // Also update pph and grand total main fields
+            const pphInput = document.getElementById('pph');
+            const grandTotalInputMain = document.getElementById('grand_total');
+            
+            let totalPPH = 0;
+            entries.forEach(entry => {
+                const pph = parseFloat(entry.querySelector('.bl-pph').value) || 0;
+                totalPPH += pph;
+            });
+            
+            if (pphInput) {
+                pphInput.value = totalPPH > 0 ? Math.round(totalPPH).toLocaleString('id-ID') : '0';
+            }
+            if (grandTotalInputMain) {
+                grandTotalInputMain.value = totalGrand > 0 ? Math.round(totalGrand).toLocaleString('id-ID') : '0';
+            }
+        }
+        
+        // Add button for biaya listrik
+        const addBiayaListrikBtn = document.getElementById('add_biaya_listrik_btn');
+        if (addBiayaListrikBtn) {
+            addBiayaListrikBtn.addEventListener('click', function() {
+                addBiayaListrikInput();
             });
         }
         
