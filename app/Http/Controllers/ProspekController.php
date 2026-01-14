@@ -460,7 +460,7 @@ class ProspekController extends Controller
                 
                 $naikKapalData = [
                     'prospek_id' => $prospek->id,
-                    'nomor_kontainer' => $prospek->nomor_kontainer ?: 'CARGO-' . $prospek->id, // Handle null
+                    'nomor_kontainer' => $prospek->nomor_kontainer,
                     'jenis_barang' => $prospek->barang,
                     'tipe_kontainer' => $prospek->tipe,
                     'size_kontainer' => $sizeKontainer,
