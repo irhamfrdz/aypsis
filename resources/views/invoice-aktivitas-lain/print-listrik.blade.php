@@ -226,11 +226,6 @@
             <span class="info-separator">:</span>
             <span class="info-value">{{ $invoice->tanggal_invoice->format('d/M/Y') }}</span>
         </div>
-        <div class="info-item">
-            <span class="info-label">Jenis Biaya</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->klasifikasiBiayaUmum->nama ?? 'Biaya Listrik' }}</span>
-        </div>
         @if($invoice->vendor_listrik)
         <div class="info-item">
             <span class="info-label">Vendor</span>
@@ -245,11 +240,6 @@
             <span class="info-value">{{ $invoice->referensi }}</span>
         </div>
         @endif
-        <div class="info-item">
-            <span class="info-label">Penerima</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->penerima }}</span>
-        </div>
     </div>
 
     @php
@@ -258,64 +248,46 @@
         $totalGrandTotal = 0;
     @endphp
 
-    @foreach($biayaListrikEntries as $index => $biayaListrik)
-        <div class="section-title">DETAIL BIAYA LISTRIK #{{ $index + 1 }}{{ $biayaListrik->referensi ? ' - ' . $biayaListrik->referensi : '' }}{{ $biayaListrik->penerima ? ' | Penerima: ' . $biayaListrik->penerima : '' }}</div>
-
-        <table class="details-table">
-            <thead>
+    <!-- Summary Table -->
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Referensi</th>
+                <th style="width: 15%;">Tanggal</th>
+                <th style="width: 20%;">Penerima</th>
+                <th style="width: 13%;">DPP</th>
+                <th style="width: 13%;">PPH</th>
+                <th style="width: 14%;">Grandtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($biayaListrikEntries as $biayaListrik)
                 <tr>
-                    <th class="label-col">Keterangan</th>
-                    <th class="value-col">Nilai</th>
+                    <td>{{ $biayaListrik->referensi ?? '-' }}</td>
+                    <td>{{ $biayaListrik->tanggal ? $biayaListrik->tanggal->format('d/M/Y') : '-' }}</td>
+                    <td>{{ $biayaListrik->penerima ?? '-' }}</td>
+                    <td class="number">Rp {{ number_format($biayaListrik->dpp, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($biayaListrik->pph, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($biayaListrik->grand_total, 0, ',', '.') }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                <!-- DPP -->
-                <tr class="total-row">
-                    <td class="label-col">DPP (Dasar Pengenaan Pajak)</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->dpp, 0, ',', '.') }}</td>
+                @php
+                    $totalDPP += $biayaListrik->dpp;
+                    $totalPPH += $biayaListrik->pph;
+                    $totalGrandTotal += $biayaListrik->grand_total;
+                @endphp
+            @endforeach
+            
+            @if($biayaListrikEntries->count() > 1)
+                <!-- Total Keseluruhan Row -->
+                <tr class="grand-total-row" style="background-color: #d4edda; font-weight: bold;">
+                    <td colspan="3" style="text-align: center; font-weight: bold;">TOTAL KESELURUHAN</td>
+                    <td class="number">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
-                
-                <!-- PPH -->
-                <tr class="calculation-row">
-                    <td class="label-col">PPH (10%)</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->pph, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- Grand Total per entry -->
-                <tr class="grand-total-row">
-                    <td class="label-col">GRAND TOTAL (DPP - PPH)</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->grand_total, 0, ',', '.') }}</td>
-                </tr>
-            </tbody>
-        </table>
-        
-        @php
-            $totalDPP += $biayaListrik->dpp;
-            $totalPPH += $biayaListrik->pph;
-            $totalGrandTotal += $biayaListrik->grand_total;
-        @endphp
-    @endforeach
-
-    @if($biayaListrikEntries->count() > 1)
-        <div class="section-title" style="background-color: #d4edda; font-size: 13px;">TOTAL KESELURUHAN</div>
-        
-        <table class="details-table">
-            <tbody>
-                <tr class="total-row">
-                    <td class="label-col">Total DPP</td>
-                    <td class="value-col number">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="calculation-row">
-                    <td class="label-col">Total PPH (10%)</td>
-                    <td class="value-col number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="grand-total-row" style="font-size: 12px;">
-                    <td class="label-col">TOTAL GRAND TOTAL</td>
-                    <td class="value-col number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
-                </tr>
-            </tbody>
-        </table>
-    @endif
+            @endif
+        </tbody>
+    </table>
 
     @if($invoice->deskripsi || $invoice->catatan)
     <div class="notes">

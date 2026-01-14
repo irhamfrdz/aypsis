@@ -15,6 +15,7 @@ class InvoiceAktivitasLainListrik extends Model
         'invoice_aktivitas_lain_id',
         'referensi',
         'penerima',
+        'tanggal',
         'lwbp_baru',
         'lwbp_lama',
         'lwbp',
@@ -31,6 +32,7 @@ class InvoiceAktivitasLainListrik extends Model
     ];
 
     protected $casts = [
+        'tanggal' => 'date',
         'lwbp_baru' => 'decimal:2',
         'lwbp_lama' => 'decimal:2',
         'lwbp' => 'decimal:2',

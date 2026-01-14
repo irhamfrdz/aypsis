@@ -426,16 +426,15 @@
                     @enderror
                 </div>
 
-                <!-- Penerima -->
-                <div>
+                <!-- Penerima (hidden for Biaya Listrik) -->
+                <div id="penerima_wrapper">
                     <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
                         Penerima <span class="text-red-500">*</span>
                     </label>
                     <select name="penerima" 
                             id="penerima" 
                             class="w-full {{ $errors->has('penerima') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                            required>
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Penerima</option>
                         @foreach($karyawans as $karyawan)
                             <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima') == $karyawan->nama_lengkap ? 'selected' : '' }}>
@@ -1262,6 +1261,8 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 
                 const referensiWrapper = document.getElementById('referensi_wrapper');
                 const referensiInput = document.getElementById('referensi');
+                const penerimaWrapper = document.getElementById('penerima_wrapper');
+                const penerimaInput = document.getElementById('penerima');
                 
                 // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
@@ -1275,6 +1276,15 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     if (vendorListrikWrapper) {
                         vendorListrikWrapper.classList.remove('hidden');
                         if (vendorListrikInput) vendorListrikInput.setAttribute('required', 'required');
+                    }
+                    
+                    // HIDE penerima field (each biaya listrik entry has its own)
+                    if (penerimaWrapper) {
+                        penerimaWrapper.classList.add('hidden');
+                        if (penerimaInput) {
+                            penerimaInput.value = '';
+                            penerimaInput.removeAttribute('required');
+                        }
                     }
                     
                     // HIDE referensi field (each biaya listrik entry has its own)
@@ -1376,6 +1386,12 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                             vendorListrikInput.value = '';
                             vendorListrikInput.removeAttribute('required');
                         }
+                    }
+                    
+                    // Show penerima field for other jenis biaya
+                    if (penerimaWrapper) {
+                        penerimaWrapper.classList.remove('hidden');
+                        if (penerimaInput) penerimaInput.setAttribute('required', 'required');
                     }
                     
                     // Show referensi field for other jenis biaya
@@ -2169,7 +2185,7 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 </div>
                 
                 <!-- Penerima -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">
                         Penerima <span class="text-red-500">*</span>
                     </label>
@@ -2178,6 +2194,18 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                            class="bl-penerima w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            placeholder="Nama penerima pembayaran"
                            value="${existingData.penerima || ''}"
+                           required>
+                </div>
+                
+                <!-- Tanggal -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tanggal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" 
+                           name="biaya_listrik[${index}][tanggal]" 
+                           class="bl-tanggal w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           value="${existingData.tanggal || ''}"
                            required>
                 </div>
                 
