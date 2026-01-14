@@ -13,23 +13,23 @@
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 8px;
-            line-height: 1.2;
+            font-size: 11px;
+            line-height: 1.4;
             color: #333;
-            padding: 8px;
+            padding: 15px;
             font-weight: bold;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #333;
-            padding-bottom: 4px;
+            padding-bottom: 8px;
         }
         
         .header h1 {
-            font-size: 14px;
-            margin-bottom: 2px;
+            font-size: 18px;
+            margin-bottom: 4px;
             color: #1a1a1a;
         }
         
@@ -40,15 +40,15 @@
         }
         
         .invoice-info {
-            margin-bottom: 6px;
+            margin-bottom: 12px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0 15px;
+            gap: 0 20px;
         }
         
         .info-item {
             display: flex;
-            padding: 1px 0;
+            padding: 3px 0;
         }
         
         .info-label {
@@ -68,11 +68,11 @@
         }
         
         .section-title {
-            font-size: 9px;
+            font-size: 12px;
             font-weight: bold;
-            margin-top: 6px;
-            margin-bottom: 4px;
-            padding: 3px 6px;
+            margin-top: 10px;
+            margin-bottom: 8px;
+            padding: 6px 10px;
             background-color: #f0f0f0;
             border-left: 3px solid #2563eb;
         }
@@ -80,13 +80,13 @@
         .details-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 6px;
-            font-size: 7px;
+            margin-bottom: 12px;
+            font-size: 10px;
         }
         
         .details-table th,
         .details-table td {
-            padding: 3px 4px;
+            padding: 6px 8px;
             border: 2px solid #333;
             text-align: left;
             font-weight: bold;
@@ -96,7 +96,7 @@
             background-color: #f8f9fa;
             font-weight: bold;
             color: #1a1a1a;
-            font-size: 7px;
+            font-size: 10px;
         }
         
         .details-table tr:nth-child(even) {
@@ -126,7 +126,7 @@
         .grand-total-row {
             background-color: #d4edda !important;
             font-weight: bold;
-            font-size: 8px;
+            font-size: 11px;
         }
         
         .number {
@@ -135,36 +135,36 @@
         }
         
         .footer {
-            margin-top: 8px;
-            padding-top: 6px;
+            margin-top: 15px;
+            padding-top: 10px;
             border-top: 1px solid #ddd;
         }
         
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 8px;
+            gap: 15px;
+            margin-top: 12px;
         }
         
         .signature-box {
             text-align: center;
-            font-size: 7px;
+            font-size: 10px;
         }
         
         .signature-line {
-            margin-top: 35px;
+            margin-top: 50px;
             border-top: 1px solid #333;
-            padding-top: 2px;
+            padding-top: 3px;
             font-weight: bold;
         }
         
         .notes {
-            margin-top: 6px;
-            padding: 5px;
+            margin-top: 10px;
+            padding: 8px;
             background-color: #f8f9fa;
             border-left: 3px solid #ffc107;
-            font-size: 7px;
+            font-size: 9px;
             font-weight: bold;
         }
         
@@ -175,7 +175,7 @@
         
         @media print {
             body {
-                padding: 5px;
+                padding: 10px;
             }
             
             .no-print {
@@ -183,7 +183,7 @@
             }
             
             @page {
-                margin: 0.5cm;
+                margin: 1cm;
                 size: 21.6cm 33cm;
             }
         }
