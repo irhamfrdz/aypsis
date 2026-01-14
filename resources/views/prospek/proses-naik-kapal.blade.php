@@ -137,22 +137,19 @@
                                      class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
                                     @foreach($prospeksAktif as $prospek)
                                         @php
-                                            // Allow selection even without container number
-                                            if ($prospek->nomor_kontainer) {
+                                            // For CARGO type, always show nomor_tanda_terima
+                                            if (strtoupper($prospek->tipe ?? '') === 'CARGO') {
+                                                $ttNumber = $prospek->nomor_tanda_terima ?? 'Belum ada TT';
+                                                $displayText = 'TT: ' . $ttNumber;
+                                            } elseif ($prospek->nomor_kontainer) {
                                                 $displayText = $prospek->no_seal 
                                                     ? $prospek->nomor_kontainer . ' - ' . $prospek->no_seal 
                                                     : $prospek->nomor_kontainer;
                                             } else {
                                                 // Show alternative info when container number is empty
-                                                if (strtoupper($prospek->tipe ?? '') === 'CARGO') {
-                                                    // For CARGO type, always show nomor_tanda_terima
-                                                    $ttNumber = $prospek->nomor_tanda_terima ?? 'Belum ada TT';
-                                                    $displayText = 'CARGO - TT: ' . $ttNumber;
-                                                } else {
-                                                    $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
-                                                    if ($prospek->no_seal) {
-                                                        $displayText .= ' - Seal: ' . $prospek->no_seal;
-                                                    }
+                                                $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
+                                                if ($prospek->no_seal) {
+                                                    $displayText .= ' - Seal: ' . $prospek->no_seal;
                                                 }
                                             }
                                         @endphp
