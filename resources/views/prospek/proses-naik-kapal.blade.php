@@ -144,9 +144,13 @@
                                                     : $prospek->nomor_kontainer;
                                             } else {
                                                 // Show alternative info when container number is empty
-                                                $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
-                                                if ($prospek->no_seal) {
-                                                    $displayText .= ' - Seal: ' . $prospek->no_seal;
+                                                if (strtoupper($prospek->tipe ?? '') === 'CARGO' && !empty($prospek->nomor_tanda_terima)) {
+                                                    $displayText = 'CARGO - TT: ' . $prospek->nomor_tanda_terima;
+                                                } else {
+                                                    $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
+                                                    if ($prospek->no_seal) {
+                                                        $displayText .= ' - Seal: ' . $prospek->no_seal;
+                                                    }
                                                 }
                                             }
                                         @endphp
