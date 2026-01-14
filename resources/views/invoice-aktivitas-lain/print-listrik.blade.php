@@ -231,6 +231,13 @@
             <span class="info-separator">:</span>
             <span class="info-value">{{ $invoice->klasifikasiBiayaUmum->nama ?? 'Biaya Listrik' }}</span>
         </div>
+        @if($invoice->vendor_listrik)
+        <div class="info-item">
+            <span class="info-label">Vendor</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $invoice->vendor_listrik }}</span>
+        </div>
+        @endif
         @if($invoice->referensi)
         <div class="info-item">
             <span class="info-label">Referensi</span>
@@ -252,7 +259,7 @@
     @endphp
 
     @foreach($biayaListrikEntries as $index => $biayaListrik)
-        <div class="section-title">DETAIL BIAYA LISTRIK #{{ $index + 1 }}{{ $biayaListrik->referensi ? ' - ' . $biayaListrik->referensi : '' }}</div>
+        <div class="section-title">DETAIL BIAYA LISTRIK #{{ $index + 1 }}{{ $biayaListrik->referensi ? ' - ' . $biayaListrik->referensi : '' }}{{ $biayaListrik->penerima ? ' | Penerima: ' . $biayaListrik->penerima : '' }}</div>
 
         <table class="details-table">
             <thead>
@@ -262,66 +269,6 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- LWBP Baru -->
-                <tr>
-                    <td class="label-col">LWBP Baru</td>
-                    <td class="value-col number">{{ number_format($biayaListrik->lwbp_baru, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- LWBP Lama -->
-                <tr>
-                    <td class="label-col">LWBP Lama</td>
-                    <td class="value-col number">{{ number_format($biayaListrik->lwbp_lama, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- WBP -->
-                <tr class="calculation-row">
-                    <td class="label-col">WBP (17% dari selisih)</td>
-                    <td class="value-col number">{{ number_format($biayaListrik->wbp, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- LWBP -->
-                <tr class="calculation-row">
-                    <td class="label-col">LWBP (LWBP Baru - LWBP Lama - WBP)</td>
-                    <td class="value-col number">{{ number_format($biayaListrik->lwbp, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- LWBP Tarif -->
-                <tr>
-                    <td class="label-col">LWBP Tarif</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->lwbp_tarif, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- WBP Tarif -->
-                <tr>
-                    <td class="label-col">WBP Tarif</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->wbp_tarif, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- Tarif 1 -->
-                <tr class="calculation-row">
-                    <td class="label-col">Tarif 1 (LWBP × LWBP Tarif)</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->tarif_1, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- Tarif 2 -->
-                <tr class="calculation-row">
-                    <td class="label-col">Tarif 2 (WBP × WBP Tarif)</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->tarif_2, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- Biaya Beban -->
-                <tr>
-                    <td class="label-col">Biaya Beban</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->biaya_beban, 0, ',', '.') }}</td>
-                </tr>
-                
-                <!-- PPJU -->
-                <tr class="calculation-row">
-                    <td class="label-col">PPJU (3% dari Tarif 1 + Tarif 2 + Biaya Beban)</td>
-                    <td class="value-col number">Rp {{ number_format($biayaListrik->ppju, 0, ',', '.') }}</td>
-                </tr>
-                
                 <!-- DPP -->
                 <tr class="total-row">
                     <td class="label-col">DPP (Dasar Pengenaan Pajak)</td>
