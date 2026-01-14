@@ -1258,9 +1258,15 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                         }
                     }
                     
-                    // Show summary fields (will be auto-filled from entries)
-                    pphWrapper.classList.remove('hidden');
-                    grandTotalWrapper.classList.remove('hidden');
+                    // HIDE old summary fields (PPH and Grand Total) - each entry has its own
+                    if (pphWrapper) {
+                        pphWrapper.classList.add('hidden');
+                        if (pphInput) pphInput.value = '';
+                    }
+                    if (grandTotalWrapper) {
+                        grandTotalWrapper.classList.add('hidden');
+                        if (grandTotalInput) grandTotalInput.value = '';
+                    }
                     
                     // HIDE all old single-entry fields (replaced by multiple entries)
                     if (lwbpBaruWrapper) {
