@@ -323,7 +323,8 @@ class ProspekController extends Controller
 
             // Get prospek aktif dan batal yang sesuai dengan tujuan ini
             $keywords = $tujuan->keywords;
-            $prospeksAktif = Prospek::whereIn('status', ['aktif', 'batal'])
+            $prospeksAktif = Prospek::with('tandaTerima')
+                ->whereIn('status', ['aktif', 'batal'])
                 ->get()
                 ->filter(function($prospek) use ($keywords) {
                     $tujuanPengiriman = strtolower($prospek->tujuan_pengiriman ?? '');
@@ -334,6 +335,27 @@ class ProspekController extends Controller
                     }
                     return false;
                 });
+
+            // Untuk tipe CARGO, cari nomor tanda terima dari tanda_terima_tanpa_surat_jalan
+            foreach ($prospeksAktif as $prospek) {
+                if (strtoupper($prospek->tipe ?? '') === 'CARGO') {
+                    // Coba cari dari tandaTerima dulu
+                    if ($prospek->tandaTerima && $prospek->tandaTerima->no_tanda_terima) {
+                        $prospek->nomor_tanda_terima = $prospek->tandaTerima->no_tanda_terima;
+                    } else {
+                        // Cari dari tanda_terima_tanpa_surat_jalan berdasarkan pengirim, supir, dan tanggal
+                        $tttsj = \DB::table('tanda_terima_tanpa_surat_jalan')
+                            ->where('pengirim', $prospek->pt_pengirim)
+                            ->where('supir', $prospek->nama_supir)
+                            ->orderBy('tanggal_tanda_terima', 'desc')
+                            ->first();
+                        
+                        if ($tttsj) {
+                            $prospek->nomor_tanda_terima = $tttsj->no_tanda_terima;
+                        }
+                    }
+                }
+            }
 
             // Get data kapal dan pelabuhan untuk dropdown
             $masterKapals = \App\Models\MasterKapal::where('status', 'aktif')
