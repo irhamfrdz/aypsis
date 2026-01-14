@@ -250,32 +250,25 @@
             </thead>
             <tbody>
                 @php
-                    // Get all gate outs with null check
-                    $allGateOuts = collect();
-                    if ($pranota->gateOuts) {
-                        $allGateOuts = $pranota->gateOuts->sortBy('nama_supir');
-                    }
+                    // Sort displayItems by supir
+                    $sortedItems = collect($displayItems)->sortBy('supir');
                     $no = 1;
                 @endphp
                 
-                @forelse($allGateOuts as $gateOut)
+                @forelse($sortedItems as $item)
                     <tr>
                         <td class="border px-2 py-1 text-center">{{ $no++ }}</td>
-                        <td class="border px-2 py-1">{{ $gateOut->nomor_kontainer ?? '-' }}</td>
+                        <td class="border px-2 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
                         <td class="border px-2 py-1 text-center">
-                            @if($gateOut->ukuran_kontainer)
-                                {{ $gateOut->ukuran_kontainer }}
-                            @else
-                                -
-                            @endif
+                            {{ $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-')) }}
                         </td>
                         <td class="border px-2 py-1 text-center">
-                            {{ strtoupper(substr($gateOut->status_kontainer ?? '-', 0, 1)) }}
+                            {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
                         </td>
-                        <td class="border px-2 py-1">{{ $gateOut->nama_supir ?? '-' }}</td>
-                        <td class="border px-2 py-1">{{ $gateOut->nomor_polisi ?? '-' }}</td>
-                        <td class="border px-2 py-1 text-center">{{ $gateOut->dari ?? '-' }}</td>
-                        <td class="border px-2 py-1 text-center">{{ $gateOut->ke ?? '-' }}</td>
+                        <td class="border px-2 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                        <td class="border px-2 py-1">{{ $item['nomor_polisi'] ?? ($item['no_mobil'] ?? '-') }}</td>
+                        <td class="border px-2 py-1 text-center">{{ $item['dari'] ?? '-' }}</td>
+                        <td class="border px-2 py-1 text-center">{{ $item['ke'] ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr>

@@ -70,7 +70,7 @@ class PranotaObController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mencetak pranota OB.');
         }
 
-        $pranota = PranotaOb::with('creator', 'itemsPivot', 'gateOuts')->findOrFail($id);
+        $pranota = PranotaOb::with('creator', 'itemsPivot')->findOrFail($id);
         $enrichedItems = $pranota->getEnrichedItems();
 
         $displayItems = $enrichedItems;
