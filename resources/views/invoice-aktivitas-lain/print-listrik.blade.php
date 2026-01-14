@@ -17,6 +17,7 @@
             line-height: 1.2;
             color: #333;
             padding: 8px;
+            font-weight: bold;
         }
         
         .header {
@@ -63,6 +64,7 @@
         
         .info-value {
             flex: 1;
+            font-weight: bold;
         }
         
         .section-title {
@@ -87,6 +89,7 @@
             padding: 3px 4px;
             border: 1px solid #ddd;
             text-align: left;
+            font-weight: bold;
         }
         
         .details-table th {
@@ -162,6 +165,7 @@
             background-color: #f8f9fa;
             border-left: 3px solid #ffc107;
             font-size: 7px;
+            font-weight: bold;
         }
         
         .notes-title {
