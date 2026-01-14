@@ -563,6 +563,29 @@ Route::middleware([
              ->middleware('can:master-mobil-delete')
              ->only(['destroy']);
 
+        // Ongkos Truck routes
+        Route::get('ongkos-truck', [\App\Http\Controllers\OngkosTruckController::class, 'index'])
+             ->name('ongkos-truck.index')
+             ->middleware('can:ongkos-truck-view');
+        Route::get('ongkos-truck/show-data', [\App\Http\Controllers\OngkosTruckController::class, 'showData'])
+             ->name('ongkos-truck.show-data')
+             ->middleware('can:ongkos-truck-view');
+        Route::get('ongkos-truck/export-excel', [\App\Http\Controllers\OngkosTruckController::class, 'exportExcel'])
+             ->name('ongkos-truck.export-excel')
+             ->middleware('can:ongkos-truck-view');
+        Route::get('ongkos-truck/{id}', [\App\Http\Controllers\OngkosTruckController::class, 'show'])
+             ->name('ongkos-truck.show')
+             ->middleware('can:ongkos-truck-view');
+        Route::get('ongkos-truck/{id}/edit', [\App\Http\Controllers\OngkosTruckController::class, 'edit'])
+             ->name('ongkos-truck.edit')
+             ->middleware('can:ongkos-truck-update');
+        Route::put('ongkos-truck/{id}', [\App\Http\Controllers\OngkosTruckController::class, 'update'])
+             ->name('ongkos-truck.update')
+             ->middleware('can:ongkos-truck-update');
+        Route::delete('ongkos-truck/{id}', [\App\Http\Controllers\OngkosTruckController::class, 'destroy'])
+             ->name('ongkos-truck.destroy')
+             ->middleware('can:ongkos-truck-delete');
+
         // Master pricelist sewa kontainer routes (with master prefix) - granular permissions
         Route::get('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'index'])
              ->name('master.pricelist-sewa-kontainer.index')
