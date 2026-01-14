@@ -13,22 +13,22 @@
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.3;
+            font-size: 8px;
+            line-height: 1.2;
             color: #333;
-            padding: 15px;
+            padding: 8px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            padding-bottom: 4px;
         }
         
         .header h1 {
-            font-size: 16px;
-            margin-bottom: 3px;
+            font-size: 14px;
+            margin-bottom: 2px;
             color: #1a1a1a;
         }
         
@@ -39,15 +39,15 @@
         }
         
         .invoice-info {
-            margin-bottom: 12px;
+            margin-bottom: 6px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0 20px;
+            gap: 0 15px;
         }
         
         .info-item {
             display: flex;
-            padding: 2px 0;
+            padding: 1px 0;
         }
         
         .info-label {
@@ -66,11 +66,11 @@
         }
         
         .section-title {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: bold;
-            margin-top: 12px;
-            margin-bottom: 6px;
-            padding: 5px 8px;
+            margin-top: 6px;
+            margin-bottom: 4px;
+            padding: 3px 6px;
             background-color: #f0f0f0;
             border-left: 3px solid #2563eb;
         }
@@ -78,13 +78,13 @@
         .details-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
-            font-size: 9px;
+            margin-bottom: 6px;
+            font-size: 7px;
         }
         
         .details-table th,
         .details-table td {
-            padding: 5px 6px;
+            padding: 3px 4px;
             border: 1px solid #ddd;
             text-align: left;
         }
@@ -93,7 +93,7 @@
             background-color: #f8f9fa;
             font-weight: bold;
             color: #1a1a1a;
-            font-size: 9px;
+            font-size: 7px;
         }
         
         .details-table tr:nth-child(even) {
@@ -123,7 +123,7 @@
         .grand-total-row {
             background-color: #d4edda !important;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 8px;
         }
         
         .number {
@@ -132,36 +132,36 @@
         }
         
         .footer {
-            margin-top: 20px;
-            padding-top: 10px;
+            margin-top: 8px;
+            padding-top: 6px;
             border-top: 1px solid #ddd;
         }
         
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 15px;
+            gap: 10px;
+            margin-top: 8px;
         }
         
         .signature-box {
             text-align: center;
-            font-size: 9px;
+            font-size: 7px;
         }
         
         .signature-line {
-            margin-top: 60px;
+            margin-top: 35px;
             border-top: 1px solid #333;
-            padding-top: 3px;
+            padding-top: 2px;
             font-weight: bold;
         }
         
         .notes {
-            margin-top: 12px;
-            padding: 8px;
+            margin-top: 6px;
+            padding: 5px;
             background-color: #f8f9fa;
             border-left: 3px solid #ffc107;
-            font-size: 9px;
+            font-size: 7px;
         }
         
         .notes-title {
@@ -171,7 +171,7 @@
         
         @media print {
             body {
-                padding: 10px;
+                padding: 5px;
             }
             
             .no-print {
@@ -179,7 +179,7 @@
             }
             
             @page {
-                margin: 0.8cm;
+                margin: 0.5cm;
                 size: 21cm 16.5cm;
             }
         }
