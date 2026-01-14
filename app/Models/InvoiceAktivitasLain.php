@@ -30,6 +30,7 @@ class InvoiceAktivitasLain extends Model
         'tipe_penyesuaian',
         'detail_pembayaran',
         'penerima',
+        'vendor_listrik',
         'total',
         'pph',
         'grand_total',

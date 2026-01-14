@@ -448,6 +448,23 @@
                     @enderror
                 </div>
 
+                <!-- Vendor (conditional for Biaya Listrik) -->
+                <div id="vendor_listrik_wrapper" class="hidden">
+                    <label for="vendor_listrik" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor Listrik <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="vendor_listrik" 
+                           id="vendor_listrik" 
+                           value="{{ old('vendor_listrik') }}"
+                           class="w-full {{ $errors->has('vendor_listrik') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan nama vendor (misal: PLN, dll)">
+                    @error('vendor_listrik')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Biaya Listrik Multiple Entries -->
                 <div id="biaya_listrik_wrapper" class="hidden md:col-span-2">
                     <div class="flex justify-between items-center mb-3">
@@ -1234,6 +1251,8 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         const tipePenyesuaianWrapper = document.getElementById('tipe_penyesuaian_wrapper');
         const detailPembayaranWrapper = document.getElementById('detail_pembayaran_wrapper');
         const biayaListrikWrapper = document.getElementById('biaya_listrik_wrapper');
+        const vendorListrikWrapper = document.getElementById('vendor_listrik_wrapper');
+        const vendorListrikInput = document.getElementById('vendor_listrik');
 
         // Toggle PPh fields based on jenis biaya selection
         if (jenisBiayaDropdown) {
@@ -1250,6 +1269,12 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.remove('hidden');
                         initializeBiayaListrikInputs();
+                    }
+                    
+                    // Show vendor listrik field
+                    if (vendorListrikWrapper) {
+                        vendorListrikWrapper.classList.remove('hidden');
+                        if (vendorListrikInput) vendorListrikInput.setAttribute('required', 'required');
                     }
                     
                     // HIDE referensi field (each biaya listrik entry has its own)
@@ -1342,6 +1367,15 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.add('hidden');
                         clearBiayaListrikInputs();
+                    }
+                    
+                    // Hide vendor listrik field for other jenis biaya
+                    if (vendorListrikWrapper) {
+                        vendorListrikWrapper.classList.add('hidden');
+                        if (vendorListrikInput) {
+                            vendorListrikInput.value = '';
+                            vendorListrikInput.removeAttribute('required');
+                        }
                     }
                     
                     // Show referensi field for other jenis biaya
@@ -2132,6 +2166,19 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                            class="bl-referensi w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            placeholder="Masukkan referensi (misal: Nomor Meteran, Lokasi, dll)"
                            value="${existingData.referensi || ''}">
+                </div>
+                
+                <!-- Penerima -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Penerima <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="biaya_listrik[${index}][penerima]" 
+                           class="bl-penerima w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Nama penerima pembayaran"
+                           value="${existingData.penerima || ''}"
+                           required>
                 </div>
                 
                 <!-- LWBP Baru -->

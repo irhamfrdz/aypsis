@@ -14,6 +14,7 @@ class InvoiceAktivitasLainListrik extends Model
     protected $fillable = [
         'invoice_aktivitas_lain_id',
         'referensi',
+        'penerima',
         'lwbp_baru',
         'lwbp_lama',
         'lwbp',
