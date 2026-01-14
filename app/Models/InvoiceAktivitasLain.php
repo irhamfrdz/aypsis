@@ -165,7 +165,7 @@ class InvoiceAktivitasLain extends Model
      */
     public function biayaListrik()
     {
-        return $this->hasOne(InvoiceAktivitasLainListrik::class, 'invoice_aktivitas_lain_id');
+        return $this->hasMany(InvoiceAktivitasLainListrik::class, 'invoice_aktivitas_lain_id');
     }
 
     /**

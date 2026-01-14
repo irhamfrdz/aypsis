@@ -251,18 +251,21 @@ class InvoiceAktivitasLainController extends Controller
             'grand_total' => 'nullable|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
-            // Biaya Listrik fields
-            'lwbp_baru' => 'nullable|numeric|min:0',
-            'lwbp_lama' => 'nullable|numeric|min:0',
-            'lwbp' => 'nullable|numeric',
-            'wbp' => 'nullable|numeric',
-            'lwbp_tarif' => 'nullable|numeric|min:0',
-            'wbp_tarif' => 'nullable|numeric|min:0',
-            'tarif_1' => 'nullable|numeric',
-            'tarif_2' => 'nullable|numeric',
-            'biaya_beban' => 'nullable|numeric|min:0',
-            'ppju' => 'nullable|numeric',
-            'dpp' => 'nullable|numeric',
+            // Biaya Listrik fields - now accepts array for multiple entries
+            'biaya_listrik' => 'nullable|array',
+            'biaya_listrik.*.lwbp_baru' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.lwbp_lama' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.lwbp' => 'nullable|numeric',
+            'biaya_listrik.*.wbp' => 'nullable|numeric',
+            'biaya_listrik.*.lwbp_tarif' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.wbp_tarif' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.tarif_1' => 'nullable|numeric',
+            'biaya_listrik.*.tarif_2' => 'nullable|numeric',
+            'biaya_listrik.*.biaya_beban' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.ppju' => 'nullable|numeric',
+            'biaya_listrik.*.dpp' => 'nullable|numeric',
+            'biaya_listrik.*.pph' => 'nullable|numeric',
+            'biaya_listrik.*.grand_total' => 'nullable|numeric',
         ]);
         
         // Convert bl_details array to JSON for storage
@@ -295,31 +298,22 @@ class InvoiceAktivitasLainController extends Controller
         // Set default status
         $validated['status'] = 'draft';
 
-        // Extract biaya listrik data before creating invoice
-        $biayaListrikData = [];
-        $biayaListrikFields = ['lwbp_baru', 'lwbp_lama', 'lwbp', 'wbp', 'lwbp_tarif', 'wbp_tarif', 'tarif_1', 'tarif_2', 'biaya_beban', 'ppju', 'dpp'];
-        $hasBiayaListrik = false;
-        
-        foreach ($biayaListrikFields as $field) {
-            if (isset($validated[$field])) {
-                $biayaListrikData[$field] = $validated[$field];
-                $hasBiayaListrik = true;
-                unset($validated[$field]);
-            }
-        }
-
-        // Store PPH and Grand Total in biaya listrik if present
-        if ($hasBiayaListrik) {
-            $biayaListrikData['pph'] = $validated['pph'] ?? null;
-            $biayaListrikData['grand_total'] = $validated['grand_total'] ?? null;
+        // Extract biaya listrik data array before creating invoice
+        $biayaListrikEntries = [];
+        if (isset($validated['biaya_listrik']) && is_array($validated['biaya_listrik'])) {
+            $biayaListrikEntries = $validated['biaya_listrik'];
+            unset($validated['biaya_listrik']);
         }
 
         $invoice = InvoiceAktivitasLain::create($validated);
 
-        // Create biaya listrik record if data exists
-        if ($hasBiayaListrik && !empty($biayaListrikData)) {
-            $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
-            \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
+        // Create multiple biaya listrik records if data exists
+        if (!empty($biayaListrikEntries)) {
+            foreach ($biayaListrikEntries as $biayaListrikData) {
+                // Add invoice_aktivitas_lain_id to each entry
+                $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
+                \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
+            }
         }
 
         return redirect()->route('invoice-aktivitas-lain.index')
