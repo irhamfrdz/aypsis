@@ -87,7 +87,7 @@
         .details-table th,
         .details-table td {
             padding: 3px 4px;
-            border: 1px solid #ddd;
+            border: 2px solid #333;
             text-align: left;
             font-weight: bold;
         }
