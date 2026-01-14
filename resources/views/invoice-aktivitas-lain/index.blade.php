@@ -206,9 +206,9 @@
                                     $isListrikInvoice = $invoice->klasifikasiBiayaUmum && 
                                                         str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik');
                                     
-                                    // For electricity invoices, display grand_total from listrik data
-                                    if ($isListrikInvoice && $invoice->listrikData) {
-                                        $displayTotal = $invoice->listrikData->grand_total ?? 0;
+                                    // For electricity invoices, sum grand_total from all listrik entries
+                                    if ($isListrikInvoice && $invoice->biayaListrik && $invoice->biayaListrik->isNotEmpty()) {
+                                        $displayTotal = $invoice->biayaListrik->sum('grand_total');
                                     } else {
                                         $displayTotal = $invoice->total ?? 0;
                                     }
