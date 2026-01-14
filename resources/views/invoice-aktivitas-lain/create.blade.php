@@ -1243,12 +1243,13 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 
                 // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
-                    // Show biaya listrik wrapper
+                    // Show biaya listrik wrapper (new multiple entries system)
                     if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.remove('hidden');
                         initializeBiayaListrikInputs();
                     }
-                    // HIDE total field for biaya listrik (not needed, use DPP instead)
+                    
+                    // HIDE total field for biaya listrik (not needed, calculated from entries)
                     if (totalWrapper) {
                         totalWrapper.classList.add('hidden');
                         if (totalInput) {
@@ -1257,57 +1258,70 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                         }
                     }
                     
+                    // Show summary fields (will be auto-filled from entries)
                     pphWrapper.classList.remove('hidden');
                     grandTotalWrapper.classList.remove('hidden');
+                    
+                    // HIDE all old single-entry fields (replaced by multiple entries)
                     if (lwbpBaruWrapper) {
-                        lwbpBaruWrapper.classList.remove('hidden');
-                        if (lwbpBaruInput) lwbpBaruInput.setAttribute('required', 'required');
+                        lwbpBaruWrapper.classList.add('hidden');
+                        if (lwbpBaruInput) {
+                            lwbpBaruInput.value = '';
+                            lwbpBaruInput.removeAttribute('required');
+                        }
                     }
                     if (lwbpLamaWrapper) {
-                        lwbpLamaWrapper.classList.remove('hidden');
-                        if (lwbpLamaInput) lwbpLamaInput.setAttribute('required', 'required');
+                        lwbpLamaWrapper.classList.add('hidden');
+                        if (lwbpLamaInput) {
+                            lwbpLamaInput.value = '';
+                            lwbpLamaInput.removeAttribute('required');
+                        }
                     }
-                    if (lwbpWrapper) lwbpWrapper.classList.remove('hidden');
-                    if (wbpWrapper) wbpWrapper.classList.remove('hidden');
+                    if (lwbpWrapper) {
+                        lwbpWrapper.classList.add('hidden');
+                        if (lwbpInput) lwbpInput.value = '';
+                    }
+                    if (wbpWrapper) {
+                        wbpWrapper.classList.add('hidden');
+                        if (wbpInput) wbpInput.value = '';
+                    }
                     if (lwbpTarifWrapper) {
-                        lwbpTarifWrapper.classList.remove('hidden');
-                        if (lwbpTarifInput) lwbpTarifInput.setAttribute('required', 'required');
+                        lwbpTarifWrapper.classList.add('hidden');
+                        if (lwbpTarifInput) {
+                            lwbpTarifInput.value = '';
+                            lwbpTarifInput.removeAttribute('required');
+                        }
                     }
                     if (wbpTarifWrapper) {
-                        wbpTarifWrapper.classList.remove('hidden');
-                        if (wbpTarifInput) wbpTarifInput.setAttribute('required', 'required');
+                        wbpTarifWrapper.classList.add('hidden');
+                        if (wbpTarifInput) {
+                            wbpTarifInput.value = '';
+                            wbpTarifInput.removeAttribute('required');
+                        }
                     }
-                    if (tarif1Wrapper) tarif1Wrapper.classList.remove('hidden');
-                    if (tarif2Wrapper) tarif2Wrapper.classList.remove('hidden');
+                    if (tarif1Wrapper) {
+                        tarif1Wrapper.classList.add('hidden');
+                        if (tarif1Input) tarif1Input.value = '';
+                    }
+                    if (tarif2Wrapper) {
+                        tarif2Wrapper.classList.add('hidden');
+                        if (tarif2Input) tarif2Input.value = '';
+                    }
                     if (biayaBebanWrapper) {
-                        biayaBebanWrapper.classList.remove('hidden');
-                        if (biayaBebanInput) biayaBebanInput.setAttribute('required', 'required');
+                        biayaBebanWrapper.classList.add('hidden');
+                        if (biayaBebanInput) {
+                            biayaBebanInput.value = '';
+                            biayaBebanInput.removeAttribute('required');
+                        }
                     }
-                    if (ppjuWrapper) ppjuWrapper.classList.remove('hidden');
-                    if (dppWrapper) dppWrapper.classList.remove('hidden');
-                    
-                    // Set default values for tarif fields
-                    if (lwbpTarifInput && !lwbpTarifInput.value) lwbpTarifInput.value = '1982';
-                    if (wbpTarifInput && !wbpTarifInput.value) wbpTarifInput.value = '2975';
-                    if (biayaBebanInput && !biayaBebanInput.value) biayaBebanInput.value = '893200';
-                    
-                    // Setup WBP auto-calculation
-                    setupWbpCalculation();
-                    
-                    // Setup LWBP auto-calculation
-                    setupLwbpCalculation();
-                    
-                    // Setup Tarif 1 auto-calculation
-                    setupTarif1Calculation();
-                    
-                    // Setup Tarif 2 auto-calculation
-                    setupTarif2Calculation();
-                    
-                    // Setup PPJU auto-calculation
-                    setupPpjuCalculation();
-                    
-                    // Setup DPP auto-calculation
-                    setupDppCalculation();
+                    if (ppjuWrapper) {
+                        ppjuWrapper.classList.add('hidden');
+                        if (ppjuInput) ppjuInput.value = '';
+                    }
+                    if (dppWrapper) {
+                        dppWrapper.classList.add('hidden');
+                        if (dppInput) dppInput.value = '';
+                    }
                 } else {
                     // Hide biaya listrik wrapper for other jenis biaya
                     if (biayaListrikWrapper) {
