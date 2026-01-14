@@ -256,8 +256,11 @@
                     </thead>
                     <tbody>
                         @php
-                            // Get all gate outs for this supir
-                            $gateOuts = $pranota->gateOuts->where('nama_supir', $supirName);
+                            // Get all gate outs for this supir - with null check
+                            $gateOuts = collect();
+                            if ($pranota->gateOuts) {
+                                $gateOuts = $pranota->gateOuts->where('nama_supir', $supirName);
+                            }
                             $no = 1;
                         @endphp
                         
