@@ -319,6 +319,12 @@ class BiayaKapalController extends Controller
             return view('biaya-kapal.print-dokumen', compact('biayaKapal'));
         }
         
+        // Check if it's Biaya Trucking and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'trucking') !== false) {
+            return view('biaya-kapal.print-trucking', compact('biayaKapal'));
+        }
+        
         return view('biaya-kapal.print', compact('biayaKapal'));
     }
 
@@ -329,6 +335,15 @@ class BiayaKapalController extends Controller
     {
         $biayaKapal->load(['klasifikasiBiaya']);
         return view('biaya-kapal.print-dokumen', compact('biayaKapal'));
+    }
+    
+    /**
+     * Print biaya trucking specifically.
+     */
+    public function printTrucking(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya']);
+        return view('biaya-kapal.print-trucking', compact('biayaKapal'));
     }
 
     /**

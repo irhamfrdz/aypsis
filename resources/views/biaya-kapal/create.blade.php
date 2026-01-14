@@ -304,18 +304,43 @@
 
                 <!-- Jenis Biaya -->
                 <div>
-                    <label for="jenis_biaya" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="jenis_biaya_search" class="block text-sm font-medium text-gray-700 mb-2">
                         Jenis Biaya <span class="text-red-500">*</span>
                     </label>
-                    <select id="jenis_biaya" 
-                            name="jenis_biaya" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('jenis_biaya') border-red-500 @enderror"
-                            required>
-                        <option value="">-- Pilih Jenis Biaya --</option>
-                        @foreach($klasifikasiBiayas as $k)
-                            <option value="{{ $k->kode }}" {{ old('jenis_biaya') == $k->kode ? 'selected' : '' }}>{{ $k->nama }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <div id="jenis_biaya_container" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent @error('jenis_biaya') border-red-500 @enderror min-h-[42px] cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <input type="text" 
+                                       id="jenis_biaya_search" 
+                                       class="flex-1 outline-none bg-transparent text-sm" 
+                                       placeholder="-- Pilih atau ketik untuk mencari jenis biaya --"
+                                       autocomplete="off">
+                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                            </div>
+                            <div id="selected_jenis_biaya_display" class="text-sm font-medium text-gray-700 hidden"></div>
+                        </div>
+                        
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" id="jenis_biaya" name="jenis_biaya" value="{{ old('jenis_biaya') }}" required>
+                        
+                        <!-- Dropdown list -->
+                        <div id="jenis_biaya_dropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <div class="sticky top-0 bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
+                                <span class="text-xs font-medium text-gray-600" id="jenisBiayaSelectedCount">Pilih jenis biaya</span>
+                                <button type="button" id="clearJenisBiayaBtn" class="text-xs text-red-600 hover:text-red-800 font-medium">
+                                    <i class="fas fa-times mr-1"></i>Clear
+                                </button>
+                            </div>
+                            @foreach($klasifikasiBiayas as $k)
+                                <div class="jenis-biaya-option px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm border-b border-gray-100 last:border-b-0"
+                                     data-kode="{{ $k->kode }}"
+                                     data-nama="{{ $k->nama }}">
+                                    <div class="font-medium text-gray-900">{{ $k->nama }}</div>
+                                    <div class="text-xs text-gray-500">{{ $k->kode }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                     @error('jenis_biaya')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -630,6 +655,116 @@
     // Store pricelist buruh data
     const pricelistBuruhData = @json($pricelistBuruh);
 
+    // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
+    const jenisBiayaSearch = document.getElementById('jenis_biaya_search');
+    const jenisBiayaContainer = document.getElementById('jenis_biaya_container');
+    const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
+    const jenisBiayaHiddenInput = document.getElementById('jenis_biaya');
+    const selectedJenisBiayaDisplay = document.getElementById('selected_jenis_biaya_display');
+    const jenisBiayaOptions = document.querySelectorAll('.jenis-biaya-option');
+    const clearJenisBiayaBtn = document.getElementById('clearJenisBiayaBtn');
+    const jenisBiayaSelectedCount = document.getElementById('jenisBiayaSelectedCount');
+    
+    let selectedJenisBiaya = { kode: '', nama: '' };
+    const oldJenisBiayaValue = '{{ old('jenis_biaya') }}';
+    
+    // Show dropdown on focus
+    jenisBiayaSearch.addEventListener('focus', function() {
+        jenisBiayaDropdown.classList.remove('hidden');
+        filterJenisBiayaOptions();
+    });
+    
+    // Container click to focus search
+    jenisBiayaContainer.addEventListener('click', function() {
+        jenisBiayaSearch.focus();
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#jenis_biaya_container') && !e.target.closest('#jenis_biaya_dropdown')) {
+            jenisBiayaDropdown.classList.add('hidden');
+        }
+    });
+    
+    // Search/filter options
+    jenisBiayaSearch.addEventListener('input', function() {
+        filterJenisBiayaOptions();
+    });
+    
+    function filterJenisBiayaOptions() {
+        const searchTerm = jenisBiayaSearch.value.toLowerCase();
+        jenisBiayaOptions.forEach(option => {
+            const nama = option.getAttribute('data-nama').toLowerCase();
+            const kode = option.getAttribute('data-kode').toLowerCase();
+            const shouldShow = nama.includes(searchTerm) || kode.includes(searchTerm);
+            option.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+    
+    // Handle option selection
+    jenisBiayaOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const kode = this.getAttribute('data-kode');
+            const nama = this.getAttribute('data-nama');
+            
+            selectedJenisBiaya = { kode, nama };
+            jenisBiayaHiddenInput.value = kode;
+            
+            // Update display
+            jenisBiayaSearch.value = '';
+            jenisBiayaSearch.classList.add('hidden');
+            selectedJenisBiayaDisplay.textContent = nama;
+            selectedJenisBiayaDisplay.classList.remove('hidden');
+            
+            // Remove selected class from all options
+            jenisBiayaOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            jenisBiayaDropdown.classList.add('hidden');
+            updateJenisBiayaSelectedCount();
+            
+            // Trigger change event for existing logic
+            const event = new Event('change', { bubbles: true });
+            jenisBiayaHiddenInput.dispatchEvent(event);
+        });
+    });
+    
+    // Clear selection
+    clearJenisBiayaBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearJenisBiayaSelection();
+    });
+    
+    function clearJenisBiayaSelection() {
+        selectedJenisBiaya = { kode: '', nama: '' };
+        jenisBiayaHiddenInput.value = '';
+        jenisBiayaSearch.value = '';
+        jenisBiayaSearch.classList.remove('hidden');
+        selectedJenisBiayaDisplay.classList.add('hidden');
+        jenisBiayaOptions.forEach(opt => opt.classList.remove('selected'));
+        updateJenisBiayaSelectedCount();
+        
+        // Trigger change event
+        const event = new Event('change', { bubbles: true });
+        jenisBiayaHiddenInput.dispatchEvent(event);
+    }
+    
+    function updateJenisBiayaSelectedCount() {
+        if (selectedJenisBiaya.kode) {
+            jenisBiayaSelectedCount.textContent = 'Terpilih: ' + selectedJenisBiaya.nama;
+        } else {
+            jenisBiayaSelectedCount.textContent = 'Pilih jenis biaya';
+        }
+    }
+    
+    // Restore old value on page load (for validation errors)
+    if (oldJenisBiayaValue) {
+        const option = Array.from(jenisBiayaOptions).find(opt => opt.getAttribute('data-kode') === oldJenisBiayaValue);
+        if (option) {
+            option.click();
+        }
+    }
+    
     // Declare all input elements at the top
     const nominalInput = document.getElementById('nominal');
     const jenisBiayaSelect = document.getElementById('jenis_biaya');
@@ -671,8 +806,8 @@
         this.value = value;
         
         // Recalculate based on jenis biaya
-        const selectedText = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
-        if (selectedText.toLowerCase().includes('dokumen') || selectedText.toLowerCase().includes('listrik')) {
+        const selectedText = selectedJenisBiaya.nama || '';
+        if (selectedText.toLowerCase().includes('dokumen') || selectedText.toLowerCase().includes('listrik') || selectedText.toLowerCase().includes('trucking')) {
             calculatePphDokumen();
         } else if (selectedText.toLowerCase().includes('penumpukan')) {
             calculateTotalBiaya();
@@ -861,7 +996,7 @@
     // Toggle barang wrapper based on jenis biaya
     jenisBiayaSelect.addEventListener('change', function() {
         const selectedValue = this.value;
-        const selectedText = this.options[this.selectedIndex].text;
+        const selectedText = selectedJenisBiaya.nama || '';
         
         // Show vendor wrapper if "Biaya Dokumen" is selected
         if (selectedText.toLowerCase().includes('dokumen')) {
@@ -900,6 +1035,40 @@
         // Show PPH fields if "Biaya Listrik" is selected
         else if (selectedText.toLowerCase().includes('listrik')) {
             // Show PPH Dokumen and Grand Total fields for Biaya Listrik
+            pphDokumenWrapper.classList.remove('hidden');
+            grandTotalDokumenWrapper.classList.remove('hidden');
+            
+            // Hide other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            
+            // Show standard fields
+            kapalWrapper.classList.remove('hidden');
+            voyageWrapper.classList.remove('hidden');
+            blWrapper.classList.remove('hidden');
+            
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+            
+            // Calculate PPH if nominal already filled
+            if (nominalInput.value) {
+                calculatePphDokumen();
+            }
+        }
+        // Show PPH fields if "Biaya Trucking" is selected
+        else if (selectedText.toLowerCase().includes('trucking')) {
+            // Show PPH Dokumen and Grand Total fields for Biaya Trucking
             pphDokumenWrapper.classList.remove('hidden');
             grandTotalDokumenWrapper.classList.remove('hidden');
             
@@ -2301,13 +2470,36 @@
         padding-left: 9px;
     }
     
-    .kapal-option.selected::after, .voyage-option.selected::after, .bl-option.selected::after {
+    .kapal-option.selected::after, .voyage-option.selected::after, .bl-option.selected::after, .jenis-biaya-option.selected::after {
         content: '\u2713';
         position: absolute;
         right: 12px;
         color: #3b82f6;
         font-weight: bold;
         font-size: 1rem;
+    }
+    
+    .jenis-biaya-option {
+        transition: background-color 0.15s ease;
+        position: relative;
+    }
+    
+    .jenis-biaya-option:hover {
+        background-color: #eff6ff !important;
+    }
+    
+    .jenis-biaya-option.selected {
+        background-color: #dbeafe !important;
+        border-left: 3px solid #3b82f6;
+        padding-left: 9px;
+    }
+    
+    #jenis_biaya_container {
+        transition: all 0.15s ease;
+    }
+    
+    #jenis_biaya_container:focus-within {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
     
     #kapal_search::placeholder, #voyage_search::placeholder {
