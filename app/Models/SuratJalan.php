@@ -116,7 +116,7 @@ class SuratJalan extends Model
 
     public function tujuanPengambilanRelation()
     {
-        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengambilan', 'id');
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengambilan', 'ke');
     }
 
     public function tujuanPengirimanRelation()

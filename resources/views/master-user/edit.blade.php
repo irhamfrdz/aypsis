@@ -1429,6 +1429,23 @@
                                 <td><input type="checkbox" name="permissions[master-gudang][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['export']) && $userMatrixPermissions['master-gudang']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Ongkos Truck --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Ongkos Truck</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[ongkos-truck][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ongkos-truck']['view']) && $userMatrixPermissions['ongkos-truck']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ongkos-truck][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ongkos-truck']['create']) && $userMatrixPermissions['ongkos-truck']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ongkos-truck][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ongkos-truck']['update']) && $userMatrixPermissions['ongkos-truck']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ongkos-truck][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ongkos-truck']['delete']) && $userMatrixPermissions['ongkos-truck']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[ongkos-truck][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ongkos-truck']['print']) && $userMatrixPermissions['ongkos-truck']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ongkos-truck][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ongkos-truck']['export']) && $userMatrixPermissions['ongkos-truck']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Aktivitas --}}
                             <tr class="module-row" data-module="aktivitas">
                                 <td class="module-header">

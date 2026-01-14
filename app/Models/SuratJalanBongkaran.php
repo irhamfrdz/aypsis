@@ -123,6 +123,22 @@ class SuratJalanBongkaran extends Model
     }
 
     /**
+     * Relationship to Tujuan Kegiatan Utama (for ongkos truk) - based on tujuan_pengiriman
+     */
+    public function tujuanPengirimanRelation()
+    {
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengiriman', 'id');
+    }
+
+    /**
+     * Relationship to Tujuan Kegiatan Utama (for ongkos truk) - based on tujuan_pengambilan
+     */
+    public function tujuanPengambilanRelation()
+    {
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengambilan', 'ke');
+    }
+
+    /**
      * Relationship to Tanda Terima Bongkaran
      */
     public function tandaTerima()
