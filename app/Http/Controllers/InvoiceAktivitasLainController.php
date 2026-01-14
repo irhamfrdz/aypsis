@@ -597,13 +597,14 @@ class InvoiceAktivitasLainController extends Controller
         }
         
         // Pastikan ada data biaya listrik
-        if (!$invoice->biayaListrik) {
+        // Get all biaya listrik entries for this invoice
+        $biayaListrikEntries = $invoice->biayaListrik;
+        
+        if ($biayaListrikEntries->isEmpty()) {
             return redirect()->route('invoice-aktivitas-lain.show', $id)
                 ->with('error', 'Data biaya listrik tidak ditemukan untuk invoice ini.');
         }
         
-        $biayaListrik = $invoice->biayaListrik;
-        
-        return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrik'));
+        return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrikEntries'));
     }
 }
