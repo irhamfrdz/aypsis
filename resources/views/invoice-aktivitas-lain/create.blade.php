@@ -1241,12 +1241,21 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 const selectedOption = $(this).find('option:selected');
                 const namaJenisBiaya = selectedOption.text().toLowerCase();
                 
+                const referensiWrapper = document.getElementById('referensi_wrapper');
+                const referensiInput = document.getElementById('referensi');
+                
                 // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
                     // Show biaya listrik wrapper (new multiple entries system)
                     if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.remove('hidden');
                         initializeBiayaListrikInputs();
+                    }
+                    
+                    // HIDE referensi field (each biaya listrik entry has its own)
+                    if (referensiWrapper) {
+                        referensiWrapper.classList.add('hidden');
+                        if (referensiInput) referensiInput.value = '';
                     }
                     
                     // HIDE total field for biaya listrik (not needed, calculated from entries)
@@ -1333,6 +1342,11 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.add('hidden');
                         clearBiayaListrikInputs();
+                    }
+                    
+                    // Show referensi field for other jenis biaya
+                    if (referensiWrapper) {
+                        referensiWrapper.classList.remove('hidden');
                     }
                     
                     // Show total field for other jenis biaya
