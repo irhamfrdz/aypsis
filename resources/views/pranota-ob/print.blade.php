@@ -231,78 +231,61 @@
     {{-- Halaman 2: Detail Kontainer Per Supir --}}
     <div class="p-2 bg-white print-container">
         <div style="margin-bottom: 8px;">
-            <h2 class="font-semibold" style="margin: 0 0 2px 0; font-size: 11px;">Detail Kontainer Per Supir</h2>
-            <p style="margin: 0; font-size: 7px; line-height: 1.3;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-            <p style="margin: 0; font-size: 7px; line-height: 1.3;">Kapal: {{ $pranota->nama_kapal ?? '-' }} | Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
+            <h2 class="font-semibold" style="margin: 0 0 2px 0; font-size: 11px;">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-m-Y') : date('d-m-Y') }}</h2>
+            <p style="margin: 0; font-size: 9px; line-height: 1.3; font-weight: bold;">KM, {{ $pranota->nama_kapal ?? '-' }}</p>
         </div>
 
-        @foreach($perSupirCounts as $supirName => $counts)
-            <div style="margin-bottom: 10px;">
-                <h4 class="font-medium" style="margin: 0 0 3px 0; font-size: 9px; background-color: #f3f4f6; padding: 3px 6px; border-left: 3px solid #6b7280;">
-                    {{ $supirName }}
-                </h4>
+        <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
+            <thead>
+                <tr>
+                    <th class="border px-2 py-1 text-center" style="width: 5%;">No</th>
+                    <th class="border px-2 py-1 text-left" style="width: 20%;">No.Container</th>
+                    <th class="border px-2 py-1 text-center" style="width: 8%;">Size</th>
+                    <th class="border px-2 py-1 text-center" style="width: 8%;">Status</th>
+                    <th class="border px-2 py-1 text-left" style="width: 18%;">NamaSupir</th>
+                    <th class="border px-2 py-1 text-left" style="width: 15%;">No.Mobil</th>
+                    <th class="border px-2 py-1 text-center" style="width: 10%;">Dari</th>
+                    <th class="border px-2 py-1 text-center" style="width: 10%;">Ke</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    // Get all gate outs with null check
+                    $allGateOuts = collect();
+                    if ($pranota->gateOuts) {
+                        $allGateOuts = $pranota->gateOuts->sortBy('nama_supir');
+                    }
+                    $no = 1;
+                @endphp
                 
-                <table class="min-w-full table-auto border-collapse" style="font-size: 7px;">
-                    <thead>
-                        <tr>
-                            <th class="border px-2 py-1 text-center" style="width: 5%;">No</th>
-                            <th class="border px-2 py-1 text-left" style="width: 20%;">No. Kontainer</th>
-                            <th class="border px-2 py-1 text-center" style="width: 10%;">Size</th>
-                            <th class="border px-2 py-1 text-center" style="width: 10%;">Status</th>
-                            <th class="border px-2 py-1 text-left" style="width: 25%;">Barang</th>
-                            <th class="border px-2 py-1 text-left" style="width: 20%;">PT. Pengirim</th>
-                            <th class="border px-2 py-1 text-right" style="width: 10%;">Biaya</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            // Get all gate outs for this supir - with null check
-                            $gateOuts = collect();
-                            if ($pranota->gateOuts) {
-                                $gateOuts = $pranota->gateOuts->where('nama_supir', $supirName);
-                            }
-                            $no = 1;
-                        @endphp
-                        
-                        @forelse($gateOuts as $gateOut)
-                            <tr>
-                                <td class="border px-2 py-1 text-center">{{ $no++ }}</td>
-                                <td class="border px-2 py-1">{{ $gateOut->nomor_kontainer ?? '-' }}</td>
-                                <td class="border px-2 py-1 text-center">
-                                    @if($gateOut->ukuran_kontainer)
-                                        {{ $gateOut->ukuran_kontainer }}"
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td class="border px-2 py-1 text-center">
-                                    {{ strtoupper($gateOut->status_kontainer ?? '-') }}
-                                </td>
-                                <td class="border px-2 py-1">{{ $gateOut->jenis_barang ?? '-' }}</td>
-                                <td class="border px-2 py-1">{{ $gateOut->pt_pengirim ?? '-' }}</td>
-                                <td class="border px-2 py-1 text-right">
-                                    {{ number_format($gateOut->biaya_ob ?? 0, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="border px-2 py-1 text-center text-gray-500">
-                                    Tidak ada data kontainer
-                                </td>
-                            </tr>
-                        @endforelse
-                        
-                        {{-- Subtotal per supir --}}
-                        <tr class="font-semibold" style="background-color: #f9fafb;">
-                            <td colspan="6" class="border px-2 py-1 text-right">SUBTOTAL {{ strtoupper($supirName) }}:</td>
-                            <td class="border px-2 py-1 text-right">
-                                {{ number_format($perSupir[$supirName] ?? 0, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        @endforeach
+                @forelse($allGateOuts as $gateOut)
+                    <tr>
+                        <td class="border px-2 py-1 text-center">{{ $no++ }}</td>
+                        <td class="border px-2 py-1">{{ $gateOut->nomor_kontainer ?? '-' }}</td>
+                        <td class="border px-2 py-1 text-center">
+                            @if($gateOut->ukuran_kontainer)
+                                {{ $gateOut->ukuran_kontainer }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="border px-2 py-1 text-center">
+                            {{ strtoupper(substr($gateOut->status_kontainer ?? '-', 0, 1)) }}
+                        </td>
+                        <td class="border px-2 py-1">{{ $gateOut->nama_supir ?? '-' }}</td>
+                        <td class="border px-2 py-1">{{ $gateOut->nomor_polisi ?? '-' }}</td>
+                        <td class="border px-2 py-1 text-center">{{ $gateOut->dari ?? '-' }}</td>
+                        <td class="border px-2 py-1 text-center">{{ $gateOut->ke ?? '-' }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" class="border px-2 py-1 text-center text-gray-500">
+                            Tidak ada data kontainer
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
 
         {{-- Grand Total di akhir halaman 2 --}}
         <div style="margin-top: 10px; padding: 5px; background-color: #f3f4f6; border: 2px solid #000;">
