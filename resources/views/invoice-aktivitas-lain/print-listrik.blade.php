@@ -105,13 +105,13 @@
         
         .details-table .label-col {
             width: 60%;
-            font-weight: 500;
+            font-weight: bold;
         }
         
         .details-table .value-col {
             width: 40%;
             text-align: right;
-            font-weight: 500;
+            font-weight: bold;
         }
         
         .calculation-row {
