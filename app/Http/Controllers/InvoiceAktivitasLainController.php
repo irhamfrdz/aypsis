@@ -253,6 +253,7 @@ class InvoiceAktivitasLainController extends Controller
             'catatan' => 'nullable|string',
             // Biaya Listrik fields - now accepts array for multiple entries
             'biaya_listrik' => 'nullable|array',
+            'biaya_listrik.*.referensi' => 'nullable|string|max:255',
             'biaya_listrik.*.lwbp_baru' => 'nullable|numeric|min:0',
             'biaya_listrik.*.lwbp_lama' => 'nullable|numeric|min:0',
             'biaya_listrik.*.lwbp' => 'nullable|numeric',
