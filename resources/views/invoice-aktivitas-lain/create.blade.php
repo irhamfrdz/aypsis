@@ -567,10 +567,12 @@
                            name="tarif_1" 
                            id="tarif_1" 
                            value="{{ old('tarif_1') }}"
-                           class="w-full {{ $errors->has('tarif_1') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('tarif_1') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           placeholder="Masukkan Tarif 1"
-                           step="0.01">
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">Tarif 1 = LWBP × LWBP Tarif</p>
                     @error('tarif_1')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -1038,6 +1040,9 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             // LWBP = LWBP Baru - LWBP Lama - WBP
             const lwbp = lwbpBaru - lwbpLama - wbp;
             lwbpInput.value = lwbp;
+            
+            // Trigger Tarif 1 calculation when LWBP changes
+            calculateTarif1();
         }
 
         // Setup LWBP calculation event listeners
@@ -1050,6 +1055,26 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             }
             if (wbpInput) {
                 wbpInput.addEventListener('input', calculateLwbp);
+            }
+        }
+
+        // Calculate Tarif 1 (LWBP × LWBP Tarif)
+        function calculateTarif1() {
+            const lwbp = parseFloat(lwbpInput.value) || 0;
+            const lwbpTarif = parseFloat(lwbpTarifInput.value) || 0;
+            
+            // Tarif 1 = LWBP × LWBP Tarif
+            const tarif1 = lwbp * lwbpTarif;
+            tarif1Input.value = tarif1;
+        }
+
+        // Setup Tarif 1 calculation event listeners
+        function setupTarif1Calculation() {
+            if (lwbpInput) {
+                lwbpInput.addEventListener('change', calculateTarif1);
+            }
+            if (lwbpTarifInput) {
+                lwbpTarifInput.addEventListener('input', calculateTarif1);
             }
         }
 
@@ -1106,6 +1131,9 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     
                     // Setup LWBP auto-calculation
                     setupLwbpCalculation();
+                    
+                    // Setup Tarif 1 auto-calculation
+                    setupTarif1Calculation();
                     
                     // Calculate PPh if total already filled
                     if (totalInput.value) {
