@@ -180,7 +180,7 @@
             
             @page {
                 margin: 0.5cm;
-                size: 21cm 16.5cm;
+                size: 21.6cm 33cm;
             }
         }
         
