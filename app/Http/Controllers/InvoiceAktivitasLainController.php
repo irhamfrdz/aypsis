@@ -14,7 +14,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function index(Request $request)
     {
-        $query = InvoiceAktivitasLain::query()->with(['klasifikasiBiaya', 'klasifikasiBiayaUmum']);
+        $query = InvoiceAktivitasLain::query()->with(['klasifikasiBiaya', 'klasifikasiBiayaUmum', 'listrikData']);
 
         // Filter by nomor_invoice
         if ($request->filled('nomor_invoice')) {
@@ -206,6 +206,18 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if this is biaya listrik invoice
+        $isBiayaListrik = false;
+        if ($request->has('klasifikasi_biaya_umum_id')) {
+            $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
+            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
+                $isBiayaListrik = true;
+            }
+        }
+        
+        // Conditional validation rules
+        $totalValidation = $isBiayaListrik ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        
         $validated = $request->validate([
             'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice',
             'tanggal_invoice' => 'required|date',
@@ -234,11 +246,23 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.no_bukti' => 'nullable|string',
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'required|string',
-            'total' => 'required|numeric|min:0',
+            'total' => $totalValidation, // Conditional: nullable for biaya listrik, required for others
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
+            // Biaya Listrik fields
+            'lwbp_baru' => 'nullable|numeric|min:0',
+            'lwbp_lama' => 'nullable|numeric|min:0',
+            'lwbp' => 'nullable|numeric',
+            'wbp' => 'nullable|numeric',
+            'lwbp_tarif' => 'nullable|numeric|min:0',
+            'wbp_tarif' => 'nullable|numeric|min:0',
+            'tarif_1' => 'nullable|numeric',
+            'tarif_2' => 'nullable|numeric',
+            'biaya_beban' => 'nullable|numeric|min:0',
+            'ppju' => 'nullable|numeric',
+            'dpp' => 'nullable|numeric',
         ]);
         
         // Convert bl_details array to JSON for storage
@@ -271,7 +295,32 @@ class InvoiceAktivitasLainController extends Controller
         // Set default status
         $validated['status'] = 'draft';
 
-        InvoiceAktivitasLain::create($validated);
+        // Extract biaya listrik data before creating invoice
+        $biayaListrikData = [];
+        $biayaListrikFields = ['lwbp_baru', 'lwbp_lama', 'lwbp', 'wbp', 'lwbp_tarif', 'wbp_tarif', 'tarif_1', 'tarif_2', 'biaya_beban', 'ppju', 'dpp'];
+        $hasBiayaListrik = false;
+        
+        foreach ($biayaListrikFields as $field) {
+            if (isset($validated[$field])) {
+                $biayaListrikData[$field] = $validated[$field];
+                $hasBiayaListrik = true;
+                unset($validated[$field]);
+            }
+        }
+
+        // Store PPH and Grand Total in biaya listrik if present
+        if ($hasBiayaListrik) {
+            $biayaListrikData['pph'] = $validated['pph'] ?? null;
+            $biayaListrikData['grand_total'] = $validated['grand_total'] ?? null;
+        }
+
+        $invoice = InvoiceAktivitasLain::create($validated);
+
+        // Create biaya listrik record if data exists
+        if ($hasBiayaListrik && !empty($biayaListrikData)) {
+            $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
+            \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
+        }
 
         return redirect()->route('invoice-aktivitas-lain.index')
             ->with('success', 'Invoice berhasil dibuat.');
@@ -282,7 +331,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function show(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'pembayarans', 'creator'])
+        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'klasifikasiBiayaUmum', 'pembayarans', 'creator', 'biayaListrik'])
             ->findOrFail($id);
         
         return view('invoice-aktivitas-lain.show', compact('invoice'));
@@ -544,7 +593,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function printListrik(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['createdBy', 'klasifikasiBiayaUmum'])->findOrFail($id);
+        $invoice = InvoiceAktivitasLain::with(['creator', 'approver', 'klasifikasiBiayaUmum', 'biayaListrik'])->findOrFail($id);
         
         // Pastikan ini invoice biaya listrik
         if ($invoice->klasifikasiBiayaUmum && !str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik')) {
@@ -552,6 +601,14 @@ class InvoiceAktivitasLainController extends Controller
                 ->with('warning', 'Print khusus listrik hanya untuk invoice biaya listrik.');
         }
         
-        return view('invoice-aktivitas-lain.print_listrik', compact('invoice'));
+        // Pastikan ada data biaya listrik
+        if (!$invoice->biayaListrik) {
+            return redirect()->route('invoice-aktivitas-lain.show', $id)
+                ->with('error', 'Data biaya listrik tidak ditemukan untuk invoice ini.');
+        }
+        
+        $biayaListrik = $invoice->biayaListrik;
+        
+        return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrik'));
     }
 }

@@ -513,10 +513,12 @@
                            name="wbp" 
                            id="wbp" 
                            value="{{ old('wbp') }}"
-                           class="w-full {{ $errors->has('wbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('wbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           placeholder="Masukkan WBP"
-                           step="0.01">
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">WBP = (LWBP Baru - LWBP Lama) × 17%</p>
                     @error('wbp')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -587,10 +589,12 @@
                            name="tarif_2" 
                            id="tarif_2" 
                            value="{{ old('tarif_2') }}"
-                           class="w-full {{ $errors->has('tarif_2') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('tarif_2') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           placeholder="Masukkan Tarif 2"
-                           step="0.01">
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">Tarif 2 = WBP × WBP Tarif</p>
                     @error('tarif_2')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -623,10 +627,12 @@
                            name="ppju" 
                            id="ppju" 
                            value="{{ old('ppju') }}"
-                           class="w-full {{ $errors->has('ppju') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('ppju') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           placeholder="Masukkan PPJU"
-                           step="0.01">
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPJU = (Tarif 1 + Tarif 2 + Biaya Beban) × 3%</p>
                     @error('ppju')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -653,7 +659,7 @@
                 <!-- Total (for Biaya Listrik) -->
                 <div id="total_wrapper" class="hidden">
                     <label for="total" class="block text-sm font-medium text-gray-700 mb-2">
-                        Total <span class="text-red-500">*</span>
+                        Total
                     </label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
@@ -663,8 +669,7 @@
                                value="{{ old('total') }}"
                                class="w-full pl-10 {{ $errors->has('total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                               placeholder="0"
-                               required>
+                               placeholder="0">
                     </div>
                     @error('total')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -687,7 +692,7 @@
                                placeholder="0"
                                readonly>
                     </div>
-                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 10% × Total</p>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 10% × DPP</p>
                     @error('pph')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -709,7 +714,7 @@
                                placeholder="0"
                                readonly>
                     </div>
-                    <p class="mt-1 text-xs text-green-600 font-medium">Grand Total = Total - PPH</p>
+                    <p class="mt-1 text-xs text-green-600 font-medium">Grand Total = DPP - PPH</p>
                     @error('grand_total')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -1018,21 +1023,24 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             });
         }
 
-        // Calculate PPh (10% dari total)
+        // Calculate PPh (10% dari DPP untuk biaya listrik)
         function calculatePph() {
-            const total = parseInt(totalInput.value.replace(/\D/g, '') || 0);
+            const dpp = parseFloat(dppInput.value) || 0;
             
-            // PPH = 10% dari total
-            const pph = Math.round(total * 0.10);
+            // PPH = 10% dari DPP
+            const pph = Math.round(dpp * 0.10);
             pphInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
             
-            // Grand Total = Total - PPH
-            const grandTotal = total - pph;
+            // Grand Total = DPP - PPH
+            const grandTotal = dpp - pph;
             grandTotalInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
         }
 
         // Calculate LWBP (LWBP Baru - LWBP Lama - WBP)
         function calculateLwbp() {
+            // First calculate WBP
+            calculateWbp();
+            
             const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
             const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
             const wbp = parseFloat(wbpInput.value) || 0;
@@ -1045,6 +1053,29 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             calculateTarif1();
         }
 
+        // Calculate WBP ((LWBP Baru - LWBP Lama) × 17%)
+        function calculateWbp() {
+            const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+            const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+            
+            // WBP = (LWBP Baru - LWBP Lama) × 17%
+            const wbp = Math.round((lwbpBaru - lwbpLama) * 0.17);
+            wbpInput.value = wbp;
+            
+            // Trigger Tarif 2 calculation when WBP changes
+            calculateTarif2();
+        }
+
+        // Setup WBP calculation event listeners
+        function setupWbpCalculation() {
+            if (lwbpBaruInput) {
+                lwbpBaruInput.addEventListener('input', calculateWbp);
+            }
+            if (lwbpLamaInput) {
+                lwbpLamaInput.addEventListener('input', calculateWbp);
+            }
+        }
+
         // Setup LWBP calculation event listeners
         function setupLwbpCalculation() {
             if (lwbpBaruInput) {
@@ -1052,9 +1083,6 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             }
             if (lwbpLamaInput) {
                 lwbpLamaInput.addEventListener('input', calculateLwbp);
-            }
-            if (wbpInput) {
-                wbpInput.addEventListener('input', calculateLwbp);
             }
         }
 
@@ -1066,6 +1094,9 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             // Tarif 1 = LWBP × LWBP Tarif
             const tarif1 = lwbp * lwbpTarif;
             tarif1Input.value = tarif1;
+            
+            // Trigger PPJU calculation when Tarif 1 changes
+            calculatePpju();
         }
 
         // Setup Tarif 1 calculation event listeners
@@ -1075,6 +1106,87 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             }
             if (lwbpTarifInput) {
                 lwbpTarifInput.addEventListener('input', calculateTarif1);
+            }
+        }
+
+        // Calculate Tarif 2 (WBP × WBP Tarif)
+        function calculateTarif2() {
+            const wbp = parseFloat(wbpInput.value) || 0;
+            const wbpTarif = parseFloat(wbpTarifInput.value) || 0;
+            
+            // Tarif 2 = WBP × WBP Tarif
+            const tarif2 = wbp * wbpTarif;
+            tarif2Input.value = tarif2;
+            
+            // Trigger PPJU calculation when Tarif 2 changes
+            calculatePpju();
+        }
+
+        // Setup Tarif 2 calculation event listeners
+        function setupTarif2Calculation() {
+            if (wbpInput) {
+                wbpInput.addEventListener('change', calculateTarif2);
+            }
+            if (wbpTarifInput) {
+                wbpTarifInput.addEventListener('input', calculateTarif2);
+            }
+        }
+
+        // Calculate PPJU ((Tarif 1 + Tarif 2 + Biaya Beban) × 3%)
+        function calculatePpju() {
+            const tarif1 = parseFloat(tarif1Input.value) || 0;
+            const tarif2 = parseFloat(tarif2Input.value) || 0;
+            const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+            
+            // PPJU = (Tarif 1 + Tarif 2 + Biaya Beban) × 3%
+            const ppju = Math.round((tarif1 + tarif2 + biayaBeban) * 0.03);
+            ppjuInput.value = ppju;
+            
+            // Trigger DPP calculation when PPJU changes
+            calculateDpp();
+        }
+
+        // Calculate DPP (Tarif 1 + Tarif 2 + Biaya Beban + PPJU)
+        function calculateDpp() {
+            const tarif1 = parseFloat(tarif1Input.value) || 0;
+            const tarif2 = parseFloat(tarif2Input.value) || 0;
+            const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+            const ppju = parseFloat(ppjuInput.value) || 0;
+            
+            // DPP = Tarif 1 + Tarif 2 + Biaya Beban + PPJU
+            const dpp = tarif1 + tarif2 + biayaBeban + ppju;
+            dppInput.value = dpp;
+            
+            // Trigger PPH calculation when DPP changes
+            calculatePph();
+        }
+
+        // Setup PPJU calculation event listeners
+        function setupPpjuCalculation() {
+            if (tarif1Input) {
+                tarif1Input.addEventListener('change', calculatePpju);
+            }
+            if (tarif2Input) {
+                tarif2Input.addEventListener('change', calculatePpju);
+            }
+            if (biayaBebanInput) {
+                biayaBebanInput.addEventListener('input', calculatePpju);
+            }
+        }
+
+        // Setup DPP calculation event listeners
+        function setupDppCalculation() {
+            if (tarif1Input) {
+                tarif1Input.addEventListener('change', calculateDpp);
+            }
+            if (tarif2Input) {
+                tarif2Input.addEventListener('change', calculateDpp);
+            }
+            if (biayaBebanInput) {
+                biayaBebanInput.addEventListener('input', calculateDpp);
+            }
+            if (ppjuInput) {
+                ppjuInput.addEventListener('change', calculateDpp);
             }
         }
 
@@ -1110,24 +1222,51 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 
                 // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
-                    if (totalWrapper) totalWrapper.classList.remove('hidden');
+                    // HIDE total field for biaya listrik (not needed, use DPP instead)
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
+                        if (totalInput) {
+                            totalInput.value = '';
+                            totalInput.removeAttribute('required');
+                        }
+                    }
+                    
                     pphWrapper.classList.remove('hidden');
                     grandTotalWrapper.classList.remove('hidden');
-                    if (lwbpBaruWrapper) lwbpBaruWrapper.classList.remove('hidden');
-                    if (lwbpLamaWrapper) lwbpLamaWrapper.classList.remove('hidden');
+                    if (lwbpBaruWrapper) {
+                        lwbpBaruWrapper.classList.remove('hidden');
+                        if (lwbpBaruInput) lwbpBaruInput.setAttribute('required', 'required');
+                    }
+                    if (lwbpLamaWrapper) {
+                        lwbpLamaWrapper.classList.remove('hidden');
+                        if (lwbpLamaInput) lwbpLamaInput.setAttribute('required', 'required');
+                    }
                     if (lwbpWrapper) lwbpWrapper.classList.remove('hidden');
                     if (wbpWrapper) wbpWrapper.classList.remove('hidden');
-                    if (lwbpTarifWrapper) lwbpTarifWrapper.classList.remove('hidden');
-                    if (wbpTarifWrapper) wbpTarifWrapper.classList.remove('hidden');
+                    if (lwbpTarifWrapper) {
+                        lwbpTarifWrapper.classList.remove('hidden');
+                        if (lwbpTarifInput) lwbpTarifInput.setAttribute('required', 'required');
+                    }
+                    if (wbpTarifWrapper) {
+                        wbpTarifWrapper.classList.remove('hidden');
+                        if (wbpTarifInput) wbpTarifInput.setAttribute('required', 'required');
+                    }
                     if (tarif1Wrapper) tarif1Wrapper.classList.remove('hidden');
                     if (tarif2Wrapper) tarif2Wrapper.classList.remove('hidden');
-                    if (biayaBebanWrapper) biayaBebanWrapper.classList.remove('hidden');
+                    if (biayaBebanWrapper) {
+                        biayaBebanWrapper.classList.remove('hidden');
+                        if (biayaBebanInput) biayaBebanInput.setAttribute('required', 'required');
+                    }
                     if (ppjuWrapper) ppjuWrapper.classList.remove('hidden');
                     if (dppWrapper) dppWrapper.classList.remove('hidden');
                     
                     // Set default values for tarif fields
                     if (lwbpTarifInput && !lwbpTarifInput.value) lwbpTarifInput.value = '1982';
                     if (wbpTarifInput && !wbpTarifInput.value) wbpTarifInput.value = '2975';
+                    if (biayaBebanInput && !biayaBebanInput.value) biayaBebanInput.value = '893200';
+                    
+                    // Setup WBP auto-calculation
+                    setupWbpCalculation();
                     
                     // Setup LWBP auto-calculation
                     setupLwbpCalculation();
@@ -1135,39 +1274,85 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                     // Setup Tarif 1 auto-calculation
                     setupTarif1Calculation();
                     
-                    // Calculate PPh if total already filled
-                    if (totalInput.value) {
-                        calculatePph();
-                    }
+                    // Setup Tarif 2 auto-calculation
+                    setupTarif2Calculation();
+                    
+                    // Setup PPJU auto-calculation
+                    setupPpjuCalculation();
+                    
+                    // Setup DPP auto-calculation
+                    setupDppCalculation();
                 } else {
+                    // Show total field for other jenis biaya
+                    if (totalWrapper) {
+                        totalWrapper.classList.remove('hidden');
+                        if (totalInput) totalInput.setAttribute('required', 'required');
+                    }
+                    
                     // Hide PPh and LWBP fields for other jenis biaya
-                    if (totalWrapper) totalWrapper.classList.add('hidden');
                     pphWrapper.classList.add('hidden');
                     grandTotalWrapper.classList.add('hidden');
-                    if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
-                    if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
-                    if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
-                    if (wbpWrapper) wbpWrapper.classList.add('hidden');
-                    if (lwbpTarifWrapper) lwbpTarifWrapper.classList.add('hidden');
-                    if (wbpTarifWrapper) wbpTarifWrapper.classList.add('hidden');
-                    if (tarif1Wrapper) tarif1Wrapper.classList.add('hidden');
-                    if (tarif2Wrapper) tarif2Wrapper.classList.add('hidden');
-                    if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
-                    if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
-                    if (dppWrapper) dppWrapper.classList.add('hidden');
+                    if (lwbpBaruWrapper) {
+                        lwbpBaruWrapper.classList.add('hidden');
+                        if (lwbpBaruInput) {
+                            lwbpBaruInput.value = '';
+                            lwbpBaruInput.removeAttribute('required');
+                        }
+                    }
+                    if (lwbpLamaWrapper) {
+                        lwbpLamaWrapper.classList.add('hidden');
+                        if (lwbpLamaInput) {
+                            lwbpLamaInput.value = '';
+                            lwbpLamaInput.removeAttribute('required');
+                        }
+                    }
+                    if (lwbpWrapper) {
+                        lwbpWrapper.classList.add('hidden');
+                        if (lwbpInput) lwbpInput.value = '';
+                    }
+                    if (wbpWrapper) {
+                        wbpWrapper.classList.add('hidden');
+                        if (wbpInput) wbpInput.value = '';
+                    }
+                    if (lwbpTarifWrapper) {
+                        lwbpTarifWrapper.classList.add('hidden');
+                        if (lwbpTarifInput) {
+                            lwbpTarifInput.value = '';
+                            lwbpTarifInput.removeAttribute('required');
+                        }
+                    }
+                    if (wbpTarifWrapper) {
+                        wbpTarifWrapper.classList.add('hidden');
+                        if (wbpTarifInput) {
+                            wbpTarifInput.value = '';
+                            wbpTarifInput.removeAttribute('required');
+                        }
+                    }
+                    if (tarif1Wrapper) {
+                        tarif1Wrapper.classList.add('hidden');
+                        if (tarif1Input) tarif1Input.value = '';
+                    }
+                    if (tarif2Wrapper) {
+                        tarif2Wrapper.classList.add('hidden');
+                        if (tarif2Input) tarif2Input.value = '';
+                    }
+                    if (biayaBebanWrapper) {
+                        biayaBebanWrapper.classList.add('hidden');
+                        if (biayaBebanInput) {
+                            biayaBebanInput.value = '';
+                            biayaBebanInput.removeAttribute('required');
+                        }
+                    }
+                    if (ppjuWrapper) {
+                        ppjuWrapper.classList.add('hidden');
+                        if (ppjuInput) ppjuInput.value = '';
+                    }
+                    if (dppWrapper) {
+                        dppWrapper.classList.add('hidden');
+                        if (dppInput) dppInput.value = '';
+                    }
                     pphInput.value = '0';
                     grandTotalInput.value = '';
-                    if (lwbpBaruInput) lwbpBaruInput.value = '';
-                    if (lwbpLamaInput) lwbpLamaInput.value = '';
-                    if (lwbpInput) lwbpInput.value = '';
-                    if (wbpInput) wbpInput.value = '';
-                    if (lwbpTarifInput) lwbpTarifInput.value = '';
-                    if (wbpTarifInput) wbpTarifInput.value = '';
-                    if (tarif1Input) tarif1Input.value = '';
-                    if (tarif2Input) tarif2Input.value = '';
-                    if (biayaBebanInput) biayaBebanInput.value = '';
-                    if (ppjuInput) ppjuInput.value = '';
-                    if (dppInput) dppInput.value = '';
                 }
             });
         }

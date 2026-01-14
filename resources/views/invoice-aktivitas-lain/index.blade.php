@@ -201,7 +201,19 @@
                                 <div class="text-sm text-gray-900">{{ $invoice->penerima ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">Rp {{ number_format($invoice->total, 0, ',', '.') }}</div>
+                                @php
+                                    // Check if this is electricity invoice
+                                    $isListrikInvoice = $invoice->klasifikasiBiayaUmum && 
+                                                        str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik');
+                                    
+                                    // For electricity invoices, display grand_total from listrik data
+                                    if ($isListrikInvoice && $invoice->listrikData) {
+                                        $displayTotal = $invoice->listrikData->grand_total ?? 0;
+                                    } else {
+                                        $displayTotal = $invoice->total ?? 0;
+                                    }
+                                @endphp
+                                <div class="text-sm font-medium text-gray-900">Rp {{ number_format($displayTotal, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php

@@ -161,6 +161,22 @@ class InvoiceAktivitasLain extends Model
     }
 
     /**
+     * Relationship dengan Biaya Listrik
+     */
+    public function biayaListrik()
+    {
+        return $this->hasOne(InvoiceAktivitasLainListrik::class, 'invoice_aktivitas_lain_id');
+    }
+
+    /**
+     * Alias untuk relationship biayaListrik
+     */
+    public function listrikData()
+    {
+        return $this->biayaListrik();
+    }
+
+    /**
      * Accessor untuk barang detail dengan join pricelist_buruh
      */
     public function getBarangDetailArrayAttribute()
