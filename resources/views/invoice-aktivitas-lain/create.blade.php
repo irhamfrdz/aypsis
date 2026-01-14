@@ -104,7 +104,7 @@
                 <!-- Jenis Biaya (conditional for Pembayaran Lain-lain) -->
                 <div id="jenis_biaya_wrapper" class="hidden">
                     <label for="jenis_biaya_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
-                        Jenis Biaya <span class="text-red-500">*</span>
+                        Jenis Biaya
                     </label>
                     <select name="klasifikasi_biaya_umum_id" 
                             id="jenis_biaya_dropdown" 
@@ -448,8 +448,208 @@
                     @enderror
                 </div>
 
-                <!-- Total -->
-                <div>
+                <!-- LWBP Baru (for Biaya Listrik) -->
+                <div id="lwbp_baru_wrapper" class="hidden">
+                    <label for="lwbp_baru" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP Baru
+                    </label>
+                    <input type="number" 
+                           name="lwbp_baru" 
+                           id="lwbp_baru" 
+                           value="{{ old('lwbp_baru') }}"
+                           class="w-full {{ $errors->has('lwbp_baru') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan LWBP baru"
+                           step="0.01">
+                    @error('lwbp_baru')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- LWBP Lama (for Biaya Listrik) -->
+                <div id="lwbp_lama_wrapper" class="hidden">
+                    <label for="lwbp_lama" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP Lama
+                    </label>
+                    <input type="number" 
+                           name="lwbp_lama" 
+                           id="lwbp_lama" 
+                           value="{{ old('lwbp_lama') }}"
+                           class="w-full {{ $errors->has('lwbp_lama') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan LWBP lama"
+                           step="0.01">
+                    @error('lwbp_lama')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- LWBP (for Biaya Listrik) -->
+                <div id="lwbp_wrapper" class="hidden">
+                    <label for="lwbp" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP
+                    </label>
+                    <input type="number" 
+                           name="lwbp" 
+                           id="lwbp" 
+                           value="{{ old('lwbp') }}"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('lwbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">LWBP = LWBP Baru - LWBP Lama - WBP</p>
+                    @error('lwbp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- WBP (for Biaya Listrik) -->
+                <div id="wbp_wrapper" class="hidden">
+                    <label for="wbp" class="block text-sm font-medium text-gray-700 mb-2">
+                        WBP
+                    </label>
+                    <input type="number" 
+                           name="wbp" 
+                           id="wbp" 
+                           value="{{ old('wbp') }}"
+                           class="w-full {{ $errors->has('wbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan WBP"
+                           step="0.01">
+                    @error('wbp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- LWBP Tarif (for Biaya Listrik) -->
+                <div id="lwbp_tarif_wrapper" class="hidden">
+                    <label for="lwbp_tarif" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP Tarif
+                    </label>
+                    <input type="number" 
+                           name="lwbp_tarif" 
+                           id="lwbp_tarif" 
+                           value="{{ old('lwbp_tarif', '1982') }}"
+                           class="w-full {{ $errors->has('lwbp_tarif') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan LWBP Tarif"
+                           step="0.01">
+                    @error('lwbp_tarif')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- WBP Tarif (for Biaya Listrik) -->
+                <div id="wbp_tarif_wrapper" class="hidden">
+                    <label for="wbp_tarif" class="block text-sm font-medium text-gray-700 mb-2">
+                        WBP Tarif
+                    </label>
+                    <input type="number" 
+                           name="wbp_tarif" 
+                           id="wbp_tarif" 
+                           value="{{ old('wbp_tarif', '2975') }}"
+                           class="w-full {{ $errors->has('wbp_tarif') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan WBP Tarif"
+                           step="0.01">
+                    @error('wbp_tarif')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tarif 1 (for Biaya Listrik) -->
+                <div id="tarif_1_wrapper" class="hidden">
+                    <label for="tarif_1" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tarif 1
+                    </label>
+                    <input type="number" 
+                           name="tarif_1" 
+                           id="tarif_1" 
+                           value="{{ old('tarif_1') }}"
+                           class="w-full {{ $errors->has('tarif_1') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan Tarif 1"
+                           step="0.01">
+                    @error('tarif_1')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tarif 2 (for Biaya Listrik) -->
+                <div id="tarif_2_wrapper" class="hidden">
+                    <label for="tarif_2" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tarif 2
+                    </label>
+                    <input type="number" 
+                           name="tarif_2" 
+                           id="tarif_2" 
+                           value="{{ old('tarif_2') }}"
+                           class="w-full {{ $errors->has('tarif_2') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan Tarif 2"
+                           step="0.01">
+                    @error('tarif_2')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Biaya Beban (for Biaya Listrik) -->
+                <div id="biaya_beban_wrapper" class="hidden">
+                    <label for="biaya_beban" class="block text-sm font-medium text-gray-700 mb-2">
+                        Biaya Beban
+                    </label>
+                    <input type="number" 
+                           name="biaya_beban" 
+                           id="biaya_beban" 
+                           value="{{ old('biaya_beban') }}"
+                           class="w-full {{ $errors->has('biaya_beban') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan Biaya Beban"
+                           step="0.01">
+                    @error('biaya_beban')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- PPJU (for Biaya Listrik) -->
+                <div id="ppju_wrapper" class="hidden">
+                    <label for="ppju" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPJU
+                    </label>
+                    <input type="number" 
+                           name="ppju" 
+                           id="ppju" 
+                           value="{{ old('ppju') }}"
+                           class="w-full {{ $errors->has('ppju') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan PPJU"
+                           step="0.01">
+                    @error('ppju')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- DPP (for Biaya Listrik) -->
+                <div id="dpp_wrapper" class="hidden">
+                    <label for="dpp" class="block text-sm font-medium text-gray-700 mb-2">
+                        DPP
+                    </label>
+                    <input type="number" 
+                           name="dpp" 
+                           id="dpp" 
+                           value="{{ old('dpp') }}"
+                           class="w-full {{ $errors->has('dpp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan DPP"
+                           step="0.01">
+                    @error('dpp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Total (for Biaya Listrik) -->
+                <div id="total_wrapper" class="hidden">
                     <label for="total" class="block text-sm font-medium text-gray-700 mb-2">
                         Total <span class="text-red-500">*</span>
                     </label>
@@ -469,10 +669,10 @@
                     @enderror
                 </div>
 
-                <!-- PPH (for Biaya Listrik - 2% dari total) -->
+                <!-- PPH (for Biaya Listrik - 10% dari total) -->
                 <div id="pph_wrapper" class="hidden">
                     <label for="pph" class="block text-sm font-medium text-gray-700 mb-2">
-                        PPH (2%)
+                        PPH (10%)
                     </label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
@@ -485,7 +685,7 @@
                                placeholder="0"
                                readonly>
                     </div>
-                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Total</p>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 10% × Total</p>
                     @error('pph')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -755,6 +955,29 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
         const grandTotalInput = document.getElementById('grand_total');
         const pphWrapper = document.getElementById('pph_wrapper');
         const grandTotalWrapper = document.getElementById('grand_total_wrapper');
+        const lwbpBaruWrapper = document.getElementById('lwbp_baru_wrapper');
+        const lwbpLamaWrapper = document.getElementById('lwbp_lama_wrapper');
+        const lwbpBaruInput = document.getElementById('lwbp_baru');
+        const lwbpLamaInput = document.getElementById('lwbp_lama');
+        const lwbpWrapper = document.getElementById('lwbp_wrapper');
+        const lwbpInput = document.getElementById('lwbp');
+        const wbpWrapper = document.getElementById('wbp_wrapper');
+        const wbpInput = document.getElementById('wbp');
+        const lwbpTarifWrapper = document.getElementById('lwbp_tarif_wrapper');
+        const lwbpTarifInput = document.getElementById('lwbp_tarif');
+        const wbpTarifWrapper = document.getElementById('wbp_tarif_wrapper');
+        const wbpTarifInput = document.getElementById('wbp_tarif');
+        const tarif1Wrapper = document.getElementById('tarif_1_wrapper');
+        const tarif1Input = document.getElementById('tarif_1');
+        const tarif2Wrapper = document.getElementById('tarif_2_wrapper');
+        const tarif2Input = document.getElementById('tarif_2');
+        const biayaBebanWrapper = document.getElementById('biaya_beban_wrapper');
+        const biayaBebanInput = document.getElementById('biaya_beban');
+        const ppjuWrapper = document.getElementById('ppju_wrapper');
+        const ppjuInput = document.getElementById('ppju');
+        const dppWrapper = document.getElementById('dpp_wrapper');
+        const dppInput = document.getElementById('dpp');
+        const totalWrapper = document.getElementById('total_wrapper');
         const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
 
         if (totalInput) {
@@ -793,17 +1016,41 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             });
         }
 
-        // Calculate PPh (2% dari total)
+        // Calculate PPh (10% dari total)
         function calculatePph() {
             const total = parseInt(totalInput.value.replace(/\D/g, '') || 0);
             
-            // PPH = 2% dari total
-            const pph = Math.round(total * 0.02);
+            // PPH = 10% dari total
+            const pph = Math.round(total * 0.10);
             pphInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
             
             // Grand Total = Total - PPH
             const grandTotal = total - pph;
             grandTotalInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
+        }
+
+        // Calculate LWBP (LWBP Baru - LWBP Lama - WBP)
+        function calculateLwbp() {
+            const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+            const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+            const wbp = parseFloat(wbpInput.value) || 0;
+            
+            // LWBP = LWBP Baru - LWBP Lama - WBP
+            const lwbp = lwbpBaru - lwbpLama - wbp;
+            lwbpInput.value = lwbp;
+        }
+
+        // Setup LWBP calculation event listeners
+        function setupLwbpCalculation() {
+            if (lwbpBaruInput) {
+                lwbpBaruInput.addEventListener('input', calculateLwbp);
+            }
+            if (lwbpLamaInput) {
+                lwbpLamaInput.addEventListener('input', calculateLwbp);
+            }
+            if (wbpInput) {
+                wbpInput.addEventListener('input', calculateLwbp);
+            }
         }
 
         // Toggle conditional fields
@@ -836,21 +1083,63 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 const selectedOption = $(this).find('option:selected');
                 const namaJenisBiaya = selectedOption.text().toLowerCase();
                 
-                // Show PPh fields for Biaya Listrik
+                // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
+                    if (totalWrapper) totalWrapper.classList.remove('hidden');
                     pphWrapper.classList.remove('hidden');
                     grandTotalWrapper.classList.remove('hidden');
+                    if (lwbpBaruWrapper) lwbpBaruWrapper.classList.remove('hidden');
+                    if (lwbpLamaWrapper) lwbpLamaWrapper.classList.remove('hidden');
+                    if (lwbpWrapper) lwbpWrapper.classList.remove('hidden');
+                    if (wbpWrapper) wbpWrapper.classList.remove('hidden');
+                    if (lwbpTarifWrapper) lwbpTarifWrapper.classList.remove('hidden');
+                    if (wbpTarifWrapper) wbpTarifWrapper.classList.remove('hidden');
+                    if (tarif1Wrapper) tarif1Wrapper.classList.remove('hidden');
+                    if (tarif2Wrapper) tarif2Wrapper.classList.remove('hidden');
+                    if (biayaBebanWrapper) biayaBebanWrapper.classList.remove('hidden');
+                    if (ppjuWrapper) ppjuWrapper.classList.remove('hidden');
+                    if (dppWrapper) dppWrapper.classList.remove('hidden');
+                    
+                    // Set default values for tarif fields
+                    if (lwbpTarifInput && !lwbpTarifInput.value) lwbpTarifInput.value = '1982';
+                    if (wbpTarifInput && !wbpTarifInput.value) wbpTarifInput.value = '2975';
+                    
+                    // Setup LWBP auto-calculation
+                    setupLwbpCalculation();
                     
                     // Calculate PPh if total already filled
                     if (totalInput.value) {
                         calculatePph();
                     }
                 } else {
-                    // Hide PPh fields for other jenis biaya
+                    // Hide PPh and LWBP fields for other jenis biaya
+                    if (totalWrapper) totalWrapper.classList.add('hidden');
                     pphWrapper.classList.add('hidden');
                     grandTotalWrapper.classList.add('hidden');
+                    if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
+                    if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
+                    if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
+                    if (wbpWrapper) wbpWrapper.classList.add('hidden');
+                    if (lwbpTarifWrapper) lwbpTarifWrapper.classList.add('hidden');
+                    if (wbpTarifWrapper) wbpTarifWrapper.classList.add('hidden');
+                    if (tarif1Wrapper) tarif1Wrapper.classList.add('hidden');
+                    if (tarif2Wrapper) tarif2Wrapper.classList.add('hidden');
+                    if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
+                    if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
+                    if (dppWrapper) dppWrapper.classList.add('hidden');
                     pphInput.value = '0';
                     grandTotalInput.value = '';
+                    if (lwbpBaruInput) lwbpBaruInput.value = '';
+                    if (lwbpLamaInput) lwbpLamaInput.value = '';
+                    if (lwbpInput) lwbpInput.value = '';
+                    if (wbpInput) wbpInput.value = '';
+                    if (lwbpTarifInput) lwbpTarifInput.value = '';
+                    if (wbpTarifInput) wbpTarifInput.value = '';
+                    if (tarif1Input) tarif1Input.value = '';
+                    if (tarif2Input) tarif2Input.value = '';
+                    if (biayaBebanInput) biayaBebanInput.value = '';
+                    if (ppjuInput) ppjuInput.value = '';
+                    if (dppInput) dppInput.value = '';
                 }
             });
         }
@@ -862,6 +1151,32 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
             jenisBiayaWrapper.classList.add('hidden');
             jenisBiayaDropdown.removeAttribute('required');
             $('#jenis_biaya_dropdown').val('').trigger('change');
+            
+            // Hide LWBP fields
+            if (totalWrapper) totalWrapper.classList.add('hidden');
+            if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
+            if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
+            if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
+            if (wbpWrapper) wbpWrapper.classList.add('hidden');
+            if (lwbpTarifWrapper) lwbpTarifWrapper.classList.add('hidden');
+            if (wbpTarifWrapper) wbpTarifWrapper.classList.add('hidden');
+            if (tarif1Wrapper) tarif1Wrapper.classList.add('hidden');
+            if (tarif2Wrapper) tarif2Wrapper.classList.add('hidden');
+            if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
+            if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
+            if (dppWrapper) dppWrapper.classList.add('hidden');
+            if (totalInput) totalInput.value = '';
+            if (lwbpBaruInput) lwbpBaruInput.value = '';
+            if (lwbpLamaInput) lwbpLamaInput.value = '';
+            if (lwbpInput) lwbpInput.value = '';
+            if (wbpInput) wbpInput.value = '';
+            if (lwbpTarifInput) lwbpTarifInput.value = '';
+            if (wbpTarifInput) wbpTarifInput.value = '';
+            if (tarif1Input) tarif1Input.value = '';
+            if (tarif2Input) tarif2Input.value = '';
+            if (biayaBebanInput) biayaBebanInput.value = '';
+            if (ppjuInput) ppjuInput.value = '';
+            if (dppInput) dppInput.value = '';
             
             const referensiWrapper = document.getElementById('referensi_wrapper');
             const referensiInput = document.getElementById('referensi');
@@ -958,7 +1273,6 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                 }, 100);
             } else if (jenisVal === 'Pembayaran Lain-lain') {
                 jenisBiayaWrapper.classList.remove('hidden');
-                jenisBiayaDropdown.setAttribute('required', 'required');
                 
                 if (referensiWrapper) {
                     referensiWrapper.classList.remove('hidden');
