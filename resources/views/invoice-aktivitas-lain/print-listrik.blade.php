@@ -255,58 +255,6 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Input Fields -->
-            <tr>
-                <td class="label-col">LWBP Baru</td>
-                <td class="value-col number">{{ number_format($biayaListrik->lwbp_baru, 2, ',', '.') }} kWh</td>
-            </tr>
-            <tr>
-                <td class="label-col">LWBP Lama</td>
-                <td class="value-col number">{{ number_format($biayaListrik->lwbp_lama, 2, ',', '.') }} kWh</td>
-            </tr>
-            
-            <!-- Calculated Fields -->
-            <tr class="calculation-row">
-                <td class="label-col">WBP (Waktu Beban Puncak)</td>
-                <td class="value-col number">{{ number_format($biayaListrik->wbp, 2, ',', '.') }} kWh</td>
-            </tr>
-            <tr class="calculation-row">
-                <td class="label-col">LWBP (Luar Waktu Beban Puncak)</td>
-                <td class="value-col number">{{ number_format($biayaListrik->lwbp, 2, ',', '.') }} kWh</td>
-            </tr>
-            
-            <!-- Tariff Fields -->
-            <tr>
-                <td class="label-col">LWBP Tarif</td>
-                <td class="value-col number">Rp {{ number_format($biayaListrik->lwbp_tarif, 2, ',', '.') }}</td>
-            </tr>
-            <tr>
-                <td class="label-col">WBP Tarif</td>
-                <td class="value-col number">Rp {{ number_format($biayaListrik->wbp_tarif, 2, ',', '.') }}</td>
-            </tr>
-            
-            <!-- Tarif Calculations -->
-            <tr class="calculation-row">
-                <td class="label-col">Tarif 1</td>
-                <td class="value-col number">Rp {{ number_format($biayaListrik->tarif_1, 0, ',', '.') }}</td>
-            </tr>
-            <tr class="calculation-row">
-                <td class="label-col">Tarif 2</td>
-                <td class="value-col number">Rp {{ number_format($biayaListrik->tarif_2, 0, ',', '.') }}</td>
-            </tr>
-            
-            <!-- Biaya Beban -->
-            <tr>
-                <td class="label-col">Biaya Beban</td>
-                <td class="value-col number">Rp {{ number_format($biayaListrik->biaya_beban, 0, ',', '.') }}</td>
-            </tr>
-            
-            <!-- PPJU -->
-            <tr class="calculation-row">
-                <td class="label-col">PPJU (Pajak Penerangan Jalan Umum)</td>
-                <td class="value-col number">Rp {{ number_format($biayaListrik->ppju, 0, ',', '.') }}</td>
-            </tr>
-            
             <!-- DPP -->
             <tr class="total-row">
                 <td class="label-col">DPP (Dasar Pengenaan Pajak)</td>
