@@ -251,10 +251,9 @@
                     <thead>
                         <tr style="background-color: #f3f4f6;">
                             <th class="border px-1 py-0.5 text-center" style="width: 6%;">No</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 40%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 55%;">No.Container</th>
                             <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
-                            <th class="border px-1 py-0.5 text-center" style="width: 8%;">St</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 31%;">NamaSupir</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 24%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -275,31 +274,11 @@
                                         }
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-0.5 text-center">
-                                    @php
-                                        // Check multiple possible status fields
-                                        $isFull = $item['is_full'] ?? null;
-                                        $status = $item['status'] ?? ($item['status_kontainer'] ?? '');
-                                        
-                                        // Determine status from various fields
-                                        if ($isFull === 1 || $isFull === '1' || $isFull === true) {
-                                            echo 'F';
-                                        } elseif ($isFull === 0 || $isFull === '0' || $isFull === false) {
-                                            echo 'E';
-                                        } elseif (strtolower($status) === 'full' || strtolower($status) === 'f') {
-                                            echo 'F';
-                                        } elseif (strtolower($status) === 'empty' || strtolower($status) === 'e') {
-                                            echo 'E';
-                                        } else {
-                                            echo 'F'; // Default to F
-                                        }
-                                    @endphp
-                                </td>
                                 <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="border px-1 py-0.5 text-center text-gray-500">
+                                <td colspan="4" class="border px-1 py-0.5 text-center text-gray-500">
                                     Tidak ada data
                                 </td>
                             </tr>
@@ -314,10 +293,9 @@
                     <thead>
                         <tr style="background-color: #f3f4f6;">
                             <th class="border px-1 py-0.5 text-center" style="width: 6%;">No</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 40%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 55%;">No.Container</th>
                             <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
-                            <th class="border px-1 py-0.5 text-center" style="width: 8%;">St</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 31%;">NamaSupir</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 24%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -338,31 +316,11 @@
                                         }
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-0.5 text-center">
-                                    @php
-                                        // Check multiple possible status fields
-                                        $isFull = $item['is_full'] ?? null;
-                                        $status = $item['status'] ?? ($item['status_kontainer'] ?? '');
-                                        
-                                        // Determine status from various fields
-                                        if ($isFull === 1 || $isFull === '1' || $isFull === true) {
-                                            echo 'F';
-                                        } elseif ($isFull === 0 || $isFull === '0' || $isFull === false) {
-                                            echo 'E';
-                                        } elseif (strtolower($status) === 'full' || strtolower($status) === 'f') {
-                                            echo 'F';
-                                        } elseif (strtolower($status) === 'empty' || strtolower($status) === 'e') {
-                                            echo 'E';
-                                        } else {
-                                            echo 'F'; // Default to F
-                                        }
-                                    @endphp
-                                </td>
                                 <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="border px-1 py-0.5 text-center text-gray-500">
+                                <td colspan="4" class="border px-1 py-0.5 text-center text-gray-500">
                                     Tidak ada data
                                 </td>
                             </tr>
