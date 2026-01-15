@@ -587,6 +587,40 @@
                     @enderror
                 </div>
 
+                <!-- Nama Vendor -->
+                <div>
+                    <label for="nama_vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nama Vendor
+                    </label>
+                    <input type="text" 
+                           id="nama_vendor" 
+                           name="nama_vendor" 
+                           value="{{ old('nama_vendor') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_vendor') border-red-500 @enderror"
+                           placeholder="Masukkan nama vendor">
+                    <p class="mt-1 text-xs text-gray-500">Nama perusahaan atau individu penerima pembayaran</p>
+                    @error('nama_vendor')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Nomor Rekening -->
+                <div>
+                    <label for="nomor_rekening" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Rekening
+                    </label>
+                    <input type="text" 
+                           id="nomor_rekening" 
+                           name="nomor_rekening" 
+                           value="{{ old('nomor_rekening') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_rekening') border-red-500 @enderror"
+                           placeholder="Contoh: 1234567890">
+                    <p class="mt-1 text-xs text-gray-500">Nomor rekening bank penerima</p>
+                    @error('nomor_rekening')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Keterangan -->
                 <div class="md:col-span-2">
                     <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">

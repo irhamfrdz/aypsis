@@ -178,10 +178,27 @@
         $kontainerText = '1 kontainer' . (!empty($sizeKontainer) ? ' ' . $sizeKontainer : '');
     @endphp
     <div class="kontainer-info">{{ e($kontainerText) }}</div>
-    {{-- Unit Text (static: 1 unit) --}}
-    <div class="unit-text">1 unit</div>
-    {{-- Second Unit Text (static: 1 unit) --}}
-    <div class="unit-text-2">1 unit</div>
+    {{-- Unit Text: jika cargo ambil dari manifest (kuantitas + satuan), jika tidak tetap 1 unit --}}
+    @php
+        // Cek apakah kontainer adalah cargo (based on jenis_barang atau size_kontainer)
+        $isCargo = false;
+        $sizeKontainerLower = strtolower($baData->size_kontainer ?? $baData->size ?? '');
+        if (str_contains($sizeKontainerLower, 'cargo') || str_contains(strtolower($baData->jenis_barang ?? ''), 'cargo')) {
+            $isCargo = true;
+        }
+        
+        // Jika cargo, ambil dari manifest
+        if ($isCargo && isset($baData->manifest)) {
+            $kuantitas = $baData->manifest->kuantitas ?? 1;
+            $satuan = $baData->manifest->satuan ?? 'unit';
+            $unitText = $kuantitas . ' ' . $satuan;
+        } else {
+            $unitText = '1 unit';
+        }
+    @endphp
+    <div class="unit-text">{{ e($unitText) }}</div>
+    {{-- Second Unit Text (same logic as first) --}}
+    <div class="unit-text-2">{{ e($unitText) }}</div>
     {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}
     @if(isset($baData) && !empty($baData->nama_kapal))
         <div class="nama-kapal">{{ e($baData->nama_kapal) }}</div>

@@ -4000,6 +4000,9 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 });
 
+// API Routes for AJAX calls (no middleware needed for these specific routes)
+Route::get('/api/manifests/voyages/{namaKapal}', [App\Http\Controllers\ManifestController::class, 'getVoyagesByShip']);
+
 // ═══════════════════════════════════════════════════════════════════════
 // 📊 AUDIT LOG ROUTES - Universal audit trail system
 // ═══════════════════════════════════════════════════════════════════════

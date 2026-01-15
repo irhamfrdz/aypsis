@@ -142,11 +142,11 @@
                                 Nomor Voyage <span class="text-red-500">*</span>
                             </div>
                         </label>
-                        <input type="text" name="no_voyage" id="no_voyage" required
-                               value="{{ request('no_voyage') }}"
-                               placeholder="Contoh: 001, 002, etc."
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 hover:bg-white">
-                        <p class="mt-2 text-sm text-gray-500">Masukkan nomor voyage kapal</p>
+                        <select name="no_voyage" id="no_voyage" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 hover:bg-white">
+                            <option value="">-- Pilih Voyage --</option>
+                        </select>
+                        <p class="mt-2 text-sm text-gray-500" id="voyage-help-text">Pilih nama kapal terlebih dahulu</p>
                     </div>
 
                     <!-- Info Box -->
@@ -400,7 +400,66 @@ document.getElementById('bulkImportModal')?.addEventListener('click', function(e
         if (namaKapal && !namaKapal.value) {
             namaKapal.focus();
         }
+
+        // Load voyages if ship is pre-selected
+        const selectedShip = "{{ request('nama_kapal') }}";
+        const selectedVoyage = "{{ request('no_voyage') }}";
+        if (selectedShip) {
+            loadVoyages(selectedShip, selectedVoyage);
+        }
     });
+
+    // Load voyages when ship is selected
+    document.getElementById('nama_kapal')?.addEventListener('change', function() {
+        const namaKapal = this.value;
+        loadVoyages(namaKapal);
+    });
+
+    function loadVoyages(namaKapal, selectedVoyage = '') {
+        const voyageSelect = document.getElementById('no_voyage');
+        const helpText = document.getElementById('voyage-help-text');
+        
+        if (!namaKapal) {
+            voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+            voyageSelect.disabled = true;
+            helpText.textContent = 'Pilih nama kapal terlebih dahulu';
+            return;
+        }
+
+        // Show loading state
+        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        voyageSelect.disabled = true;
+        helpText.textContent = 'Memuat data voyage...';
+
+        // Fetch voyages from server
+        fetch(`/api/manifests/voyages/${encodeURIComponent(namaKapal)}`)
+            .then(response => response.json())
+            .then(data => {
+                voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+                
+                if (data.voyages && data.voyages.length > 0) {
+                    data.voyages.forEach(voyage => {
+                        const option = document.createElement('option');
+                        option.value = voyage;
+                        option.textContent = voyage;
+                        if (selectedVoyage && voyage === selectedVoyage) {
+                            option.selected = true;
+                        }
+                        voyageSelect.appendChild(option);
+                    });
+                    voyageSelect.disabled = false;
+                    helpText.textContent = `${data.voyages.length} voyage tersedia`;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                    helpText.textContent = 'Tidak ada data voyage untuk kapal ini';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading voyages:', error);
+                voyageSelect.innerHTML = '<option value="">Error loading voyages</option>';
+                helpText.textContent = 'Gagal memuat data voyage';
+            });
+    }
 
     // Form validation
     document.getElementById('selectShipForm').addEventListener('submit', function(e) {

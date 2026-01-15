@@ -676,5 +676,43 @@ class ManifestController extends Controller
         $writer->save('php://output');
         exit;
     }
+
+    /**
+     * Get voyages by ship name (for AJAX)
+     */
+    public function getVoyagesByShip($namaKapal)
+    {
+        try {
+            // Decode URL-encoded ship name
+            $namaKapal = urldecode($namaKapal);
+
+            // Get distinct normalized voyages for the ship
+            $voyages = Manifest::where('nama_kapal', $namaKapal)
+                ->select('no_voyage')
+                ->distinct()
+                ->orderBy('no_voyage', 'asc')
+                ->pluck('no_voyage')
+                ->map(function($voyage) {
+                    // Normalize voyage: trim and uppercase
+                    return strtoupper(trim($voyage));
+                })
+                ->unique()
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'voyages' => $voyages,
+                'count' => count($voyages)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'voyages' => [],
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

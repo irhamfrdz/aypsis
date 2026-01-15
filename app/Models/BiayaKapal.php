@@ -25,6 +25,8 @@ class BiayaKapal extends Model
         'dp',
         'sisa_pembayaran',
         'penerima',
+        'nama_vendor',
+        'nomor_rekening',
         'keterangan',
         'bukti',
         'ppn',

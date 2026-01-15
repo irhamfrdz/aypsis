@@ -81,7 +81,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #333;
             padding-bottom: 8px;
         }
@@ -89,23 +89,8 @@
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .header-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-            font-size: 10px;
-        }
-
-        .header-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 10px;
+            margin-bottom: 4px;
+            color: #1a1a1a;
         }
 
         .info-section {
@@ -177,6 +162,30 @@
             page-break-inside: avoid;
         }
 
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+        }
+        
+        .signatures {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 12px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            font-size: 10px;
+        }
+        
+        .signature-line {
+            margin-top: 50px;
+            border-top: 1px solid #333;
+            padding-top: 3px;
+            font-weight: bold;
+        }
+
         .signature-table {
             width: 100%;
             border-collapse: collapse;
@@ -232,21 +241,16 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="header-info">
-                <div>
-                    <strong>PT. ALEXINDO YAKINPRIMA</strong><br>
-                    <span>Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
-                </div>
-            </div>
-            <div class="header-meta">
-                <span><strong>Tanggal: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</strong></span>
-            </div>
             <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Info Section -->
         <div class="info-section">
             <table class="info-table">
+                <tr>
+                    <td>Tanggal</td>
+                    <td>: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                </tr>
                 <tr>
                     <td>Nomor</td>
                     <td>: {{ $biayaKapal->nomor_invoice }}</td>
@@ -259,6 +263,18 @@
                 <tr>
                     <td>Penerima</td>
                     <td>: {{ $biayaKapal->penerima }}</td>
+                </tr>
+                @endif
+                @if($biayaKapal->nama_vendor)
+                <tr>
+                    <td>Nama Vendor</td>
+                    <td>: {{ $biayaKapal->nama_vendor }}</td>
+                </tr>
+                @endif
+                @if($biayaKapal->nomor_rekening)
+                <tr>
+                    <td>Nomor Rekening</td>
+                    <td>: {{ $biayaKapal->nomor_rekening }}</td>
                 </tr>
                 @endif
             </table>
@@ -382,23 +398,33 @@
         </div>
 
         <!-- Signature Section -->
-        <div class="signature-section">
-            <table class="signature-table">
-                <tr>
-                    <td>
-                        <div style="margin-bottom: 40px;"><strong>Dibuat Oleh:</strong></div>
-                        <div>___________</div>
-                    </td>
-                    <td>
-                        <div style="margin-bottom: 40px;"><strong>Diperiksa Oleh:</strong></div>
-                        <div>___________</div>
-                    </td>
-                    <td>
-                        <div style="margin-bottom: 40px;"><strong>Disetujui Oleh:</strong></div>
-                        <div>___________</div>
-                    </td>
-                </tr>
-            </table>
+        <div class="footer">
+            <div class="signatures">
+                <div class="signature-box">
+                    <div>Dibuat Oleh</div>
+                    <div class="signature-line">
+                        {{ $biayaKapal->creator->name ?? '-' }}
+                    </div>
+                </div>
+                
+                <div class="signature-box">
+                    <div>Diperiksa Oleh</div>
+                    <div class="signature-line">
+                        &nbsp;
+                    </div>
+                </div>
+                
+                <div class="signature-box">
+                    <div>Disetujui Oleh</div>
+                    <div class="signature-line">
+                        {{ $biayaKapal->approver->name ?? '-' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
+                Dicetak: {{ now()->format('d/m/Y H:i') }}
+            </div>
         </div>
     </div>
 

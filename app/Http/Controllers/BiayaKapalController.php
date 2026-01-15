@@ -141,6 +141,8 @@ class BiayaKapalController extends Controller
             'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
             'nominal' => 'required|numeric|min:0',
             'penerima' => 'required|string|max:255',
+            'nama_vendor' => 'nullable|string|max:255',
+            'nomor_rekening' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
             'ppn' => 'nullable|numeric|min:0',
@@ -374,6 +376,8 @@ class BiayaKapalController extends Controller
             'nama_kapal' => 'required|string|max:255',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
+            'nama_vendor' => 'nullable|string|max:255',
+            'nomor_rekening' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
         ]);
