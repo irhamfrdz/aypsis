@@ -343,15 +343,39 @@ class ProspekController extends Controller
                     if ($prospek->tandaTerima && $prospek->tandaTerima->no_tanda_terima) {
                         $prospek->nomor_tanda_terima = $prospek->tandaTerima->no_tanda_terima;
                     } else {
-                        // Cari dari tanda_terima_tanpa_surat_jalan berdasarkan pengirim, supir, dan tanggal
+                        // Cari semua tanda terima yang cocok dengan pengirim dan supir
+                        // Ambil yang paling cocok berdasarkan tanggal atau ID
                         $tttsj = \DB::table('tanda_terima_tanpa_surat_jalan')
                             ->where('pengirim', $prospek->pt_pengirim)
                             ->where('supir', $prospek->nama_supir)
-                            ->orderBy('tanggal_tanda_terima', 'desc')
-                            ->first();
+                            ->where('tujuan_pengiriman', $prospek->tujuan_pengiriman)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
                         
-                        if ($tttsj) {
-                            $prospek->nomor_tanda_terima = $tttsj->no_tanda_terima;
+                        if ($tttsj->count() > 0) {
+                            // Jika hanya 1, langsung assign
+                            if ($tttsj->count() == 1) {
+                                $prospek->nomor_tanda_terima = $tttsj->first()->no_tanda_terima;
+                            } else {
+                                // Jika lebih dari 1, coba cari yang created_at nya paling dekat dengan prospek
+                                $closestTT = null;
+                                $minDiff = PHP_INT_MAX;
+                                
+                                foreach ($tttsj as $tt) {
+                                    $ttTime = strtotime($tt->created_at);
+                                    $prospekTime = strtotime($prospek->created_at);
+                                    $diff = abs($ttTime - $prospekTime);
+                                    
+                                    if ($diff < $minDiff) {
+                                        $minDiff = $diff;
+                                        $closestTT = $tt;
+                                    }
+                                }
+                                
+                                if ($closestTT) {
+                                    $prospek->nomor_tanda_terima = $closestTT->no_tanda_terima;
+                                }
+                            }
                         }
                     }
                 }
