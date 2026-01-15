@@ -244,26 +244,26 @@
             $rightItems = $sortedItems->skip($halfCount);
         @endphp
 
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 8px;">
             {{-- Kolom Kiri --}}
             <div style="flex: 1;">
-                <table class="table-auto border-collapse" style="width: 100%; font-size: 8px;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 7px;">
                     <thead>
-                        <tr>
-                            <th class="border px-1 py-1 text-center" style="width: 8%;">No</th>
-                            <th class="border px-1 py-1 text-left" style="width: 37%;">No.Container</th>
-                            <th class="border px-1 py-1 text-center" style="width: 12%;">Size</th>
-                            <th class="border px-1 py-1 text-center" style="width: 10%;">St</th>
-                            <th class="border px-1 py-1 text-left" style="width: 33%;">NamaSupir</th>
+                        <tr style="background-color: #f3f4f6;">
+                            <th class="border px-1 py-0.5 text-center" style="width: 6%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 40%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 8%;">St</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 31%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $no = 1; @endphp
                         @forelse($leftItems as $item)
                             <tr>
-                                <td class="border px-1 py-1 text-center">{{ $no++ }}</td>
-                                <td class="border px-1 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                                <td class="border px-1 py-1 text-center">
+                                <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
                                         if (str_contains($size, '40')) {
@@ -275,14 +275,14 @@
                                         }
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-1 text-center">
+                                <td class="border px-1 py-0.5 text-center">
                                     {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
                                 </td>
-                                <td class="border px-1 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="border px-1 py-1 text-center text-gray-500">
+                                <td colspan="5" class="border px-1 py-0.5 text-center text-gray-500">
                                     Tidak ada data
                                 </td>
                             </tr>
@@ -293,23 +293,23 @@
 
             {{-- Kolom Kanan --}}
             <div style="flex: 1;">
-                <table class="table-auto border-collapse" style="width: 100%; font-size: 8px;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 7px;">
                     <thead>
-                        <tr>
-                            <th class="border px-1 py-1 text-center" style="width: 8%;">No</th>
-                            <th class="border px-1 py-1 text-left" style="width: 37%;">No.Container</th>
-                            <th class="border px-1 py-1 text-center" style="width: 12%;">Size</th>
-                            <th class="border px-1 py-1 text-center" style="width: 10%;">St</th>
-                            <th class="border px-1 py-1 text-left" style="width: 33%;">NamaSupir</th>
+                        <tr style="background-color: #f3f4f6;">
+                            <th class="border px-1 py-0.5 text-center" style="width: 6%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 40%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 8%;">St</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 31%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $no = $halfCount + 1; @endphp
                         @forelse($rightItems as $item)
                             <tr>
-                                <td class="border px-1 py-1 text-center">{{ $no++ }}</td>
-                                <td class="border px-1 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                                <td class="border px-1 py-1 text-center">
+                                <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
                                         if (str_contains($size, '40')) {
@@ -321,14 +321,14 @@
                                         }
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-1 text-center">
+                                <td class="border px-1 py-0.5 text-center">
                                     {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
                                 </td>
-                                <td class="border px-1 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="border px-1 py-1 text-center text-gray-500">
+                                <td colspan="5" class="border px-1 py-0.5 text-center text-gray-500">
                                     Tidak ada data
                                 </td>
                             </tr>
