@@ -1260,7 +1260,20 @@ Route::middleware([
              'destroy' => 'can:master-gudang-delete'
          ]);
 
-    // 💰 Pricelist Uang Jalan Batam Management with permissions
+    // � Stock Ban (Tire Stock) Management with permissions
+    Route::resource('stock-ban', \App\Http\Controllers\StockBanController::class)
+         ->names('stock-ban')
+         ->middleware([
+             'index' => 'can:stock-ban-view',
+             'show' => 'can:stock-ban-view',
+             'create' => 'can:stock-ban-create',
+             'store' => 'can:stock-ban-create',
+             'edit' => 'can:stock-ban-update',
+             'update' => 'can:stock-ban-update',
+             'destroy' => 'can:stock-ban-delete'
+         ]);
+
+    // �💰 Pricelist Uang Jalan Batam Management with permissions
     // Download Template & Import (must be before resource routes)
     Route::get('pricelist-uang-jalan-batam/download-template', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'downloadTemplate'])
          ->name('pricelist-uang-jalan-batam.download-template')
