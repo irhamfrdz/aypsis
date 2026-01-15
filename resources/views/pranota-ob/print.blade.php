@@ -277,13 +277,21 @@
                                 </td>
                                 <td class="border px-1 py-0.5 text-center">
                                     @php
+                                        // Check multiple possible status fields
+                                        $isFull = $item['is_full'] ?? null;
                                         $status = $item['status'] ?? ($item['status_kontainer'] ?? '');
-                                        if (strtolower($status) === 'full' || strtolower($status) === 'f') {
+                                        
+                                        // Determine status from various fields
+                                        if ($isFull === 1 || $isFull === '1' || $isFull === true) {
+                                            echo 'F';
+                                        } elseif ($isFull === 0 || $isFull === '0' || $isFull === false) {
+                                            echo 'E';
+                                        } elseif (strtolower($status) === 'full' || strtolower($status) === 'f') {
                                             echo 'F';
                                         } elseif (strtolower($status) === 'empty' || strtolower($status) === 'e') {
                                             echo 'E';
                                         } else {
-                                            echo strtoupper(substr($status, 0, 1));
+                                            echo 'F'; // Default to F
                                         }
                                     @endphp
                                 </td>
@@ -332,13 +340,21 @@
                                 </td>
                                 <td class="border px-1 py-0.5 text-center">
                                     @php
+                                        // Check multiple possible status fields
+                                        $isFull = $item['is_full'] ?? null;
                                         $status = $item['status'] ?? ($item['status_kontainer'] ?? '');
-                                        if (strtolower($status) === 'full' || strtolower($status) === 'f') {
+                                        
+                                        // Determine status from various fields
+                                        if ($isFull === 1 || $isFull === '1' || $isFull === true) {
+                                            echo 'F';
+                                        } elseif ($isFull === 0 || $isFull === '0' || $isFull === false) {
+                                            echo 'E';
+                                        } elseif (strtolower($status) === 'full' || strtolower($status) === 'f') {
                                             echo 'F';
                                         } elseif (strtolower($status) === 'empty' || strtolower($status) === 'e') {
                                             echo 'E';
                                         } else {
-                                            echo strtoupper(substr($status, 0, 1));
+                                            echo 'F'; // Default to F
                                         }
                                     @endphp
                                 </td>
