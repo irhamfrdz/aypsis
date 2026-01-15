@@ -446,6 +446,26 @@
                     @enderror
                 </div>
 
+                <!-- Biaya Materai (for Biaya Penumpukan) -->
+                <div id="biaya_materai_wrapper" class="hidden">
+                    <label for="biaya_materai" class="block text-sm font-medium text-gray-700 mb-2">
+                        Biaya Materai
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               id="biaya_materai" 
+                               name="biaya_materai" 
+                               value="{{ old('biaya_materai', '0') }}"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('biaya_materai') border-red-500 @enderror"
+                               placeholder="0">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Biaya materai untuk dokumen</p>
+                    @error('biaya_materai')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- DP (for Biaya Buruh) -->
                 <div id="dp_wrapper" class="hidden">
                     <label for="dp" class="block text-sm font-medium text-gray-700 mb-2">
@@ -785,6 +805,8 @@
     const sisaPembayaranInput = document.getElementById('sisa_pembayaran');
     const vendorWrapper = document.getElementById('vendor_wrapper');
     const vendorSelect = document.getElementById('vendor');
+    const biayaMateraiWrapper = document.getElementById('biaya_materai_wrapper');
+    const biayaMateraiInput = document.getElementById('biaya_materai');
     
     // Biaya Dokumen specific fields
     const pphDokumenWrapper = document.getElementById('pph_dokumen_wrapper');
@@ -810,7 +832,7 @@
         if (selectedText.toLowerCase().includes('dokumen') || selectedText.toLowerCase().includes('listrik') || selectedText.toLowerCase().includes('trucking')) {
             calculatePphDokumen();
         } else if (selectedText.toLowerCase().includes('penumpukan')) {
-            calculateTotalBiaya();
+            calculatePpnPenumpukan();
         } else if (selectedText.toLowerCase().includes('buruh')) {
             calculateSisaPembayaran();
         }
@@ -846,6 +868,16 @@
         calculateTotalBiaya();
     });
     
+    // Format Biaya Materai input
+    biayaMateraiInput.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        this.value = value;
+        calculateTotalBiaya();
+    });
+    
     // Calculate Sisa Pembayaran = Nominal - DP (for Biaya Buruh)
     function calculateSisaPembayaran() {
         const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
@@ -868,13 +900,38 @@
         grandTotalDokumenInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
     }
     
-    // Calculate Total Biaya = Nominal + PPN - PPH
+    // Calculate PPH Penumpukan (2% dari nominal) for Biaya Penumpukan
+    function calculatePphPenumpukan() {
+        const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
+        
+        // PPH = 2% dari nominal
+        const pph = Math.round(nominal * 0.02);
+        pphInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
+        
+        // Recalculate total biaya
+        calculateTotalBiaya();
+    }
+    
+    // Calculate PPN Penumpukan (11% dari nominal) for Biaya Penumpukan
+    function calculatePpnPenumpukan() {
+        const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
+        
+        // PPN = 11% dari nominal
+        const ppn = Math.round(nominal * 0.11);
+        ppnInput.value = ppn > 0 ? ppn.toLocaleString('id-ID') : '0';
+        
+        // Auto-calculate PPH after PPN
+        calculatePphPenumpukan();
+    }
+    
+    // Calculate Total Biaya = Nominal + PPN + Materai - PPH
     function calculateTotalBiaya() {
         const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
         const ppn = parseInt(ppnInput.value.replace(/\D/g, '') || 0);
         const pph = parseInt(pphInput.value.replace(/\D/g, '') || 0);
+        const materai = parseInt(biayaMateraiInput.value.replace(/\D/g, '') || 0);
         
-        const total = nominal + ppn - pph;
+        const total = nominal + ppn + materai - pph;
         totalBiayaInput.value = total > 0 ? total.toLocaleString('id-ID') : '';
     }
 
@@ -898,6 +955,10 @@
         }
         if (grandTotalDokumenInput && grandTotalDokumenInput.value) {
             grandTotalDokumenInput.value = grandTotalDokumenInput.value.replace(/\./g, '');
+        }
+        // Clean Biaya Materai field
+        if (biayaMateraiInput && biayaMateraiInput.value) {
+            biayaMateraiInput.value = biayaMateraiInput.value.replace(/\./g, '');
         }
     });
 
@@ -1145,6 +1206,9 @@
             pphWrapper.classList.remove('hidden');
             totalBiayaWrapper.classList.remove('hidden');
             
+            // Show Biaya Materai for Biaya Penumpukan
+            biayaMateraiWrapper.classList.remove('hidden');
+            
             // Hide DP fields for Biaya Penumpukan
             dpWrapper.classList.add('hidden');
             sisaPembayaranWrapper.classList.add('hidden');
@@ -1160,6 +1224,9 @@
             grandTotalDokumenWrapper.classList.add('hidden');
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
+            
+            // Auto-calculate PPN (11%) and PPH (2% dari nominal) for Biaya Penumpukan
+            calculatePpnPenumpukan();
             
             // Show Nama Kapal and Nomor Voyage fields
             kapalWrapper.classList.remove('hidden');
@@ -1187,6 +1254,10 @@
             sisaPembayaranWrapper.classList.add('hidden');
             dpInput.value = '0';
             sisaPembayaranInput.value = '0';
+            
+            // Hide Biaya Materai for other types
+            biayaMateraiWrapper.classList.add('hidden');
+            biayaMateraiInput.value = '0';
             
             // Hide vendor wrapper for other types
             vendorWrapper.classList.add('hidden');

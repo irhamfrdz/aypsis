@@ -239,13 +239,10 @@
             <thead>
                 <tr>
                     <th class="border px-2 py-1 text-center" style="width: 5%;">No</th>
-                    <th class="border px-2 py-1 text-left" style="width: 20%;">No.Container</th>
-                    <th class="border px-2 py-1 text-center" style="width: 8%;">Size</th>
-                    <th class="border px-2 py-1 text-center" style="width: 8%;">Status</th>
-                    <th class="border px-2 py-1 text-left" style="width: 18%;">NamaSupir</th>
-                    <th class="border px-2 py-1 text-left" style="width: 15%;">No.Mobil</th>
-                    <th class="border px-2 py-1 text-center" style="width: 10%;">Dari</th>
-                    <th class="border px-2 py-1 text-center" style="width: 10%;">Ke</th>
+                    <th class="border px-2 py-1 text-left" style="width: 35%;">No.Container</th>
+                    <th class="border px-2 py-1 text-center" style="width: 15%;">Size</th>
+                    <th class="border px-2 py-1 text-center" style="width: 15%;">Status</th>
+                    <th class="border px-2 py-1 text-left" style="width: 30%;">NamaSupir</th>
                 </tr>
             </thead>
             <tbody>
@@ -266,13 +263,10 @@
                             {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
                         </td>
                         <td class="border px-2 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
-                        <td class="border px-2 py-1">{{ $item['nomor_polisi'] ?? ($item['no_mobil'] ?? '-') }}</td>
-                        <td class="border px-2 py-1 text-center">{{ $item['dari'] ?? '-' }}</td>
-                        <td class="border px-2 py-1 text-center">{{ $item['ke'] ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="border px-2 py-1 text-center text-gray-500">
+                        <td colspan="5" class="border px-2 py-1 text-center text-gray-500">
                             Tidak ada data kontainer
                         </td>
                     </tr>
