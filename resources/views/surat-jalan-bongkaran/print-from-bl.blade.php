@@ -152,9 +152,9 @@
         ============================================================
     -->
     <div class="container">
-        <!-- Tanggal Surat Jalan (posisi top 1.25cm, left 10cm) - Data dari Manifest -->
+        <!-- Tanggal Berangkat (posisi top 1.25cm, left 10cm) - Data dari Manifest (manifests.tanggal_berangkat) -->
         <div class="date-header">
-            {{ $printData->tanggal_surat_jalan ? \Carbon\Carbon::parse($printData->tanggal_surat_jalan)->format('d-M-Y') : '' }}
+            {{ $printData->tanggal_berangkat ? \Carbon\Carbon::parse($printData->tanggal_berangkat)->format('d-M-Y') : '' }}
         </div>
 
         <!-- Nomor Voyage (posisi top 5cm, left 3.5cm) - Data dari Manifest -->

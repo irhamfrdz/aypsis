@@ -916,7 +916,10 @@ class SuratJalanBongkaranController extends Controller
         // This allows printing even if surat jalan hasn't been created yet
         $printData = new \stdClass();
         
-        // Get current date for tanggal_surat_jalan
+        // Get tanggal_berangkat from manifest table
+        $printData->tanggal_berangkat = $manifest->tanggal_berangkat ?? now()->format('Y-m-d');
+        
+        // Get current date for tanggal_surat_jalan (fallback)
         $printData->tanggal_surat_jalan = now()->format('Y-m-d');
         
         // ========================================
