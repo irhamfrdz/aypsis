@@ -16,6 +16,10 @@ class InvoiceAktivitasLainListrik extends Model
         'referensi',
         'penerima',
         'tanggal',
+        'akun_coa_id',
+        'tipe_transaksi',
+        'nominal_debit',
+        'nominal_kredit',
         'lwbp_baru',
         'lwbp_lama',
         'lwbp',
@@ -33,6 +37,8 @@ class InvoiceAktivitasLainListrik extends Model
 
     protected $casts = [
         'tanggal' => 'date',
+        'nominal_debit' => 'decimal:2',
+        'nominal_kredit' => 'decimal:2',
         'lwbp_baru' => 'decimal:2',
         'lwbp_lama' => 'decimal:2',
         'lwbp' => 'decimal:2',
@@ -47,6 +53,11 @@ class InvoiceAktivitasLainListrik extends Model
         'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',
     ];
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(\App\Models\AkunCoa::class, 'akun_coa_id');
+    }
 
     /**
      * Relationship to Invoice Aktivitas Lain

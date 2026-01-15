@@ -159,7 +159,13 @@ class InvoiceAktivitasLainController extends Controller
             ->values()
             ->toArray();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList'));
+        // Get akun COA for biaya listrik
+        $akunCoas = \DB::table('akun_coa')
+            ->select('id', 'nomor_akun', 'nama_akun')
+            ->orderBy('nomor_akun')
+            ->get();
+        
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas'));
     }
 
     /**
@@ -257,6 +263,10 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik.*.referensi' => 'nullable|string|max:255',
             'biaya_listrik.*.penerima' => 'nullable|string|max:255',
             'biaya_listrik.*.tanggal' => 'nullable|date',
+            'biaya_listrik.*.akun_coa_id' => 'nullable|exists:akun_coa,id',
+            'biaya_listrik.*.tipe_transaksi' => 'nullable|in:debit,kredit',
+            'biaya_listrik.*.nominal_debit' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.nominal_kredit' => 'nullable|numeric|min:0',
             'biaya_listrik.*.lwbp_baru' => 'nullable|numeric|min:0',
             'biaya_listrik.*.lwbp_lama' => 'nullable|numeric|min:0',
             'biaya_listrik.*.lwbp' => 'nullable|numeric',

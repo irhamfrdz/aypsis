@@ -920,10 +920,12 @@
 const pricelistBuruhData = @json($pricelistBuruh);
 const pricelistBiayaDokumenData = @json($pricelistBiayaDokumen);
 const blsData = @json($bls);
+const akunCoasData = @json($akunCoas);
 
 // Debug: Check for duplicates
 console.log('Total pricelist buruh:', pricelistBuruhData.length);
 console.log('Pricelist buruh data:', pricelistBuruhData);
+console.log('Akun COAs data:', akunCoasData);
 
 (function() {
     function loadScript(src, onload, onerror) {
@@ -2207,6 +2209,57 @@ console.log('Pricelist buruh data:', pricelistBuruhData);
                            class="bl-tanggal w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            value="${existingData.tanggal || ''}"
                            required>
+                </div>
+                
+                <!-- Akun COA -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Akun COA <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <select name="biaya_listrik[${index}][akun_coa_id]" 
+                            class="bl-akun-coa w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Akun COA</option>
+                        ${akunCoasData.map(akun => `<option value="${akun.id}">${akun.nomor_akun} - ${akun.nama_akun}</option>`).join('')}
+                    </select>
+                </div>
+                
+                <!-- Tipe Transaksi -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tipe Transaksi <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <select name="biaya_listrik[${index}][tipe_transaksi]" 
+                            class="bl-tipe-transaksi w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Tipe</option>
+                        <option value="debit">Debit</option>
+                        <option value="kredit">Kredit</option>
+                    </select>
+                </div>
+                
+                <!-- Nominal Debit -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Nominal Debit <small class="text-gray-500">(Jika Debit)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][nominal_debit]" 
+                           class="bl-nominal-debit w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.nominal_debit || ''}">
+                </div>
+                
+                <!-- Nominal Kredit -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Nominal Kredit <small class="text-gray-500">(Jika Kredit)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][nominal_kredit]" 
+                           class="bl-nominal-kredit w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.nominal_kredit || ''}">
                 </div>
                 
                 <!-- LWBP Baru -->
