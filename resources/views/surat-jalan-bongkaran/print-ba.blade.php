@@ -54,6 +54,15 @@
             font-size: 14px;
             font-weight: bold;
         }
+        /* Positioned second unit text below first unit */
+        .unit-text-2 {
+            position: absolute;
+            top: 15cm; /* moved down 3cm from 12cm */
+            left: 5cm; /* aligned with first unit text */
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: bold;
+        }
         /* Positioned nama barang (jenis barang) */
         .nama-barang {
             position: absolute;
@@ -97,11 +106,21 @@
         /* Positioned pelabuhan route (asal - tujuan) */
         .pelabuhan-route {
             position: absolute;
-            top: 9cm; /* 1cm lower: 9cm */
-            left: 20cm; /* 1.5cm more to the right: 20cm */
+            top: 8.5cm; /* moved up another 1cm */
+            left: 20.25cm; /* aligned with nama kapal */
             max-width: 11.5cm;
             white-space: nowrap;
             font-size: 12px; /* smaller font */
+            font-weight: bold;
+            text-align: left;
+        }
+        /* Positioned tanggal below nama kapal */
+        .tanggal-ba {
+            position: absolute;
+            top: 8cm; /* moved up 1cm */
+            left: 20.25cm; /* aligned with nama kapal */
+            white-space: nowrap;
+            font-size: 12px;
             font-weight: bold;
             text-align: left;
         }
@@ -161,6 +180,8 @@
     <div class="kontainer-info">{{ e($kontainerText) }}</div>
     {{-- Unit Text (static: 1 unit) --}}
     <div class="unit-text">1 unit</div>
+    {{-- Second Unit Text (static: 1 unit) --}}
+    <div class="unit-text-2">1 unit</div>
     {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}
     @if(isset($baData) && !empty($baData->nama_kapal))
         <div class="nama-kapal">{{ e($baData->nama_kapal) }}</div>
@@ -201,17 +222,39 @@
             return $v;
         };
 
-        $asal = $mapPelabuhan($baData->pelabuhan_asal ?? '');
-        $tujuan = $mapPelabuhan($baData->pelabuhan_tujuan ?? '');
-        $pelabuhanText = '';
-        if ($asal !== '' || $tujuan !== '') {
-            $pelabuhanText = trim(($asal ?? '') . ' - ' . ($tujuan ?? ''));
+        // Check if voyage contains 'bj' (case-insensitive) -> Batam - Jakarta
+        $voyageCheck = strtolower($baData->no_voyage ?? '');
+        if (str_contains($voyageCheck, 'bj')) {
+            $pelabuhanText = 'Batam - Jakarta';
+        } else {
+            $asal = $mapPelabuhan($baData->pelabuhan_asal ?? '');
+            $tujuan = $mapPelabuhan($baData->pelabuhan_tujuan ?? '');
+            $pelabuhanText = '';
+            if ($asal !== '' || $tujuan !== '') {
+                $pelabuhanText = trim(($asal ?? '') . ' - ' . ($tujuan ?? ''));
+            }
         }
     @endphp
     @if(!empty($pelabuhanText))
         <div class="pelabuhan-route">{{ e($pelabuhanText) }}</div>
     @else
         <div class="pelabuhan-route">&nbsp;</div>
+    @endif
+    {{-- Tanggal BA (format: d-M-Y) --}}
+    @php
+        $tanggalBa = '';
+        if (isset($baData->tanggal_ba)) {
+            try {
+                $tanggalBa = \Carbon\Carbon::parse($baData->tanggal_ba)->format('d-M-Y');
+            } catch (\Exception $e) {
+                $tanggalBa = '';
+            }
+        }
+    @endphp
+    @if(!empty($tanggalBa))
+        <div class="tanggal-ba">{{ e($tanggalBa) }}</div>
+    @else
+        <div class="tanggal-ba">&nbsp;</div>
     @endif
     {{-- Nama Alex (static) --}}
     <div class="alex-name">Alex</div>
