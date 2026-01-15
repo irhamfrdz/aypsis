@@ -97,7 +97,7 @@
                 <!-- Tahun Pembuatan -->
                 <div>
                     <label for="tahun_pembuatan" class="block text-sm font-medium text-gray-700">Tahun Pembuatan</label>
-                    <input type="number" name="tahun_pembuatan" id="tahun_pembuatan" value="{{ old('tahun_pembuatan', $mobil->tahun_pembuatan) }}" class="{{ $inputClasses }}" min="1990" max="{{ date('Y') + 1 }}" placeholder="Contoh: {{ date('Y') }}">
+                    <input type="number" name="tahun_pembuatan" id="tahun_pembuatan" value="{{ old('tahun_pembuatan', $mobil->tahun_pembuatan) }}" class="{{ $inputClasses }}" min="1900" max="{{ date('Y') + 1 }}" placeholder="Contoh: {{ date('Y') }}">
                     @error('tahun_pembuatan')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
