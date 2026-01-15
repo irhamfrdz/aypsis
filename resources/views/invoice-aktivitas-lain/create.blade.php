@@ -2236,32 +2236,6 @@ console.log('Akun COAs data:', akunCoasData);
                     </select>
                 </div>
                 
-                <!-- Nominal Debit -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Nominal Debit <small class="text-gray-500">(Jika Debit)</small>
-                    </label>
-                    <input type="number" 
-                           name="biaya_listrik[${index}][nominal_debit]" 
-                           class="bl-nominal-debit w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="0"
-                           step="0.01"
-                           value="${existingData.nominal_debit || ''}">
-                </div>
-                
-                <!-- Nominal Kredit -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Nominal Kredit <small class="text-gray-500">(Jika Kredit)</small>
-                    </label>
-                    <input type="number" 
-                           name="biaya_listrik[${index}][nominal_kredit]" 
-                           class="bl-nominal-kredit w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="0"
-                           step="0.01"
-                           value="${existingData.nominal_kredit || ''}">
-                </div>
-                
                 <!-- LWBP Baru -->
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">
