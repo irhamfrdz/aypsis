@@ -276,7 +276,16 @@
                                     @endphp
                                 </td>
                                 <td class="border px-1 py-0.5 text-center">
-                                    {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
+                                    @php
+                                        $status = $item['status'] ?? ($item['status_kontainer'] ?? '');
+                                        if (strtolower($status) === 'full' || strtolower($status) === 'f') {
+                                            echo 'F';
+                                        } elseif (strtolower($status) === 'empty' || strtolower($status) === 'e') {
+                                            echo 'E';
+                                        } else {
+                                            echo strtoupper(substr($status, 0, 1));
+                                        }
+                                    @endphp
                                 </td>
                                 <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
@@ -322,7 +331,16 @@
                                     @endphp
                                 </td>
                                 <td class="border px-1 py-0.5 text-center">
-                                    {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
+                                    @php
+                                        $status = $item['status'] ?? ($item['status_kontainer'] ?? '');
+                                        if (strtolower($status) === 'full' || strtolower($status) === 'f') {
+                                            echo 'F';
+                                        } elseif (strtolower($status) === 'empty' || strtolower($status) === 'e') {
+                                            echo 'E';
+                                        } else {
+                                            echo strtoupper(substr($status, 0, 1));
+                                        }
+                                    @endphp
                                 </td>
                                 <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
@@ -336,16 +354,6 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        {{-- Grand Total di akhir halaman 2 --}}
-        <div style="margin-top: 10px; padding: 5px; background-color: #f3f4f6; border: 2px solid #000;">
-            <table style="width: 100%; font-size: 9px; font-weight: bold;">
-                <tr>
-                    <td style="text-align: right; padding-right: 10px;">TOTAL KESELURUHAN:</td>
-                    <td style="text-align: right; width: 120px;">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
-                </tr>
-            </table>
         </div>
     </div>
 @endsection
