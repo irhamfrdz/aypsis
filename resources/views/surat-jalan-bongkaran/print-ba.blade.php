@@ -39,7 +39,7 @@
         /* Positioned container number */
         .no-kontainer {
             position: absolute;
-            top: 10.5cm; /* moved up slightly */
+            top: 11.5cm; /* aligned with nama barang */
             left: 1cm;  /* 1cm from left */
             white-space: nowrap; /* container number single-line */
             font-weight: bold;
@@ -48,7 +48,7 @@
         /* Positioned unit text */
         .unit-text {
             position: absolute;
-            top: 10.5cm; /* aligned with container number */
+            top: 11.5cm; /* aligned with nama barang */
             left: 5cm; /* 5cm from left */
             white-space: nowrap;
             font-size: 14px;
@@ -57,7 +57,7 @@
         /* Positioned second unit text below first unit */
         .unit-text-2 {
             position: absolute;
-            top: 15cm; /* moved down 3cm from 12cm */
+            top: 20cm; /* lowered by 5cm */
             left: 5cm; /* aligned with first unit text */
             white-space: nowrap;
             font-size: 14px;
@@ -96,7 +96,7 @@
         /* Positioned nomor voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) */
         .no-voyage {
             position: absolute;
-            top: 6.0cm; /* 1cm lower: 6.0cm */
+            top: 6.2cm; /* lowered by 0.2cm */
             left: 12.75cm; /* 1.5cm more to the right: 12.75cm */
             white-space: nowrap;
             font-weight: bold;
