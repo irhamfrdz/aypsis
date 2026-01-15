@@ -6,7 +6,7 @@
 <style>
     @page {
         size: 21.5cm 16.5cm; /* Half folio size (setengah folio) */
-        margin: 0.5cm;
+        margin: 1cm;
     }
     
     @media print {
@@ -18,22 +18,6 @@
             width: 100%;
             height: 100%;
         }
-    }
-    
-    /* 2-column layout */
-    .two-column-container {
-        display: flex;
-        gap: 10px;
-    }
-    
-    .column-left {
-        width: 48%;
-        padding-right: 5px;
-    }
-    
-    .column-right {
-        width: 48%;
-        padding-left: 5px;
     }
     
     /* Adjust font sizes for smaller paper */
@@ -68,9 +52,6 @@
 @endpush
 
 @section('content')
-<div class="two-column-container">
-    <!-- Column 1: Ringkasan -->
-    <div class="column-left">
     <div class="p-2 bg-white print-container">
         <div style="margin-bottom: 4px;">
             <h2 class="font-semibold" style="margin: 0 0 1px 0; font-size: 11px;">Pranota OB</h2>
@@ -243,54 +224,101 @@
             </table>
         </div>
     </div>
-    </div>
 
-    <!-- Column 2: Detail Kontainer -->
-    <div class="column-right">
+    {{-- Page Break untuk halaman 2 --}}
+    <div style="page-break-after: always;"></div>
+
+    {{-- Halaman 2: Detail Kontainer Per Supir --}}
     <div class="p-2 bg-white print-container">
         <div style="margin-bottom: 8px;">
             <h2 class="font-semibold" style="margin: 0 0 2px 0; font-size: 11px;">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-m-Y') : date('d-m-Y') }}</h2>
             <p style="margin: 0; font-size: 9px; line-height: 1.3; font-weight: bold;">KM, {{ $pranota->nama_kapal ?? '-' }}</p>
         </div>
 
-        <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
-            <thead>
-                <tr>
-                    <th class="border px-2 py-1 text-center" style="width: 5%;">No</th>
-                    <th class="border px-2 py-1 text-left" style="width: 35%;">No.Container</th>
-                    <th class="border px-2 py-1 text-center" style="width: 15%;">Size</th>
-                    <th class="border px-2 py-1 text-center" style="width: 15%;">Status</th>
-                    <th class="border px-2 py-1 text-left" style="width: 30%;">NamaSupir</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    // Sort displayItems by supir
-                    $sortedItems = collect($displayItems)->sortBy('supir');
-                    $no = 1;
-                @endphp
-                
-                @forelse($sortedItems as $item)
-                    <tr>
-                        <td class="border px-2 py-1 text-center">{{ $no++ }}</td>
-                        <td class="border px-2 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                        <td class="border px-2 py-1 text-center">
-                            {{ $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-')) }}
-                        </td>
-                        <td class="border px-2 py-1 text-center">
-                            {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
-                        </td>
-                        <td class="border px-2 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="border px-2 py-1 text-center text-gray-500">
-                            Tidak ada data kontainer
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+        @php
+            // Sort displayItems by supir
+            $sortedItems = collect($displayItems)->sortBy('supir')->values();
+            $totalItems = $sortedItems->count();
+            $halfCount = ceil($totalItems / 2);
+            $leftItems = $sortedItems->take($halfCount);
+            $rightItems = $sortedItems->skip($halfCount);
+        @endphp
+
+        <div style="display: flex; gap: 10px;">
+            {{-- Kolom Kiri --}}
+            <div style="flex: 1;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 8px;">
+                    <thead>
+                        <tr>
+                            <th class="border px-1 py-1 text-center" style="width: 8%;">No</th>
+                            <th class="border px-1 py-1 text-left" style="width: 37%;">No.Container</th>
+                            <th class="border px-1 py-1 text-center" style="width: 12%;">Size</th>
+                            <th class="border px-1 py-1 text-center" style="width: 10%;">St</th>
+                            <th class="border px-1 py-1 text-left" style="width: 33%;">NamaSupir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $no = 1; @endphp
+                        @forelse($leftItems as $item)
+                            <tr>
+                                <td class="border px-1 py-1 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-1 text-center">
+                                    {{ $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-')) }}
+                                </td>
+                                <td class="border px-1 py-1 text-center">
+                                    {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
+                                </td>
+                                <td class="border px-1 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="border px-1 py-1 text-center text-gray-500">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Kolom Kanan --}}
+            <div style="flex: 1;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 8px;">
+                    <thead>
+                        <tr>
+                            <th class="border px-1 py-1 text-center" style="width: 8%;">No</th>
+                            <th class="border px-1 py-1 text-left" style="width: 37%;">No.Container</th>
+                            <th class="border px-1 py-1 text-center" style="width: 12%;">Size</th>
+                            <th class="border px-1 py-1 text-center" style="width: 10%;">St</th>
+                            <th class="border px-1 py-1 text-left" style="width: 33%;">NamaSupir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $no = $halfCount + 1; @endphp
+                        @forelse($rightItems as $item)
+                            <tr>
+                                <td class="border px-1 py-1 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-1 text-center">
+                                    {{ $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-')) }}
+                                </td>
+                                <td class="border px-1 py-1 text-center">
+                                    {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
+                                </td>
+                                <td class="border px-1 py-1">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="border px-1 py-1 text-center text-gray-500">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         {{-- Grand Total di akhir halaman 2 --}}
         <div style="margin-top: 10px; padding: 5px; background-color: #f3f4f6; border: 2px solid #000;">
@@ -302,6 +330,4 @@
             </table>
         </div>
     </div>
-    </div>
-</div>
 @endsection
