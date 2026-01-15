@@ -65,7 +65,7 @@
             color: white;
             padding: 8px;
             text-align: left;
-            font-size: 9pt;
+            font-size: 11pt;
             font-weight: bold;
             border: 1px solid #333;
         }
@@ -73,7 +73,7 @@
         td {
             padding: 6px 8px;
             border: 1px solid #ddd;
-            font-size: 9pt;
+            font-size: 11pt;
         }
         
         tr:nth-child(even) {
@@ -218,7 +218,7 @@
                     <br>
                     <span style="color: #666;">{{ isset($bls) ? ($item->size_kontainer ? $item->size_kontainer . ' Feet' : '-') : ($item->ukuran_kontainer ?? '-') }}</span>
                     @if($item->no_seal)
-                    <br><span style="color: #2563eb; font-size: 8pt;">Seal: {{ $item->no_seal }}</span>
+                    <br><span style="color: #2563eb; font-size: 10pt;">Seal: {{ $item->no_seal }}</span>
                     @endif
                 </td>
                 <td style="text-align: center;">
@@ -267,7 +267,7 @@
                     @if($supir)
                         {{ $supir }}
                         @if($item->supir?->plat)
-                        <br><span style="color: #666; font-size: 8pt;">{{ $item->supir->plat }}</span>
+                        <br><span style="color: #666; font-size: 10pt;">{{ $item->supir->plat }}</span>
                         @endif
                     @else
                         <span style="color: #999;">-</span>
