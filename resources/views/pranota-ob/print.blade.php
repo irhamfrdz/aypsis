@@ -56,7 +56,6 @@
         <div style="margin-bottom: 4px;">
             <h2 class="font-semibold" style="margin: 0 0 1px 0; font-size: 11px;">Pranota OB</h2>
             <p style="margin: 0; font-size: 7px; line-height: 1.3;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-            <p style="margin: 0; font-size: 7px; line-height: 1.3;">Kapal: {{ $pranota->nama_kapal ?? '-' }}</p>
             <p style="margin: 0; font-size: 7px; line-height: 1.3;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
         </div>
 
@@ -232,7 +231,6 @@
     <div class="p-2 bg-white print-container">
         <div style="margin-bottom: 8px;">
             <h2 class="font-semibold" style="margin: 0 0 2px 0; font-size: 11px;">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-m-Y') : date('d-m-Y') }}</h2>
-            <p style="margin: 0; font-size: 9px; line-height: 1.3; font-weight: bold;">KM, {{ $pranota->nama_kapal ?? '-' }}</p>
         </div>
 
         @php
