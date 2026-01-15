@@ -264,7 +264,16 @@
                                 <td class="border px-1 py-1 text-center">{{ $no++ }}</td>
                                 <td class="border px-1 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
                                 <td class="border px-1 py-1 text-center">
-                                    {{ $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-')) }}
+                                    @php
+                                        $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
+                                        if (str_contains($size, '40')) {
+                                            echo '40 ft';
+                                        } elseif (str_contains($size, '20')) {
+                                            echo '20 ft';
+                                        } else {
+                                            echo $size;
+                                        }
+                                    @endphp
                                 </td>
                                 <td class="border px-1 py-1 text-center">
                                     {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
@@ -301,7 +310,16 @@
                                 <td class="border px-1 py-1 text-center">{{ $no++ }}</td>
                                 <td class="border px-1 py-1">{{ $item['nomor_kontainer'] ?? '-' }}</td>
                                 <td class="border px-1 py-1 text-center">
-                                    {{ $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-')) }}
+                                    @php
+                                        $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
+                                        if (str_contains($size, '40')) {
+                                            echo '40 ft';
+                                        } elseif (str_contains($size, '20')) {
+                                            echo '20 ft';
+                                        } else {
+                                            echo $size;
+                                        }
+                                    @endphp
                                 </td>
                                 <td class="border px-1 py-1 text-center">
                                     {{ strtoupper(substr($item['status'] ?? ($item['status_kontainer'] ?? 'F'), 0, 1)) }}
