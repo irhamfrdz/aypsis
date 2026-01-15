@@ -32,24 +32,23 @@ try {
     // Tampilkan data yang akan dihapus
     $manifests = DB::table('manifests')
         ->where('no_voyage', 'SR01BJ26')
-        ->select('id', 'no_voyage', 'no_bl', 'tanggal_berangkat')
+        ->select('id', 'no_voyage', 'tanggal_berangkat')
         ->get();
     
     echo "Data yang akan dihapus:\n";
-    echo str_repeat('-', 80) . "\n";
-    printf("%-10s %-20s %-30s %-20s\n", 'ID', 'No Voyage', 'No BL', 'Tanggal Berangkat');
-    echo str_repeat('-', 80) . "\n";
+    echo str_repeat('-', 60) . "\n";
+    printf("%-10s %-30s %-20s\n", 'ID', 'No Voyage', 'Tanggal Berangkat');
+    echo str_repeat('-', 60) . "\n";
     
     foreach ($manifests as $manifest) {
         printf(
-            "%-10s %-20s %-30s %-20s\n",
+            "%-10s %-30s %-20s\n",
             $manifest->id,
             $manifest->no_voyage,
-            $manifest->no_bl ?? '-',
             $manifest->tanggal_berangkat ?? '-'
         );
     }
-    echo str_repeat('-', 80) . "\n\n";
+    echo str_repeat('-', 60) . "\n\n";
     
     // Konfirmasi penghapusan
     echo "⚠️  PERINGATAN: Data yang dihapus tidak dapat dikembalikan!\n";

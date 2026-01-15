@@ -7,6 +7,70 @@
 <div class="py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <!-- Success Message -->
+        @if(session('success'))
+        <div class="mb-6 bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-md">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-green-800">{{ session('success') }}</p>
+                    @if(session('imported_count'))
+                    <p class="text-sm text-green-700 mt-1">✓ {{ session('imported_count') }} data berhasil diimport</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Warning/Error Message -->
+        @if(session('warning') || session('errors_list') || session('failed_count'))
+        <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 shadow-md">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-yellow-800">
+                        {{ session('warning') ?? 'Terdapat data yang gagal diimport' }}
+                    </p>
+                    @if(session('failed_count'))
+                    <p class="text-sm text-yellow-700 mt-1">✗ {{ session('failed_count') }} data gagal diimport</p>
+                    @endif
+                    
+                    @if(session('errors_list'))
+                    <div class="mt-3 bg-white rounded-lg p-3 max-h-60 overflow-y-auto">
+                        <p class="text-xs font-semibold text-gray-700 mb-2">Detail Error:</p>
+                        <ul class="space-y-1">
+                            @foreach(session('errors_list') as $error)
+                            <li class="text-xs text-red-600 flex items-start">
+                                <span class="mr-2">•</span>
+                                <span>{{ $error }}</span>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- General Error Message -->
+        @if(session('error'))
+        <div class="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-md">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-red-800">{{ session('error') }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+        
         <!-- Header Card -->
         <div class="rounded-2xl shadow-xl overflow-hidden mb-8" style="background: linear-gradient(to right, #7c3aed, #4f46e5);">
             <div class="px-8 py-6">
