@@ -40,7 +40,7 @@
                             <option value="">- Pilih Prospek -</option>
                             @foreach($prospeks as $prospek)
                                 <option value="{{ $prospek->id }}" {{ old('prospek_id') == $prospek->id ? 'selected' : '' }}>
-                                    {{ $prospek->nama_perusahaan }}
+                                    {{ $prospek->pt_pengirim }}
                                 </option>
                             @endforeach
                         </select>

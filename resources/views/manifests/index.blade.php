@@ -166,11 +166,30 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @can('manifest-edit')
-                                <div class="text-sm font-medium text-gray-900 editable-bl cursor-pointer hover:bg-yellow-50 px-2 py-1 rounded transition-colors" 
-                                     contenteditable="true" 
-                                     data-manifest-id="{{ $manifest->id }}"
-                                     data-original-value="{{ $manifest->nomor_bl }}"
-                                     title="Klik untuk edit">{{ $manifest->nomor_bl }}</div>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" 
+                                           class="text-sm font-medium text-gray-900 border-0 border-b-2 border-transparent hover:border-yellow-400 focus:border-purple-500 px-2 py-1 bg-transparent focus:bg-yellow-50 transition-colors bl-input" 
+                                           data-manifest-id="{{ $manifest->id }}"
+                                           data-original-value="{{ $manifest->nomor_bl }}"
+                                           value="{{ $manifest->nomor_bl }}"
+                                           title="Ketik lalu tekan Enter atau klik tombol save">
+                                    <button type="button" 
+                                            class="save-bl-btn hidden text-green-600 hover:text-green-800 transition-colors"
+                                            data-manifest-id="{{ $manifest->id }}"
+                                            title="Simpan perubahan">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button" 
+                                            class="cancel-bl-btn hidden text-gray-400 hover:text-gray-600 transition-colors"
+                                            data-manifest-id="{{ $manifest->id }}"
+                                            title="Batalkan perubahan">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                                 @else
                                 <div class="text-sm font-medium text-gray-900">{{ $manifest->nomor_bl }}</div>
                                 @endcan
@@ -383,41 +402,75 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    const editableCells = document.querySelectorAll('.editable-bl');
+    const blInputs = document.querySelectorAll('.bl-input');
+    const saveBtns = document.querySelectorAll('.save-bl-btn');
+    const cancelBtns = document.querySelectorAll('.cancel-bl-btn');
     
-    editableCells.forEach(cell => {
-        // Store original value on focus
-        cell.addEventListener('focus', function() {
-            this.dataset.originalValue = this.textContent.trim();
-        });
+    blInputs.forEach(input => {
+        const manifestId = input.dataset.manifestId;
+        const saveBtn = document.querySelector(`.save-bl-btn[data-manifest-id="${manifestId}"]`);
+        const cancelBtn = document.querySelector(`.cancel-bl-btn[data-manifest-id="${manifestId}"]`);
         
-        // Handle blur event (when user clicks away)
-        cell.addEventListener('blur', function() {
-            const newValue = this.textContent.trim();
+        // Show buttons when input changes
+        input.addEventListener('input', function() {
+            const newValue = this.value.trim();
             const originalValue = this.dataset.originalValue;
-            const manifestId = this.dataset.manifestId;
             
-            // Only update if value changed
-            if (newValue !== originalValue && newValue !== '') {
-                updateNomorBl(manifestId, newValue, this);
-            } else if (newValue === '') {
-                // Restore original if empty
-                this.textContent = originalValue;
+            if (newValue !== originalValue) {
+                saveBtn.classList.remove('hidden');
+                cancelBtn.classList.remove('hidden');
+            } else {
+                saveBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden');
             }
         });
         
-        // Handle Enter key
-        cell.addEventListener('keydown', function(e) {
+        // Handle Enter key to save
+        input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                this.blur();
+                const newValue = this.value.trim();
+                const originalValue = this.dataset.originalValue;
+                
+                if (newValue !== originalValue && newValue !== '') {
+                    updateNomorBl(manifestId, newValue, this);
+                }
             }
+            
             // Handle Escape key to cancel
             if (e.key === 'Escape') {
                 e.preventDefault();
-                this.textContent = this.dataset.originalValue;
-                this.blur();
+                this.value = this.dataset.originalValue;
+                saveBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden');
             }
+        });
+    });
+    
+    // Save button click handlers
+    saveBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const manifestId = this.dataset.manifestId;
+            const input = document.querySelector(`.bl-input[data-manifest-id="${manifestId}"]`);
+            const newValue = input.value.trim();
+            const originalValue = input.dataset.originalValue;
+            
+            if (newValue !== originalValue && newValue !== '') {
+                updateNomorBl(manifestId, newValue, input);
+            }
+        });
+    });
+    
+    // Cancel button click handlers
+    cancelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const manifestId = this.dataset.manifestId;
+            const input = document.querySelector(`.bl-input[data-manifest-id="${manifestId}"]`);
+            const saveBtn = document.querySelector(`.save-bl-btn[data-manifest-id="${manifestId}"]`);
+            
+            input.value = input.dataset.originalValue;
+            this.classList.add('hidden');
+            saveBtn.classList.add('hidden');
         });
     });
     
@@ -442,8 +495,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 // Update the value and original value
-                element.textContent = data.nomor_bl;
+                element.value = data.nomor_bl;
                 element.dataset.originalValue = data.nomor_bl;
+                
+                // Hide buttons
+                const manifestId = element.dataset.manifestId;
+                const saveBtn = document.querySelector(`.save-bl-btn[data-manifest-id="${manifestId}"]`);
+                const cancelBtn = document.querySelector(`.cancel-bl-btn[data-manifest-id="${manifestId}"]`);
+                saveBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden');
                 
                 // Show success feedback
                 element.classList.add('bg-green-100');
@@ -455,13 +515,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('success', data.message);
             } else {
                 // Restore original value on error
-                element.textContent = element.dataset.originalValue;
+                element.value = element.dataset.originalValue;
                 showToast('error', 'Gagal memperbarui nomor BL');
             }
         })
         .catch(error => {
             element.classList.remove('opacity-50');
-            element.textContent = element.dataset.originalValue;
+            element.value = element.dataset.originalValue;
             console.error('Error:', error);
             showToast('error', 'Terjadi kesalahan saat memperbarui');
         });

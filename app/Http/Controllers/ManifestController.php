@@ -115,7 +115,7 @@ class ManifestController extends Controller
      */
     public function create()
     {
-        $prospeks = Prospek::orderBy('nama_perusahaan')->get();
+        $prospeks = Prospek::orderBy('pt_pengirim')->get();
         return view('manifests.create', compact('prospeks'));
     }
 
@@ -174,7 +174,7 @@ class ManifestController extends Controller
     public function edit(string $id)
     {
         $manifest = Manifest::findOrFail($id);
-        $prospeks = Prospek::orderBy('nama_perusahaan')->get();
+        $prospeks = Prospek::orderBy('pt_pengirim')->get();
         return view('manifests.edit', compact('manifest', 'prospeks'));
     }
 
