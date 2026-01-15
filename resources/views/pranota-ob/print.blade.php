@@ -6,7 +6,7 @@
 <style>
     @page {
         size: 21.5cm 16.5cm; /* Half folio size (setengah folio) */
-        margin: 1cm;
+        margin: 0.5cm;
     }
     
     @media print {
@@ -18,6 +18,22 @@
             width: 100%;
             height: 100%;
         }
+    }
+    
+    /* 2-column layout */
+    .two-column-container {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .column-left {
+        width: 48%;
+        padding-right: 5px;
+    }
+    
+    .column-right {
+        width: 48%;
+        padding-left: 5px;
     }
     
     /* Adjust font sizes for smaller paper */
@@ -52,6 +68,9 @@
 @endpush
 
 @section('content')
+<div class="two-column-container">
+    <!-- Column 1: Ringkasan -->
+    <div class="column-left">
     <div class="p-2 bg-white print-container">
         <div style="margin-bottom: 4px;">
             <h2 class="font-semibold" style="margin: 0 0 1px 0; font-size: 11px;">Pranota OB</h2>
@@ -224,11 +243,10 @@
             </table>
         </div>
     </div>
+    </div>
 
-    {{-- Page Break untuk halaman 2 --}}
-    <div style="page-break-after: always;"></div>
-
-    {{-- Halaman 2: Detail Kontainer Per Supir --}}
+    <!-- Column 2: Detail Kontainer -->
+    <div class="column-right">
     <div class="p-2 bg-white print-container">
         <div style="margin-bottom: 8px;">
             <h2 class="font-semibold" style="margin: 0 0 2px 0; font-size: 11px;">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-m-Y') : date('d-m-Y') }}</h2>
@@ -284,4 +302,6 @@
             </table>
         </div>
     </div>
+    </div>
+</div>
 @endsection
