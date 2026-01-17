@@ -1143,10 +1143,16 @@ class PranotaUangRitController extends Controller
         // Load necessary relationships
         $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
         
-        // Get supir details for this pranota
+        // Get supir details for this pranota with karyawan data
         $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->orderBy('supir_nama')
             ->get();
+
+        // Get NIK from karyawans table for each supir
+        foreach ($supirDetails as $detail) {
+            $karyawan = \App\Models\Karyawan::where('nama', $detail->supir_nama)->first();
+            $detail->nik = $karyawan ? $karyawan->nik : '-';
+        }
 
         // Create Excel file using PhpSpreadsheet
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -1214,7 +1220,7 @@ class PranotaUangRitController extends Controller
             $rit = $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0;
             
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, str_pad($no, 4, '0', STR_PAD_LEFT));
+            $sheet->setCellValue('B' . $row, $detail->nik ?? '-');
             $sheet->setCellValue('C' . $row, strtoupper($detail->supir_nama));
             $sheet->setCellValue('D' . $row, $rit);
             $sheet->setCellValue('E' . $row, $detail->total_uang_supir);
