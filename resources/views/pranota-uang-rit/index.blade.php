@@ -11,11 +11,21 @@
                 <h1 class="text-2xl font-bold text-gray-900">💰 Pranota Uang Rit</h1>
                 <p class="text-gray-600 mt-1">Kelola daftar pranota uang rit untuk supir</p>
             </div>
-            @can('pranota-uang-rit-create')
-            <a href="{{ route('pranota-uang-rit.select-date') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                <i class="fas fa-plus mr-2"></i> Tambah Pranota Uang Rit
-            </a>
-            @endcan
+            <div class="flex items-center space-x-2">
+                @can('pranota-uang-rit-view')
+                <button onclick="printTable()" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <i class="fas fa-print mr-2"></i> Print
+                </button>
+                <button onclick="exportToExcel()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <i class="fas fa-file-excel mr-2"></i> Export Excel
+                </button>
+                @endcan
+                @can('pranota-uang-rit-create')
+                <a href="{{ route('pranota-uang-rit.select-date') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i> Tambah Pranota Uang Rit
+                </a>
+                @endcan
+            </div>
         </div>
 
         <!-- Filters -->
@@ -270,6 +280,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 function markAsPaid(pranotaId) {
     document.getElementById('markAsPaidForm').action = '/pranota-uang-rit/' + pranotaId + '/mark-as-paid';
@@ -287,6 +298,97 @@ function printRitasiSupir(pranotaId) {
             printWindow.print();
         });
     }
+}
+
+function printTable() {
+    const printContents = document.querySelector('.max-w-7xl').cloneNode(true);
+    
+    // Remove action buttons from print
+    const actionColumns = printContents.querySelectorAll('td:last-child, th:last-child');
+    actionColumns.forEach(col => col.remove());
+    
+    // Remove filter form
+    const filterSection = printContents.querySelector('.bg-white.rounded-lg.shadow-sm.border');
+    if (filterSection) {
+        filterSection.remove();
+    }
+    
+    // Remove pagination
+    const pagination = printContents.querySelector('.flex.justify-center.mt-6');
+    if (pagination) {
+        pagination.remove();
+    }
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Pranota Uang Rit - Print</title>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <style>
+                @media print {
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    @page { margin: 1cm; }
+                }
+                .no-print { display: none; }
+            </style>
+        </head>
+        <body class="p-4">
+            ${printContents.innerHTML}
+            <script>
+                window.onload = function() {
+                    window.print();
+                    window.onafterprint = function() {
+                        window.close();
+                    }
+                }
+            </script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function exportToExcel() {
+    const table = document.getElementById('pranotaUangRitTable');
+    if (!table) {
+        alert('Tidak ada data untuk diekspor');
+        return;
+    }
+    
+    // Clone table and remove action column
+    const tableClone = table.cloneNode(true);
+    const rows = tableClone.querySelectorAll('tr');
+    rows.forEach(row => {
+        const lastCell = row.querySelector('th:last-child, td:last-child');
+        if (lastCell && lastCell.textContent.includes('Aksi')) {
+            lastCell.remove();
+        } else if (lastCell && row.querySelector('button, a')) {
+            lastCell.remove();
+        }
+    });
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(tableClone);
+    
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 20 }, // No. Pranota
+        { wch: 15 }, // Tanggal
+        { wch: 20 }, // Uang Rit
+        { wch: 15 }  // Status
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Pranota Uang Rit');
+    
+    // Generate filename with current date
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `Pranota_Uang_Rit_${date}.xlsx`;
+    
+    // Save file
+    XLSX.writeFile(wb, filename);
 }
 
 function closeModal() {
