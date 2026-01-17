@@ -155,7 +155,7 @@ class PranotaUangRitController extends Controller
         // Apply date range filter to base query BEFORE any cloning - filter by tanggal tanda terima
         if ($startDateObj && $endDateObj) {
             $baseQuery->where(function($q) use ($startDateObj, $endDateObj) {
-                // Filter berdasarkan tanggal tanda terima dari berbagai sumber
+                // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDateObj, $endDateObj) {
                     // 1. Tanggal dari relasi tandaTerima (untuk surat jalan non-bongkaran seperti pengiriman, muat, dll)
                     $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
@@ -165,20 +165,22 @@ class PranotaUangRitController extends Controller
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
                     // 2. Tanggal tanda terima untuk kegiatan bongkaran (kolom langsung di tabel surat_jalans)
-                    // Bongkaran menyimpan tanggal_tanda_terima langsung di kolom surat_jalan, bukan relasi
                     $subQ->where('kegiatan', 'bongkaran')
                          ->whereNotNull('tanggal_tanda_terima')
                          ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
                          ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 3. Fallback ke tanggal checkpoint jika tidak ada tanda terima sama sekali
-                    // Untuk surat jalan yang sudah checkpoint tapi belum ada tanda terima
-                    $subQ->whereDoesntHave('tandaTerima')
-                         ->whereNull('tanggal_tanda_terima')
-                         ->whereNotNull('tanggal_checkpoint')
+                    // 3. Filter berdasarkan tanggal checkpoint
+                    $subQ->whereNotNull('tanggal_checkpoint')
                          ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
                          ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                })
+                ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
+                    // 4. Filter berdasarkan tanggal surat jalan (untuk yang approved tapi belum ada checkpoint/tanda terima)
+                    $subQ->where('status', 'approved')
+                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDateObj->toDateString())
+                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDateObj->toDateString());
                 });
             });
             
