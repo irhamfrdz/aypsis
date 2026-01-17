@@ -105,9 +105,9 @@
                     <h3 class="text-sm font-medium text-blue-800">Informasi Pricelist Air Tawar</h3>
                     <div class="mt-2 text-sm text-blue-700">
                         <ul class="list-disc list-inside space-y-1">
-                            <li>Nama agen harus unik dalam sistem</li>
                             <li>Harga akan otomatis diformat dalam tampilan sebagai mata uang Rupiah</li>
                             <li>Pastikan memasukkan harga yang akurat sesuai dengan agen yang dipilih</li>
+                            <li>Nama vendor yang sama dapat memiliki harga berbeda berdasarkan periode atau kontrak</li>
                         </ul>
                     </div>
                 </div>
