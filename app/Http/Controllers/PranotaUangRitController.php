@@ -1320,15 +1320,17 @@ class PranotaUangRitController extends Controller
         // Get surat jalan numbers from the combined field
         $suratJalanNomors = array_map('trim', explode(', ', $pranotaUangRit->no_surat_jalan));
         
-        // Get surat jalan data
+        // Get surat jalan data - sorted by supir name alphabetically
         $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
+            ->orderBy('supir', 'asc')
             ->orderBy('tanggal_surat_jalan', 'desc')
             ->get();
         
-        // Also check for surat jalan bongkaran if exists
+        // Also check for surat jalan bongkaran if exists - sorted by supir name alphabetically
         $suratJalanBongkarans = collect();
         if ($pranotaUangRit->surat_jalan_bongkaran_id) {
             $suratJalanBongkarans = SuratJalanBongkaran::whereIn('no_surat_jalan', $suratJalanNomors)
+                ->orderBy('supir', 'asc')
                 ->orderBy('tanggal', 'desc')
                 ->get();
         }
