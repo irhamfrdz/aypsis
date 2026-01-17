@@ -148,16 +148,6 @@
                         <td class="border px-2 py-1 text-center" colspan="2">-</td>
                         <td class="border px-2 py-1 text-center">-</td>
                     </tr>
-
-                    {{-- Baris TL (Tanda Langsung) --}}
-                    <tr>
-                        <td class="border px-2 py-1 text-center">TL</td>
-                        @foreach($perSupirCounts as $supirName => $counts)
-                            <td class="border px-2 py-1 text-center" colspan="2">-</td>
-                        @endforeach
-                        <td class="border px-2 py-1 text-center" colspan="2">{{ $totalTlContainers ?? 0 }}</td>
-                        <td class="border px-2 py-1 text-center">-</td>
-                    </tr>
                 </tbody>
                 <tfoot>
                     <tr class="font-semibold">
