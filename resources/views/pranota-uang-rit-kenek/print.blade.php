@@ -136,7 +136,10 @@
             </tr>
         </thead>
         <tbody>
-            @php $no = 1; @endphp
+            @php
+                $no = 1;
+                $totalRit = 0;
+            @endphp
             @if($KenekDetails && $KenekDetails->count() > 0)
                 @foreach($KenekDetails as $detail)
                 <tr>
@@ -149,7 +152,11 @@
                         @endphp
                         {{ $jumlahRit }}
                     </td>
-                    <td class="text-center">Rit</td>
+                    @php
+                        $rit = (int) round($detail->total_uang_kenek / 50000);
+                        $totalRit += $rit;
+                    @endphp
+                    <td class="text-center">{{ $rit }}</td>
                     <td class="text-right">{{ number_format($detail->total_uang_kenek, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
@@ -172,8 +179,13 @@
                     <td class="text-center">
                         {{ array_count_values($kenekArray)[trim($kenek)] ?? 1 }}
                     </td>
-                    <td class="text-center">Rit</td>
-                    <td class="text-right">{{ number_format($pranotaUangRitKenek->uang_rit_kenek / count($uniqueKenek), 0, ',', '.') }}</td>
+                    @php
+                        $amount = $pranotaUangRitKenek->uang_rit_kenek / count($uniqueKenek);
+                        $rit = (int) round($amount / 50000);
+                        $totalRit += $rit;
+                    @endphp
+                    <td class="text-center">{{ $rit }}</td>
+                    <td class="text-right">{{ number_format($amount, 0, ',', '.') }}</td>
                     <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right">{{ number_format($pranotaUangRitKenek->grand_total_bersih / count($uniqueKenek), 0, ',', '.') }}</td>
@@ -184,15 +196,7 @@
         <tfoot>
             <tr class="total-row">
                 <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
-                <td class="text-center">
-                    <strong>
-                        @if($KenekDetails && $KenekDetails->count() > 0)
-                            {{ $groupedPranota->count() }}
-                        @else
-                            {{ count(explode(', ', $pranotaUangRitKenek->no_surat_jalan)) }}
-                        @endif
-                    </strong>
-                </td>
+                <td class="text-center"><strong>{{ $totalRit }}</strong></td>
                 <td class="text-center"><strong></strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRitKenek->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRitKenek->total_hutang, 0, ',', '.') }}</strong></td>
