@@ -369,126 +369,18 @@
                     @enderror
                 </div>
 
-                <!-- Vendor Air Tawar (for Biaya Air) -->
-                <div id="vendor_air_wrapper" class="hidden">
-                    <label for="vendor_air" class="block text-sm font-medium text-gray-700 mb-2">
-                        Vendor Air Tawar <span class="text-red-500">*</span>
-                    </label>
-                    <select id="vendor_air" 
-                            name="vendor_air_id"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">-- Pilih Vendor Air Tawar --</option>
-                        @foreach($pricelistAirTawar as $pricelist)
-                            <option value="{{ $pricelist->id }}" 
-                                    data-harga="{{ $pricelist->harga }}"
-                                    {{ old('vendor_air_id') == $pricelist->id ? 'selected' : '' }}>
-                                {{ $pricelist->nama_agen }} - Rp {{ number_format($pricelist->harga, 0, ',', '.') }}/ton
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">Pilih vendor penyedia air tawar</p>
-                    @error('vendor_air_id')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Type Air (for Biaya Air) -->
-                <div id="type_air_wrapper" class="hidden">
-                    <label for="type_air" class="block text-sm font-medium text-gray-700 mb-2">
-                        Type <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" 
-                           id="type_air" 
-                           name="type_air" 
-                           value="{{ old('type_air') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('type_air') border-red-500 @enderror"
-                           placeholder="Masukkan type (misal: Air Bersih, Air PDAM, dll)">
-                    <p class="mt-1 text-xs text-gray-500">Type atau kategori air yang digunakan</p>
-                    @error('type_air')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Kuantitas Air (for Biaya Air) -->
-                <div id="kuantitas_air_wrapper" class="hidden">
-                    <label for="kuantitas_air" class="block text-sm font-medium text-gray-700 mb-2">
-                        Kuantitas (Ton) <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" 
-                           id="kuantitas_air" 
-                           name="kuantitas_air" 
-                           value="{{ old('kuantitas_air') }}"
-                           step="0.01"
-                           min="0"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kuantitas_air') border-red-500 @enderror"
-                           placeholder="0.00">
-                    <p class="mt-1 text-xs text-gray-500">Jumlah air dalam satuan ton</p>
-                    @error('kuantitas_air')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Jasa Air (for Biaya Air) - Auto calculated -->
-                <div id="jasa_air_wrapper" class="hidden">
-                    <label for="jasa_air" class="block text-sm font-medium text-gray-700 mb-2">
-                        Jasa Air
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                        <input type="text" 
-                               id="jasa_air" 
-                               name="jasa_air" 
-                               value="{{ old('jasa_air', '0') }}"
-                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('jasa_air') border-red-500 @enderror"
-                               placeholder="0"
-                               readonly>
+                <!-- Detail Kapal Air Tawar (for Biaya Air) - MULTI KAPAL SYSTEM -->
+                <div id="air_wrapper" class="md:col-span-2 hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Kapal & Air Tawar <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" id="add_air_section_btn" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Kapal</span>
+                        </button>
                     </div>
-                    <p class="mt-1 text-xs text-blue-600 font-medium">Jasa Air = Harga Vendor × Kuantitas</p>
-                    @error('jasa_air')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- PPH Air (for Biaya Air - 2% dari Jasa Air) -->
-                <div id="pph_air_wrapper" class="hidden">
-                    <label for="pph_air" class="block text-sm font-medium text-gray-700 mb-2">
-                        PPH (2%)
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                        <input type="text" 
-                               id="pph_air" 
-                               name="pph_air" 
-                               value="{{ old('pph_air', '0') }}"
-                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pph_air') border-red-500 @enderror"
-                               placeholder="0"
-                               readonly>
-                    </div>
-                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Jasa Air</p>
-                    @error('pph_air')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Grand Total Air (for Biaya Air - Jasa Air - PPH) -->
-                <div id="grand_total_air_wrapper" class="hidden">
-                    <label for="grand_total_air" class="block text-sm font-medium text-gray-700 mb-2">
-                        Grand Total
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                        <input type="text" 
-                               id="grand_total_air" 
-                               name="grand_total_air" 
-                               value="{{ old('grand_total_air', '0') }}"
-                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-green-50 font-semibold cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('grand_total_air') border-red-500 @enderror"
-                               placeholder="0"
-                               readonly>
-                    </div>
-                    <p class="mt-1 text-xs text-green-600 font-medium">Grand Total = Jasa Air - PPH</p>
-                    @error('grand_total_air')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <div id="air_sections_container"></div>
                 </div>
 
                 <!-- Barang (for Biaya Buruh) - NEW MULTI KAPAL SYSTEM -->
@@ -971,6 +863,7 @@
     const grandTotalDokumenInput = document.getElementById('grand_total_dokumen');
     
     // Biaya Air specific fields
+    const airWrapper = document.getElementById('air_wrapper');
     const vendorAirWrapper = document.getElementById('vendor_air_wrapper');
     const vendorAirSelect = document.getElementById('vendor_air');
     const typeAirWrapper = document.getElementById('type_air_wrapper');
@@ -983,6 +876,9 @@
     const pphAirInput = document.getElementById('pph_air');
     const grandTotalAirWrapper = document.getElementById('grand_total_air_wrapper');
     const grandTotalAirInput = document.getElementById('grand_total_air');
+    
+    // Pricelist Air Tawar data
+    const pricelistAirTawarData = @json($pricelistAirTawar);
 
     // Format nominal input with thousand separator
     
@@ -1048,16 +944,6 @@
         calculateTotalBiaya();
     });
     
-    // Auto-calculate Biaya Air when vendor air changes
-    vendorAirSelect.addEventListener('change', function() {
-        calculateBiayaAir();
-    });
-    
-    // Auto-calculate Biaya Air when kuantitas changes
-    kuantitasAirInput.addEventListener('input', function() {
-        calculateBiayaAir();
-    });
-    
     // Calculate Sisa Pembayaran = Nominal - DP (for Biaya Buruh)
     function calculateSisaPembayaran() {
         const nominal = parseInt(nominalInput.value.replace(/\D/g, '') || 0);
@@ -1078,25 +964,6 @@
         // Grand Total = Nominal - PPH
         const grandTotal = nominal - pph;
         grandTotalDokumenInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
-    }
-    
-    // Calculate Biaya Air (Jasa Air, PPH, Grand Total)
-    function calculateBiayaAir() {
-        const selectedOption = vendorAirSelect.options[vendorAirSelect.selectedIndex];
-        const hargaPerTon = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
-        const kuantitas = parseFloat(kuantitasAirInput.value) || 0;
-        
-        // Jasa Air = Harga × Kuantitas
-        const jasaAir = Math.round(hargaPerTon * kuantitas);
-        jasaAirInput.value = jasaAir > 0 ? jasaAir.toLocaleString('id-ID') : '0';
-        
-        // PPH = 2% dari Jasa Air
-        const pph = Math.round(jasaAir * 0.02);
-        pphAirInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
-        
-        // Grand Total = Jasa Air - PPH
-        const grandTotal = jasaAir - pph;
-        grandTotalAirInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
     }
     
     // Calculate PPH Penumpukan (2% dari nominal) for Biaya Penumpukan
@@ -1279,6 +1146,8 @@
             // Hide other type-specific fields
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
+            airWrapper.classList.add('hidden');
+            clearAllAirSections();
             ppnWrapper.classList.add('hidden');
             pphWrapper.classList.add('hidden');
             totalBiayaWrapper.classList.add('hidden');
@@ -1347,6 +1216,8 @@
             if (vendorSelect) vendorSelect.value = '';
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
+            airWrapper.classList.add('hidden');
+            clearAllAirSections();
             ppnWrapper.classList.add('hidden');
             pphWrapper.classList.add('hidden');
             totalBiayaWrapper.classList.add('hidden');
@@ -1372,21 +1243,27 @@
         }
         // Show fields for "Biaya Air"
         else if (selectedText.toLowerCase().includes('air')) {
-            // Show Biaya Air specific fields
-            vendorAirWrapper.classList.remove('hidden');
-            typeAirWrapper.classList.remove('hidden');
-            kuantitasAirWrapper.classList.remove('hidden');
+            // Show Biaya Air multi kapal wrapper
+            airWrapper.classList.remove('hidden');
+            initializeAirSections();
+            
+            // Show summary fields
             jasaAirWrapper.classList.remove('hidden');
             pphAirWrapper.classList.remove('hidden');
             grandTotalAirWrapper.classList.remove('hidden');
             
-            // Show standard fields
-            kapalWrapper.classList.remove('hidden');
-            voyageWrapper.classList.remove('hidden');
+            // Hide standard kapal/voyage fields (already in air sections)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
             
             // Hide other type-specific fields
             vendorWrapper.classList.add('hidden');
             if (vendorSelect) vendorSelect.value = '';
+            vendorAirWrapper.classList.add('hidden');
+            typeAirWrapper.classList.add('hidden');
+            kuantitasAirWrapper.classList.add('hidden');
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
             blWrapper.classList.add('hidden');
@@ -1410,11 +1287,9 @@
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
             nominalInput.value = '';
-            
-            // Calculate if values already exist
-            if (vendorAirSelect.value && kuantitasAirInput.value) {
-                calculateBiayaAir();
-            }
+            jasaAirInput.value = '0';
+            pphAirInput.value = '0';
+            grandTotalAirInput.value = '0';
         }
         // Show barang wrapper if "Biaya Buruh" is selected
         else if (selectedText.toLowerCase().includes('buruh')) {
@@ -1449,6 +1324,13 @@
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
             
+            // Hide Biaya Air fields for Biaya Buruh
+            airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            jasaAirWrapper.classList.add('hidden');
+            pphAirWrapper.classList.add('hidden');
+            grandTotalAirWrapper.classList.add('hidden');
+            
             // Show DP fields for Biaya Buruh
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
@@ -1479,6 +1361,13 @@
             grandTotalDokumenWrapper.classList.add('hidden');
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
+            
+            // Hide Biaya Air fields for Biaya Penumpukan
+            airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            jasaAirWrapper.classList.add('hidden');
+            pphAirWrapper.classList.add('hidden');
+            grandTotalAirWrapper.classList.add('hidden');
             
             // Auto-calculate PPN (11%) and PPH (2% dari nominal) for Biaya Penumpukan
             calculatePpnPenumpukan();
@@ -1523,6 +1412,19 @@
             grandTotalDokumenWrapper.classList.add('hidden');
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
+            
+            // Hide Biaya Air fields
+            airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            vendorAirWrapper.classList.add('hidden');
+            typeAirWrapper.classList.add('hidden');
+            kuantitasAirWrapper.classList.add('hidden');
+            jasaAirWrapper.classList.add('hidden');
+            pphAirWrapper.classList.add('hidden');
+            grandTotalAirWrapper.classList.add('hidden');
+            jasaAirInput.value = '0';
+            pphAirInput.value = '0';
+            grandTotalAirInput.value = '0';
             
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
@@ -1988,6 +1890,200 @@
         addBarangBtn.addEventListener('click', function() {
             addBarangInput();
         });
+    }
+
+    // ============= AIR SECTIONS MANAGEMENT =============
+    let airSectionCounter = 0;
+    const airSectionsContainer = document.getElementById('air_sections_container');
+    const addAirSectionBtn = document.getElementById('add_air_section_btn');
+    
+    function initializeAirSections() {
+        airSectionsContainer.innerHTML = '';
+        airSectionCounter = 0;
+        addAirSection();
+    }
+    
+    function clearAllAirSections() {
+        airSectionsContainer.innerHTML = '';
+        airSectionCounter = 0;
+        nominalInput.value = '';
+        jasaAirInput.value = '0';
+        pphAirInput.value = '0';
+        grandTotalAirInput.value = '0';
+    }
+    
+    addAirSectionBtn.addEventListener('click', function() {
+        addAirSection();
+    });
+    
+    function addAirSection() {
+        airSectionCounter++;
+        const sectionIndex = airSectionCounter;
+        
+        const section = document.createElement('div');
+        section.className = 'air-section mb-6 p-4 border-2 border-cyan-200 rounded-lg bg-cyan-50';
+        section.setAttribute('data-section-index', sectionIndex);
+        
+        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+        });
+        
+        let vendorOptions = '<option value="">-- Pilih Vendor Air Tawar --</option>';
+        pricelistAirTawarData.forEach(vendor => {
+            vendorOptions += `<option value="${vendor.id}" data-harga="${vendor.harga}">${vendor.nama_agen} - Rp ${parseInt(vendor.harga).toLocaleString('id-ID')}/ton</option>`;
+        });
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-md font-semibold text-cyan-800">
+                    <i class="fas fa-ship mr-2"></i>Kapal ${sectionIndex}
+                </h4>
+                ${sectionIndex > 1 ? `<button type="button" onclick="removeAirSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
+                    <select name="air[${sectionIndex}][kapal]" class="kapal-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" required>
+                        ${kapalOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage</label>
+                    <select name="air[${sectionIndex}][voyage]" class="voyage-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Air Tawar</label>
+                    <select name="air[${sectionIndex}][vendor_id]" class="vendor-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" required>
+                        ${vendorOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <input type="text" name="air[${sectionIndex}][type]" class="type-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Air Bersih, Air PDAM, dll" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas (Ton)</label>
+                    <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Auto)</label>
+                    <input type="text" name="air[${sectionIndex}][jasa_air]" class="jasa-air-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][jasa_air_value]" class="jasa-air-value" value="0">
+                </div>
+            </div>
+        `;
+        
+        airSectionsContainer.appendChild(section);
+        
+        // Setup kapal change listener
+        const kapalSelect = section.querySelector('.kapal-select-air');
+        kapalSelect.addEventListener('change', function() {
+            loadVoyagesForAirSection(sectionIndex, this.value);
+        });
+        
+        // Setup auto-calculation listeners
+        const vendorSelect = section.querySelector('.vendor-select-air');
+        const kuantitasInput = section.querySelector('.kuantitas-input-air');
+        
+        vendorSelect.addEventListener('change', function() {
+            calculateAirSectionTotal(sectionIndex);
+        });
+        
+        kuantitasInput.addEventListener('input', function() {
+            calculateAirSectionTotal(sectionIndex);
+        });
+    }
+    
+    window.removeAirSection = function(sectionIndex) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        if (section) {
+            section.remove();
+            calculateTotalFromAllAirSections();
+        }
+    };
+    
+    function loadVoyagesForAirSection(sectionIndex, kapalNama) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        const voyageSelect = section.querySelector('.voyage-select-air');
+        
+        if (!kapalNama) {
+            voyageSelect.disabled = true;
+            voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            return;
+        }
+        
+        voyageSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
+            .then(response => response.json())
+            .then(data => {
+                voyageSelect.disabled = false;
+                if (data.length > 0) {
+                    let options = '<option value="">-- Pilih Voyage --</option>';
+                    data.forEach(voyage => {
+                        options += `<option value="${voyage}">${voyage}</option>`;
+                    });
+                    voyageSelect.innerHTML = options;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading voyages:', error);
+                voyageSelect.disabled = false;
+                voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+            });
+    }
+    
+    function calculateAirSectionTotal(sectionIndex) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        const vendorSelect = section.querySelector('.vendor-select-air');
+        const kuantitasInput = section.querySelector('.kuantitas-input-air');
+        const jasaAirDisplay = section.querySelector('.jasa-air-display');
+        const jasaAirValue = section.querySelector('.jasa-air-value');
+        
+        const selectedOption = vendorSelect.options[vendorSelect.selectedIndex];
+        const hargaPerTon = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
+        const kuantitas = parseFloat(kuantitasInput.value) || 0;
+        
+        const jasaAir = Math.round(hargaPerTon * kuantitas);
+        jasaAirDisplay.value = jasaAir > 0 ? `Rp ${jasaAir.toLocaleString('id-ID')}` : 'Rp 0';
+        jasaAirValue.value = jasaAir;
+        
+        // Recalculate total from all sections
+        calculateTotalFromAllAirSections();
+    }
+    
+    function calculateTotalFromAllAirSections() {
+        let totalJasaAir = 0;
+        
+        document.querySelectorAll('.air-section').forEach(section => {
+            const jasaAirValue = section.querySelector('.jasa-air-value');
+            totalJasaAir += parseFloat(jasaAirValue.value) || 0;
+        });
+        
+        // Set to Nominal field
+        if (totalJasaAir > 0) {
+            nominalInput.value = totalJasaAir.toLocaleString('id-ID');
+        } else {
+            nominalInput.value = '';
+        }
+        
+        // Calculate Jasa Air total
+        jasaAirInput.value = totalJasaAir > 0 ? totalJasaAir.toLocaleString('id-ID') : '0';
+        
+        // Calculate PPH (2% dari total jasa air)
+        const pph = Math.round(totalJasaAir * 0.02);
+        pphAirInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
+        
+        // Calculate Grand Total (Jasa Air - PPH)
+        const grandTotal = totalJasaAir - pph;
+        grandTotalAirInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
     }
 
     // ============= PENERIMA SELECT2 INITIALIZATION =============
