@@ -229,7 +229,7 @@
                     </div>
                 </div>
                 <div class="px-4 py-3 text-xs text-gray-600">
-                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, memiliki <strong>Kenek</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> dan memiliki <strong>Kenek</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
+                    <p>Note: Hanya surat jalan yang <strong>approved</strong>, sudah melalui <strong>checkpoint</strong>, memiliki <strong>Tanda Terima</strong>, atau surat jalan <strong>bongkaran</strong> yang sudah memilih <strong>tanggal tanda terima</strong> yang dapat dipilih untuk Pranota Uang Rit.</p>
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
@@ -279,7 +279,7 @@
                 </div>
                 @endif
 
-                <div class="overflow-x-auto max-h-60">
+                <div class="overflow-x-auto overflow-y-auto max-h-96" id="suratJalanTableContainer">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 sticky top-0 z-20">
                             <tr>
@@ -299,11 +299,6 @@
                                 
                                 // Add regular surat jalans
                                 foreach($suratJalans as $sj) {
-                                    // Skip surat jalan yang tidak memiliki kenek
-                                    if (empty($sj->kenek)) {
-                                        continue;
-                                    }
-                                    
                                     // Prioritas tanggal: checkpoint -> tanda terima
                                     $tanggalDisplay = $sj->tanggal_checkpoint;
                                     if (!$tanggalDisplay && $sj->tandaTerima) {
@@ -328,11 +323,6 @@
                                 // Add surat jalan bongkarans if available
                                 if(isset($suratJalanBongkarans)) {
                                     foreach($suratJalanBongkarans as $sjb) {
-                                        // Skip surat jalan bongkaran yang tidak memiliki kenek
-                                        if (empty($sjb->kenek)) {
-                                            continue;
-                                        }
-                                        
                                         // Prioritas tanggal: checkpoint -> tanda terima bongkaran
                                         $tanggalDisplay = $sjb->tanggal_checkpoint;
                                         if (!$tanggalDisplay && $sjb->tandaTerima) {
@@ -497,10 +487,14 @@
                         </tfoot>
                     </table>
                 </div>
-                <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
+                <div class="bg-gray-50 px-3 py-2 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="text-xs text-gray-600">
+                        <span class="font-semibold text-indigo-600">Total {{ $suratJalans->count() }} surat jalan</span> tersedia dalam tabel (scroll untuk melihat semua).
+                        <span id="searchResults" class="ml-2 text-green-600 font-medium hidden"></span>
+                    </div>
                     <p class="text-xs text-gray-600">
                         * Pilih surat jalan dan masukkan nominal uang supir, hutang, tabungan, dan BPJS untuk setiap surat jalan yang dipilih.
-                        <br>* <strong>Grand Total = Uang Supir - Hutang - Tabungan - BPJS</strong> (Hutang, Tabungan, dan BPJS mengurangi total yang diterima supir)
+                        <br>* <strong>Grand Total = Uang Supir - Hutang - Tabungan - BPJS</strong>
                     </p>
                 </div>
 
