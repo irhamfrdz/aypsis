@@ -1929,9 +1929,11 @@
             kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
         });
         
+        // Get unique vendor names
         let vendorOptions = '<option value="">-- Pilih Vendor Air Tawar --</option>';
-        pricelistAirTawarData.forEach(vendor => {
-            vendorOptions += `<option value="${vendor.id}" data-harga="${vendor.harga}">${vendor.nama_agen} - Rp ${parseInt(vendor.harga).toLocaleString('id-ID')}/ton</option>`;
+        const uniqueVendors = [...new Set(pricelistAirTawarData.map(item => item.nama_agen))];
+        uniqueVendors.forEach(vendorName => {
+            vendorOptions += `<option value="${vendorName}">${vendorName}</option>`;
         });
         
         section.innerHTML = `
@@ -1957,13 +1959,15 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Air Tawar</label>
-                    <select name="air[${sectionIndex}][vendor_id]" class="vendor-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" required>
+                    <select name="air[${sectionIndex}][vendor]" class="vendor-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" required>
                         ${vendorOptions}
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <input type="text" name="air[${sectionIndex}][type]" class="type-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Air Bersih, Air PDAM, dll" required>
+                    <select name="air[${sectionIndex}][type]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
+                        <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas (Ton)</label>
@@ -1973,6 +1977,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Auto)</label>
                     <input type="text" name="air[${sectionIndex}][jasa_air]" class="jasa-air-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="air[${sectionIndex}][jasa_air_value]" class="jasa-air-value" value="0">
+                    <input type="hidden" name="air[${sectionIndex}][harga]" class="harga-hidden" value="0">
                 </div>
             </div>
         `;
@@ -1985,14 +1990,20 @@
             loadVoyagesForAirSection(sectionIndex, this.value);
         });
         
-        // Setup auto-calculation listeners
+        // Setup vendor change listener to load types
         const vendorSelect = section.querySelector('.vendor-select-air');
-        const kuantitasInput = section.querySelector('.kuantitas-input-air');
-        
         vendorSelect.addEventListener('change', function() {
+            loadTypesForVendor(sectionIndex, this.value);
+        });
+        
+        // Setup type change listener for auto-calculation
+        const typeSelect = section.querySelector('.type-select-air');
+        typeSelect.addEventListener('change', function() {
             calculateAirSectionTotal(sectionIndex);
         });
         
+        // Setup kuantitas change listener
+        const kuantitasInput = section.querySelector('.kuantitas-input-air');
         kuantitasInput.addEventListener('input', function() {
             calculateAirSectionTotal(sectionIndex);
         });
@@ -2040,20 +2051,48 @@
             });
     }
     
+    function loadTypesForVendor(sectionIndex, vendorName) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        const typeSelect = section.querySelector('.type-select-air');
+        
+        if (!vendorName) {
+            typeSelect.disabled = true;
+            typeSelect.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            return;
+        }
+        
+        // Filter pricelist data by vendor name
+        const vendorTypes = pricelistAirTawarData.filter(item => item.nama_agen === vendorName);
+        
+        if (vendorTypes.length > 0) {
+            typeSelect.disabled = false;
+            let options = '<option value="">-- Pilih Type --</option>';
+            vendorTypes.forEach(type => {
+                options += `<option value="${type.id}" data-keterangan="${type.keterangan}" data-harga="${type.harga}">${type.keterangan} - Rp ${parseInt(type.harga).toLocaleString('id-ID')}/ton</option>`;
+            });
+            typeSelect.innerHTML = options;
+        } else {
+            typeSelect.disabled = true;
+            typeSelect.innerHTML = '<option value="">Tidak ada type tersedia</option>';
+        }
+    }
+    
     function calculateAirSectionTotal(sectionIndex) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
-        const vendorSelect = section.querySelector('.vendor-select-air');
+        const typeSelect = section.querySelector('.type-select-air');
         const kuantitasInput = section.querySelector('.kuantitas-input-air');
         const jasaAirDisplay = section.querySelector('.jasa-air-display');
         const jasaAirValue = section.querySelector('.jasa-air-value');
+        const hargaHidden = section.querySelector('.harga-hidden');
         
-        const selectedOption = vendorSelect.options[vendorSelect.selectedIndex];
+        const selectedOption = typeSelect.options[typeSelect.selectedIndex];
         const hargaPerTon = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
         const kuantitas = parseFloat(kuantitasInput.value) || 0;
         
         const jasaAir = Math.round(hargaPerTon * kuantitas);
         jasaAirDisplay.value = jasaAir > 0 ? `Rp ${jasaAir.toLocaleString('id-ID')}` : 'Rp 0';
         jasaAirValue.value = jasaAir;
+        hargaHidden.value = hargaPerTon;
         
         // Recalculate total from all sections
         calculateTotalFromAllAirSections();
