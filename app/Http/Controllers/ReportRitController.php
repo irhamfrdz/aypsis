@@ -242,7 +242,7 @@ class ReportRitController extends Controller
         $allSuratJalans = collect();
         
         foreach ($suratJalansBiasa as $sj) {
-            $allSuratJalans->push((object)[
+            $allSuratJalans->push([
                 'type' => 'regular',
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
                 'no_surat_jalan' => $sj->no_surat_jalan,
@@ -250,7 +250,7 @@ class ReportRitController extends Controller
                 'supir' => $sj->supir ?: $sj->supir2,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirim,
-                'tujuan_pengiriman' => $sj->tujuan_pengiriman,
+                'penerima' => $sj->tujuan_pengiriman,
                 'jenis_barang' => $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
@@ -260,7 +260,7 @@ class ReportRitController extends Controller
         }
         
         foreach ($suratJalansBongkaran as $sjb) {
-            $allSuratJalans->push((object)[
+            $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
@@ -268,7 +268,7 @@ class ReportRitController extends Controller
                 'supir' => $sjb->supir ?: $sjb->supir2,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
-                'tujuan_pengiriman' => $sjb->tujuan_pengiriman,
+                'penerima' => $sjb->tujuan_pengiriman,
                 'jenis_barang' => $sjb->jenis_barang,
                 'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
                 'rit' => $sjb->rit,
@@ -278,7 +278,7 @@ class ReportRitController extends Controller
         }
         
         $suratJalans = $allSuratJalans->sortByDesc(function($item) {
-            return $item->tanggal_surat_jalan . ' ' . $item->created_at;
+            return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
         });
 
         return view('report-rit.print', compact('suratJalans', 'startDate', 'endDate'));
@@ -361,7 +361,7 @@ class ReportRitController extends Controller
         $allSuratJalans = collect();
         
         foreach ($suratJalansBiasa as $sj) {
-            $allSuratJalans->push((object)[
+            $allSuratJalans->push([
                 'type' => 'regular',
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
                 'no_surat_jalan' => $sj->no_surat_jalan,
@@ -369,7 +369,7 @@ class ReportRitController extends Controller
                 'supir' => $sj->supir ?: $sj->supir2,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirim,
-                'tujuan_pengiriman' => $sj->tujuan_pengiriman,
+                'penerima' => $sj->tujuan_pengiriman,
                 'jenis_barang' => $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
@@ -379,7 +379,7 @@ class ReportRitController extends Controller
         }
         
         foreach ($suratJalansBongkaran as $sjb) {
-            $allSuratJalans->push((object)[
+            $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
@@ -387,7 +387,7 @@ class ReportRitController extends Controller
                 'supir' => $sjb->supir ?: $sjb->supir2,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
-                'tujuan_pengiriman' => $sjb->tujuan_pengiriman,
+                'penerima' => $sjb->tujuan_pengiriman,
                 'jenis_barang' => $sjb->jenis_barang,
                 'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
                 'rit' => $sjb->rit,
@@ -397,7 +397,7 @@ class ReportRitController extends Controller
         }
         
         $suratJalans = $allSuratJalans->sortByDesc(function($item) {
-            return $item->tanggal_surat_jalan . ' ' . $item->created_at;
+            return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
         });
 
         $filename = 'Report_Rit_' . $startDate->format('d-m-Y') . '_to_' . $endDate->format('d-m-Y') . '.xlsx';
