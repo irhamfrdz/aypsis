@@ -112,6 +112,15 @@
     </div>
 
     {{-- Statistics Cards --}}
+    @php
+        $totalItems = $suratJalans->total();
+        $muatCount = collect($suratJalans->items())->filter(function($item) {
+            return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'muat';
+        })->count();
+        $bongkarCount = collect($suratJalans->items())->filter(function($item) {
+            return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'bongkar';
+        })->count();
+    @endphp
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
             <div class="flex items-center">
@@ -120,7 +129,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Total Surat Jalan</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $suratJalans->total() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalItems }}</p>
                 </div>
             </div>
         </div>
@@ -132,7 +141,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Muat</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $suratJalans->where('kegiatan', 'muat')->count() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $muatCount }}</p>
                 </div>
             </div>
         </div>
@@ -144,7 +153,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Bongkar</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $suratJalans->where('kegiatan', 'bongkar')->count() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $bongkarCount }}</p>
                 </div>
             </div>
         </div>
@@ -186,33 +195,57 @@
                     <tr class="hover:bg-gray-50 transition duration-150">
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $suratJalans->firstItem() + $key }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            @if($sj->tanggal_surat_jalan)
-                                {{ is_string($sj->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : $sj->tanggal_surat_jalan->format('d/m/Y') }}
-                            @elseif($sj->order && $sj->order->tanggal_order)
-                                {{ is_string($sj->order->tanggal_order) ? \Carbon\Carbon::parse($sj->order->tanggal_order)->format('d/m/Y') : $sj->order->tanggal_order->format('d/m/Y') }}
+                            @php
+                                $tanggal = is_array($sj) ? $sj['tanggal_surat_jalan'] : $sj->tanggal_surat_jalan;
+                                $order = is_array($sj) ? ($sj['order'] ?? null) : ($sj->order ?? null);
+                            @endphp
+                            @if($tanggal)
+                                {{ is_string($tanggal) ? \Carbon\Carbon::parse($tanggal)->format('d/m/Y') : $tanggal->format('d/m/Y') }}
+                            @elseif($order && $order->tanggal_order)
+                                {{ is_string($order->tanggal_order) ? \Carbon\Carbon::parse($order->tanggal_order)->format('d/m/Y') : $order->tanggal_order->format('d/m/Y') }}
                             @else
                                 -
                             @endif
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $sj->no_surat_jalan ? $sj->no_surat_jalan : ($sj->order ? $sj->order->nomor_order : '-') }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                            @php
+                                $noSj = is_array($sj) ? $sj['no_surat_jalan'] : $sj->no_surat_jalan;
+                                $type = is_array($sj) ? ($sj['type'] ?? 'regular') : ($sj->type ?? 'regular');
+                            @endphp
+                            {{ $noSj ?: ($order ? $order->nomor_order : '-') }}
+                            @if($type == 'bongkaran')
+                                <span class="ml-1 px-1 py-0.5 text-xs font-semibold rounded bg-purple-100 text-purple-800">Bongkaran</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $sj->kegiatan == 'muat' ? 'bg-green-100 text-green-800' : ($sj->kegiatan == 'bongkar' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800') }}">
-                                {{ ucfirst(strtolower($sj->kegiatan ? $sj->kegiatan : 'tarik isi')) }}
+                            @php
+                                $kegiatan = is_array($sj) ? $sj['kegiatan'] : $sj->kegiatan;
+                            @endphp
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $kegiatan == 'muat' ? 'bg-green-100 text-green-800' : ($kegiatan == 'bongkar' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800') }}">
+                                {{ ucfirst($kegiatan ?: 'tarik isi') }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->supir ? $sj->supir : ($sj->supir2 ? $sj->supir2 : '-') }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->no_plat ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim }}">
-                            {{ $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : ($sj->pengirim ? $sj->pengirim : '-') }}
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {{ is_array($sj) ? ($sj['supir'] ?: '-') : ($sj->supir ?: '-') }}
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman }}">
-                            {{ $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : ($sj->tujuan_pengiriman ? $sj->tujuan_pengiriman : '-') }}
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {{ is_array($sj) ? ($sj['no_plat'] ?: '-') : ($sj->no_plat ?: '-') }}
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="{{ $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang }}">
-                            {{ $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : ($sj->jenis_barang ? $sj->jenis_barang : '-') }}
+                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                            {{ is_array($sj) ? ($sj['pengirim'] ?: '-') : ($sj->pengirim ?: '-') }}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->tipe_kontainer ? $sj->tipe_kontainer : ($sj->size ? $sj->size : ($sj->order ? $sj->order->tipe_kontainer : '-')) }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $sj->rit ? $sj->rit : '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                            {{ is_array($sj) ? ($sj['penerima'] ?: '-') : ($sj->penerima ?: '-') }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                            {{ is_array($sj) ? ($sj['jenis_barang'] ?: '-') : ($sj->jenis_barang ?: '-') }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {{ is_array($sj) ? ($sj['tipe_kontainer'] ?: '-') : ($sj->tipe_kontainer ?: '-') }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {{ is_array($sj) ? ($sj['rit'] ?: '-') : ($sj->rit ?: '-') }}
+                        </td>
                     </tr>
                     @empty
                     <tr>
