@@ -156,6 +156,16 @@
         <h1>Data OB</h1>
         <p>{{ isset($bls) && $bls->count() > 0 ? 'Data Bongkaran' : 'Data Naik Kapal' }}</p>
     </div>
+
+    @php
+        // Filter out TL / CARGO containers: remove rows without driver name
+        $rawData = isset($bls) ? $bls : $naikKapals;
+        $data = collect($rawData)->filter(function($item) {
+            $isCargo = str_starts_with(strtoupper($item->nomor_kontainer ?? ''), 'CARGO-');
+            $supir = $item->supir?->nama_panggilan ?? $item->supir?->nama_lengkap;
+            return !$isCargo && !empty($supir);
+        })->values();
+    @endphp
     
     <div class="info-section">
         <div class="info-item">
@@ -174,7 +184,7 @@
         @endif
         <div class="info-item">
             <span class="info-label">Total:</span>
-            <span>{{ isset($bls) ? $bls->count() : $naikKapals->count() }} kontainer</span>
+            <span>{{ $data->count() }} kontainer</span>
         </div>
     </div>
     
@@ -192,16 +202,10 @@
             </tr>
         </thead>
         <tbody>
-            @if(isset($bls))
-                @php $data = $bls; @endphp
-            @else
-                @php $data = $naikKapals; @endphp
-            @endif
+
 
             @forelse($data as $index => $item)
-            @if(strtoupper($item->tipe_kontainer) === 'CARGO')
-                @continue
-            @endif
+
             <tr>
                 <td style="text-align: center;">{{ $loop->iteration }}</td>
                 <td>
