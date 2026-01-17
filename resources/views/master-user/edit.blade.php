@@ -1259,6 +1259,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Air Tawar --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Air Tawar</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-air-tawar][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-air-tawar']['view']) && $userMatrixPermissions['master-pricelist-air-tawar']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-air-tawar][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-air-tawar']['create']) && $userMatrixPermissions['master-pricelist-air-tawar']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-air-tawar][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-air-tawar']['update']) && $userMatrixPermissions['master-pricelist-air-tawar']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-air-tawar][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-air-tawar']['delete']) && $userMatrixPermissions['master-pricelist-air-tawar']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Rit --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
