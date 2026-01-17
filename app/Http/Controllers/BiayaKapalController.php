@@ -109,8 +109,11 @@ class BiayaKapalController extends Controller
             ->where('status', 'aktif')
             ->orderBy('nama_vendor')
             ->get();
+        
+        // Get active pricelist air tawar for biaya air
+        $pricelistAirTawar = \App\Models\MasterPricelistAirTawar::orderBy('nama_agen')->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen'));
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar'));
     }
 
     /**
@@ -119,7 +122,7 @@ class BiayaKapalController extends Controller
     public function store(Request $request)
     {
         // Clean up all currency fields before validation (remove thousand separator)
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
         foreach ($fieldsToClean as $field) {
             if ($request->has($field) && $request->$field) {
                 $request->merge([
