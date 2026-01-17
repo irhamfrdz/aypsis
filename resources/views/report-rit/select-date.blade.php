@@ -39,7 +39,7 @@
             <div class="text-center mb-8">
                 <i class="fas fa-calendar-alt text-blue-600 text-6xl mb-4"></i>
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Pilih Periode Tanggal</h2>
-                <p class="text-gray-600">Pilih tanggal mulai dan tanggal akhir untuk menampilkan laporan surat jalan</p>
+                <p class="text-gray-600">Silakan pilih rentang tanggal untuk menampilkan laporan surat jalan yang memiliki <strong>tanggal checkpoint</strong> atau <strong>tanda terima</strong>.</p>
             </div>
 
             <form method="GET" action="{{ route('report.rit.view') }}" class="space-y-6">
@@ -47,11 +47,11 @@
                     {{-- Start Date --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Tanggal Mulai <span class="text-red-500">*</span>
+                            Dari Tanggal <span class="text-red-500">*</span>
                         </label>
                         <input type="date" 
                                name="start_date" 
-                               value="{{ old('start_date') }}"
+                               value="{{ old('start_date', now()->subDays(30)->format('Y-m-d')) }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
                                required>
                     </div>
@@ -59,11 +59,11 @@
                     {{-- End Date --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Tanggal Akhir <span class="text-red-500">*</span>
+                            Sampai Tanggal <span class="text-red-500">*</span>
                         </label>
                         <input type="date" 
                                name="end_date" 
-                               value="{{ old('end_date') }}"
+                               value="{{ old('end_date', now()->format('Y-m-d')) }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
                                required>
                     </div>
