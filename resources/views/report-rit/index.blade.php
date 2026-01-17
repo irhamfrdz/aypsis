@@ -48,6 +48,7 @@
             <input type="hidden" name="end_date" value="{{ request('end_date') }}">
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                     <input type="text"
                            name="search"
@@ -196,13 +197,32 @@
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $suratJalans->firstItem() + $key }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             @php
-                                $tanggal = is_array($sj) ? $sj['tanggal_surat_jalan'] : $sj->tanggal_surat_jalan;
-                                $order = is_array($sj) ? ($sj['order'] ?? null) : ($sj->order ?? null);
+                                // Prioritas: 1. tanggal_checkpoint, 2. tanggal tanda terima
+                                $tanggalCheckpoint = is_array($sj) ? ($sj['tanggal_checkpoint'] ?? null) : ($sj->tanggal_checkpoint ?? null);
+                                $tanggalTandaTerima = null;
+                                
+                                if (is_array($sj)) {
+                                    // Untuk bongkaran, gunakan tanggal_tanda_terima langsung
+                                    if (($sj['kegiatan'] ?? '') == 'bongkaran' && isset($sj['tanggal_tanda_terima'])) {
+                                        $tanggalTandaTerima = $sj['tanggal_tanda_terima'];
+                                    }
+                                    // Untuk non-bongkaran, gunakan tanggal dari relasi tandaTerima
+                                    elseif (isset($sj['tanda_terima']) && $sj['tanda_terima']) {
+                                        $tanggalTandaTerima = $sj['tanda_terima']->tanggal ?? null;
+                                    }
+                                } else {
+                                    if ($sj->kegiatan == 'bongkaran' && $sj->tanggal_tanda_terima) {
+                                        $tanggalTandaTerima = $sj->tanggal_tanda_terima;
+                                    }
+                                    elseif ($sj->tandaTerima) {
+                                        $tanggalTandaTerima = $sj->tandaTerima->tanggal ?? null;
+                                    }
+                                }
+                                
+                                $displayTanggal = $tanggalCheckpoint ?: $tanggalTandaTerima;
                             @endphp
-                            @if($tanggal)
-                                {{ is_string($tanggal) ? \Carbon\Carbon::parse($tanggal)->format('d/m/Y') : $tanggal->format('d/m/Y') }}
-                            @elseif($order && $order->tanggal_order)
-                                {{ is_string($order->tanggal_order) ? \Carbon\Carbon::parse($order->tanggal_order)->format('d/m/Y') : $order->tanggal_order->format('d/m/Y') }}
+                            @if($displayTanggal)
+                                {{ is_string($displayTanggal) ? \Carbon\Carbon::parse($displayTanggal)->format('d/m/Y') : $displayTanggal->format('d/m/Y') }}
                             @else
                                 -
                             @endif
@@ -212,7 +232,7 @@
                                 $noSj = is_array($sj) ? $sj['no_surat_jalan'] : $sj->no_surat_jalan;
                                 $type = is_array($sj) ? ($sj['type'] ?? 'regular') : ($sj->type ?? 'regular');
                             @endphp
-                            {{ $noSj ?: ($order ? $order->nomor_order : '-') }}
+                            {{ $noSj ?: '-' }}
                             @if($type == 'bongkaran')
                                 <span class="ml-1 px-1 py-0.5 text-xs font-semibold rounded bg-purple-100 text-purple-800">Bongkaran</span>
                             @endif

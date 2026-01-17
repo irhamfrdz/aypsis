@@ -2245,6 +2245,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-rit.export-single')
          ->middleware('can:pranota-uang-rit-view');
 
+    // Export all surat jalan in a pranota to Excel
+    Route::get('pranota-uang-rit/{pranotaUangRit}/export-surat-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'exportSuratJalan'])
+         ->name('pranota-uang-rit.export-surat-jalan')
+         ->middleware('can:pranota-uang-rit-view');
+
     Route::post('pranota-uang-rit/{pranotaUangRit}/approve', [\App\Http\Controllers\PranotaUangRitController::class, 'approve'])
          ->name('pranota-uang-rit.approve')
          ->middleware('can:pranota-uang-rit-approve');
