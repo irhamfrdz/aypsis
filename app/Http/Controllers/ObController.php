@@ -259,9 +259,8 @@ class ObController extends Controller
                 } else {
                     $lowerName = strtolower(trim($bl->nama_barang));
                     // Check if it's an empty container marker
-                    if (str_contains($lowerName, 'empty container') || 
-                        str_contains($lowerName, 'container empty') ||
-                        $lowerName === 'empty' ||
+                    // Support various formats: "empty container", "emptycontainer", "empty", "mt", "mty"
+                    if (str_contains($lowerName, 'empty') || 
                         $lowerName === 'mt' || // MT = Empty
                         $lowerName === 'mty') { // MTY = Empty
                         $status = 'empty';
@@ -400,9 +399,8 @@ class ObController extends Controller
             } else {
                 $lowerName = strtolower(trim($nk->jenis_barang));
                 // Check if it's an empty container marker
-                if (str_contains($lowerName, 'empty container') || 
-                    str_contains($lowerName, 'container empty') ||
-                    $lowerName === 'empty' ||
+                // Support various formats: "empty container", "emptycontainer", "empty", "mt", "mty"
+                if (str_contains($lowerName, 'empty') || 
                     $lowerName === 'mt' || // MT = Empty
                     $lowerName === 'mty') { // MTY = Empty
                     $status = 'empty';
