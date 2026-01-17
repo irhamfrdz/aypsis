@@ -67,10 +67,6 @@ class ReportRitController extends Controller
                     $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
-            })
-            ->where(function($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
             });
 
         // Query untuk Surat Jalan Bongkaran
@@ -94,10 +90,6 @@ class ReportRitController extends Controller
                     $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
-            })
-            ->where(function($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
             });
 
         // Filter tambahan jika ada
@@ -256,10 +248,6 @@ class ReportRitController extends Controller
                     $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
-            })
-            ->where(function($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
             });
 
         // Query untuk Surat Jalan Bongkaran
@@ -283,10 +271,6 @@ class ReportRitController extends Controller
                     $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
-            })
-            ->where(function($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
             });
 
         // Filter tambahan jika ada
@@ -422,10 +406,6 @@ class ReportRitController extends Controller
                     $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
-            })
-            ->where(function($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
             });
 
         // Query untuk Surat Jalan Bongkaran
@@ -449,10 +429,6 @@ class ReportRitController extends Controller
                     $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
-            })
-            ->where(function($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
             });
 
         // Filter tambahan jika ada
