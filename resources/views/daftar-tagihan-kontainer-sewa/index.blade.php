@@ -1681,14 +1681,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Save checkbox state to localStorage
     function saveCheckboxState() {
-        const checkedIds = [];
-        rowCheckboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                checkedIds.push(checkbox.value);
-            }
-        });
-        localStorage.setItem('daftar_tagihan_checked_ids', JSON.stringify(checkedIds));
-        console.log('Saved checkbox state:', checkedIds);
+        try {
+            // Get existing saved IDs from localStorage
+            const rawData = localStorage.getItem('daftar_tagihan_checked_ids');
+            const existingSavedIds = JSON.parse(rawData || '[]');
+            
+            // Get IDs of checkboxes on current page
+            const currentPageIds = [];
+            rowCheckboxes.forEach(checkbox => {
+                currentPageIds.push(checkbox.value);
+            });
+            
+            // Remove IDs that exist on current page from saved list
+            // (we'll re-add the checked ones)
+            const savedIdsNotOnCurrentPage = existingSavedIds.filter(id => !currentPageIds.includes(id));
+            
+            // Get checked IDs from current page
+            const currentPageCheckedIds = [];
+            rowCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    currentPageCheckedIds.push(checkbox.value);
+                }
+            });
+            
+            // Merge: IDs not on current page + currently checked IDs
+            const mergedIds = [...new Set([...savedIdsNotOnCurrentPage, ...currentPageCheckedIds])];
+            
+            localStorage.setItem('daftar_tagihan_checked_ids', JSON.stringify(mergedIds));
+            console.log('Saved checkbox state:', {
+                previouslySaved: existingSavedIds.length,
+                notOnCurrentPage: savedIdsNotOnCurrentPage.length,
+                currentPageChecked: currentPageCheckedIds.length,
+                totalSaved: mergedIds.length,
+                mergedIds: mergedIds
+            });
+        } catch (error) {
+            console.error('Error saving checkbox state:', error);
+        }
     }
 
     // Restore checkbox state from localStorage
