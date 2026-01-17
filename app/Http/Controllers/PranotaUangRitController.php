@@ -1150,7 +1150,9 @@ class PranotaUangRitController extends Controller
 
         // Get NIK from karyawans table for each supir
         foreach ($supirDetails as $detail) {
-            $karyawan = \App\Models\Karyawan::where('nama', $detail->supir_nama)->first();
+            $karyawan = \App\Models\Karyawan::where('nama_lengkap', $detail->supir_nama)
+                ->orWhere('nama_panggilan', $detail->supir_nama)
+                ->first();
             $detail->nik = $karyawan ? $karyawan->nik : '-';
         }
 
