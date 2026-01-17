@@ -343,7 +343,7 @@ function printTable() {
                         window.close();
                     }
                 }
-            </script>
+            <\/script>
         </body>
         </html>
     `);
