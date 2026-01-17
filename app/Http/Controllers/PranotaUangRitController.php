@@ -136,7 +136,11 @@ class PranotaUangRitController extends Controller
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
-            // Only include surat jalan that already have a supir checkpoint OR have a Tanda Terima record OR bongkaran dengan tanggal tanda terima
+            // Include surat jalan that:
+            // - Have a supir/kenek checkpoint (tanggal_checkpoint), OR
+            // - Have a Tanda Terima record, OR
+            // - Are bongkaran with tanggal tanda terima, OR
+            // - Are approved (don't strictly require checkpoint)
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
                   ->orWhereHas('tandaTerima')
@@ -144,7 +148,8 @@ class PranotaUangRitController extends Controller
                       // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
                       $subQ->where('kegiatan', 'bongkaran')
                            ->whereNotNull('tanggal_tanda_terima');
-                  });
+                  })
+                  ->orWhere('status', 'approved'); // Tambahan: surat jalan yang sudah approved bisa langsung muncul
             });
 
         // Apply date range filter to base query BEFORE any cloning - filter by tanggal tanda terima
