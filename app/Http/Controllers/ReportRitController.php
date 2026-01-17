@@ -38,7 +38,11 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
+        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
@@ -90,7 +94,11 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
+        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
@@ -137,7 +145,11 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
+        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
