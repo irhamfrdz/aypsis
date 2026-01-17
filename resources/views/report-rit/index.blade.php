@@ -112,6 +112,15 @@
     </div>
 
     {{-- Statistics Cards --}}
+    @php
+        $totalItems = $suratJalans->total();
+        $muatCount = collect($suratJalans->items())->filter(function($item) {
+            return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'muat';
+        })->count();
+        $bongkarCount = collect($suratJalans->items())->filter(function($item) {
+            return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'bongkar';
+        })->count();
+    @endphp
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
             <div class="flex items-center">
@@ -120,7 +129,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Total Surat Jalan</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $suratJalans->total() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalItems }}</p>
                 </div>
             </div>
         </div>
@@ -132,7 +141,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Muat</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $suratJalans->where('kegiatan', 'muat')->count() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $muatCount }}</p>
                 </div>
             </div>
         </div>
@@ -144,7 +153,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Bongkar</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $suratJalans->where('kegiatan', 'bongkar')->count() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $bongkarCount }}</p>
                 </div>
             </div>
         </div>
