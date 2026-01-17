@@ -1128,26 +1128,26 @@ class PranotaUangRitKenekController extends Controller
         
         // Parse multiple surat jalan from combined field (since we now store combined data)
         $suratJalanNomors = explode(', ', $pranotaUangRitKenek->no_surat_jalan);
-        $suratJalanSupirs = explode(', ', $pranotaUangRitKenek->kenek_nama);
+        $suratJalanKeneks = explode(', ', $pranotaUangRitKenek->kenek_nama);
         
         // Create grouped pranota data from the combined stored data
         $groupedPranota = collect();
         foreach ($suratJalanNomors as $index => $nomor) {
-            $supir = $suratJalanSupirs[$index] ?? $suratJalanSupirs[0];
+            $kenek = $suratJalanKeneks[$index] ?? $suratJalanKeneks[0];
             $groupedPranota->push((object)[
                 'no_surat_jalan' => trim($nomor),
-                'kenek_nama' => trim($supir),
+                'Kenek_nama' => trim($kenek),
                 'tanggal' => $pranotaUangRitKenek->tanggal,
-                'uang_rit_supir' => $pranotaUangRitKenek->uang_rit_supir / count($suratJalanNomors), // Split evenly
+                'uang_rit_kenek' => $pranotaUangRitKenek->uang_rit_kenek / count($suratJalanNomors), // Split evenly
             ]);
         }
             
-        // Get supir details for this pranota
-        $supirDetails = PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
+        // Get kenek details for this pranota
+        $KenekDetails = PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
             ->orderBy('kenek_nama')
             ->get();
             
-        return view('pranota-uang-rit-kenek.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
+        return view('pranota-uang-rit-kenek.print', compact('pranotaUangRitKenek', 'groupedPranota', 'KenekDetails'));
     }
 
     /**

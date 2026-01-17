@@ -199,26 +199,9 @@
                             @php
                                 // Prioritas: 1. tanggal_checkpoint, 2. tanggal tanda terima
                                 $tanggalCheckpoint = is_array($sj) ? ($sj['tanggal_checkpoint'] ?? null) : ($sj->tanggal_checkpoint ?? null);
-                                $tanggalTandaTerima = null;
+                                $tanggalTandaTerima = is_array($sj) ? ($sj['tanggal_tanda_terima'] ?? null) : ($sj->tanggal_tanda_terima ?? null);
                                 
-                                if (is_array($sj)) {
-                                    // Untuk bongkaran, gunakan tanggal_tanda_terima langsung
-                                    if (($sj['kegiatan'] ?? '') == 'bongkaran' && isset($sj['tanggal_tanda_terima'])) {
-                                        $tanggalTandaTerima = $sj['tanggal_tanda_terima'];
-                                    }
-                                    // Untuk non-bongkaran, gunakan tanggal dari relasi tandaTerima
-                                    elseif (isset($sj['tanda_terima']) && $sj['tanda_terima']) {
-                                        $tanggalTandaTerima = $sj['tanda_terima']->tanggal ?? null;
-                                    }
-                                } else {
-                                    if ($sj->kegiatan == 'bongkaran' && $sj->tanggal_tanda_terima) {
-                                        $tanggalTandaTerima = $sj->tanggal_tanda_terima;
-                                    }
-                                    elseif ($sj->tandaTerima) {
-                                        $tanggalTandaTerima = $sj->tandaTerima->tanggal ?? null;
-                                    }
-                                }
-                                
+                                // Use checkpoint first, then tanda terima as fallback
                                 $displayTanggal = $tanggalCheckpoint ?: $tanggalTandaTerima;
                             @endphp
                             @if($displayTanggal)

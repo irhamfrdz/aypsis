@@ -149,7 +149,7 @@ class ReportRitController extends Controller
 
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan
-            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation'])
+            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima'])
             ->get();
             
         $suratJalansBongkaran = $querySuratJalanBongkaran
@@ -165,6 +165,8 @@ class ReportRitController extends Controller
                 'type' => 'regular',
                 'id' => $sj->id,
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                'tanggal_checkpoint' => $sj->tanggal_checkpoint,
+                'tanggal_tanda_terima' => $sj->tandaTerima ? $sj->tandaTerima->tanggal : null,
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $sj->supir ?: $sj->supir2,
@@ -185,6 +187,8 @@ class ReportRitController extends Controller
                 'type' => 'bongkaran',
                 'id' => $sjb->id,
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                'tanggal_checkpoint' => $sjb->tanggal_checkpoint,
+                'tanggal_tanda_terima' => $sjb->tandaTerima ? $sjb->tandaTerima->tanggal_tanda_terima : null,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $sjb->supir ?: $sjb->supir2,
@@ -345,8 +349,8 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->get();
-        $suratJalansBongkaran = $querySuratJalanBongkaran->get();
+        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima'])->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima'])->get();
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
@@ -355,6 +359,8 @@ class ReportRitController extends Controller
             $allSuratJalans->push([
                 'type' => 'regular',
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                'tanggal_checkpoint' => $sj->tanggal_checkpoint,
+                'tanggal_tanda_terima' => $sj->tandaTerima ? $sj->tandaTerima->tanggal : null,
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $sj->supir ?: $sj->supir2,
@@ -373,6 +379,8 @@ class ReportRitController extends Controller
             $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                'tanggal_checkpoint' => $sjb->tanggal_checkpoint,
+                'tanggal_tanda_terima' => $sjb->tandaTerima ? $sjb->tandaTerima->tanggal_tanda_terima : null,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $sjb->supir ?: $sjb->supir2,
@@ -519,8 +527,8 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->get();
-        $suratJalansBongkaran = $querySuratJalanBongkaran->get();
+        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima'])->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima'])->get();
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
@@ -529,6 +537,8 @@ class ReportRitController extends Controller
             $allSuratJalans->push([
                 'type' => 'regular',
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                'tanggal_checkpoint' => $sj->tanggal_checkpoint,
+                'tanggal_tanda_terima' => $sj->tandaTerima ? $sj->tandaTerima->tanggal : null,
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $sj->supir ?: $sj->supir2,
@@ -547,6 +557,8 @@ class ReportRitController extends Controller
             $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                'tanggal_checkpoint' => $sjb->tanggal_checkpoint,
+                'tanggal_tanda_terima' => $sjb->tandaTerima ? $sjb->tandaTerima->tanggal_tanda_terima : null,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $sjb->supir ?: $sjb->supir2,
