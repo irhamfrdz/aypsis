@@ -275,13 +275,6 @@ class ReportRitController extends Controller
                     $subQ->where('status', 'approved')
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
-                });\n            });
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 4. Filter berdasarkan tanggal surat jalan (fallback)
-                    $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
             });
 
@@ -455,24 +448,6 @@ class ReportRitController extends Controller
                     // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
                     $subQ->where('status', 'approved')
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
-                });
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Tanggal tanda terima untuk kegiatan bongkaran
-                    $subQ->where('kegiatan', 'bongkaran')
-                         ->whereNotNull('tanggal_tanda_terima')
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 3. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 4. Filter berdasarkan tanggal surat jalan (fallback)
-                    $subQ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
                          ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
                 });
             });
