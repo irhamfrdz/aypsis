@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaran;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -38,7 +39,15 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+        // Query untuk Surat Jalan biasa
+        $querySuratJalan = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
+
+        // Query untuk Surat Jalan Bongkaran
+        $querySuratJalanBongkaran = SuratJalanBongkaran::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
                   ->orWhereHas('tandaTerima');
@@ -47,8 +56,17 @@ class ReportRitController extends Controller
         // Filter tambahan jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $querySuratJalan->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('supir2', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+            });
+            
+            $querySuratJalanBongkaran->where(function($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('supir2', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
@@ -58,22 +76,91 @@ class ReportRitController extends Controller
         }
 
         if ($request->filled('supir')) {
-            $query->where(function($q) use ($request) {
+            $querySuratJalan->where(function($q) use ($request) {
+                $q->where('supir', 'like', "%{$request->supir}%")
+                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+            });
+            
+            $querySuratJalanBongkaran->where(function($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
                   ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
         }
 
         if ($request->filled('kegiatan')) {
-            $query->where('kegiatan', $request->kegiatan);
+            $querySuratJalan->where('kegiatan', $request->kegiatan);
+            $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
 
-        // Order by tanggal descending
-        $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc');
+        // Get data dari kedua tabel
+        $suratJalansBiasa = $querySuratJalan
+            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation'])
+            ->get();
+            
+        $suratJalansBongkaran = $querySuratJalanBongkaran
+            ->with(['tandaTerima'])
+            ->get();
 
-        $suratJalans = $query->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation'])
-            ->paginate($request->get('per_page', 50))
-            ->appends($request->except('page'));
+        // Gabungkan dan transform data agar konsisten
+        $allSuratJalans = collect();
+        
+        // Add surat jalan biasa
+        foreach ($suratJalansBiasa as $sj) {
+            $allSuratJalans->push([
+                'type' => 'regular',
+                'id' => $sj->id,
+                'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'kegiatan' => $sj->kegiatan,
+                'supir' => $sj->supir ?: $sj->supir2,
+                'no_plat' => $sj->no_plat,
+                'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
+                'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
+                'jenis_barang' => $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang,
+                'tipe_kontainer' => $sj->tipe_kontainer ?: ($sj->size ?: ($sj->order ? $sj->order->tipe_kontainer : null)),
+                'rit' => $sj->rit,
+                'order' => $sj->order,
+                'created_at' => $sj->created_at,
+            ]);
+        }
+        
+        // Add surat jalan bongkaran
+        foreach ($suratJalansBongkaran as $sjb) {
+            $allSuratJalans->push([
+                'type' => 'bongkaran',
+                'id' => $sjb->id,
+                'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                'kegiatan' => $sjb->kegiatan,
+                'supir' => $sjb->supir ?: $sjb->supir2,
+                'no_plat' => $sjb->no_plat,
+                'pengirim' => $sjb->pengirim,
+                'penerima' => $sjb->tujuan_pengiriman,
+                'jenis_barang' => $sjb->jenis_barang,
+                'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
+                'rit' => $sjb->rit,
+                'order' => null,
+                'created_at' => $sjb->created_at,
+            ]);
+        }
+        
+        // Sort by tanggal descending, then created_at descending
+        $allSuratJalans = $allSuratJalans->sortByDesc(function($item) {
+            return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
+        });
+
+        // Manual pagination
+        $perPage = $request->get('per_page', 50);
+        $currentPage = $request->get('page', 1);
+        $total = $allSuratJalans->count();
+        
+        $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allSuratJalans->forPage($currentPage, $perPage)->values(),
+            $total,
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('report-rit.view', compact('suratJalans', 'startDate', 'endDate'));
     }
@@ -94,7 +181,15 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+        // Query untuk Surat Jalan biasa
+        $querySuratJalan = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
+
+        // Query untuk Surat Jalan Bongkaran
+        $querySuratJalanBongkaran = SuratJalanBongkaran::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
                   ->orWhereHas('tandaTerima');
@@ -103,8 +198,17 @@ class ReportRitController extends Controller
         // Filter tambahan jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $querySuratJalan->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('supir2', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+            });
+            
+            $querySuratJalanBongkaran->where(function($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('supir2', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
@@ -114,17 +218,68 @@ class ReportRitController extends Controller
         }
 
         if ($request->filled('supir')) {
-            $query->where(function($q) use ($request) {
+            $querySuratJalan->where(function($q) use ($request) {
+                $q->where('supir', 'like', "%{$request->supir}%")
+                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+            });
+            
+            $querySuratJalanBongkaran->where(function($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
                   ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
         }
 
         if ($request->filled('kegiatan')) {
-            $query->where('kegiatan', $request->kegiatan);
+            $querySuratJalan->where('kegiatan', $request->kegiatan);
+            $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
 
-        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc')->get();
+        // Get data dari kedua tabel
+        $suratJalansBiasa = $querySuratJalan->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->get();
+
+        // Gabungkan dan transform data agar konsisten
+        $allSuratJalans = collect();
+        
+        foreach ($suratJalansBiasa as $sj) {
+            $allSuratJalans->push((object)[
+                'type' => 'regular',
+                'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'kegiatan' => $sj->kegiatan,
+                'supir' => $sj->supir ?: $sj->supir2,
+                'no_plat' => $sj->no_plat,
+                'pengirim' => $sj->pengirim,
+                'tujuan_pengiriman' => $sj->tujuan_pengiriman,
+                'jenis_barang' => $sj->jenis_barang,
+                'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
+                'rit' => $sj->rit,
+                'order' => $sj->order,
+                'created_at' => $sj->created_at,
+            ]);
+        }
+        
+        foreach ($suratJalansBongkaran as $sjb) {
+            $allSuratJalans->push((object)[
+                'type' => 'bongkaran',
+                'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                'kegiatan' => $sjb->kegiatan,
+                'supir' => $sjb->supir ?: $sjb->supir2,
+                'no_plat' => $sjb->no_plat,
+                'pengirim' => $sjb->pengirim,
+                'tujuan_pengiriman' => $sjb->tujuan_pengiriman,
+                'jenis_barang' => $sjb->jenis_barang,
+                'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
+                'rit' => $sjb->rit,
+                'order' => null,
+                'created_at' => $sjb->created_at,
+            ]);
+        }
+        
+        $suratJalans = $allSuratJalans->sortByDesc(function($item) {
+            return $item->tanggal_surat_jalan . ' ' . $item->created_at;
+        });
 
         return view('report-rit.print', compact('suratJalans', 'startDate', 'endDate'));
     }
@@ -145,7 +300,15 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        $query = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+        // Query untuk Surat Jalan biasa
+        $querySuratJalan = SuratJalan::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->where(function($q) {
+                $q->whereNotNull('tanggal_checkpoint')
+                  ->orWhereHas('tandaTerima');
+            });
+
+        // Query untuk Surat Jalan Bongkaran
+        $querySuratJalanBongkaran = SuratJalanBongkaran::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->where(function($q) {
                 $q->whereNotNull('tanggal_checkpoint')
                   ->orWhereHas('tandaTerima');
@@ -154,8 +317,17 @@ class ReportRitController extends Controller
         // Filter tambahan jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $querySuratJalan->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('supir2', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+            });
+            
+            $querySuratJalanBongkaran->where(function($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('supir2', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
@@ -165,17 +337,68 @@ class ReportRitController extends Controller
         }
 
         if ($request->filled('supir')) {
-            $query->where(function($q) use ($request) {
+            $querySuratJalan->where(function($q) use ($request) {
+                $q->where('supir', 'like', "%{$request->supir}%")
+                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+            });
+            
+            $querySuratJalanBongkaran->where(function($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
                   ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
         }
 
         if ($request->filled('kegiatan')) {
-            $query->where('kegiatan', $request->kegiatan);
+            $querySuratJalan->where('kegiatan', $request->kegiatan);
+            $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
 
-        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->orderBy('created_at', 'desc')->get();
+        // Get data dari kedua tabel
+        $suratJalansBiasa = $querySuratJalan->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->get();
+
+        // Gabungkan dan transform data agar konsisten
+        $allSuratJalans = collect();
+        
+        foreach ($suratJalansBiasa as $sj) {
+            $allSuratJalans->push((object)[
+                'type' => 'regular',
+                'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'kegiatan' => $sj->kegiatan,
+                'supir' => $sj->supir ?: $sj->supir2,
+                'no_plat' => $sj->no_plat,
+                'pengirim' => $sj->pengirim,
+                'tujuan_pengiriman' => $sj->tujuan_pengiriman,
+                'jenis_barang' => $sj->jenis_barang,
+                'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
+                'rit' => $sj->rit,
+                'order' => $sj->order,
+                'created_at' => $sj->created_at,
+            ]);
+        }
+        
+        foreach ($suratJalansBongkaran as $sjb) {
+            $allSuratJalans->push((object)[
+                'type' => 'bongkaran',
+                'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
+                'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                'kegiatan' => $sjb->kegiatan,
+                'supir' => $sjb->supir ?: $sjb->supir2,
+                'no_plat' => $sjb->no_plat,
+                'pengirim' => $sjb->pengirim,
+                'tujuan_pengiriman' => $sjb->tujuan_pengiriman,
+                'jenis_barang' => $sjb->jenis_barang,
+                'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
+                'rit' => $sjb->rit,
+                'order' => null,
+                'created_at' => $sjb->created_at,
+            ]);
+        }
+        
+        $suratJalans = $allSuratJalans->sortByDesc(function($item) {
+            return $item->tanggal_surat_jalan . ' ' . $item->created_at;
+        });
 
         $filename = 'Report_Rit_' . $startDate->format('d-m-Y') . '_to_' . $endDate->format('d-m-Y') . '.xlsx';
 
