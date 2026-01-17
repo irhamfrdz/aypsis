@@ -1136,6 +1136,118 @@ class PranotaUangRitController extends Controller
     }
 
     /**
+     * Export single pranota to Excel
+     */
+    public function exportSingle(PranotaUangRit $pranotaUangRit)
+    {
+        // Load necessary relationships
+        $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
+        
+        // Get supir details for this pranota
+        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
+            ->orderBy('supir_nama')
+            ->get();
+
+        // Create Excel file using PhpSpreadsheet
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set title
+        $sheet->setCellValue('A1', 'PRANOTA UANG RIT');
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Pranota info
+        $sheet->setCellValue('A3', 'No. Pranota:');
+        $sheet->setCellValue('B3', $pranotaUangRit->no_pranota);
+        $sheet->setCellValue('A4', 'Tanggal:');
+        $sheet->setCellValue('B4', $pranotaUangRit->tanggal->format('d/m/Y'));
+        $sheet->setCellValue('A5', 'Status:');
+        $sheet->setCellValue('B5', ucfirst($pranotaUangRit->status));
+
+        // Detail supir headers
+        $row = 7;
+        $sheet->setCellValue('A' . $row, 'No');
+        $sheet->setCellValue('B' . $row, 'No. Surat Jalan');
+        $sheet->setCellValue('C' . $row, 'Nama Supir');
+        $sheet->setCellValue('D' . $row, 'Tujuan');
+        $sheet->setCellValue('E' . $row, 'Uang Rit');
+        $sheet->setCellValue('F' . $row, 'Keterangan');
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => 'FFFFFF']
+                ]
+            ]
+        ];
+        $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray($headerStyle);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getColumnDimension('B')->setWidth(25);
+        $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(30);
+        $sheet->getColumnDimension('E')->setWidth(18);
+        $sheet->getColumnDimension('F')->setWidth(25);
+
+        // Fill data
+        $row++;
+        $no = 1;
+        foreach ($supirDetails as $detail) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $detail->no_surat_jalan ?? '-');
+            $sheet->setCellValue('C' . $row, $detail->supir_nama ?? '-');
+            $sheet->setCellValue('D' . $row, $detail->tujuan_pengambilan ?? '-');
+            $sheet->setCellValue('E' . $row, 'Rp ' . number_format($detail->uang_rit_supir ?? 0, 0, ',', '.'));
+            $sheet->setCellValue('F' . $row, $detail->keterangan ?? '-');
+
+            // Add border to data rows
+            $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ]);
+
+            $row++;
+        }
+
+        // Total row
+        $sheet->setCellValue('A' . $row, 'TOTAL');
+        $sheet->mergeCells('A' . $row . ':D' . $row);
+        $sheet->setCellValue('E' . $row, 'Rp ' . number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.'));
+        $sheet->getStyle('A' . $row . ':F' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+
+        // Create writer and download
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = $pranotaUangRit->no_pranota . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
      * Export selected surat jalan to Excel
      */
     public function exportExcel(Request $request)

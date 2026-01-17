@@ -2240,6 +2240,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-rit.export-excel')
          ->middleware('can:pranota-uang-rit-create');
 
+    // Export single pranota to Excel
+    Route::get('pranota-uang-rit/{pranotaUangRit}/export-single', [\App\Http\Controllers\PranotaUangRitController::class, 'exportSingle'])
+         ->name('pranota-uang-rit.export-single')
+         ->middleware('can:pranota-uang-rit-view');
+
     Route::post('pranota-uang-rit/{pranotaUangRit}/approve', [\App\Http\Controllers\PranotaUangRitController::class, 'approve'])
          ->name('pranota-uang-rit.approve')
          ->middleware('can:pranota-uang-rit-approve');

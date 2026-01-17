@@ -145,7 +145,7 @@
                                         <button type="button" 
                                                 class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-100 hover:bg-green-200 rounded-lg transition-colors duration-200" 
                                                 title="Export Excel"
-                                                onclick="exportSinglePranota({{ $item->id }}, '{{ $item->no_pranota }}', '{{ $item->tanggal->format('d/m/Y') }}', {{ $item->grand_total_bersih }}, '{{ $item->status }}')">
+                                                onclick="window.location.href='{{ route('pranota-uang-rit.export-single', $item) }}'">
                                             <i class="fas fa-file-excel"></i>
                                         </button>
                                         @endcan
@@ -395,34 +395,6 @@ function exportToExcel() {
     // Generate filename with current date
     const date = new Date().toISOString().split('T')[0];
     const filename = `Pranota_Uang_Rit_${date}.xlsx`;
-    
-    // Save file
-    XLSX.writeFile(wb, filename);
-}
-
-function exportSinglePranota(id, noPranota, tanggal, uangRit, status) {
-    // Create data array
-    const data = [
-        ['No. Pranota', 'Tanggal', 'Uang Rit', 'Status'],
-        [noPranota, tanggal, 'Rp ' + new Intl.NumberFormat('id-ID').format(uangRit), status]
-    ];
-    
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    
-    // Set column widths
-    ws['!cols'] = [
-        { wch: 20 }, // No. Pranota
-        { wch: 15 }, // Tanggal
-        { wch: 20 }, // Uang Rit
-        { wch: 15 }  // Status
-    ];
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Pranota Uang Rit');
-    
-    // Generate filename
-    const filename = `${noPranota}.xlsx`;
     
     // Save file
     XLSX.writeFile(wb, filename);
