@@ -133,12 +133,12 @@
                                         @endcan
 
                                         @can('pranota-uang-rit-view')
-                                        <button type="button" 
-                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors duration-200" 
-                                                title="Print Ritasi Supir"
-                                                onclick="printRitasiSupir({{ $item->id }})">
+                                        <a href="{{ route('pranota-uang-rit.print', $item) }}" 
+                                           target="_blank"
+                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors duration-200" 
+                                           title="Print Ritasi Supir">
                                             <i class="fas fa-print"></i>
-                                        </button>
+                                        </a>
                                         @endcan
 
                                         @can('pranota-uang-rit-view')
@@ -303,19 +303,6 @@
 function markAsPaid(pranotaId) {
     document.getElementById('markAsPaidForm').action = '/pranota-uang-rit/' + pranotaId + '/mark-as-paid';
     document.getElementById('markAsPaidModal').classList.remove('hidden');
-}
-
-function printRitasiSupir(pranotaId) {
-    // Open print page in new window
-    const printUrl = '/pranota-uang-rit/' + pranotaId + '/print';
-    const printWindow = window.open(printUrl, '_blank', 'width=800,height=600');
-    
-    // Auto print when page loads
-    if (printWindow) {
-        printWindow.addEventListener('load', function() {
-            printWindow.print();
-        });
-    }
 }
 
 function printTable() {

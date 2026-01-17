@@ -42,11 +42,22 @@
             @csrf
             <input type="hidden" name="start_date" value="{{ request('start_date') }}">
             <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+            <input type="hidden" name="rit_filter_hidden" value="{{ $ritFilter ?? 'semua' }}">
 
             @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
-            <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-                <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dengan <strong>tanggal tanda terima</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
-                <a href="{{ route('pranota-uang-rit-kenek.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
+            <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dengan <strong>tanggal tanda terima</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
+                    <a href="{{ route('pranota-uang-rit-kenek.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="rit_filter" class="text-xs font-medium text-gray-700">Filter Status Rit:</label>
+                    <select id="rit_filter" name="rit_filter" class="text-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1 px-2" onchange="applyRitFilter()">
+                        <option value="semua" {{ ($ritFilter ?? 'semua') == 'semua' ? 'selected' : '' }}>Semua</option>
+                        <option value="menggunakan_rit" {{ ($ritFilter ?? 'semua') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="tanpa_rit" {{ ($ritFilter ?? 'semua') == 'tanpa_rit' ? 'selected' : '' }}>Tanpa Rit</option>
+                    </select>
+                </div>
             </div>
             @endif
 
@@ -557,6 +568,14 @@
 
 @push('scripts')
 <script>
+// Function to apply rit filter - redirect to same page with filter parameter
+function applyRitFilter() {
+    const ritFilter = document.getElementById('rit_filter').value;
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('rit_filter', ritFilter);
+    window.location.href = currentUrl.toString();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const suratJalanCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');

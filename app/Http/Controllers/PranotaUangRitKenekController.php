@@ -115,8 +115,10 @@ class PranotaUangRitKenekController extends Controller
             }
         }
 
+        // Get rit filter from request (default: semua)
+        $ritFilter = request()->input('rit_filter', 'semua');
+
         // Get available surat jalans that haven't been processed for Pranota Uang Rit Kenek
-        // Only include surat jalans that use 'menggunakan_rit' and status pembayaran uang rit 'belum_dibayar'
         $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
             // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
             $q->where('status', 'approved')
@@ -127,9 +129,27 @@ class PranotaUangRitKenekController extends Controller
               ->orWhereHas('approvals', function($sub) {
                   $sub->where('status', 'approved');
               });
-        })
-            ->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
-            ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
+        });
+        
+        // Apply rit filter based on request
+        if ($ritFilter === 'menggunakan_rit') {
+            $baseQuery->where('rit', 'menggunakan_rit');
+        } elseif ($ritFilter === 'tanpa_rit') {
+            $baseQuery->where(function($q) {
+                $q->where('rit', 'tanpa_rit')
+                  ->orWhereNull('rit')
+                  ->orWhere('rit', '');
+            });
+        }
+        // If 'semua', don't apply any rit filter
+        
+        // Only include surat jalan that have a kenek
+        $baseQuery->where(function($q) {
+            $q->whereNotNull('kenek')
+              ->where('kenek', '!=', '');
+        });
+        
+        $baseQuery->where('status_pembayaran_uang_rit_kenek', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar kenek
             ->whereNotIn('id', function($query) {
                 $query->select('surat_jalan_id')
                     ->from('pranota_uang_rits')
@@ -203,9 +223,26 @@ class PranotaUangRitKenekController extends Controller
               ->orWhereHas('approvals', function($sub) {
                   $sub->where('status', 'approved');
               });
-        })
-            ->where('rit', 'menggunakan_rit')
-            ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
+        });
+        
+        // Apply same rit filter for statistics
+        if ($ritFilter === 'menggunakan_rit') {
+            $baseQueryBeforeDate->where('rit', 'menggunakan_rit');
+        } elseif ($ritFilter === 'tanpa_rit') {
+            $baseQueryBeforeDate->where(function($q) {
+                $q->where('rit', 'tanpa_rit')
+                  ->orWhereNull('rit')
+                  ->orWhere('rit', '');
+            });
+        }
+        
+        // Only include surat jalan that have a kenek (for statistics)
+        $baseQueryBeforeDate->where(function($q) {
+            $q->whereNotNull('kenek')
+              ->where('kenek', '!=', '');
+        });
+        
+        $baseQueryBeforeDate->where('status_pembayaran_uang_rit_kenek', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
             ->whereNotIn('id', function($query) {
                 $query->select('surat_jalan_id')
                     ->from('pranota_uang_rits')
@@ -297,21 +334,33 @@ class PranotaUangRitKenekController extends Controller
                     $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
                           ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                 })
-                ->where(function($q) {
-                    // Filter: rit = menggunakan_rit ATAU rit is NULL (default dianggap menggunakan rit)
-                    $q->where('rit', 'menggunakan_rit')
-                      ->orWhereNull('rit');
+                ->where(function($q) use ($ritFilter) {
+                    // Apply same rit filter for bongkaran
+                    if ($ritFilter === 'menggunakan_rit') {
+                        $q->where('rit', 'menggunakan_rit')
+                          ->orWhereNull('rit');
+                    } elseif ($ritFilter === 'tanpa_rit') {
+                        $q->where('rit', 'tanpa_rit');
+                    } else {
+                        // 'semua' - include all
+                        $q->whereNotNull('id'); // always true, include all
+                    }
                 })
                 ->where(function($q) {
-                    // Filter: status_pembayaran_uang_rit = belum_bayar ATAU NULL (belum ada pembayaran)
-                    $q->where('status_pembayaran_uang_rit', 'belum_bayar')
-                      ->orWhereNull('status_pembayaran_uang_rit');
+                    // Filter: status_pembayaran_uang_rit_kenek = belum_bayar ATAU NULL (belum ada pembayaran)
+                    $q->where('status_pembayaran_uang_rit_kenek', 'belum_bayar')
+                      ->orWhereNull('status_pembayaran_uang_rit_kenek');
                 })
                 ->whereNotIn('id', function($query) {
                     $query->select('surat_jalan_bongkaran_id')
                         ->from('pranota_uang_rits')
                         ->whereNotNull('surat_jalan_bongkaran_id')
                         ->whereNotIn('status', ['cancelled']);
+                })
+                // Only include surat jalan bongkaran that have a kenek
+                ->where(function($q) {
+                    $q->whereNotNull('kenek')
+                      ->where('kenek', '!=', '');
                 });
 
             $suratJalanBongkarans = $queryBongkaran->orderBy('created_at', 'desc')->get();
@@ -336,7 +385,7 @@ class PranotaUangRitKenekController extends Controller
             }
         }
 
-        return view('pranota-uang-rit-kenek.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate'));
+        return view('pranota-uang-rit-kenek.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate', 'ritFilter'));
     }
 
     /**
