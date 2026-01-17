@@ -187,7 +187,6 @@
             <tr class="total-row">
                 <td colspan="3" class="text-center"><strong>TOTAL</strong></td>
                 <td class="text-center"><strong>{{ $totalRit }}</strong></td>
-                <td class="text-center"><strong></strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRitKenek->total_uang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRitKenek->total_hutang, 0, ',', '.') }}</strong></td>
                 <td class="text-right"><strong>{{ number_format($pranotaUangRitKenek->total_tabungan, 0, ',', '.') }}</strong></td>
