@@ -550,8 +550,8 @@
 
                         {{-- Master Tarif Sub-Dropdown --}}
         @php
-            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master.pricelist-ob.*') || Request::routeIs('pricelist-uang-jalan-batam.*') || Request::routeIs('master.pricelist-rit.*') || Request::routeIs('master-pelayanan-pelabuhan.*') || Request::routeIs('master.pricelist-biaya-dokumen.*') || Request::routeIs('ongkos-truck.*');
-            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('uang-jalan-batam.view') || $user->can('master-pricelist-gate-in-view') || $user->can('master-pricelist-ob-view') || $user->can('master-pricelist-uang-jalan-batam-view') || $user->can('master-pricelist-rit-view') || $user->can('master-pelayanan-pelabuhan-view') || $user->can('master-pricelist-biaya-dokumen-view') || $user->can('ongkos-truck-view'));
+            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master.pricelist-ob.*') || Request::routeIs('pricelist-uang-jalan-batam.*') || Request::routeIs('master.pricelist-rit.*') || Request::routeIs('master-pelayanan-pelabuhan.*') || Request::routeIs('master.pricelist-biaya-dokumen.*') || Request::routeIs('ongkos-truck.*') || Request::routeIs('master.pricelist-air-tawar.*');
+            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('uang-jalan-batam.view') || $user->can('master-pricelist-gate-in-view') || $user->can('master-pricelist-ob-view') || $user->can('master-pricelist-uang-jalan-batam-view') || $user->can('master-pricelist-rit-view') || $user->can('master-pelayanan-pelabuhan-view') || $user->can('master-pricelist-biaya-dokumen-view') || $user->can('ongkos-truck-view') || $user->can('master-pricelist-air-tawar-view'));
         @endphp                        @if($hasTarifPermissions)
                         <div class="mx-2 mb-3">
                             <button id="master-tarif-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group {{ $isTarifRoute ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
@@ -594,6 +594,11 @@
                                 @if($user && $user->can('master-pricelist-rit-view'))
                                     <a href="{{ route('master.pricelist-rit.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist Rit</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('master-pricelist-air-tawar-view'))
+                                    <a href="{{ route('master.pricelist-air-tawar.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-air-tawar.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Pricelist Air Tawar</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-buruh-view'))
