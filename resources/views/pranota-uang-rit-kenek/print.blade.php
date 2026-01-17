@@ -142,15 +142,15 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
-                    <td class="text-left">{{ strtoupper($detail->Kenek_nama) }}</td>
+                    <td class="text-left">{{ strtoupper($detail->kenek_nama) }}</td>
                     <td class="text-center">
                         @php
-                            $jumlahRit = $groupedPranota->where('Kenek_nama', $detail->Kenek_nama)->count();
+                            $jumlahRit = $groupedPranota->where('kenek_nama', $detail->kenek_nama)->count();
                         @endphp
                         {{ $jumlahRit }}
                     </td>
                     <td class="text-center">Rit</td>
-                    <td class="text-right">{{ number_format($detail->total_uang_Kenek, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($detail->total_uang_kenek, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($detail->bpjs, 0, ',', '.') }}</td>
@@ -161,19 +161,19 @@
                 {{-- Fallback jika tidak ada Kenek details --}}
                 @php
                     $suratJalanArray = explode(', ', $pranotaUangRitKenek->no_surat_jalan);
-                    $KenekArray = explode(', ', $pranotaUangRitKenek->Kenek_nama);
-                    $uniqueKenek = array_unique($KenekArray);
+                    $kenekArray = explode(', ', $pranotaUangRitKenek->kenek_nama);
+                    $uniqueKenek = array_unique($kenekArray);
                 @endphp
-                @foreach($uniqueKenek as $index => $Kenek)
+                @foreach($uniqueKenek as $index => $kenek)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
-                    <td class="text-left">{{ strtoupper(trim($Kenek)) }}</td>
+                    <td class="text-left">{{ strtoupper(trim($kenek)) }}</td>
                     <td class="text-center">
-                        {{ array_count_values($KenekArray)[trim($Kenek)] ?? 1 }}
+                        {{ array_count_values($kenekArray)[trim($kenek)] ?? 1 }}
                     </td>
                     <td class="text-center">Rit</td>
-                    <td class="text-right">{{ number_format($pranotaUangRitKenek->uang_rit_Kenek / count($uniqueKenek), 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($pranotaUangRitKenek->uang_rit_kenek / count($uniqueKenek), 0, ',', '.') }}</td>
                     <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right">{{ number_format($pranotaUangRitKenek->grand_total_bersih / count($uniqueKenek), 0, ',', '.') }}</td>

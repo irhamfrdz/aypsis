@@ -1136,7 +1136,7 @@ class PranotaUangRitKenekController extends Controller
             $kenek = $suratJalanKeneks[$index] ?? $suratJalanKeneks[0];
             $groupedPranota->push((object)[
                 'no_surat_jalan' => trim($nomor),
-                'Kenek_nama' => trim($kenek),
+                'kenek_nama' => trim($kenek),
                 'tanggal' => $pranotaUangRitKenek->tanggal,
                 'uang_rit_kenek' => $pranotaUangRitKenek->uang_rit_kenek / count($suratJalanNomors), // Split evenly
             ]);
