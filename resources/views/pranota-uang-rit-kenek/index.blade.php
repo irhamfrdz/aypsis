@@ -126,6 +126,15 @@
                                         </button>
                                         @endcan
 
+                                        @can('pranota-uang-rit-view')
+                                        <button type="button" 
+                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-teal-600 bg-teal-100 hover:bg-teal-200 rounded-lg transition-colors duration-200" 
+                                                title="Export Detail Surat Jalan"
+                                                onclick="window.location.href='{{ route('pranota-uang-rit-kenek.export-surat-jalan', $item) }}'">
+                                            <i class="fas fa-file-export"></i>
+                                        </button>
+                                        @endcan
+
                                         @can('pranota-uang-rit-update')
                                             @if(in_array($item->status, ['draft', 'submitted']))
                                             <a href="{{ route('pranota-uang-rit-kenek.edit', $item) }}" 

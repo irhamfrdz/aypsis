@@ -1254,6 +1254,195 @@ class PranotaUangRitKenekController extends Controller
         $writer->save('php://output');
         exit;
     }
+
+    /**
+     * Export surat jalan detail to Excel
+     */
+    public function exportSuratJalan(PranotaUangRitKenek $pranotaUangRitKenek)
+    {
+        // Get surat jalan numbers from the combined field
+        $suratJalanNomors = array_map('trim', explode(', ', $pranotaUangRitKenek->no_surat_jalan));
+        
+        // Get surat jalan data - sorted by kenek name alphabetically
+        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
+            ->orderBy('kenek', 'asc')
+            ->orderBy('tanggal_surat_jalan', 'desc')
+            ->get();
+        
+        // Also check for surat jalan bongkaran if exists - sorted by kenek name alphabetically
+        $suratJalanBongkarans = collect();
+        if ($pranotaUangRitKenek->surat_jalan_bongkaran_id) {
+            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('no_surat_jalan', $suratJalanNomors)
+                ->orderBy('kenek', 'asc')
+                ->orderBy('tanggal', 'desc')
+                ->get();
+        }
+        
+        // Create Excel file using PhpSpreadsheet
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set title
+        $sheet->setCellValue('A1', 'DETAIL SURAT JALAN - PRANOTA UANG RIT KENEK');
+        $sheet->mergeCells('A1:L1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Pranota info
+        $sheet->setCellValue('A3', 'No Pranota');
+        $sheet->setCellValue('B3', ': ' . $pranotaUangRitKenek->no_pranota);
+        $sheet->setCellValue('A4', 'Tanggal');
+        $sheet->setCellValue('B4', ': ' . $pranotaUangRitKenek->tanggal->format('d/m/Y'));
+        $sheet->setCellValue('A5', 'Total Surat Jalan');
+        $sheet->setCellValue('B5', ': ' . count($suratJalanNomors) . ' SJ');
+
+        // Headers
+        $row = 7;
+        $headers = ['No', 'No Surat Jalan', 'Tanggal', 'Kegiatan', 'Supir', 'Kenek', 'No Plat', 'Pengirim', 'Penerima', 'Jenis Barang', 'Tipe Kontainer', 'Rit'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $col++;
+        }
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ];
+        $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray($headerStyle);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(5);   // No
+        $sheet->getColumnDimension('B')->setWidth(20);  // No Surat Jalan
+        $sheet->getColumnDimension('C')->setWidth(12);  // Tanggal
+        $sheet->getColumnDimension('D')->setWidth(10);  // Kegiatan
+        $sheet->getColumnDimension('E')->setWidth(20);  // Supir
+        $sheet->getColumnDimension('F')->setWidth(20);  // Kenek
+        $sheet->getColumnDimension('G')->setWidth(12);  // No Plat
+        $sheet->getColumnDimension('H')->setWidth(25);  // Pengirim
+        $sheet->getColumnDimension('I')->setWidth(25);  // Penerima
+        $sheet->getColumnDimension('J')->setWidth(20);  // Jenis Barang
+        $sheet->getColumnDimension('K')->setWidth(15);  // Tipe Kontainer
+        $sheet->getColumnDimension('L')->setWidth(8);   // Rit
+
+        // Fill data
+        $row++;
+        $no = 1;
+        $totalRit = 0;
+
+        // Add regular surat jalan
+        foreach ($suratJalans as $sj) {
+            $sheet->setCellValue('A' . $row, $no);
+            $sheet->setCellValue('B' . $row, $sj->no_surat_jalan);
+            $sheet->setCellValue('C' . $row, $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-');
+            $sheet->setCellValue('D' . $row, ucfirst($sj->kegiatan ?? '-'));
+            $sheet->setCellValue('E' . $row, $sj->supir ?? '-');
+            $sheet->setCellValue('F' . $row, $sj->kenek ?? '-');
+            $sheet->setCellValue('G' . $row, $sj->no_plat ?? '-');
+            $sheet->setCellValue('H' . $row, $sj->pengirim ?? '-');
+            $sheet->setCellValue('I' . $row, $sj->penerima ?? '-');
+            $sheet->setCellValue('J' . $row, $sj->jenis_barang ?? '-');
+            $sheet->setCellValue('K' . $row, $sj->tipe_kontainer ?? '-');
+            $sheet->setCellValue('L' . $row, $sj->rit ?? 1);
+
+            $totalRit += $sj->rit ?? 1;
+
+            // Center align
+            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('L' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+            // Add border
+            $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ]);
+
+            $row++;
+            $no++;
+        }
+
+        // Add surat jalan bongkaran if exists
+        foreach ($suratJalanBongkarans as $sj) {
+            $sheet->setCellValue('A' . $row, $no);
+            $sheet->setCellValue('B' . $row, $sj->no_surat_jalan . ' (Bongkaran)');
+            $sheet->setCellValue('C' . $row, $sj->tanggal ? $sj->tanggal->format('d/m/Y') : '-');
+            $sheet->setCellValue('D' . $row, 'Bongkar');
+            $sheet->setCellValue('E' . $row, $sj->supir ?? '-');
+            $sheet->setCellValue('F' . $row, $sj->kenek ?? '-');
+            $sheet->setCellValue('G' . $row, $sj->no_plat ?? '-');
+            $sheet->setCellValue('H' . $row, $sj->pengirim ?? '-');
+            $sheet->setCellValue('I' . $row, $sj->penerima ?? '-');
+            $sheet->setCellValue('J' . $row, $sj->jenis_barang ?? '-');
+            $sheet->setCellValue('K' . $row, $sj->tipe_kontainer ?? '-');
+            $sheet->setCellValue('L' . $row, $sj->rit ?? 1);
+
+            $totalRit += $sj->rit ?? 1;
+
+            // Center align
+            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('L' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+            // Add border
+            $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ]);
+
+            $row++;
+            $no++;
+        }
+
+        // Total row
+        $sheet->setCellValue('A' . $row, 'TOTAL');
+        $sheet->mergeCells('A' . $row . ':K' . $row);
+        $sheet->setCellValue('L' . $row, $totalRit);
+
+        $sheet->getStyle('A' . $row . ':L' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':L' . $row)->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('F5F5F5');
+        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('L' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+
+        // Create writer and download
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'DETAIL_SURAT_JALAN_KENEK_' . $pranotaUangRitKenek->no_pranota . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
 }
 
 

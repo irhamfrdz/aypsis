@@ -2309,6 +2309,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-rit-kenek.print')
          ->middleware('can:pranota-uang-rit-view');
 
+    Route::get('pranota-uang-rit-kenek/{pranotaUangRitKenek}/export-surat-jalan', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportSuratJalan'])
+         ->name('pranota-uang-rit-kenek.export-surat-jalan')
+         ->middleware('can:pranota-uang-rit-view');
+
     Route::post('pranota-uang-rit-kenek/export-excel', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportExcel'])
          ->name('pranota-uang-rit-kenek.export-excel')
          ->middleware('can:pranota-uang-rit-view');
