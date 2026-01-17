@@ -67,6 +67,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SuratJalanController;
 use App\Http\Controllers\SuratJalanBongkaranController;
 use App\Http\Controllers\MasterPricelistObController;
+use App\Http\Controllers\MasterPricelistAirTawarController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
 
 /*
@@ -863,6 +864,47 @@ Route::middleware([
         Route::delete('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'destroy'])
              ->name('pricelist-ob.destroy')
              ->middleware('can:master-pricelist-ob-delete');
+
+        // Pricelist Air Tawar Management - Separate routes to avoid middleware conflicts
+        Route::get('pricelist-air-tawar', [MasterPricelistAirTawarController::class, 'index'])
+             ->name('pricelist-air-tawar.index')
+             ->middleware('can:master-pricelist-air-tawar-view');
+        
+        Route::get('pricelist-air-tawar/create', [MasterPricelistAirTawarController::class, 'create'])
+             ->name('pricelist-air-tawar.create')
+             ->middleware('can:master-pricelist-air-tawar-create');
+        
+        Route::post('pricelist-air-tawar', [MasterPricelistAirTawarController::class, 'store'])
+             ->name('pricelist-air-tawar.store')
+             ->middleware('can:master-pricelist-air-tawar-create');
+        
+        // Import/Export routes for pricelist air tawar (must come before parameterized routes)
+        Route::get('pricelist-air-tawar/export-template', [MasterPricelistAirTawarController::class, 'exportTemplate'])
+             ->name('pricelist-air-tawar.export-template')
+             ->middleware('can:master-pricelist-air-tawar-view');
+        Route::post('pricelist-air-tawar/import', [MasterPricelistAirTawarController::class, 'import'])
+             ->name('pricelist-air-tawar.import')
+             ->middleware('can:master-pricelist-air-tawar-create');
+
+        Route::get('pricelist-air-tawar/{pricelistAirTawar}', [MasterPricelistAirTawarController::class, 'show'])
+             ->name('pricelist-air-tawar.show')
+             ->middleware('can:master-pricelist-air-tawar-view');
+        
+        Route::get('pricelist-air-tawar/{pricelistAirTawar}/edit', [MasterPricelistAirTawarController::class, 'edit'])
+             ->name('pricelist-air-tawar.edit')
+             ->middleware('can:master-pricelist-air-tawar-update');
+        
+        Route::put('pricelist-air-tawar/{pricelistAirTawar}', [MasterPricelistAirTawarController::class, 'update'])
+             ->name('pricelist-air-tawar.update')
+             ->middleware('can:master-pricelist-air-tawar-update');
+        
+        Route::patch('pricelist-air-tawar/{pricelistAirTawar}', [MasterPricelistAirTawarController::class, 'update'])
+             ->name('pricelist-air-tawar.update')
+             ->middleware('can:master-pricelist-air-tawar-update');
+        
+        Route::delete('pricelist-air-tawar/{pricelistAirTawar}', [MasterPricelistAirTawarController::class, 'destroy'])
+             ->name('pricelist-air-tawar.destroy')
+             ->middleware('can:master-pricelist-air-tawar-delete');
 
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
