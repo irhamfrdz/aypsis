@@ -880,16 +880,35 @@ class PranotaUangRitController extends Controller
         }
 
         try {
+            // Ambil no_surat_jalan untuk mencari surat jalan yang terkait
+            $noSuratJalanList = explode(', ', $pranotaUangRit->no_surat_jalan);
+            
+            // Kembalikan status surat jalan biasa ke 'belum_dibayar'
+            SuratJalan::whereIn('no_surat_jalan', $noSuratJalanList)
+                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA)
+                ->update([
+                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR
+                ]);
+
+            // Kembalikan status surat jalan bongkaran ke 'belum_bayar'
+            SuratJalanBongkaran::whereIn('nomor_surat_jalan', $noSuratJalanList)
+                ->where('status_pembayaran_uang_rit', 'lunas')
+                ->update([
+                    'status_pembayaran_uang_rit' => 'belum_bayar'
+                ]);
+
+            // Hapus pranota
             $pranotaUangRit->delete();
 
-            Log::info('Pranota Uang Rit deleted', [
+            Log::info('Pranota Uang Rit deleted and surat jalan status reset', [
                 'pranota_id' => $pranotaUangRit->id,
                 'no_pranota' => $pranotaUangRit->no_pranota,
+                'no_surat_jalan_list' => $noSuratJalanList,
                 'deleted_by' => Auth::user()->name,
             ]);
 
             return redirect()->route('pranota-uang-rit.index')
-                ->with('success', 'Pranota Uang Rit berhasil dihapus!');
+                ->with('success', 'Pranota Uang Rit berhasil dihapus dan status surat jalan telah dikembalikan!');
 
         } catch (\Exception $e) {
             Log::error('Error deleting Pranota Uang Rit: ' . $e->getMessage());
