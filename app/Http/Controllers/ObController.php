@@ -1526,9 +1526,15 @@ class ObController extends Controller
                         // Check if TL container - TL containers should have no biaya
                         $isTL = ($bl->sudah_tl === 1 || $bl->sudah_tl === true || $bl->sudah_tl === '1');
                         $itemsToSave[$idx]['is_tl'] = $isTL; // Store TL flag
+                        
+                        // Check if nama_barang contains "EMPTY" to determine status
+                        $namaBarangUpper = strtoupper($bl->nama_barang ?? '');
+                        $isEmptyByName = str_contains($namaBarangUpper, 'EMPTY');
+                        
                         if ($isTL) {
                             $itemsToSave[$idx]['biaya'] = null; // TL containers have no cost
-                            $itemsToSave[$idx]['status'] = 'full'; // Default status for TL
+                            // For TL, determine status from nama_barang
+                            $itemsToSave[$idx]['status'] = $isEmptyByName ? 'empty' : 'full';
                         } else {
                             // Use biaya from request if provided, otherwise from DB
                             $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null);
@@ -1543,8 +1549,12 @@ class ObController extends Controller
                             if (isset($reverseMap[$mapKey])) {
                                 $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
                             } else {
-                                // Fallback to request status or default
-                                $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                                // Fallback: check nama_barang for "EMPTY", then request status, then default
+                                if ($isEmptyByName) {
+                                    $itemsToSave[$idx]['status'] = 'empty';
+                                } else {
+                                    $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                                }
                             }
                         }
                         
@@ -1563,9 +1573,16 @@ class ObController extends Controller
                         // Check if TL container - TL containers should have no biaya
                         $isTL = ($nk->is_tl === 1 || $nk->is_tl === true || $nk->is_tl === '1');
                         $itemsToSave[$idx]['is_tl'] = $isTL; // Store TL flag
+                        
+                        // Check if nama_barang contains "EMPTY" to determine status
+                        $namaBarangNK = $nk->jenis_barang ?? ($nk->nama_barang ?? '');
+                        $namaBarangUpperNK = strtoupper($namaBarangNK);
+                        $isEmptyByNameNK = str_contains($namaBarangUpperNK, 'EMPTY');
+                        
                         if ($isTL) {
                             $itemsToSave[$idx]['biaya'] = null; // TL containers have no cost
-                            $itemsToSave[$idx]['status'] = 'full'; // Default status for TL
+                            // For TL, determine status from nama_barang
+                            $itemsToSave[$idx]['status'] = $isEmptyByNameNK ? 'empty' : 'full';
                         } else {
                             // Use biaya from request if provided, otherwise from DB
                             $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null);
@@ -1580,8 +1597,12 @@ class ObController extends Controller
                             if (isset($reverseMap[$mapKey])) {
                                 $itemsToSave[$idx]['status'] = $reverseMap[$mapKey];
                             } else {
-                                // Fallback to request status or default
-                                $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                                // Fallback: check nama_barang for "EMPTY", then request status, then default
+                                if ($isEmptyByNameNK) {
+                                    $itemsToSave[$idx]['status'] = 'empty';
+                                } else {
+                                    $itemsToSave[$idx]['status'] = $it['status'] ?? 'full';
+                                }
                             }
                         }
                         
