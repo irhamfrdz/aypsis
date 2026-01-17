@@ -39,8 +39,9 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        // Query untuk Surat Jalan biasa
-        $querySuratJalan = SuratJalan::where(function($q) use ($startDate, $endDate) {
+        // Query untuk Surat Jalan biasa - filter hanya yang menggunakan rit
+        $querySuratJalan = SuratJalan::where('rit', 'menggunakan_rit')
+            ->where(function($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
@@ -69,8 +70,12 @@ class ReportRitController extends Controller
                 });
             });
 
-        // Query untuk Surat Jalan Bongkaran
-        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
+        // Query untuk Surat Jalan Bongkaran - filter hanya yang menggunakan rit atau rit null
+        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) {
+                $q->where('rit', 'menggunakan_rit')
+                  ->orWhereNull('rit');
+            })
+            ->where(function($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
@@ -220,8 +225,9 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        // Query untuk Surat Jalan biasa
-        $querySuratJalan = SuratJalan::where(function($q) use ($startDate, $endDate) {
+        // Query untuk Surat Jalan biasa - filter hanya yang menggunakan rit
+        $querySuratJalan = SuratJalan::where('rit', 'menggunakan_rit')
+            ->where(function($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
@@ -250,8 +256,12 @@ class ReportRitController extends Controller
                 });
             });
 
-        // Query untuk Surat Jalan Bongkaran
-        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
+        // Query untuk Surat Jalan Bongkaran - filter hanya yang menggunakan rit atau rit null
+        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) {
+                $q->where('rit', 'menggunakan_rit')
+                  ->orWhereNull('rit');
+            })
+            ->where(function($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
@@ -378,8 +388,9 @@ class ReportRitController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        // Query untuk Surat Jalan biasa
-        $querySuratJalan = SuratJalan::where(function($q) use ($startDate, $endDate) {
+        // Query untuk Surat Jalan biasa - filter hanya yang menggunakan rit
+        $querySuratJalan = SuratJalan::where('rit', 'menggunakan_rit')
+            ->where(function($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
@@ -408,8 +419,12 @@ class ReportRitController extends Controller
                 });
             });
 
-        // Query untuk Surat Jalan Bongkaran
-        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
+        // Query untuk Surat Jalan Bongkaran - filter hanya yang menggunakan rit atau rit null
+        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) {
+                $q->where('rit', 'menggunakan_rit')
+                  ->orWhereNull('rit');
+            })
+            ->where(function($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
                 $q->where(function($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
