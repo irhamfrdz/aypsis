@@ -67,14 +67,6 @@ class MasterPricelistAirTawarController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Cek duplikasi nama agen
-        $exists = MasterPricelistAirTawar::where('nama_agen', $request->nama_agen)->exists();
-
-        if ($exists) {
-            return back()->with('error', 'Nama agen sudah ada!')
-                        ->withInput();
-        }
-
         try {
             MasterPricelistAirTawar::create($request->all());
             
@@ -122,16 +114,6 @@ class MasterPricelistAirTawarController extends Controller
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
-        }
-
-        // Cek duplikasi nama agen kecuali untuk record yang sedang diedit
-        $exists = MasterPricelistAirTawar::where('nama_agen', $request->nama_agen)
-                                        ->where('id', '!=', $pricelistAirTawar->id)
-                                        ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'Nama agen sudah ada!')
-                        ->withInput();
         }
 
         try {
