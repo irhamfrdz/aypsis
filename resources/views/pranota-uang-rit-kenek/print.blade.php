@@ -125,8 +125,7 @@
             <tr>
                 <th style="width: 5%;">No</th>
                 <th style="width: 10%;">NIK</th>
-                <th style="width: 25%;">Kenek</th>
-                <th style="width: 8%;">Total</th>
+                <th style="width: 30%;">Kenek</th>
                 <th style="width: 5%;">Rit</th>
                 <th style="width: 12%;">Total</th>
                 <th style="width: 10%;">Hutang</th>
@@ -146,12 +145,6 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper($detail->kenek_nama) }}</td>
-                    <td class="text-center">
-                        @php
-                            $jumlahRit = $groupedPranota->where('kenek_nama', $detail->kenek_nama)->count();
-                        @endphp
-                        {{ $jumlahRit }}
-                    </td>
                     @php
                         $rit = (int) round($detail->total_uang_kenek / 50000);
                         $totalRit += $rit;
@@ -176,9 +169,6 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                     <td class="text-left">{{ strtoupper(trim($kenek)) }}</td>
-                    <td class="text-center">
-                        {{ array_count_values($kenekArray)[trim($kenek)] ?? 1 }}
-                    </td>
                     @php
                         $amount = $pranotaUangRitKenek->uang_rit_kenek / count($uniqueKenek);
                         $rit = (int) round($amount / 50000);
