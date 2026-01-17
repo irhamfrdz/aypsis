@@ -1153,27 +1153,27 @@ class PranotaUangRitController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set title
-        $sheet->setCellValue('A1', 'PRANOTA UANG RIT');
-        $sheet->mergeCells('A1:F1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->setCellValue('A1', 'RITASI SUPIR');
+        $sheet->mergeCells('A1:I1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         // Pranota info
-        $sheet->setCellValue('A3', 'No. Pranota:');
-        $sheet->setCellValue('B3', $pranotaUangRit->no_pranota);
-        $sheet->setCellValue('A4', 'Tanggal:');
-        $sheet->setCellValue('B4', $pranotaUangRit->tanggal->format('d/m/Y'));
-        $sheet->setCellValue('A5', 'Status:');
-        $sheet->setCellValue('B5', ucfirst($pranotaUangRit->status));
+        $sheet->setCellValue('A3', 'GAJI SUPIR TGL: ' . $pranotaUangRit->tanggal->format('d M Y'));
+        $sheet->setCellValue('I3', $pranotaUangRit->no_pranota);
+        $sheet->getStyle('I3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
         // Detail supir headers
-        $row = 7;
+        $row = 5;
         $sheet->setCellValue('A' . $row, 'No');
-        $sheet->setCellValue('B' . $row, 'No. Surat Jalan');
-        $sheet->setCellValue('C' . $row, 'Nama Supir');
-        $sheet->setCellValue('D' . $row, 'Tujuan');
-        $sheet->setCellValue('E' . $row, 'Uang Rit');
-        $sheet->setCellValue('F' . $row, 'Keterangan');
+        $sheet->setCellValue('B' . $row, 'NIK');
+        $sheet->setCellValue('C' . $row, 'Supir');
+        $sheet->setCellValue('D' . $row, 'Rit');
+        $sheet->setCellValue('E' . $row, 'Total Uang');
+        $sheet->setCellValue('F' . $row, 'Hutang');
+        $sheet->setCellValue('G' . $row, 'Tabungan');
+        $sheet->setCellValue('H' . $row, 'BPJS');
+        $sheet->setCellValue('I' . $row, 'Grand Total');
 
         // Style headers
         $headerStyle = [
@@ -1187,29 +1187,59 @@ class PranotaUangRitController extends Controller
                 ]
             ]
         ];
-        $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray($headerStyle);
+        $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray($headerStyle);
 
         // Set column widths
-        $sheet->getColumnDimension('A')->setWidth(6);
-        $sheet->getColumnDimension('B')->setWidth(25);
-        $sheet->getColumnDimension('C')->setWidth(30);
-        $sheet->getColumnDimension('D')->setWidth(30);
-        $sheet->getColumnDimension('E')->setWidth(18);
-        $sheet->getColumnDimension('F')->setWidth(25);
+        $sheet->getColumnDimension('A')->setWidth(5);   // No
+        $sheet->getColumnDimension('B')->setWidth(8);   // NIK
+        $sheet->getColumnDimension('C')->setWidth(28);  // Supir
+        $sheet->getColumnDimension('D')->setWidth(6);   // Rit
+        $sheet->getColumnDimension('E')->setWidth(15);  // Total Uang
+        $sheet->getColumnDimension('F')->setWidth(12);  // Hutang
+        $sheet->getColumnDimension('G')->setWidth(12);  // Tabungan
+        $sheet->getColumnDimension('H')->setWidth(10);  // BPJS
+        $sheet->getColumnDimension('I')->setWidth(15);  // Grand Total
 
         // Fill data
         $row++;
         $no = 1;
+        $totalRit = 0;
+        $totalUang = 0;
+        $totalHutang = 0;
+        $totalTabungan = 0;
+        $totalBpjs = 0;
+        $totalGrand = 0;
+
         foreach ($supirDetails as $detail) {
-            $sheet->setCellValue('A' . $row, $no++);
-            $sheet->setCellValue('B' . $row, $detail->no_surat_jalan ?? '-');
-            $sheet->setCellValue('C' . $row, $detail->supir_nama ?? '-');
-            $sheet->setCellValue('D' . $row, $detail->tujuan_pengambilan ?? '-');
-            $sheet->setCellValue('E' . $row, 'Rp ' . number_format($detail->uang_rit_supir ?? 0, 0, ',', '.'));
-            $sheet->setCellValue('F' . $row, $detail->keterangan ?? '-');
+            $rit = $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0;
+            
+            $sheet->setCellValue('A' . $row, $no);
+            $sheet->setCellValue('B' . $row, str_pad($no, 4, '0', STR_PAD_LEFT));
+            $sheet->setCellValue('C' . $row, strtoupper($detail->supir_nama));
+            $sheet->setCellValue('D' . $row, $rit);
+            $sheet->setCellValue('E' . $row, $detail->total_uang_supir);
+            $sheet->setCellValue('F' . $row, $detail->hutang);
+            $sheet->setCellValue('G' . $row, $detail->tabungan);
+            $sheet->setCellValue('H' . $row, $detail->bpjs);
+            $sheet->setCellValue('I' . $row, $detail->grand_total);
+
+            // Format currency
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('I' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            // Center align for No, NIK, Rit
+            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('B' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+            // Right align for currency columns
+            $sheet->getStyle('E' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Add border to data rows
-            $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+            $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -1218,15 +1248,42 @@ class PranotaUangRitController extends Controller
                 ]
             ]);
 
+            $totalRit += $rit;
+            $totalUang += $detail->total_uang_supir;
+            $totalHutang += $detail->hutang;
+            $totalTabungan += $detail->tabungan;
+            $totalBpjs += $detail->bpjs;
+            $totalGrand += $detail->grand_total;
+
             $row++;
+            $no++;
         }
 
         // Total row
         $sheet->setCellValue('A' . $row, 'TOTAL');
-        $sheet->mergeCells('A' . $row . ':D' . $row);
-        $sheet->setCellValue('E' . $row, 'Rp ' . number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.'));
-        $sheet->getStyle('A' . $row . ':F' . $row)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+        $sheet->mergeCells('A' . $row . ':C' . $row);
+        $sheet->setCellValue('D' . $row, $totalRit);
+        $sheet->setCellValue('E' . $row, $totalUang);
+        $sheet->setCellValue('F' . $row, $totalHutang);
+        $sheet->setCellValue('G' . $row, $totalTabungan);
+        $sheet->setCellValue('H' . $row, $totalBpjs);
+        $sheet->setCellValue('I' . $row, $totalGrand);
+
+        // Format total row
+        $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('I' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+        $sheet->getStyle('A' . $row . ':I' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':I' . $row)->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('F5F5F5');
+        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
@@ -1237,7 +1294,7 @@ class PranotaUangRitController extends Controller
 
         // Create writer and download
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = $pranotaUangRit->no_pranota . '.xlsx';
+        $filename = 'RITASI_SUPIR_' . $pranotaUangRit->no_pranota . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
