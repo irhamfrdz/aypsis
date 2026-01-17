@@ -77,18 +77,30 @@
                 
                 $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
             @endphp
+                @php
+                    // Hanya tampilkan supir yang memiliki nama (exclude TL / Perusahaan)
+                    $filteredPerSupirCounts = collect($perSupirCounts)->filter(function($counts, $name) {
+                        $k = trim($name);
+                        return $k !== '' && strtolower($k) !== 'perusahaan';
+                    })->toArray();
+
+                    $filteredPerSupir = collect($perSupir)->filter(function($sum, $name) {
+                        $k = trim($name);
+                        return $k !== '' && strtolower($k) !== 'perusahaan';
+                    })->toArray();
+                @endphp
             <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
                 <thead>
                     <tr>
                         <th class="border px-2 py-1 text-center" rowspan="2"></th>
-                        @foreach($perSupirCounts as $supirName => $counts)
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
                             <th class="border px-2 py-1 text-center" colspan="2">{{ $supirName }}</th>
                         @endforeach
                         <th class="border px-2 py-1 text-center" colspan="2">TOTAL</th>
                         <th class="border px-2 py-1 text-center" rowspan="2">JUMLAH</th>
                     </tr>
                     <tr>
-                        @foreach($perSupirCounts as $supirName => $counts)
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
                             <th class="border px-2 py-1 text-center">FULL</th>
                             <th class="border px-2 py-1 text-center">EMPTY</th>
                         @endforeach
@@ -100,7 +112,7 @@
                     {{-- Baris 20" --}}
                     <tr>
                         <td class="border px-2 py-1 text-center">20"</td>
-                        @foreach($perSupirCounts as $supirName => $counts)
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
                             @php
                                 $full20 = $counts['sizes']['20']['full'] ?? 0;
                                 $empty20 = $counts['sizes']['20']['empty'] ?? 0;
@@ -116,7 +128,7 @@
                     {{-- Baris 40" --}}
                     <tr>
                         <td class="border px-2 py-1 text-center">40"</td>
-                        @foreach($perSupirCounts as $supirName => $counts)
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
                             @php
                                 $full40 = $counts['sizes']['40']['full'] ?? 0;
                                 $empty40 = $counts['sizes']['40']['empty'] ?? 0;
@@ -132,7 +144,7 @@
                     {{-- Baris curah --}}
                     <tr>
                         <td class="border px-2 py-1 text-center">curah</td>
-                        @foreach($perSupirCounts as $supirName => $counts)
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
                             <td class="border px-2 py-1 text-center" colspan="2">-</td>
                         @endforeach
                         <td class="border px-2 py-1 text-center" colspan="2">-</td>
@@ -142,7 +154,7 @@
                     {{-- Baris curah pipa --}}
                     <tr>
                         <td class="border px-2 py-1 text-center">curah pipa</td>
-                        @foreach($perSupirCounts as $supirName => $counts)
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
                             <td class="border px-2 py-1 text-center" colspan="2">-</td>
                         @endforeach
                         <td class="border px-2 py-1 text-center" colspan="2">-</td>
@@ -152,7 +164,7 @@
                 <tfoot>
                     <tr class="font-semibold">
                         <td class="border px-2 py-1 text-center">JUMLAH</td>
-                        @foreach($perSupir as $supirName => $sumBiaya)
+                        @foreach($filteredPerSupir as $supirName => $sumBiaya)
                             <td class="border px-2 py-1 text-right" colspan="2">{{ number_format($sumBiaya, 0, ',', '.') }}</td>
                         @endforeach
                         <td class="border px-2 py-1 text-center" colspan="2"></td>
