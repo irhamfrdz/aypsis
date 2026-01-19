@@ -29,50 +29,42 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
     public function collection()
     {
         return $this->suratJalans->map(function($sj, $index) {
-            // Format tanggal
+            // helper to access both array and object
+            $get = function($key, $default = null) use ($sj) {
+                if (is_array($sj)) return $sj[$key] ?? $default;
+                if (is_object($sj)) return $sj->$key ?? $default;
+                return $default;
+            };
+
+            // Format tanggal — gunakan tanggal_checkpoint dulu, lalu tanggal_tanda_terima
             $tanggal = '-';
-            if ($sj->tanggal_surat_jalan) {
-                $tanggal = is_string($sj->tanggal_surat_jalan) 
-                    ? Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y')
-                    : $sj->tanggal_surat_jalan->format('d/m/Y');
-            } elseif ($sj->order && $sj->order->tanggal_order) {
-                $tanggal = is_string($sj->order->tanggal_order)
-                    ? Carbon::parse($sj->order->tanggal_order)->format('d/m/Y')
-                    : $sj->order->tanggal_order->format('d/m/Y');
+            $rawTanggal = $get('tanggal_checkpoint') ?: $get('tanggal_tanda_terima');
+            if ($rawTanggal) {
+                $tanggal = is_string($rawTanggal)
+                    ? Carbon::parse($rawTanggal)->format('d/m/Y')
+                    : (method_exists($rawTanggal, 'format') ? $rawTanggal->format('d/m/Y') : Carbon::parse($rawTanggal)->format('d/m/Y'));
             }
 
             // No Surat Jalan
-            $noSuratJalan = $sj->no_surat_jalan 
-                ? $sj->no_surat_jalan 
-                : ($sj->order ? $sj->order->nomor_order : '-');
+            $noSuratJalan = $get('no_surat_jalan') ? $get('no_surat_jalan') : (
+                ($get('order')) ? (is_array($get('order')) ? ($get('order')['nomor_order'] ?? '-') : ($get('order')->nomor_order ?? '-')) : '-'
+            );
 
             // Kegiatan
-            $kegiatan = ucfirst(strtolower($sj->kegiatan ? $sj->kegiatan : 'tarik isi'));
+            $kegiatan = ucfirst(strtolower($get('kegiatan') ? $get('kegiatan') : 'tarik isi'));
 
             // Supir
-            $supir = $sj->supir 
-                ? $sj->supir 
-                : ($sj->supir2 ? $sj->supir2 : '-');
+            $supir = $get('supir') ? $get('supir') : ($get('supir2') ? $get('supir2') : '-');
 
-            // Pengirim
-            $pengirim = $sj->pengirimRelation 
-                ? $sj->pengirimRelation->nama_pengirim 
-                : ($sj->pengirim ? $sj->pengirim : '-');
-
-            // Penerima/Tujuan
-            $penerima = $sj->tujuanPengirimanRelation 
-                ? $sj->tujuanPengirimanRelation->nama_tujuan 
-                : ($sj->tujuan_pengiriman ? $sj->tujuan_pengiriman : '-');
-
-            // Jenis Barang
-            $jenisBarang = $sj->jenisBarangRelation 
-                ? $sj->jenisBarangRelation->nama_barang 
-                : ($sj->jenis_barang ? $sj->jenis_barang : '-');
+            // Pengirim, Penerima, Jenis Barang
+            $pengirim = $get('pengirim') ? $get('pengirim') : '-';
+            $penerima = $get('penerima') ? $get('penerima') : '-';
+            $jenisBarang = $get('jenis_barang') ? $get('jenis_barang') : '-';
 
             // Tipe
-            $tipe = $sj->tipe_kontainer 
-                ? $sj->tipe_kontainer 
-                : ($sj->size ? $sj->size : ($sj->order ? $sj->order->tipe_kontainer : '-'));
+            $tipe = $get('tipe_kontainer') ? $get('tipe_kontainer') : ($get('size') ? $get('size') : (
+                ($get('order')) ? (is_array($get('order')) ? ($get('order')['tipe_kontainer'] ?? '-') : ($get('order')->tipe_kontainer ?? '-')) : '-'
+            ));
 
             return [
                 $index + 1,
@@ -80,7 +72,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $noSuratJalan,
                 $kegiatan,
                 $supir,
-                $sj->no_plat ? $sj->no_plat : '-',
+                $get('no_plat') ? $get('no_plat') : '-',
                 $pengirim,
                 $penerima,
                 $jenisBarang,
