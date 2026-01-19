@@ -257,7 +257,7 @@ class BiayaKapalController extends Controller
                                 
                                 // Log skipped items for easier debugging
                                 
-                                \\Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
+                                \Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
                                     'biaya_kapal_id' => $biayaKapal->id ?? null,
                                     'section_index' => $sectionIndex,
                                     'kapal' => $kapalName,
@@ -269,7 +269,7 @@ class BiayaKapalController extends Controller
 
                             $barang = PricelistBuruh::find($barangId);
                             if (!$barang) {
-                                \\Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
+                                \Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
                                 continue;
                             }
 
