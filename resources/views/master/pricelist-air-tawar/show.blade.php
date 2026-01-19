@@ -59,6 +59,11 @@
                     </div>
 
                     <div class="border-b border-gray-200 pb-4">
+                        <dt class="text-sm font-medium text-gray-500 mb-2">Lokasi</dt>
+                        <dd class="text-base text-gray-900">{{ $pricelistAirTawar->lokasi ?? '-' }}</dd>
+                    </div>
+
+                    <div class="border-b border-gray-200 pb-4">
                         <dt class="text-sm font-medium text-gray-500 mb-2">Tanggal Dibuat</dt>
                         <dd class="text-base text-gray-900">{{ $pricelistAirTawar->created_at->format('d M Y H:i') }}</dd>
                     </div>

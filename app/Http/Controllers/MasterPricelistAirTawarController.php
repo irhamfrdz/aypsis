@@ -53,6 +53,7 @@ class MasterPricelistAirTawarController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_agen' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
+            'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'keterangan' => 'nullable|string|max:1000'
         ], [
             'nama_agen.required' => 'Nama agen harus diisi',
@@ -60,6 +61,8 @@ class MasterPricelistAirTawarController extends Controller
             'harga.required' => 'Harga harus diisi',
             'harga.numeric' => 'Harga harus berupa angka',
             'harga.min' => 'Harga tidak boleh negatif',
+            'lokasi.required' => 'Lokasi harus dipilih',
+            'lokasi.in' => 'Lokasi tidak valid',
             'keterangan.max' => 'Keterangan maksimal 1000 karakter'
         ]);
 
@@ -102,6 +105,7 @@ class MasterPricelistAirTawarController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_agen' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
+            'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'keterangan' => 'nullable|string|max:1000'
         ], [
             'nama_agen.required' => 'Nama agen harus diisi',
@@ -109,6 +113,8 @@ class MasterPricelistAirTawarController extends Controller
             'harga.required' => 'Harga harus diisi',
             'harga.numeric' => 'Harga harus berupa angka',
             'harga.min' => 'Harga tidak boleh negatif',
+            'lokasi.required' => 'Lokasi harus dipilih',
+            'lokasi.in' => 'Lokasi tidak valid',
             'keterangan.max' => 'Keterangan maksimal 1000 karakter'
         ]);
 
@@ -160,10 +166,7 @@ class MasterPricelistAirTawarController extends Controller
         $callback = function () {
             $file = fopen('php://output', 'w');
             // Write header with semicolon delimiter
-            fputcsv($file, ['nama_agen', 'harga', 'keterangan'], ';');
-            fclose($file);
-        };
-
+            fputcsv($file, ['nama_agen', 'harga', 'lokasi', 'keterangan'], ';');
         return response()->stream($callback, 200, $headers);
     }
 

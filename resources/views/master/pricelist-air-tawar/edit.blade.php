@@ -59,6 +59,23 @@
                         <p class="mt-1 text-sm text-gray-500">Masukkan harga dalam format desimal, contoh: 150000.50</p>
                     </div>
 
+                    <!-- Lokasi -->
+                    <div>
+                        <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-2">
+                            Lokasi <span class="text-red-500">*</span>
+                        </label>
+                        <select name="lokasi" id="lokasi" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('lokasi') border-red-500 @enderror">
+                            <option value="Jakarta" {{ old('lokasi', $pricelistAirTawar->lokasi) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                            <option value="Batam" {{ old('lokasi', $pricelistAirTawar->lokasi) == 'Batam' ? 'selected' : '' }}>Batam</option>
+                            <option value="Pinang" {{ old('lokasi', $pricelistAirTawar->lokasi) == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                        </select>
+                        @error('lokasi')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-sm text-gray-500">Pilih lokasi berlaku untuk pricelist ini</p>
+                    </div>
+
                     <!-- Keterangan -->
                     <div>
                         <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">

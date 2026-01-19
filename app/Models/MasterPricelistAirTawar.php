@@ -15,7 +15,8 @@ class MasterPricelistAirTawar extends Model
     protected $fillable = [
         'nama_agen',
         'harga',
-        'keterangan'
+        'keterangan',
+        'lokasi'
     ];
 
     protected $casts = [

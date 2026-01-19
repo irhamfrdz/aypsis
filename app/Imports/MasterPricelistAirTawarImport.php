@@ -24,6 +24,8 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
             $namaAgen = $this->getRowValue($row, ['nama_agen', 'agen', 'nama']);
             $hargaRaw = $this->getRowValue($row, ['harga', 'price', 'biaya']);
             $keterangan = $this->getRowValue($row, ['keterangan', 'note', 'notes']);
+            $lokasiRaw = $this->getRowValue($row, ['lokasi', 'location', 'lokasi']);
+            $lokasi = $this->normalizeLokasi($lokasiRaw);
 
             // Skip if all required fields are empty
             if (empty($namaAgen) && empty($hargaRaw)) {
@@ -45,6 +47,7 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
                 $exists->update([
                     'harga' => $harga,
                     'keterangan' => $keterangan,
+                    'lokasi' => $lokasi,
                 ]);
                 $this->successCount++;
                 return null;
@@ -55,6 +58,7 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
                 'nama_agen' => $namaAgen,
                 'harga' => $harga,
                 'keterangan' => $keterangan,
+                'lokasi' => $lokasi,
             ]);
 
         } catch (\Exception $e) {
@@ -90,6 +94,16 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
             'input_encoding' => 'UTF-8',
             'delimiter' => ';'
         ];
+    }
+
+    private function normalizeLokasi($value)
+    {
+        $val = trim(strtolower((string) $value));
+        if (in_array(ucfirst($val), ['Jakarta','Batam','Pinang'])) {
+            return ucfirst($val);
+        }
+        // default
+        return 'Jakarta';
     }
 
     public function getSuccessCount()
