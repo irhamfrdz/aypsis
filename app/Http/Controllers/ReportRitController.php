@@ -136,6 +136,33 @@ class ReportRitController extends Controller
             $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
 
+        // Filter berdasarkan status pembayaran uang rit
+        if ($request->filled('status_pembayaran_rit')) {
+            $statusFilter = $request->status_pembayaran_rit;
+            
+            if ($statusFilter === 'belum_dibayar') {
+                // Belum dibayar: status null atau belum_dibayar
+                $querySuratJalan->where(function($q) {
+                    $q->whereNull('status_pembayaran_uang_rit')
+                      ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar');
+                });
+            } elseif ($statusFilter === 'dibayar') {
+                // Sudah dibayar
+                $querySuratJalan->where('status_pembayaran_uang_rit', 'dibayar');
+            } elseif ($statusFilter === 'proses') {
+                // Dalam proses: proses_pranota, sudah_masuk_pranota, pranota_submitted, pranota_approved
+                $querySuratJalan->whereIn('status_pembayaran_uang_rit', [
+                    'proses_pranota',
+                    'sudah_masuk_pranota', 
+                    'pranota_submitted',
+                    'pranota_approved'
+                ]);
+            }
+            
+            // Untuk SuratJalanBongkaran, filter sama jika punya field status_pembayaran_uang_rit
+            // Jika tidak ada field, bisa di-skip atau ditambahkan kondisi
+        }
+
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan
             ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima'])
