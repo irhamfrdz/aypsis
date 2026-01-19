@@ -674,11 +674,12 @@ class PranotaUangRitController extends Controller
             $createdPranota = [$pranotaUangRit];
 
             // Update status pembayaran uang rit pada SEMUA surat jalan yang dipilih
+            // Langsung set ke 'dibayar' karena pranota = sudah dibayar
             foreach ($selectedData as $suratJalanId => $data) {
                 $suratJalan = SuratJalan::find($suratJalanId);
                 if ($suratJalan) {
                     $suratJalan->update([
-                        'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA
+                        'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR
                     ]);
                 }
             }
@@ -885,8 +886,9 @@ class PranotaUangRitController extends Controller
             $noSuratJalanList = explode(', ', $pranotaUangRit->no_surat_jalan);
             
             // Kembalikan status surat jalan biasa ke 'belum_dibayar'
+            // Karena status langsung di-set ke 'dibayar' saat buat pranota
             SuratJalan::whereIn('no_surat_jalan', $noSuratJalanList)
-                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA)
+                ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_DIBAYAR)
                 ->update([
                     'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR
                 ]);
