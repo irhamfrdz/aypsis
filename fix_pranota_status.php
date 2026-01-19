@@ -1,79 +1,73 @@
 <?php
 
-require __DIR__.'/vendor/autoload.php';
-
-$app = require_once __DIR__.'/bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
+use App\Models\PranotaUangRit;
+use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaran;
 use Illuminate\Support\Facades\DB;
 
-echo "Memperbaiki status pranota_ob_items berdasarkan biaya...\n\n";
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
-// Get all pricelist
-$pricelists = DB::table('master_pricelist_ob')->get();
-$reverseMap = [];
+echo "Memulai proses perbaikan status pembayaran rit...\n";
 
-foreach ($pricelists as $pl) {
-    // Create reverse map: biaya|size => status
-    $key = $pl->biaya . '|' . $pl->size_kontainer;
-    $reverseMap[$key] = $pl->status_kontainer;
-}
+// Ambil semua pranota yang aktif (bukan cancelled)
+$pranotas = PranotaUangRit::where('status', '!=', 'cancelled')->get();
 
-echo "Pricelist mapping:\n";
-foreach ($reverseMap as $key => $status) {
-    echo "  $key => $status\n";
-}
-echo "\n";
+echo "Ditemukan " . $pranotas->count() . " pranota aktif.\n";
 
-// Get all pranota_ob_items
-$items = DB::table('pranota_ob_items')->whereNotNull('biaya')->whereNotNull('size')->get();
+$totalUpdatedSuratJalan = 0;
+$totalUpdatedBongkaran = 0;
 
-echo "Total items to check: " . $items->count() . "\n\n";
+foreach ($pranotas as $pranota) {
+    if (empty($pranota->no_surat_jalan)) {
+        continue;
+    }
 
-$fixed = 0;
-$alreadyCorrect = 0;
-
-foreach ($items as $item) {
-    // Normalize size
-    $sizeStr = null;
-    if ($item->size) {
-        $sizeInt = intval($item->size);
-        if ($sizeInt === 20) {
-            $sizeStr = '20ft';
-        } elseif ($sizeInt === 40) {
-            $sizeStr = '40ft';
+    // Parse nomor surat jalan (dipisahkan koma)
+    $nomorSjList = array_map('trim', explode(',', $pranota->no_surat_jalan));
+    
+    // Pisahkan antara bongkaran (biasanya ada suffix '(Bongkaran)') dan reguler
+    $nomorSjReguler = [];
+    $nomorSjBongkaran = [];
+    
+    foreach ($nomorSjList as $nomor) {
+        if (str_contains(strtolower($nomor), '(bongkaran)')) {
+            // Hapus suffix ' (Bongkaran)' untuk mendapatkan nomor asli
+            $cleanNomor = trim(str_ireplace('(bongkaran)', '', $nomor));
+            $nomorSjBongkaran[] = $cleanNomor;
+        } else {
+            $nomorSjReguler[] = $nomor;
         }
     }
     
-    if (!$sizeStr) {
-        continue;
+    // 1. Update Surat Jalan Reguler
+    if (!empty($nomorSjReguler)) {
+        $updated = SuratJalan::whereIn('no_surat_jalan', $nomorSjReguler)
+            ->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_DIBAYAR)
+            ->update(['status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR]);
+            
+        if ($updated > 0) {
+            echo "Pranota {$pranota->no_pranota}: Updated {$updated} Surat Jalan reguler menjadi 'dibayar'.\n";
+            $totalUpdatedSuratJalan += $updated;
+        }
     }
     
-    // Check what status should be based on biaya
-    $key = $item->biaya . '|' . $sizeStr;
-    $correctStatus = $reverseMap[$key] ?? null;
-    
-    if (!$correctStatus) {
-        echo "⚠️  Item ID {$item->id}: Biaya {$item->biaya} dengan size {$sizeStr} tidak ada di pricelist\n";
-        continue;
-    }
-    
-    // Check if status is wrong
-    if ($item->status !== $correctStatus) {
-        echo "🔧 Fixing Item ID {$item->id}: {$item->nomor_kontainer}\n";
-        echo "   Size: {$sizeStr}, Biaya: {$item->biaya}\n";
-        echo "   Status saat ini: " . ($item->status ?? 'null') . " => Status benar: {$correctStatus}\n";
-        
-        DB::table('pranota_ob_items')
-            ->where('id', $item->id)
-            ->update(['status' => $correctStatus]);
-        
-        $fixed++;
-    } else {
-        $alreadyCorrect++;
+    // 2. Update Surat Jalan Bongkaran
+    if (!empty($nomorSjBongkaran)) {
+        $updatedBongkaran = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $nomorSjBongkaran)
+            ->where('status_pembayaran_uang_rit', '!=', 'lunas')
+            ->update(['status_pembayaran_uang_rit' => 'lunas']);
+            
+        if ($updatedBongkaran > 0) {
+            echo "Pranota {$pranota->no_pranota}: Updated {$updatedBongkaran} Surat Jalan Bongkaran menjadi 'lunas'.\n";
+            $totalUpdatedBongkaran += $updatedBongkaran;
+        }
     }
 }
 
-echo "\n✅ Selesai!\n";
-echo "Total yang diperbaiki: $fixed\n";
-echo "Total yang sudah benar: $alreadyCorrect\n";
+echo "\n------------------------------------------------\n";
+echo "Total Surat Jalan reguler diperbarui: {$totalUpdatedSuratJalan}\n";
+echo "Total Surat Jalan Bongkaran diperbarui: {$totalUpdatedBongkaran}\n";
+echo "Selesai.\n";

@@ -401,8 +401,29 @@ class PranotaUangRitController extends Controller
                             ->withInput()
                             ->with('error', 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
                 }
-                $query->whereDate('tanggal_surat_jalan', '>=', $startDateObj->toDateString())
-                      ->whereDate('tanggal_surat_jalan', '<=', $endDateObj->toDateString());
+                // Ganti filter tanggal_surat_jalan dengan logika filter yang sama dengan Report (checkpoint/tanda terima)
+                $query->where(function($q) use ($startDateObj, $endDateObj) {
+                    $q->where(function($subQ) use ($startDateObj, $endDateObj) {
+                        // 1. Tanggal dari relasi tandaTerima
+                        $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
+                            $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
+                                    ->where(\DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                        });
+                    })
+                    ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
+                        // 2. Tanggal tanda terima untuk kegiatan bongkaran (jika ada kolom ini di tabel surat_jalans)
+                        $subQ->where('kegiatan', 'bongkaran')
+                             ->whereNotNull('tanggal_tanda_terima')
+                             ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                             ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                    })
+                    ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
+                        // 3. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                    });
+                });
             } catch (\Exception $e) {
                 // Invalid date format, ignore filter and show all but return an error message
                 return redirect()->route('pranota-uang-rit.select-uang-jalan')->withInput()->with('error', 'Format tanggal tidak valid.');

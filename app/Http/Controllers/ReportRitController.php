@@ -146,9 +146,20 @@ class ReportRitController extends Controller
                     $q->whereNull('status_pembayaran_uang_rit')
                       ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar');
                 });
+                
+                // Filter Bongkaran: belum_bayar atau null
+                $querySuratJalanBongkaran->where(function($q) {
+                    $q->whereNull('status_pembayaran_uang_rit')
+                      ->orWhere('status_pembayaran_uang_rit', 'belum_bayar');
+                });
+                
             } elseif ($statusFilter === 'dibayar') {
                 // Sudah dibayar
                 $querySuratJalan->where('status_pembayaran_uang_rit', 'dibayar');
+                
+                // Filter Bongkaran: lunas
+                $querySuratJalanBongkaran->where('status_pembayaran_uang_rit', 'lunas');
+                
             } elseif ($statusFilter === 'proses') {
                 // Dalam proses: proses_pranota, sudah_masuk_pranota, pranota_submitted, pranota_approved
                 $querySuratJalan->whereIn('status_pembayaran_uang_rit', [
@@ -157,10 +168,11 @@ class ReportRitController extends Controller
                     'pranota_submitted',
                     'pranota_approved'
                 ]);
+                
+                // Filter Bongkaran: Tidak punya status proses, jadi exclude semua (karena bongkaran langsung lunas)
+                // Atau tampilkan kosong
+                $querySuratJalanBongkaran->where('id', 0); // Force empty
             }
-            
-            // Untuk SuratJalanBongkaran, filter sama jika punya field status_pembayaran_uang_rit
-            // Jika tidak ada field, bisa di-skip atau ditambahkan kondisi
         }
 
         // Get data dari kedua tabel
