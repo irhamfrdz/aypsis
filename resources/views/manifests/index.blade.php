@@ -169,24 +169,25 @@
                                 @can('manifest-edit')
                                 <div class="flex items-center gap-2">
                                     <input type="text" 
-                                           class="text-sm font-medium text-gray-900 border-0 border-b-2 border-transparent hover:border-yellow-400 focus:border-purple-500 px-2 py-1 bg-transparent focus:bg-yellow-50 transition-colors bl-input" 
+                                           class="text-sm font-medium text-gray-900 border border-gray-300 rounded px-2 py-1 w-32 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bl-input" 
                                            data-manifest-id="{{ $manifest->id }}"
                                            data-original-value="{{ $manifest->nomor_bl }}"
                                            value="{{ $manifest->nomor_bl }}"
-                                           title="Ketik lalu tekan Enter atau klik tombol save">
+                                           title="Edit nomor BL, lalu klik Simpan">
                                     <button type="button" 
-                                            class="save-bl-btn hidden text-green-600 hover:text-green-800 transition-colors"
+                                            class="save-bl-btn px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded transition-colors flex items-center gap-1"
                                             data-manifest-id="{{ $manifest->id }}"
                                             title="Simpan perubahan">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
+                                        <span>Simpan</span>
                                     </button>
                                     <button type="button" 
-                                            class="cancel-bl-btn hidden text-gray-400 hover:text-gray-600 transition-colors"
+                                            class="cancel-bl-btn px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium rounded transition-colors"
                                             data-manifest-id="{{ $manifest->id }}"
                                             title="Batalkan perubahan">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
                                     </button>
@@ -415,17 +416,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const saveBtn = document.querySelector(`.save-bl-btn[data-manifest-id="${manifestId}"]`);
         const cancelBtn = document.querySelector(`.cancel-bl-btn[data-manifest-id="${manifestId}"]`);
         
-        // Show buttons when input changes
+        // Show buttons when input is focused or changed
+        input.addEventListener('focus', function() {
+            saveBtn.classList.remove('hidden');
+            cancelBtn.classList.remove('hidden');
+        });
+
         input.addEventListener('input', function() {
             const newValue = this.value.trim();
             const originalValue = this.dataset.originalValue;
             
+            // Optional: visual feedback if modified
             if (newValue !== originalValue) {
-                saveBtn.classList.remove('hidden');
-                cancelBtn.classList.remove('hidden');
+                this.classList.add('border-yellow-400');
             } else {
-                saveBtn.classList.add('hidden');
-                cancelBtn.classList.add('hidden');
+                this.classList.remove('border-yellow-400');
             }
         });
         
@@ -453,14 +458,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Save button click handlers
     saveBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const manifestId = this.dataset.manifestId;
             const input = document.querySelector(`.bl-input[data-manifest-id="${manifestId}"]`);
             const newValue = input.value.trim();
-            const originalValue = input.dataset.originalValue;
             
-            if (newValue !== originalValue && newValue !== '') {
+            console.log('Save clicked for manifest:', manifestId, 'Value:', newValue);
+            
+            if (newValue !== '') {
                 updateNomorBl(manifestId, newValue, input);
+            } else {
+                showToast('error', 'Nomor BL tidak boleh kosong');
             }
         });
     });
@@ -481,33 +492,50 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateNomorBl(manifestId, newValue, element) {
         // Show loading state
         element.classList.add('opacity-50');
+        const saveBtn = document.querySelector(`.save-bl-btn[data-manifest-id="${manifestId}"]`);
+        if (saveBtn) saveBtn.disabled = true;
+        
+        console.log('Sending update request for manifest:', manifestId, 'with value:', newValue);
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfToken) {
+            console.error('CSRF token not found!');
+            showToast('error', 'CSRF token tidak ditemukan');
+            element.classList.remove('opacity-50');
+            if (saveBtn) saveBtn.disabled = false;
+            return;
+        }
         
         fetch(`/report/manifests/${manifestId}/update-nomor-bl`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-CSRF-TOKEN': csrfToken.content,
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
                 nomor_bl: newValue
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('Error response:', text);
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             element.classList.remove('opacity-50');
+            if (saveBtn) saveBtn.disabled = false;
             
             if (data.success) {
                 // Update the value and original value
                 element.value = data.nomor_bl;
                 element.dataset.originalValue = data.nomor_bl;
-                
-                // Hide buttons
-                const manifestId = element.dataset.manifestId;
-                const saveBtn = document.querySelector(`.save-bl-btn[data-manifest-id="${manifestId}"]`);
-                const cancelBtn = document.querySelector(`.cancel-bl-btn[data-manifest-id="${manifestId}"]`);
-                saveBtn.classList.add('hidden');
-                cancelBtn.classList.add('hidden');
                 
                 // Show success feedback
                 element.classList.add('bg-green-100');
@@ -516,18 +544,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1000);
                 
                 // Show toast notification
-                showToast('success', data.message);
+                showToast('success', data.message || 'Nomor BL berhasil disimpan');
             } else {
                 // Restore original value on error
                 element.value = element.dataset.originalValue;
-                showToast('error', 'Gagal memperbarui nomor BL');
+                showToast('error', data.message || 'Gagal memperbarui nomor BL');
             }
         })
         .catch(error => {
             element.classList.remove('opacity-50');
+            if (saveBtn) saveBtn.disabled = false;
             element.value = element.dataset.originalValue;
-            console.error('Error:', error);
-            showToast('error', 'Terjadi kesalahan saat memperbarui');
+            console.error('Fetch error:', error);
+            showToast('error', 'Terjadi kesalahan: ' + error.message);
         });
     }
     
