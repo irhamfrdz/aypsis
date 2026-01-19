@@ -343,7 +343,8 @@ class BiayaKapalController extends Controller
                     // Get type keterangan from pricelist
                     $typeKeterangan = null;
                     if (!empty($section['type'])) {
-                        $typeData = \DB::table('master_pricelist_air_tawar_type')
+                        // source of type records is master_pricelist_air_tawar (each row represents a type/price entry)
+                        $typeData = \DB::table('master_pricelist_air_tawar')
                             ->where('id', $section['type'])
                             ->first();
                         $typeKeterangan = $typeData ? $typeData->keterangan : null;
