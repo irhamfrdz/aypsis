@@ -162,7 +162,10 @@ class ManifestController extends Controller
 
         Manifest::create($validated);
 
-        return redirect()->route('report.manifests.index')->with('success', 'Manifest berhasil ditambahkan');
+        return redirect()->route('report.manifests.index', [
+            'nama_kapal' => $validated['nama_kapal'] ?? '',
+            'no_voyage' => $validated['no_voyage'] ?? ''
+        ])->with('success', 'Manifest berhasil ditambahkan');
     }
 
     /**
@@ -222,7 +225,10 @@ class ManifestController extends Controller
 
         $manifest->update($validated);
 
-        return redirect()->route('report.manifests.index')->with('success', 'Manifest berhasil diperbarui');
+        return redirect()->route('report.manifests.index', [
+            'nama_kapal' => $manifest->nama_kapal,
+            'no_voyage' => $manifest->no_voyage
+        ])->with('success', 'Manifest berhasil diperbarui');
     }
 
     /**
@@ -231,9 +237,15 @@ class ManifestController extends Controller
     public function destroy(string $id)
     {
         $manifest = Manifest::findOrFail($id);
+        $namaKapal = $manifest->nama_kapal;
+        $noVoyage = $manifest->no_voyage;
+
         $manifest->delete();
 
-        return redirect()->route('report.manifests.index')->with('success', 'Manifest berhasil dihapus');
+        return redirect()->route('report.manifests.index', [
+            'nama_kapal' => $namaKapal,
+            'no_voyage' => $noVoyage
+        ])->with('success', 'Manifest berhasil dihapus');
     }
 
     /**
