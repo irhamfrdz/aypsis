@@ -239,27 +239,58 @@ class BiayaKapalController extends Controller
                     
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
-                            $barang = PricelistBuruh::find($item['barang_id']);
-                            if ($barang) {
-                                $subtotal = $barang->tarif * $item['jumlah'];
+                            // Normalize inputs (trim strings, convert decimals)
+                            $barangIdRaw = $item['barang_id'] ?? null;
+                            $barangId = is_string($barangIdRaw) ? trim($barangIdRaw) : $barangIdRaw;
+
+                            $jumlahRaw = $item['jumlah'] ?? 0;
+                            // Convert comma decimal and remove thousand separators if any
+                            if (is_string($jumlahRaw)) {
+                                $jumlahSanitized = str_replace(['.', ','], ['', '.'], $jumlahRaw);
+                            } else {
+                                $jumlahSanitized = $jumlahRaw;
+                            }
+                            $jumlah = floatval($jumlahSanitized ?: 0);
+
+                            // Basic validation: skip if missing barang id or non-positive jumlah
+                            if (empty($barangId) || $jumlah <= 0) {
                                 
-                                // Save to biaya_kapal_barang table with kapal, voyage, and DP info
-                                BiayaKapalBarang::create([
-                                    'biaya_kapal_id' => $biayaKapal->id,
-                                    'pricelist_buruh_id' => $barang->id,
+                                // Log skipped items for easier debugging
+                                
+                                \\Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
+                                    'biaya_kapal_id' => $biayaKapal->id ?? null,
+                                    'section_index' => $sectionIndex,
                                     'kapal' => $kapalName,
                                     'voyage' => $voyageName,
-                                    'jumlah' => $item['jumlah'],
-                                    'tarif' => $barang->tarif,
-                                    'subtotal' => $subtotal,
-                                    'total_nominal' => $sectionTotalNominal,
-                                    'dp' => $sectionDp,
-                                    'sisa_pembayaran' => $sectionSisa,
+                                    'item' => $item,
                                 ]);
-
-                                // Build keterangan string with kapal, voyage, and DP info
-                                $barangDetails[] = "[$kapalName - Voyage $voyageName] " . $barang->barang . ' x ' . $item['jumlah'] . ' = Rp ' . number_format($subtotal, 0, ',', '.');
+                                continue;
                             }
+
+                            $barang = PricelistBuruh::find($barangId);
+                            if (!$barang) {
+                                \\Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
+                                continue;
+                            }
+
+                            $subtotal = $barang->tarif * $jumlah;
+
+                            // Save to biaya_kapal_barang table with kapal, voyage, and DP info
+                            BiayaKapalBarang::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'pricelist_buruh_id' => $barang->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'jumlah' => $jumlah,
+                                'tarif' => $barang->tarif,
+                                'subtotal' => $subtotal,
+                                'total_nominal' => $sectionTotalNominal,
+                                'dp' => $sectionDp,
+                                'sisa_pembayaran' => $sectionSisa,
+                            ]);
+
+                            // Build keterangan string with kapal, voyage, and DP info
+                            $barangDetails[] = "[$kapalName - Voyage $voyageName] " . $barang->barang . ' x ' . $jumlah . ' = Rp ' . number_format($subtotal, 0, ',', '.');
                         }
                         
                         // Add section summary to barang details
