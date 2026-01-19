@@ -935,13 +935,6 @@ class PranotaUangRitController extends Controller
                 'updated_by' => Auth::id(),
             ]);
 
-            // Update status surat jalan
-            if ($pranotaUangRit->suratJalan) {
-                $pranotaUangRit->suratJalan->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_PRANOTA_SUBMITTED
-                ]);
-            }
-
             Log::info('Pranota Uang Rit submitted', [
                 'pranota_id' => $pranotaUangRit->id,
                 'no_pranota' => $pranotaUangRit->no_pranota,
@@ -975,12 +968,7 @@ class PranotaUangRitController extends Controller
                 'updated_by' => Auth::id(),
             ]);
 
-            // Update status surat jalan
-            if ($pranotaUangRit->suratJalan) {
-                $pranotaUangRit->suratJalan->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_PRANOTA_APPROVED
-                ]);
-            }
+            // Note: Tidak mengubah status surat jalan karena sudah 'dibayar' sejak awal (sesuai request user)
 
             Log::info('Pranota Uang Rit approved', [
                 'pranota_id' => $pranotaUangRit->id,
