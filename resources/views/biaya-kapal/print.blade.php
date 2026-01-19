@@ -352,60 +352,51 @@
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang:</strong>
             
             @if($biayaKapal->jenis_biaya === 'KB024' && isset($groupedDetails) && $groupedDetails->count() > 0)
-                {{-- Tampilkan per kapal/voyage untuk Biaya Buruh --}}
-                @php $overallTotal = 0; $groupNo = 0; @endphp
-                @foreach($groupedDetails as $groupKey => $details)
-                    @php
-                        $groupNo++;
-                        list($groupKapal, $groupVoyage) = explode('|', $groupKey);
-                        // Gabungkan barang per grup (per kapal/voyage)
-                        $groupCombined = $details->groupBy('pricelist_buruh_id')->map(function($items) {
-                            $first = $items->first();
-                            return [
-                                'barang' => $first->pricelistBuruh->barang ?? '-',
-                                'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
-                                'jumlah' => $items->sum('jumlah'),
-                                'subtotal' => $items->sum('subtotal'),
-                            ];
-                        })->values();
-                        $groupSubtotal = $groupCombined->sum('subtotal');
-                        $overallTotal += $groupSubtotal;
-                    @endphp
+                {{-- Biaya Buruh: Gabungkan semua barang menjadi satu tabel (gabungan semua kapal) --}}
+                @php
+                    // Combine all barang across groups into one list
+                    $combinedBarang = $biayaKapal->barangDetails->groupBy('pricelist_buruh_id')->map(function($items) {
+                        $first = $items->first();
+                        return [
+                            'barang' => $first->pricelistBuruh->barang ?? '-',
+                            'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
+                            'jumlah' => $items->sum('jumlah'),
+                            'subtotal' => $items->sum('subtotal'),
+                        ];
+                    })->values();
+                    $overallTotal = $combinedBarang->sum('subtotal');
+                @endphp
 
-                    <div style="margin-top:12px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
-                        <strong>Kapal {{ $groupNo }}:</strong> {{ $groupKapal }} @if($groupVoyage && $groupVoyage !== '-') - Voyage: {{ $groupVoyage }} @endif
-                    </div>
+                <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
+                    <strong>Detail Barang (Gabungan Semua Kapal)</strong>
+                </div>
 
-                    <table class="table" style="margin-top: 6px; margin-bottom: 0;">
-                        <thead>
-                            <tr>
-                                <th style="width: 6%;">No</th>
-                                <th style="width: 37%;">Jenis Barang</th>
-                                <th style="width: 12%;">Jumlah</th>
-                                <th style="width: 17%;">Harga Satuan</th>
-                                <th style="width: 18%;">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($groupCombined as $index => $item)
-                            <tr>
-                                <td class="text-center">{{ $index + 1 }}</td>
-                                <td>{{ $item['barang'] }}</td>
-                                <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
-                            </tr>
-                            @endforeach
-                            <tr class="total-row">
-                                <td colspan="4" class="text-right"><strong>TOTAL {{ $groupKapal }}</strong></td>
-                                <td class="text-right"><strong>Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                @endforeach
-
-                {{-- Overall total for all kapal --}}
-                <div style="margin-top:8px; text-align:right; font-weight:bold;">TOTAL: Rp {{ number_format($overallTotal, 0, ',', '.') }}</div>
+                <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%;">No</th>
+                            <th style="width: 37%;">Jenis Barang</th>
+                            <th style="width: 12%;">Jumlah</th>
+                            <th style="width: 17%;">Harga Satuan</th>
+                            <th style="width: 18%;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($combinedBarang as $index => $item)
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $item['barang'] }}</td>
+                            <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                        <tr class="total-row">
+                            <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                            <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
 
             @else
                 {{-- Default: Gabungkan semua barang yang sama --}}
