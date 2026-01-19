@@ -1044,6 +1044,16 @@
         if (grandTotalAirInput && grandTotalAirInput.value) {
             grandTotalAirInput.value = grandTotalAirInput.value.replace(/\./g, '');
         }
+        // Sanitize per-section numeric hidden inputs to ensure validation accepts numbers
+        document.querySelectorAll('.sub-total-value').forEach(el => {
+            el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
+        });
+        document.querySelectorAll('.pph-value').forEach(el => {
+            el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
+        });
+        document.querySelectorAll('.grand-total-value').forEach(el => {
+            el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
+        });
     });
 
     // Update file name display
