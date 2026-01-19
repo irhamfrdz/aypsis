@@ -1744,6 +1744,7 @@
         fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
             .then(response => response.json())
             .then(data => {
+                console.log('Voyages response for', kapalNama, data);
                 if (data.success && data.voyages) {
                     let html = '<option value="">-- Pilih Voyage --</option>';
                     data.voyages.forEach(voyage => {
