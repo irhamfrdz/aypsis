@@ -532,6 +532,44 @@ class ReportRitController extends Controller
             $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
 
+        // Filter berdasarkan status pembayaran uang rit
+        if ($request->filled('status_pembayaran_rit')) {
+            $statusFilter = $request->status_pembayaran_rit;
+            
+            if ($statusFilter === 'belum_dibayar') {
+                // Belum dibayar: status null atau belum_dibayar
+                $querySuratJalan->where(function($q) {
+                    $q->whereNull('status_pembayaran_uang_rit')
+                      ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar');
+                });
+                
+                // Filter Bongkaran: belum_bayar atau null
+                $querySuratJalanBongkaran->where(function($q) {
+                    $q->whereNull('status_pembayaran_uang_rit')
+                      ->orWhere('status_pembayaran_uang_rit', 'belum_bayar');
+                });
+                
+            } elseif ($statusFilter === 'dibayar') {
+                // Sudah dibayar
+                $querySuratJalan->where('status_pembayaran_uang_rit', 'dibayar');
+                
+                // Filter Bongkaran: lunas
+                $querySuratJalanBongkaran->where('status_pembayaran_uang_rit', 'lunas');
+                
+            } elseif ($statusFilter === 'proses') {
+                // Dalam proses: proses_pranota, sudah_masuk_pranota, pranota_submitted, pranota_approved
+                $querySuratJalan->whereIn('status_pembayaran_uang_rit', [
+                    'proses_pranota',
+                    'sudah_masuk_pranota', 
+                    'pranota_submitted',
+                    'pranota_approved'
+                ]);
+                
+                // Filter Bongkaran: Tidak punya status proses, jadi exclude semua
+                $querySuratJalanBongkaran->where('id', 0); // Force empty
+            }
+        }
+
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan->with(['tandaTerima'])->get();
         $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima'])->get();
