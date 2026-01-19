@@ -2096,6 +2096,14 @@
             } else if (lokasiSelect.options.length > 0) {
                 lokasiSelect.selectedIndex = 0;
             }
+
+            // When lokasi changes, update vendor list for this section
+            lokasiSelect.addEventListener('change', function() {
+                updateVendorsForLokasi(sectionIndex, this.value);
+            });
+
+            // Initialize vendor list based on default lokasi
+            updateVendorsForLokasi(sectionIndex, lokasiSelect.value);
         }
 
         // Setup jasa air input change listener
@@ -2157,8 +2165,12 @@
             return;
         }
         
-        // Filter pricelist data by vendor name
-        const vendorTypes = pricelistAirTawarData.filter(item => item.nama_agen === vendorName);
+        // Get selected lokasi for this section
+        const lokasiSelect = section.querySelector('.lokasi-select-air');
+        const selectedLokasi = lokasiSelect ? (lokasiSelect.value || '') : '';
+
+        // Filter pricelist data by vendor name and lokasi (if selected)
+        const vendorTypes = pricelistAirTawarData.filter(item => item.nama_agen === vendorName && (selectedLokasi === '' || item.lokasi === selectedLokasi));
         
         if (vendorTypes.length > 0) {
             typeSelect.disabled = false;
@@ -2170,6 +2182,38 @@
         } else {
             typeSelect.disabled = true;
             typeSelect.innerHTML = '<option value="">Tidak ada type tersedia</option>';
+        }
+    }
+
+    // Update vendor list for a given lokasi in a section
+    function updateVendorsForLokasi(sectionIndex, lokasi) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        const vendorSelect = section.querySelector('.vendor-select-air');
+        const typeSelect = section.querySelector('.type-select-air');
+
+        // Build vendor list filtered by lokasi; if lokasi is empty, include all vendors
+        let vendors = [];
+        if (lokasi && lokasi !== '') {
+            vendors = [...new Set(pricelistAirTawarData.filter(item => (item.lokasi || '') === lokasi).map(i => i.nama_agen))];
+        } else {
+            vendors = [...new Set(pricelistAirTawarData.map(i => i.nama_agen))];
+        }
+
+        if (vendors.length > 0) {
+            vendorSelect.disabled = false;
+            let options = '<option value="">-- Pilih Vendor Air Tawar --</option>';
+            vendors.forEach(v => options += `<option value="${v}">${v}</option>`);
+            vendorSelect.innerHTML = options;
+        } else {
+            vendorSelect.disabled = true;
+            vendorSelect.innerHTML = '<option value="">-- Tidak ada vendor di lokasi ini --</option>';
+        }
+
+        // Clear type options whenever vendor list changes
+        if (typeSelect) {
+            typeSelect.disabled = true;
+            typeSelect.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
         }
     }
     
