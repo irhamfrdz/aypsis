@@ -73,8 +73,14 @@ class ManifestController extends Controller
      */
     private function showManifestData(Request $request, $namaKapal, $noVoyage)
     {
+        // Normalize ship name for flexible matching (consistent with ObController)
+        // Remove dots, double spaces, and uppercase
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+        $noVoyage = trim($noVoyage);
+
         $query = Manifest::with(['prospek', 'createdBy', 'updatedBy'])
-            ->where('nama_kapal', $namaKapal)
+            ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage);
 
         // Search
@@ -685,9 +691,13 @@ class ManifestController extends Controller
         try {
             // Decode URL-encoded ship name
             $namaKapal = urldecode($namaKapal);
+            
+            // Normalize ship name for loose matching
+            $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+            $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
 
-            // Get distinct normalized voyages for the ship
-            $voyages = Manifest::where('nama_kapal', $namaKapal)
+            // Get distinct normalized voyages for the ship using loose matching
+            $voyages = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->select('no_voyage')
                 ->distinct()
                 ->orderBy('no_voyage', 'asc')
