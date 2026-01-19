@@ -2032,19 +2032,19 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
-                    <input type="text" name="air[${sectionIndex}][sub_total]" class="sub-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="air[${sectionIndex}][sub_total_value]" class="sub-total-value" value="0">
+                    <input type="text" class="sub-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
                     <input type="hidden" name="air[${sectionIndex}][harga]" class="harga-hidden" value="0">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
-                    <input type="text" name="air[${sectionIndex}][pph]" class="pph-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="air[${sectionIndex}][pph_value]" class="pph-value" value="0">
+                    <input type="text" class="pph-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][pph]" class="pph-value" value="0">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
-                    <input type="text" name="air[${sectionIndex}][grand_total]" class="grand-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="air[${sectionIndex}][grand_total_value]" class="grand-total-value" value="0">
+                    <input type="text" class="grand-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][grand_total]" class="grand-total-value" value="0">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
