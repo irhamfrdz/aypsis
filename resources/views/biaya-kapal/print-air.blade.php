@@ -255,6 +255,17 @@
             <span class="info-value">{{ $biayaKapal->klasifikasiBiaya->nama }}</span>
         </div>
         @endif
+        @php
+            // Show overall penerima if set, otherwise try to use first penerima from airDetails
+            $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? null);
+        @endphp
+        @if($penerimaDisplay)
+        <div class="info-item">
+            <span class="info-label">Penerima</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $penerimaDisplay }}</span>
+        </div>
+        @endif
         @if($biayaKapal->nomor_referensi)
         <div class="info-item">
             <span class="info-label">Referensi</span>
