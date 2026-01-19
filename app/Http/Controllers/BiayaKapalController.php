@@ -529,10 +529,14 @@ class BiayaKapalController extends Controller
     public function getVoyagesByShip($namaKapal)
     {
         try {
+            // Log incoming parameter for debugging
+            \Log::info('getVoyagesByShip called', ['nama_kapal' => $namaKapal]);
+
             // Normalize ship name for flexible matching (remove dots, extra spaces, lowercase)
             $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $namaKapal)));
-            
-            // Get distinct no_voyage from naik_kapal for the selected ship
+            \Log::info('getVoyagesByShip normalized', ['normalized' => $normalizedKapal]);
+
+            // Primary attempt: Use REGEXP_REPLACE normalization if available in DB (MySQL 8+ / Postgres)
             $voyagesFromNaikKapal = \DB::table('naik_kapal')
                 ->select('no_voyage')
                 ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
@@ -541,7 +545,6 @@ class BiayaKapalController extends Controller
                 ->distinct()
                 ->pluck('no_voyage');
 
-            // Get distinct no_voyage from bls for the selected ship
             $voyagesFromBls = \DB::table('bls')
                 ->select('no_voyage')
                 ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
@@ -550,17 +553,41 @@ class BiayaKapalController extends Controller
                 ->distinct()
                 ->pluck('no_voyage');
 
+            // Fallback: if no results (maybe REGEXP_REPLACE unsupported or data mismatch), try simpler LIKE matching
+            if ((empty($voyagesFromNaikKapal) || $voyagesFromNaikKapal->count() === 0) && (empty($voyagesFromBls) || $voyagesFromBls->count() === 0)) {
+                \Log::info('getVoyagesByShip fallback to simple LIKE');
+
+                $voyagesFromNaikKapal = \DB::table('naik_kapal')
+                    ->select('no_voyage')
+                    ->where('nama_kapal', 'like', "%{$namaKapal}%")
+                    ->whereNotNull('no_voyage')
+                    ->where('no_voyage', '!=', '')
+                    ->distinct()
+                    ->pluck('no_voyage');
+
+                $voyagesFromBls = \DB::table('bls')
+                    ->select('no_voyage')
+                    ->where('nama_kapal', 'like', "%{$namaKapal}%")
+                    ->whereNotNull('no_voyage')
+                    ->where('no_voyage', '!=', '')
+                    ->distinct()
+                    ->pluck('no_voyage');
+            }
+
             // Merge and get unique voyages
             $voyages = $voyagesFromNaikKapal->merge($voyagesFromBls)
                 ->unique()
                 ->sort()
                 ->values();
 
+            \Log::info('getVoyagesByShip results', ['nama_kapal' => $namaKapal, 'voyages_count' => count($voyages), 'voyages_sample' => array_slice($voyages->toArray(),0,5)]);
+
             return response()->json([
                 'success' => true,
                 'voyages' => $voyages
             ]);
         } catch (\Exception $e) {
+            \Log::error('getVoyagesByShip error', ['error' => $e->getMessage(), 'nama_kapal' => $namaKapal]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data voyage: ' . $e->getMessage()
