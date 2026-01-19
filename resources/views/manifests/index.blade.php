@@ -393,7 +393,7 @@ window.closeImportModal = function() {
 
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 // Editable BL Number functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -585,4 +585,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection
+@endpush
