@@ -2138,10 +2138,11 @@
         fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
             .then(response => response.json())
             .then(data => {
+                console.log('Voyages response for', kapalNama, data);
                 voyageSelect.disabled = false;
-                if (data.length > 0) {
+                if (data && data.success && data.voyages && data.voyages.length > 0) {
                     let options = '<option value="">-- Pilih Voyage --</option>';
-                    data.forEach(voyage => {
+                    data.voyages.forEach(voyage => {
                         options += `<option value="${voyage}">${voyage}</option>`;
                     });
                     voyageSelect.innerHTML = options;
