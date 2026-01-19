@@ -32,11 +32,37 @@ class FixManifestVoyage extends Command
         $voyage = $this->argument('voyage');
         $this->info("Starting manifest fix for voyage: {$voyage}");
 
-        // 1. Get all NaikKapal records for this voyage
-        // Normalize search to handle case sensitivity if needed, but strict for now based on user request
-        $naikKapals = NaikKapal::where('no_voyage', $voyage)->get();
+        // --- STEP 1: CLEANUP INVALID MANIFESTS ---
+        $this->info("Step 1: Cleaning up manifests for containers that are NOT 'sudah OB'...");
+        
+        $manifests = Manifest::where('no_voyage', $voyage)->get();
+        $deletedCount = 0;
 
-        $this->info("Found " . $naikKapals->count() . " NaikKapal records for voyage {$voyage}.");
+        foreach ($manifests as $manifest) {
+            // Find corresponding NaikKapal record
+            $nk = NaikKapal::where('nomor_kontainer', $manifest->nomor_kontainer)
+                ->where('no_voyage', $voyage)
+                ->first();
+
+            // If NaikKapal exists AND it is NOT marked as OB, then this manifest shouldn't exist
+            if ($nk && !$nk->sudah_ob) {
+                $this->warn(" - Deleting invalid manifest {$manifest->nomor_bl} for container {$manifest->nomor_kontainer} (Not OB yet)");
+                $manifest->delete();
+                $deletedCount++;
+            }
+        }
+        $this->info("Cleanup complete. Deleted {$deletedCount} invalid records.");
+
+        // --- STEP 2: GENERATE MISSING MANIFESTS ---
+        $this->info("Step 2: Generating missing manifests for 'sudah OB' containers...");
+
+        // Get all NaikKapal records for this voyage THAT ARE SUDAH OB
+        // Normalize search to handle case sensitivity if needed
+        $naikKapals = NaikKapal::where('no_voyage', $voyage)
+            ->where('sudah_ob', true)
+            ->get();
+
+        $this->info("Found " . $naikKapals->count() . " valid 'sudah OB' NaikKapal records for voyage {$voyage}.");
 
         $stats = [
             'created' => 0,
