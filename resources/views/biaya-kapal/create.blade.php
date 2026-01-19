@@ -1968,6 +1968,13 @@
             vendorOptions += `<option value="${vendorName}">${vendorName}</option>`;
         });
 
+        // Get unique lokasi from pricelist data
+        let lokasiOptions = '<option value="">-- Pilih Lokasi --</option>';
+        const uniqueLokasis = [...new Set(pricelistAirTawarData.map(item => item.lokasi))];
+        uniqueLokasis.forEach(loc => {
+            lokasiOptions += `<option value="${loc}">${loc}</option>`;
+        });
+
         // Get Penerima options
         let penerimaOptions = '<option value="">-- Pilih Penerima --</option>';
         @foreach($karyawans as $karyawan)
@@ -2006,6 +2013,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                     <select name="air[${sectionIndex}][type]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
                         <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+                    <select name="air[${sectionIndex}][lokasi]" class="lokasi-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        ${lokasiOptions}
                     </select>
                 </div>
                 <div>
@@ -2074,6 +2087,16 @@
         kuantitasInput.addEventListener('input', function() {
             calculateAirSectionTotal(sectionIndex);
         });
+
+        // Set default lokasi if available
+        const lokasiSelect = section.querySelector('.lokasi-select-air');
+        if (lokasiSelect) {
+            if (lokasiSelect.querySelector('option[value="Jakarta"]')) {
+                lokasiSelect.value = 'Jakarta';
+            } else if (lokasiSelect.options.length > 0) {
+                lokasiSelect.selectedIndex = 0;
+            }
+        }
 
         // Setup jasa air input change listener
         const jasaAirInput = section.querySelector('.jasa-air-input');
