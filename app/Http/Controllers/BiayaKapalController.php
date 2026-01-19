@@ -315,9 +315,30 @@ class BiayaKapalController extends Controller
                     $kuantitas = isset($section['kuantitas']) ? floatval(str_replace(['.', ','], ['', '.'], $section['kuantitas'])) : 0;
                     $harga = isset($section['harga']) ? floatval(str_replace(['.', ','], ['', '.'], $section['harga'])) : 0;
                     $jasaAir = isset($section['jasa_air']) ? floatval(str_replace(['.', ','], ['', '.'], $section['jasa_air'])) : 0;
-                    $subTotal = isset($section['sub_total_value']) ? floatval(str_replace(['.', ','], ['', '.'], $section['sub_total_value'])) : 0;
-                    $pph = isset($section['pph_value']) ? floatval(str_replace(['.', ','], ['', '.'], $section['pph_value'])) : 0;
-                    $grandTotal = isset($section['grand_total_value']) ? floatval(str_replace(['.', ','], ['', '.'], $section['grand_total_value'])) : 0;
+                    // Prefer numeric fields submitted as 'sub_total', 'pph', 'grand_total' (hidden inputs). Fall back to older *_value names if present.
+                    if (isset($section['sub_total'])) {
+                        $subTotal = floatval(str_replace([',', '.'], ['', '.'], $section['sub_total']));
+                    } elseif (isset($section['sub_total_value'])) {
+                        $subTotal = floatval(str_replace([',', '.'], ['', '.'], $section['sub_total_value']));
+                    } else {
+                        $subTotal = 0;
+                    }
+
+                    if (isset($section['pph'])) {
+                        $pph = floatval(str_replace([',', '.'], ['', '.'], $section['pph']));
+                    } elseif (isset($section['pph_value'])) {
+                        $pph = floatval(str_replace([',', '.'], ['', '.'], $section['pph_value']));
+                    } else {
+                        $pph = 0;
+                    }
+
+                    if (isset($section['grand_total'])) {
+                        $grandTotal = floatval(str_replace([',', '.'], ['', '.'], $section['grand_total']));
+                    } elseif (isset($section['grand_total_value'])) {
+                        $grandTotal = floatval(str_replace([',', '.'], ['', '.'], $section['grand_total_value']));
+                    } else {
+                        $grandTotal = 0;
+                    }
                     
                     // Get type keterangan from pricelist
                     $typeKeterangan = null;
