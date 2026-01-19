@@ -167,6 +167,9 @@ class MasterPricelistAirTawarController extends Controller
             $file = fopen('php://output', 'w');
             // Write header with semicolon delimiter
             fputcsv($file, ['nama_agen', 'harga', 'lokasi', 'keterangan'], ';');
+            fclose($file);
+        };
+
         return response()->stream($callback, 200, $headers);
     }
 
