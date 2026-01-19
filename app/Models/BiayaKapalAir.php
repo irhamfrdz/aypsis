@@ -13,6 +13,7 @@ class BiayaKapalAir extends Model
         'kapal',
         'voyage',
         'vendor',
+        'lokasi',
         'type_id',
         'type_keterangan',
         'kuantitas',
