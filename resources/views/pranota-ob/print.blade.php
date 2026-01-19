@@ -62,32 +62,38 @@
         <div class="mb-2">
             <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 8px;">Ringkasan Per Supir</h4>
             @php
-                // Calculate totals before rendering table
-                $totalFull20 = 0;
-                $totalEmpty20 = 0;
-                $totalFull40 = 0;
-                $totalEmpty40 = 0;
-                
-                foreach($perSupirCounts as $supirName => $counts) {
-                    $totalFull20 += $counts['sizes']['20']['full'] ?? 0;
-                    $totalEmpty20 += $counts['sizes']['20']['empty'] ?? 0;
-                    $totalFull40 += $counts['sizes']['40']['full'] ?? 0;
-                    $totalEmpty40 += $counts['sizes']['40']['empty'] ?? 0;
-                }
-                
-                $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
-            @endphp
-                @php
-                    // Hanya tampilkan supir yang memiliki nama (exclude TL / Perusahaan)
-                    $filteredPerSupirCounts = collect($perSupirCounts)->filter(function($counts, $name) {
-                        $k = trim($name);
-                        return $k !== '' && strtolower($k) !== 'perusahaan';
+                    // Hanya tampilkan supir yang memiliki nama (exclude TL / Perusahaan / kosong / '-' dll)
+                    $normalizeName = function($n) {
+                        $k = strtolower(trim($n ?? ''));
+                        // remove any non-alphanumeric characters so placeholders like '-' normalize to empty
+                        $k = preg_replace('/[^a-z0-9]/', '', $k);
+                        return $k;
+                    };
+
+                    $filteredPerSupirCounts = collect($perSupirCounts)->filter(function($counts, $name) use($normalizeName) {
+                        $k = $normalizeName($name);
+                        return $k !== '' && $k !== 'perusahaan' && $k !== 'tl';
                     })->toArray();
 
-                    $filteredPerSupir = collect($perSupir)->filter(function($sum, $name) {
-                        $k = trim($name);
-                        return $k !== '' && strtolower($k) !== 'perusahaan';
+                    $filteredPerSupir = collect($perSupir)->filter(function($sum, $name) use($normalizeName) {
+                        $k = $normalizeName($name);
+                        return $k !== '' && $k !== 'perusahaan' && $k !== 'tl';
                     })->toArray();
+
+                    // Calculate totals from filtered data before rendering table
+                    $totalFull20 = 0;
+                    $totalEmpty20 = 0;
+                    $totalFull40 = 0;
+                    $totalEmpty40 = 0;
+
+                    foreach($filteredPerSupirCounts as $supirName => $counts) {
+                        $totalFull20 += $counts['sizes']['20']['full'] ?? 0;
+                        $totalEmpty20 += $counts['sizes']['20']['empty'] ?? 0;
+                        $totalFull40 += $counts['sizes']['40']['full'] ?? 0;
+                        $totalEmpty40 += $counts['sizes']['40']['empty'] ?? 0;
+                    }
+
+                    $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
                 @endphp
             <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
                 <thead>
@@ -236,8 +242,17 @@
         </div>
 
         @php
-            // Sort displayItems by supir
-            $sortedItems = collect($displayItems)->sortBy('supir')->values();
+            // Filter out items without supir or with TL/perusahaan or placeholder names (like '-') then sort by supir
+            $normalizeName = function($n) {
+                $k = strtolower(trim($n ?? ''));
+                $k = preg_replace('/[^a-z0-9]/', '', $k);
+                return $k;
+            };
+
+            $sortedItems = collect($displayItems)->filter(function($item) use($normalizeName) {
+                $name = $normalizeName($item['supir'] ?? ($item['nama_supir'] ?? ''));
+                return $name !== '' && $name !== 'perusahaan' && $name !== 'tl';
+            })->sortBy('supir')->values();
             $totalItems = $sortedItems->count();
             $halfCount = ceil($totalItems / 2);
             $leftItems = $sortedItems->take($halfCount);

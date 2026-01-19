@@ -97,6 +97,15 @@ class ProspekController extends Controller
                         $totalSudahMuat = (clone $filteredQuery)->where('status', 'sudah_muat')->count();
                         $totalBatal = (clone $filteredQuery)->where('status', 'batal')->count();
 
+            // Mobile detection using regex (fallback since package install failed)
+            $userAgent = $request->header('User-Agent');
+            $isMobile = preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i', $userAgent);
+
+            // Check if mobile (but allow override via query param for testing)
+            if ($isMobile || $request->has('mobile_view')) {
+                return view('prospek.index_mobile', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal'));
+            }
+
             return view('prospek.index', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal'));
 
         } catch (\Exception $e) {

@@ -135,4 +135,9 @@ class BiayaKapal extends Model
     {
         return $this->belongsTo(\App\Models\PricelistBiayaDokumen::class, 'vendor_id');
     }
+
+    public function airDetails()
+    {
+        return $this->hasMany(BiayaKapalAir::class, 'biaya_kapal_id');
+    }
 }

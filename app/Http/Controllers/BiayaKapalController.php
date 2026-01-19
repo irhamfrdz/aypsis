@@ -7,6 +7,7 @@ use App\Models\MasterKapal;
 use App\Models\KlasifikasiBiaya;
 use App\Models\PricelistBuruh;
 use App\Models\BiayaKapalBarang;
+use App\Models\BiayaKapalAir;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -142,8 +143,8 @@ class BiayaKapalController extends Controller
             'no_bl.*' => 'string',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
-            'nominal' => 'required|numeric|min:0',
-            'penerima' => 'required|string|max:255',
+            'nominal' => 'nullable|numeric|min:0',
+            'penerima' => 'nullable|string|max:255',
             'nama_vendor' => 'nullable|string|max:255',
             'nomor_rekening' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string',
@@ -170,6 +171,19 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.dp' => 'nullable|numeric|min:0',
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            // Biaya Air sections structure
+            'air' => 'nullable|array',
+            'air.*.kapal' => 'nullable|string|max:255',
+            'air.*.voyage' => 'nullable|string|max:255',
+            'air.*.vendor' => 'nullable|string|max:255',
+            'air.*.type' => 'nullable|integer',
+            'air.*.kuantitas' => 'nullable|numeric|min:0',
+            'air.*.harga' => 'nullable|numeric|min:0',
+            'air.*.jasa_air' => 'nullable|numeric|min:0',
+            'air.*.sub_total' => 'nullable|numeric|min:0',
+            'air.*.pph' => 'nullable|numeric|min:0',
+            'air.*.grand_total' => 'nullable|numeric|min:0',
+            'air.*.penerima' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -287,6 +301,68 @@ class BiayaKapalController extends Controller
                 $biayaKapal->save();
             }
 
+            // BIAYA AIR SECTIONS: Store air details
+            $airDetails = [];
+            if ($request->has('air') && !empty($request->air)) {
+                foreach ($request->air as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['vendor'])) {
+                        continue;
+                    }
+                    
+                    // Clean numeric values
+                    $kuantitas = isset($section['kuantitas']) ? floatval(str_replace(['.', ','], ['', '.'], $section['kuantitas'])) : 0;
+                    $harga = isset($section['harga']) ? floatval(str_replace(['.', ','], ['', '.'], $section['harga'])) : 0;
+                    $jasaAir = isset($section['jasa_air']) ? floatval(str_replace(['.', ','], ['', '.'], $section['jasa_air'])) : 0;
+                    $subTotal = isset($section['sub_total_value']) ? floatval(str_replace(['.', ','], ['', '.'], $section['sub_total_value'])) : 0;
+                    $pph = isset($section['pph_value']) ? floatval(str_replace(['.', ','], ['', '.'], $section['pph_value'])) : 0;
+                    $grandTotal = isset($section['grand_total_value']) ? floatval(str_replace(['.', ','], ['', '.'], $section['grand_total_value'])) : 0;
+                    
+                    // Get type keterangan from pricelist
+                    $typeKeterangan = null;
+                    if (!empty($section['type'])) {
+                        $typeData = \DB::table('master_pricelist_air_tawar_type')
+                            ->where('id', $section['type'])
+                            ->first();
+                        $typeKeterangan = $typeData ? $typeData->keterangan : null;
+                    }
+                    
+                    // Create BiayaKapalAir record
+                    BiayaKapalAir::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'vendor' => $section['vendor'] ?? null,
+                        'type_id' => $section['type'] ?? null,
+                        'type_keterangan' => $typeKeterangan,
+                        'kuantitas' => $kuantitas,
+                        'harga' => $harga,
+                        'jasa_air' => $jasaAir,
+                        'sub_total' => $subTotal,
+                        'pph' => $pph,
+                        'grand_total' => $grandTotal,
+                        'penerima' => $section['penerima'] ?? null,
+                    ]);
+                    
+                    // Build keterangan string
+                    $airDetails[] = "[" . ($section['kapal'] ?? 'N/A') . " - Voyage " . ($section['voyage'] ?? 'N/A') . "] " .
+                        "Vendor: " . ($section['vendor'] ?? 'N/A') . " | " .
+                        "Kuantitas: " . number_format($kuantitas, 2, ',', '.') . " ton | " .
+                        "Sub Total: Rp " . number_format($subTotal, 0, ',', '.') . " | " .
+                        "PPH: Rp " . number_format($pph, 0, ',', '.') . " | " .
+                        "Grand Total: Rp " . number_format($grandTotal, 0, ',', '.');
+                }
+                
+                // Update keterangan with air details
+                if (!empty($airDetails)) {
+                    $keteranganAir = "Detail Biaya Air:\n" . implode("\n", $airDetails);
+                    $biayaKapal->keterangan = $biayaKapal->keterangan 
+                        ? $biayaKapal->keterangan . "\n\n" . $keteranganAir 
+                        : $keteranganAir;
+                    $biayaKapal->save();
+                }
+            }
+
             DB::commit();
 
             return redirect()
@@ -315,7 +391,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails']);
         
         // Check if it's Biaya Dokumen and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
@@ -328,6 +404,12 @@ class BiayaKapalController extends Controller
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'trucking') !== false) {
             return view('biaya-kapal.print-trucking', compact('biayaKapal'));
+        }
+        
+        // Check if it's Biaya Air and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'air') !== false) {
+            return view('biaya-kapal.print-air', compact('biayaKapal'));
         }
         
         return view('biaya-kapal.print', compact('biayaKapal'));

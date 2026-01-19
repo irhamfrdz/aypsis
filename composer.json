@@ -7,20 +7,7 @@
         "framework"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "http://mirrors.aliyun.com/composer/",
-            "options": {
-                "http": {
-                    "timeout": 60
-                }
-            }
-        },
-        {
-            "packagist": false
-        }
-    ],
+
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^2.2",

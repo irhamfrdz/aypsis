@@ -55,7 +55,7 @@
             <div class="mt-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded p-2">
                 <p class="mb-1">Debug: filter range: <strong>{{ $viewStartDate }}</strong> - <strong>{{ $viewEndDate }}</strong></p>
                 <p class="mb-1">Eligible count: <strong>{{ $eligibleCount ?? 'N/A' }}</strong></p>
-                <p class="mb-1">SuratJalans returned: <strong>{{ $suratJalans->count() ?? 'N/A' }}</strong></p>
+                <p class="mb-1">Regular returned: <strong>{{ $suratJalans->count() }}</strong> | Bongkaran returned: <strong>{{ $suratJalanBongkarans->count() ?? 0 }}</strong></p>
                 @if($suratJalans->count() > 0)
                 <p class="mb-1">Sample tanggal surat jalan: <strong>{{ $suratJalans->first()->tanggal_surat_jalan ?? 'N/A' }}</strong></p>
                 <p class="mb-1">Sample ID: <strong>{{ $suratJalans->first()->id ?? 'N/A' }}</strong> - No: <strong>{{ $suratJalans->first()->no_surat_jalan ?? 'N/A' }}</strong></p>
@@ -489,7 +489,7 @@
                 </div>
                 <div class="bg-gray-50 px-3 py-2 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
                     <div class="text-xs text-gray-600">
-                        <span class="font-semibold text-indigo-600">Total {{ $suratJalans->count() }} surat jalan</span> tersedia dalam tabel (scroll untuk melihat semua).
+                        <span class="font-semibold text-indigo-600">Total {{ $suratJalans->count() + ($suratJalanBongkarans->count() ?? 0) }} surat jalan</span> tersedia dalam tabel (scroll untuk melihat semua).
                         <span id="searchResults" class="ml-2 text-green-600 font-medium hidden"></span>
                     </div>
                     <p class="text-xs text-gray-600">

@@ -175,12 +175,6 @@ class PranotaUangRitController extends Controller
                     $subQ->whereNotNull('tanggal_checkpoint')
                          ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
                          ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 4. Filter berdasarkan tanggal surat jalan (untuk yang approved tapi belum ada checkpoint/tanda terima)
-                    $subQ->where('status', 'approved')
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDateObj->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDateObj->toDateString());
                 });
             });
             
@@ -300,11 +294,18 @@ class PranotaUangRitController extends Controller
         $suratJalanBongkarans = collect();
         if ($startDateObj && $endDateObj) {
             $queryBongkaran = SuratJalanBongkaran::with(['tandaTerima'])
-                ->whereHas('tandaTerima', function($query) use ($startDateObj, $endDateObj) {
-                    $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                          ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                ->where(function($q) use ($startDateObj, $endDateObj) {
+                    $q->whereHas('tandaTerima', function($query) use ($startDateObj, $endDateObj) {
+                        $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                              ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                    })
+                    ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                    });
                 })
-                ->where('lokasi', 'Jakarta') // Filter: hanya lokasi Jakarta
+                // Filter lokasi removed to match Report logic
                 ->where(function($q) {
                     // Filter: rit = menggunakan_rit ATAU rit is NULL (default dianggap menggunakan rit)
                     $q->where('rit', 'menggunakan_rit')

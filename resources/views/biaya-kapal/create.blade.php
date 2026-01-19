@@ -108,7 +108,7 @@
                 </div>
 
                 <!-- Nomor Referensi -->
-                <div>
+                <div id="nomor_referensi_wrapper">
                     <label for="nomor_referensi" class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Referensi
                     </label>
@@ -246,7 +246,7 @@
                 </div>
 
                 <!-- Nomor BL -->
-                <div>
+                <div id="bl_wrapper">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor BL <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">✓ Multi-Select</span>
                     </label>
@@ -398,7 +398,7 @@
                 </div>
 
                 <!-- Nominal -->
-                <div>
+                <div id="nominal_wrapper">
                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-2">
                         Nominal <span class="text-red-500">*</span>
                     </label>
@@ -522,7 +522,7 @@
                 </div>
 
                 <!-- Penerima -->
-                <div>
+                <div id="penerima_wrapper">
                     <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
                         Penerima <span class="text-red-500">*</span>
                     </label>
@@ -602,7 +602,7 @@
                 </div>
 
                 <!-- Nama Vendor -->
-                <div>
+                <div id="nama_vendor_wrapper">
                     <label for="nama_vendor" class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Vendor
                     </label>
@@ -619,7 +619,7 @@
                 </div>
 
                 <!-- Nomor Rekening -->
-                <div>
+                <div id="nomor_rekening_wrapper">
                     <label for="nomor_rekening" class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Rekening
                     </label>
@@ -844,7 +844,7 @@
     const ppnInput = document.getElementById('ppn');
     const pphInput = document.getElementById('pph');
     const totalBiayaInput = document.getElementById('total_biaya');
-    const blWrapper = document.querySelector('#bl_container_input').closest('div').parentElement;
+    const blWrapper = document.getElementById('bl_wrapper');
     const kapalWrapper = document.getElementById('kapal_wrapper');
     const voyageWrapper = document.getElementById('voyage_wrapper');
     const dpWrapper = document.getElementById('dp_wrapper');
@@ -877,6 +877,14 @@
     const grandTotalAirWrapper = document.getElementById('grand_total_air_wrapper');
     const grandTotalAirInput = document.getElementById('grand_total_air');
     
+    // Standard field wrappers
+    const nominalWrapper = document.getElementById('nominal_wrapper');
+    const penerimaWrapper = document.getElementById('penerima_wrapper');
+    const penerimaInput = document.getElementById('penerima');
+    const namaVendorWrapper = document.getElementById('nama_vendor_wrapper');
+    const nomorRekeningWrapper = document.getElementById('nomor_rekening_wrapper');
+    const nomorReferensiWrapper = document.getElementById('nomor_referensi_wrapper');
+
     // Pricelist Air Tawar data
     const pricelistAirTawarData = @json($pricelistAirTawar);
 
@@ -1135,6 +1143,17 @@
         const selectedValue = this.value;
         const selectedText = selectedJenisBiaya.nama || '';
         
+        // Reset visibility of standard fields
+        if(nominalWrapper) nominalWrapper.classList.remove('hidden');
+        if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
+        if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
+        if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+        if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+        
+        // Reset required attributes
+        if(nominalInput) nominalInput.setAttribute('required', 'required');
+        if(penerimaInput) penerimaInput.setAttribute('required', 'required');
+
         // Show vendor wrapper if "Biaya Dokumen" is selected
         if (selectedText.toLowerCase().includes('dokumen')) {
             vendorWrapper.classList.remove('hidden');
@@ -1244,30 +1263,43 @@
         // Show fields for "Biaya Air"
         else if (selectedText.toLowerCase().includes('air')) {
             // Show Biaya Air multi kapal wrapper
-            airWrapper.classList.remove('hidden');
+            if (airWrapper) airWrapper.classList.remove('hidden');
             initializeAirSections();
             
-            // Show summary fields
-            jasaAirWrapper.classList.remove('hidden');
-            pphAirWrapper.classList.remove('hidden');
-            grandTotalAirWrapper.classList.remove('hidden');
+            // Show summary fields (with null checks)
+            if (jasaAirWrapper) jasaAirWrapper.classList.remove('hidden');
+            if (pphAirWrapper) pphAirWrapper.classList.remove('hidden');
+            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.remove('hidden');
             
-            // Hide standard kapal/voyage fields (already in air sections)
+            // Hide standard kapal/voyage/bl fields (already in air sections)
             kapalWrapper.classList.add('hidden');
             voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
             clearKapalSelections();
             clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide Nomor Referensi for Biaya Air
+            if (nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
             
-            // Hide other type-specific fields
+            // Hide standard fields for Biaya Air
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            
+            // Remove required attributes for hidden fields
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) penerimaInput.removeAttribute('required');
+            
+            // Hide other type-specific fields (with null checks)
             vendorWrapper.classList.add('hidden');
             if (vendorSelect) vendorSelect.value = '';
-            vendorAirWrapper.classList.add('hidden');
-            typeAirWrapper.classList.add('hidden');
-            kuantitasAirWrapper.classList.add('hidden');
+            if (vendorAirWrapper) vendorAirWrapper.classList.add('hidden');
+            if (typeAirWrapper) typeAirWrapper.classList.add('hidden');
+            if (kuantitasAirWrapper) kuantitasAirWrapper.classList.add('hidden');
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
-            blWrapper.classList.add('hidden');
-            clearBlSelections();
             ppnWrapper.classList.add('hidden');
             pphWrapper.classList.add('hidden');
             totalBiayaWrapper.classList.add('hidden');
@@ -1277,7 +1309,7 @@
             pphDokumenWrapper.classList.add('hidden');
             grandTotalDokumenWrapper.classList.add('hidden');
             
-            // Reset values
+            // Reset values (with null checks)
             ppnInput.value = '0';
             pphInput.value = '0';
             totalBiayaInput.value = '';
@@ -1287,9 +1319,9 @@
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
             nominalInput.value = '';
-            jasaAirInput.value = '0';
-            pphAirInput.value = '0';
-            grandTotalAirInput.value = '0';
+            if (jasaAirInput) jasaAirInput.value = '0';
+            if (pphAirInput) pphAirInput.value = '0';
+            if (grandTotalAirInput) grandTotalAirInput.value = '0';
         }
         // Show barang wrapper if "Biaya Buruh" is selected
         else if (selectedText.toLowerCase().includes('buruh')) {
@@ -1325,11 +1357,11 @@
             grandTotalDokumenInput.value = '0';
             
             // Hide Biaya Air fields for Biaya Buruh
-            airWrapper.classList.add('hidden');
+            if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            jasaAirWrapper.classList.add('hidden');
-            pphAirWrapper.classList.add('hidden');
-            grandTotalAirWrapper.classList.add('hidden');
+            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
+            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
+            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
             
             // Show DP fields for Biaya Buruh
             dpWrapper.classList.remove('hidden');
@@ -1363,11 +1395,11 @@
             grandTotalDokumenInput.value = '0';
             
             // Hide Biaya Air fields for Biaya Penumpukan
-            airWrapper.classList.add('hidden');
+            if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            jasaAirWrapper.classList.add('hidden');
-            pphAirWrapper.classList.add('hidden');
-            grandTotalAirWrapper.classList.add('hidden');
+            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
+            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
+            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
             
             // Auto-calculate PPN (11%) and PPH (2% dari nominal) for Biaya Penumpukan
             calculatePpnPenumpukan();
@@ -1414,17 +1446,17 @@
             grandTotalDokumenInput.value = '0';
             
             // Hide Biaya Air fields
-            airWrapper.classList.add('hidden');
+            if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            vendorAirWrapper.classList.add('hidden');
-            typeAirWrapper.classList.add('hidden');
-            kuantitasAirWrapper.classList.add('hidden');
-            jasaAirWrapper.classList.add('hidden');
-            pphAirWrapper.classList.add('hidden');
-            grandTotalAirWrapper.classList.add('hidden');
-            jasaAirInput.value = '0';
-            pphAirInput.value = '0';
-            grandTotalAirInput.value = '0';
+            if (vendorAirWrapper) vendorAirWrapper.classList.add('hidden');
+            if (typeAirWrapper) typeAirWrapper.classList.add('hidden');
+            if (kuantitasAirWrapper) kuantitasAirWrapper.classList.add('hidden');
+            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
+            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
+            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            if (jasaAirInput) jasaAirInput.value = '0';
+            if (pphAirInput) pphAirInput.value = '0';
+            if (grandTotalAirInput) grandTotalAirInput.value = '0';
             
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
@@ -1935,6 +1967,13 @@
         uniqueVendors.forEach(vendorName => {
             vendorOptions += `<option value="${vendorName}">${vendorName}</option>`;
         });
+
+        // Get Penerima options
+        let penerimaOptions = '<option value="">-- Pilih Penerima --</option>';
+        @foreach($karyawans as $karyawan)
+            penerimaOptions += `<option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>`;
+        @endforeach
+        
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -1974,10 +2013,30 @@
                     <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Auto)</label>
-                    <input type="text" name="air[${sectionIndex}][jasa_air]" class="jasa-air-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="air[${sectionIndex}][jasa_air_value]" class="jasa-air-value" value="0">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
+                    <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
+                    <input type="text" name="air[${sectionIndex}][sub_total]" class="sub-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][sub_total_value]" class="sub-total-value" value="0">
                     <input type="hidden" name="air[${sectionIndex}][harga]" class="harga-hidden" value="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
+                    <input type="text" name="air[${sectionIndex}][pph]" class="pph-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][pph_value]" class="pph-value" value="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
+                    <input type="text" name="air[${sectionIndex}][grand_total]" class="grand-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="air[${sectionIndex}][grand_total_value]" class="grand-total-value" value="0">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
+                    <select name="air[${sectionIndex}][penerima]" class="penerima-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        ${penerimaOptions}
+                    </select>
                 </div>
             </div>
         `;
@@ -1994,6 +2053,14 @@
         const vendorSelect = section.querySelector('.vendor-select-air');
         vendorSelect.addEventListener('change', function() {
             loadTypesForVendor(sectionIndex, this.value);
+            // Check for Abqori on vendor change
+            const jasaAirInput = section.querySelector('.jasa-air-input');
+            if (this.value && this.value.toLowerCase().includes('abqori')) {
+                jasaAirInput.value = 100000;
+            } else {
+                jasaAirInput.value = 0;
+            }
+            calculateAirSectionTotal(sectionIndex);
         });
         
         // Setup type change listener for auto-calculation
@@ -2005,6 +2072,12 @@
         // Setup kuantitas change listener
         const kuantitasInput = section.querySelector('.kuantitas-input-air');
         kuantitasInput.addEventListener('input', function() {
+            calculateAirSectionTotal(sectionIndex);
+        });
+
+        // Setup jasa air input change listener
+        const jasaAirInput = section.querySelector('.jasa-air-input');
+        jasaAirInput.addEventListener('input', function() {
             calculateAirSectionTotal(sectionIndex);
         });
     }
@@ -2081,48 +2154,80 @@
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
         const typeSelect = section.querySelector('.type-select-air');
         const kuantitasInput = section.querySelector('.kuantitas-input-air');
-        const jasaAirDisplay = section.querySelector('.jasa-air-display');
-        const jasaAirValue = section.querySelector('.jasa-air-value');
+        
+        // Updated selectors
+        const subTotalDisplay = section.querySelector('.sub-total-display');
+        const subTotalValue = section.querySelector('.sub-total-value');
+        const jasaAirInput = section.querySelector('.jasa-air-input');
+        
         const hargaHidden = section.querySelector('.harga-hidden');
+        
+        // New fields
+        const pphDisplay = section.querySelector('.pph-display');
+        const pphValue = section.querySelector('.pph-value');
+        const grandTotalDisplay = section.querySelector('.grand-total-display');
+        const grandTotalValue = section.querySelector('.grand-total-value');
         
         const selectedOption = typeSelect.options[typeSelect.selectedIndex];
         const hargaPerTon = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
         const kuantitas = parseFloat(kuantitasInput.value) || 0;
         
-        const jasaAir = Math.round(hargaPerTon * kuantitas);
-        jasaAirDisplay.value = jasaAir > 0 ? `Rp ${jasaAir.toLocaleString('id-ID')}` : 'Rp 0';
-        jasaAirValue.value = jasaAir;
+        let waterCost = Math.round(hargaPerTon * kuantitas);
+        let jasaAir = parseFloat(jasaAirInput.value) || 0;
+        
+        // Sub Total = (Price * Qty) + Jasa Air
+        let subTotal = waterCost + jasaAir;
+        
+        const pph = Math.round(subTotal * 0.02);
+        const grandTotal = subTotal - pph;
+        
+        subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
+        subTotalValue.value = subTotal;
         hargaHidden.value = hargaPerTon;
+        
+        if (pphDisplay) pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
+        if (pphValue) pphValue.value = pph;
+        
+        if (grandTotalDisplay) grandTotalDisplay.value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
+        if (grandTotalValue) grandTotalValue.value = grandTotal;
         
         // Recalculate total from all sections
         calculateTotalFromAllAirSections();
     }
     
     function calculateTotalFromAllAirSections() {
-        let totalJasaAir = 0;
+        let totalBase = 0;
+        let totalPph = 0;
+        let totalGrandTotal = 0;
         
         document.querySelectorAll('.air-section').forEach(section => {
-            const jasaAirValue = section.querySelector('.jasa-air-value');
-            totalJasaAir += parseFloat(jasaAirValue.value) || 0;
+            const subTotalValue = section.querySelector('.sub-total-value');
+            // Jasa air is already included in subTotal
+            const pphValue = section.querySelector('.pph-value');
+            const grandTotalValue = section.querySelector('.grand-total-value');
+            
+            const subTotal = parseFloat(subTotalValue ? subTotalValue.value : 0) || 0;
+            
+            totalBase += subTotal;
+            totalPph += parseFloat(pphValue ? pphValue.value : 0) || 0;
+            totalGrandTotal += parseFloat(grandTotalValue ? grandTotalValue.value : 0) || 0;
         });
         
         // Set to Nominal field
-        if (totalJasaAir > 0) {
-            nominalInput.value = totalJasaAir.toLocaleString('id-ID');
+        if (totalBase > 0) {
+            nominalInput.value = totalBase.toLocaleString('id-ID');
         } else {
             nominalInput.value = '';
         }
         
-        // Calculate Jasa Air total
-        jasaAirInput.value = totalJasaAir > 0 ? totalJasaAir.toLocaleString('id-ID') : '0';
+        // Calculate Jasa Air / Total Base summary
+        if (jasaAirInput) jasaAirInput.value = totalBase > 0 ? totalBase.toLocaleString('id-ID') : '0';
         
-        // Calculate PPH (2% dari total jasa air)
-        const pph = Math.round(totalJasaAir * 0.02);
-        pphAirInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
+        // Calculate PPH total
+        if (pphAirInput) pphAirInput.value = totalPph > 0 ? totalPph.toLocaleString('id-ID') : '0';
         
-        // Calculate Grand Total (Jasa Air - PPH)
-        const grandTotal = totalJasaAir - pph;
-        grandTotalAirInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
+        // Calculate Grand Total
+        if (grandTotalAirInput) grandTotalAirInput.value = totalGrandTotal > 0 ? totalGrandTotal.toLocaleString('id-ID') : '0';
     }
 
     // ============= PENERIMA SELECT2 INITIALIZATION =============
