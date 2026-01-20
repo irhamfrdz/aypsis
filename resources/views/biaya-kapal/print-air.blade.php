@@ -278,6 +278,7 @@
     @php
         $totalSubTotal = 0;
         $totalJasaAir = 0;
+        $totalBiayaAgen = 0;
         $totalPPH = 0;
         $totalGrandTotal = 0;
     @endphp
@@ -290,16 +291,17 @@
     <table class="details-table">
         <thead>
             <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 15%;">Kapal</th>
-                <th style="width: 10%;">Voyage</th>
-                <th style="width: 12%;">Vendor</th>
-                <th style="width: 8%;">Qty (Ton)</th>
-                <th style="width: 10%;">Jasa Air</th>
-                <th style="width: 12%;">Sub Total</th>
-                <th style="width: 10%;">PPH (2%)</th>
-                <th style="width: 12%;">Grand Total</th>
-                <th style="width: 12%;">Penerima</th>
+                <th style="width: 4%;">No</th>
+                <th style="width: 12%;">Kapal</th>
+                <th style="width: 8%;">Voyage</th>
+                <th style="width: 10%;">Vendor</th>
+                <th style="width: 6%;">Qty (Ton)</th>
+                <th style="width: 9%;">Jasa Air</th>
+                <th style="width: 9%;">Biaya Agen</th>
+                <th style="width: 11%;">Sub Total</th>
+                <th style="width: 9%;">PPH (2%)</th>
+                <th style="width: 11%;">Grand Total</th>
+                <th style="width: 11%;">Penerima</th>
             </tr>
         </thead>
         <tbody>
@@ -311,6 +313,7 @@
                     <td>{{ $detail->vendor ?? '-' }}</td>
                     <td class="number">{{ number_format($detail->kuantitas, 2, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->jasa_air, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($detail->biaya_agen, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->pph, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
@@ -318,13 +321,14 @@
                 </tr>
                 @php
                     $totalJasaAir += $detail->jasa_air;
+                    $totalBiayaAgen += $detail->biaya_agen;
                     $totalSubTotal += $detail->sub_total;
                     $totalPPH += $detail->pph;
                     $totalGrandTotal += $detail->grand_total;
                 @endphp
             @empty
                 <tr>
-                    <td colspan="10" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
+                    <td colspan="11" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
                 </tr>
             @endforelse
             
@@ -333,6 +337,7 @@
                 <tr class="grand-total-row">
                     <td colspan="5" style="text-align: center; font-weight: bold;">TOTAL KESELURUHAN</td>
                     <td class="number">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalSubTotal, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
@@ -356,6 +361,10 @@
             <tr>
                 <td class="label-col">Total Jasa Air</td>
                 <td class="value-col number">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">Total Biaya Agen</td>
+                <td class="value-col number">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
             </tr>
             <tr class="calculation-row">
                 <td class="label-col">Total PPH (2%)</td>

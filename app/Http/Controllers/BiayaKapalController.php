@@ -181,6 +181,7 @@ class BiayaKapalController extends Controller
             'air.*.kuantitas' => 'nullable|numeric|min:0',
             'air.*.harga' => 'nullable|numeric|min:0',
             'air.*.jasa_air' => 'nullable|numeric|min:0',
+            'air.*.biaya_agen' => 'nullable|numeric|min:0',
             'air.*.lokasi' => 'nullable|string|max:255',
             'air.*.sub_total' => 'nullable|numeric|min:0',
             'air.*.pph' => 'nullable|numeric|min:0',
@@ -347,6 +348,8 @@ class BiayaKapalController extends Controller
                     $kuantitas = isset($section['kuantitas']) ? floatval(str_replace(['.', ','], ['', '.'], $section['kuantitas'])) : 0;
                     $harga = isset($section['harga']) ? floatval(str_replace(['.', ','], ['', '.'], $section['harga'])) : 0;
                     $jasaAir = isset($section['jasa_air']) ? floatval(str_replace(['.', ','], ['', '.'], $section['jasa_air'])) : 0;
+                    $biayaAgen = isset($section['biaya_agen']) ? floatval(str_replace(['.', ','], ['', '.'], $section['biaya_agen'])) : 0;
+                    
                     // Prefer numeric fields submitted as 'sub_total', 'pph', 'grand_total' (hidden inputs). Fall back to older *_value names if present.
                     if (isset($section['sub_total'])) {
                         $subTotal = floatval(str_replace([',', '.'], ['', '.'], $section['sub_total']));
@@ -394,6 +397,7 @@ class BiayaKapalController extends Controller
                         'kuantitas' => $kuantitas,
                         'harga' => $harga,
                         'jasa_air' => $jasaAir,
+                        'biaya_agen' => $biayaAgen,
                         'sub_total' => $subTotal,
                         'pph' => $pph,
                         'grand_total' => $grandTotal,
@@ -404,6 +408,8 @@ class BiayaKapalController extends Controller
                     $airDetails[] = "[" . ($section['kapal'] ?? 'N/A') . " - Voyage " . ($section['voyage'] ?? 'N/A') . "] " .
                         "Vendor: " . ($section['vendor'] ?? 'N/A') . " | " .
                         "Kuantitas: " . number_format($kuantitas, 2, ',', '.') . " ton | " .
+                        "Jasa Air: Rp " . number_format($jasaAir, 0, ',', '.') . " | " .
+                        "Biaya Agen: Rp " . number_format($biayaAgen, 0, ',', '.') . " | " .
                         "Sub Total: Rp " . number_format($subTotal, 0, ',', '.') . " | " .
                         "PPH: Rp " . number_format($pph, 0, ',', '.') . " | " .
                         "Grand Total: Rp " . number_format($grandTotal, 0, ',', '.');

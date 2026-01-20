@@ -2041,6 +2041,10 @@
                     <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Agen</label>
+                    <input type="number" name="air[${sectionIndex}][biaya_agen]" class="biaya-agen-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="6500000" placeholder="6500000">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
                     <input type="text" class="sub-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="air[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
@@ -2120,6 +2124,12 @@
         // Setup jasa air input change listener
         const jasaAirInput = section.querySelector('.jasa-air-input');
         jasaAirInput.addEventListener('input', function() {
+            calculateAirSectionTotal(sectionIndex);
+        });
+        
+        // Setup biaya agen input change listener
+        const biayaAgenInput = section.querySelector('.biaya-agen-input');
+        biayaAgenInput.addEventListener('input', function() {
             calculateAirSectionTotal(sectionIndex);
         });
     }
@@ -2238,6 +2248,7 @@
         const subTotalDisplay = section.querySelector('.sub-total-display');
         const subTotalValue = section.querySelector('.sub-total-value');
         const jasaAirInput = section.querySelector('.jasa-air-input');
+        const biayaAgenInput = section.querySelector('.biaya-agen-input');
         
         const hargaHidden = section.querySelector('.harga-hidden');
         
@@ -2253,11 +2264,13 @@
         
         let waterCost = Math.round(hargaPerTon * kuantitas);
         let jasaAir = parseFloat(jasaAirInput.value) || 0;
+        let biayaAgen = parseFloat(biayaAgenInput.value) || 0;
         
-        // Sub Total = (Price * Qty) + Jasa Air
-        let subTotal = waterCost + jasaAir;
+        // Sub Total = (Price * Qty) + Jasa Air + Biaya Agen
+        let subTotal = waterCost + jasaAir + biayaAgen;
         
-        const pph = Math.round(subTotal * 0.02);
+        // PPH = (Jasa Air + Biaya Agen) * 2%
+        const pph = Math.round((jasaAir + biayaAgen) * 0.02);
         const grandTotal = subTotal - pph;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
