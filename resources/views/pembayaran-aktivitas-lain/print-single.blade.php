@@ -8,36 +8,36 @@
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px',
+            'headerH1' => '24px',
+            'tableFont' => '11px',
         ],
         'Half-Folio' => [
             'size' => '215.9mm 165.1mm',
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '12px',
-            'headerH1' => '18px',
-            'tableFont' => '10px',
+            'fontSize' => '14px',
+            'headerH1' => '22px',
+            'tableFont' => '12px',
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px',
+            'headerH1' => '24px',
+            'tableFont' => '11px',
         ],
         'Half-A4' => [
             'size' => '210mm 148.5mm',
             'width' => '210mm',
             'height' => '148.5mm',
             'containerWidth' => '210mm',
-            'fontSize' => '9px',
-            'headerH1' => '14px',
-            'tableFont' => '7px',
+            'fontSize' => '12px',
+            'headerH1' => '18px',
+            'tableFont' => '10px',
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
@@ -88,8 +88,9 @@
 
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
-            font-weight: bold;
+            font-weight: 800;
             margin-bottom: 5px;
+            text-transform: uppercase;
         }
 
         .header-info {
@@ -97,7 +98,7 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 8px;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         .header-meta {
@@ -105,12 +106,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         .info-section {
             margin-bottom: 12px;
-            font-size: 9px;
+            font-size: 11px;
         }
 
         .info-table {
@@ -127,7 +128,7 @@
 
         .info-table td:first-child {
             width: 30%;
-            font-weight: bold;
+            font-weight: 800;
         }
 
         .table {
@@ -148,7 +149,7 @@
         .table th {
             background-color: #f8f9fa;
             color: #333;
-            font-weight: bold;
+            font-weight: 800;
             font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
             border: 2px solid #333;
@@ -156,6 +157,7 @@
 
         .table td {
             font-size: {{ $currentPaper['tableFont'] }};
+            font-weight: 500;
         }
 
         .text-right {
@@ -168,7 +170,7 @@
 
         .total-row td {
             background-color: #e9ecef !important;
-            font-weight: bold !important;
+            font-weight: 900 !important;
             border: 2px solid #333 !important;
         }
 
