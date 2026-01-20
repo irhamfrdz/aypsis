@@ -256,6 +256,17 @@
         </div>
         @endif
         @php
+            // Get vendor from nama_vendor or first air detail
+            $vendorDisplay = $biayaKapal->nama_vendor ?? ($biayaKapal->airDetails->pluck('vendor')->filter()->unique()->values()->first() ?? null);
+        @endphp
+        @if($vendorDisplay)
+        <div class="info-item">
+            <span class="info-label">Vendor</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $vendorDisplay }}</span>
+        </div>
+        @endif
+        @php
             // Show overall penerima if set, otherwise try to use first penerima from airDetails
             $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? null);
         @endphp
@@ -294,7 +305,6 @@
                 <th style="width: 4%;">No</th>
                 <th style="width: 12%;">Kapal</th>
                 <th style="width: 8%;">Voyage</th>
-                <th style="width: 10%;">Vendor</th>
                 <th style="width: 6%;">Qty (Ton)</th>
                 <th style="width: 9%;">Jasa Air</th>
                 <th style="width: 9%;">Biaya Agen</th>
@@ -311,7 +321,6 @@
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td>{{ $detail->kapal ?? '-' }}</td>
                     <td>{{ $detail->voyage ?? '-' }}</td>
-                    <td>{{ $detail->vendor ?? '-' }}</td>
                     <td class="number">{{ number_format($detail->kuantitas, 2, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->jasa_air, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->biaya_agen, 0, ',', '.') }}</td>
@@ -337,7 +346,7 @@
             @if($biayaKapal->airDetails->count() > 0)
                 <!-- Total Row -->
                 <tr class="grand-total-row">
-                    <td colspan="5" style="text-align: center; font-weight: bold;">TOTAL KESELURUHAN</td>
+                    <td colspan="4" style="text-align: center; font-weight: bold;">TOTAL KESELURUHAN</td>
                     <td class="number">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalSubTotal, 0, ',', '.') }}</td>
