@@ -258,7 +258,8 @@
                 <!-- Jumlah -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="jumlah" value="{{ old('jumlah') }}" required min="0" step="1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jumlah') border-red-500 @enderror">
+                    <input type="text" id="jumlah_input_display" value="{{ old('jumlah') ? number_format(old('jumlah'), 0, ',', '.') : '' }}" required placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right @error('jumlah') border-red-500 @enderror">
+                    <input type="hidden" name="jumlah" id="jumlah_input_value" value="{{ old('jumlah') }}">
                     @error('jumlah')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -599,6 +600,55 @@ function initializeMainFunctionality() {
     const nomorPolisiSelect = nomorPolisiField.querySelector('select');
     const nomorVoyageField = document.getElementById('nomor_voyage_field');
     const nomorVoyageSelect = nomorVoyageField.querySelector('select');
+    
+    // Initialize jumlah input formatting
+    initializeJumlahInput();
+
+    function initializeJumlahInput() {
+        const displayInput = document.getElementById('jumlah_input_display');
+        const valueInput = document.getElementById('jumlah_input_value');
+        
+        if (!displayInput || !valueInput) return;
+
+        // Function to format number with thousands separator
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Function to strip non-numeric characters
+        function cleanNumber(str) {
+            return str.replace(/[^\d]/g, '');
+        }
+
+        displayInput.addEventListener('input', function(e) {
+            // Get current cursor position to restore later mechanism (complex, simplified here)
+            let value = cleanNumber(this.value);
+            
+            // Update hidden value
+            valueInput.value = value;
+            
+            // Format display
+            if (value) {
+                this.value = formatNumber(value);
+            } else {
+                this.value = '';
+            }
+            
+            // Trigger auto journal calculation if function exists
+            if (typeof calculateJournalPreview === 'function') {
+                const debitKreditSelect = document.getElementById('debit_kredit');
+                if (debitKreditSelect && debitKreditSelect.value) {
+                    calculateJournalPreview(debitKreditSelect.value);
+                }
+            }
+        });
+        
+        // Also listen for change to ensure sync
+        displayInput.addEventListener('change', function() {
+            let value = cleanNumber(this.value);
+            valueInput.value = value;
+        });
+    }
 
     function toggleSubJenisKendaraan() {
         const jenisVal = (jenisAktivitas.value || '').trim();
@@ -663,14 +713,6 @@ function initializeMainFunctionality() {
         if (jenisVal === 'Pembayaran Adjusment Uang Jalan') {
             suratJalanField.classList.remove('hidden');
             suratJalanSelect.setAttribute('required', 'required');
-            // Reinitialize Select2 after showing
-            setTimeout(() => {
-                $('#surat_jalan_select').select2({
-                    placeholder: "Pilih Surat Jalan",
-                    allowClear: true,
-                    width: '100%'
-                });
-            }, 100);
         } else {
             suratJalanField.classList.add('hidden');
             suratJalanSelect.removeAttribute('required');
@@ -687,14 +729,6 @@ function initializeMainFunctionality() {
             jenisPenyesuaianField.classList.remove('hidden');
             jenisPenyesuaianField.style.display = '';
             jenisPenyesuaianSelect.setAttribute('required', 'required');
-            // Reinitialize Select2 after showing
-            setTimeout(() => {
-                $('#jenis_penyesuaian_select').select2({
-                    placeholder: "Pilih Jenis Penyesuaian",
-                    allowClear: true,
-                    width: '100%'
-                });
-            }, 100);
 
             // Toggle tipe penyesuaian based on jenis penyesuaian
             toggleTipePenyesuaian();
@@ -709,10 +743,12 @@ function initializeMainFunctionality() {
             // Clear all dynamic inputs
             clearTipePenyesuaianInputs();
             // Clear jumlah if not adjustment payment
-            const jumlahInput = document.querySelector('input[name="jumlah"]');
-            if (jumlahInput && !jumlahInput.dataset.manual) {
-                jumlahInput.value = '';
-                jumlahInput.dispatchEvent(new Event('input', { bubbles: true }));
+            const jumlahDisplay = document.getElementById('jumlah_input_display');
+            const jumlahValue = document.getElementById('jumlah_input_value');
+            if (jumlahDisplay && jumlahValue && !jumlahDisplay.readOnly) {
+                jumlahDisplay.value = '';
+                jumlahValue.value = '';
+                jumlahDisplay.dispatchEvent(new Event('input'));
             }
         }
         
@@ -743,7 +779,8 @@ function initializeMainFunctionality() {
     function toggleTipePenyesuaian() {
         const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
         const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
-        const jumlahInput = document.querySelector('input[name="jumlah"]');
+        const jumlahDisplay = document.getElementById('jumlah_input_display');
+        const jumlahValue = document.getElementById('jumlah_input_value');
         
         if (jenisPenyesuaian === 'pengembalian penuh') {
             // Sembunyikan tipe penyesuaian
@@ -752,19 +789,28 @@ function initializeMainFunctionality() {
             clearTipePenyesuaianInputs();
             // Set jumlah ke uang jalan dari surat jalan yang dipilih
             const selectedSuratJalan = $('#surat_jalan_select').find('option:selected');
-            const uangJalan = selectedSuratJalan.data('uang-jalan');
-            if (uangJalan && !isNaN(uangJalan)) {
-                jumlahInput.value = uangJalan;
-                jumlahInput.readOnly = true;
-                jumlahInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+            let uangJalanVal = selectedSuratJalan.data('uang-jalan');
+            
+            // Parse to float and truncate decimals to avoid "565000.00" becoming "56500000"
+            // due to cleanNumber removing the dot
+            const uangJalan = uangJalanVal ? Math.floor(parseFloat(uangJalanVal)) : 0;
+            
+            if (uangJalan > 0) {
+                jumlahDisplay.value = uangJalan;
+                // Dispatch input event to trigger formatting
+                jumlahDisplay.dispatchEvent(new Event('input'));
+                
+                jumlahDisplay.readOnly = true;
+                jumlahDisplay.classList.add('bg-gray-100', 'cursor-not-allowed');
+                
+                // Remove existing indicators to prevent duplicates
+                jumlahDisplay.parentNode.querySelectorAll('.auto-calc-indicator').forEach(el => el.remove());
+                
                 // Tambahkan indicator
-                let indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
-                if (!indicator) {
-                    indicator = document.createElement('p');
-                    indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
-                    indicator.innerHTML = '🔄 Jumlah diisi otomatis dari uang jalan surat jalan';
-                    jumlahInput.parentNode.appendChild(indicator);
-                }
+                let indicator = document.createElement('p');
+                indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
+                indicator.innerHTML = '🔄 Jumlah diisi otomatis dari uang jalan surat jalan';
+                jumlahDisplay.parentNode.appendChild(indicator);
             }
         } else if (jenisPenyesuaian === 'pengembalian sebagian') {
             // Sembunyikan tipe penyesuaian
@@ -772,13 +818,10 @@ function initializeMainFunctionality() {
             // Clear all dynamic inputs
             clearTipePenyesuaianInputs();
             // Jumlah bisa diinputkan manual, editable
-            jumlahInput.readOnly = false;
-            jumlahInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            jumlahDisplay.readOnly = false;
+            jumlahDisplay.classList.remove('bg-gray-100', 'cursor-not-allowed');
             // Remove indicator if exists
-            const indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
-            if (indicator) {
-                indicator.remove();
-            }
+            jumlahDisplay.parentNode.querySelectorAll('.auto-calc-indicator').forEach(el => el.remove());
         } else {
             // Tampilkan tipe penyesuaian
             tipePenyesuaianField.classList.remove('hidden');
@@ -900,29 +943,36 @@ function initializeMainFunctionality() {
 
     function calculateTotalJumlah() {
         const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
-        const jumlahInput = document.querySelector('input[name="jumlah"]');
+        const jumlahDisplay = document.getElementById('jumlah_input_display');
+        const jumlahValue = document.getElementById('jumlah_input_value');
         
+        if (!jumlahDisplay) return;
+
         // Only auto-calculate for "Pembayaran Adjusment Uang Jalan"
         if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
             const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
             
             if (jenisPenyesuaian === 'pengembalian penuh') {
                 // Jumlah sudah di-set di toggleTipePenyesuaian, pastikan read-only
-                jumlahInput.readOnly = true;
-                jumlahInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                jumlahDisplay.readOnly = true;
+                jumlahDisplay.classList.add('bg-gray-100', 'cursor-not-allowed');
                 // Indicator sudah ditambahkan di toggleTipePenyesuaian
             } else if (jenisPenyesuaian === 'pengembalian sebagian') {
                 // Jumlah editable, remove read-only
-                jumlahInput.readOnly = false;
-                jumlahInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
-                // Remove indicator
-                const indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
-                if (indicator) {
-                    indicator.remove();
+                jumlahDisplay.readOnly = false;
+                jumlahDisplay.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                // Remove indicator if exists (already done above)
+            } else { // Other adjustment types (e.g., 'penyesuaian')
+                const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
+                if (tipePenyesuaianField && tipePenyesuaianField.classList.contains('hidden')) {
+                    // If tipe penyesuaian field is hidden, don't calculate from inputs
+                    jumlahDisplay.readOnly = false;
+                    jumlahDisplay.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                    return;
                 }
-            } else {
-                const container = document.getElementById('tipe_penyesuaian_container');
-                const nominalInputs = container.querySelectorAll('input[name*="[nominal]"]');
+
+
+                const nominalInputs = document.querySelectorAll('input[name^="tipe_penyesuaian_detail"][name$="[nominal]"]');
                 
                 let total = 0;
                 nominalInputs.forEach(input => {
@@ -931,28 +981,25 @@ function initializeMainFunctionality() {
                 });
                 
                 // Update jumlah field
-                jumlahInput.value = total;
-                jumlahInput.readOnly = true;
-                jumlahInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                jumlahDisplay.value = total;
+                jumlahDisplay.readOnly = true;
+                jumlahDisplay.classList.add('bg-gray-100', 'cursor-not-allowed');
                 
                 // Add visual indicator
-                let indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
-                if (!indicator) {
-                    indicator = document.createElement('p');
-                    indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
-                    indicator.innerHTML = '🔄 Jumlah dihitung otomatis dari total nominal tipe penyesuaian';
-                    jumlahInput.parentNode.appendChild(indicator);
-                }
+                let indicator = document.createElement('p');
+                indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
+                indicator.innerHTML = '🔄 Jumlah dihitung otomatis dari total nominal tipe penyesuaian';
+                jumlahDisplay.parentNode.appendChild(indicator);
                 
-                // Trigger input event to update journal preview
-                jumlahInput.dispatchEvent(new Event('input', { bubbles: true }));
+                // Trigger input event to update journal preview and formatting
+                jumlahDisplay.dispatchEvent(new Event('input', { bubbles: true }));
             }
         } else {
             // Remove read-only and indicator for other activity types
-            jumlahInput.readOnly = false;
-            jumlahInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            jumlahDisplay.readOnly = false;
+            jumlahDisplay.classList.remove('bg-gray-100', 'cursor-not-allowed');
             
-            const indicator = jumlahInput.parentNode.querySelector('.auto-calc-indicator');
+            const indicator = jumlahDisplay.parentNode.querySelector('.auto-calc-indicator');
             if (indicator) {
                 indicator.remove();
             }
@@ -978,6 +1025,13 @@ function initializeMainFunctionality() {
     
     $('#jenis_penyesuaian_select').on('change', function() {
         toggleTipePenyesuaian();
+    });
+
+    $('#surat_jalan_select').on('change', function() {
+        const jenisPenyesuaian = $('#jenis_penyesuaian_select').val();
+        if (typeof toggleTipePenyesuaian === 'function' && jenisPenyesuaian === 'pengembalian penuh') {
+            toggleTipePenyesuaian();
+        }
     });
 
     // Force hide jenis/tipes penyesuaian on init unless it's adjust money type

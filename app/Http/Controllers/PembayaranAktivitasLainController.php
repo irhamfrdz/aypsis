@@ -224,28 +224,30 @@ class PembayaranAktivitasLainController extends Controller
         
         // Get surat jalans for adjustment payments from surat_jalans table
         $suratJalansRegular = DB::table('surat_jalans')
+            ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
             ->select(
-                'id',
-                'no_surat_jalan',
-                'tujuan_pengiriman',
-                'uang_jalan',
+                'surat_jalans.id',
+                'surat_jalans.no_surat_jalan',
+                'surat_jalans.tujuan_pengiriman',
+                DB::raw('COALESCE(uang_jalans.jumlah_total, 0) as uang_jalan'),
                 DB::raw("'regular' as source")
             )
-            ->whereNotNull('no_surat_jalan')
-            ->where('no_surat_jalan', '!=', '')
+            ->whereNotNull('surat_jalans.no_surat_jalan')
+            ->where('surat_jalans.no_surat_jalan', '!=', '')
             ->get();
         
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
         $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
+            ->leftJoin('uang_jalans', 'surat_jalan_bongkarans.id', '=', 'uang_jalans.surat_jalan_bongkaran_id')
             ->select(
-                'id',
-                DB::raw('nomor_surat_jalan as no_surat_jalan'),
-                'tujuan_pengiriman',
-                'uang_jalan',
+                'surat_jalan_bongkarans.id',
+                DB::raw('surat_jalan_bongkarans.nomor_surat_jalan as no_surat_jalan'),
+                'surat_jalan_bongkarans.tujuan_pengiriman',
+                DB::raw('COALESCE(uang_jalans.jumlah_total, 0) as uang_jalan'),
                 DB::raw("'bongkar' as source")
             )
-            ->whereNotNull('nomor_surat_jalan')
-            ->where('nomor_surat_jalan', '!=', '')
+            ->whereNotNull('surat_jalan_bongkarans.nomor_surat_jalan')
+            ->where('surat_jalan_bongkarans.nomor_surat_jalan', '!=', '')
             ->get();
         
         // Combine both surat jalans
