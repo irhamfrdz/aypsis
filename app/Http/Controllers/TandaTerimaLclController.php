@@ -1524,34 +1524,40 @@ class TandaTerimaLclController extends Controller
 
         DB::beginTransaction();
         try {
-            // Cek apakah kontainer ini sudah di-seal sebelumnya
-            $existingSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
-                ->whereNotNull('nomor_seal')
-                ->first();
-
-            if ($existingSeal) {
-                DB::rollBack();
-                return redirect()->back()
-                               ->with('error', "Kontainer {$request->nomor_kontainer} sudah di-seal sebelumnya dengan nomor seal: {$existingSeal->nomor_seal}");
-            }
-
-            // Update semua pivot records dengan kontainer yang sama
-            $pivotRecords = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+            // Cek apakah ada pivot records YANG BELUM DI-SEAL untuk kontainer ini
+            // (Kontainer yang sudah di-seal sebelumnya tetap bisa digunakan untuk batch baru)
+            $unsealedRecords = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->whereNull('nomor_seal')
                 ->with(['tandaTerima.items', 'tandaTerima.tujuanPengiriman'])
                 ->get();
 
-            if ($pivotRecords->isEmpty()) {
+            if ($unsealedRecords->isEmpty()) {
+                // Cek apakah ada record sama sekali untuk kontainer ini
+                $existingSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                    ->whereNotNull('nomor_seal')
+                    ->first();
+                
+                if ($existingSeal) {
+                    DB::rollBack();
+                    return redirect()->back()
+                                   ->with('error', "Tidak ada LCL yang belum di-seal untuk kontainer {$request->nomor_kontainer}. Semua LCL sudah di-seal dengan nomor seal: {$existingSeal->nomor_seal}. Jika ingin menambah LCL baru ke kontainer ini, silakan lakukan stuffing terlebih dahulu.");
+                }
+                
                 DB::rollBack();
                 return redirect()->back()
                                ->with('error', "Kontainer {$request->nomor_kontainer} tidak ditemukan atau belum ada LCL yang di-stuffing.");
             }
 
-            // Update pivot records dengan nomor seal
+            // Update HANYA pivot records yang BELUM DI-SEAL untuk kontainer ini
             $updated = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->whereNull('nomor_seal')
                 ->update([
                     'nomor_seal' => $request->nomor_seal,
                     'tanggal_seal' => $request->tanggal_seal,
                 ]);
+
+            // Gunakan unsealedRecords yang sudah diquery sebelumnya sebagai pivotRecords
+            $pivotRecords = $unsealedRecords;
 
             // Ambil data pertama untuk informasi kontainer
             $firstPivot = $pivotRecords->first();

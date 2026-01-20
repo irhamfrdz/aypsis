@@ -378,6 +378,11 @@ class DaftarTagihanKontainerSewaController extends Controller
             'pph' => $pph,
             'grand_total' => $grand_total,
             'tarif' => $tarifLabel,
+            // Additional fields for pricelist preview
+            'harga_pricelist' => $pr ? (float)$pr->harga : null,
+            'vendor' => $vendor,
+            'size' => $size,
+            'tanggal_berlaku' => $pr && $pr->tanggal_harga_awal ? Carbon::parse($pr->tanggal_harga_awal)->format('d M Y') : null,
             'pricelist' => $pr ? $pr->toArray() : null
         ]);
     }

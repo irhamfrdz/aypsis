@@ -216,15 +216,16 @@
                         <!-- Periode -->
                         <div>
                             <label for="periode" class="block text-sm font-medium text-gray-700 mb-2">
-                                Periode
+                                Periode <span class="text-xs text-gray-500">(Bulan ke-)</span>
                             </label>
                             <input type="number" 
                                    name="periode" 
                                    id="periode" 
-                                   value="{{ old('periode') }}"
+                                   value="{{ old('periode', 1) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                    min="1"
-                                   placeholder="Jumlah hari">
+                                   placeholder="1">
+                            <p class="mt-1 text-xs text-gray-500">Contoh: Periode 1 = bulan pertama sewa, Periode 2 = bulan kedua, dst.</p>
                             @error('periode')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -251,18 +252,47 @@
                 <!-- Section: Tarif & Biaya -->
                 <div class="border-b border-gray-200 pb-4">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Tarif & Biaya</h2>
+                    
+                    <!-- Pricelist Preview -->
+                    <div id="pricelist-preview" class="hidden mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-semibold text-blue-800">Harga Pricelist Terdeteksi:</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="pricelist-vendor" class="text-sm text-gray-600"></span>
+                                <span id="pricelist-size" class="text-sm text-gray-600 ml-2"></span>
+                                <span id="pricelist-tarif" class="text-sm text-gray-600 ml-2"></span>
+                            </div>
+                        </div>
+                        <div class="mt-2 grid grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-sm text-gray-500">Harga per unit:</span>
+                                <span id="pricelist-harga" class="ml-2 font-bold text-green-600">-</span>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-500">Berlaku sejak:</span>
+                                <span id="pricelist-berlaku" class="ml-2 text-gray-700">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Tarif -->
                         <div>
                             <label for="tarif" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tarif
+                                Tarif <span class="text-red-500">*</span>
                             </label>
                             <select name="tarif" 
                                     id="tarif" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    required>
                                 <option value="">-- Pilih Tarif --</option>
-                                <option value="harian" {{ old('tarif') == 'harian' ? 'selected' : '' }}>Harian</option>
-                                <option value="bulanan" {{ old('tarif') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                                <option value="Bulanan" {{ old('tarif') == 'Bulanan' ? 'selected' : '' }}>📅 Bulanan</option>
+                                <option value="Harian" {{ old('tarif') == 'Harian' ? 'selected' : '' }}>📆 Harian</option>
                             </select>
                             @error('tarif')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -614,6 +644,61 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDateFormatting('tanggal_akhir');
     setupDateFormatting('tanggal_invoice_vendor');
 
+    // Auto-generate Masa from tanggal_awal and tanggal_akhir
+    function generateMasa() {
+        const masaInput = document.getElementById('masa');
+        if (!tanggalAwalInput || !tanggalAkhirInput || !masaInput) return;
+        
+        const tanggalAwal = tanggalAwalInput.value;
+        const tanggalAkhir = tanggalAkhirInput.value;
+        
+        if (!tanggalAwal) return;
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        const dateAwal = new Date(tanggalAwal);
+        const dayAwal = dateAwal.getDate();
+        const monthAwal = months[dateAwal.getMonth()];
+        const yearAwal = dateAwal.getFullYear();
+        
+        if (tanggalAkhir) {
+            const dateAkhir = new Date(tanggalAkhir);
+            const dayAkhir = dateAkhir.getDate();
+            const monthAkhir = months[dateAkhir.getMonth()];
+            const yearAkhir = dateAkhir.getFullYear();
+            
+            masaInput.value = `${dayAwal} ${monthAwal} ${yearAwal} - ${dayAkhir} ${monthAkhir} ${yearAkhir}`;
+        } else {
+            masaInput.value = `${dayAwal} ${monthAwal} ${yearAwal}`;
+        }
+    }
+    
+    // Listen to tanggal changes for auto-generate masa
+    if (tanggalAwalInput) tanggalAwalInput.addEventListener('change', generateMasa);
+    if (tanggalAkhirInput) tanggalAkhirInput.addEventListener('change', generateMasa);
+    
+    // Update pricelist preview
+    function updatePricelistPreview(data) {
+        const previewEl = document.getElementById('pricelist-preview');
+        if (!previewEl) return;
+        
+        if (data && data.success && data.harga_pricelist) {
+            document.getElementById('pricelist-vendor').textContent = data.vendor || '';
+            document.getElementById('pricelist-size').textContent = data.size ? data.size + ' ft' : '';
+            document.getElementById('pricelist-tarif').textContent = data.tarif || '';
+            document.getElementById('pricelist-harga').textContent = 'Rp ' + formatNumber(data.harga_pricelist);
+            document.getElementById('pricelist-berlaku').textContent = data.tanggal_berlaku || '-';
+            previewEl.classList.remove('hidden');
+        } else {
+            previewEl.classList.add('hidden');
+        }
+    }
+    
+    // Format number with thousand separators
+    function formatNumber(num) {
+        return parseFloat(num || 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+    
     // Fetch computed DPP & taxes from pricelist API
     function fetchPricelistDpp() {
         const vendor = (vendorSelect && vendorSelect.value) ? vendorSelect.value : '';
@@ -623,24 +708,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const tanggal_akhir = (tanggalAkhirInput && tanggalAkhirInput.value) ? tanggalAkhirInput.value : '';
         const periode = (periodeInput && periodeInput.value) ? periodeInput.value : '';
 
-        if (!vendor || !size) return; // vendor & size required to compute pricelist
+        if (!vendor || !size) {
+            updatePricelistPreview(null);
+            return;
+        }
 
         const params = new URLSearchParams({ vendor, size, tarif, tanggal_awal, tanggal_akhir, periode });
-        const url = '{{ route('daftar-tagihan-kontainer-sewa.get_pricelist') }}' + '?' + params.toString();
+        const url = '{{ route("daftar-tagihan-kontainer-sewa.get_pricelist") }}' + '?' + params.toString();
 
         fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
             .then(r => r.json())
             .then(data => {
-                if (!data || !data.success) return;
+                if (!data || !data.success) {
+                    updatePricelistPreview(null);
+                    return;
+                }
+                
+                // Update pricelist preview
+                updatePricelistPreview(data);
+                
                 dppInput.value = parseFloat(data.dpp || 0).toFixed(2);
                 dppNilaiLainInput.value = parseFloat(data.dpp_nilai_lain || 0).toFixed(2);
                 ppnInput.value = parseFloat(data.ppn || 0).toFixed(2);
                 pphInput.value = parseFloat(data.pph || 0).toFixed(2);
                 grandTotalInput.value = parseFloat(data.grand_total || 0).toFixed(2);
-                if (data.tarif) {
+                if (data.tarif && !tarifSelect.value) {
                     for (let i = 0; i < tarifSelect.options.length; i++) {
-                        if (tarifSelect.options[i].text.toLowerCase() === data.tarif.toLowerCase()) {
-                            tarifSelect.value = tarifSelect.options[i].value; break;
+                        if (tarifSelect.options[i].value.toLowerCase() === data.tarif.toLowerCase()) {
+                            tarifSelect.value = tarifSelect.options[i].value; 
+                            break;
                         }
                     }
                 }
@@ -648,7 +744,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 calculateDppNilaiLain();
                 calculatePph();
             })
-            .catch(err => { if (window.console) console.warn('fetchPricelistDpp failed', err); });
+            .catch(err => { 
+                if (window.console) console.warn('fetchPricelistDpp failed', err);
+                updatePricelistPreview(null);
+            });
     }
 
     function parseNumber(str) {
