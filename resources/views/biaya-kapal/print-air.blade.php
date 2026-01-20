@@ -350,35 +350,7 @@
         </tbody>
     </table>
 
-    <!-- Summary Section -->
-    <div class="section-title">
-        Ringkasan Pembayaran
-    </div>
-    
-    <table class="details-table" style="width: 50%; margin-left: auto;">
-        <tbody>
-            <tr>
-                <td class="label-col">Total Sub Total (DPP)</td>
-                <td class="value-col number">Rp {{ number_format($totalSubTotal, 0, ',', '.') }}</td>
-            </tr>
-            <tr>
-                <td class="label-col">Total Jasa Air</td>
-                <td class="value-col number">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
-            </tr>
-            <tr>
-                <td class="label-col">Total Biaya Agen</td>
-                <td class="value-col number">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
-            </tr>
-            <tr class="calculation-row">
-                <td class="label-col">Total PPH (2%)</td>
-                <td class="value-col number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-            </tr>
-            <tr class="grand-total-row">
-                <td class="label-col">TOTAL YANG DIBAYARKAN</td>
-                <td class="value-col number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
-            </tr>
-        </tbody>
-    </table>
+
 
     @if($biayaKapal->keterangan)
     <div class="notes">
