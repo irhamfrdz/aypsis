@@ -992,6 +992,8 @@ class SuratJalanBongkaranController extends Controller
         $baData->jenis_barang = $manifest->nama_barang;                         // manifests.nama_barang
         $baData->pengirim = $manifest->pengirim ?? '';                          // manifests.pengirim
         $baData->penerima = $manifest->penerima ?? '';                          // manifests.penerima
+        $baData->kuantitas = $manifest->kuantitas;                              // manifests.kuantitas
+        $baData->satuan = $manifest->satuan;                                    // manifests.satuan
         
         // Transportation data (will be empty until surat jalan is created)
         $baData->no_plat = '';
