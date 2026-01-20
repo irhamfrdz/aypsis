@@ -248,8 +248,16 @@ class BiayaKapalController extends Controller
 
                             $jumlahRaw = $item['jumlah'] ?? 0;
                             // Convert comma decimal and remove thousand separators if any
+                            // Convert comma decimal and remove thousand separators if any
                             if (is_string($jumlahRaw)) {
-                                $jumlahSanitized = str_replace(['.', ','], ['', '.'], $jumlahRaw);
+                                // If contains comma, assume ID format (1.000,00) -> remove dots, replace comma with dot
+                                if (strpos($jumlahRaw, ',') !== false) {
+                                    $jumlahSanitized = str_replace('.', '', $jumlahRaw);
+                                    $jumlahSanitized = str_replace(',', '.', $jumlahSanitized);
+                                } else {
+                                    // If no comma, assume standard/US format (6.7) or plain number -> keep dots
+                                    $jumlahSanitized = $jumlahRaw;
+                                }
                             } else {
                                 $jumlahSanitized = $jumlahRaw;
                             }
