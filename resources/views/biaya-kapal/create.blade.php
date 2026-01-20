@@ -1708,7 +1708,7 @@
                 </select>
             </div>
             <div class="w-24">
-                <input type="number" name="kapal_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" value="${jumlah}" min="0" step="0.01" class="jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Jumlah" required>
+                <input type="text" name="kapal_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" value="${jumlah}" class="jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" required>
             </div>
             <button type="button" onclick="removeBarangFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
                 <i class="fas fa-trash text-xs"></i>
@@ -1791,7 +1791,7 @@
                 </select>
             </div>
             <div class="w-24">
-                <input type="number" name="kapal_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" min="0" step="0.01" class="jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Jumlah" required>
+                <input type="text" name="kapal_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" required>
             </div>
             <button type="button" onclick="removeBarangFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
                 <i class="fas fa-trash text-xs"></i>
@@ -1831,7 +1831,9 @@
             barangSelects.forEach((select, index) => {
                 const selectedOption = select.options[select.selectedIndex];
                 const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
-                const jumlah = parseFloat(jumlahInputs[index].value) || 0;
+                // Convert comma to period for proper decimal parsing (Indonesian format)
+                const jumlahRaw = jumlahInputs[index].value.replace(',', '.');
+                const jumlah = parseFloat(jumlahRaw) || 0;
                 grandTotal += tarif * jumlah;
             });
         });
@@ -3047,6 +3049,21 @@
     // Generate invoice number on page load
     document.addEventListener('DOMContentLoaded', function() {
         generateInvoiceNumber();
+        
+        // Form submit handler: convert comma decimal to period before submission
+        const form = document.querySelector('form[action*="biaya-kapal"]');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Convert all jumlah inputs from comma to period
+                const jumlahInputs = document.querySelectorAll('.jumlah-input-item, .jumlah-input');
+                jumlahInputs.forEach(input => {
+                    if (input.value) {
+                        // Replace comma with period for proper decimal
+                        input.value = input.value.replace(',', '.');
+                    }
+                });
+            });
+        }
     });
 </script>
 @endpush
