@@ -12,6 +12,7 @@ use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BiayaKapalController extends Controller
 {
@@ -106,7 +107,7 @@ class BiayaKapalController extends Controller
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
 
         // Get active pricelist biaya dokumen for vendor selection
-        $pricelistBiayaDokumen = \DB::table('pricelist_biaya_dokumen')
+        $pricelistBiayaDokumen = DB::table('pricelist_biaya_dokumen')
             ->where('status', 'aktif')
             ->orderBy('nama_vendor')
             ->get();
@@ -257,7 +258,7 @@ class BiayaKapalController extends Controller
                                 
                                 // Log skipped items for easier debugging
                                 
-                                \Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
+                                Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
                                     'biaya_kapal_id' => $biayaKapal->id ?? null,
                                     'section_index' => $sectionIndex,
                                     'kapal' => $kapalName,
@@ -269,7 +270,7 @@ class BiayaKapalController extends Controller
 
                             $barang = PricelistBuruh::find($barangId);
                             if (!$barang) {
-                                \Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
+                                Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
                                 continue;
                             }
 
@@ -375,7 +376,7 @@ class BiayaKapalController extends Controller
                     $typeKeterangan = null;
                     if (!empty($section['type'])) {
                         // source of type records is master_pricelist_air_tawar (each row represents a type/price entry)
-                        $typeData = \DB::table('master_pricelist_air_tawar')
+                        $typeData = DB::table('master_pricelist_air_tawar')
                             ->where('id', $section['type'])
                             ->first();
                         $typeKeterangan = $typeData ? $typeData->keterangan : null;
@@ -583,14 +584,14 @@ class BiayaKapalController extends Controller
     {
         try {
             // Log incoming parameter for debugging
-            \Log::info('getVoyagesByShip called', ['nama_kapal' => $namaKapal]);
+            Log::info('getVoyagesByShip called', ['nama_kapal' => $namaKapal]);
 
             // Normalize ship name for flexible matching (remove dots, extra spaces, lowercase)
             $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $namaKapal)));
-            \Log::info('getVoyagesByShip normalized', ['normalized' => $normalizedKapal]);
+            Log::info('getVoyagesByShip normalized', ['normalized' => $normalizedKapal]);
 
             // Primary attempt: Use REGEXP_REPLACE normalization if available in DB (MySQL 8+ / Postgres)
-            $voyagesFromNaikKapal = \DB::table('naik_kapal')
+            $voyagesFromNaikKapal = DB::table('naik_kapal')
                 ->select('no_voyage')
                 ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
                 ->whereNotNull('no_voyage')
@@ -598,7 +599,7 @@ class BiayaKapalController extends Controller
                 ->distinct()
                 ->pluck('no_voyage');
 
-            $voyagesFromBls = \DB::table('bls')
+            $voyagesFromBls = DB::table('bls')
                 ->select('no_voyage')
                 ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
                 ->whereNotNull('no_voyage')
@@ -608,9 +609,9 @@ class BiayaKapalController extends Controller
 
             // Fallback: if no results (maybe REGEXP_REPLACE unsupported or data mismatch), try simpler LIKE matching
             if ((empty($voyagesFromNaikKapal) || $voyagesFromNaikKapal->count() === 0) && (empty($voyagesFromBls) || $voyagesFromBls->count() === 0)) {
-                \Log::info('getVoyagesByShip fallback to simple LIKE');
+                Log::info('getVoyagesByShip fallback to simple LIKE');
 
-                $voyagesFromNaikKapal = \DB::table('naik_kapal')
+                $voyagesFromNaikKapal = DB::table('naik_kapal')
                     ->select('no_voyage')
                     ->where('nama_kapal', 'like', "%{$namaKapal}%")
                     ->whereNotNull('no_voyage')
@@ -618,7 +619,7 @@ class BiayaKapalController extends Controller
                     ->distinct()
                     ->pluck('no_voyage');
 
-                $voyagesFromBls = \DB::table('bls')
+                $voyagesFromBls = DB::table('bls')
                     ->select('no_voyage')
                     ->where('nama_kapal', 'like', "%{$namaKapal}%")
                     ->whereNotNull('no_voyage')
@@ -633,14 +634,14 @@ class BiayaKapalController extends Controller
                 ->sort()
                 ->values();
 
-            \Log::info('getVoyagesByShip results', ['nama_kapal' => $namaKapal, 'voyages_count' => count($voyages), 'voyages_sample' => array_slice($voyages->toArray(),0,5)]);
+            Log::info('getVoyagesByShip results', ['nama_kapal' => $namaKapal, 'voyages_count' => count($voyages), 'voyages_sample' => array_slice($voyages->toArray(),0,5)]);
 
             return response()->json([
                 'success' => true,
                 'voyages' => $voyages
             ]);
         } catch (\Exception $e) {
-            \Log::error('getVoyagesByShip error', ['error' => $e->getMessage(), 'nama_kapal' => $namaKapal]);
+            Log::error('getVoyagesByShip error', ['error' => $e->getMessage(), 'nama_kapal' => $namaKapal]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data voyage: ' . $e->getMessage()
@@ -664,7 +665,7 @@ class BiayaKapalController extends Controller
             }
 
             // Get BL data with kontainer and seal from bls table for the selected voyages
-            $bls = \DB::table('bls')
+            $bls = DB::table('bls')
                 ->select('id', 'nomor_kontainer', 'no_seal')
                 ->whereIn('no_voyage', $voyages)
                 ->whereNotNull('nomor_kontainer')
@@ -708,7 +709,7 @@ class BiayaKapalController extends Controller
 
             // Get BL data for the selected kapal and voyage
             // Exclude CARGO containers from calculation
-            $bls = \DB::table('bls')
+            $bls = DB::table('bls')
                 ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer')
                 ->where('nama_kapal', $kapalNama)
                 ->where('no_voyage', $voyage)

@@ -721,7 +721,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     // Store pricelist buruh data
-    const pricelistBuruhData = @json($pricelistBuruh);
+    const pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
 
     // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
     const jenisBiayaSearch = document.getElementById('jenis_biaya_search');
@@ -734,7 +734,7 @@
     const jenisBiayaSelectedCount = document.getElementById('jenisBiayaSelectedCount');
     
     let selectedJenisBiaya = { kode: '', nama: '' };
-    const oldJenisBiayaValue = '{{ old('jenis_biaya') }}';
+    const oldJenisBiayaValue = "{{ old('jenis_biaya') }}";
     
     // Show dropdown on focus
     jenisBiayaSearch.addEventListener('focus', function() {
@@ -886,7 +886,7 @@
     const nomorReferensiWrapper = document.getElementById('nomor_referensi_wrapper');
 
     // Pricelist Air Tawar data
-    const pricelistAirTawarData = @json($pricelistAirTawar);
+    const pricelistAirTawarData = {!! json_encode($pricelistAirTawar) !!};
 
     // Format nominal input with thousand separator
     

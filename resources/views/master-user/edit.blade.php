@@ -1446,6 +1446,7 @@
                                 <td><input type="checkbox" name="permissions[master-gudang][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang']['export']) && $userMatrixPermissions['master-gudang']['export']) checked @endif></td>
                             </tr>
 
+
                             {{-- Stock Ban --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
@@ -1454,10 +1455,10 @@
                                         <span>Stock Ban</span>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[stock-ban][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['stock-ban']['view']) && $userMatrixPermissions['stock-ban']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[stock-ban][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['stock-ban']['create']) && $userMatrixPermissions['stock-ban']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[stock-ban][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['stock-ban']['update']) && $userMatrixPermissions['stock-ban']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[stock-ban][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['stock-ban']['delete']) && $userMatrixPermissions['stock-ban']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-ban][view]" value="1" class="permission-checkbox" @if(old('permissions.stock-ban.view') || (isset($userMatrixPermissions['stock-ban']['view']) && $userMatrixPermissions['stock-ban']['view']) || ($user && $user->can('stock-ban-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-ban][create]" value="1" class="permission-checkbox" @if(old('permissions.stock-ban.create') || (isset($userMatrixPermissions['stock-ban']['create']) && $userMatrixPermissions['stock-ban']['create']) || ($user && $user->can('stock-ban-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-ban][update]" value="1" class="permission-checkbox" @if(old('permissions.stock-ban.update') || (isset($userMatrixPermissions['stock-ban']['update']) && $userMatrixPermissions['stock-ban']['update']) || ($user && $user->can('stock-ban-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-ban][delete]" value="1" class="permission-checkbox" @if(old('permissions.stock-ban.delete') || (isset($userMatrixPermissions['stock-ban']['delete']) && $userMatrixPermissions['stock-ban']['delete']) || ($user && $user->can('stock-ban-delete'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

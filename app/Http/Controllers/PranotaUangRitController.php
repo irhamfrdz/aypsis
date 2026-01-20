@@ -22,8 +22,8 @@ class PranotaUangRitController extends Controller
         // Default to last 30 days if no date range is provided
         if (!($request->filled('start_date') && $request->filled('end_date'))) {
             $request->merge([
-                'start_date' => now()->subDays(30)->format('Y-m-d'),
-                'end_date' => now()->format('Y-m-d'),
+                'start_date' => \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'),
+                'end_date' => \Carbon\Carbon::now()->format('Y-m-d'),
             ]);
         }
 
@@ -77,8 +77,8 @@ class PranotaUangRitController extends Controller
     public function create()
     {
         // Default to last 30 days for create if date range is not provided
-        $startDate = request()->input('start_date', now()->subDays(30)->format('Y-m-d'));
-        $endDate = request()->input('end_date', now()->format('Y-m-d'));
+        $startDate = request()->input('start_date', \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'));
+        $endDate = request()->input('end_date', \Carbon\Carbon::now()->format('Y-m-d'));
 
         // Validate date inputs
         if (request()->filled('start_date') && request()->filled('end_date')) {
@@ -159,22 +159,22 @@ class PranotaUangRitController extends Controller
                 $q->where(function($subQ) use ($startDateObj, $endDateObj) {
                     // 1. Tanggal dari relasi tandaTerima (untuk surat jalan non-bongkaran seperti pengiriman, muat, dll)
                     $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
-                        $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
-                                ->where(\DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                        $ttQuery->where(DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
+                                ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
                     });
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
                     // 2. Tanggal tanda terima untuk kegiatan bongkaran (kolom langsung di tabel surat_jalans)
                     $subQ->where('kegiatan', 'bongkaran')
                          ->whereNotNull('tanggal_tanda_terima')
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                         ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                         ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                 })
                 ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
                     // 3. Filter berdasarkan tanggal checkpoint
                     $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                         ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                         ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
                 });
             });
             
@@ -296,13 +296,13 @@ class PranotaUangRitController extends Controller
             $queryBongkaran = SuratJalanBongkaran::with(['tandaTerima'])
                 ->where(function($q) use ($startDateObj, $endDateObj) {
                     $q->whereHas('tandaTerima', function($query) use ($startDateObj, $endDateObj) {
-                        $query->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                              ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                        $query->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                              ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                     })
                     ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
                         $subQ->whereNotNull('tanggal_checkpoint')
-                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
                     });
                 })
                 // Filter lokasi removed to match Report logic
@@ -406,22 +406,22 @@ class PranotaUangRitController extends Controller
                     $q->where(function($subQ) use ($startDateObj, $endDateObj) {
                         // 1. Tanggal dari relasi tandaTerima
                         $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
-                            $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
-                                    ->where(\DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                            $ttQuery->where(DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
+                                    ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
                         });
                     })
                     ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
                         // 2. Tanggal tanda terima untuk kegiatan bongkaran (jika ada kolom ini di tabel surat_jalans)
                         $subQ->where('kegiatan', 'bongkaran')
                              ->whereNotNull('tanggal_tanda_terima')
-                             ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                             ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                             ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                             ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                     })
                     ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
                         // 3. Filter berdasarkan tanggal checkpoint
                         $subQ->whereNotNull('tanggal_checkpoint')
-                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                             ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
                     });
                 });
             } catch (\Exception $e) {

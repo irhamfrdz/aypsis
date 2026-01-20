@@ -4253,6 +4253,21 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                
           Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')
                ->middleware('can:bl-view');
+
+          // ═══════════════════════════════════════════════════════════════════════
+          // 🔧 STOCK BAN MANAGEMENT
+          // ═══════════════════════════════════════════════════════════════════════
+          Route::resource('stock-ban', \App\Http\Controllers\StockBanController::class)
+               ->middleware([
+                   'index' => 'can:stock-ban-view',
+                   'create' => 'can:stock-ban-create',
+                   'store' => 'can:stock-ban-create',
+                   'show' => 'can:stock-ban-view',
+                   'edit' => 'can:stock-ban-update',
+                   'update' => 'can:stock-ban-update',
+                   'destroy' => 'can:stock-ban-delete'
+               ]);
+
 });
 
 // Test route for ZipArchive
