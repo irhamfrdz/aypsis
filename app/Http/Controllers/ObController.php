@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Exports\ObExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ObController extends Controller
 {
@@ -1750,7 +1752,7 @@ class ObController extends Controller
     }
 
     /**
-     * Export OB data to Excel (CSV format)
+     * Export OB data to Excel (.xlsx)
      */
     public function exportExcel(Request $request)
     {
@@ -1784,7 +1786,7 @@ class ObController extends Controller
             ->where('no_voyage', $noVoyage)
             ->exists();
 
-        $fileName = 'OB_' . str_replace(' ', '_', $namaKapal) . '_' . $noVoyage . '_' . date('Ymd_His') . '.csv';
+        $fileName = 'OB_' . str_replace(' ', '_', $namaKapal) . '_' . $noVoyage . '_' . date('Ymd_His') . '.xlsx';
 
         // Determine which data to use
         if ($kegiatan !== 'muat' && $hasBl) {
@@ -1817,62 +1819,7 @@ class ObController extends Controller
                 });
             }
 
-            $bls = $query->orderBy('nomor_bl', 'asc')->get();
-
-            $callback = function() use ($bls, $namaKapal, $noVoyage) {
-                $out = fopen('php://output', 'w');
-
-                // Write UTF-8 BOM
-                fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-                // Header row
-                $headers = [
-                    'No', 'No. BL', 'No. Kontainer', 'No. Seal', 'Nama Barang', 
-                    'Asal Kontainer', 'Ke', 'Tipe', 'Size', 
-                    'Tanggal Dibuat', 'Status OB', 'Tanggal OB', 'Supir', 
-                    'Nama Kapal', 'No. Voyage'
-                ];
-                fwrite($out, implode(";", $headers) . "\r\n");
-
-                // Data rows
-                $no = 1;
-                foreach ($bls as $bl) {
-                    $row = [
-                        $no++,
-                        $bl->nomor_bl ?: '-',
-                        "\u{200B}" . ($bl->nomor_kontainer ?: '-'), // Zero-width space to prevent scientific notation
-                        "\u{200B}" . ($bl->no_seal ?: '-'),
-                        $bl->nama_barang ?: '-',
-                        $bl->asal_kontainer ?: '-',
-                        $bl->ke ?: '-',
-                        $bl->tipe_kontainer ?: '-',
-                        $bl->size_kontainer ? $bl->size_kontainer . ' Feet' : '-',
-                        $bl->created_at ? $bl->created_at->format('d/m/Y H:i') : '-',
-                        $bl->sudah_ob ? 'Sudah OB' : 'Belum OB',
-                        $bl->tanggal_ob ? \Carbon\Carbon::parse($bl->tanggal_ob)->format('d/m/Y H:i') : '-',
-                        $bl->supir ? ($bl->supir->nama_panggilan ?? $bl->supir->nama_lengkap ?? '-') : '-',
-                        $namaKapal,
-                        $noVoyage
-                    ];
-                    
-                    // Clean line breaks
-                    $row = array_map(function($val) {
-                        return str_replace(["\r", "\n"], ' ', $val);
-                    }, $row);
-                    
-                    fwrite($out, implode(";", $row) . "\r\n");
-                }
-
-                fclose($out);
-            };
-
-            return response()->stream($callback, 200, [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
-            ]);
+            $data = $query->orderBy('nomor_bl', 'asc')->get();
 
         } else {
             // Use naik_kapal data
@@ -1893,8 +1840,15 @@ class ObController extends Controller
                 $query->where('tipe_kontainer', $tipeFilter);
             }
 
+            // Dedicated nomor_kontainer filter
+            if ($request->filled('nomor_kontainer')) {
+                 $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
+                 $query->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
+            }
+
             if ($searchFilter) {
                 $search = $searchFilter;
+                // Normalize nomor kontainer for better matches against formatted values
                 $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
                 $query->where(function($q) use ($search, $searchNum) {
                     $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
@@ -1903,64 +1857,12 @@ class ObController extends Controller
                 });
             }
 
-            $naikKapals = $query->orderBy('tanggal_muat', 'desc')
+            $data = $query->orderBy('tanggal_muat', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->get();
-
-            $callback = function() use ($naikKapals, $namaKapal, $noVoyage) {
-                $out = fopen('php://output', 'w');
-
-                // Write UTF-8 BOM
-                fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-                // Header row
-                $headers = [
-                    'No', 'No. Kontainer', 'No. Seal', 'Jenis Barang', 
-                    'Asal Kontainer', 'Ke', 'Tipe', 'Size', 
-                    'Tanggal Muat', 'Status OB', 'Tanggal OB', 'Supir', 
-                    'Nama Kapal', 'No. Voyage'
-                ];
-                fwrite($out, implode(";", $headers) . "\r\n");
-
-                // Data rows
-                $no = 1;
-                foreach ($naikKapals as $nk) {
-                    $row = [
-                        $no++,
-                        "\u{200B}" . ($nk->nomor_kontainer ?: '-'),
-                        "\u{200B}" . ($nk->no_seal ?: '-'),
-                        $nk->jenis_barang ?: '-',
-                        $nk->asal_kontainer ?: '-',
-                        $nk->ke ?: '-',
-                        $nk->tipe_kontainer ?: '-',
-                        $nk->size_kontainer ? $nk->size_kontainer . ' Feet' : '-',
-                        $nk->tanggal_muat ? \Carbon\Carbon::parse($nk->tanggal_muat)->format('d/m/Y') : '-',
-                        $nk->sudah_ob ? 'Sudah OB' : 'Belum OB',
-                        $nk->tanggal_ob ? \Carbon\Carbon::parse($nk->tanggal_ob)->format('d/m/Y H:i') : '-',
-                        $nk->supir ? ($nk->supir->nama_panggilan ?? $nk->supir->nama_lengkap ?? '-') : '-',
-                        $namaKapal,
-                        $noVoyage
-                    ];
-                    
-                    // Clean line breaks
-                    $row = array_map(function($val) {
-                        return str_replace(["\r", "\n"], ' ', $val);
-                    }, $row);
-                    
-                    fwrite($out, implode(";", $row) . "\r\n");
-                }
-
-                fclose($out);
-            };
-
-            return response()->stream($callback, 200, [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
-            ]);
         }
+
+        return Excel::download(new ObExport($data, $namaKapal, $noVoyage), $fileName);
     }
 
     /**

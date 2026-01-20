@@ -2060,11 +2060,13 @@
                     <input type="text" class="grand-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="air[${sectionIndex}][grand_total]" class="grand-total-value" value="0">
                 </div>
-                <div class="md:col-span-2">
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                    <select name="air[${sectionIndex}][penerima]" class="penerima-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
-                        ${penerimaOptions}
-                    </select>
+                    <input type="text" name="air[${sectionIndex}][penerima]" class="penerima-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan nama penerima">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                    <input type="text" name="air[${sectionIndex}][nomor_rekening]" class="nomor-rekening-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan nomor rekening">
                 </div>
             </div>
         `;

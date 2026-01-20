@@ -187,6 +187,7 @@ class BiayaKapalController extends Controller
             'air.*.pph' => 'nullable|numeric|min:0',
             'air.*.grand_total' => 'nullable|numeric|min:0',
             'air.*.penerima' => 'nullable|string|max:255',
+            'air.*.nomor_rekening' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -402,6 +403,7 @@ class BiayaKapalController extends Controller
                         'pph' => $pph,
                         'grand_total' => $grandTotal,
                         'penerima' => $section['penerima'] ?? null,
+                        'nomor_rekening' => $section['nomor_rekening'] ?? null,
                     ]);
                     
                     // Build keterangan string

@@ -24,6 +24,7 @@ class BiayaKapalAir extends Model
         'pph',
         'grand_total',
         'penerima',
+        'nomor_rekening',
     ];
 
     protected $casts = [

@@ -301,7 +301,8 @@
                 <th style="width: 11%;">Sub Total</th>
                 <th style="width: 9%;">PPH (2%)</th>
                 <th style="width: 11%;">Grand Total</th>
-                <th style="width: 11%;">Penerima</th>
+                <th style="width: 9%;">Penerima</th>
+                <th style="width: 10%;">No. Rekening</th>
             </tr>
         </thead>
         <tbody>
@@ -318,6 +319,7 @@
                     <td class="number">Rp {{ number_format($detail->pph, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
                     <td>{{ $detail->penerima ?? '-' }}</td>
+                    <td>{{ $detail->nomor_rekening ?? '-' }}</td>
                 </tr>
                 @php
                     $totalJasaAir += $detail->jasa_air;
@@ -328,7 +330,7 @@
                 @endphp
             @empty
                 <tr>
-                    <td colspan="11" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
+                    <td colspan="12" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
                 </tr>
             @endforelse
             
@@ -341,6 +343,7 @@
                     <td class="number">Rp {{ number_format($totalSubTotal, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                    <td></td>
                     <td></td>
                 </tr>
             @endif
