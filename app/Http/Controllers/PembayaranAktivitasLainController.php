@@ -395,15 +395,25 @@ class PembayaranAktivitasLainController extends Controller
             // Implement Double Book Accounting
             $this->createDoubleBookJournal($pembayaran, $validated);
 
+            // Logic to delete Prospek record if "Pembayaran Adjusment Uang Jalan" and "pengembalian penuh"
+            if ($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && 
+                ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') {
+                
+                if (!empty($validated['no_surat_jalan'])) {
+                    \App\Models\Prospek::where('no_surat_jalan', $validated['no_surat_jalan'])->delete();
+                }
+            }
+
             DB::commit();
 
             return redirect()->route('pembayaran-aktivitas-lain.index')
-                ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
-        }
+                ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting' . 
+                    (($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') ? ' dan Data Prospek dihapus' : ''));
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
     }
+}
 
     /**
      * Create Double Book Accounting Journal Entries for Invoice Payment

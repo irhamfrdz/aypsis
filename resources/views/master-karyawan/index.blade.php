@@ -87,7 +87,7 @@
                         </a>
 
                         <!-- Template Dropdown -->
-                        <div class="relative group">
+                        <div class="relative group hidden md:block">
                             <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -136,7 +136,7 @@
 
                         <a href="{{ route('master.karyawan.print') }}"
                            target="_blank"
-                           class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                           class="hidden md:inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                             </svg>
@@ -144,7 +144,7 @@
                         </a>
 
                         <!-- Export Dropdown -->
-                        <div class="relative group">
+                        <div class="relative group hidden md:block">
                             <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
@@ -203,7 +203,7 @@
                         </div>
 
                         <a href="{{ route('master.karyawan.import') }}"
-                           class="inline-flex items-center px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                           class="hidden md:inline-flex items-center px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                             </svg>
@@ -339,7 +339,7 @@
         </div>
 
         <!-- Table Section with Sticky Header -->
-        <div class="table-container overflow-x-auto max-h-screen">
+        <div class="table-container overflow-x-auto max-h-screen hidden md:block">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
@@ -623,6 +623,100 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="md:hidden">
+            @forelse($karyawans as $karyawan)
+                <div class="p-4 border-b border-gray-200 {{ $karyawan->tanggal_berhenti ? 'bg-red-50' : 'bg-white' }}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</h3>
+                            <p class="text-xs text-gray-500">{{ strtoupper($karyawan->nik) }}</p>
+                            @if($karyawan->nama_panggilan)
+                                <p class="text-xs text-gray-400">({{ strtoupper($karyawan->nama_panggilan) }})</p>
+                            @endif
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                             @if($karyawan->divisi && $karyawan->divisi !== '0')
+                                <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
+                                    {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
+                                       (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
+                                       (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
+                                       'bg-gray-100 text-gray-800')) }}">
+                                    {{ strtoupper($karyawan->divisi) }}
+                                </span>
+                            @endif
+                            @if($karyawan->tanggal_berhenti)
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800">
+                                    BERHENTI
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-xs text-gray-600 mb-4">
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">Pekerjaan</span>
+                            <span class="font-medium">{{ $karyawan->pekerjaan && $karyawan->pekerjaan !== '0' ? strtoupper($karyawan->pekerjaan) : '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">No HP</span>
+                            <span class="font-medium">{{ $karyawan->no_hp ? strtoupper($karyawan->no_hp) : '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">Tgl Masuk</span>
+                            <span class="font-medium">{{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}</span>
+                        </div>
+                        @if($karyawan->tanggal_berhenti)
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">Tgl Berhenti</span>
+                            <span class="font-medium text-red-600">{{ \Carbon\Carbon::parse($karyawan->tanggal_berhenti)->format('d/M/Y') }}</span>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center justify-between border-t border-gray-100 pt-3 mt-2">
+                        <div class="flex gap-4">
+                            <!-- View -->
+                            <a href="{{ route('master.karyawan.show', $karyawan->id) }}" class="text-blue-600 hover:text-blue-800" title="Lihat">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </a>
+                            <!-- Edit -->
+                            <a href="{{ route('master.karyawan.edit', $karyawan->id) }}" class="text-amber-600 hover:text-amber-800" title="Edit">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </a>
+                            <!-- History -->
+                            <button onclick="showAuditLog('{!! addslashes(get_class($karyawan)) !!}', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')" class="text-purple-600 hover:text-purple-800" title="Riwayat">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </button>
+                            <!-- Print -->
+                             <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}" target="_blank" class="text-green-600 hover:text-green-800" title="Cetak">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            </a>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                             @if(strtolower($karyawan->divisi) === 'abk')
+                                <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}" class="text-green-600 hover:text-green-800 text-xs font-medium bg-green-50 px-2 py-1 rounded" title="Checklist Baru">
+                                    Checklist
+                                </a>
+                            @endif
+                            <!-- Delete -->
+                            <button onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')" class="text-red-600 hover:text-red-800" title="Hapus">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-gray-500">
+                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                    </svg>
+                    <p class="text-sm font-medium">Tidak ada data karyawan</p>
+                </div>
+            @endforelse
         </div>
 
         <!-- Modern Pagination Design -->
