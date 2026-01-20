@@ -284,7 +284,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('tanda-terima-lcl.show-container', ['nomor_kontainer' => $container['nomor_kontainer']]) }}"
+                                        <a href="{{ route('tanda-terima-lcl.show-container', ['nomor_kontainer' => $container['nomor_kontainer'], 'seal' => $hasSealed ? $firstPivot->nomor_seal : 'unsealed']) }}"
                                            style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #2563eb; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; text-decoration: none; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
                                            onmouseover="this.style.backgroundColor='#1d4ed8'" 
                                            onmouseout="this.style.backgroundColor='#2563eb'"

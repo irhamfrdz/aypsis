@@ -3241,6 +3241,10 @@ Route::get('/test-gate-in-ajax', function () {
                     ->name('daftar-tagihan-kontainer-sewa.bulk-update-status')
                     ->middleware('can:tagihan-kontainer-update');
 
+               Route::get('daftar-tagihan-kontainer-sewa/get-details-by-ids', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'getDetailsByIds'])
+                    ->name('daftar-tagihan-kontainer-sewa.get-details-by-ids')
+                    ->middleware('can:tagihan-kontainer-view');
+
                // Invoice Kontainer Sewa routes - menggunakan permission tagihan-kontainer-sewa
                Route::resource('invoice-tagihan-sewa', \App\Http\Controllers\InvoiceKontainerSewaController::class)
                     ->middleware('can:tagihan-kontainer-sewa-index');

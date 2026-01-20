@@ -1793,14 +1793,24 @@ class TandaTerimaLclController extends Controller
     /**
      * Show detail of a specific container with all its LCL items
      */
-    public function showContainer($nomor_kontainer)
+    public function showContainer(Request $request, $nomor_kontainer)
     {
         try {
-            // Get all pivot records for this container
-            $pivots = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser'])
+            // Get filtered pivot records for this container
+            $query = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser'])
                 ->where('nomor_kontainer', $nomor_kontainer)
-                ->orderBy('assigned_at', 'desc')
-                ->get();
+                ->orderBy('assigned_at', 'desc');
+
+            // Apply seal filter if present to distinguish between different stuffing batches
+            if ($request->has('seal')) {
+                if ($request->seal === 'unsealed') {
+                    $query->whereNull('nomor_seal');
+                } else {
+                    $query->where('nomor_seal', $request->seal);
+                }
+            }
+
+            $pivots = $query->get();
             
             if ($pivots->isEmpty()) {
                 return redirect()->route('tanda-terima-lcl.stuffing')

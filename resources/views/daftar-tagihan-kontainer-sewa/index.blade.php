@@ -264,30 +264,35 @@ input[required]:focus {
 
                 <!-- Filter Semua -->
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}"
+                   onclick="if(typeof saveCheckboxState === 'function') saveCheckboxState();"
                    class="px-3 py-1 text-xs rounded-full border {{ !request()->anyFilled(['status', 'status_pranota', 'vendor', 'size']) ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }} transition-colors duration-150">
                     📋 Semua
                 </a>
 
                 <!-- Filter Ongoing -->
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['status' => 'ongoing']) }}"
+                   onclick="if(typeof saveCheckboxState === 'function') saveCheckboxState();"
                    class="px-3 py-1 text-xs rounded-full border {{ request('status') == 'ongoing' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50' }} transition-colors duration-150">
                     🟢 Ongoing
                 </a>
 
                 <!-- Filter Belum Pranota -->
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['status_pranota' => 'null']) }}"
+                   onclick="if(typeof saveCheckboxState === 'function') saveCheckboxState();"
                    class="px-3 py-1 text-xs rounded-full border {{ request('status_pranota') == 'null' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50' }} transition-colors duration-150">
                     🔄 Belum Pranota
                 </a>
 
                 <!-- Filter Vendor ZONA -->
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['vendor' => 'ZONA']) }}"
+                   onclick="if(typeof saveCheckboxState === 'function') saveCheckboxState();"
                    class="px-3 py-1 text-xs rounded-full border {{ request('vendor') == 'ZONA' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50' }} transition-colors duration-150">
                     🏢 ZONA
                 </a>
 
                 <!-- Filter 40ft -->
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['size' => '40']) }}"
+                   onclick="if(typeof saveCheckboxState === 'function') saveCheckboxState();"
                    class="px-3 py-1 text-xs rounded-full border {{ request('size') == '40' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }} transition-colors duration-150">
                     📦 40ft
                 </a>
@@ -345,7 +350,7 @@ input[required]:focus {
 
     <!-- Search and Filter Section -->
     <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <form action="{{ route('daftar-tagihan-kontainer-sewa.index') }}" method="GET" class="space-y-4">
+        <form action="{{ route('daftar-tagihan-kontainer-sewa.index') }}" method="GET" class="space-y-4" id="searchFilterForm" onsubmit="if(typeof saveCheckboxState === 'function') saveCheckboxState();">
             @php
                 // Precompute relatedGroups early so toggle buttons can reflect auto-detect state
                 if (request('q')) {
@@ -363,9 +368,11 @@ input[required]:focus {
                     <input
                         type="search"
                         name="q"
+                        id="searchInput"
                         value="{{ request('q') }}"
                         placeholder="Cari berdasarkan: nomor kontainer, vendor, group, atau invoice vendor..."
                         class="w-full border border-gray-300 rounded-lg px-2 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        onkeydown="if(event.key === 'Enter' && typeof saveCheckboxState === 'function') saveCheckboxState();"
                     />
                     @if(request('q'))
                         <div class="text-sm text-gray-500 mt-1">Hasil pencarian untuk: <strong>{{ request('q') }}</strong></div>
@@ -1535,6 +1542,55 @@ input[required]:focus {
 @push('scripts')
 <script>    
 
+// Global function to save checkbox state - must be defined before DOMContentLoaded 
+// so it can be called from form onsubmit attribute
+window.saveCheckboxState = function() {
+    try {
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        
+        // Get existing saved IDs from localStorage
+        const rawData = localStorage.getItem('daftar_tagihan_checked_ids');
+        // Ensure all saved IDs are strings for consistent comparison
+        const existingSavedIds = (JSON.parse(rawData || '[]')).map(String);
+        
+        // Get IDs of checkboxes on current page
+        const currentPageIds = [];
+        rowCheckboxes.forEach(checkbox => {
+            currentPageIds.push(String(checkbox.value));
+        });
+        
+        // Remove IDs that exist on current page from saved list
+        const savedIdsNotOnCurrentPage = existingSavedIds.filter(id => !currentPageIds.includes(id));
+        
+        // Get checked IDs from current page
+        const currentPageCheckedIds = [];
+        rowCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                currentPageCheckedIds.push(String(checkbox.value));
+            }
+        });
+        
+        // Merge: IDs not on current page + currently checked IDs
+        const mergedIds = [...new Set([...savedIdsNotOnCurrentPage, ...currentPageCheckedIds])];
+        
+        localStorage.setItem('daftar_tagihan_checked_ids', JSON.stringify(mergedIds));
+        console.log('Global saveCheckboxState called, saved:', mergedIds.length, 'items');
+    } catch (error) {
+        console.error('Error in global saveCheckboxState:', error);
+    }
+};
+
+// Global function to clear saved state
+window.clearSavedState = function() {
+    localStorage.removeItem('daftar_tagihan_checked_ids');
+    console.log('Cleared saved checkbox state');
+    
+    // Remove badge if exists
+    const badge = document.getElementById('hiddenSelectionBadge');
+    if (badge) {
+        badge.remove();
+    }
+};
 
 // Checkbox functionality with state persistence
 document.addEventListener('DOMContentLoaded', function() {
@@ -1798,10 +1854,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create badge element
         const badge = document.createElement('div');
         badge.id = 'hiddenSelectionBadge';
-        badge.className = 'fixed top-20 right-4 z-40 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3';
+        badge.className = 'fixed top-20 right-4 z-40 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg flex flex-col gap-2 pointer-events-auto';
         badge.innerHTML = `
-            <div class="flex items-center gap-2">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                 </svg>
                 <div>
@@ -1809,11 +1865,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="text-xs opacity-90">${notVisibleCount} item tidak tampil di halaman ini</div>
                 </div>
             </div>
-            <button onclick="clearSelectionAndBadge()" class="ml-2 hover:bg-blue-700 rounded p-1" title="Hapus semua pilihan">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                </svg>
-            </button>
+            <div class="flex items-center justify-end gap-2 mt-1 pt-2 border-t border-blue-500">
+                <button onclick="document.getElementById('hiddenSelectionBadge').remove()" class="px-2 py-1 text-xs text-blue-100 hover:text-white hover:bg-blue-700 rounded transition-colors" title="Sembunyikan notifikasi ini (Pilihan TETAP ADA)">
+                    Sembunyikan
+                </button>
+                <button onclick="clearSelectionAndBadge()" class="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded font-medium transition-colors shadow-sm" title="Hapus semua pilihan yang tersimpan">
+                    Hapus Pilihan
+                </button>
+            </div>
         `;
         
         document.body.appendChild(badge);
@@ -3627,496 +3686,6 @@ window.closeBulkGroupInfoModal = function() {
 
 // Function to bulk add invoice
 window.bulkAddInvoice = function() {
-    console.log('bulkAddInvoice called');
-
-    // Check permission for updating tagihan
-    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
-        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk menambah invoice. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
-        return;
-    @endif
-
-    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-
-    console.log('Selected IDs for bulk invoice:', selectedIds);
-
-    if (selectedIds.length === 0) {
-        alert('Pilih minimal satu kontainer untuk menambah invoice');
-        return;
-    }
-
-    // Validasi: Periksa apakah ada item yang sudah masuk invoice
-    let itemsAlreadyInInvoice = [];
-    checkedBoxes.forEach((checkbox, index) => {
-        const row = checkbox.closest('tr');
-        if (row) {
-            // Cek kolom Status Invoice (kolom ke-19 setelah Status Pranota)
-            const statusInvoiceCell = row.querySelector('td:nth-child(19)');
-            if (statusInvoiceCell) {
-                const statusText = statusInvoiceCell.textContent.trim();
-                // Jika bukan "Belum masuk invoice", berarti sudah ada invoice
-                if (statusText && !statusText.includes('Belum masuk invoice')) {
-                    // Ambil nomor kontainer untuk pesan error
-                    const containerCell = row.querySelector('td:nth-child(5)');
-                    const containerNumber = containerCell ? containerCell.textContent.trim() : `Item ${index + 1}`;
-                    itemsAlreadyInInvoice.push(containerNumber);
-                }
-            }
-        }
-    });
-
-    // Jika ada item yang sudah masuk invoice, tampilkan pesan error
-    if (itemsAlreadyInInvoice.length > 0) {
-        const itemList = itemsAlreadyInInvoice.join(', ');
-        alert(`❌ Tidak dapat membuat invoice!\n\nTagihan berikut sudah dimasukkan ke dalam invoice:\n${itemList}\n\nTagihan yang sudah masuk invoice tidak dapat dimasukkan kembali.`);
-        return;
-    }
-
-    // Validasi: Periksa apakah ada item yang status pranota sudah lunas/paid
-    let itemsAlreadyPaid = [];
-    checkedBoxes.forEach((checkbox, index) => {
-        const row = checkbox.closest('tr');
-        if (row) {
-            // Cek kolom Status Pranota (kolom ke-18)
-            const statusPranotaCell = row.querySelector('td:nth-child(18)');
-            if (statusPranotaCell) {
-                const statusText = statusPranotaCell.textContent.trim();
-                // Jika status mengandung "Lunas" atau status_pranota adalah 'paid'
-                if (statusText && (statusText.includes('Lunas') || statusText.includes('paid'))) {
-                    // Ambil nomor kontainer untuk pesan error
-                    const containerCell = row.querySelector('td:nth-child(5)');
-                    const containerNumber = containerCell ? containerCell.textContent.trim() : `Item ${index + 1}`;
-                    itemsAlreadyPaid.push(containerNumber);
-                }
-            }
-        }
-    });
-
-    // Jika ada item yang sudah lunas, tampilkan pesan error
-    if (itemsAlreadyPaid.length > 0) {
-        const itemList = itemsAlreadyPaid.join(', ');
-        alert(`❌ Tidak dapat membuat invoice!\n\nTagihan berikut sudah lunas:\n${itemList}\n\nTagihan yang sudah lunas tidak dapat dimasukkan ke dalam invoice.`);
-        return;
-    }
-
-    // Collect data from selected rows
-    const selectedData = {
-        containers: [],
-        vendors: [],
-        sizes: [],
-        periodes: [],
-        totals: [],
-        dpps: [],
-        adjustments: [],
-        ppns: [],
-        pphs: [],
-        invoiceVendors: [],
-        tanggalVendors: []
-    };
-
-    checkedBoxes.forEach((checkbox, index) => {
-        const row = checkbox.closest('tr');
-        if (!row) {
-            console.warn('Row not found for checkbox:', checkbox);
-            return;
-        }
-
-        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, 8=masa, 9=tarif, 10=dpp, 11=adjustment, 12=invoice_vendor, 13=tanggal_vendor, 14=ppn, 15=pph, 16=grand_total
-        const vendorElement = row.querySelector('td:nth-child(4) .font-semibold');
-        const containerElement = row.querySelector('td:nth-child(5)');
-        const sizeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const periodeElement = row.querySelector('td:nth-child(7) .inline-flex');
-        const dppElement = row.querySelector('td:nth-child(10)');
-        const adjustmentElement = row.querySelector('td:nth-child(11)');
-        const invoiceVendorElement = row.querySelector('td:nth-child(12)'); // Invoice Vendor column
-        const tanggalVendorElement = row.querySelector('td:nth-child(13)'); // Tanggal Vendor column
-        const ppnElement = row.querySelector('td:nth-child(15)');
-        const pphElement = row.querySelector('td:nth-child(16)');
-        const totalElement = row.querySelector('td:nth-child(17)');
-
-        selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
-        selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
-        selectedData.sizes.push(sizeElement ? sizeElement.textContent.trim() : '-');
-        selectedData.periodes.push(periodeElement ? periodeElement.textContent.trim() : '-');
-        selectedData.totals.push(totalElement ? totalElement.textContent.trim() : '-');
-        
-        // Extract numeric values for DPP, Adjustment, PPN, PPh
-        selectedData.dpps.push(dppElement ? dppElement.textContent.trim() : '0');
-        selectedData.adjustments.push(adjustmentElement ? adjustmentElement.textContent.trim() : '0');
-        selectedData.ppns.push(ppnElement ? ppnElement.textContent.trim() : '0');
-        selectedData.pphs.push(pphElement ? pphElement.textContent.trim() : '0');
-        
-        // Extract Invoice Vendor and Tanggal Vendor
-        selectedData.invoiceVendors.push(invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '');
-        selectedData.tanggalVendors.push(tanggalVendorElement ? tanggalVendorElement.textContent.trim() : '');
-    });
-
-    console.log('Invoice data extracted:', selectedData);
-
-    // Check if all selected items have the same invoice vendor
-    const uniqueInvoiceVendors = [...new Set(selectedData.invoiceVendors.filter(inv => inv && inv !== '-' && inv !== ''))];
-    const uniqueTanggalVendors = [...new Set(selectedData.tanggalVendors.filter(tgl => tgl && tgl !== '-' && tgl !== ''))];
-    
-    console.log('Unique Invoice Vendors:', uniqueInvoiceVendors);
-    console.log('Unique Tanggal Vendors:', uniqueTanggalVendors);
-    
-    // Determine if we should auto-fill or ask for input
-    const shouldAutoFillInvoiceVendor = uniqueInvoiceVendors.length === 1;
-    const shouldAutoFillTanggalVendor = uniqueTanggalVendors.length === 1;
-    
-    const existingInvoiceVendor = shouldAutoFillInvoiceVendor ? uniqueInvoiceVendors[0] : '';
-    const existingTanggalVendor = shouldAutoFillTanggalVendor ? uniqueTanggalVendors[0] : '';
-
-    // Create detailed table for selected items
-    let containerRows = '';
-    selectedData.containers.forEach((container, index) => {
-        containerRows += `
-            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="px-3 py-2 text-sm text-gray-600">${index + 1}</td>
-                <td class="px-3 py-2 text-sm font-medium text-gray-900">${container}</td>
-                <td class="px-3 py-2 text-sm text-gray-600">${selectedData.vendors[index]}</td>
-                <td class="px-3 py-2 text-sm text-center">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        ${selectedData.sizes[index]}
-                    </span>
-                </td>
-                <td class="px-3 py-2 text-sm text-center">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        ${selectedData.periodes[index]} bln
-                    </span>
-                </td>
-                <td class="px-3 py-2 text-sm text-right font-medium text-gray-900">${selectedData.totals[index]}</td>
-            </tr>
-        `;
-    });
-
-    // Calculate totals
-    const totals = selectedData.totals.map(total => {
-        const cleanTotal = total.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '');
-        return parseFloat(cleanTotal) || 0;
-    });
-    const grandTotal = totals.reduce((sum, total) => sum + total, 0);
-    
-    // Calculate DPP total
-    const dpps = selectedData.dpps.map(dpp => {
-        const cleanDpp = dpp.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '');
-        return parseFloat(cleanDpp) || 0;
-    });
-    const totalDpp = dpps.reduce((sum, dpp) => sum + dpp, 0);
-    
-    // Calculate Adjustment total
-    const adjustments = selectedData.adjustments.map(adj => {
-        const cleanAdj = adj.replace(/Rp\s*/g, '').replace(/\+/g, '').replace(/\./g, '').replace(/,/g, '');
-        return parseFloat(cleanAdj) || 0;
-    });
-    const totalAdjustment = adjustments.reduce((sum, adj) => sum + adj, 0);
-    
-    // Calculate PPN total
-    const ppns = selectedData.ppns.map(ppn => {
-        const cleanPpn = ppn.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '');
-        return parseFloat(cleanPpn) || 0;
-    });
-    const totalPpn = ppns.reduce((sum, ppn) => sum + ppn, 0);
-    
-    // Calculate PPh total
-    const pphs = selectedData.pphs.map(pph => {
-        const cleanPph = pph.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '');
-        return parseFloat(cleanPph) || 0;
-    });
-    const totalPph = pphs.reduce((sum, pph) => sum + pph, 0);
-
-    // Create modal HTML for bulk invoice creation
-    const modalHTML = `
-        <div id="bulkInvoiceModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="modal-content relative top-20 mx-auto p-6 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Tambah Invoice - ${selectedIds.length} Item</h3>
-                    <button onclick="closeBulkInvoiceModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Tagihan Info Table -->
-                <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-700">Detail Kontainer yang Dipilih</h4>
-                    </div>
-                    <div class="max-h-64 overflow-y-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
-                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                ${containerRows}
-                            </tbody>
-                            <tfoot class="bg-gray-50 border-t-2 border-gray-300">
-                                <tr>
-                                    <td colspan="5" class="px-3 py-2 text-sm font-semibold text-gray-900 text-right">Total Keseluruhan:</td>
-                                    <td class="px-3 py-2 text-sm font-bold text-indigo-600 text-right">Rp ${grandTotal.toLocaleString('id-ID')}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-
-                <form id="bulkInvoiceForm" class="space-y-4">
-                    <input type="hidden" name="tagihan_ids" value="${selectedIds.join(',')}">
-                    
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <p class="text-sm text-green-800">
-                                <strong>Nomor invoice internal akan digenerate otomatis</strong> setelah data berhasil disimpan<br>
-                                Format: MS-MMYY-0000001
-                            </p>
-                        </div>
-                    </div>
-
-                    ${shouldAutoFillInvoiceVendor ? `
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-sm text-blue-800">
-                                    <strong>Otomatis menggunakan</strong> nomor invoice vendor yang sudah ada: <strong>${existingInvoiceVendor}</strong>
-                                </p>
-                            </div>
-                        </div>
-                        <input type="hidden" id="bulk_nomor_invoice_vendor" name="nomor_invoice_vendor" value="${existingInvoiceVendor}">
-                    ` : `
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Nomor Invoice Vendor <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="bulk_nomor_invoice_vendor" name="nomor_invoice_vendor" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Masukkan nomor invoice dari vendor">
-                            <p class="text-xs text-gray-500 mt-1">Nomor invoice yang diberikan oleh vendor</p>
-                        </div>
-                    `}
-
-                    ${shouldAutoFillTanggalVendor ? `
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-sm text-blue-800">
-                                    <strong>Otomatis menggunakan</strong> tanggal vendor yang sudah ada: <strong>${existingTanggalVendor}</strong>
-                                </p>
-                            </div>
-                        </div>
-                        <input type="hidden" id="bulk_tanggal_vendor" name="tanggal_vendor" value="${existingTanggalVendor}">
-                    ` : `
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Tanggal Invoice Vendor <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" id="bulk_tanggal_vendor" name="tanggal_vendor" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                   value="${existingTanggalVendor || new Date().toISOString().split('T')[0]}">
-                        </div>
-                    `}
-
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p class="text-sm text-blue-800">
-                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Invoice ini akan ditambahkan ke ${selectedIds.length} tagihan kontainer yang dipilih.
-                        </p>
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-4 border-t">
-                        <button type="button" onclick="closeBulkInvoiceModal()"
-                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200">
-                            Batal
-                        </button>
-                        <button type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200">
-                            <span class="btn-text">Simpan Invoice</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
-
-    // Add modal to body
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // Show modal with animation
-    const modal = document.getElementById('bulkInvoiceModal');
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-
-    setTimeout(() => {
-        modal.classList.add('modal-show');
-        const modalContent = modal.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.classList.add('modal-show');
-        }
-    }, 10);
-
-    // Set default date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('bulk_tanggal_vendor').value = today;
-
-    // Don't auto-generate invoice number when modal opens
-    // It will be generated when data is successfully saved
-
-    // Handle form submission
-    const form = document.getElementById('bulkInvoiceForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const nomorInvoiceVendorField = document.getElementById('bulk_nomor_invoice_vendor');
-            const tanggalVendorField = document.getElementById('bulk_tanggal_vendor');
-            
-            const nomorInvoiceVendor = nomorInvoiceVendorField ? nomorInvoiceVendorField.value.trim() : '';
-            const tanggalVendor = tanggalVendorField ? tanggalVendorField.value : '';
-
-            // Only validate if fields are visible (not auto-filled)
-            if (!shouldAutoFillInvoiceVendor && !nomorInvoiceVendor) {
-                showNotification('error', 'Validasi Gagal', 'Nomor invoice vendor harus diisi');
-                return;
-            }
-
-            if (!shouldAutoFillTanggalVendor && !tanggalVendor) {
-                showNotification('error', 'Validasi Gagal', 'Tanggal invoice vendor harus diisi');
-                return;
-            }
-            
-            // Use auto-filled values if available
-            const finalNomorInvoiceVendor = shouldAutoFillInvoiceVendor ? existingInvoiceVendor : nomorInvoiceVendor;
-            const finalTanggalVendor = shouldAutoFillTanggalVendor ? existingTanggalVendor : tanggalVendor;
-
-            // Show loading state
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const btnText = submitBtn.querySelector('.btn-text');
-            const originalText = btnText.textContent;
-            btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
-            submitBtn.disabled = true;
-
-            // Prepare form data to create invoice record
-            const formData = new FormData();
-            formData.append('_token', '{{ csrf_token() }}');
-            formData.append('nomor_invoice_vendor', finalNomorInvoiceVendor);
-            formData.append('tanggal_invoice', finalTanggalVendor);
-            formData.append('vendor_name', selectedData.vendors[0] || ''); // Use first vendor name
-            formData.append('subtotal', totalDpp.toString());
-            formData.append('ppn', totalPpn.toString());
-            formData.append('pph', totalPph.toString());
-            formData.append('adjustment', totalAdjustment.toString());
-            formData.append('total', grandTotal.toString());
-            formData.append('status', 'draft');
-            formData.append('keterangan', `Invoice untuk ${selectedIds.length} tagihan kontainer`);
-            formData.append('auto_generate_number', 'true'); // Flag untuk backend generate nomor
-            
-            console.log('Sending invoice data:', {
-                nomor_invoice_vendor: finalNomorInvoiceVendor,
-                tanggal_invoice: finalTanggalVendor,
-                vendor_name: selectedData.vendors[0] || '',
-                subtotal: totalDpp,
-                ppn: totalPpn,
-                pph: totalPph,
-                adjustment: totalAdjustment,
-                total: grandTotal,
-                tagihan_ids: selectedIds,
-                auto_generate_number: true,
-                auto_filled_invoice: shouldAutoFillInvoiceVendor,
-                auto_filled_tanggal: shouldAutoFillTanggalVendor
-            });
-            
-            // Add tagihan IDs
-            selectedIds.forEach(id => {
-                formData.append('tagihan_ids[]', id);
-            });
-
-            // Send request to create invoice
-            fetch('{{ route("invoice-tagihan-sewa.store") }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        console.error('Validation errors:', data);
-                        let errorMessage = data.message || `HTTP error! status: ${response.status}`;
-                        
-                        // Display validation errors if available
-                        if (data.errors) {
-                            const errorDetails = Object.entries(data.errors)
-                                .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-                                .join('\n');
-                            errorMessage += '\n\nDetail:\n' + errorDetails;
-                        }
-                        
-                        throw new Error(errorMessage);
-                    }).catch(err => {
-                        if (err.message) throw err;
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Invoice created successfully:', data);
-                showNotification('success', 'Berhasil', 'Invoice berhasil dibuat');
-                
-                // Clear checkbox selections
-                window.clearSavedState();
-                
-                // Uncheck all visible checkboxes
-                const checkboxes = document.querySelectorAll('.row-checkbox');
-                checkboxes.forEach(cb => cb.checked = false);
-                
-                // Update select all checkbox
-                const selectAll = document.getElementById('select-all');
-                if (selectAll) selectAll.checked = false;
-                
-                // Hide bulk actions
-                const bulkActions = document.getElementById('bulkActions');
-                if (bulkActions) bulkActions.classList.add('hidden');
-                
-                // Remove badge if exists
-                const badge = document.getElementById('hiddenSelectionBadge');
-                if (badge) badge.remove();
-                
-                // Close modal
-                closeBulkInvoiceModal();
-                
-                // Reload page to show updated data
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            })
-            .catch(error => {
-                console.error('Error creating invoice:', error);
-                showNotification('error', 'Gagal Membuat Invoice', error.message || 'Terjadi kesalahan saat membuat invoice');
-                btnText.textContent = originalText;
-                submitBtn.disabled = false;
-            });
-        });
-    }
 };
 
 // Function to generate invoice number with format MS-MMYY-0000001

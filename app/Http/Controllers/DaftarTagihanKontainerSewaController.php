@@ -2792,4 +2792,40 @@ class DaftarTagihanKontainerSewaController extends Controller
             'akhiran' => trim($akhiran),
         ];
     }
+    /**
+     * Get details for multiple IDs (used for bulk actions across pages)
+     */
+    public function getDetailsByIds(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'Invalid IDs']);
+        }
+
+        $items = DaftarTagihanKontainerSewa::whereIn('id', $ids)->get();
+
+        // Format data to match what the frontend expects
+        $formattedItems = $items->map(function($item) {
+            return [
+                'id' => $item->id,
+                'nomor_kontainer' => $item->nomor_kontainer,
+                'vendor' => $item->vendor,
+                'size' => $item->size,
+                'periode' => $item->periode,
+                'masa' => $item->masa,
+                'dpp' => $item->dpp,
+                'ppn' => $item->ppn,
+                'pph' => $item->pph,
+                'adjustment' => $item->adjustment,
+                'grand_total' => $item->grand_total,
+                'formatted_total' => 'Rp ' . number_format($item->grand_total, 0, ',', '.'),
+                'invoice_vendor' => $item->invoice_vendor,
+                'tanggal_vendor' => $item->tanggal_vendor,
+                'status_pranota' => $item->status_pranota,
+                'status_invoice' => $item->status_invoice,
+            ];
+        });
+
+        return response()->json(['success' => true, 'data' => $formattedItems]);
+    }
 }
