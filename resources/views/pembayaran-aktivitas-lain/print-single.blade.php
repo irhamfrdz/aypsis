@@ -354,12 +354,11 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 15%;">No. Surat Jalan</th>
+                        <th style="width: 20%;">No. Surat Jalan</th>
                         <th style="width: 10%;">Tanggal SJ</th>
                         <th style="width: 12%;">No. Polisi</th>
                         <th style="width: 15%;">Supir</th>
-                        <th style="width: 18%;">Tujuan</th>
-                        <th style="width: 10%;">Ritase</th>
+                        <th style="width: 23%;">Tujuan</th>
                         <th style="width: 15%;">Nominal Kembali</th>
                     </tr>
                 </thead>
@@ -377,12 +376,11 @@
                             <td>{{ $sj->no_plat ?? '-' }}</td>
                             <td>{{ $sj->supir ?? '-' }}</td>
                             <td>{{ $sj->tujuan_pengiriman ?? '-' }}</td>
-                            <td class="text-center">{{ $sj->rit ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
@@ -396,12 +394,11 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 15%;">No. Surat Jalan</th>
+                        <th style="width: 20%;">No. Surat Jalan</th>
                         <th style="width: 10%;">Tanggal SJ</th>
                         <th style="width: 12%;">No. Polisi</th>
                         <th style="width: 15%;">Supir</th>
-                        <th style="width: 18%;">Tujuan</th>
-                        <th style="width: 10%;">Ritase</th>
+                        <th style="width: 23%;">Tujuan</th>
                         <th style="width: 15%;">Nominal Kembali</th>
                     </tr>
                 </thead>
@@ -413,11 +410,10 @@
                         <td>{{ $sjDetail->no_plat ?? $sjDetail->no_polisi_kendaraan ?? '-' }}</td>
                         <td>{{ $sjDetail->supir ?? '-' }}</td>
                         <td>{{ $sjDetail->tujuan_pengiriman ?? '-' }}</td>
-                        <td class="text-center">{{ $sjDetail->rit ?? '-' }}</td>
                         <td class="text-right">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</td>
                     </tr>
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
