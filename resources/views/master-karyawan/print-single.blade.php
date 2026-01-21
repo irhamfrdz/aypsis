@@ -1,38 +1,38 @@
 @extends('layouts.print')
 
 @section('content')
-<div style="padding:12px;max-width:800px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#111;">
+<div style="padding:12px;max-width:800px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#000;font-weight:bold;">
     @php use Carbon\Carbon; @endphp
     <style>
         /* Adjust spacing for readability */
         .form-table td, .form-table th { padding: 4px 6px !important; line-height: 1.2; }
         /* Slightly smaller signature fonts and reduced spacing */
-        .signature-block { font-size: 9px; }
-        .signature-block .signature-name { font-size: 8px; margin-top:4px; }
+        .signature-block { font-size: 10px; }
+        .signature-block .signature-name { font-size: 9px; margin-top:4px; }
         .signature-line { height: 20px; }
 
         /* Print-specific rules */
         @media print {
             /* Balanced spacing to fit single F4 page with better readability */
-            .form-table td, .form-table th { padding: 2.5px 5.5px !important; font-size: 8.25px !important; line-height: 1.12 !important; }
+            .form-table td, .form-table th { padding: 3px 6px !important; font-size: 11px !important; line-height: 1.15 !important; font-weight: bold !important; }
             /* family table compact */
-            .family-table { font-size: 8px !important; }
+            .family-table { font-size: 10px !important; font-weight: bold !important; }
             .family-table th, .family-table td { padding: 3px 5px !important; line-height: 1.1 !important; }
             /* headings */
-            h2 { margin-bottom:3px !important; font-size:14px !important; }
+            h2 { margin-bottom:3px !important; font-size:16px !important; }
             .signature-block { margin-top:4px !important; }
             .signature-line { height:16px !important; }
             /* reduce page margins to maximize vertical space */
             @page { margin: 0mm 4mm 4mm 4mm; }
         }
     </style>
-    <h2 style="text-align:center;margin-bottom:4px;font-size:15px;">FORM DATA KARYAWAN</h2>
-    <div style="display:flex;justify-content:flex-start;margin-bottom:6px;font-size:11px;gap:16px;">
+    <h2 style="text-align:center;margin-bottom:4px;font-size:18px;">FORM DATA KARYAWAN</h2>
+    <div style="display:flex;justify-content:flex-start;margin-bottom:6px;font-size:12px;gap:16px;">
         <div><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }}</div>
     </div>
     @php $fmCount = min($karyawan->familyMembers->count(), 6); @endphp
 
-    <table class="form-table" style="width:100%;border-collapse:collapse;font-size:9px;">
+    <table class="form-table" style="width:100%;border-collapse:collapse;font-size:12px;font-weight:bold;">
         <!-- Requested fields in specific order -->
         <tr>
             <td style="width:40%;padding:1px;border:1px solid #ddd;background:#f7fafc;"><strong>1. NIK Karyawan</strong></td>
@@ -166,38 +166,38 @@
 
     {{-- Halaman 1: Pernyataan dan Tanda Tangan --}}
     <div class="signature-block" style="page-break-inside:avoid; -webkit-column-break-inside: avoid; break-inside: avoid;">
-        <div style="margin-top:6px;margin-bottom:4px;font-size:8.5px;font-style:italic;">
+        <div style="margin-top:6px;margin-bottom:4px;font-size:10px;font-style:italic;font-weight:bold;">
             Dengan ini menyatakan bahwa apa yang telah saya beritahukan di atas adalah benar dan dapat dipertanggungjawabkan.
         </div>
 
-        <div style="margin-top:4px;font-size:8.5px;">
+        <div style="margin-top:4px;font-size:10px;font-weight:bold;">
             <strong>Jakarta, {{ now()->format('d F Y') }}</strong>
         </div>
 
         <div style="margin-top:2px;margin-bottom:8px;">&nbsp;</div>
 
-        <div style="margin-top:12px;font-size:11px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div style="margin-top:12px;font-size:12px;display:flex;justify-content:space-between;align-items:flex-end;">
             <div style="width:220px;text-align:center;">
                 <div class="signature-line" style="height:28px;border-bottom:1px solid #ddd;width:220px;margin:0 auto;"></div>
-                <div style="margin-top:6px;font-size:9px;"><strong>{{ $karyawan->nama_lengkap ?? '____________________________' }}</strong></div>
+                <div style="margin-top:6px;font-size:11px;"><strong>{{ $karyawan->nama_lengkap ?? '____________________________' }}</strong></div>
             </div>
             <div style="width:220px;text-align:center;">
-                <div class="signature-name" style="font-size:8.5px;margin-bottom:6px;">&nbsp;</div>
+                <div class="signature-name" style="font-size:10px;margin-bottom:6px;">&nbsp;</div>
                 <div class="signature-line" style="height:28px;border-bottom:1px solid #ddd;width:220px;margin:0 auto;"></div>
-                <div style="margin-top:6px;font-size:9px;"><strong>TTD HR</strong></div>
+                <div style="margin-top:6px;font-size:11px;"><strong>TTD HR</strong></div>
             </div>
         </div>
     </div>
 
     {{-- Halaman 2: Susunan Keluarga --}}
-    <h2 style="text-align:center;margin-bottom:8px;">SUSUNAN KELUARGA</h2>
-    <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:13px;">
+    <h2 style="text-align:center;margin-bottom:8px;font-size:18px;">SUSUNAN KELUARGA</h2>
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:14px;font-weight:bold;">
         <div><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }}</div>
         <div><strong>Nama:</strong> {{ $karyawan->nama_lengkap ?? '-' }}</div>
     </div>
 
         @if($karyawan->familyMembers && $karyawan->familyMembers->count() > 0)
-            <table class="family-table" style="width:100%;border-collapse:collapse;font-size:9px;">
+            <table class="family-table" style="width:100%;border-collapse:collapse;font-size:11px;font-weight:bold;">
                 <thead>
                     <tr style="background:#f7fafc;">
                         <th style="padding:6px;border:1px solid #ddd;text-align:center;width:8%;"><strong>NO.</strong></th>
@@ -235,14 +235,14 @@
                     @endfor
                     @if($karyawan->familyMembers->count() > 6)
                         <tr>
-                            <td colspan="7" style="padding:4px;border:1px solid #ddd;font-size:8px;text-align:left;">Menampilkan 6 dari {{ $karyawan->familyMembers->count() }} anggota keluarga. Lihat detail untuk lengkapnya.</td>
+                            <td colspan="7" style="padding:4px;border:1px solid #ddd;font-size:10px;text-align:left;">Menampilkan 6 dari {{ $karyawan->familyMembers->count() }} anggota keluarga. Lihat detail untuk lengkapnya.</td>
                         </tr>
                     @endif
                 </tbody>
             </table>
         @else
             {{-- Empty table with 10 rows for family members --}}
-            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;font-weight:bold;">
                 <thead>
                     <tr style="background:#f7fafc;">
                         <th style="padding:6px;border:1px solid #ddd;text-align:center;width:8%;"><strong>NO.</strong></th>
