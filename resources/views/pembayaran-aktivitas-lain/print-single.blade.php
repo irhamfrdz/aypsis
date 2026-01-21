@@ -276,6 +276,12 @@
                     <td>: {{ $pembayaranAktivitasLain->nomor_voyage }}</td>
                 </tr>
                 @endif
+                @if($pembayaranAktivitasLain->no_surat_jalan)
+                <tr>
+                    <td>No. Surat Jalan</td>
+                    <td>: {{ $pembayaranAktivitasLain->no_surat_jalan }}</td>
+                </tr>
+                @endif
                 @if($pembayaranAktivitasLain->penerima)
                 <tr>
                     <td>Penerima</td>
@@ -293,13 +299,16 @@
             $jenisPenyesuaian = $pembayaranAktivitasLain->jenis_penyesuaian ?? '';
             
             $isPembayaranKapal = stripos($jenisAktivitas, 'Kapal') !== false;
-            $isAdjustment = stripos($jenisAktivitas, 'Adjustment') !== false;
+            // Handle typo 'Adjusment'
+            $isAdjustment = stripos($jenisAktivitas, 'Adjustment') !== false || stripos($jenisAktivitas, 'Adjusment') !== false;
+            
             // Check for 'pengembalian penuh' (handle snake_case or spaces)
             $isPengembalianPenuh = $isAdjustment && stripos(str_replace(['_', '-'], ' ', $jenisPenyesuaian), 'pengembalian penuh') !== false;
             
             // For Direct Payment (Single SJ without invoice)
             $sjDetail = $pembayaranAktivitasLain->suratJalanDetail ?? null;
             $hasSuratJalan = !empty($sjDetail);
+            $hasManualSj = !empty($pembayaranAktivitasLain->no_surat_jalan);
         @endphp
         
         @if($hasInvoices && $isPembayaranKapal)
@@ -379,7 +388,7 @@
                 </tbody>
             </table>
         </div>
-        @elseif($isPengembalianPenuh && $hasSuratJalan)
+        @elseif($isPengembalianPenuh && ($hasSuratJalan || $hasManualSj))
         <!-- Daftar Invoice untuk Pengembalian Penuh Uang Jalan (Direct Payment / Tanpa Invoice) -->
         <div style="margin-bottom: 12px;">
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Pengembalian Penuh Uang Jalan:</strong>
@@ -399,7 +408,7 @@
                 <tbody>
                     <tr>
                         <td class="text-center">1</td>
-                        <td>{{ $sjDetail->nomor_surat_jalan ?? $sjDetail->no_surat_jalan ?? '-' }}</td>
+                        <td>{{ $sjDetail->nomor_surat_jalan ?? $sjDetail->no_surat_jalan ?? $pembayaranAktivitasLain->no_surat_jalan ?? '-' }}</td>
                         <td class="text-center">{{ ($sjDetail && $sjDetail->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sjDetail->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
                         <td>{{ $sjDetail->no_plat ?? $sjDetail->no_polisi_kendaraan ?? '-' }}</td>
                         <td>{{ $sjDetail->supir ?? '-' }}</td>
@@ -424,7 +433,7 @@
                         <th style="width: 4%;">No</th>
                         <th style="width: 15%;">No. Invoice</th>
                         <th style="width: 10%;">Tanggal</th>
-                        @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
+                        @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false || stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjusment') !== false)
                             <th style="width: 12%;">No. Surat Jalan</th>
                             <th style="width: 13%;">No. Accurate Sebelumnya</th>
                         @endif
