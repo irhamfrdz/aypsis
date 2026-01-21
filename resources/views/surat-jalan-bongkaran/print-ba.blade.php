@@ -277,7 +277,17 @@
     {{-- Tanggal BA (format: d-M-Y) --}}
     @php
         $tanggalBa = '';
-        if (isset($baData->tanggal_ba)) {
+        // Prioritas: Ambil dari manifest tanggal_berangkat
+        if (isset($baData->manifest) && !empty($baData->manifest->tanggal_berangkat)) {
+            try {
+                $tanggalBa = \Carbon\Carbon::parse($baData->manifest->tanggal_berangkat)->format('d-M-Y');
+            } catch (\Exception $e) {
+                // If parse fails, stay empty to try fallback
+            }
+        }
+        
+        // Fallback: Ambil dari tanggal_ba jika manifest date kosong
+        if (empty($tanggalBa) && isset($baData->tanggal_ba)) {
             try {
                 $tanggalBa = \Carbon\Carbon::parse($baData->tanggal_ba)->format('d-M-Y');
             } catch (\Exception $e) {
