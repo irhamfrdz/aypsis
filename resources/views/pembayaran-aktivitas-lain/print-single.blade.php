@@ -296,6 +296,10 @@
             $isAdjustment = stripos($jenisAktivitas, 'Adjustment') !== false;
             // Check for 'pengembalian penuh' (handle snake_case or spaces)
             $isPengembalianPenuh = $isAdjustment && stripos(str_replace(['_', '-'], ' ', $jenisPenyesuaian), 'pengembalian penuh') !== false;
+            
+            // For Direct Payment (Single SJ without invoice)
+            $sjDetail = $pembayaranAktivitasLain->suratJalanDetail ?? null;
+            $hasSuratJalan = !empty($sjDetail);
         @endphp
         
         @if($hasInvoices && $isPembayaranKapal)
@@ -371,6 +375,41 @@
                     <tr class="total-row">
                         <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @elseif($isPengembalianPenuh && $hasSuratJalan)
+        <!-- Daftar Invoice untuk Pengembalian Penuh Uang Jalan (Direct Payment / Tanpa Invoice) -->
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Pengembalian Penuh Uang Jalan:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No. Surat Jalan</th>
+                        <th style="width: 10%;">Tanggal SJ</th>
+                        <th style="width: 12%;">No. Polisi</th>
+                        <th style="width: 15%;">Supir</th>
+                        <th style="width: 18%;">Tujuan</th>
+                        <th style="width: 10%;">Ritase</th>
+                        <th style="width: 15%;">Nominal Kembali</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center">1</td>
+                        <td>{{ $sjDetail->nomor_surat_jalan ?? $sjDetail->no_surat_jalan ?? '-' }}</td>
+                        <td class="text-center">{{ ($sjDetail && $sjDetail->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sjDetail->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $sjDetail->no_plat ?? $sjDetail->no_polisi_kendaraan ?? '-' }}</td>
+                        <td>{{ $sjDetail->supir ?? '-' }}</td>
+                        <td>{{ $sjDetail->tujuan_pengiriman ?? '-' }}</td>
+                        <td class="text-center">{{ $sjDetail->rit ?? '-' }}</td>
+                        <td class="text-right">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
