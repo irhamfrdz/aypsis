@@ -4265,6 +4265,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                
           Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')
                ->middleware('can:bl-view');
+               
+          Route::delete('bl/{bl}', [\App\Http\Controllers\BlController::class, 'destroy'])->name('bl.destroy')
+               ->middleware('can:bl-delete');
 
           // ═══════════════════════════════════════════════════════════════════════
           // 🔧 STOCK BAN MANAGEMENT

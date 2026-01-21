@@ -1872,4 +1872,34 @@ class BlController extends Controller
             'warning' => null
         ];
     }
+
+    /**
+     * Remove the specified BL from storage.
+     */
+    public function destroy(Bl $bl)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-delete")
+                ->exists();
+            
+            if (!$hasPermission) {
+                return redirect()->back()->with('error', 'Tidak memiliki akses untuk menghapus data BL');
+            }
+        }
+
+        try {
+            $nomorBl = $bl->nomor_bl ?? 'BL #' . $bl->id;
+            $bl->delete();
+            
+            return redirect()->route('bl.index')->with('success', "Data BL {$nomorBl} berhasil dihapus.");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus data BL: ' . $e->getMessage());
+        }
+    }
 }

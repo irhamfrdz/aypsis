@@ -25,12 +25,12 @@
             font-size: 14px;
             font-weight: bold;
         }
-        /* Positioned penerima data */
+        /* Positioned penerima data - below pengirim */
         .penerima {
             position: absolute;
-            top: 8.5cm; /* 1cm lower: 8.5cm */
-            left: 4.5cm;  /* 1cm more to the right: 4.5cm */
-            width: 12cm; /* same width to align with pengirim */
+            top: 9.5cm; /* moved down to give space for pengirim */
+            left: 4.5cm;  /* aligned with pengirim */
+            width: 12cm; /* same width as pengirim */
             white-space: pre-wrap;
             line-height: 1.2;
             font-size: 14px;

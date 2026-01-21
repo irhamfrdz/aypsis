@@ -666,7 +666,8 @@
                                 <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('bl.show', $bl) }}" 
-                                           class="text-blue-600 hover:text-blue-900 transition duration-200">
+                                           class="text-blue-600 hover:text-blue-900 transition duration-200"
+                                           title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @if($bl->prospek)
@@ -676,6 +677,12 @@
                                                 <i class="fas fa-link"></i>
                                             </a>
                                         @endif
+                                        <button type="button" 
+                                                onclick="confirmDelete({{ $bl->id }}, '{{ addslashes($bl->nomor_bl) }}')"
+                                                class="text-red-600 hover:text-red-900 transition duration-200"
+                                                title="Hapus BL">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -1102,6 +1109,42 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus BL -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mt-4">Konfirmasi Hapus</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    Apakah Anda yakin ingin menghapus BL <strong id="deleteBlNumber"></strong>?
+                </p>
+                <p class="text-xs text-red-500 mt-2">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    Tindakan ini tidak dapat dibatalkan.
+                </p>
+            </div>
+            <div class="flex justify-center gap-3 mt-4">
+                <button type="button" onclick="closeDeleteModal()"
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    <i class="fas fa-times mr-1"></i> Batal
+                </button>
+                <form id="deleteForm" method="POST" action="" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" id="deleteBlId" name="id" value="">
+                    <button type="submit"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <i class="fas fa-trash mr-1"></i> Hapus
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -1657,6 +1700,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(event) {
         const splitModal = document.getElementById('splitModal');
         const exportModal = document.getElementById('exportModal');
+        const deleteModal = document.getElementById('deleteModal');
         
         if (event.target === splitModal) {
             closeSplitModal();
@@ -1665,7 +1709,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.target === exportModal) {
             closeExportModal();
         }
+        
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
     });
 });
+
+// Delete confirmation functions
+function confirmDelete(id, nomorBl) {
+    document.getElementById('deleteBlId').value = id;
+    document.getElementById('deleteBlNumber').textContent = nomorBl || 'BL #' + id;
+    document.getElementById('deleteForm').action = '/bl/' + id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
 </script>
 @endpush
