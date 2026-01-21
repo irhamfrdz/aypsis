@@ -124,7 +124,12 @@
                                     // Untuk biaya buruh (KB024), ambil kapal dari barangDetails
                                     if ($biaya->jenis_biaya === 'KB024' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
                                         $namaKapals = $biaya->barangDetails->pluck('kapal')->unique()->filter()->values()->toArray();
-                                    } else {
+                                    } 
+                                    // Untuk biaya air, ambil kapal dari airDetails
+                                    elseif ($biaya->airDetails && $biaya->airDetails->count() > 0) {
+                                        $namaKapals = $biaya->airDetails->pluck('kapal')->unique()->filter()->values()->toArray();
+                                    }
+                                    else {
                                         $namaKapals = is_array($biaya->nama_kapal) ? $biaya->nama_kapal : ($biaya->nama_kapal ? [$biaya->nama_kapal] : []);
                                     }
                                 @endphp
@@ -142,7 +147,12 @@
                                     // Untuk biaya buruh (KB024), ambil voyage dari barangDetails
                                     if ($biaya->jenis_biaya === 'KB024' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
                                         $noVoyages = $biaya->barangDetails->pluck('voyage')->unique()->filter()->values()->toArray();
-                                    } else {
+                                    } 
+                                    // Untuk biaya air, ambil voyage dari airDetails
+                                    elseif ($biaya->airDetails && $biaya->airDetails->count() > 0) {
+                                        $noVoyages = $biaya->airDetails->pluck('voyage')->unique()->filter()->values()->toArray();
+                                    }
+                                    else {
                                         $noVoyages = is_array($biaya->no_voyage) ? $biaya->no_voyage : ($biaya->no_voyage ? [$biaya->no_voyage] : []);
                                     }
                                 @endphp
