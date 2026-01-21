@@ -234,12 +234,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="header-info">
-                <div>
-                    <strong>PT. ALEXINDO YAKINPRIMA</strong><br>
-                    <span>Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
-                </div>
-            </div>
+
             <div class="header-meta">
                 <span><strong>Tanggal: {{ \Carbon\Carbon::parse($pembayaranAktivitasLain->tanggal)->format('d-M-Y') }}</strong></span>
             </div>
