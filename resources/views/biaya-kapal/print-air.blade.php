@@ -172,6 +172,7 @@
         
         // Calculate Totals
         $totalQty = 0;
+        $totalWaterCost = 0;
         $totalJasaAir = 0;
         $totalBiayaAgen = 0;
         $totalPPH = 0;
@@ -179,6 +180,12 @@
         
         foreach($biayaKapal->airDetails as $detail) {
             $totalQty += $detail->kuantitas;
+            
+            // Perhitungan Harga Murni Air (Qty * Harga Satuan)
+            // Jika harga null/0, maka 0.
+            $waterCost = $detail->kuantitas * ($detail->harga ?? 0);
+            $totalWaterCost += $waterCost;
+            
             $totalJasaAir += $detail->jasa_air;
             $totalBiayaAgen += $detail->biaya_agen;
             $totalPPH += $detail->pph;
@@ -262,22 +269,34 @@
         </thead>
         <tbody>
             @php $no = 1; @endphp
-            <!-- Row 1: Air Tawar -->
+            
+            <!-- Row 1: Air Tawar (Base Cost) -->
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
                 <td>AIR TAWAR</td>
                 <td class="text-center">{{ number_format($totalQty, 2, ',', '.') }}</td>
                 <td class="text-right">
                     @if($totalQty > 0)
-                        Rp {{ number_format($totalJasaAir / $totalQty, 0, ',', '.') }}
+                        Rp {{ number_format($totalWaterCost / $totalQty, 0, ',', '.') }}
                     @else
                         -
                     @endif
                 </td>
-                <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($totalWaterCost, 0, ',', '.') }}</td>
             </tr>
             
-            <!-- Row 2: Biaya Agen (If exists) -->
+            <!-- Row 2: Jasa Air (Jika ada value) -->
+            @if($totalJasaAir > 0)
+            <tr>
+                <td class="text-center">{{ $no++ }}</td>
+                <td>JASA AIR</td>
+                <td class="text-center">1</td>
+                <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            
+            <!-- Row 3: Biaya Agen (If exists) -->
             @if($totalBiayaAgen > 0)
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
@@ -288,7 +307,7 @@
             </tr>
             @endif
             
-            <!-- Row 3: PPH (If exists) -->
+            <!-- Row 4: PPH (If exists) -->
             @if($totalPPH > 0)
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
