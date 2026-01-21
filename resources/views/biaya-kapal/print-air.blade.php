@@ -14,392 +14,323 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
-            line-height: 1.4;
             color: #333;
-            padding: 15px;
-            font-weight: bold;
+            padding: 20px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            margin-bottom: 20px;
         }
         
         .header h1 {
             font-size: 18px;
-            margin-bottom: 4px;
-            color: #1a1a1a;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
         }
         
         .header p {
-            font-size: 9px;
-            color: #666;
-            line-height: 1.2;
-        }
-        
-        .invoice-info {
-            margin-bottom: 12px;
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-        }
-        
-        .info-item {
-            display: flex;
-            padding: 3px 0;
-        }
-        
-        .info-label {
-            width: 120px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        
-        .info-separator {
-            margin: 0 5px;
-            flex-shrink: 0;
-        }
-        
-        .info-value {
-            flex: 1;
-            font-weight: bold;
-        }
-        
-        .section-title {
             font-size: 12px;
             font-weight: bold;
-            margin-top: 10px;
-            margin-bottom: 8px;
-            padding: 6px 10px;
-            background-color: #e0f7fa;
-            border-left: 3px solid #0097a7;
         }
         
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 12px;
-            font-size: 10px;
-        }
-        
-        .details-table th,
-        .details-table td {
-            padding: 6px 8px;
-            border: 2px solid #333;
-            text-align: left;
-            font-weight: bold;
-        }
-        
-        .details-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #1a1a1a;
-            font-size: 10px;
-        }
-        
-        .details-table tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        
-        .details-table .label-col {
-            width: 60%;
-            font-weight: bold;
-        }
-        
-        .details-table .value-col {
-            width: 40%;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        .calculation-row {
-            background-color: #e3f2fd !important;
-        }
-        
-        .total-row {
-            background-color: #fff3cd !important;
-            font-weight: bold;
-        }
-        
-        .grand-total-row {
-            background-color: #d4edda !important;
-            font-weight: bold;
+        .info-section {
+            margin-bottom: 20px;
             font-size: 11px;
         }
         
-        .number {
-            text-align: right;
-            font-family: 'Courier New', monospace;
+        .info-table {
+            width: 100%;
+        }
+        
+        .info-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 130px;
+        }
+        
+        .section-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+        
+        .custom-table th, 
+        .custom-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            vertical-align: middle;
+        }
+        
+        .custom-table th {
+            text-align: center;
+            font-weight: bold;
+            background-color: #fff;
+            border-bottom: 2px solid #000; /* Thicker border for header */
+        }
+        
+        .custom-table tr.total-row td {
+            background-color: #e9ecef;
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        
+        .keterangan-box {
+            border: 2px solid #000;
+            padding: 10px;
+            margin-top: 20px;
+            min-height: 60px;
+        }
+        
+        .keterangan-title {
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         
         .footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
+            margin-top: 30px;
         }
         
-        .signatures {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 12px;
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
         }
         
-        .signature-box {
+        .signature-table td {
+            border: 1px solid #000;
             text-align: center;
-            font-size: 10px;
+            padding: 5px;
+            width: 33.33%;
         }
         
-        .signature-line {
-            margin-top: 50px;
-            border-top: 1px solid #333;
-            padding-top: 3px;
-            font-weight: bold;
-        }
-        
-        .notes {
-            margin-top: 10px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-left: 3px solid #0097a7;
-            font-size: 9px;
-            font-weight: bold;
-        }
-        
-        .notes-title {
-            font-weight: bold;
-            margin-bottom: 3px;
+        .signature-space {
+            height: 60px;
         }
         
         @media print {
-            body {
-                padding: 10px;
-            }
-            
-            .no-print {
-                display: none;
-            }
-            
-            @page {
-                margin: 1cm;
-                size: 21.6cm 33cm;
-            }
+            .no-print { display: none !important; }
+            body { padding: 0; }
+            @page { margin: 1cm; size: auto; }
         }
         
-        .print-button {
+        .btn-print {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            padding: 8px 16px;
-            background-color: #0097a7;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 12px;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .print-button:hover {
-            background-color: #00796b;
-        }
-
-        .back-button {
+        .btn-back {
             position: fixed;
-            top: 15px;
-            right: 130px;
-            padding: 8px 16px;
-            background-color: #6c757d;
+            top: 10px;
+            right: 70px;
+            padding: 5px 10px;
+            background: #6c757d;
             color: white;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 3px;
             text-decoration: none;
-        }
-
-        .back-button:hover {
-            background-color: #5a6268;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <a href="{{ route('biaya-kapal.index') }}" class="back-button no-print">← Kembali</a>
-    <button class="print-button no-print" onclick="window.print()">🖨️ Cetak Invoice</button>
+    <button class="btn-print no-print" onclick="window.print()">Print</button>
+    <a href="{{ route('biaya-kapal.index') }}" class="btn-back no-print">Kembali</a>
 
     <div class="header">
         <h1>PERMOHONAN TRANSFER</h1>
         <p>BIAYA AIR TAWAR</p>
     </div>
-
+    
     @php
-        // Prepare variables for display
         $vendorDisplay = $biayaKapal->nama_vendor ?? ($biayaKapal->airDetails->pluck('vendor')->filter()->unique()->values()->first() ?? '-');
         $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
         $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($biayaKapal->airDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
-    @endphp
-
-    <div class="invoice-info">
-        <div style="flex: 1;">
-            <div class="info-item">
-                <span class="info-label">Nomor Invoice</span>
-                <span class="info-separator">:</span>
-                <span class="info-value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
-            </div>
-
-            @if($biayaKapal->klasifikasiBiaya)
-            <div class="info-item">
-                <span class="info-label">Jenis Biaya</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $biayaKapal->klasifikasiBiaya->nama }}</span>
-            </div>
-            @endif
-
-            <div class="info-item">
-                <span class="info-label">Penerima</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $penerimaDisplay }}</span>
-            </div>
-
-            @if($biayaKapal->nomor_referensi)
-            <div class="info-item">
-                <span class="info-label">Referensi</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $biayaKapal->nomor_referensi }}</span>
-            </div>
-            @endif
-        </div>
-
-        <div style="flex: 1;">
-            <div class="info-item">
-                <span class="info-label">Tanggal</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $biayaKapal->tanggal->format('d/M/Y') }}</span>
-            </div>
-
-            <div class="info-item">
-                <span class="info-label">Vendor</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $vendorDisplay }}</span>
-            </div>
-
-            <div class="info-item">
-                <span class="info-label">Nomor Rekening</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $rekeningDisplay }}</span>
-            </div>
-        </div>
-    </div>
-
-    @php
-        $totalSubTotal = 0;
+        
+        // Calculate Totals
+        $totalQty = 0;
         $totalJasaAir = 0;
         $totalBiayaAgen = 0;
         $totalPPH = 0;
         $totalGrandTotal = 0;
+        
+        foreach($biayaKapal->airDetails as $detail) {
+            $totalQty += $detail->kuantitas;
+            $totalJasaAir += $detail->jasa_air;
+            $totalBiayaAgen += $detail->biaya_agen;
+            $totalPPH += $detail->pph;
+            $totalGrandTotal += $detail->grand_total;
+        }
     @endphp
 
-    <div class="section-title">
-        <i class="fas fa-water"></i> Detail Biaya Air Tawar
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td class="info-label">Nomor Invoice</td>
+                <td>: <strong>{{ $biayaKapal->nomor_invoice }}</strong></td>
+                <td class="info-label">Tanggal</td>
+                <td>: {{ $biayaKapal->tanggal->format('d/M/Y') }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Penerima</td>
+                <td>: {{ $penerimaDisplay }}</td>
+                <td class="info-label">Vendor</td>
+                <td>: {{ $vendorDisplay }}</td>
+            </tr>
+            <tr>
+                @if($biayaKapal->klasifikasiBiaya)
+                <td class="info-label">Jenis Biaya</td>
+                <td>: {{ $biayaKapal->klasifikasiBiaya->nama }}</td>
+                @else
+                <td class="info-label"></td>
+                <td></td>
+                @endif
+                <td class="info-label">Nomor Rekening</td>
+                <td>: {{ $rekeningDisplay }}</td>
+            </tr>
+        </table>
     </div>
 
-    <!-- Detail Table -->
-    <table class="details-table">
+    <!-- TABLE 1: DETAIL BIAYA KAPAL -->
+    <div class="section-header">Detail Biaya Kapal:</div>
+    <table class="custom-table">
         <thead>
             <tr>
-                <th style="width: 4%;">No</th>
-                <th style="width: 25%;">Kapal</th>
-                <th style="width: 14%;">Voyage</th>
-                <th style="width: 8%;">Qty (Ton)</th>
-                <th style="width: 9%;">Jasa Air</th>
-                <th style="width: 9%;">Biaya Agen</th>
-                <th style="width: 11%;">Sub Total</th>
-                <th style="width: 9%;">PPH (2%)</th>
-                <th style="width: 11%;">Grand Total</th>
+                <th style="width: 5%;">No</th>
+                <th>Nama Kapal</th>
+                <th style="width: 20%;">Tanggal</th>
+                <th style="width: 20%;">No. Voyage</th>
+                <th style="width: 20%;">Biaya</th>
             </tr>
         </thead>
         <tbody>
             @forelse($biayaKapal->airDetails as $index => $detail)
-                <tr>
-                    <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td>{{ $detail->kapal ?? '-' }}</td>
-                    <td>{{ $detail->voyage ?? '-' }}</td>
-                    <td class="number">{{ number_format($detail->kuantitas, 2, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($detail->jasa_air, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($detail->biaya_agen, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($detail->pph, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
-                </tr>
-                @php
-                    $totalJasaAir += $detail->jasa_air;
-                    $totalBiayaAgen += $detail->biaya_agen;
-                    $totalSubTotal += $detail->sub_total;
-                    $totalPPH += $detail->pph;
-                    $totalGrandTotal += $detail->grand_total;
-                @endphp
+            <tr>
+                <td class="text-center">{{ $index + 1 }}</td>
+                <td>{{ $detail->kapal ?? '-' }}</td>
+                <td class="text-center">{{ $biayaKapal->tanggal->format('d/M/Y') }}</td>
+                <td>{{ $detail->voyage ?? '-' }}</td>
+                <td class="text-right">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
+            </tr>
             @empty
-                <tr>
-                    <td colspan="9" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
-                </tr>
+            <tr>
+                <td colspan="5" class="text-center">Tidak ada data detail.</td>
+            </tr>
             @endforelse
-            
-            @if($biayaKapal->airDetails->count() > 0)
-                <!-- Total Row -->
-                <tr class="grand-total-row">
-                    <td colspan="4" style="text-align: center; font-weight: bold;">TOTAL KESELURUHAN</td>
-                    <td class="number">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($totalSubTotal, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
-                </tr>
-            @endif
+            <tr class="total-row">
+                <td colspan="4" style="text-align: left; padding-left: 10px;">TOTAL PEMBAYARAN</td>
+                <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+            </tr>
         </tbody>
     </table>
 
-
-
-    @if($biayaKapal->keterangan)
-    <div class="notes">
-        <div>
-            <span class="notes-title">Keterangan:</span> {{ $biayaKapal->keterangan }}
-        </div>
+    <!-- TABLE 2: DETAIL BARANG (GABUNGAN) -->
+    <div class="section-header">Detail Barang:</div>
+    <div class="section-header">Detail Barang (Gabungan Semua Kapal)</div>
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">No</th>
+                <th>Jenis Barang</th>
+                <th style="width: 15%;">Jumlah</th>
+                <th style="width: 20%;">Harga Satuan</th>
+                <th style="width: 20%;">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $no = 1; @endphp
+            <!-- Row 1: Air Tawar -->
+            <tr>
+                <td class="text-center">{{ $no++ }}</td>
+                <td>AIR TAWAR</td>
+                <td class="text-center">{{ number_format($totalQty, 2, ',', '.') }}</td>
+                <td class="text-right">
+                    @if($totalQty > 0)
+                        Rp {{ number_format($totalJasaAir / $totalQty, 0, ',', '.') }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+            </tr>
+            
+            <!-- Row 2: Biaya Agen (If exists) -->
+            @if($totalBiayaAgen > 0)
+            <tr>
+                <td class="text-center">{{ $no++ }}</td>
+                <td>BIAYA AGEN</td>
+                <td class="text-center">1</td>
+                <td class="text-right">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            
+            <!-- Row 3: PPH (If exists) -->
+            @if($totalPPH > 0)
+            <tr>
+                <td class="text-center">{{ $no++ }}</td>
+                <td>PPH (2%)</td>
+                <td class="text-center">1</td>
+                <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            
+            <tr class="total-row">
+                <td colspan="4" style="text-align: left; padding-left: 10px;">TOTAL</td>
+                <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- KETERANGAN BOX -->
+    <div class="keterangan-box">
+        <div class="keterangan-title">Keterangan:</div>
+        <div>{{ $biayaKapal->keterangan ?? '' }}</div>
     </div>
-    @endif
-
+    
+    <!-- FOOTER SIGNATURES -->
     <div class="footer">
-        <div class="signatures">
-            <div class="signature-box">
-                <div>Dibuat Oleh</div>
-                <div class="signature-line">
-                    &nbsp;
-                </div>
-            </div>
-            
-            <div class="signature-box">
-                <div>Diperiksa Oleh</div>
-                <div class="signature-line">
-                    &nbsp;
-                </div>
-            </div>
-            
-            <div class="signature-box">
-                <div>Disetujui Oleh</div>
-                <div class="signature-line">
-                    &nbsp;
-                </div>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
-            Dicetak: {{ now()->format('d/m/Y H:i') }}
-        </div>
+        <table class="signature-table">
+            <tr>
+                <td><strong>Dibuat Oleh:</strong></td>
+                <td><strong>Diperiksa Oleh:</strong></td>
+                <td><strong>Disetujui Oleh:</strong></td>
+            </tr>
+            <tr>
+                <td class="signature-space"></td>
+                <td class="signature-space"></td>
+                <td class="signature-space"></td>
+            </tr>
+            <tr>
+                <td>___________</td>
+                <td>___________</td>
+                <td>___________</td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>
