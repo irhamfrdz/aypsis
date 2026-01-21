@@ -987,6 +987,7 @@ class SuratJalanBongkaranController extends Controller
         $baData->no_seal = $manifest->no_seal;                                  // manifests.no_seal
         $baData->size = $manifest->size_kontainer;                              // manifests.size_kontainer
         $baData->size_kontainer = $manifest->size_kontainer;                    // manifests.size_kontainer
+        $baData->tipe_kontainer = $manifest->tipe_kontainer ?? '';              // manifests.tipe_kontainer (CARGO, FCL, LCL, etc)
         
         // Cargo data (manifests table)
         $baData->jenis_barang = $manifest->nama_barang;                         // manifests.nama_barang

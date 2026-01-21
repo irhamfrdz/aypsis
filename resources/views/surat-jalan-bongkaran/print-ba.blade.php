@@ -165,9 +165,12 @@
     @else
         <div class="nama-barang">&nbsp;</div>
     @endif
-    {{-- Kontainer Info: 1 kontainer + size kontainer --}}
+    {{-- Kontainer Info: 1 kontainer + size kontainer - HIDDEN for CARGO type --}}
     @php
         $sizeKontainer = $baData->size_kontainer ?? $baData->size ?? '';
+        $tipeKontainer = strtoupper(trim($baData->tipe_kontainer ?? ''));
+        $isCargo = ($tipeKontainer === 'CARGO');
+        
         // Format size kontainer: jika hanya angka, tambahkan 'ft'
         if (!empty($sizeKontainer)) {
             // Check if already has 'ft' or 'HC'
@@ -177,25 +180,33 @@
         }
         $kontainerText = '1 kontainer' . (!empty($sizeKontainer) ? ' ' . $sizeKontainer : '');
     @endphp
+    {{-- Only show kontainer info if NOT cargo --}}
+    @if(!$isCargo)
     <div class="kontainer-info">{{ e($kontainerText) }}</div>
-    {{-- Unit Text: ambil dari manifest (kuantitas + satuan), jika tidak ada default 1 unit --}}
+    @endif
+    {{-- Unit Text: ambil dari manifest (kuantitas + satuan) --}}
     @php
-        $unitText = '1 unit';
+        // Default fallback
+        $unitText = '';
         
-        // Prioritas 1: Ambil langsung dari object baData (jika di-pass dari controller)
-        if (isset($baData->kuantitas) && isset($baData->satuan) && !empty($baData->kuantitas)) {
-            $unitText = $baData->kuantitas . ' ' . $baData->satuan;
+        // Prioritas 1: Ambil langsung dari object baData (kuantitas + satuan dari manifests table)
+        if (isset($baData->kuantitas) && !empty($baData->kuantitas)) {
+            $kuantitas = $baData->kuantitas;
+            $satuan = $baData->satuan ?? 'unit';
+            $unitText = $kuantitas . ' ' . $satuan;
         }
         // Prioritas 2: Cek via relationship manifest (jika object baData punya relation manifest)
-        elseif (isset($baData->manifest)) {
-            $kuantitas = $baData->manifest->kuantitas ?? 1;
+        elseif (isset($baData->manifest) && !empty($baData->manifest->kuantitas)) {
+            $kuantitas = $baData->manifest->kuantitas;
             $satuan = $baData->manifest->satuan ?? 'unit';
             $unitText = $kuantitas . ' ' . $satuan;
         }
     @endphp
+    @if(!empty($unitText))
     <div class="unit-text">{{ e($unitText) }}</div>
     {{-- Second Unit Text (same logic as first) --}}
     <div class="unit-text-2">{{ e($unitText) }}</div>
+    @endif
     {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}
     @if(isset($baData) && !empty($baData->nama_kapal))
         <div class="nama-kapal">{{ e($baData->nama_kapal) }}</div>

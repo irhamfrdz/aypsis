@@ -746,6 +746,14 @@ Route::middleware([
              ->name('pricelist-buruh.destroy')
              ->middleware('can:master-pricelist-buruh-delete');
 
+        // Pricelist TKBM Routes
+        Route::get('pricelist-tkbm', [\App\Http\Controllers\PricelistTkbmController::class, 'index'])->name('pricelist-tkbm.index');
+        Route::get('pricelist-tkbm/create', [\App\Http\Controllers\PricelistTkbmController::class, 'create'])->name('pricelist-tkbm.create');
+        Route::post('pricelist-tkbm', [\App\Http\Controllers\PricelistTkbmController::class, 'store'])->name('pricelist-tkbm.store');
+        Route::get('pricelist-tkbm/{id}/edit', [\App\Http\Controllers\PricelistTkbmController::class, 'edit'])->name('pricelist-tkbm.edit');
+        Route::put('pricelist-tkbm/{id}', [\App\Http\Controllers\PricelistTkbmController::class, 'update'])->name('pricelist-tkbm.update');
+        Route::delete('pricelist-tkbm/{id}', [\App\Http\Controllers\PricelistTkbmController::class, 'destroy'])->name('pricelist-tkbm.destroy');
+
         // Master pricelist biaya dokumen routes - granular permissions
         Route::get('pricelist-biaya-dokumen', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'index'])
              ->name('pricelist-biaya-dokumen.index')

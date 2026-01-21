@@ -1949,12 +1949,12 @@
     }
     
     function clearAllAirSections() {
-        airSectionsContainer.innerHTML = '';
+        if (airSectionsContainer) airSectionsContainer.innerHTML = '';
         airSectionCounter = 0;
-        nominalInput.value = '';
-        jasaAirInput.value = '0';
-        pphAirInput.value = '0';
-        grandTotalAirInput.value = '0';
+        if (nominalInput) nominalInput.value = '';
+        if (jasaAirInput) jasaAirInput.value = '0';
+        if (pphAirInput) pphAirInput.value = '0';
+        if (grandTotalAirInput) grandTotalAirInput.value = '0';
     }
     
     addAirSectionBtn.addEventListener('click', function() {
