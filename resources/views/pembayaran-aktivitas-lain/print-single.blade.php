@@ -289,7 +289,13 @@
         @php
             // Debug: Check if invoices relation exists
             $hasInvoices = isset($pembayaranAktivitasLain->invoices) && $pembayaranAktivitasLain->invoices->count() > 0;
-            $isPembayaranKapal = stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Kapal') !== false;
+            $jenisAktivitas = $pembayaranAktivitasLain->jenis_aktivitas ?? '';
+            $jenisPenyesuaian = $pembayaranAktivitasLain->jenis_penyesuaian ?? '';
+            
+            $isPembayaranKapal = stripos($jenisAktivitas, 'Kapal') !== false;
+            $isAdjustment = stripos($jenisAktivitas, 'Adjustment') !== false;
+            // Check for 'pengembalian penuh' (handle snake_case or spaces)
+            $isPengembalianPenuh = $isAdjustment && stripos(str_replace(['_', '-'], ' ', $jenisPenyesuaian), 'pengembalian penuh') !== false;
         @endphp
         
         @if($hasInvoices && $isPembayaranKapal)
@@ -322,6 +328,48 @@
                     @endforeach
                     <tr class="total-row">
                         <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @elseif($hasInvoices && $isPengembalianPenuh)
+        <!-- Daftar Invoice untuk Pengembalian Penuh Uang Jalan -->
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Pengembalian Penuh Uang Jalan:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No. Surat Jalan</th>
+                        <th style="width: 10%;">Tanggal SJ</th>
+                        <th style="width: 12%;">No. Polisi</th>
+                        <th style="width: 15%;">Supir</th>
+                        <th style="width: 18%;">Tujuan</th>
+                        <th style="width: 10%;">Ritase</th>
+                        <th style="width: 15%;">Nominal Kembali</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $totalInvoices = 0; @endphp
+                    @foreach($pembayaranAktivitasLain->invoices as $index => $invoice)
+                        @php 
+                            $totalInvoices += $invoice->total; 
+                            $sj = $invoice->suratJalan;
+                        @endphp
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $sj->nomor_surat_jalan ?? '-' }}</td>
+                            <td class="text-center">{{ ($sj && $sj->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
+                            <td>{{ $sj->no_plat ?? '-' }}</td>
+                            <td>{{ $sj->supir ?? '-' }}</td>
+                            <td>{{ $sj->tujuan_pengiriman ?? '-' }}</td>
+                            <td class="text-center">{{ $sj->rit ?? '-' }}</td>
+                            <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
