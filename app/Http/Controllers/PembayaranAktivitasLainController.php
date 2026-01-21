@@ -621,9 +621,13 @@ class PembayaranAktivitasLainController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
+            'jenis_penyesuaian' => 'nullable|string|max:255',
+            'no_surat_jalan' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
             'jumlah' => 'required|integer|min:0',
             'metode_pembayaran' => 'required|string',
+            'debit_kredit' => 'required|string',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
         ]);
 
         try {

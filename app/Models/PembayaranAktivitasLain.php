@@ -20,6 +20,7 @@ class PembayaranAktivitasLain extends Model
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_voyage',
+        'no_surat_jalan',
         'penerima',
         'keterangan',
         'jumlah',
