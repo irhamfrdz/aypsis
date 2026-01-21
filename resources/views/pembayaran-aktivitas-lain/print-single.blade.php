@@ -353,12 +353,10 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 4%;">No</th>
-                        <th style="width: 15%;">No. Surat Jalan</th>
-                        <th style="width: 13%;">No. Accurate Sebelumnya</th>
-                        <th style="width: 9%;">Tanggal SJ</th>
-                        <th style="width: 11%;">No. Polisi</th>
-                        <th style="width: 13%;">Supir</th>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 25%;">No. Surat Jalan</th>
+                        <th style="width: 20%;">No. Accurate Sebelumnya</th>
+                        <th style="width: 15%;">Supir</th>
                         <th style="width: 20%;">Tujuan</th>
                         <th style="width: 15%;">Nominal Kembali</th>
                     </tr>
@@ -374,15 +372,13 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $sj->nomor_surat_jalan ?? '-' }}</td>
                             <td>{{ $pembayaranAktivitasLain->nomor_accurate ?? '-' }}</td>
-                            <td class="text-center">{{ ($sj && $sj->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
-                            <td>{{ $sj->no_plat ?? '-' }}</td>
                             <td>{{ $sj->supir ?? '-' }}</td>
                             <td>{{ $sj->tujuan_pengiriman ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($invoice->total, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
+                        <td colspan="5" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalInvoices, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
@@ -395,12 +391,10 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 4%;">No</th>
-                        <th style="width: 15%;">No. Surat Jalan</th>
-                        <th style="width: 13%;">No. Accurate Sebelumnya</th>
-                        <th style="width: 9%;">Tanggal SJ</th>
-                        <th style="width: 11%;">No. Polisi</th>
-                        <th style="width: 13%;">Supir</th>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 25%;">No. Surat Jalan</th>
+                        <th style="width: 20%;">No. Accurate Sebelumnya</th>
+                        <th style="width: 15%;">Supir</th>
                         <th style="width: 20%;">Tujuan</th>
                         <th style="width: 15%;">Nominal Kembali</th>
                     </tr>
@@ -410,14 +404,12 @@
                         <td class="text-center">1</td>
                         <td>{{ $sjDetail->nomor_surat_jalan ?? $sjDetail->no_surat_jalan ?? $pembayaranAktivitasLain->no_surat_jalan ?? '-' }}</td>
                         <td>{{ $pembayaranAktivitasLain->nomor_accurate ?? '-' }}</td>
-                        <td class="text-center">{{ ($sjDetail && $sjDetail->tanggal_surat_jalan) ? \Carbon\Carbon::parse($sjDetail->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
-                        <td>{{ $sjDetail->no_plat ?? $sjDetail->no_polisi_kendaraan ?? '-' }}</td>
                         <td>{{ $sjDetail->supir ?? '-' }}</td>
                         <td>{{ $sjDetail->tujuan_pengiriman ?? '-' }}</td>
                         <td class="text-right">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</td>
                     </tr>
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
+                        <td colspan="5" class="text-right"><strong>TOTAL PENGEMBALIAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
