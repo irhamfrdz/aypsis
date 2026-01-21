@@ -28,7 +28,7 @@
         /* Positioned penerima data - below pengirim */
         .penerima {
             position: absolute;
-            top: 9.5cm; /* moved down to give space for pengirim */
+            top: 9.0cm; /* raised by 0.5cm from 9.5cm */
             left: 4.5cm;  /* aligned with pengirim */
             width: 12cm; /* same width as pengirim */
             white-space: pre-wrap;
