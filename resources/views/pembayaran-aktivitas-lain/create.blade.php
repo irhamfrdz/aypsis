@@ -597,9 +597,10 @@ function initializeSelect2() {
         const subJenisKendaraan = document.getElementById('sub_jenis_kendaraan');
         
         // Add form submit handler to ensure jumlah matches display
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function() {
+        // Add form submit handler to ensure jumlah matches display
+        const paymentForm = document.querySelector('form');
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function() {
                 const displayInput = document.getElementById('jumlah_input_display');
                 const valueInput = document.getElementById('jumlah_input_value');
                 
