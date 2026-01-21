@@ -182,10 +182,7 @@
             {{ strtoupper($printData->no_kontainer ?? '') }}
         </div>
         
-        <!-- Jenis Pengiriman (posisi top 9cm, left 6cm) - Data dari Manifest -->
-        <div class="jenis-pengiriman-abs">
-            {{ $printData->jenis_pengiriman ? strtoupper($printData->jenis_pengiriman) : '' }}
-        </div>
+
         
         <!-- Tipe Kontainer (posisi top 9.5cm, left 6cm) - Data dari Manifest -->
         @php
