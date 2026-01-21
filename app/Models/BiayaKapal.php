@@ -140,4 +140,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalAir::class, 'biaya_kapal_id');
     }
+
+    public function tkbmDetails()
+    {
+        return $this->hasMany(BiayaKapalTkbm::class, 'biaya_kapal_id');
+    }
 }

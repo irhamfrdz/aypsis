@@ -6,8 +6,10 @@ use App\Models\BiayaKapal;
 use App\Models\MasterKapal;
 use App\Models\KlasifikasiBiaya;
 use App\Models\PricelistBuruh;
+use App\Models\PricelistTkbm;
 use App\Models\BiayaKapalBarang;
 use App\Models\BiayaKapalAir;
+use App\Models\BiayaKapalTkbm;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -191,6 +193,13 @@ class BiayaKapalController extends Controller
             'air.*.grand_total' => 'nullable|numeric|min:0',
             'air.*.penerima' => 'nullable|string|max:255',
             'air.*.nomor_rekening' => 'nullable|string|max:100',
+            // TKBM sections structure
+            'tkbm_sections' => 'nullable|array',
+            'tkbm_sections.*.kapal' => 'nullable|string|max:255',
+            'tkbm_sections.*.voyage' => 'nullable|string|max:255',
+            'tkbm_sections.*.barang' => 'nullable|array',
+            'tkbm_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_tkbms,id',
+            'tkbm_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -438,6 +447,85 @@ class BiayaKapalController extends Controller
                 }
             }
 
+            // BIAYA TKBM SECTIONS: Store TKBM details
+            $tkbmDetails = [];
+            if ($request->has('tkbm_sections') && !empty($request->tkbm_sections)) {
+                foreach ($request->tkbm_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['barang'])) {
+                        continue;
+                    }
+                    
+                    $kapalName = $section['kapal'] ?? null;
+                    $voyageName = $section['voyage'] ?? null;
+                    
+                    if (isset($section['barang']) && is_array($section['barang'])) {
+                        foreach ($section['barang'] as $item) {
+                            // Normalize inputs
+                            $barangIdRaw = $item['barang_id'] ?? null;
+                            $barangId = is_string($barangIdRaw) ? trim($barangIdRaw) : $barangIdRaw;
+                            
+                            $jumlahRaw = $item['jumlah'] ?? 0;
+                            // Convert comma decimal
+                            if (is_string($jumlahRaw)) {
+                                if (strpos($jumlahRaw, ',') !== false) {
+                                    $jumlahSanitized = str_replace('.', '', $jumlahRaw);
+                                    $jumlahSanitized = str_replace(',', '.', $jumlahSanitized);
+                                } else {
+                                    $jumlahSanitized = $jumlahRaw;
+                                }
+                            } else {
+                                $jumlahSanitized = $jumlahRaw;
+                            }
+                            $jumlah = floatval($jumlahSanitized ?: 0);
+                            
+                            // Skip if missing barang id or non-positive jumlah
+                            if (empty($barangId) || $jumlah <= 0) {
+                                Log::warning('Skipping TKBM section barang during save: missing barang_id or jumlah <= 0', [
+                                    'biaya_kapal_id' => $biayaKapal->id ?? null,
+                                    'section_index' => $sectionIndex,
+                                    'kapal' => $kapalName,
+                                    'voyage' => $voyageName,
+                                    'item' => $item,
+                                ]);
+                                continue;
+                            }
+                            
+                            $barang = PricelistTkbm::find($barangId);
+                            if (!$barang) {
+                                Log::warning('PricelistTkbm not found for barang_id while saving TKBM section', ['barang_id' => $barangId, 'item' => $item]);
+                                continue;
+                            }
+                            
+                            $subtotal = $barang->tarif * $jumlah;
+                            
+                            // Save to biaya_kapal_tkbm table
+                            BiayaKapalTkbm::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'pricelist_tkbm_id' => $barang->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'jumlah' => $jumlah,
+                                'tarif' => $barang->tarif,
+                                'subtotal' => $subtotal,
+                            ]);
+                            
+                            // Build keterangan string
+                            $tkbmDetails[] = "[$kapalName - Voyage $voyageName] " . $barang->nama_barang . ' x ' . $jumlah . ' = Rp ' . number_format($subtotal, 0, ',', '.');
+                        }
+                    }
+                }
+                
+                // Update keterangan with TKBM details
+                if (!empty($tkbmDetails)) {
+                    $keteranganTkbm = "Detail Biaya TKBM:\n" . implode("\n", $tkbmDetails);
+                    $biayaKapal->keterangan = $biayaKapal->keterangan 
+                        ? $biayaKapal->keterangan . "\n\n" . $keteranganTkbm 
+                        : $keteranganTkbm;
+                    $biayaKapal->save();
+                }
+            }
+
             DB::commit();
 
             return redirect()
@@ -466,7 +554,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm']);
         
         // Check if it's Biaya Dokumen and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
@@ -485,6 +573,12 @@ class BiayaKapalController extends Controller
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'air') !== false) {
             return view('biaya-kapal.print-air', compact('biayaKapal'));
+        }
+        
+        // Check if it's Biaya TKBM and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'tkbm') !== false) {
+            return view('biaya-kapal.print-tkbm', compact('biayaKapal'));
         }
         
         return view('biaya-kapal.print', compact('biayaKapal'));
