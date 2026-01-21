@@ -115,7 +115,10 @@ class BiayaKapalController extends Controller
         // Get active pricelist air tawar for biaya air
         $pricelistAirTawar = \App\Models\MasterPricelistAirTawar::orderBy('nama_agen')->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar'));
+        // Get active pricelist TKBM for biaya TKBM barang selection
+        $pricelistTkbm = \App\Models\PricelistTkbm::where('status', 'active')->orderBy('nama_barang')->get();
+
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm'));
     }
 
     /**

@@ -397,6 +397,20 @@
                     <div id="kapal_sections_container"></div>
                 </div>
 
+                <!-- TKBM (for Biaya TKBM) - SIMILAR TO BURUH SYSTEM -->
+                <div id="tkbm_wrapper" class="md:col-span-2 hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Kapal & Barang TKBM <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" id="add_tkbm_section_btn" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Kapal</span>
+                        </button>
+                    </div>
+                    <div id="tkbm_sections_container"></div>
+                </div>
+
                 <!-- Nominal -->
                 <div id="nominal_wrapper">
                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-2">
@@ -722,6 +736,9 @@
 <script>
     // Store pricelist buruh data
     const pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
+
+    // Store pricelist TKBM data for Biaya TKBM
+    const pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
 
     // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
     const jenisBiayaSearch = document.getElementById('jenis_biaya_search');
@@ -1377,6 +1394,63 @@
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
+            
+            // Hide TKBM wrapper for Biaya Buruh
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+        }
+        // Show TKBM wrapper if "Biaya TKBM" is selected
+        else if (selectedText.toLowerCase().includes('tkbm')) {
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.remove('hidden');
+                initializeTkbmSections();
+            }
+            
+            // Hide Nama Kapal and Nomor Voyage fields (already in section)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            
+            // Hide BL wrapper for Biaya TKBM
+            blWrapper.classList.add('hidden');
+            clearBlSelections();
+            
+            // Hide PPN/PPH fields for Biaya TKBM
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            
+            // Hide vendor wrapper for Biaya TKBM
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide PPH Dokumen fields for Biaya TKBM
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
+            
+            // Hide Biaya Air fields for Biaya TKBM
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
+            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
+            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            
+            // Hide Biaya Buruh fields for Biaya TKBM
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            
+            // Show DP fields for Biaya TKBM
+            dpWrapper.classList.remove('hidden');
+            sisaPembayaranWrapper.classList.remove('hidden');
+            calculateSisaPembayaran();
         } else if (selectedText.toLowerCase().includes('penumpukan')) {
             // Show PPN/PPH fields for Biaya Penumpukan
             barangWrapper.classList.add('hidden');
@@ -1426,6 +1500,12 @@
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
+            
+            // Hide TKBM wrapper for other types
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
             
             // Hide PPN/PPH fields for other types
             ppnWrapper.classList.add('hidden');
@@ -1827,6 +1907,203 @@
         document.querySelectorAll('.kapal-section').forEach(section => {
             const barangSelects = section.querySelectorAll('.barang-select-item');
             const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+            
+            barangSelects.forEach((select, index) => {
+                const selectedOption = select.options[select.selectedIndex];
+                const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+                // Convert comma to period for proper decimal parsing (Indonesian format)
+                const jumlahRaw = jumlahInputs[index].value.replace(',', '.');
+                const jumlah = parseFloat(jumlahRaw) || 0;
+                grandTotal += tarif * jumlah;
+            });
+        });
+        
+        if (grandTotal > 0) {
+            nominalInput.value = Math.round(grandTotal).toLocaleString('id-ID');
+            // Recalculate sisa pembayaran after nominal changes
+            calculateSisaPembayaran();
+        } else {
+            nominalInput.value = '';
+        }
+    }
+
+    // ============= TKBM SECTIONS MANAGEMENT =============
+    let tkbmSectionCounter = 0;
+    const tkbmSectionsContainer = document.getElementById('tkbm_sections_container');
+    const addTkbmSectionBtn = document.getElementById('add_tkbm_section_btn');
+    
+    function initializeTkbmSections() {
+        if (!tkbmSectionsContainer) return;
+        tkbmSectionsContainer.innerHTML = '';
+        tkbmSectionCounter = 0;
+        addTkbmSection();
+    }
+    
+    function clearAllTkbmSections() {
+        if (!tkbmSectionsContainer) return;
+        tkbmSectionsContainer.innerHTML = '';
+        tkbmSectionCounter = 0;
+    }
+    
+    if (addTkbmSectionBtn) {
+        addTkbmSectionBtn.addEventListener('click', function() {
+            addTkbmSection();
+        });
+    }
+    
+    function addTkbmSection() {
+        if (!tkbmSectionsContainer) return;
+        tkbmSectionCounter++;
+        const sectionIndex = tkbmSectionCounter;
+        
+        const section = document.createElement('div');
+        section.className = 'tkbm-section mb-6 p-4 border-2 border-amber-200 rounded-lg bg-amber-50';
+        section.setAttribute('data-tkbm-section-index', sectionIndex);
+        
+        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+        });
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex}</h3>
+                ${sectionIndex > 1 ? `<button type="button" onclick="removeTkbmSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                    <select name="tkbm_sections[${sectionIndex}][kapal]" class="tkbm-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500" required>
+                        ${kapalOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
+                    <select name="tkbm_sections[${sectionIndex}][voyage]" class="tkbm-voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500" required disabled>
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="block text-xs font-medium text-gray-700 mb-2">Detail Barang TKBM</label>
+                <div class="tkbm-barang-container" data-tkbm-section="${sectionIndex}"></div>
+                <button type="button" onclick="addBarangToTkbmSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs rounded-lg transition">
+                    <i class="fas fa-plus mr-1"></i> Tambah Barang
+                </button>
+            </div>
+        `;
+        
+        tkbmSectionsContainer.appendChild(section);
+        
+        // Setup kapal change listener
+        const kapalSelect = section.querySelector('.tkbm-kapal-select');
+        kapalSelect.addEventListener('change', function() {
+            loadVoyagesForTkbmSection(sectionIndex, this.value);
+        });
+        
+        // Add first barang input
+        addBarangToTkbmSection(sectionIndex);
+    }
+    
+    window.removeTkbmSection = function(sectionIndex) {
+        const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+        if (section) {
+            section.remove();
+            calculateTotalFromAllTkbmSections();
+        }
+    };
+    
+    function loadVoyagesForTkbmSection(sectionIndex, kapalNama) {
+        const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+        const voyageSelect = section.querySelector('.tkbm-voyage-select');
+        
+        if (!kapalNama) {
+            voyageSelect.disabled = true;
+            voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            return;
+        }
+        
+        voyageSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.voyages) {
+                    let html = '<option value="">-- Pilih Voyage --</option>';
+                    data.voyages.forEach(voyage => {
+                        html += `<option value="${voyage}">${voyage}</option>`;
+                    });
+                    voyageSelect.innerHTML = html;
+                    voyageSelect.disabled = false;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching voyages for TKBM:', error);
+                voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+            });
+    }
+    
+    window.addBarangToTkbmSection = function(sectionIndex) {
+        const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.tkbm-barang-container');
+        const barangIndex = container.children.length;
+        
+        // Use TKBM pricelist data instead of Buruh pricelist data
+        let barangOptions = '<option value="">Pilih Nama Barang</option>';
+        pricelistTkbmData.forEach(pricelist => {
+            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}">${pricelist.nama_barang}</option>`;
+        });
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="tkbm_sections[${sectionIndex}][barang][${barangIndex}][barang_id]" class="tkbm-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-amber-500" required>
+                    ${barangOptions}
+                </select>
+            </div>
+            <div class="w-24">
+                <input type="number" step="any" name="tkbm_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="tkbm-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-amber-500" placeholder="0" required>
+            </div>
+            <button type="button" onclick="removeBarangFromTkbmSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        // Add event listeners
+        const barangSelect = inputGroup.querySelector('.tkbm-barang-select-item');
+        const jumlahInput = inputGroup.querySelector('.tkbm-jumlah-input-item');
+        
+        barangSelect.addEventListener('change', function() {
+            calculateTotalFromAllTkbmSections();
+        });
+        
+        jumlahInput.addEventListener('input', function() {
+            calculateTotalFromAllTkbmSections();
+        });
+    };
+    
+    window.removeBarangFromTkbmSection = function(button) {
+        const container = button.closest('.tkbm-barang-container');
+        if (container.children.length > 1) {
+            button.closest('.flex').remove();
+            calculateTotalFromAllTkbmSections();
+        }
+    };
+    
+    function calculateTotalFromAllTkbmSections() {
+        let grandTotal = 0;
+        
+        document.querySelectorAll('.tkbm-section').forEach(section => {
+            const barangSelects = section.querySelectorAll('.tkbm-barang-select-item');
+            const jumlahInputs = section.querySelectorAll('.tkbm-jumlah-input-item');
             
             barangSelects.forEach((select, index) => {
                 const selectedOption = select.options[select.selectedIndex];

@@ -169,7 +169,10 @@
     @php
         $sizeKontainer = $baData->size_kontainer ?? $baData->size ?? '';
         $tipeKontainer = strtoupper(trim($baData->tipe_kontainer ?? ''));
-        $isCargo = ($tipeKontainer === 'CARGO');
+        $noKontainer = strtoupper(trim($baData->no_kontainer ?? ''));
+        
+        // Check if CARGO: either tipe_kontainer is CARGO or no_kontainer is CARGO
+        $isCargo = ($tipeKontainer === 'CARGO') || ($noKontainer === 'CARGO');
         
         // Format size kontainer: jika hanya angka, tambahkan 'ft'
         if (!empty($sizeKontainer)) {
@@ -260,7 +263,7 @@
             }
         }
     @endphp
-    @if(!empty($pelabuhanText))
+    @if(!empty($pelabuhanText)) 
         <div class="pelabuhan-route">{{ e($pelabuhanText) }}</div>
     @else
         <div class="pelabuhan-route">&nbsp;</div>
