@@ -41,9 +41,9 @@
         
         .invoice-info {
             margin-bottom: 12px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 20px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
         }
         
         .info-item {
@@ -237,53 +237,63 @@
         <p>BIAYA AIR TAWAR</p>
     </div>
 
+    @php
+        // Prepare variables for display
+        $vendorDisplay = $biayaKapal->nama_vendor ?? ($biayaKapal->airDetails->pluck('vendor')->filter()->unique()->values()->first() ?? '-');
+        $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
+        $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($biayaKapal->airDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
+    @endphp
+
     <div class="invoice-info">
-        <div class="info-item">
-            <span class="info-label">Nomor Invoice</span>
-            <span class="info-separator">:</span>
-            <span class="info-value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
+        <div style="flex: 1;">
+            <div class="info-item">
+                <span class="info-label">Nomor Invoice</span>
+                <span class="info-separator">:</span>
+                <span class="info-value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
+            </div>
+
+            @if($biayaKapal->klasifikasiBiaya)
+            <div class="info-item">
+                <span class="info-label">Jenis Biaya</span>
+                <span class="info-separator">:</span>
+                <span class="info-value">{{ $biayaKapal->klasifikasiBiaya->nama }}</span>
+            </div>
+            @endif
+
+            <div class="info-item">
+                <span class="info-label">Penerima</span>
+                <span class="info-separator">:</span>
+                <span class="info-value">{{ $penerimaDisplay }}</span>
+            </div>
+
+            @if($biayaKapal->nomor_referensi)
+            <div class="info-item">
+                <span class="info-label">Referensi</span>
+                <span class="info-separator">:</span>
+                <span class="info-value">{{ $biayaKapal->nomor_referensi }}</span>
+            </div>
+            @endif
         </div>
-        <div class="info-item">
-            <span class="info-label">Tanggal</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $biayaKapal->tanggal->format('d/M/Y') }}</span>
+
+        <div style="flex: 1;">
+            <div class="info-item">
+                <span class="info-label">Tanggal</span>
+                <span class="info-separator">:</span>
+                <span class="info-value">{{ $biayaKapal->tanggal->format('d/M/Y') }}</span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Vendor</span>
+                <span class="info-separator">:</span>
+                <span class="info-value">{{ $vendorDisplay }}</span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Nomor Rekening</span>
+                <span class="info-separator">:</span>
+                <span class="info-value">{{ $rekeningDisplay }}</span>
+            </div>
         </div>
-        @if($biayaKapal->klasifikasiBiaya)
-        <div class="info-item">
-            <span class="info-label">Jenis Biaya</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $biayaKapal->klasifikasiBiaya->nama }}</span>
-        </div>
-        @endif
-        @php
-            // Get vendor from nama_vendor or first air detail
-            $vendorDisplay = $biayaKapal->nama_vendor ?? ($biayaKapal->airDetails->pluck('vendor')->filter()->unique()->values()->first() ?? null);
-        @endphp
-        @if($vendorDisplay)
-        <div class="info-item">
-            <span class="info-label">Vendor</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $vendorDisplay }}</span>
-        </div>
-        @endif
-        @php
-            // Show overall penerima if set, otherwise try to use first penerima from airDetails
-            $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? null);
-        @endphp
-        @if($penerimaDisplay)
-        <div class="info-item">
-            <span class="info-label">Penerima</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $penerimaDisplay }}</span>
-        </div>
-        @endif
-        @if($biayaKapal->nomor_referensi)
-        <div class="info-item">
-            <span class="info-label">Referensi</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $biayaKapal->nomor_referensi }}</span>
-        </div>
-        @endif
     </div>
 
     @php
@@ -303,16 +313,14 @@
         <thead>
             <tr>
                 <th style="width: 4%;">No</th>
-                <th style="width: 12%;">Kapal</th>
-                <th style="width: 8%;">Voyage</th>
-                <th style="width: 6%;">Qty (Ton)</th>
+                <th style="width: 25%;">Kapal</th>
+                <th style="width: 14%;">Voyage</th>
+                <th style="width: 8%;">Qty (Ton)</th>
                 <th style="width: 9%;">Jasa Air</th>
                 <th style="width: 9%;">Biaya Agen</th>
                 <th style="width: 11%;">Sub Total</th>
                 <th style="width: 9%;">PPH (2%)</th>
                 <th style="width: 11%;">Grand Total</th>
-                <th style="width: 9%;">Penerima</th>
-                <th style="width: 10%;">No. Rekening</th>
             </tr>
         </thead>
         <tbody>
@@ -327,8 +335,6 @@
                     <td class="number">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->pph, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
-                    <td>{{ $detail->penerima ?? '-' }}</td>
-                    <td>{{ $detail->nomor_rekening ?? '-' }}</td>
                 </tr>
                 @php
                     $totalJasaAir += $detail->jasa_air;
@@ -339,7 +345,7 @@
                 @endphp
             @empty
                 <tr>
-                    <td colspan="12" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
+                    <td colspan="9" style="text-align: center; color: #666;">Tidak ada detail biaya air</td>
                 </tr>
             @endforelse
             
@@ -352,8 +358,6 @@
                     <td class="number">Rp {{ number_format($totalSubTotal, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
-                    <td></td>
-                    <td></td>
                 </tr>
             @endif
         </tbody>

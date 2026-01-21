@@ -111,7 +111,6 @@
         }
 
         .info-table td:first-child {
-            width: 30%;
             font-weight: bold;
         }
 
@@ -246,38 +245,46 @@
 
         <!-- Info Section -->
         <div class="info-section">
-            <table class="info-table">
-                <tr>
-                    <td>Tanggal</td>
-                    <td>: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
-                </tr>
-                <tr>
-                    <td>Nomor</td>
-                    <td>: {{ $biayaKapal->nomor_invoice }}</td>
-                </tr>
-                <tr>
-                    <td>Nomor Referensi</td>
-                    <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
-                </tr>
-                @if($biayaKapal->penerima)
-                <tr>
-                    <td>Penerima</td>
-                    <td>: {{ $biayaKapal->penerima }}</td>
-                </tr>
-                @endif
-                @if($biayaKapal->nama_vendor)
-                <tr>
-                    <td>Nama Vendor</td>
-                    <td>: {{ $biayaKapal->nama_vendor }}</td>
-                </tr>
-                @endif
-                @if($biayaKapal->nomor_rekening)
-                <tr>
-                    <td>Nomor Rekening</td>
-                    <td>: {{ $biayaKapal->nomor_rekening }}</td>
-                </tr>
-                @endif
-            </table>
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <table class="info-table">
+                        <tr>
+                            <td style="width: 35%;">Tanggal</td>
+                            <td>: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nomor</td>
+                            <td>: {{ $biayaKapal->nomor_invoice }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nomor Referensi</td>
+                            <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="flex: 1;">
+                    <table class="info-table">
+                        @if($biayaKapal->penerima)
+                        <tr>
+                            <td style="width: 35%;">Penerima</td>
+                            <td>: {{ $biayaKapal->penerima }}</td>
+                        </tr>
+                        @endif
+                        @if($biayaKapal->nama_vendor)
+                        <tr>
+                            <td>Nama Vendor</td>
+                            <td>: {{ $biayaKapal->nama_vendor }}</td>
+                        </tr>
+                        @endif
+                        @if($biayaKapal->nomor_rekening)
+                        <tr>
+                            <td>Nomor Rekening</td>
+                            <td>: {{ $biayaKapal->nomor_rekening }}</td>
+                        </tr>
+                        @endif
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Detail Biaya Kapal -->

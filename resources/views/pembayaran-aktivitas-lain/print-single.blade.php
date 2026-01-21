@@ -243,7 +243,7 @@
             <div class="header-meta">
                 <span><strong>Tanggal: {{ \Carbon\Carbon::parse($pembayaranAktivitasLain->tanggal)->format('d-M-Y') }}</strong></span>
             </div>
-            <h1>PEMBAYARAN AKTIVITAS LAIN</h1>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Info Section -->
