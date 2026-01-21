@@ -969,7 +969,12 @@ class SuratJalanBongkaranController extends Controller
         // Generate BA number if not exists
         $baData->id = $manifest->id;
         $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
-        $baData->tanggal_ba = now()->format('Y-m-d');
+        
+        // Use manifest tanggal_berangkat for BA date
+        $baData->tanggal_ba = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('Y-m-d') : now()->format('Y-m-d');
+        
+        // Attach manifest object for view compatibility
+        $baData->manifest = $manifest;
         
         // ========================================
         // MAPPING DATA DARI TABEL MANIFESTS
