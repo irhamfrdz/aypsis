@@ -228,7 +228,13 @@
         $romanMonths = [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'];
         $voyageFormatted = '';
         if(!empty($voyageNumber)) {
-            $voyageFormatted = $voyageNumber . '/' . ($romanMonths[$carbon->month] ?? '') . '/' . $carbon->format('Y');
+            // Format: NOMOR_BL/VOYAGE/BULAN_ROMAWI/TAHUN (contoh: 05/AP25BJ25/I/2026)
+            $nomorBl = $baData->no_bl ?? '';
+            if(!empty($nomorBl)) {
+                $voyageFormatted = $nomorBl . '/' . $voyageNumber . '/' . ($romanMonths[$carbon->month] ?? '') . '/' . $carbon->format('Y');
+            } else {
+                $voyageFormatted = $voyageNumber . '/' . ($romanMonths[$carbon->month] ?? '') . '/' . $carbon->format('Y');
+            }
         }
     @endphp
     @if(!empty($voyageFormatted))
