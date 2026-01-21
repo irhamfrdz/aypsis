@@ -1401,8 +1401,8 @@
                 clearAllTkbmSections();
             }
         }
-        // Show TKBM wrapper if "Biaya TKBM" is selected
-        else if (selectedText.toLowerCase().includes('tkbm')) {
+        // Show TKBM wrapper if "Biaya KTKBM" is selected
+        else if (selectedText.toLowerCase().includes('ktkbm')) {
             if (document.getElementById('tkbm_wrapper')) {
                 document.getElementById('tkbm_wrapper').classList.remove('hidden');
                 initializeTkbmSections();
