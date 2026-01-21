@@ -684,7 +684,16 @@ class PembayaranAktivitasLainController extends Controller
      */
     public function print(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
-        $pembayaranAktivitasLain->load(['creator', 'approver', 'invoices']);
+        $pembayaranAktivitasLain->load(['creator', 'approver', 'invoices.suratJalan']);
+
+        // Jika direct payment (ada no_surat_jalan tapi tidak ada invoice), cari detail surat jalan manual
+        if ($pembayaranAktivitasLain->no_surat_jalan && $pembayaranAktivitasLain->invoices->isEmpty()) {
+            $sj = \App\Models\SuratJalan::where('no_surat_jalan', $pembayaranAktivitasLain->no_surat_jalan)->first();
+            if (!$sj) {
+                 $sj = \App\Models\SuratJalanBongkaran::where('nomor_surat_jalan', $pembayaranAktivitasLain->no_surat_jalan)->first();
+            }
+            $pembayaranAktivitasLain->suratJalanDetail = $sj;
+        }
 
         $akunCoas = DB::table('akun_coa')->whereIn('id', [$pembayaranAktivitasLain->akun_coa_id, $pembayaranAktivitasLain->akun_bank_id])->get()->keyBy('id');
 
