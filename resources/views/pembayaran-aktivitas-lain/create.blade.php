@@ -591,10 +591,25 @@ function initializeSelect2() {
     initializeMainFunctionality();
 }
 
-// Initialize main functionality
-function initializeMainFunctionality() {
-    const jenisAktivitas = document.getElementById('jenis_aktivitas');
-    const subJenisKendaraan = document.getElementById('sub_jenis_kendaraan');
+    // Initialize main functionality
+    function initializeMainFunctionality() {
+        const jenisAktivitas = document.getElementById('jenis_aktivitas');
+        const subJenisKendaraan = document.getElementById('sub_jenis_kendaraan');
+        
+        // Add form submit handler to ensure jumlah matches display
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                const displayInput = document.getElementById('jumlah_input_display');
+                const valueInput = document.getElementById('jumlah_input_value');
+                
+                if (displayInput && valueInput) {
+                    // Strip non-numeric chars (dots) from display value to set hidden value
+                    valueInput.value = displayInput.value.replace(/[^\d]/g, '');
+                }
+            });
+        }
+
     const subJenisSelect = document.getElementById('sub_jenis_kendaraan_select');
     const nomorPolisiField = document.getElementById('nomor_polisi_field');
     const nomorPolisiSelect = nomorPolisiField.querySelector('select');
@@ -797,6 +812,13 @@ function initializeMainFunctionality() {
             
             if (uangJalan > 0) {
                 jumlahDisplay.value = uangJalan;
+                
+                // Set hidden value explicitly
+                const jumlahValueInput = document.getElementById('jumlah_input_value');
+                if (jumlahValueInput) {
+                    jumlahValueInput.value = Math.floor(uangJalan);
+                }
+
                 // Dispatch input event to trigger formatting
                 jumlahDisplay.dispatchEvent(new Event('input'));
                 
