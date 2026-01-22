@@ -105,8 +105,15 @@
             position: absolute;
             top: 90mm;  /* 9cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 17px;
+            font-size: 12px; /* reduced so long names fit */
             font-weight: bold;
+            max-width: 45mm; /* constrain width to form column */
+            line-height: 1.1;
+            white-space: normal; /* allow wrapping */
+            word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
         }
         
         /* Tujuan Ambil dengan posisi absolut */
