@@ -219,16 +219,48 @@
 
                             <!-- Nomor Voyage Field -->
                             <div>
-                                <label for="nomor_voyage" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="nomor_voyage_display" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nomor Voyage <span class="text-red-500">*</span>
                                 </label>
-                                <select name="nomor_voyage"
-                                        id="nomor_voyage"
-                                        required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_voyage') border-red-300 @enderror"
-                                        disabled>
-                                    <option value="">-- Pilih Kegiatan Terlebih Dahulu --</option>
-                                </select>
+                                <div class="relative" id="voyage-dropdown-container">
+                                    <input type="hidden" name="nomor_voyage" id="nomor_voyage" value="{{ old('nomor_voyage') }}" required>
+                                    
+                                    <button type="button" 
+                                            id="voyage-dropdown-toggle"
+                                            class="w-full text-left px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_voyage') border-red-300 @enderror disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            disabled>
+                                        <span id="voyage-selected-label">-- Pilih Kegiatan Terlebih Dahulu --</span>
+                                    </button>
+
+                                    <!-- Voyage Dropdown Menu -->
+                                    <div id="voyage-dropdown-menu" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden">
+                                        <!-- Search box -->
+                                        <div class="p-2 border-b border-gray-200 bg-gray-50">
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <i class="fas fa-search text-gray-400"></i>
+                                                </div>
+                                                <input type="text"
+                                                       id="voyage-search-input"
+                                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                                       placeholder="Cari nomor voyage atau kapal..."
+                                                       autocomplete="off">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Voyage list -->
+                                        <div class="max-h-60 overflow-y-auto" id="voyage-list-container">
+                                            <!-- Options will be loaded via AJAX -->
+                                            <div class="px-3 py-2 text-gray-500 text-sm">Memuat data...</div>
+                                        </div>
+                                        
+                                        <!-- No results message -->
+                                        <div id="no-voyage-results" class="hidden px-3 py-4 text-center text-gray-500 text-sm">
+                                            <i class="fas fa-search mb-2 text-gray-400 text-lg"></i>
+                                            <div>Tidak ada voyage yang cocok</div>
+                                        </div>
+                                    </div>
+                                </div>
                                 @error('nomor_voyage')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -798,18 +830,82 @@ document.querySelector('form').addEventListener('submit', function(e) {
 });
 
 // Load Nomor Voyage based on Kegiatan selection
-async function loadNomorVoyage() {
-    const kegiatanSelect = document.getElementById('kegiatan');
-    const voyageSelect = document.getElementById('nomor_voyage');
-    const helpText = document.getElementById('voyage-help-text');
-    const kegiatan = kegiatanSelect.value;
+// Searchable Voyage Dropdown functionality
+function toggleVoyageDropdown() {
+    const menu = document.getElementById('voyage-dropdown-menu');
+    if (!document.getElementById('voyage-dropdown-toggle').disabled) {
+        menu.classList.toggle('hidden');
+        if (!menu.classList.contains('hidden')) {
+            document.getElementById('voyage-search-input').focus();
+        }
+    }
+}
 
-    // Reset voyage select
-    voyageSelect.innerHTML = '<option value="">-- Loading... --</option>';
-    voyageSelect.disabled = true;
+function selectVoyage(noVoyage, label) {
+    document.getElementById('nomor_voyage').value = noVoyage;
+    document.getElementById('voyage-selected-label').textContent = label;
+    document.getElementById('voyage-dropdown-menu').classList.add('hidden');
+    
+    // Trigger any dependent validation or logic here
+    console.log('Voyage selected:', noVoyage);
+}
+
+// Handle voyage search
+document.getElementById('voyage-search-input').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const voyageItems = document.querySelectorAll('.voyage-item');
+    const noResultsMessage = document.getElementById('no-voyage-results');
+    let hasVisibleItems = false;
+
+    voyageItems.forEach(function(item) {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            item.style.display = 'block';
+            hasVisibleItems = true;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    if (hasVisibleItems || searchTerm === '') {
+        noResultsMessage.classList.add('hidden');
+    } else {
+        noResultsMessage.classList.remove('hidden');
+    }
+});
+
+// Close voyage dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const container = document.getElementById('voyage-dropdown-container');
+    if (container && !container.contains(e.target)) {
+        document.getElementById('voyage-dropdown-menu').classList.add('hidden');
+    }
+});
+
+// Toggle button click
+document.getElementById('voyage-dropdown-toggle').addEventListener('click', toggleVoyageDropdown);
+
+async function loadNomorVoyage(isInitialLoad = false) {
+    const kegiatanSelect = document.getElementById('kegiatan');
+    const voyageToggle = document.getElementById('voyage-dropdown-toggle');
+    const voyageLabel = document.getElementById('voyage-selected-label');
+    const voyageList = document.getElementById('voyage-list-container');
+    const helpText = document.getElementById('voyage-help-text');
+    const hiddenInput = document.getElementById('nomor_voyage');
+    const kegiatan = kegiatanSelect.value;
+    const currentVoyageValue = hiddenInput.value;
+
+    // Reset voyage feedback but preserve value if it's initial load
+    if (!isInitialLoad) {
+        hiddenInput.value = '';
+        voyageLabel.textContent = '-- Loading... --';
+    }
+    
+    voyageToggle.disabled = true;
+    voyageList.innerHTML = '<div class="px-3 py-2 text-gray-500 text-sm">Memuat data...</div>';
 
     if (!kegiatan) {
-        voyageSelect.innerHTML = '<option value="">-- Pilih Kegiatan Terlebih Dahulu --</option>';
+        voyageLabel.textContent = '-- Pilih Kegiatan Terlebih Dahulu --';
         helpText.textContent = 'Pilih nomor voyage dari data yang tersedia';
         helpText.className = 'mt-1 text-sm text-gray-500';
         return;
@@ -819,17 +915,35 @@ async function loadNomorVoyage() {
         const response = await fetch(`{{ route('pembayaran-ob.get-voyage-list') }}?kegiatan=${kegiatan}`);
         const data = await response.json();
 
-        if (data.success && data.voyages) {
-            voyageSelect.innerHTML = '<option value="">-- Pilih Nomor Voyage --</option>';
+        if (data.success && data.voyages && data.voyages.length > 0) {
+            if (!isInitialLoad || !currentVoyageValue) {
+                voyageLabel.textContent = '-- Pilih Nomor Voyage --';
+            }
+            voyageList.innerHTML = '';
             
+            let foundOldValue = false;
             data.voyages.forEach(voyage => {
-                const option = document.createElement('option');
-                option.value = voyage.no_voyage;
-                option.textContent = `${voyage.no_voyage} - ${voyage.nama_kapal}`;
-                voyageSelect.appendChild(option);
+                const label = `${voyage.no_voyage} - ${voyage.nama_kapal}`;
+                const item = document.createElement('div');
+                item.className = 'voyage-item px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 transition-colors border-b border-gray-100 last:border-0';
+                item.textContent = label;
+                item.onclick = () => selectVoyage(voyage.no_voyage, label);
+                voyageList.appendChild(item);
+                
+                // If there's an old value, auto-update the display label
+                if (currentVoyageValue === voyage.no_voyage) {
+                    voyageLabel.textContent = label;
+                    foundOldValue = true;
+                }
             });
 
-            voyageSelect.disabled = false;
+            if (isInitialLoad && currentVoyageValue && !foundOldValue) {
+                // The old value isn't in the current list (maybe voyage ended/changed)
+                hiddenInput.value = '';
+                voyageLabel.textContent = '-- Pilih Nomor Voyage --';
+            }
+
+            voyageToggle.disabled = false;
             
             // Update help text
             if (kegiatan === 'Muat') {
@@ -840,13 +954,16 @@ async function loadNomorVoyage() {
                 helpText.className = 'mt-1 text-sm text-green-600';
             }
         } else {
-            voyageSelect.innerHTML = '<option value="">-- Tidak Ada Data --</option>';
+            voyageLabel.textContent = '-- Tidak Ada Data --';
+            voyageList.innerHTML = '<div class="px-3 py-2 text-red-500 text-sm italic">Tidak ada voyage tersedia untuk kegiatan ini</div>';
             helpText.textContent = data.message || 'Tidak ada data voyage tersedia';
             helpText.className = 'mt-1 text-sm text-red-600';
+            hiddenInput.value = '';
         }
     } catch (error) {
         console.error('Error loading voyage data:', error);
-        voyageSelect.innerHTML = '<option value="">-- Error Loading Data --</option>';
+        voyageLabel.textContent = '-- Error Loading --';
+        voyageList.innerHTML = '<div class="px-3 py-2 text-red-500 text-sm">Gagal memuat data</div>';
         helpText.textContent = 'Terjadi kesalahan saat memuat data voyage';
         helpText.className = 'mt-1 text-sm text-red-600';
     }
@@ -865,7 +982,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load voyage if kegiatan already selected (for old input)
     const kegiatanValue = document.getElementById('kegiatan').value;
     if (kegiatanValue) {
-        loadNomorVoyage();
+        loadNomorVoyage(true);
     }
 });
 </script>
