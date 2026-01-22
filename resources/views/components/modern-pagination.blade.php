@@ -21,6 +21,7 @@
                         <option value="25" {{ request('per_page', 15) == 25 ? 'selected' : '' }}>25</option>
                         <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
                         <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ request('per_page', 15) == 200 ? 'selected' : '' }}>200</option>
                     </select>
                 </div>
 
