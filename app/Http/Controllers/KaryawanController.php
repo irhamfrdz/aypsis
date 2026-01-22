@@ -1221,6 +1221,22 @@ class KaryawanController extends Controller
             $query->where('cabang', $request->cabang);
         }
 
+        // Filter: Tanggal Masuk range
+        if ($request->filled('tanggal_masuk_start')) {
+            $query->whereDate('tanggal_masuk', '>=', $request->tanggal_masuk_start);
+        }
+        if ($request->filled('tanggal_masuk_end')) {
+            $query->whereDate('tanggal_masuk', '<=', $request->tanggal_masuk_end);
+        }
+
+        // Filter: Tanggal Berhenti range
+        if ($request->filled('tanggal_berhenti_start')) {
+            $query->whereDate('tanggal_berhenti', '>=', $request->tanggal_berhenti_start);
+        }
+        if ($request->filled('tanggal_berhenti_end')) {
+            $query->whereDate('tanggal_berhenti', '<=', $request->tanggal_berhenti_end);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -1278,6 +1294,22 @@ class KaryawanController extends Controller
         }
         if ($request->filled('cabang')) {
             $query->where('cabang', $request->cabang);
+        }
+
+        // Filter: Tanggal Masuk range
+        if ($request->filled('tanggal_masuk_start')) {
+            $query->whereDate('tanggal_masuk', '>=', $request->tanggal_masuk_start);
+        }
+        if ($request->filled('tanggal_masuk_end')) {
+            $query->whereDate('tanggal_masuk', '<=', $request->tanggal_masuk_end);
+        }
+
+        // Filter: Tanggal Berhenti range
+        if ($request->filled('tanggal_berhenti_start')) {
+            $query->whereDate('tanggal_berhenti', '>=', $request->tanggal_berhenti_start);
+        }
+        if ($request->filled('tanggal_berhenti_end')) {
+            $query->whereDate('tanggal_berhenti', '<=', $request->tanggal_berhenti_end);
         }
 
         if ($request->filled('search')) {
