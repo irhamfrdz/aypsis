@@ -268,15 +268,7 @@
                     @endfor
                 </tbody>
             </table>
-        @endif    {{-- Catatan untuk Susunan Keluarga --}}
-    <div style="margin-top:16px;font-size:10px;color:#666;">
-        <p><strong>Catatan:</strong></p>
-        <ul style="margin:4px 0;padding-left:16px;">
-            <li>Isi data susunan keluarga dengan lengkap dan benar</li>
-            <li>Untuk anak yang belum memiliki KTP, kolom NIK/KTP bisa dikosongkan</li>
-            <li>Pastikan nomor telepon dapat dihubungi untuk keperluan darurat</li>
-        </ul>
-    </div>
+        @endif    {{-- Susunan Keluarga End --}}
 
 </div>
 @endsection
