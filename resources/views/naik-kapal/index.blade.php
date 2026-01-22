@@ -172,6 +172,7 @@
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kontainer<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Barang<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tipe Kontainer<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Size<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal & Voyage<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Volume & Tonase<div class="resize-handle"></div></th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Muat<div class="resize-handle"></div></th>
@@ -203,6 +204,9 @@
                                 @if($naikKapal->tipe_kontainer_detail)
                                     <div class="text-sm text-gray-500">{{ $naikKapal->tipe_kontainer_detail }}</div>
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $naikKapal->size_kontainer ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $naikKapal->nama_kapal }}</div>
