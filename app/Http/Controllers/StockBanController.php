@@ -43,6 +43,7 @@ class StockBanController extends Controller
             'lokasi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'mobil_id' => 'nullable|exists:mobils,id',
+            'nomor_bukti' => 'nullable|string|max:255',
         ]);
 
         // Clean up numeric input if needed (though numeric validation usually handles it, sometimes format uses dots)
@@ -81,6 +82,7 @@ class StockBanController extends Controller
             'lokasi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'mobil_id' => 'nullable|exists:mobils,id',
+            'nomor_bukti' => 'nullable|string|max:255',
         ]);
 
         $stockBan->update($request->all());

@@ -13,6 +13,7 @@ class StockBan extends Model
 
     protected $fillable = [
         'nomor_seri',
+        'nomor_bukti',
         'merk',
         'ukuran',
         'kondisi',
