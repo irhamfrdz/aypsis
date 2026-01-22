@@ -2,6 +2,21 @@
 
 @section('title', 'Tambah Stock Ban')
 @section('page_title', 'Tambah Stock Ban')
+ 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding-top: 5px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+</style>
+@endpush
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -134,3 +149,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih Mobil --",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+@endpush

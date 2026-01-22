@@ -14,7 +14,7 @@ class StockBanController extends Controller
      */
     public function index()
     {
-        $stockBans = StockBan::latest()->get();
+        $stockBans = StockBan::with('mobil')->latest()->get();
         return view('stock-ban.index', compact('stockBans'));
     }
 
