@@ -2882,7 +2882,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment, currentAdjustment
 
     // Handle form submission
     const form = document.getElementById('adjustmentForm');
-    if (form && form !== null) {
+    if (form) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3052,7 +3052,7 @@ window.editVendorInfo = function(tagihanId, currentInvoice, currentTanggal) {
 
     // Handle form submission
     const form = document.getElementById('vendorInfoForm');
-    if (form && form !== null) {
+    if (form) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3209,7 +3209,7 @@ window.editGroupInfo = function(tagihanId, currentGroup) {
 
     // Handle form submission
     const form = document.getElementById('groupInfoForm');
-    if (form && form !== null) {
+    if (form) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3393,7 +3393,7 @@ window.bulkEditVendorInfo = function() {
 
     // Handle form submission
     const form = document.getElementById('bulkVendorInfoForm');
-    if (form && form !== null) {
+    if (form) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3598,7 +3598,7 @@ window.bulkEditGroupInfo = function() {
 
     // Handle form submission
     const form = document.getElementById('bulkGroupInfoForm');
-    if (form && form !== null) {
+    if (form) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
