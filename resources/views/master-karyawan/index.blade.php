@@ -32,55 +32,98 @@
                 <!-- Group 2: Interaction (Search & Tools) -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto items-end sm:items-center">
                     <!-- Search & Filter Form -->
-                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex flex-col xl:flex-row gap-2 w-full xl:w-auto">
                         <!-- Preserve other query params -->
-                        @foreach(request()->except(['search', 'divisi', 'cabang', 'page']) as $key => $value)
+                        @foreach(request()->except(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
 
-                        <!-- Divisi Filter -->
-                        @if(isset($divisiOptions) && count($divisiOptions) > 0)
-                        <select name="divisi" onchange="this.form.submit()"
-                                class="block w-full sm:w-48 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                            <option value="">Semua Divisi</option>
-                            @foreach($divisiOptions as $opt)
-                                <option value="{{ $opt }}" {{ request('divisi') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                            @endforeach
-                        </select>
-                        @endif
-
-                        <!-- Cabang Filter -->
-                        @if(isset($cabangOptions) && count($cabangOptions) > 0)
-                        <select name="cabang" onchange="this.form.submit()"
-                                class="block w-full sm:w-48 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                            <option value="">Semua Cabang</option>
-                            @foreach($cabangOptions as $opt)
-                                <option value="{{ $opt }}" {{ request('cabang') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                            @endforeach
-                        </select>
-                        @endif
-
-                        <!-- Search Box -->
-                        <div class="relative group w-full sm:w-80">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
-                            <input type="text"
-                                   name="search"
-                                   value="{{ request('search') }}"
-                                   class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow shadow-sm"
-                                   placeholder="Cari data..."
-                                   autocomplete="off">
-                            
-                            @if(request('search'))
-                                <button type="button" onclick="window.location.href='{{ route('master.karyawan.index', request()->except(['search', 'page'])) }}'" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <!-- Divisi Filter -->
+                            @if(isset($divisiOptions) && count($divisiOptions) > 0)
+                            <select name="divisi" onchange="this.form.submit()"
+                                    class="block w-full sm:w-48 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors">
+                                <option value="">Semua Divisi</option>
+                                @foreach($divisiOptions as $opt)
+                                    <option value="{{ $opt }}" {{ request('divisi') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                                @endforeach
+                            </select>
                             @endif
+
+                            <!-- Cabang Filter -->
+                            @if(isset($cabangOptions) && count($cabangOptions) > 0)
+                            <select name="cabang" onchange="this.form.submit()"
+                                    class="block w-full sm:w-48 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors">
+                                <option value="">Semua Cabang</option>
+                                @foreach($cabangOptions as $opt)
+                                    <option value="{{ $opt }}" {{ request('cabang') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                                @endforeach
+                            </select>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2 items-center">
+                            <div class="flex flex-col gap-1 w-full sm:w-auto">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase ml-1">Masuk:</span>
+                                <div class="flex items-center gap-1">
+                                    <input type="date" name="tanggal_masuk_start" value="{{ request('tanggal_masuk_start') }}"
+                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
+                                           title="Tanggal Masuk Dari">
+                                    <span class="text-gray-400 text-xs">-</span>
+                                    <input type="date" name="tanggal_masuk_end" value="{{ request('tanggal_masuk_end') }}"
+                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
+                                           title="Tanggal Masuk Sampai">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-1 w-full sm:w-auto">
+                                <span class="text-[10px] font-bold text-red-500 uppercase ml-1">Berhenti:</span>
+                                <div class="flex items-center gap-1">
+                                    <input type="date" name="tanggal_berhenti_start" value="{{ request('tanggal_berhenti_start') }}"
+                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm transition-colors"
+                                           title="Tanggal Berhenti Dari">
+                                    <span class="text-gray-400 text-xs">-</span>
+                                    <input type="date" name="tanggal_berhenti_end" value="{{ request('tanggal_berhenti_end') }}"
+                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm transition-colors"
+                                           title="Tanggal Berhenti Sampai">
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 w-full sm:w-auto self-end">
+                                <!-- Search Box -->
+                                <div class="relative group flex-1 sm:w-48">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <input type="text"
+                                           name="search"
+                                           value="{{ request('search') }}"
+                                           class="block w-full pl-9 pr-9 py-1.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow shadow-sm"
+                                           placeholder="Cari..."
+                                           autocomplete="off">
+                                    
+                                    @if(request('search'))
+                                        <button type="button" onclick="window.location.href='{{ route('master.karyawan.index', request()->except(['search', 'page'])) }}'" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    @endif
+                                </div>
+
+                                <button type="submit" class="inline-flex items-center px-4 py-1.5 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-150 shadow-sm">
+                                    <i class="fas fa-filter mr-1.5 text-[10px]"></i>
+                                    Filter
+                                </button>
+
+                                @if(request()->anyFilled(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end']))
+                                    <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center px-4 py-1.5 bg-gray-100 border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-150 shadow-sm" title="Reset Filter">
+                                        <i class="fas fa-undo"></i>
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </form>
 
