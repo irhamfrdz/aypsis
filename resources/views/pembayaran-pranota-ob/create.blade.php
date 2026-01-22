@@ -483,6 +483,15 @@
             
             // Get DP supir data from PHP
             const dpSupirData = @json($selectedDp && isset($dpSupirData) ? $dpSupirData : []);
+            
+            // Seed supirData with drivers from DP to ensure they appear even if they have 0 items
+            Object.keys(dpSupirData).forEach(supirName => {
+                supirData[supirName] = {
+                    items: 0,
+                    biaya: 0
+                };
+            });
+            
             const dpAmount = {{ $selectedDp ? $selectedDp->dp_amount : 0 }};
             let totalDp = 0;
 
