@@ -151,7 +151,7 @@ class KaryawanController extends Controller
             $perPage = $totalCount > 0 ? $totalCount : 15;
         } else {
             $perPage = (int) $request->get('per_page', 15); // Default 15 per halaman
-            $allowedPerPage = [15, 50, 100];
+            $allowedPerPage = [10, 15, 25, 50, 100, 200];
             if (!in_array($perPage, $allowedPerPage)) {
                 $perPage = 15;
             }

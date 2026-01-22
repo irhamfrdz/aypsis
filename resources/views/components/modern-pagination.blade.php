@@ -321,6 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function changePerPage(perPage) {
     const url = new URL(window.location.href);
     url.searchParams.set('per_page', perPage);
+    url.searchParams.delete('show_all'); // Remove show_all filter when changing per_page
     url.searchParams.set('page', 1); // Reset to first page when changing per_page
     window.location.href = url.toString();
 }
