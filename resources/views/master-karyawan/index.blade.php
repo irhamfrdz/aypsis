@@ -8,7 +8,7 @@
     <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
         <!-- Header Section -->
         <div class="px-6 py-4 border-b bg-white">
-            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <!-- Group 1: Title & Counts -->
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                     <h2 class="text-xl font-bold text-gray-900 whitespace-nowrap">Daftar Karyawan</h2>
@@ -24,16 +24,16 @@
                                 Berhenti: {{ $counts['berhenti'] }}
                             </span>
                             <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-gray-50 text-gray-700 border border-gray-200 font-medium shadow-sm">
-                                Type: Total: {{ $counts['total'] }}
+                                Total: {{ $counts['total'] }}
                             </span>
                         </div>
                     @endif
                 </div>
 
                 <!-- Group 2: Search & Actions -->
-                <div class="flex flex-col lg:flex-row gap-3 w-full xl:w-auto lg:items-center">
+                <div class="flex flex-col md:flex-row gap-3 w-full lg:w-auto items-center">
                     <!-- Search Box -->
-                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="w-full lg:w-72 flex-shrink-0">
+                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="w-full md:w-64 relative">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +60,7 @@
                     </form>
 
                     <!-- Action Buttons Toolbar -->
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
                         
                         <!-- Toggle Filters (Stacked/Grouped) -->
                         <div class="inline-flex rounded-md shadow-sm">
@@ -105,7 +105,7 @@
                                     </svg>
                                 </button>
                                 <!-- Dropdown Content -->
-                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden z-20">
                                     <div class="py-1">
                                         <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">Download Template</div>
                                         <a href="{{ route('master.karyawan.template') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Template CSV</a>
@@ -132,7 +132,7 @@
                                     </svg>
                                 </button>
                                 <!-- Dropdown Content -->
-                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden z-20">
                                    <div class="py-1">
                                         <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">Export Options</div>
                                         <a href="{{ route('master.karyawan.export') }}?sep=%3B" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">CSV (Semicolon)</a>
@@ -151,7 +151,7 @@
                                     </svg>
                                 </button>
                                 <!-- Dropdown Content -->
-                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden z-20">
                                    <div class="py-1">
                                         <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">Print Options</div>
                                         <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cetak Daftar</a>
