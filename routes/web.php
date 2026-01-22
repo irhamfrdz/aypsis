@@ -263,6 +263,11 @@ Route::middleware([
              ->name('karyawan.print')
              ->middleware('can:master-karyawan-print');
 
+        // Print multiple forms based on filters
+        Route::get('karyawan/print-forms', [KaryawanController::class, 'printForms'])
+             ->name('karyawan.print.forms')
+             ->middleware('can:master-karyawan-print');
+
         // Print single karyawan (form layout)
         Route::get('karyawan/{karyawan}/print', [KaryawanController::class, 'printSingle'])
              ->name('karyawan.print.single')

@@ -479,8 +479,13 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Set created_by and handle nomor_tanda_terima
             $validated['created_by'] = Auth::user()->name;
             
-            // Use manual number or leave as null if empty
-            $validated['no_tanda_terima'] = !empty($validated['nomor_tanda_terima']) ? $validated['nomor_tanda_terima'] : null;
+            // Use manual number or generate if empty
+            $validated['no_tanda_terima'] = !empty($validated['nomor_tanda_terima']) 
+                ? $validated['nomor_tanda_terima'] 
+                : TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
+            
+            // Sync nomor_tanda_terima for backward compatibility
+            $validated['nomor_tanda_terima'] = $validated['no_tanda_terima'];
 
             // (Legacy flattened dimensi items merged before validation)
 

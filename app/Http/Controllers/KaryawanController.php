@@ -1166,10 +1166,108 @@ class KaryawanController extends Controller
     /**
      * Menampilkan halaman print-friendly yang berisi semua field karyawan
      */
-    public function print()
+    /**
+     * Menampilkan halaman print-friendly yang berisi semua field karyawan
+     */
+    public function print(Request $request)
     {
-        $karyawans = Karyawan::all();
+        $query = Karyawan::query();
+
+        // Filter logic copied from index
+        if ($request->filled('show_all')) {
+            // show_all -> tampilkan semua karyawan (tidak menambah where)
+        } elseif ($request->filled('show_berhenti')) {
+            $query->whereNotNull('tanggal_berhenti');
+        } else {
+            // Default: hanya tampilkan karyawan aktif (belum berhenti)
+            $query->whereNull('tanggal_berhenti');
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nik', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                  ->orWhere('divisi', 'LIKE', "%{$search}%")
+                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('jkn', 'LIKE', "%{$search}%")
+                  ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                  ->orWhere('status_pajak', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Handle sorting
+        $sortField = $request->get('sort', 'nama_lengkap');
+        $sortDirection = $request->get('direction', 'asc');
+
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'nama_lengkap';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $query->orderBy($sortField, $sortDirection);
+
+        $karyawans = $query->get();
         return view('master-karyawan.print', compact('karyawans'));
+    }
+
+    /**
+     * Print multiple forms based on filters
+     */
+    public function printForms(Request $request)
+    {
+        $query = Karyawan::query();
+
+        // Filter logic copied from index
+        if ($request->filled('show_all')) {
+            // show_all -> tampilkan semua karyawan (tidak menambah where)
+        } elseif ($request->filled('show_berhenti')) {
+            $query->whereNotNull('tanggal_berhenti');
+        } else {
+            // Default: hanya tampilkan karyawan aktif (belum berhenti)
+            $query->whereNull('tanggal_berhenti');
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nik', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                  ->orWhere('divisi', 'LIKE', "%{$search}%")
+                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('jkn', 'LIKE', "%{$search}%")
+                  ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                  ->orWhere('status_pajak', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Handle sorting
+        $sortField = $request->get('sort', 'nama_lengkap');
+        $sortDirection = $request->get('direction', 'asc');
+
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'nama_lengkap';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $query->orderBy($sortField, $sortDirection);
+
+        $karyawans = $query->get();
+        return view('master-karyawan.print-bulk', compact('karyawans'));
     }
 
     /**

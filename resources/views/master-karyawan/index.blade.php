@@ -8,20 +8,32 @@
     <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
         <!-- Header Section -->
         <div class="px-6 py-4 border-b bg-white">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h2 class="text-xl font-semibold text-gray-900">Daftar Karyawan</h2>
+            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                <!-- Group 1: Title & Counts -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <h2 class="text-xl font-bold text-gray-900 whitespace-nowrap">Daftar Karyawan</h2>
 
-                @if(isset($counts))
-                    <div class="mt-2 text-sm text-gray-600 flex items-center gap-3">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-50 text-green-800 font-medium">Aktif: {{ $counts['aktif'] }}</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-50 text-red-800 font-medium">Berhenti: {{ $counts['berhenti'] }}</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-50 text-gray-800 font-medium">Total: {{ $counts['total'] }}</span>
-                    </div>
-                @endif
+                    @if(isset($counts))
+                        <div class="text-sm text-gray-600 flex flex-wrap items-center gap-3">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-50 text-green-700 border border-green-200 font-medium shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></span>
+                                Aktif: {{ $counts['aktif'] }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-50 text-red-700 border border-red-200 font-medium shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-2"></span>
+                                Berhenti: {{ $counts['berhenti'] }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-gray-50 text-gray-700 border border-gray-200 font-medium shadow-sm">
+                                Type: Total: {{ $counts['total'] }}
+                            </span>
+                        </div>
+                    @endif
+                </div>
 
-                <!-- Search Box -->
-                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex-1 sm:flex-initial">
+                <!-- Group 2: Search & Actions -->
+                <div class="flex flex-col lg:flex-row gap-3 w-full xl:w-auto lg:items-center">
+                    <!-- Search Box -->
+                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="w-full lg:w-72 flex-shrink-0">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,18 +43,13 @@
                             <input type="text"
                                    name="search"
                                    value="{{ request('search') }}"
-                                   class="block w-full sm:w-80 pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                   placeholder="Cari nama, NIK, divisi, pekerjaan..."
+                                   class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition duration-150 ease-in-out shadow-sm"
+                                   placeholder="Cari nama, NIK..."
                                    autocomplete="off">
-                            <!-- Tombol submit manual -->
-                            <button type="submit" class="absolute inset-y-0 right-8 flex items-center px-2 text-gray-400 hover:text-blue-600" title="Cari">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </button>
+                            
                             @if(request('search'))
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <a href="{{ route('master.karyawan.index') }}" class="text-gray-400 hover:text-gray-600" title="Hapus filter">
+                                    <a href="{{ route('master.karyawan.index') }}" class="text-gray-400 hover:text-gray-600 transition-colors" title="Hapus pencarian">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
@@ -52,163 +59,108 @@
                         </div>
                     </form>
 
-                    <!-- Action Buttons -->
-                    <div class="flex flex-nowrap gap-2 items-center">
-                        <!-- Toggle Karyawan Berhenti -->
-                        <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_berhenti' => request('show_berhenti') ? null : '1'])) }}"
-                           class="inline-flex items-center px-3 py-2 {{ request('show_berhenti') ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700' }} text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
-                           title="{{ request('show_berhenti') ? 'Tampilkan Semua Karyawan' : 'Lihat Karyawan Berhenti' }}">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                @if(request('show_berhenti'))
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
-                                @endif
-                            </svg>
-                            {{ request('show_berhenti') ? 'Semua Karyawan' : 'Karyawan Berhenti' }}
-                        </a>
-
-                        <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_all' => request('show_all') ? null : '1', 'show_berhenti' => null])) }}"
-                           class="inline-flex items-center px-3 py-2 {{ request('show_all') ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 hover:bg-gray-700' }} text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
-                           title="{{ request('show_all') ? 'Tampilkan default (Aktif)' : 'Tampilkan Semua Karyawan' }}">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
-                            </svg>
-                            Semua
-                        </a>
+                    <!-- Action Buttons Toolbar -->
+                    <div class="flex flex-wrap items-center gap-2">
                         
+                        <!-- Toggle Filters (Stacked/Grouped) -->
+                        <div class="inline-flex rounded-md shadow-sm">
+                             <!-- Show Berhenti Button -->
+                            <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_berhenti' => request('show_berhenti') ? null : '1'])) }}"
+                               class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-l-lg text-sm font-medium {{ request('show_berhenti') ? 'bg-red-50 text-red-700 z-10' : 'bg-white text-gray-700 hover:bg-gray-50' }} focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               title="Tampilkan Karyawan Berhenti">
+                                <svg class="w-4 h-4 mr-2 {{ request('show_berhenti') ? 'text-red-500' : 'text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                </svg>
+                                <span class="hidden sm:inline">Stopped</span>
+                                <span class="sm:hidden">Stop</span>
+                            </a>
+                            <!-- Show All Button -->
+                            <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_all' => request('show_all') ? null : '1', 'show_berhenti' => null])) }}"
+                               class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-lg text-sm font-medium {{ request('show_all') ? 'bg-indigo-50 text-indigo-700 z-10' : 'bg-white text-gray-700 hover:bg-gray-50' }} focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               title="Tampilkan Semua Karyawan">
+                                <svg class="w-4 h-4 mr-2 {{ request('show_all') ? 'text-indigo-500' : 'text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                </svg>
+                                <span class="hidden sm:inline">Semua</span>
+                                <span class="sm:hidden">All</span>
+                            </a>
+                        </div>
+
+                        <!-- Primary Actions -->
                         <a href="{{ route('master.karyawan.create') }}"
-                           class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                           class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
                             Tambah
                         </a>
 
-                        <!-- Template Dropdown -->
-                        <div class="relative group hidden md:block">
-                            <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        <!-- Tools Dropdowns Group -->
+                        <div class="flex items-center gap-2">
+                            <!-- Template Dropdown -->
+                            <div class="relative group">
+                                <button class="p-2 text-gray-600 hover:text-green-600 bg-white hover:bg-green-50 rounded-lg border border-gray-200 shadow-sm transition-colors" title="Template Import">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </button>
+                                <!-- Dropdown Content -->
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                    <div class="py-1">
+                                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">Download Template</div>
+                                        <a href="{{ route('master.karyawan.template') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Template CSV</a>
+                                        <a href="{{ route('master.karyawan.excel-template') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Excel + Panduan</a>
+                                        <a href="{{ route('master.karyawan.simple-excel-template') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Excel Simple</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Import Button -->
+                            <a href="{{ route('master.karyawan.import') }}" 
+                               class="p-2 text-gray-600 hover:text-orange-600 bg-white hover:bg-orange-50 rounded-lg border border-gray-200 shadow-sm transition-colors" 
+                               title="Import Data">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                 </svg>
-                                Template
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
-                            <!-- Dropdown Menu -->
-                            <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                                <div class="py-2">
-                                    <a href="{{ route('master.karyawan.template') }}"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Template CSV</div>
-                                            <div class="text-xs text-gray-500">Format CSV standar</div>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.excel-template') }}"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Template Excel + Instruksi</div>
-                                            <div class="text-xs text-gray-500">Excel dengan panduan lengkap</div>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.simple-excel-template') }}"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Template Excel Sederhana</div>
-                                            <div class="text-xs text-gray-500">Header saja tanpa instruksi</div>
-                                        </div>
-                                    </a>
+                            </a>
+
+                            <!-- Export Dropdown -->
+                            <div class="relative group">
+                                <button class="p-2 text-gray-600 hover:text-purple-600 bg-white hover:bg-purple-50 rounded-lg border border-gray-200 shadow-sm transition-colors" title="Export Data">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                </button>
+                                <!-- Dropdown Content -->
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                   <div class="py-1">
+                                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">Export Options</div>
+                                        <a href="{{ route('master.karyawan.export') }}?sep=%3B" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">CSV (Semicolon)</a>
+                                        <a href="{{ route('master.karyawan.export') }}?sep=," class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">CSV (Comma)</a>
+                                        <a href="{{ route('master.karyawan.export-excel') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Excel (Delimited)</a>
+                                        <a href="{{ route('master.karyawan.export-excel-indonesia') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-l-2 border-orange-500">Excel Indonesia (Rec.)</a>
+                                   </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Print Dropdown -->
+                            <div class="relative group">
+                                <button class="p-2 text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 shadow-sm transition-colors" title="Cetak / Print">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                    </svg>
+                                </button>
+                                <!-- Dropdown Content -->
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                   <div class="py-1">
+                                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">Print Options</div>
+                                        <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cetak Daftar</a>
+                                        <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cetak Formulir</a>
+                                   </div>
                                 </div>
                             </div>
                         </div>
 
-                        <a href="{{ route('master.karyawan.print') }}"
-                           target="_blank"
-                           class="hidden md:inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                            </svg>
-                            Cetak
-                        </a>
-
-                        <!-- Export Dropdown -->
-                        <div class="relative group hidden md:block">
-                            <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
-                                </svg>
-                                Export
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
-                            <!-- Dropdown Menu -->
-                            <div class="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                                <div class="py-2">
-                                    <a href="{{ route('master.karyawan.export') }}?sep=%3B"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Export CSV (Semicolon)</div>
-                                            <div class="text-xs text-gray-500">Format CSV dengan separator ;</div>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.export') }}?sep=,"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Export CSV (Comma)</div>
-                                            <div class="text-xs text-gray-500">Format CSV dengan separator ,</div>
-                                        </div>
-                                    </a>
-                                    <div class="border-t border-gray-200 my-1"></div>
-                                    <a href="{{ route('master.karyawan.export-excel') }}"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Export Excel (Semicolon)</div>
-                                            <div class="text-xs text-gray-500">Anti scientific notation, delimiter ;</div>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.export-excel-indonesia') }}"
-                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors border-l-4 border-orange-400">
-                                        <svg class="w-4 h-4 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium">Export Excel Indonesia</div>
-                                            <div class="text-xs text-gray-500">Comma delimiter + quotes (Recommended)</div>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <a href="{{ route('master.karyawan.import') }}"
-                           class="hidden md:inline-flex items-center px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            Import
-                        </a>
                     </div>
                 </div>
             </div>

@@ -1,10 +1,16 @@
 <?php
-include 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
+require_once __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$result = DB::select("SHOW COLUMNS FROM pembayaran_pranota_perbaikan_kontainers WHERE Field = 'status'");
-if (!empty($result)) {
-    echo "Status column type: " . $result[0]->Type . PHP_EOL;
-}
+use Illuminate\Support\Facades\Schema;
+
+echo "=== Columns in 'prospek' table ===\n";
+print_r(Schema::getColumnListing('prospek'));
+
+echo "\n=== Columns in 'tanda_terima' table ===\n";
+print_r(Schema::getColumnListing('tanda_terima'));
+
+echo "\n=== Columns in 'tanda_terima_tanpa_surat_jalan' table ===\n";
+print_r(Schema::getColumnListing('tanda_terima_tanpa_surat_jalan'));
