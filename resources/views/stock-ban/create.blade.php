@@ -27,13 +27,13 @@
     }
     .custom-select-dropdown {
         position: absolute;
-        z-index: 50;
+        z-index: 9999;
         width: 100%;
         margin-top: 0.25rem;
         background-color: white;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         max-height: 15rem;
         overflow-y: auto;
         display: none;
@@ -149,13 +149,13 @@
                                 <div class="custom-select-search">
                                     <input type="text" id="mobil-search-input" placeholder="Cari mobil..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 </div>
-                                <div class="custom-select-options">
-                                    <div class="custom-select-option" data-value="" onclick="selectMobil('', '-- Tidak Dipasang --')">-- Tidak Dipasang --</div>
+                                <div class="custom-select-options" id="mobil-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Tidak Dipasang --">-- Tidak Dipasang --</div>
                                     @foreach($mobils as $mobil)
                                         <div class="custom-select-option" 
                                              data-value="{{ $mobil->id }}" 
                                              data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}"
-                                             onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})')">
+                                             data-text="{{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})">
                                             {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
                                         </div>
                                     @endforeach
@@ -223,46 +223,56 @@
 
 @push('scripts')
 <script>
-    function selectMobil(id, text) {
-        document.getElementById('mobil_id').value = id;
-        document.getElementById('mobil-selected-text').textContent = text;
-        document.getElementById('mobil-select-dropdown').style.display = 'none';
-        
-        // Update selected class
-        const options = document.querySelectorAll('.custom-select-option');
-        options.forEach(opt => {
-            if (opt.getAttribute('data-value') === id.toString()) {
-                opt.classList.add('selected');
-            } else {
-                opt.classList.remove('selected');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
+    (function() {
+        const selectContainer = document.getElementById('mobil-select-container');
         const selectButton = document.getElementById('mobil-select-button');
         const selectDropdown = document.getElementById('mobil-select-dropdown');
         const searchInput = document.getElementById('mobil-search-input');
-        const options = document.querySelectorAll('.custom-select-option');
+        const optionsList = document.getElementById('mobil-options-list');
         const noResults = document.getElementById('no-mobil-results');
+        const hiddenInput = document.getElementById('mobil_id');
+        const selectedText = document.getElementById('mobil-selected-text');
+
+        function updateSelectedState(value) {
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.getAttribute('data-value') === (value || '').toString()) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+
+        function selectMobil(id, text) {
+            hiddenInput.value = id;
+            selectedText.textContent = text;
+            selectDropdown.style.display = 'none';
+            updateSelectedState(id);
+        }
+
+        // Initialize selected state
+        updateSelectedState(hiddenInput.value);
 
         // Toggle dropdown
         selectButton.addEventListener('click', function(e) {
+            e.preventDefault();
             e.stopPropagation();
-            const isVisible = selectDropdown.style.display === 'block';
-            selectDropdown.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) {
+            
+            const isHidden = window.getComputedStyle(selectDropdown).display === 'none';
+            
+            if (isHidden) {
+                // Close any other open dropdowns first if any
+                selectDropdown.style.display = 'block';
                 searchInput.value = '';
-                searchInput.focus();
-                // Reset search results
+                
+                // Reset search results visibility
+                const options = optionsList.querySelectorAll('.custom-select-option');
                 options.forEach(opt => opt.classList.remove('hidden'));
                 noResults.classList.add('hidden');
-            }
-        });
-
-        // Close when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!document.getElementById('mobil-select-container').contains(e.target)) {
+                
+                setTimeout(() => searchInput.focus(), 10);
+            } else {
                 selectDropdown.style.display = 'none';
             }
         });
@@ -270,11 +280,13 @@
         // Search functionality
         searchInput.addEventListener('input', function() {
             const term = this.value.toLowerCase().trim();
+            const options = optionsList.querySelectorAll('.custom-select-option');
             let count = 0;
             
             options.forEach(opt => {
-                const searchData = opt.getAttribute('data-search');
-                if (!searchData || searchData.includes(term)) {
+                const searchData = opt.getAttribute('data-search') || '';
+                const textData = opt.textContent.toLowerCase();
+                if (searchData.includes(term) || textData.includes(term)) {
                     opt.classList.remove('hidden');
                     count++;
                 } else {
@@ -282,10 +294,23 @@
                 }
             });
 
-            if (count === 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                noResults.classList.add('hidden');
+            noResults.classList.toggle('hidden', count > 0);
+        });
+
+        // Option selection
+        optionsList.addEventListener('click', function(e) {
+            const option = e.target.closest('.custom-select-option');
+            if (option) {
+                const val = option.getAttribute('data-value');
+                const txt = option.getAttribute('data-text');
+                selectMobil(val, txt);
+            }
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!selectContainer.contains(e.target)) {
+                selectDropdown.style.display = 'none';
             }
         });
 
@@ -293,6 +318,6 @@
         searchInput.addEventListener('click', function(e) {
             e.stopPropagation();
         });
-    });
+    })();
 </script>
 @endpush
