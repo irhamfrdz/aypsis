@@ -146,7 +146,6 @@
 
             {{-- Hidden inputs for additional data --}}
             <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="">
-            <input type="hidden" name="tanggal_kas" value="{{ now()->toDateString() }}">
             <input type="hidden" name="kapal" value="{{ request('kapal') }}">
             <input type="hidden" name="voyage" value="{{ request('voyage') }}">
             <input type="hidden" name="dp_id" value="{{ request('dp') }}">
@@ -177,10 +176,9 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" id="tanggal_kas"
-                                    value="{{ now()->format('d/M/Y') }}"
-                                    class="{{ $readonlyInputClasses }}" readonly required>
-                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                                <input type="date" name="tanggal_kas" id="tanggal_kas"
+                                    value="{{ old('tanggal_kas', now()->toDateString()) }}"
+                                    class="{{ $inputClasses }}" required>
                             </div>
                         </div>
                     </div>
