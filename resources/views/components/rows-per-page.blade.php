@@ -21,7 +21,7 @@
 
             <select name="per_page"
                     onchange="this.form.submit()"
-                    class="mx-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    class="mx-1 px-4 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white transition-all cursor-pointer shadow-sm">
                 <option value="10" {{ $currentPerPage == 10 ? 'selected' : '' }}>10</option>
                 <option value="25" {{ $currentPerPage == 25 ? 'selected' : '' }}>25</option>
                 <option value="50" {{ $currentPerPage == 50 ? 'selected' : '' }}>50</option>

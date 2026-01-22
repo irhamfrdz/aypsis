@@ -7,217 +7,227 @@
 <div class="max-w-full mx-auto px-4">
     <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
         <!-- Header Section -->
-        <div class="px-6 py-4 border-b bg-white">
-            <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
-                <!-- Group 1: Context (Title & Stats) -->
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Daftar Karyawan</h2>
-                    @if(isset($counts))
-                        <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 font-medium border border-green-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
-                                Aktif: {{ $counts['aktif'] }}
-                            </span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 font-medium border border-red-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
-                                Berhenti: {{ $counts['berhenti'] }}
-                            </span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 font-medium border border-gray-200">
-                                Total: {{ $counts['total'] }}
-                            </span>
+        <div class="px-6 py-6 border-b bg-white">
+            <div class="flex flex-col gap-8">
+                <!-- TOP ROW: Title & Primary Actions -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Master Karyawan</h1>
+                        @if(isset($counts))
+                            <div class="mt-3 flex flex-wrap items-center gap-3">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold border border-green-100 shadow-sm transition-all hover:bg-green-100 uppercase tracking-wider">
+                                    <span class="w-2 h-2 rounded-full bg-green-500 mr-2.5 animate-pulse"></span>
+                                    Aktif: {{ $counts['aktif'] }}
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-red-50 text-red-700 text-xs font-bold border border-red-100 shadow-sm transition-all hover:bg-red-100 uppercase tracking-wider">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2.5"></span>
+                                    Berhenti: {{ $counts['berhenti'] }}
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100 shadow-sm transition-all hover:bg-blue-100 uppercase tracking-wider">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500 mr-2.5"></span>
+                                    Total: {{ $counts['total'] }}
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Toolbar Group -->
+                        <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-1 shadow-sm">
+                            <!-- Template -->
+                            <div class="relative group">
+                                <button class="p-2 text-gray-500 hover:text-green-600 hover:bg-white rounded-lg transition-all duration-200" title="Download Template">
+                                    <i class="fas fa-file-download text-lg"></i>
+                                </button>
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-2 z-50">
+                                    <div class="px-3 py-2 text-[10px] font-bold text-gray-400 border-b mb-2 uppercase tracking-widest">Download Templates</div>
+                                    <a href="{{ route('master.karyawan.template') }}" class="flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
+                                        <i class="fas fa-file-csv mr-3 text-orange-500 text-base"></i> CSV Format
+                                    </a>
+                                    <a href="{{ route('master.karyawan.excel-template') }}" class="flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
+                                        <i class="fas fa-file-excel mr-3 text-green-600 text-base"></i> Excel + Guide
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="w-px h-6 bg-gray-200 mx-1"></div>
+                            
+                            <!-- Import -->
+                            <a href="{{ route('master.karyawan.import') }}" 
+                               class="p-2 text-gray-500 hover:text-orange-600 hover:bg-white rounded-lg transition-all duration-200" 
+                               title="Import Data">
+                                <i class="fas fa-file-import text-lg"></i>
+                            </a>
+
+                            <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+                            <!-- Export -->
+                            <div class="relative group">
+                                <button class="p-2 text-gray-500 hover:text-purple-600 hover:bg-white rounded-lg transition-all duration-200" title="Export">
+                                    <i class="fas fa-file-export text-lg"></i>
+                                </button>
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-2 z-50">
+                                    <div class="px-3 py-2 text-[10px] font-bold text-gray-400 border-b mb-2 uppercase tracking-widest">Export Options</div>
+                                    <a href="{{ route('master.karyawan.export') }}?sep=;" class="flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
+                                        <i class="fas fa-file-code mr-3 text-blue-500 text-lg"></i> CSV (Semicolon)
+                                    </a>
+                                    <a href="{{ route('master.karyawan.export-excel') }}" class="flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
+                                        <i class="fas fa-file-excel mr-3 text-green-600 text-lg"></i> Excel Format
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+                            <!-- Print -->
+                            <div class="relative group">
+                                <button class="p-2 text-gray-500 hover:text-gray-900 hover:bg-white rounded-lg transition-all duration-200" title="Print Options">
+                                    <i class="fas fa-print text-lg"></i>
+                                </button>
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-2 z-50">
+                                    <div class="px-3 py-2 text-[10px] font-bold text-gray-400 border-b mb-2 uppercase tracking-widest">Print Menus</div>
+                                    <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
+                                        <span class="flex items-center"><i class="fas fa-list-ul mr-3 text-gray-500"></i> Cetak Daftar</span>
+                                        <i class="fas fa-external-link-alt text-[10px] text-gray-300"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
+                                        <span class="flex items-center"><i class="fas fa-id-card-alt mr-3 text-gray-500"></i> Cetak Formulir</span>
+                                        <i class="fas fa-external-link-alt text-[10px] text-gray-300"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                    @endif
+
+                        <a href="{{ route('master.karyawan.create') }}"
+                           class="inline-flex items-center px-5 py-2.5 bg-blue-600 border border-transparent rounded-xl font-bold text-sm text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 shadow-lg shadow-blue-600/20">
+                            <i class="fas fa-plus-circle mr-2 text-lg"></i>
+                            Tambah Karyawan
+                        </a>
+                    </div>
                 </div>
 
-                <!-- Group 2: Interaction (Search & Tools) -->
-                <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto items-end sm:items-center">
-                    <!-- Search & Filter Form -->
-                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex flex-col xl:flex-row gap-2 w-full xl:w-auto">
+                <!-- BOTTOM ROW: Advanced Filters Card -->
+                <div class="bg-gray-50/50 rounded-3xl p-6 border border-gray-200 shadow-sm shadow-gray-100/50">
+                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="space-y-6">
                         <!-- Preserve other query params -->
-                        @foreach(request()->except(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'page']) as $key => $value)
+                        @foreach(request()->except(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
 
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <!-- Divisi Filter -->
-                            @if(isset($divisiOptions) && count($divisiOptions) > 0)
-                            <select name="divisi" onchange="this.form.submit()"
-                                    class="block w-full sm:w-48 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors">
-                                <option value="">Semua Divisi</option>
-                                @foreach($divisiOptions as $opt)
-                                    <option value="{{ $opt }}" {{ request('divisi') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                            @endif
-
-                            <!-- Cabang Filter -->
-                            @if(isset($cabangOptions) && count($cabangOptions) > 0)
-                            <select name="cabang" onchange="this.form.submit()"
-                                    class="block w-full sm:w-48 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors">
-                                <option value="">Semua Cabang</option>
-                                @foreach($cabangOptions as $opt)
-                                    <option value="{{ $opt }}" {{ request('cabang') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                            @endif
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row gap-2 items-center">
-                            <div class="flex flex-col gap-1 w-full sm:w-auto">
-                                <span class="text-[10px] font-bold text-gray-500 uppercase ml-1">Masuk:</span>
-                                <div class="flex items-center gap-1">
-                                    <input type="date" name="tanggal_masuk_start" value="{{ request('tanggal_masuk_start') }}"
-                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
-                                           title="Tanggal Masuk Dari">
-                                    <span class="text-gray-400 text-xs">-</span>
-                                    <input type="date" name="tanggal_masuk_end" value="{{ request('tanggal_masuk_end') }}"
-                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
-                                           title="Tanggal Masuk Sampai">
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col gap-1 w-full sm:w-auto">
-                                <span class="text-[10px] font-bold text-red-500 uppercase ml-1">Berhenti:</span>
-                                <div class="flex items-center gap-1">
-                                    <input type="date" name="tanggal_berhenti_start" value="{{ request('tanggal_berhenti_start') }}"
-                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm transition-colors"
-                                           title="Tanggal Berhenti Dari">
-                                    <span class="text-gray-400 text-xs">-</span>
-                                    <input type="date" name="tanggal_berhenti_end" value="{{ request('tanggal_berhenti_end') }}"
-                                           class="block w-full sm:w-36 py-1.5 px-3 border border-gray-300 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm transition-colors"
-                                           title="Tanggal Berhenti Sampai">
-                                </div>
-                            </div>
-
-                            <div class="flex gap-2 w-full sm:w-auto self-end">
-                                <!-- Search Box -->
-                                <div class="relative group flex-1 sm:w-48">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                        </svg>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                            <!-- Column 1: Search -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Cari Karyawan</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
                                     </div>
                                     <input type="text"
                                            name="search"
                                            value="{{ request('search') }}"
-                                           class="block w-full pl-9 pr-9 py-1.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow shadow-sm"
-                                           placeholder="Cari..."
+                                           class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all shadow-sm"
+                                           placeholder="Nama, NIK, Divisi..."
                                            autocomplete="off">
                                     
                                     @if(request('search'))
-                                        <button type="button" onclick="window.location.href='{{ route('master.karyawan.index', request()->except(['search', 'page'])) }}'" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
+                                        <a href="{{ route('master.karyawan.index', request()->except(['search', 'page'])) }}" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-300 hover:text-red-500 transition-colors">
+                                            <i class="fas fa-times-circle"></i>
+                                        </a>
                                     @endif
                                 </div>
+                            </div>
 
-                                <button type="submit" class="inline-flex items-center px-4 py-1.5 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-150 shadow-sm">
-                                    <i class="fas fa-filter mr-1.5 text-[10px]"></i>
-                                    Filter
-                                </button>
+                            <!-- Column 2: Divisi -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Divisi Pekerjaan</label>
+                                @if(isset($divisiOptions) && count($divisiOptions) > 0)
+                                <select name="divisi" onchange="this.form.submit()"
+                                        class="block w-full py-2.5 pl-3.5 pr-10 border border-gray-300 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all appearance-none cursor-pointer">
+                                    <option value="">Semua Divisi</option>
+                                    @foreach($divisiOptions as $opt)
+                                        <option value="{{ $opt }}" {{ request('divisi') == $opt ? 'selected' : '' }}>{{ strtoupper($opt) }}</option>
+                                    @endforeach
+                                </select>
+                                @endif
+                            </div>
 
+                            <!-- Column 3: Cabang -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Wilayah Cabang</label>
+                                @if(isset($cabangOptions) && count($cabangOptions) > 0)
+                                <select name="cabang" onchange="this.form.submit()"
+                                        class="block w-full py-2.5 pl-3.5 pr-10 border border-gray-300 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all appearance-none cursor-pointer">
+                                    <option value="">Semua Cabang</option>
+                                    @foreach($cabangOptions as $opt)
+                                        <option value="{{ $opt }}" {{ request('cabang') == $opt ? 'selected' : '' }}>{{ strtoupper($opt) }}</option>
+                                    @endforeach
+                                </select>
+                                @endif
+                            </div>
+
+                            <!-- Column 4: Status Quick Filters -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Status Keaktifan</label>
+                                <div class="inline-flex overflow-hidden border border-gray-300 rounded-xl bg-white shadow-sm p-1">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_berhenti' => request('show_berhenti') ? null : '1', 'show_all' => null])) }}"
+                                       class="flex-1 inline-flex justify-center items-center px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all {{ request('show_berhenti') ? 'bg-red-500 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-50' }}"
+                                       title="Filter Karyawan Berhenti">
+                                        Stopped
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_all' => request('show_all') ? null : '1', 'show_berhenti' => null])) }}"
+                                       class="flex-1 inline-flex justify-center items-center px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all {{ request('show_all') ? 'bg-blue-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-50' }}"
+                                       title="Tampilkan Semua Karyawan">
+                                        Semua
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Column 5: Range Tgl Masuk -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Rentang Tanggal Masuk</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="date" name="tanggal_masuk_start" value="{{ request('tanggal_masuk_start') }}"
+                                           class="flex-1 py-2 px-3 border border-gray-300 bg-white rounded-xl text-[10px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all"
+                                           title="Dari Tanggal">
+                                    <span class="text-gray-300">-</span>
+                                    <input type="date" name="tanggal_masuk_end" value="{{ request('tanggal_masuk_end') }}"
+                                           class="flex-1 py-2 px-3 border border-gray-300 bg-white rounded-xl text-[10px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all"
+                                           title="Sampai Tanggal">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Row: Date Stop & Actions -->
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-6 border-t border-gray-200/60">
+                            <div class="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                                <div class="flex flex-col gap-2 min-w-[280px]">
+                                    <label class="text-[10px] font-bold text-red-500 uppercase tracking-widest px-1">Rentang Tanggal Berhenti</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="date" name="tanggal_berhenti_start" value="{{ request('tanggal_berhenti_start') }}"
+                                               class="flex-1 py-2 px-3 border border-gray-300 bg-white rounded-xl text-[10px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm transition-all"
+                                               title="Dari Tanggal">
+                                        <span class="text-gray-300">-</span>
+                                        <input type="date" name="tanggal_berhenti_end" value="{{ request('tanggal_berhenti_end') }}"
+                                               class="flex-1 py-2 px-3 border border-gray-300 bg-white rounded-xl text-[10px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm transition-all"
+                                               title="Sampai Tanggal">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
                                 @if(request()->anyFilled(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end']))
-                                    <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center px-4 py-1.5 bg-gray-100 border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-150 shadow-sm" title="Reset Filter">
-                                        <i class="fas fa-undo"></i>
+                                    <a href="{{ route('master.karyawan.index') }}" 
+                                       class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-xl font-bold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-300/20 transition-all duration-200">
+                                        <i class="fas fa-undo mr-2"></i> Reset Filter
                                     </a>
                                 @endif
+                                <button type="submit" 
+                                        class="inline-flex items-center px-8 py-2.5 bg-slate-900 border border-transparent rounded-xl font-bold text-xs text-white uppercase tracking-widest hover:bg-slate-800 focus:bg-slate-800 active:bg-slate-950 focus:outline-none focus:ring-4 focus:ring-slate-900/20 transition-all duration-200 shadow-lg shadow-slate-900/10">
+                                    <i class="fas fa-filter mr-2"></i> Terapkan Filter
+                                </button>
                             </div>
                         </div>
                     </form>
-
-                    <!-- Toolbar -->
-                    <div class="flex items-center gap-2">
-                        <!-- Filters Group -->
-                        <div class="hidden sm:inline-flex shadow-sm rounded-lg">
-                            <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_berhenti' => request('show_berhenti') ? null : '1'])) }}"
-                               class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-l-lg text-sm font-medium {{ request('show_berhenti') ? 'bg-red-50 text-red-700 z-10 border-red-300' : 'bg-white text-gray-700 hover:bg-gray-50' }} transition-colors"
-                               title="Filter Karyawan Berhenti">
-                                Stopped
-                            </a>
-                            <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_all' => request('show_all') ? null : '1', 'show_berhenti' => null])) }}"
-                               class="inline-flex items-center px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg text-sm font-medium {{ request('show_all') ? 'bg-indigo-50 text-indigo-700 z-10 border-indigo-300' : 'bg-white text-gray-700 hover:bg-gray-50' }} transition-colors"
-                               title="Tampilkan Semua Karyawan">
-                                Semua
-                            </a>
-                        </div>
-
-                        <!-- Divider -->
-                        <div class="h-6 w-px bg-gray-300 mx-1 hidden sm:block"></div>
-
-                        <!-- Tools Icons -->
-                        <div class="flex items-center gap-1">
-                            <!-- Template -->
-                            <div class="relative group z-20">
-                                <button class="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-200" title="Download Template">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                    </svg>
-                                </button>
-                                <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-1">
-                                    <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b mb-1">Templates</div>
-                                    <a href="{{ route('master.karyawan.template') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">CSV</a>
-                                    <a href="{{ route('master.karyawan.excel-template') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">Excel + Guide</a>
-                                    <a href="{{ route('master.karyawan.simple-excel-template') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">Excel Simple</a>
-                                </div>
-                            </div>
-                            
-                             <!-- Import -->
-                             <a href="{{ route('master.karyawan.import') }}" 
-                               class="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors border border-transparent hover:border-orange-200" 
-                               title="Import Data">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                </svg>
-                            </a>
-
-                            <!-- Export -->
-                            <div class="relative group z-20">
-                                <button class="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-200" title="Export">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                </button>
-                                <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-1">
-                                    <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b mb-1">Export Options</div>
-                                    <a href="{{ route('master.karyawan.export') }}?sep=;" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">CSV (Semicolon)</a>
-                                    <a href="{{ route('master.karyawan.export') }}?sep=," class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">CSV (Comma)</a>
-                                    <a href="{{ route('master.karyawan.export-excel') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">Excel</a>
-                                    <a href="{{ route('master.karyawan.export-excel-indonesia') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">Excel (Indo)</a>
-                                </div>
-                            </div>
-                            
-                            <!-- Print -->
-                            <div class="relative group z-20">
-                                <button class="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-gray-200" title="Print">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                                    </svg>
-                                </button>
-                                <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-1">
-                                    <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b mb-1">Print</div>
-                                    <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded flex items-center justify-between">
-                                        <span>Daftar</span>
-                                        <span class="text-xs text-gray-400">List</span>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded flex items-center justify-between">
-                                        <span>Formulir</span>
-                                        <span class="text-xs text-gray-400">Detail</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                         <!-- Add Button -->
-                         <a href="{{ route('master.karyawan.create') }}"
-                           class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                            Tambah
-                        </a>
-                    </div>
                 </div>
             </div>
 
