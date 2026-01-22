@@ -31,9 +31,37 @@
 
                 <!-- Group 2: Interaction (Search & Tools) -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto items-end sm:items-center">
-                    <!-- Search Box -->
-                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="w-full sm:w-64 relative">
-                        <div class="relative group">
+                    <!-- Search & Filter Form -->
+                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                        <!-- Preserve other query params -->
+                        @foreach(request()->except(['search', 'divisi', 'cabang', 'page']) as $key => $value)
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endforeach
+
+                        <!-- Divisi Filter -->
+                        @if(isset($divisiOptions) && count($divisiOptions) > 0)
+                        <select name="divisi" onchange="this.form.submit()"
+                                class="block w-full sm:w-32 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                            <option value="">Semua Divisi</option>
+                            @foreach($divisiOptions as $opt)
+                                <option value="{{ $opt }}" {{ request('divisi') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                        @endif
+
+                        <!-- Cabang Filter -->
+                        @if(isset($cabangOptions) && count($cabangOptions) > 0)
+                        <select name="cabang" onchange="this.form.submit()"
+                                class="block w-full sm:w-32 py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                            <option value="">Semua Cabang</option>
+                            @foreach($cabangOptions as $opt)
+                                <option value="{{ $opt }}" {{ request('cabang') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                        @endif
+
+                        <!-- Search Box -->
+                        <div class="relative group w-full sm:w-48">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -47,7 +75,7 @@
                                    autocomplete="off">
                             
                             @if(request('search'))
-                                <button type="button" onclick="window.location.href='{{ route('master.karyawan.index') }}'" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                <button type="button" onclick="window.location.href='{{ route('master.karyawan.index', request()->except(['search', 'page'])) }}'" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>

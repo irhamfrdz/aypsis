@@ -90,6 +90,10 @@ class KaryawanController extends Controller
             'berhenti' => $berhentiCount,
         ];
 
+        // Prepare filter options
+        $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
+        $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
+
         // Filter: show_all overrides other filters
         if ($request->filled('show_all')) {
             // show_all -> tampilkan semua karyawan (tidak menambah where)
@@ -98,6 +102,13 @@ class KaryawanController extends Controller
         } else {
             // Default: hanya tampilkan karyawan aktif (belum berhenti)
             $query->whereNull('tanggal_berhenti');
+        }
+
+        if ($request->filled('divisi')) {
+            $query->where('divisi', $request->divisi);
+        }
+        if ($request->filled('cabang')) {
+            $query->where('cabang', $request->cabang);
         }
 
         // Jika ada parameter search, lakukan pencarian
@@ -149,7 +160,7 @@ class KaryawanController extends Controller
         // Menggunakan paginate dengan per_page yang dinamis
         $karyawans = $query->paginate($perPage)->appends($request->query());
 
-        return view('master-karyawan.index', compact('karyawans', 'counts'));
+        return view('master-karyawan.index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions'));
     }
 
     /**
@@ -1183,6 +1194,13 @@ class KaryawanController extends Controller
             $query->whereNull('tanggal_berhenti');
         }
 
+        if ($request->filled('divisi')) {
+            $query->where('divisi', $request->divisi);
+        }
+        if ($request->filled('cabang')) {
+            $query->where('cabang', $request->cabang);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -1233,6 +1251,13 @@ class KaryawanController extends Controller
         } else {
             // Default: hanya tampilkan karyawan aktif (belum berhenti)
             $query->whereNull('tanggal_berhenti');
+        }
+
+        if ($request->filled('divisi')) {
+            $query->where('divisi', $request->divisi);
+        }
+        if ($request->filled('cabang')) {
+            $query->where('cabang', $request->cabang);
         }
 
         if ($request->filled('search')) {
