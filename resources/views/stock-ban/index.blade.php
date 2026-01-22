@@ -68,6 +68,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $ban->lokasi }}
+                            @if($ban->mobil_id)
+                                <div class="text-xs text-blue-600 mt-1 font-medium">
+                                    <i class="fas fa-truck mr-1"></i> {{ $ban->mobil->nomor_polisi }}
+                                </div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             Rp {{ number_format($ban->harga_beli, 0, ',', '.') }}

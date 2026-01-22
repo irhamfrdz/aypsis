@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\StockBan;
+use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +23,8 @@ class StockBanController extends Controller
      */
     public function create()
     {
-        return view('stock-ban.create');
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        return view('stock-ban.create', compact('mobils'));
     }
 
     /**
@@ -40,6 +42,7 @@ class StockBanController extends Controller
             'tanggal_masuk' => 'required|date',
             'lokasi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
+            'mobil_id' => 'nullable|exists:mobils,id',
         ]);
 
         // Clean up numeric input if needed (though numeric validation usually handles it, sometimes format uses dots)
@@ -56,7 +59,8 @@ class StockBanController extends Controller
     public function edit($id)
     {
         $stockBan = StockBan::findOrFail($id);
-        return view('stock-ban.edit', compact('stockBan'));
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        return view('stock-ban.edit', compact('stockBan', 'mobils'));
     }
 
     /**
@@ -76,6 +80,7 @@ class StockBanController extends Controller
             'tanggal_masuk' => 'required|date',
             'lokasi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
+            'mobil_id' => 'nullable|exists:mobils,id',
         ]);
 
         $stockBan->update($request->all());

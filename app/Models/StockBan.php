@@ -21,7 +21,13 @@ class StockBan extends Model
         'tanggal_masuk',
         'lokasi',
         'keterangan',
+        'mobil_id',
     ];
+
+    public function mobil()
+    {
+        return $this->belongsTo(Mobil::class, 'mobil_id');
+    }
 
     protected $casts = [
         'harga_beli' => 'decimal:2',

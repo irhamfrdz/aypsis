@@ -68,6 +68,22 @@
                         @enderror
                     </div>
 
+                    <!-- Mobil (Assign to Car) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pasang pada Mobil (Opsional)</label>
+                        <select name="mobil_id" id="mobil_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('mobil_id') border-red-500 @enderror select2">
+                            <option value="">-- Tidak Dipasang --</option>
+                            @foreach($mobils as $mobil)
+                                <option value="{{ $mobil->id }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
+                                    {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('mobil_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Lokasi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
