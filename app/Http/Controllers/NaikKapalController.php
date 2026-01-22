@@ -8,6 +8,7 @@ use App\Models\NaikKapal;
 use App\Models\Prospek;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Exports\NaikKapalExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -363,6 +364,27 @@ class NaikKapalController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Update size kontainer inline
+     */
+    public function updateSize(Request $request, $id)
+    {
+        $naikKapal = NaikKapal::findOrFail($id);
+        
+        $request->validate([
+            'size_kontainer' => 'nullable|string|max:50'
+        ]);
+
+        $naikKapal->update([
+            'size_kontainer' => $request->size_kontainer
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Size kontainer berhasil diperbarui'
+        ]);
     }
 
     /**

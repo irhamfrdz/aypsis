@@ -206,7 +206,11 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $naikKapal->size_kontainer ?? '-' }}</div>
+                                <input type="text" 
+                                       class="size-input text-sm font-medium text-gray-900 border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 w-24"
+                                       data-id="{{ $naikKapal->id }}"
+                                       value="{{ $naikKapal->size_kontainer ?? '' }}"
+                                       placeholder="-">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $naikKapal->nama_kapal }}</div>
@@ -539,6 +543,52 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.remove();
         }, 3000);
     }
+
+    // Inline Size Update
+    const sizeInputs = document.querySelectorAll('.size-input');
+    sizeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const id = this.getAttribute('data-id');
+            const size = this.value;
+            const originalValue = this.defaultValue;
+
+            // Add loading state
+            this.classList.add('bg-gray-100', 'text-gray-400');
+            this.disabled = true;
+
+            fetch(`{{ url('naik-kapal') }}/${id}/update-size`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ size_kontainer: size })
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.classList.remove('bg-gray-100', 'text-gray-400');
+                this.disabled = false;
+                
+                if (data.success) {
+                    showToast('success', data.message);
+                    this.defaultValue = size; // Update default value
+                    this.classList.add('bg-green-50');
+                    setTimeout(() => this.classList.remove('bg-green-50'), 2000);
+                } else {
+                    showToast('error', data.message || 'Gagal memperbarui size');
+                    this.value = originalValue; // Revert
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.classList.remove('bg-gray-100', 'text-gray-400');
+                this.disabled = false;
+                this.value = originalValue; // Revert
+                showToast('error', 'Terjadi kesalahan sistem');
+            });
+        });
+    });
+
 });
 </script>
 
