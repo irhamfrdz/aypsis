@@ -83,9 +83,10 @@ class PembayaranPranotaObController extends Controller
         }
 
         // If no criteria provided, redirect to select criteria page
-        if (!$request->has('kapal') || !$request->has('voyage') || !$request->has('dp')) {
+        // Note: DP is optional, only kapal and voyage are required
+        if (!$request->has('kapal') || !$request->has('voyage')) {
             return redirect()->route('pembayaran-pranota-ob.select-criteria')
-                ->with('error', 'Silakan pilih kriteria terlebih dahulu.');
+                ->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
 
         // Clear any old validation errors from session for fresh form load

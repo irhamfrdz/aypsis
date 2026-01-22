@@ -3704,10 +3704,75 @@ window.bulkAddInvoice = function() {
         return;
     }
 
+    // Collect container information from checked rows
+    const containerData = [];
+    let totalDPP = 0;
+    let totalGrandTotal = 0;
+
+    checkedBoxes.forEach(cb => {
+        const row = cb.closest('tr');
+        if (row) {
+            // Get data from row cells
+            const cells = row.querySelectorAll('td');
+            // Based on table structure: 0=checkbox, 1=no, 2=group, 3=vendor, 4=nomor_kontainer, 5=size
+            const vendor = cells[3]?.innerText?.trim() || '-';
+            const nomorKontainer = cells[4]?.innerText?.trim() || '-';
+            const size = cells[5]?.innerText?.trim() || '-';
+            
+            // Find DPP and Grand Total cells (they contain Rp format)
+            let dpp = 0;
+            let grandTotal = 0;
+            
+            cells.forEach(cell => {
+                const text = cell.innerText?.trim() || '';
+                // Check if it's a money cell by looking at font-mono class and Rp prefix
+                if (cell.classList.contains('font-mono') || text.includes('Rp')) {
+                    const blueDiv = cell.querySelector('.text-blue-900');
+                    const yellowDiv = cell.querySelector('.text-yellow-800');
+                    
+                    if (blueDiv) {
+                        // DPP cell
+                        const dppText = blueDiv.innerText.replace(/[^\d]/g, '');
+                        dpp = parseInt(dppText) || 0;
+                    }
+                    if (yellowDiv) {
+                        // Grand Total cell
+                        const gtText = yellowDiv.innerText.replace(/[^\d]/g, '');
+                        grandTotal = parseInt(gtText) || 0;
+                    }
+                }
+            });
+
+            containerData.push({
+                id: cb.value,
+                nomorKontainer: nomorKontainer,
+                vendor: vendor,
+                size: size,
+                dpp: dpp,
+                grandTotal: grandTotal
+            });
+
+            totalDPP += dpp;
+            totalGrandTotal += grandTotal;
+        }
+    });
+
+    // Build container info table HTML
+    const containerTableHTML = containerData.map((c, idx) => `
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-2 py-1.5 text-xs text-gray-600">${idx + 1}</td>
+            <td class="px-2 py-1.5 text-xs font-mono font-medium text-gray-800">${c.nomorKontainer}</td>
+            <td class="px-2 py-1.5 text-xs text-gray-600">${c.vendor}</td>
+            <td class="px-2 py-1.5 text-xs text-center">${c.size}</td>
+            <td class="px-2 py-1.5 text-xs text-right font-mono text-blue-700">Rp ${c.dpp.toLocaleString('id-ID')}</td>
+            <td class="px-2 py-1.5 text-xs text-right font-mono font-semibold text-yellow-700">Rp ${c.grandTotal.toLocaleString('id-ID')}</td>
+        </tr>
+    `).join('');
+
     // Create modal HTML for bulk invoice
     const modalHTML = `
         <div id="bulkInvoiceModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-lg rounded-md bg-white">
+            <div class="modal-content relative top-10 mx-auto p-5 border w-11/12 max-w-3xl shadow-lg rounded-md bg-white">
                 <div class="mt-3">
                     <!-- Modal Header -->
                     <div class="flex items-center justify-between pb-3 border-b">
@@ -3732,6 +3797,42 @@ window.bulkAddInvoice = function() {
                                     <p class="text-sm text-purple-800">
                                         Invoice ini akan diterapkan ke <strong>${selectedIds.length} kontainer</strong> yang dipilih
                                     </p>
+                                </div>
+                            </div>
+
+                            <!-- Container Information Table -->
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                                <div class="px-3 py-2 bg-gray-100 border-b border-gray-200">
+                                    <h4 class="text-sm font-medium text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                        Informasi Kontainer yang Dipilih
+                                    </h4>
+                                </div>
+                                <div class="max-h-48 overflow-y-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-100 sticky top-0">
+                                            <tr>
+                                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
+                                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
+                                                <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase">Size</th>
+                                                <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">DPP</th>
+                                                <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">Grand Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-100">
+                                            ${containerTableHTML}
+                                        </tbody>
+                                        <tfoot class="bg-gray-100 border-t border-gray-200">
+                                            <tr class="font-semibold">
+                                                <td colspan="4" class="px-2 py-2 text-xs text-right text-gray-700">Total:</td>
+                                                <td class="px-2 py-2 text-xs text-right font-mono text-blue-700">Rp ${totalDPP.toLocaleString('id-ID')}</td>
+                                                <td class="px-2 py-2 text-xs text-right font-mono text-yellow-700">Rp ${totalGrandTotal.toLocaleString('id-ID')}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
                             </div>
 

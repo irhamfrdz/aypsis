@@ -47,16 +47,14 @@
                 <p class="mt-1 text-xs text-gray-500">Pilih voyage dari pranota OB yang tersedia</p>
             </div>
 
-            {{-- Pilih DP --}}
+            {{-- Pilih DP (Opsional) --}}
             <div>
                 <label for="dp" class="block text-sm font-medium text-gray-700 mb-2">
-                    Pilih DP <span class="text-red-500">*</span>
+                    Pilih DP <span class="text-gray-400 text-xs font-normal">(Opsional)</span>
                 </label>
                 <select name="dp" id="dp" 
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        required
-                        disabled>
-                    <option value="">-- Pilih Voyage Terlebih Dahulu --</option>
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Tanpa DP / Pilih Voyage Terlebih Dahulu --</option>
                     @foreach($dpList as $dp)
                         <option value="{{ $dp->id }}" 
                                 data-voyage="{{ $dp->nomor_voyage }}"
@@ -65,7 +63,7 @@
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-gray-500" id="dp-help-text">Pilih voyage terlebih dahulu untuk melihat DP yang tersedia</p>
+                <p class="mt-1 text-xs text-gray-500" id="dp-help-text">Kosongkan jika tidak menggunakan DP, atau pilih voyage untuk melihat DP yang tersedia</p>
             </div>
 
             {{-- Info Box --}}
@@ -129,13 +127,11 @@
             voyageSelect.addEventListener('change', function() {
                 const selectedVoyage = this.value;
                 
-                // Clear current options except the first one
-                dpSelect.innerHTML = '<option value="">-- Pilih DP --</option>';
+                // Always start with "Tanpa DP" option
+                dpSelect.innerHTML = '<option value="">-- Tanpa DP --</option>';
                 
                 if (!selectedVoyage) {
-                    dpSelect.disabled = true;
-                    dpSelect.innerHTML = '<option value="">-- Pilih Voyage Terlebih Dahulu --</option>';
-                    dpHelpText.textContent = 'Pilih voyage terlebih dahulu untuk melihat DP yang tersedia';
+                    dpHelpText.textContent = 'Kosongkan jika tidak menggunakan DP, atau pilih voyage untuk melihat DP yang tersedia';
                     dpHelpText.className = 'mt-1 text-xs text-gray-500';
                     return;
                 }
@@ -144,12 +140,9 @@
                 const matchingDps = allDpOptions.filter(dp => dp.voyage === selectedVoyage);
                 
                 if (matchingDps.length === 0) {
-                    dpSelect.disabled = true;
-                    dpSelect.innerHTML = '<option value="">-- Tidak Ada DP untuk Voyage Ini --</option>';
-                    dpHelpText.textContent = 'Belum ada DP yang dibuat untuk voyage ini';
-                    dpHelpText.className = 'mt-1 text-xs text-red-600';
+                    dpHelpText.textContent = 'Tidak ada DP untuk voyage ini. Anda dapat melanjutkan tanpa DP.';
+                    dpHelpText.className = 'mt-1 text-xs text-orange-600';
                 } else {
-                    dpSelect.disabled = false;
                     matchingDps.forEach(dp => {
                         const option = document.createElement('option');
                         option.value = dp.value;
@@ -157,7 +150,7 @@
                         option.setAttribute('data-voyage', dp.voyage);
                         dpSelect.appendChild(option);
                     });
-                    dpHelpText.textContent = `Ditemukan ${matchingDps.length} DP untuk voyage ${selectedVoyage}`;
+                    dpHelpText.textContent = `Ditemukan ${matchingDps.length} DP untuk voyage ${selectedVoyage}. Pilih salah satu atau kosongkan untuk tanpa DP.`;
                     dpHelpText.className = 'mt-1 text-xs text-green-600';
                 }
             });
