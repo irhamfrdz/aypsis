@@ -82,6 +82,15 @@
                         @enderror
                     </div>
 
+                    <!-- Nomor Bukti (Opsional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Bukti</label>
+                        <input type="text" name="nomor_bukti" value="{{ old('nomor_bukti') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_bukti') border-red-500 @enderror" placeholder="Contoh: INV-2026-001">
+                        @error('nomor_bukti')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Merk -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Merk <span class="text-red-500">*</span></label>
