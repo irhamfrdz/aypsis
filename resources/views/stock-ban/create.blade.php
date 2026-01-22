@@ -4,16 +4,60 @@
 @section('page_title', 'Tambah Stock Ban')
  
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .select2-container--default .select2-selection--single {
-        height: 42px;
+    .custom-select-container {
+        position: relative;
+    }
+    .custom-select-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: white;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
-        padding-top: 5px;
+        cursor: pointer;
+        text-align: left;
     }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 40px;
+    .custom-select-button:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+    .custom-select-dropdown {
+        position: absolute;
+        z-index: 50;
+        width: 100%;
+        margin-top: 0.25rem;
+        background-color: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        max-height: 15rem;
+        overflow-y: auto;
+        display: none;
+    }
+    .custom-select-search {
+        position: sticky;
+        top: 0;
+        padding: 0.5rem;
+        background-color: #f9fafb;
+        border-bottom: 1px solid #d1d5db;
+    }
+    .custom-select-option {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+    .custom-select-option:hover {
+        background-color: #eff6ff;
+    }
+    .custom-select-option.selected {
+        background-color: #dbeafe;
+        font-weight: 500;
+    }
+    .hidden {
+        display: none !important;
     }
 </style>
 @endpush
@@ -86,14 +130,41 @@
                     <!-- Mobil (Assign to Car) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Pasang pada Mobil (Opsional)</label>
-                        <select name="mobil_id" id="mobil_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('mobil_id') border-red-500 @enderror select2">
-                            <option value="">-- Tidak Dipasang --</option>
-                            @foreach($mobils as $mobil)
-                                <option value="{{ $mobil->id }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
-                                    {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="custom-select-container" id="mobil-select-container">
+                            <input type="hidden" name="mobil_id" id="mobil_id" value="{{ old('mobil_id') }}">
+                            
+                            <button type="button" id="mobil-select-button" class="custom-select-button">
+                                <span id="mobil-selected-text">
+                                    @if(old('mobil_id'))
+                                        @php $selectedMobil = $mobils->firstWhere('id', old('mobil_id')); @endphp
+                                        {{ $selectedMobil ? $selectedMobil->nomor_polisi . ' (' . $selectedMobil->merek . ' - ' . $selectedMobil->jenis . ')' : '-- Tidak Dipasang --' }}
+                                    @else
+                                        -- Tidak Dipasang --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="mobil-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="mobil-search-input" placeholder="Cari mobil..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options">
+                                    <div class="custom-select-option" data-value="" onclick="selectMobil('', '-- Tidak Dipasang --')">-- Tidak Dipasang --</div>
+                                    @foreach($mobils as $mobil)
+                                        <div class="custom-select-option" 
+                                             data-value="{{ $mobil->id }}" 
+                                             data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}"
+                                             onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})')">
+                                            {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-mobil-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Mobil tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
                         @error('mobil_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -151,14 +222,76 @@
 @endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "-- Pilih Mobil --",
-            allowClear: true,
-            width: '100%'
+    function selectMobil(id, text) {
+        document.getElementById('mobil_id').value = id;
+        document.getElementById('mobil-selected-text').textContent = text;
+        document.getElementById('mobil-select-dropdown').style.display = 'none';
+        
+        // Update selected class
+        const options = document.querySelectorAll('.custom-select-option');
+        options.forEach(opt => {
+            if (opt.getAttribute('data-value') === id.toString()) {
+                opt.classList.add('selected');
+            } else {
+                opt.classList.remove('selected');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectButton = document.getElementById('mobil-select-button');
+        const selectDropdown = document.getElementById('mobil-select-dropdown');
+        const searchInput = document.getElementById('mobil-search-input');
+        const options = document.querySelectorAll('.custom-select-option');
+        const noResults = document.getElementById('no-mobil-results');
+
+        // Toggle dropdown
+        selectButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = selectDropdown.style.display === 'block';
+            selectDropdown.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                searchInput.value = '';
+                searchInput.focus();
+                // Reset search results
+                options.forEach(opt => opt.classList.remove('hidden'));
+                noResults.classList.add('hidden');
+            }
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('mobil-select-container').contains(e.target)) {
+                selectDropdown.style.display = 'none';
+            }
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            let count = 0;
+            
+            options.forEach(opt => {
+                const searchData = opt.getAttribute('data-search');
+                if (!searchData || searchData.includes(term)) {
+                    opt.classList.remove('hidden');
+                    count++;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+
+            if (count === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        });
+
+        // Prevent dropdown close when clicking search input
+        searchInput.addEventListener('click', function(e) {
+            e.stopPropagation();
         });
     });
 </script>
