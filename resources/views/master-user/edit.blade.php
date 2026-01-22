@@ -8,6 +8,15 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <style>
+        /* Ensure Choices dropdown appears above other elements */
+        .choices__list--dropdown {
+            z-index: 9999 !important;
+            position: absolute !important;
+            overflow: visible !important;
+        }
+        .choices {
+            z-index: 9999 !important;
+        }
         /* Permission Matrix Styles */
         .permission-matrix {
             border-collapse: collapse;
@@ -2413,11 +2422,60 @@
             function initializeKaryawanSelect() {
                 const karyawanElement = document.getElementById('karyawan_id');
                 if (karyawanElement) {
-                    new Choices(karyawanElement, {
+                    const karyawanChoices = new Choices(karyawanElement, {
                         searchEnabled: true,
                         shouldSort: false,
                         placeholder: true,
                         placeholderValue: 'Cari atau pilih karyawan...'
+                    });
+
+                    karyawanElement.addEventListener('click', function(e) {
+                        console.debug('karyawanElement clicked', e);
+                        try { karyawanChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
+                    });
+
+                    // Mousedown handler on wrapper to ensure dropdown shows even when other handlers exist
+                    const karyawanWrapper = karyawanElement.parentElement;
+                    karyawanWrapper.addEventListener('mousedown', function(e) {
+                        if (e.target.closest && e.target.closest('.choices')) {
+                            e.preventDefault(); e.stopPropagation();
+                            console.debug('karyawanWrapper mousedown inside choices');
+                            try { karyawanChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
+                            setTimeout(() => { try { karyawanChoices.showDropdown(); } catch (err) {} }, 50);
+                        }
+                    });
+                }
+                // Also apply Choices to the copy-user select for consistent dropdown behavior
+                const copySelect = document.getElementById('copy_user_select');
+                if (copySelect) {
+                    // Keep instance so we can programmatically open the dropdown when needed
+                    const copyChoices = new Choices(copySelect, {
+                        searchEnabled: true,
+                        shouldSort: false,
+                        placeholder: true,
+                        placeholderValue: '-- Pilih User --'
+                    });
+
+                    // If the dropdown doesn't open normally (e.g. due to container handlers), ensure clicks open it
+                    // Debug helpers: ensure dropdown opens and log events
+                    copySelect.addEventListener('click', function(e) {
+                        console.debug('copySelect clicked', e);
+                        try { copyChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
+                    });
+
+                    // Also try on mousedown on the Choices wrapper and stop propagation so other handlers don't close it
+                    const copyWrapper = copySelect.parentElement;
+                    copyWrapper.addEventListener('mousedown', function(e) {
+                        if (e.target.closest && e.target.closest('.choices')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.debug('copyWrapper mousedown inside choices');
+                            try { copyChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
+                            // A tiny delay to counteract potential other click handlers
+                            setTimeout(() => {
+                                try { copyChoices.showDropdown(); } catch (err) { /* ignore */ }
+                            }, 50);
+                        }
                     });
                 }
             }
@@ -2442,17 +2500,12 @@
                         // Hide the expand icon if no sub-modules exist
                         expandIcon.style.display = 'none';
                     } else if (expandIcon) {
-                        // Add click listener only if there are sub-modules
-                        row.addEventListener('click', function(e) {
-                            // Don't trigger if clicking on a checkbox
-                            if (e.target.type === 'checkbox') {
-                                return;
-                            }
-
-                            const module = this.dataset.module;
-                            const icon = this.querySelector('.expand-icon');
-                            const isExpanded = icon.classList.contains('expanded');
-
+                        // Attach click listener to the expand icon only so other interactive elements aren't affected
+                        expandIcon.style.cursor = 'pointer';
+                        expandIcon.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const module = row.dataset.module;
+                            const isExpanded = this.classList.contains('expanded');
                             if (isExpanded) {
                                 collapseModule(module);
                             } else {
