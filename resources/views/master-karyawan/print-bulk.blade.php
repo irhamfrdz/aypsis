@@ -268,7 +268,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for($i = 0; $i < 10; $i++)
+                    @for($i = 0; $i < 6; $i++)
                         <tr>
                             <td style="padding:6px;border:1px solid #ddd;text-align:center;">{{ $i + 1 }}</td>
                             <td style="padding:6px;border:1px solid #ddd;">&nbsp;</td>
