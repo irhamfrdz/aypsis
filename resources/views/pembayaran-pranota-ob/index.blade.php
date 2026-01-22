@@ -162,6 +162,17 @@
                                     <i class="fas fa-history"></i> Riwayat
                                 </button>
                                 @endcan
+
+                                @can('pembayaran-pranota-ob-delete')
+                                <span class="text-gray-300">|</span>
+                                <form action="{{ route('pembayaran-pranota-ob.destroy', $pembayaran->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini? Status pranota akan dikembalikan menjadi belum dibayar dan transaksi COA akan dihapus.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900 bg-transparent border-none cursor-pointer">
+                                        <i class="fas fa-trash"></i> Hapus
+                                    </button>
+                                </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty

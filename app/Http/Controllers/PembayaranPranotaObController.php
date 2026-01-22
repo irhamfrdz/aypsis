@@ -396,8 +396,46 @@ class PembayaranPranotaObController extends Controller
 
     public function destroy($id)
     {
-        // Placeholder for future implementation
-        return redirect()->route('pembayaran-pranota-ob.index')
-            ->with('info', 'Fitur delete sedang dalam pengembangan');
+        // Check permission
+        if (!Gate::allows('pembayaran-pranota-ob-delete')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menghapus pembayaran pranota OB.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PembayaranPranotaOb::findOrFail($id);
+
+            // Get associated pranota IDs (model has 'pranota_ob_ids' => 'array' cast)
+            $pranotaIds = $pembayaran->pranota_ob_ids ?? [];
+
+            // Restore pranota status to unpaid
+            if (!empty($pranotaIds)) {
+                PranotaOb::whereIn('id', $pranotaIds)->update(['status' => 'unpaid']);
+                Log::info('Restored pranota statuses to unpaid', ['pranota_ids' => $pranotaIds]);
+            }
+
+            // Delete associated COA transactions
+            $success = $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+            if (!$success) {
+                Log::warning('Failed to delete some COA transactions or transactions not found', ['nomor_pembayaran' => $pembayaran->nomor_pembayaran]);
+            }
+
+            // Delete the payment record
+            $nomorPembayaran = $pembayaran->nomor_pembayaran;
+            $pembayaran->delete();
+
+            DB::commit();
+            Log::info('Pembayaran pranota OB deleted successfully', ['id' => $id, 'nomor_pembayaran' => $nomorPembayaran]);
+
+            return redirect()->route('pembayaran-pranota-ob.index')
+                ->with('success', "Pembayaran nomor {$nomorPembayaran} berhasil dihapus dan status pranota dikembalikan.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting pembayaran pranota OB: ' . $e->getMessage());
+            return redirect()->route('pembayaran-pranota-ob.index')
+                ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+        }
     }
 }
