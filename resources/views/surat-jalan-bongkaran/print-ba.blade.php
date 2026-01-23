@@ -64,9 +64,10 @@
             font-weight: bold;
         }
         /* Positioned nama barang (jenis barang) */
+        /* Positioned nama barang (jenis barang) */
         .nama-barang {
             position: absolute;
-            top: 11.5cm; /* moved down to avoid overlap */
+            top: 12.5cm; /* moved down so kontainer info can be on top */
             left: 9cm; /* 1cm more to the right: 9cm */
             max-width: 10cm; /* reduced width to prevent overflow */
             white-space: pre-wrap;
@@ -74,10 +75,10 @@
             font-weight: bold;
             line-height: 1.3;
         }
-        /* Positioned kontainer info (1 kontainer + size) below nama barang */
+        /* Positioned kontainer info (1 kontainer + size) above nama barang */
         .kontainer-info {
             position: absolute;
-            top: 13.5cm; /* more space below nama barang */
+            top: 11.5cm; /* aligned with no-kontainer */
             left: 9cm; /* aligned with nama barang */
             white-space: nowrap;
             font-size: 13px;
