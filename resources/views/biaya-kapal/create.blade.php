@@ -1992,9 +1992,15 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
-                    <select name="tkbm_sections[${sectionIndex}][voyage]" class="tkbm-voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500" required disabled>
-                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select name="tkbm_sections[${sectionIndex}][voyage]" class="tkbm-voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500" required disabled>
+                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                        </select>
+                        <input type="text" name="tkbm_sections[${sectionIndex}][voyage]" class="tkbm-voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500 hidden" disabled placeholder="Ketik No. Voyage">
+                        <button type="button" class="tkbm-voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">No. Referensi</label>
@@ -2032,6 +2038,38 @@
         const kapalSelect = section.querySelector('.tkbm-kapal-select');
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForTkbmSection(sectionIndex, this.value);
+        });
+
+        // Setup manual voyage toggle
+        const voyageSelect = section.querySelector('.tkbm-voyage-select');
+        const voyageInput = section.querySelector('.tkbm-voyage-input');
+        const voyageManualBtn = section.querySelector('.tkbm-voyage-manual-btn');
+
+        voyageManualBtn.addEventListener('click', function() {
+            if (voyageInput.classList.contains('hidden')) {
+                // Switch to manual input
+                voyageSelect.classList.add('hidden');
+                voyageSelect.disabled = true;
+                
+                voyageInput.classList.remove('hidden');
+                voyageInput.disabled = false;
+                voyageInput.focus();
+                
+                this.classList.remove('bg-gray-200', 'text-gray-600');
+                this.classList.add('bg-blue-200', 'text-blue-700');
+                this.innerHTML = '<i class="fas fa-list"></i>';
+            } else {
+                // Switch to select list
+                voyageInput.classList.add('hidden');
+                voyageInput.disabled = true;
+                
+                voyageSelect.classList.remove('hidden');
+                voyageSelect.disabled = false;
+                
+                this.classList.add('bg-gray-200', 'text-gray-600');
+                this.classList.remove('bg-blue-200', 'text-blue-700');
+                this.innerHTML = '<i class="fas fa-keyboard"></i>';
+            }
         });
         
         // Add first barang input

@@ -110,11 +110,11 @@
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #000;
+            border: none;
         }
         
         .signature-table td {
-            border: 1px solid #000;
+            border: none;
             text-align: center;
             padding: 5px;
             width: 33.33%;
