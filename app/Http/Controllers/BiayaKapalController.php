@@ -348,7 +348,8 @@ class BiayaKapalController extends Controller
                 }
             }
             
-            // Update keterangan with barang details
+            // Update keterangan with barang details (REMOVED as per user request to keep keterangan clean)
+            /*
             if (!empty($barangDetails)) {
                 $keteranganBarang = "Detail Barang Buruh:\n" . implode("\n", $barangDetails);
                 $biayaKapal->keterangan = $biayaKapal->keterangan 
@@ -356,6 +357,7 @@ class BiayaKapalController extends Controller
                     : $keteranganBarang;
                 $biayaKapal->save();
             }
+            */
 
             // BIAYA AIR SECTIONS: Store air details
             $airDetails = [];
@@ -438,7 +440,8 @@ class BiayaKapalController extends Controller
                         "Grand Total: Rp " . number_format($grandTotal, 0, ',', '.');
                 }
                 
-                // Update keterangan with air details
+                // Update keterangan with air details (REMOVED as per user request to keep keterangan clean)
+                /*
                 if (!empty($airDetails)) {
                     $keteranganAir = "Detail Biaya Air:\n" . implode("\n", $airDetails);
                     $biayaKapal->keterangan = $biayaKapal->keterangan 
@@ -446,6 +449,7 @@ class BiayaKapalController extends Controller
                         : $keteranganAir;
                     $biayaKapal->save();
                 }
+                */
             }
 
             // BIAYA TKBM SECTIONS: Store TKBM details
@@ -524,7 +528,8 @@ class BiayaKapalController extends Controller
                     }
                 }
                 
-                // Update keterangan with TKBM details
+                // Update keterangan with TKBM details (REMOVED as per user request to keep keterangan clean)
+                /*
                 if (!empty($tkbmDetails)) {
                     $keteranganTkbm = "Detail Biaya TKBM:\n" . implode("\n", $tkbmDetails);
                     $biayaKapal->keterangan = $biayaKapal->keterangan 
@@ -532,6 +537,7 @@ class BiayaKapalController extends Controller
                         : $keteranganTkbm;
                     $biayaKapal->save();
                 }
+                */
             }
 
             DB::commit();

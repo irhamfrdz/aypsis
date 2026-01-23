@@ -328,7 +328,22 @@
     <!-- KETERANGAN BOX -->
     <div class="keterangan-box">
         <div class="keterangan-title">Keterangan:</div>
-        <div>{{ $biayaKapal->keterangan ?? '' }}</div>
+        <div>
+            @php
+                $keterangan = $biayaKapal->keterangan ?? '';
+                // Split by common detail headers used in the controller
+                if (stripos($keterangan, 'Detail Biaya Air:') !== false) {
+                    $keterangan = explode('Detail Biaya Air:', $keterangan)[0];
+                }
+                if (stripos($keterangan, 'Detail Barang Buruh:') !== false) {
+                    $keterangan = explode('Detail Barang Buruh:', $keterangan)[0];
+                }
+                if (stripos($keterangan, 'Detail Biaya TKBM:') !== false) {
+                    $keterangan = explode('Detail Biaya TKBM:', $keterangan)[0];
+                }
+            @endphp
+            {!! nl2br(e(trim($keterangan))) !!}
+        </div>
     </div>
     
     <!-- FOOTER SIGNATURES -->
