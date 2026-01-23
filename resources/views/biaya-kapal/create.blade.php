@@ -409,6 +409,11 @@
                         </button>
                     </div>
                     <div id="tkbm_sections_container"></div>
+                    
+                    <button type="button" id="add_tkbm_section_bottom_btn" class="mt-2 w-full py-2 border-2 border-dashed border-amber-300 rounded-lg text-amber-600 hover:bg-amber-50 hover:border-amber-400 transition flex items-center justify-center gap-2 font-medium">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Tambah Kapal Lainnya</span>
+                    </button>
                 </div>
 
                 <!-- Nominal -->
@@ -1931,6 +1936,7 @@
     let tkbmSectionCounter = 0;
     const tkbmSectionsContainer = document.getElementById('tkbm_sections_container');
     const addTkbmSectionBtn = document.getElementById('add_tkbm_section_btn');
+    const addTkbmSectionBottomBtn = document.getElementById('add_tkbm_section_bottom_btn');
     
     function initializeTkbmSections() {
         if (!tkbmSectionsContainer) return;
@@ -1947,6 +1953,12 @@
     
     if (addTkbmSectionBtn) {
         addTkbmSectionBtn.addEventListener('click', function() {
+            addTkbmSection();
+        });
+    }
+
+    if (addTkbmSectionBottomBtn) {
+        addTkbmSectionBottomBtn.addEventListener('click', function() {
             addTkbmSection();
         });
     }
