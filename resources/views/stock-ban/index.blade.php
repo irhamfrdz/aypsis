@@ -49,6 +49,7 @@
                             {{ $ban->nomor_seri }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div class="font-bold text-blue-800">{{ $ban->namaStockBan ? $ban->namaStockBan->nama : '-' }}</div>
                             <div class="font-medium text-gray-900">{{ $ban->merk }}</div>
                             <div class="text-xs">{{ $ban->ukuran }}</div>
                         </td>

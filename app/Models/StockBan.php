@@ -12,6 +12,7 @@ class StockBan extends Model
     protected $table = 'stock_bans';
 
     protected $fillable = [
+        'nama_stock_ban_id',
         'nomor_seri',
         'nomor_bukti',
         'merk',
@@ -24,6 +25,11 @@ class StockBan extends Model
         'keterangan',
         'mobil_id',
     ];
+
+    public function namaStockBan()
+    {
+        return $this->belongsTo(NamaStockBan::class, 'nama_stock_ban_id');
+    }
 
     public function mobil()
     {

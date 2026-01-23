@@ -91,6 +91,20 @@
                         @enderror
                     </div>
 
+                    <!-- Nama Barang (Dropdown from nama_stock_bans) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Barang <span class="text-red-500">*</span></label>
+                        <select name="nama_stock_ban_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_stock_ban_id') border-red-500 @enderror" required>
+                            <option value="">-- Pilih Nama Barang --</option>
+                            @foreach($namaStockBans as $item)
+                                <option value="{{ $item->id }}" {{ old('nama_stock_ban_id') == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
+                            @endforeach
+                        </select>
+                        @error('nama_stock_ban_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Merk -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Merk <span class="text-red-500">*</span></label>

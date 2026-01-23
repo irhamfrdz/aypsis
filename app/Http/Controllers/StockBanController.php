@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StockBan;
 use App\Models\Mobil;
+use App\Models\NamaStockBan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,8 @@ class StockBanController extends Controller
     public function create()
     {
         $mobils = Mobil::orderBy('nomor_polisi')->get();
-        return view('stock-ban.create', compact('mobils'));
+        $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
+        return view('stock-ban.create', compact('mobils', 'namaStockBans'));
     }
 
     /**
@@ -33,6 +35,7 @@ class StockBanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'required|unique:stock_bans,nomor_seri',
             'merk' => 'required|string|max:255',
             'ukuran' => 'required|string|max:255',
@@ -61,7 +64,8 @@ class StockBanController extends Controller
     {
         $stockBan = StockBan::findOrFail($id);
         $mobils = Mobil::orderBy('nomor_polisi')->get();
-        return view('stock-ban.edit', compact('stockBan', 'mobils'));
+        $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
+        return view('stock-ban.edit', compact('stockBan', 'mobils', 'namaStockBans'));
     }
 
     /**
@@ -72,6 +76,7 @@ class StockBanController extends Controller
         $stockBan = StockBan::findOrFail($id);
 
         $request->validate([
+            'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'required|unique:stock_bans,nomor_seri,' . $stockBan->id,
             'merk' => 'required|string|max:255',
             'ukuran' => 'required|string|max:255',
