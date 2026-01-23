@@ -227,7 +227,7 @@
         
         <!-- Seal number (posisi top 11.5cm, left 1cm) - Data dari Manifest (manifest.no_seal) -->
         <div class="seal-abs">
-            {{ $printData->no_seal ? strtoupper($printData->no_seal) : '' }}
+            {{ $printData->no_seal ? 'SEAL ' . strtoupper($printData->no_seal) : '' }}
         </div>
         
         <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) - Data dari Manifest (manifest.pelabuhan_tujuan) -->
