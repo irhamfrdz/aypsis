@@ -13,6 +13,7 @@ class BiayaKapalTkbm extends Model
         'pricelist_tkbm_id',
         'kapal',
         'voyage',
+        'no_referensi',
         'jumlah',
         'tarif',
         'subtotal',

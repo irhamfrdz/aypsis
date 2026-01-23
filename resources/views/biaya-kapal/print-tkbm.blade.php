@@ -294,9 +294,10 @@
                 <thead>
                     <tr>
                         <th style="width: 8%;">No</th>
-                        <th style="width: 32%;">Nama Kapal</th>
-                        <th style="width: 20%;">Tanggal</th>
-                        <th style="width: 20%;">No. Voyage</th>
+                        <th style="width: 27%;">Nama Kapal</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 15%;">No. Voyage</th>
+                        <th style="width: 15%;">No. Ref</th>
                         <th style="width: 20%;">Biaya</th>
                     </tr>
                 </thead>
@@ -305,7 +306,7 @@
                         // Untuk biaya TKBM, ambil kapal dan voyage dari tkbmDetails
                         if ($biayaKapal->tkbmDetails && $biayaKapal->tkbmDetails->count() > 0) {
                             $groupedDetails = $biayaKapal->tkbmDetails->groupBy(function($item) {
-                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                                 return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
                             });
                         } else {
                             $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
@@ -322,12 +323,16 @@
                                 $rowNumber++;
                                 list($groupKapal, $groupVoyage) = explode('|', $groupKey);
                                 $groupSubtotal = $details->sum('subtotal');
+                                // Ambil no_referensi dari item pertama di group (asumsi sama per group)
+                                $firstItem = $details->first();
+                                $groupRef = $firstItem->no_referensi ?? '-';
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td>{{ $groupKapal }}</td>
                                 <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
+                                <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
@@ -340,13 +345,14 @@
                             <td>{{ $namaKapals[$i] ?? ($i == 0 ? '-' : '') }}</td>
                             <td class="text-center">{{ $i == 0 ? \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') : '' }}</td>
                             <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
+                            <td class="text-center">-</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                         </tr>
                         @endfor
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
