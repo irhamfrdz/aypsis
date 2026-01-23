@@ -359,10 +359,6 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            
-
-                            
-
                             {{-- Master Data --}}
                             <tr class="module-row" data-module="master">
                                 <td class="module-header">
@@ -1468,6 +1464,23 @@
                                 <td><input type="checkbox" name="permissions[master-merk-ban][create]" value="1" class="permission-checkbox" @if(old('permissions.master-merk-ban.create') || (isset($userMatrixPermissions['master-merk-ban']['create']) && $userMatrixPermissions['master-merk-ban']['create']) || ($user && $user->can('master-merk-ban-create'))) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-merk-ban][update]" value="1" class="permission-checkbox" @if(old('permissions.master-merk-ban.update') || (isset($userMatrixPermissions['master-merk-ban']['update']) && $userMatrixPermissions['master-merk-ban']['update']) || ($user && $user->can('master-merk-ban-update'))) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-merk-ban][delete]" value="1" class="permission-checkbox" @if(old('permissions.master-merk-ban.delete') || (isset($userMatrixPermissions['master-merk-ban']['delete']) && $userMatrixPermissions['master-merk-ban']['delete']) || ($user && $user->can('master-merk-ban-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Nama Stock Ban --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Nama Stock Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-nama-stock-ban][view]" value="1" class="permission-checkbox" @if(old('permissions.master-nama-stock-ban.view') || (isset($userMatrixPermissions['master-nama-stock-ban']['view']) && $userMatrixPermissions['master-nama-stock-ban']['view']) || ($user && $user->can('master-nama-stock-ban-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-nama-stock-ban][create]" value="1" class="permission-checkbox" @if(old('permissions.master-nama-stock-ban.create') || (isset($userMatrixPermissions['master-nama-stock-ban']['create']) && $userMatrixPermissions['master-nama-stock-ban']['create']) || ($user && $user->can('master-nama-stock-ban-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-nama-stock-ban][update]" value="1" class="permission-checkbox" @if(old('permissions.master-nama-stock-ban.update') || (isset($userMatrixPermissions['master-nama-stock-ban']['update']) && $userMatrixPermissions['master-nama-stock-ban']['update']) || ($user && $user->can('master-nama-stock-ban-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-nama-stock-ban][delete]" value="1" class="permission-checkbox" @if(old('permissions.master-nama-stock-ban.delete') || (isset($userMatrixPermissions['master-nama-stock-ban']['delete']) && $userMatrixPermissions['master-nama-stock-ban']['delete']) || ($user && $user->can('master-nama-stock-ban-delete'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

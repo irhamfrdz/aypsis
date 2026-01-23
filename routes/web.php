@@ -52,6 +52,7 @@ use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TipeBarangController;
 use App\Http\Controllers\MerkBanController;
+use App\Http\Controllers\NamaStockBanController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
@@ -1532,6 +1533,11 @@ Route::middleware([
     // Merk Ban Management
     Route::resource('master/merk-ban', MerkBanController::class)
          ->names('master.merk-ban')
+         ->middleware('auth');
+
+    // Nama Stock Ban Management
+    Route::resource('master/nama-stock-ban', NamaStockBanController::class)
+         ->names('master.nama-stock-ban')
          ->middleware('auth');
 
     // 📦 Klasifikasi Biaya (Master) Management with permissions
