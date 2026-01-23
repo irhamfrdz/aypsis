@@ -51,6 +51,7 @@ use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TipeBarangController;
+use App\Http\Controllers\MerkBanController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
@@ -1526,6 +1527,11 @@ Route::middleware([
     // Tipe Barang Management
     Route::resource('master/tipe-barang', TipeBarangController::class)
          ->names('master.tipe-barang')
+         ->middleware('auth');
+
+    // Merk Ban Management
+    Route::resource('master/merk-ban', MerkBanController::class)
+         ->names('master.merk-ban')
          ->middleware('auth');
 
     // 📦 Klasifikasi Biaya (Master) Management with permissions
