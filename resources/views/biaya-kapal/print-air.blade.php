@@ -162,7 +162,6 @@
 
     <div class="header">
         <h1>PERMOHONAN TRANSFER</h1>
-        <p>BIAYA AIR TAWAR</p>
     </div>
     
     @php

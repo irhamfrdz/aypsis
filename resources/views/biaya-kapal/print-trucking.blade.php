@@ -315,9 +315,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>BIAYA TRUCKING</h1>
-            <p>{{ config('app.name', 'Aypsis') }}</p>
-            <p style="font-size: 10px;">Dokumen Pengeluaran Biaya Trucking</p>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Document Info -->
