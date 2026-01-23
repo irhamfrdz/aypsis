@@ -50,6 +50,7 @@ use App\Http\Controllers\TipeAkunController;
 use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\JenisBarangController;
+use App\Http\Controllers\TipeBarangController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
@@ -1521,6 +1522,11 @@ Route::middleware([
     Route::post('master/jenis-barang-import', [JenisBarangController::class, 'import'])
          ->name('jenis-barang.import')
          ->middleware('can:master-jenis-barang-create');
+
+    // Tipe Barang Management
+    Route::resource('master/tipe-barang', TipeBarangController::class)
+         ->names('master.tipe-barang')
+         ->middleware('auth');
 
     // 📦 Klasifikasi Biaya (Master) Management with permissions
     Route::get('master/klasifikasi-biaya-download-template', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'downloadTemplate'])

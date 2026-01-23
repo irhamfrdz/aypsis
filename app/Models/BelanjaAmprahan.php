@@ -15,12 +15,19 @@ class BelanjaAmprahan extends Model
         'nomor',
         'tanggal',
         'supplier',
+        'nama_barang',
         'total',
         'keterangan',
+        'penerima_id',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'total' => 'decimal:2',
     ];
+
+    public function penerima()
+    {
+        return $this->belongsTo(Karyawan::class, 'penerima_id');
+    }
 }

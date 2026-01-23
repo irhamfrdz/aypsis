@@ -11,6 +11,7 @@
             <tr><td class="font-medium w-48">Nomor</td><td>{{ $item->nomor }}</td></tr>
             <tr><td class="font-medium">Tanggal</td><td>{{ $item->tanggal?->format('Y-m-d') }}</td></tr>
             <tr><td class="font-medium">Supplier</td><td>{{ $item->supplier }}</td></tr>
+            <tr><td class="font-medium">Nama Barang</td><td>{{ $item->nama_barang }}</td></tr>
             <tr><td class="font-medium">Total</td><td>Rp {{ number_format($item->total,2,',','.') }}</td></tr>
             <tr><td class="font-medium">Keterangan</td><td>{{ $item->keterangan }}</td></tr>
         </table>

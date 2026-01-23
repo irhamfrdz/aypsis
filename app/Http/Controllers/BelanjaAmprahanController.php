@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BelanjaAmprahan;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 
 class BelanjaAmprahanController extends Controller
@@ -15,7 +16,8 @@ class BelanjaAmprahanController extends Controller
 
     public function create()
     {
-        return view('belanja-amprahan.create');
+        $karyawans = Karyawan::orderBy('nama_panggilan')->get();
+        return view('belanja-amprahan.create', compact('karyawans'));
     }
 
     public function store(Request $request)
@@ -24,8 +26,10 @@ class BelanjaAmprahanController extends Controller
             'nomor' => 'nullable|string|max:255',
             'tanggal' => 'nullable|date',
             'supplier' => 'nullable|string|max:255',
+            'nama_barang' => 'nullable|string|max:255',
             'total' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'penerima_id' => 'nullable|exists:karyawans,id',
         ]);
 
         BelanjaAmprahan::create($data);
@@ -42,7 +46,8 @@ class BelanjaAmprahanController extends Controller
     public function edit($id)
     {
         $item = BelanjaAmprahan::findOrFail($id);
-        return view('belanja-amprahan.edit', compact('item'));
+        $karyawans = Karyawan::orderBy('nama_panggilan')->get();
+        return view('belanja-amprahan.edit', compact('item', 'karyawans'));
     }
 
     public function update(Request $request, $id)
@@ -52,8 +57,10 @@ class BelanjaAmprahanController extends Controller
             'nomor' => 'nullable|string|max:255',
             'tanggal' => 'nullable|date',
             'supplier' => 'nullable|string|max:255',
+            'nama_barang' => 'nullable|string|max:255',
             'total' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'penerima_id' => 'nullable|exists:karyawans,id',
         ]);
 
         $item->update($data);

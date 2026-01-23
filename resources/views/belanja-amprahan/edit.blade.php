@@ -29,6 +29,12 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Barang</label>
+                    <input type="text" name="nama_barang" value="{{ old('nama_barang', $item->nama_barang) }}" class="w-full px-4 py-2 border rounded">
+                    @error('nama_barang')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
                     <input type="number" step="0.01" name="total" value="{{ old('total', $item->total) }}" class="w-full px-4 py-2 border rounded">
                     @error('total')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
