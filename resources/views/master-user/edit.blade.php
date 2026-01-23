@@ -2401,6 +2401,12 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
+        // Guard against double-initialization
+        if (window._masterUserEditInitialized) {
+            console.warn('Master user edit script already initialized, skipping...');
+        } else {
+            window._masterUserEditInitialized = true;
+            
         document.addEventListener('DOMContentLoaded', function () {
             // ==========================================
             // INITIALIZATION
@@ -3205,5 +3211,6 @@
                 }, 3000);
             }
         });
+        } // End of else block for double-initialization guard
     </script>
 @endpush

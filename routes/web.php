@@ -4100,20 +4100,20 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             'actions' => collect([]),
             'users' => collect([])
         ]);
-
-     // � Belanja Amprahan (simple CRUD)
-     Route::resource('belanja-amprahan', \App\Http\Controllers\BelanjaAmprahanController::class)
-           ->names('belanja-amprahan')
-           ->middleware([
-                'index' => 'can:belanja-amprahan-view',
-                'show' => 'can:belanja-amprahan-view',
-                'create' => 'can:belanja-amprahan-create',
-                'store' => 'can:belanja-amprahan-create',
-                'edit' => 'can:belanja-amprahan-update',
-                'update' => 'can:belanja-amprahan-update',
-                'destroy' => 'can:belanja-amprahan-delete'
-           ]);
     })->name('audit-logs.simple');
+
+    // 🛒 Belanja Amprahan (simple CRUD)
+    Route::resource('belanja-amprahan', \App\Http\Controllers\BelanjaAmprahanController::class)
+          ->names('belanja-amprahan')
+          ->middleware([
+               'index' => 'can:belanja-amprahan-view',
+               'show' => 'can:belanja-amprahan-view',
+               'create' => 'can:belanja-amprahan-create',
+               'store' => 'can:belanja-amprahan-create',
+               'edit' => 'can:belanja-amprahan-update',
+               'update' => 'can:belanja-amprahan-update',
+               'destroy' => 'can:belanja-amprahan-delete'
+          ]);
 
     // Test audit modal
     Route::get('audit-test-simple', function () {
