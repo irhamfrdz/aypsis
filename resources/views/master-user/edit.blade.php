@@ -1486,6 +1486,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Tipe Stock Ban --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Tipe Stock Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-tipe-stock-ban][view]" value="1" class="permission-checkbox" @if(old('permissions.master-tipe-stock-ban.view') || (isset($userMatrixPermissions['master-tipe-stock-ban']['view']) && $userMatrixPermissions['master-tipe-stock-ban']['view']) || ($user && $user->can('master-tipe-stock-ban-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-stock-ban][create]" value="1" class="permission-checkbox" @if(old('permissions.master-tipe-stock-ban.create') || (isset($userMatrixPermissions['master-tipe-stock-ban']['create']) && $userMatrixPermissions['master-tipe-stock-ban']['create']) || ($user && $user->can('master-tipe-stock-ban-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-stock-ban][update]" value="1" class="permission-checkbox" @if(old('permissions.master-tipe-stock-ban.update') || (isset($userMatrixPermissions['master-tipe-stock-ban']['update']) && $userMatrixPermissions['master-tipe-stock-ban']['update']) || ($user && $user->can('master-tipe-stock-ban-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-stock-ban][delete]" value="1" class="permission-checkbox" @if(old('permissions.master-tipe-stock-ban.delete') || (isset($userMatrixPermissions['master-tipe-stock-ban']['delete']) && $userMatrixPermissions['master-tipe-stock-ban']['delete']) || ($user && $user->can('master-tipe-stock-ban-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Stock Ban --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
