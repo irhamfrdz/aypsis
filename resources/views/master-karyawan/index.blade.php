@@ -95,7 +95,7 @@
                                 <div class="flex-1 inline-flex border border-gray-300 rounded-lg bg-white p-0.5 shadow-xs">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_berhenti' => request('show_berhenti') ? null : '1', 'show_all' => null])) }}"
                                        class="flex-1 inline-flex justify-center items-center py-1 rounded-md text-[9px] font-bold uppercase transition-all {{ request('show_berhenti') ? 'bg-red-500 text-white' : 'text-gray-400 hover:bg-gray-50' }}">
-                                        Stopped
+                                        Berhenti
                                     </a>
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_all' => request('show_all') ? null : '1', 'show_berhenti' => null])) }}"
                                        class="flex-1 inline-flex justify-center items-center py-1 rounded-md text-[9px] font-bold uppercase transition-all {{ request('show_all') ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-50' }}">
