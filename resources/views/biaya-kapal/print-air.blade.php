@@ -217,6 +217,12 @@
                 <td class="info-label">Nomor Rekening</td>
                 <td>: {{ $rekeningDisplay }}</td>
             </tr>
+            <tr>
+                <td class="info-label">No. Referensi</td>
+                <td>: {{ $biayaKapal->airDetails->pluck('nomor_referensi')->filter()->unique()->values()->first() ?? '-' }}</td>
+                <td class="info-label"></td>
+                <td></td>
+            </tr>
         </table>
     </div>
 

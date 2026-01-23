@@ -427,6 +427,7 @@ class BiayaKapalController extends Controller
                         'grand_total' => $grandTotal,
                         'penerima' => $section['penerima'] ?? null,
                         'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                        'nomor_referensi' => $section['nomor_referensi'] ?? null,
                     ]);
                     
                     // Build keterangan string
