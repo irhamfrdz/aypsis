@@ -298,7 +298,9 @@
                         <th style="width: 15%;">Tanggal</th>
                         <th style="width: 15%;">No. Voyage</th>
                         <th style="width: 15%;">No. Ref</th>
-                        <th style="width: 20%;">Biaya</th>
+                        <th style="width: 15%;">Biaya</th>
+                        <th style="width: 12%;">PPH (2%)</th>
+                        <th style="width: 15%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -323,9 +325,11 @@
                                 $rowNumber++;
                                 list($groupKapal, $groupVoyage) = explode('|', $groupKey);
                                 $groupSubtotal = $details->sum('subtotal');
-                                // Ambil no_referensi dari item pertama di group (asumsi sama per group)
+                                // Ambil no_referensi, pph, dan grand_total dari item pertama di group (asumsi sama per group)
                                 $firstItem = $details->first();
                                 $groupRef = $firstItem->no_referensi ?? '-';
+                                $groupPph = $firstItem->pph ?? 0;
+                                $groupGrandTotal = $firstItem->grand_total ?? 0;
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
@@ -334,6 +338,8 @@
                                 <td class="text-center">{{ $groupVoyage }}</td>
                                 <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
+                                <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
+                                <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     @else
@@ -347,12 +353,14 @@
                             <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
                             <td class="text-center">-</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
+                            <td class="text-right">-</td>
+                            <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                         </tr>
                         @endfor
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="7" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>

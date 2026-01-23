@@ -499,6 +499,9 @@ class BiayaKapalController extends Controller
                             }
                             
                             $subtotal = $barang->tarif * $jumlah;
+                            $sectionTotalNominal = isset($section['total_nominal']) ? str_replace('.', '', $section['total_nominal']) : 0;
+                            $sectionPph = isset($section['pph']) ? str_replace('.', '', $section['pph']) : 0;
+                            $sectionGrandTotal = isset($section['grand_total']) ? str_replace('.', '', $section['grand_total']) : 0;
                             
                             // Save to biaya_kapal_tkbm table
                             BiayaKapalTkbm::create([
@@ -510,6 +513,9 @@ class BiayaKapalController extends Controller
                                 'jumlah' => $jumlah,
                                 'tarif' => $barang->tarif,
                                 'subtotal' => $subtotal,
+                                'total_nominal' => $sectionTotalNominal,
+                                'pph' => $sectionPph,
+                                'grand_total' => $sectionGrandTotal,
                             ]);
                             
                             // Build keterangan string
