@@ -267,7 +267,7 @@
             <!-- Pagination -->
             @if($manifests->hasPages())
             <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                {{ $manifests->links() }}
+                {{ $manifests->withQueryString()->links() }}
             </div>
             @endif
         </div>

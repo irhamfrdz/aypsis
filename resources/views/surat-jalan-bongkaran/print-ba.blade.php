@@ -182,7 +182,7 @@
                 $sizeKontainer = $sizeKontainer . 'ft';
             }
         }
-        $kontainerText = '1 kontainer' . (!empty($sizeKontainer) ? ' ' . $sizeKontainer : '');
+        $kontainerText = '1 CONTAINER' . (!empty($sizeKontainer) ? ' ' . $sizeKontainer : '');
     @endphp
     {{-- Only show kontainer info if NOT cargo --}}
     @if(!$isCargo)
