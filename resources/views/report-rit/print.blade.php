@@ -134,34 +134,42 @@
                 <th width="12%">No. Surat Jalan</th>
                 <th width="7%">Kegiatan</th>
                 <th width="12%">Supir</th>
+                <th width="12%">Kenek</th>
                 <th width="8%">No. Plat</th>
                 <th width="15%">Pengirim</th>
                 <th width="15%">Penerima</th>
                 <th width="15%">Jenis Barang</th>
-                <th width="5%">Jml</th>
             </tr>
         </thead>
         <tbody>
             @forelse($suratJalans as $key => $sj)
             <tr>
                 <td style="text-align: center;">{{ $key + 1 }}</td>
-                <td style="text-align: center;">{{ $sj->tanggal ? $sj->tanggal->format('d/m/Y') : '-' }}</td>
-                <td>{{ $sj->nomor_surat_jalan ?: '-' }}</td>
                 <td style="text-align: center;">
-                    <span class="badge {{ $sj->kegiatan == 'muat' ? 'badge-muat' : 'badge-bongkar' }}">
-                        {{ strtoupper($sj->kegiatan) }}
+                    @php
+                        $tanggal = is_array($sj) ? ($sj['tanggal_checkpoint'] ?: ($sj['tanggal_tanda_terima'] ?: ($sj['tanggal_surat_jalan'] ?: '-'))) : ($sj->tanggal_checkpoint ?: ($sj->tanggal_tanda_terima ?: ($sj->tanggal_surat_jalan ?: '-')));
+                    @endphp
+                    {{ $tanggal != '-' ? (is_string($tanggal) ? \Carbon\Carbon::parse($tanggal)->format('d/m/Y') : $tanggal->format('d/m/Y')) : '-' }}
+                </td>
+                <td>{{ is_array($sj) ? $sj['no_surat_jalan'] : $sj->no_surat_jalan }}</td>
+                <td style="text-align: center;">
+                    @php
+                        $kegiatan = is_array($sj) ? $sj['kegiatan'] : $sj->kegiatan;
+                    @endphp
+                    <span class="badge {{ $kegiatan == 'muat' ? 'badge-muat' : 'badge-bongkar' }}">
+                        {{ strtoupper($kegiatan ?: 'TARIK ISI') }}
                     </span>
                 </td>
-                <td>{{ $sj->nama_supir ?: '-' }}</td>
-                <td>{{ $sj->no_plat ?: '-' }}</td>
-                <td>{{ $sj->pengirim ?: '-' }}</td>
-                <td>{{ $sj->penerima ?: '-' }}</td>
-                <td>{{ $sj->jenis_barang ?: '-' }}</td>
-                <td style="text-align: center;">{{ $sj->jumlah_kontainer ?: '-' }}</td>
+                <td>{{ is_array($sj) ? ($sj['supir'] ?: '-') : ($sj->supir ?: '-') }}</td>
+                <td>{{ is_array($sj) ? ($sj['kenek'] ?: '-') : ($sj->kenek ?: '-') }}</td>
+                <td>{{ is_array($sj) ? ($sj['no_plat'] ?: '-') : ($sj->no_plat ?: '-') }}</td>
+                <td>{{ is_array($sj) ? ($sj['pengirim'] ?: '-') : ($sj->pengirim ?: '-') }}</td>
+                <td>{{ is_array($sj) ? ($sj['penerima'] ?: '-') : ($sj->penerima ?: '-') }}</td>
+                <td>{{ is_array($sj) ? ($sj['jenis_barang'] ?: '-') : ($sj->jenis_barang ?: '-') }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="10" style="text-align: center; padding: 20px;">Tidak ada data</td>
+                <td colspan="11" style="text-align: center; padding: 20px;">Tidak ada data</td>
             </tr>
             @endforelse
         </tbody>

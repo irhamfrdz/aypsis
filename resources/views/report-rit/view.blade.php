@@ -196,6 +196,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kenek</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
@@ -244,6 +245,9 @@
                         <td class="px-4 py-3 text-sm text-gray-900">
                             {{ is_array($sj) ? ($sj['supir'] ?: '-') : ($sj->supir ?: '-') }}
                         </td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {{ is_array($sj) ? ($sj['kenek'] ?: '-') : ($sj->kenek ?: '-') }}
+                        </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {{ is_array($sj) ? ($sj['no_plat'] ?: '-') : ($sj->no_plat ?: '-') }}
                         </td>
@@ -265,7 +269,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="11" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="12" class="px-4 py-8 text-center text-gray-500">
                             Tidak ada data untuk periode yang dipilih
                         </td>
                     </tr>
