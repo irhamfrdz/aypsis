@@ -305,12 +305,18 @@
                                         $tanggalDisplay = $sj->tandaTerima->tanggal_terima;
                                     }
                                     
+                                    // Robust identification
+                                    $supirIdentifier = $sj->supir_nik ?: $sj->supir;
+                                    $supirDisplayName = $sj->supir_display_name;
+
                                     $allSuratJalans->push([
                                         'type' => 'regular',
                                         'id' => $sj->id,
                                         'no_surat_jalan' => $sj->no_surat_jalan,
                                         'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
                                         'supir' => $sj->supir,
+                                        'supir_identifier' => $supirIdentifier,
+                                        'supir_display_name' => $supirDisplayName,
                                         'tanggal_checkpoint' => $sj->tanggal_checkpoint,
                                         'tandaTerima' => $sj->tandaTerima,
                                         'kegiatan' => $sj->kegiatan,
@@ -328,6 +334,10 @@
                                         if (!$tanggalDisplay && $sjb->tandaTerima) {
                                             $tanggalDisplay = $sjb->tandaTerima->tanggal_tanda_terima;
                                         }
+
+                                        // Robust identification
+                                        $supirIdentifier = $sjb->supir_nik ?: $sjb->supir;
+                                        $supirDisplayName = $sjb->supir_display_name;
                                         
                                         $allSuratJalans->push([
                                             'type' => 'bongkaran',
@@ -335,6 +345,8 @@
                                             'no_surat_jalan' => $sjb->nomor_surat_jalan,
                                             'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
                                             'supir' => $sjb->supir,
+                                            'supir_identifier' => $supirIdentifier,
+                                            'supir_display_name' => $supirDisplayName,
                                             'tanggal_checkpoint' => $sjb->tanggal_checkpoint,
                                             'tandaTerima' => $sjb->tandaTerima,
                                             'kegiatan' => $sjb->kegiatan,
@@ -352,7 +364,7 @@
                                 @endphp
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
                                     data-nomor="{{ strtolower($item['no_surat_jalan'] ?? '') }}"
-                                    data-supir="{{ strtolower($item['supir'] ?? '') }}">
+                                    data-supir="{{ strtolower($item['supir_identifier'] ?? $item['supir'] ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox"
                                                name="{{ $inputPrefix }}[{{ $item['id'] }}][selected]"
@@ -362,6 +374,8 @@
                                                data-type="{{ $item['type'] }}"
                                                data-no_surat_jalan="{{ $item['no_surat_jalan'] }}"
                                                data-supir_nama="{{ $item['supir'] }}"
+                                               data-supir_identifier="{{ $item['supir_identifier'] }}"
+                                               data-supir_display_name="{{ $item['supir_display_name'] }}"
                                                data-tanggal_checkpoint="{{ $item['tanggal_checkpoint'] ?? '' }}"
                                                data-tanggal_tanda_terima="{{ $item['type'] === 'regular' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_terima : '' }}"
                                                data-tanggal_tanda_terima_bongkaran="{{ $item['type'] === 'bongkaran' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_tanda_terima : '' }}"
@@ -377,7 +391,12 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $item['tanggal_untuk_display'] ? \Carbon\Carbon::parse($item['tanggal_untuk_display'])->format('d/m/Y') : '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $item['supir'] ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        {{ $item['supir'] ?? '-' }}
+                                        @if($item['supir_display_name'] != $item['supir'])
+                                            <div class="text-[10px] text-gray-500">({{ $item['supir_display_name'] }})</div>
+                                        @endif
+                                    </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center text-xs">
                                         @if($item['tanggal_checkpoint'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800" title="Checkpoint supir detected">Checkpoint</span>
@@ -561,23 +580,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 const uangRitSupirInput = uangRitSupirInputs[index];
                 
-                // Get person name from data attribute
-                const personName = checkbox.dataset.supir_nama || 'Tanpa Nama';
+                // Get person identification from data attribute
+                const personId = checkbox.dataset.supir_identifier || checkbox.dataset.supir_nama || 'Tanpa ID';
+                const personName = checkbox.dataset.supir_display_name || checkbox.dataset.supir_nama || 'Tanpa Nama';
                 
                 // Initialize person totals if not exists
-                if (!personTotals[personName]) {
-                    personTotals[personName] = {
+                if (!personTotals[personId]) {
+                    personTotals[personId] = {
+                        name: personName,
                         count: 0,
                         uangSupir: 0
                     };
                 }
                 
-                personTotals[personName].count++;
+                personTotals[personId].count++;
                 
                 if (uangRitSupirInput) {
                     const rowUangSupir = parseFloat(uangRitSupirInput.value) || 0;
                     totalRit += rowUangSupir;
-                    personTotals[personName].uangSupir += rowUangSupir;
+                    personTotals[personId].uangSupir += rowUangSupir;
                 }
             }
         });
@@ -646,8 +667,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const sortedPersons = Object.keys(personTotals).sort();
 
             // Create rows for each person
-            sortedPersons.forEach(personName => {
-                const totals = personTotals[personName];
+            sortedPersons.forEach(personId => {
+                const totals = personTotals[personId];
+                const personName = totals.name;
                 
                 const personRow = document.createElement('tr');
                 personRow.className = 'bg-yellow-50 text-gray-700 border-t border-yellow-200';
@@ -673,23 +695,23 @@ document.addEventListener('DOMContentLoaded', function () {
                                    value="0"
                                    min="0" 
                                    step="1"
-                                   data-person="${personName}">
+                                   data-person="${personId}">
                             <input type="number" 
                                    class="person-tabungan-input w-16 px-1 py-1 text-xs border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 text-right"
                                    placeholder="Tabungan" 
                                    value="0"
                                    min="0" 
                                    step="1"
-                                   data-person="${personName}">
+                                   data-person="${personId}">
                             <input type="number" 
                                    class="person-bpjs-input w-16 px-1 py-1 text-xs border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-right"
                                    placeholder="BPJS" 
                                    value="0"
                                    min="0" 
                                    step="1"
-                                   data-person="${personName}">
+                                   data-person="${personId}">
                             <div class="person-grand-total w-20 px-1 py-1 text-xs bg-purple-50 border border-purple-200 rounded text-right font-semibold text-purple-700"
-                                 data-person="${personName}">
+                                 data-person="${personId}">
                                 Rp ${totals.uangSupir.toLocaleString('id-ID')}
                             </div>
                         </div>
@@ -732,17 +754,18 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Calculate grand totals for each person
         personGrandTotals.forEach(grandTotalDiv => {
-            const personName = grandTotalDiv.dataset.person;
+            const personId = grandTotalDiv.dataset.person;
             
             // Find corresponding inputs
-            const utangInput = document.querySelector(`.person-utang-input[data-person="${personName}"]`);
-            const tabunganInput = document.querySelector(`.person-tabungan-input[data-person="${personName}"]`);
-            const bpjsInput = document.querySelector(`.person-bpjs-input[data-person="${personName}"]`);
+            const utangInput = document.querySelector(`.person-utang-input[data-person="${personId}"]`);
+            const tabunganInput = document.querySelector(`.person-tabungan-input[data-person="${personId}"]`);
+            const bpjsInput = document.querySelector(`.person-bpjs-input[data-person="${personId}"]`);
             
             // Get person's total uang supir from checked checkboxes
             let personUangSupir = 0;
             suratJalanCheckboxes.forEach((checkbox, index) => {
-                if (checkbox.checked && checkbox.dataset.supir_nama === personName) {
+                const rowPersonId = checkbox.dataset.supir_identifier || checkbox.dataset.supir_nama || 'Tanpa ID';
+                if (checkbox.checked && rowPersonId === personId) {
                     const uangRitSupirInput = uangRitSupirInputs[index];
                     if (uangRitSupirInput) {
                         personUangSupir += parseFloat(uangRitSupirInput.value) || 0;
@@ -1059,13 +1082,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const supirRitCount = {};
         suratJalanCheckboxes.forEach((checkbox, index) => {
             if (checkbox.checked) {
-                const row = checkbox.closest('tr');
-                const supirCell = row.querySelector('td:nth-child(4)');
-                if (supirCell) {
-                    const supirNama = supirCell.textContent.trim();
-                    if (supirNama) {
-                        supirRitCount[supirNama] = (supirRitCount[supirNama] || 0) + 1;
-                    }
+                const personName = checkbox.dataset.supir_nama || 'Tanpa Nama';
+                if (personName) {
+                    supirRitCount[personName] = (supirRitCount[personName] || 0) + 1;
                 }
             }
         });
@@ -1081,34 +1100,61 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Create hidden inputs for each supir's hutang, tabungan, and bpjs
         personUtangInputs.forEach(input => {
-            const supirNama = input.dataset.person;
-            const hutangValue = input.value || 0;
+            const personId = input.dataset.person;
+            // Map identifier back to its display name for submission consistency if needed, 
+            // but the controller expects supir_nama as key.
+            // Wait, the controller uses supir_nama as key in supir_details.
+            // I should find the real supir_nama for this identifier.
             
+            let realSupirNama = personId; // Fallback
+            // Find first checkbox with this identifier to get its supir_nama
+            for (let cb of suratJalanCheckboxes) {
+                if ((cb.dataset.supir_identifier || cb.dataset.supir_nama) === personId) {
+                    realSupirNama = cb.dataset.supir_nama;
+                    break;
+                }
+            }
+
+            const hutangValue = input.value || 0;
             const hutangInput = document.createElement('input');
             hutangInput.type = 'hidden';
-            hutangInput.name = `supir_details[${supirNama}][hutang]`;
+            hutangInput.name = `supir_details[${realSupirNama}][hutang]`;
             hutangInput.value = hutangValue;
             supirDetailsContainer.appendChild(hutangInput);
         });
         
         personTabunganInputs.forEach(input => {
-            const supirNama = input.dataset.person;
+            const personId = input.dataset.person;
+            let realSupirNama = personId;
+            for (let cb of suratJalanCheckboxes) {
+                if ((cb.dataset.supir_identifier || cb.dataset.supir_nama) === personId) {
+                    realSupirNama = cb.dataset.supir_nama;
+                    break;
+                }
+            }
+
             const tabunganValue = input.value || 0;
-            
             const tabunganInput = document.createElement('input');
             tabunganInput.type = 'hidden';
-            tabunganInput.name = `supir_details[${supirNama}][tabungan]`;
+            tabunganInput.name = `supir_details[${realSupirNama}][tabungan]`;
             tabunganInput.value = tabunganValue;
             supirDetailsContainer.appendChild(tabunganInput);
         });
         
         personBpjsInputs.forEach(input => {
-            const supirNama = input.dataset.person;
+            const personId = input.dataset.person;
+            let realSupirNama = personId;
+            for (let cb of suratJalanCheckboxes) {
+                if ((cb.dataset.supir_identifier || cb.dataset.supir_nama) === personId) {
+                    realSupirNama = cb.dataset.supir_nama;
+                    break;
+                }
+            }
+
             const bpjsValue = input.value || 0;
-            
             const bpjsInput = document.createElement('input');
             bpjsInput.type = 'hidden';
-            bpjsInput.name = `supir_details[${supirNama}][bpjs]`;
+            bpjsInput.name = `supir_details[${realSupirNama}][bpjs]`;
             bpjsInput.value = bpjsValue;
             supirDetailsContainer.appendChild(bpjsInput);
         });

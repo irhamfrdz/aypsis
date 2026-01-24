@@ -177,6 +177,19 @@ class SuratJalan extends Model
         return $karyawan ? $karyawan->nik : null;
     }
 
+    /**
+     * Get supir display name (panggilan) if available
+     */
+    public function getSupirDisplayNameAttribute()
+    {
+        if (!$this->supir) return '-';
+        
+        $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
+        if (!$karyawan) {
+            $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
+        }
+        return $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : $this->supir;
+    }
 
 
     public function pranotaSuratJalan()

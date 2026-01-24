@@ -263,6 +263,48 @@ class SuratJalanBongkaran extends Model
         return $this->total_tarif - $this->jumlah_terbayar;
     }
 
+    /**
+     * Get supir NIK with fallback
+     */
+    public function getSupirNikAttribute()
+    {
+        if (!$this->supir) return null;
+        
+        $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
+        if (!$karyawan) {
+            $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
+        }
+        return $karyawan ? $karyawan->nik : null;
+    }
+
+    /**
+     * Get kenek NIK with fallback
+     */
+    public function getKenekNikAttribute()
+    {
+        if (!$this->kenek) return null;
+
+        $karyawan = Karyawan::where('nama_panggilan', $this->kenek)->first();
+        if (!$karyawan) {
+            $karyawan = Karyawan::where('nama_lengkap', $this->kenek)->first();
+        }
+        return $karyawan ? $karyawan->nik : null;
+    }
+
+    /**
+     * Get supir display name (panggilan) if available
+     */
+    public function getSupirDisplayNameAttribute()
+    {
+        if (!$this->supir) return '-';
+        
+        $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
+        if (!$karyawan) {
+            $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
+        }
+        return $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : $this->supir;
+    }
+
     // Mutators
     public function setTanggalSuratJalanAttribute($value)
     {
