@@ -144,6 +144,9 @@ Route::get('/test-no-middleware', function() {
     return '<h1>Test Tanpa Middleware</h1><p>Ini test tanpa middleware apapun. Timestamp: ' . now() . '</p><a href="/dashboard">Ke Dashboard</a>';
 })->name('test.no.middleware');
 
+// Route untuk memperbaiki data nama kapal KM SUMBER ABADI - DELETED
+// Route::get('/fix-kapal-sumber-abadi', ...);
+
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
     'auth',

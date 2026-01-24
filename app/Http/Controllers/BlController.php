@@ -150,6 +150,11 @@ class BlController extends Controller
             ->map(function($item) {
                 // Normalize: remove dots after KM/KMP, trim spaces, uppercase
                 $normalized = trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                
+                // Remove trailing numbers (often voyage numbers included in ship name error)
+                // e.g., "KM SUMBER ABADI 178" -> "KM SUMBER ABADI"
+                $normalized = preg_replace('/\s+\d+$/', '', $normalized);
+                
                 // Return object with nama_kapal property for compatibility with blade
                 return (object)['nama_kapal' => $normalized];
             })
