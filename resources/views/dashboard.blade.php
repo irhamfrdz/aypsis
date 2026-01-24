@@ -118,6 +118,35 @@
         </div>
     </div>
 
+    <!-- Rekap Supir Tanpa Tanda Terima -->
+    @if($rekapSupirBelumTandaTerima->count() > 0)
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
+        <div class="bg-indigo-50 px-4 py-3 border-b border-indigo-200">
+            <h3 class="text-base font-semibold text-indigo-800 flex items-center">
+                <i class="fas fa-users mr-1 text-indigo-600"></i>
+                Rekap Supir Tanpa Tanda Terima
+            </h3>
+            <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum ada tanda terima (Status Pembayaran: Dibayar)</p>
+        </div>
+        
+        <div class="p-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                @foreach($rekapSupirBelumTandaTerima as $data)
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col items-center justify-center text-center">
+                    <span class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
+                        {{ $data->supir ?: 'Tanpa Nama' }}
+                    </span>
+                    <span class="text-2xl font-bold text-gray-800">
+                        {{ $data->total }}
+                    </span>
+                    <span class="text-[10px] text-gray-400">Surat Jalan</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Data Surat Jalan Tanpa Tanda Terima -->
     <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
         <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex flex-col sm:flex-row justify-between items-center gap-4">

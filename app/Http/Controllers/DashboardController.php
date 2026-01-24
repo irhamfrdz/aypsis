@@ -89,8 +89,17 @@ class DashboardController extends Controller
             ->paginate($perPage)
             ->appends(request()->all());
 
+        // Rekap jumlah surat jalan per supir yang belum ada tanda terima
+        $rekapSupirBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
+            ->whereNotIn('status', ['cancelled', 'draft'])
+            ->where('status_pembayaran_uang_jalan', 'dibayar')
+            ->select('supir', DB::raw('count(*) as total'))
+            ->groupBy('supir')
+            ->orderBy('total', 'desc')
+            ->get();
+
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima'));
     }
 
     /**
