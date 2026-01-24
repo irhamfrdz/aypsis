@@ -117,5 +117,87 @@
             </table>
         </div>
     </div>
+
+    <!-- Data Surat Jalan Tanpa Tanda Terima -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
+        <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h3 class="text-base font-semibold text-red-800 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-1 text-red-600"></i>
+                    Surat Jalan Tanpa Tanda Terima
+                </h3>
+                <p class="text-xs text-red-600">Daftar surat jalan yang belum dibuatkan tanda terimanya (Sudah Bayar Uang Jalan)</p>
+            </div>
+            
+            <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2">
+                <!-- Preserve existing query params except per_page -->
+                @foreach(request()->except('per_page', 'page') as $key => $value)
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endforeach
+                
+                <label for="per_page" class="text-xs text-red-700 font-medium whitespace-nowrap">Tampilkan:</label>
+                <select name="per_page" id="per_page" onchange="this.form.submit()" class="text-xs border-red-300 focus:border-red-500 focus:ring-red-500 rounded shadow-sm bg-white text-gray-700 py-1 pl-2 pr-6">
+                    <option value="5" {{ request('per_page') == 5 ? 'selected' : '' }}>5</option>
+                    <option value="10" {{ request('per_page') == 10 ? 'selected' : (!request('per_page') ? 'selected' : '') }}>10</option>
+                    <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                </select>
+            </form>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No Surat Jalan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Surat Jalan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pengirim</th>
+                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tujuan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No Kontainer</th>
+                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($suratJalanBelumTandaTerima as $sj)
+                        <tr class="hover:bg-red-50 transition-colors duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">
+                                {{ $sj->no_surat_jalan }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                                {{ $sj->tanggal_surat_jalan->format('d/m/Y') }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                                {{ $sj->pengirimRelation->nama ?? $sj->pengirim }}
+                            </td>
+                             <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                                {{ $sj->tujuanPengirimanRelation->nama ?? $sj->order->tujuan_kirim ?? $sj->tujuan_pengiriman }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                                {{ $sj->no_kontainer }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                <a href="{{ route('surat-jalan.show', $sj->id) }}" class="text-blue-600 hover:text-blue-900 text-xs font-medium">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-3 py-4 text-center text-gray-500 italic">
+                                Semua surat jalan sudah memiliki tanda terima.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        @if($suratJalanBelumTandaTerima->hasPages())
+        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            {{ $suratJalanBelumTandaTerima->links() }}
+        </div>
+        @endif
+    </div>
 </div>
 @endsection

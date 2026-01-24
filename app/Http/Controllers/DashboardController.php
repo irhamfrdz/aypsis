@@ -79,8 +79,18 @@ class DashboardController extends Controller
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
             ->get();
 
+        // Data Surat Jalan yang belum ada tanda terimanya (hanya yang sudah bayar uang jalan)
+        $perPage = request('per_page', 10);
+        $suratJalanBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
+            ->with(['pengirimRelation', 'tujuanPengirimanRelation'])
+            ->whereNotIn('status', ['cancelled', 'draft'])
+            ->where('status_pembayaran_uang_jalan', 'dibayar')
+            ->orderBy('tanggal_surat_jalan', 'desc')
+            ->paginate($perPage)
+            ->appends(request()->all());
+
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima'));
     }
 
     /**
