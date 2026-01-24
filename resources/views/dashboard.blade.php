@@ -153,7 +153,7 @@
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Surat Jalan</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pengirim</th>
                          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tujuan</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No Kontainer</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supir</th>
                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -173,7 +173,7 @@
                                 {{ $sj->tujuanPengirimanRelation->nama ?? $sj->order->tujuan_kirim ?? $sj->tujuan_pengiriman }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-gray-500">
-                                {{ $sj->no_kontainer }}
+                                {{ $sj->supir }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center">
                                 <a href="{{ route('surat-jalan.show', $sj->id) }}" class="text-blue-600 hover:text-blue-900 text-xs font-medium">
