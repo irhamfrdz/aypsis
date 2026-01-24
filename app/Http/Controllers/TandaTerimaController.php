@@ -1545,6 +1545,9 @@ class TandaTerimaController extends Controller
                 'tipe' => 'CARGO', // Set tipe sebagai CARGO untuk kontainer cargo
                 'nomor_kontainer' => $tandaTerima->no_kontainer,
                 'no_seal' => $tandaTerima->no_seal ?: 'Tidak ada seal',
+                'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                'surat_jalan_id' => $tandaTerima->surat_jalan_id,
+                'tanda_terima_id' => $tandaTerima->id,
                 'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
                 'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
                 'keterangan' => "Data dari tanda terima: {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}",
@@ -1561,6 +1564,79 @@ class TandaTerimaController extends Controller
             Log::error('Error adding cargo to prospek: ' . $e->getMessage());
             Log::error('TandaTerima data: ' . json_encode($tandaTerima->toArray()));
             return back()->with('error', 'Gagal memasukkan kontainer ke prospek: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk add containers to prospek
+     */
+    public function bulkAddToProspek(Request $request)
+    {
+        $ids = json_decode($request->input('tanda_terima_ids', '[]'), true);
+        
+        if (empty($ids)) {
+            return back()->with('error', 'Pilih minimal 1 tanda terima untuk dimasukkan ke prospek.');
+        }
+
+        $successCount = 0;
+        $failCount = 0;
+
+        DB::beginTransaction();
+        try {
+            $tandaTerimas = TandaTerima::whereIn('id', $ids)->get();
+
+            foreach ($tandaTerimas as $tandaTerima) {
+                try {
+                    // Tentukan ukuran kontainer yang valid (hanya 20 atau 40)
+                    $ukuran = null;
+                    if ($tandaTerima->size) {
+                        if (in_array($tandaTerima->size, ['20', '40'])) {
+                            $ukuran = $tandaTerima->size;
+                        }
+                    }
+
+                    // Buat data prospek
+                    $prospekData = [
+                        'tanggal' => $tandaTerima->tanggal_surat_jalan,
+                        'nama_supir' => $tandaTerima->supir ?: 'Tidak ada supir',
+                        'barang' => $tandaTerima->jenis_barang ?: 'CARGO',
+                        'pt_pengirim' => $tandaTerima->pengirim ?: 'Tidak ada pengirim',
+                        'ukuran' => $ukuran,
+                        'tipe' => 'CARGO',
+                        'nomor_kontainer' => $tandaTerima->no_kontainer,
+                        'no_seal' => $tandaTerima->no_seal ?: 'Tidak ada seal',
+                        'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                        'surat_jalan_id' => $tandaTerima->surat_jalan_id,
+                        'tanda_terima_id' => $tandaTerima->id,
+                        'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
+                        'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
+                        'keterangan' => "Data dari tanda terima (Bulk): {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}",
+                        'status' => 'aktif',
+                        'created_by' => Auth::id(),
+                        'updated_by' => Auth::id(),
+                    ];
+
+                    Prospek::create($prospekData);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    Log::error("Error adding cargo to prospek (Bulk ID {$tandaTerima->id}): " . $e->getMessage());
+                    $failCount++;
+                }
+            }
+
+            DB::commit();
+            
+            $message = "Berhasil memasukkan {$successCount} data ke prospek.";
+            if ($failCount > 0) {
+                $message .= " Gagal {$failCount} data.";
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error bulk adding cargo to prospek: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses bulk insert ke prospek: ' . $e->getMessage());
         }
     }
 

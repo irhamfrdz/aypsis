@@ -2471,6 +2471,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima.add-to-prospek')
          ->middleware('can:tanda-terima-update');
 
+    // Route untuk bulk add to prospek
+    Route::post('tanda-terima/bulk-add-to-prospek', [\App\Http\Controllers\TandaTerimaController::class, 'bulkAddToProspek'])
+         ->name('tanda-terima.bulk-add-to-prospek')
+         ->middleware('can:tanda-terima-update');
+
     // Route untuk bulk delete tanda terima
     Route::delete('tanda-terima/bulk-delete', [\App\Http\Controllers\TandaTerimaController::class, 'bulkDelete'])
          ->name('tanda-terima.bulk-delete')

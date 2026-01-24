@@ -207,6 +207,12 @@
                         Export Excel
                     </button>
                     <button type="button"
+                            onclick="bulkAddToProspek()"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                        <i class="fas fa-ship mr-2"></i>
+                        Kirim ke Prospek
+                    </button>
+                    <button type="button"
                             onclick="bulkDelete()"
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                         <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,6 +236,12 @@
             <form id="bulkExportForm" action="{{ route('tanda-terima.export-excel') }}" method="POST" style="display: none;">
                 @csrf
                 <input type="hidden" name="tanda_terima_ids" id="bulkExportIds">
+            </form>
+
+            <!-- Bulk Add to Prospek Form (Hidden) -->
+            <form id="bulkAddToProspekForm" action="{{ route('tanda-terima.bulk-add-to-prospek') }}" method="POST" style="display: none;">
+                @csrf
+                <input type="hidden" name="tanda_terima_ids" id="bulkAddToProspekIds">
             </form>
 
             <!-- Delete Surat Jalan Form (Hidden) -->
@@ -380,7 +392,7 @@
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <input type="checkbox"
                                        class="surat-jalan-with-tt-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                       value="{{ $item->surat_jalan_id }}"
+                                       value="{{ $item->tanda_terima_id }}"
                                        data-no-surat-jalan="{{ $item->no_surat_jalan }}"
                                        onchange="updateSelection()">
                             </td>
@@ -885,6 +897,37 @@
 
         document.getElementById('bulkExportIds').value = JSON.stringify(ids);
         document.getElementById('bulkExportForm').submit();
+    }
+
+    // Bulk add to Prospek function
+    function bulkAddToProspek() {
+        const mode = '{{ $mode ?? request('mode') }}';
+        let checkboxes;
+        let message;
+
+        if (mode === 'with_tanda_terima') {
+            checkboxes = document.querySelectorAll('.surat-jalan-with-tt-checkbox:checked');
+            message = 'Pilih minimal 1 surat jalan untuk dikirim ke prospek.';
+        } else {
+            checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+            message = 'Pilih minimal 1 tanda terima untuk dikirim ke prospek.';
+        }
+
+        const selectedCount = checkboxes.length;
+
+        if (selectedCount === 0) {
+            alert(message);
+            return;
+        }
+
+        const noSuratJalans = Array.from(checkboxes).map(cb => cb.dataset.noSuratJalan).join(', ');
+        const confirmMessage = `Apakah Anda yakin ingin mengirim ${selectedCount} data tanda terima ke prospek?\n\nNo. Surat Jalan:\n${noSuratJalans}`;
+
+        if (confirm(confirmMessage)) {
+            const ids = Array.from(checkboxes).map(cb => cb.value);
+            document.getElementById('bulkAddToProspekIds').value = JSON.stringify(ids);
+            document.getElementById('bulkAddToProspekForm').submit();
+        }
     }
 
     // Bulk delete function
