@@ -119,6 +119,7 @@
                             </div>
                         </div>
 
+                        @if(strtolower($suratJalan->tipe_kontainer ?? '') != 'cargo')
                         <!-- Data Kontainer Section -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-4">
@@ -192,9 +193,8 @@
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
-                            </div>
-
                         </div>
+                        @endif
 
                         <!-- Data Pengirim & Order Section -->
                         <div>

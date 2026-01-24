@@ -129,14 +129,8 @@
     {{-- Statistics Cards --}}
     @php
         $totalItems = $suratJalans->total();
-        $muatCount = collect($suratJalans->items())->filter(function($item) {
-            return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'muat';
-        })->count();
-        $bongkarCount = collect($suratJalans->items())->filter(function($item) {
-            return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'bongkar';
-        })->count();
     @endphp
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
             <div class="flex items-center">
                 <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
@@ -149,29 +143,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
-                    <i class="fas fa-arrow-up text-2xl text-green-600"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Muat</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $muatCount }}</p>
-                </div>
-            </div>
-        </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-orange-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-orange-100 rounded-full p-3">
-                    <i class="fas fa-arrow-down text-2xl text-orange-600"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Bongkar</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $bongkarCount }}</p>
-                </div>
-            </div>
-        </div>
 
         <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
             <div class="flex items-center">

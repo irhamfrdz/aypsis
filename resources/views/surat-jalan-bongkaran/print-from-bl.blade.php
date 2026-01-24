@@ -95,7 +95,7 @@
             position: absolute;
             top: 9cm; /* 9cm dari atas */
             left: 10.5cm; /* 10.5cm dari kiri */
-            font-size: 17px;
+            font-size: 15px;
             font-weight: bold;
         }
         /* Seal number: posisi absolute sesuai permintaan */
