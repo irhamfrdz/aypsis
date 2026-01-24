@@ -85,6 +85,9 @@ class DashboardController extends Controller
             ->with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
+            ->when(request('supir'), function($q) {
+                return $q->where('supir', request('supir'));
+            })
             ->orderBy('tanggal_surat_jalan', 'desc')
             ->paginate($perPage)
             ->appends(request()->all());

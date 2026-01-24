@@ -121,26 +121,40 @@
     <!-- Rekap Supir Tanpa Tanda Terima -->
     @if($rekapSupirBelumTandaTerima->count() > 0)
     <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
-        <div class="bg-indigo-50 px-4 py-3 border-b border-indigo-200">
-            <h3 class="text-base font-semibold text-indigo-800 flex items-center">
-                <i class="fas fa-users mr-1 text-indigo-600"></i>
-                Rekap Supir Tanpa Tanda Terima
-            </h3>
-            <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum ada tanda terima (Status Pembayaran: Dibayar)</p>
+        <div class="bg-indigo-50 px-4 py-3 border-b border-indigo-200 flex justify-between items-center">
+            <div>
+                <h3 class="text-base font-semibold text-indigo-800 flex items-center">
+                    <i class="fas fa-users mr-1 text-indigo-600"></i>
+                    Rekap Supir Tanpa Tanda Terima
+                </h3>
+                <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum ada tanda terima (Status Pembayaran: Dibayar)</p>
+            </div>
+            @if(request('supir'))
+                <a href="{{ route('dashboard', request()->except(['supir', 'page'])) }}" class="text-xs bg-white text-indigo-600 px-2 py-1 rounded border border-indigo-200 hover:bg-indigo-50 transition-colors">
+                    Reset Filter
+                </a>
+            @endif
         </div>
         
         <div class="p-4">
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 @foreach($rekapSupirBelumTandaTerima as $data)
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col items-center justify-center text-center">
-                    <span class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
+                @php
+                    $isActive = request('supir') == $data->supir;
+                    $cardClass = $isActive 
+                        ? 'bg-indigo-100 border-indigo-500 ring-1 ring-indigo-500' 
+                        : 'bg-gray-50 border-gray-200 hover:border-indigo-300 hover:shadow-sm';
+                @endphp
+                <a href="{{ route('dashboard', array_merge(request()->except('page'), ['supir' => $isActive ? null : $data->supir])) }}" 
+                   class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group">
+                    <span class="text-xs {{ $isActive ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-600' }} font-medium uppercase tracking-wider mb-1">
                         {{ $data->supir ?: 'Tanpa Nama' }}
                     </span>
-                    <span class="text-2xl font-bold text-gray-800">
+                    <span class="text-2xl font-bold {{ $isActive ? 'text-indigo-900' : 'text-gray-800 group-hover:text-indigo-800' }}">
                         {{ $data->total }}
                     </span>
-                    <span class="text-[10px] text-gray-400">Surat Jalan</span>
-                </div>
+                    <span class="text-[10px] {{ $isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-500' }}">Surat Jalan</span>
+                </a>
                 @endforeach
             </div>
         </div>
