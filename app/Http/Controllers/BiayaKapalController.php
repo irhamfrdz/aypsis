@@ -716,45 +716,39 @@ class BiayaKapalController extends Controller
 
             // Normalize ship name for flexible matching (remove dots, extra spaces, lowercase)
             $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $namaKapal)));
-            Log::info('getVoyagesByShip normalized', ['normalized' => $normalizedKapal]);
+            $keywords = explode(' ', $normalizedKapal);
+            
+            Log::info('getVoyagesByShip keywords', ['keywords' => $keywords]);
 
-            // Primary attempt: Use REGEXP_REPLACE normalization if available in DB (MySQL 8+ / Postgres)
-            $voyagesFromNaikKapal = DB::table('naik_kapal')
+            // Use robust keyword matching for Naik Kapal query
+            $voyagesFromNaikKapalQuery = DB::table('naik_kapal')
                 ->select('no_voyage')
-                ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
                 ->whereNotNull('no_voyage')
-                ->where('no_voyage', '!=', '')
-                ->distinct()
-                ->pluck('no_voyage');
+                ->where('no_voyage', '!=', '');
+            
+            // Add where clause for each keyword
+            $voyagesFromNaikKapalQuery->where(function($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->where('nama_kapal', 'like', "%{$keyword}%");
+                }
+            });
+            
+            $voyagesFromNaikKapal = $voyagesFromNaikKapalQuery->distinct()->pluck('no_voyage');
 
-            $voyagesFromBls = DB::table('bls')
+            // Use robust keyword matching for BLs query
+            $voyagesFromBlsQuery = DB::table('bls')
                 ->select('no_voyage')
-                ->whereRaw('LOWER(TRIM(REGEXP_REPLACE(nama_kapal, "[.\\\\s]+", " "))) LIKE ?', ["%{$normalizedKapal}%"])
                 ->whereNotNull('no_voyage')
-                ->where('no_voyage', '!=', '')
-                ->distinct()
-                ->pluck('no_voyage');
-
-            // Fallback: if no results (maybe REGEXP_REPLACE unsupported or data mismatch), try simpler LIKE matching
-            if ((empty($voyagesFromNaikKapal) || $voyagesFromNaikKapal->count() === 0) && (empty($voyagesFromBls) || $voyagesFromBls->count() === 0)) {
-                Log::info('getVoyagesByShip fallback to simple LIKE');
-
-                $voyagesFromNaikKapal = DB::table('naik_kapal')
-                    ->select('no_voyage')
-                    ->where('nama_kapal', 'like', "%{$namaKapal}%")
-                    ->whereNotNull('no_voyage')
-                    ->where('no_voyage', '!=', '')
-                    ->distinct()
-                    ->pluck('no_voyage');
-
-                $voyagesFromBls = DB::table('bls')
-                    ->select('no_voyage')
-                    ->where('nama_kapal', 'like', "%{$namaKapal}%")
-                    ->whereNotNull('no_voyage')
-                    ->where('no_voyage', '!=', '')
-                    ->distinct()
-                    ->pluck('no_voyage');
-            }
+                ->where('no_voyage', '!=', '');
+            
+            // Add where clause for each keyword
+            $voyagesFromBlsQuery->where(function($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->where('nama_kapal', 'like', "%{$keyword}%");
+                }
+            });
+            
+            $voyagesFromBls = $voyagesFromBlsQuery->distinct()->pluck('no_voyage');
 
             // Merge and get unique voyages
             $voyages = $voyagesFromNaikKapal->merge($voyagesFromBls)
