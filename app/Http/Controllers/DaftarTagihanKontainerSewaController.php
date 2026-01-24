@@ -16,6 +16,8 @@ use Carbon\Carbon;
 use App\Jobs\RunCreateNextPeriode;
 use App\Models\MasterPricelistSewaKontainer;
 use App\Models\Kontainer;
+use App\Exports\DaftarTagihanKontainerSewaExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DaftarTagihanKontainerSewaController extends Controller
 {
@@ -1423,121 +1425,16 @@ class DaftarTagihanKontainerSewaController extends Controller
     public function export(Request $request)
     {
         try {
-            $query = DaftarTagihanKontainerSewa::query();
-
-            // Exclude GROUP_SUMMARY records
-            $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
-                  ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
-
-            // Apply same filters as index page
-            if ($request->filled('vendor')) {
-                $query->where('vendor', $request->input('vendor'));
-            }
-
-            if ($request->filled('size')) {
-                $query->where('size', $request->input('size'));
-            }
-
-            if ($request->filled('periode')) {
-                $query->where('periode', $request->input('periode'));
-            }
-
-            if ($request->filled('status')) {
-                $status = $request->input('status');
-                if ($status === 'ongoing') {
-                    $query->whereNull('tanggal_akhir');
-                } elseif ($status === 'selesai') {
-                    $query->whereNotNull('tanggal_akhir');
-                }
-            }
-
-            if ($request->filled('status_pranota')) {
-                $statusPranota = $request->input('status_pranota');
-                if ($statusPranota === 'null') {
-                    $query->whereNull('status_pranota');
-                } else {
-                    $query->where('status_pranota', $statusPranota);
-                }
-            }
-
-            // Apply search if provided
-            if ($request->filled('q')) {
-                $searchTerm = $request->input('q');
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('group', 'LIKE', '%' . $searchTerm . '%');
-                });
-            }
-
-            $query->orderBy('nomor_kontainer')->orderBy('periode');
-
-            // Get all matching records
-            $tagihans = $query->get();
-
-            $filename = 'export_tagihan_kontainer_sewa_' . date('Y-m-d_His') . '.csv';
-
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            $filters = [
+                'vendor' => $request->input('vendor'),
+                'size' => $request->input('size'),
+                'periode' => $request->input('periode'),
+                'status' => $request->input('status'),
+                'status_pranota' => $request->input('status_pranota'),
+                'q' => $request->input('q')
             ];
 
-            $callback = function() use ($tagihans) {
-                $file = fopen('php://output', 'w');
-
-                // Add BOM for UTF-8
-                fputs($file, "\xEF\xBB\xBF");
-
-                // Write header row
-                fputcsv($file, [
-                    'Group',
-                    'Vendor',
-                    'Nomor Kontainer',
-                    'Size',
-                    'Tanggal Awal',
-                    'Tanggal Akhir',
-                    'Periode',
-                    'Masa',
-                    'Tarif',
-                    'Status',
-                    'DPP',
-                    'Adjustment',
-                    'DPP Nilai Lain',
-                    'PPN',
-                    'PPH',
-                    'Grand Total',
-                    'Status Pranota',
-                    'Pranota ID'
-                ], ';');
-
-                // Write data rows
-                foreach ($tagihans as $tagihan) {
-                    fputcsv($file, [
-                        $tagihan->group ?? '',
-                        $tagihan->vendor ?? '',
-                        $tagihan->nomor_kontainer ?? '',
-                        $tagihan->size ?? '',
-                        $tagihan->tanggal_awal ? Carbon::parse($tagihan->tanggal_awal)->format('d-m-Y') : '',
-                        $tagihan->tanggal_akhir ? Carbon::parse($tagihan->tanggal_akhir)->format('d-m-Y') : '',
-                        $tagihan->periode ?? '',
-                        $tagihan->masa ?? '',
-                        $tagihan->tarif ?? '',
-                        $tagihan->status ?? '',
-                        $tagihan->dpp ?? 0,
-                        $tagihan->adjustment ?? 0,
-                        $tagihan->dpp_nilai_lain ?? 0,
-                        $tagihan->ppn ?? 0,
-                        $tagihan->pph ?? 0,
-                        $tagihan->grand_total ?? 0,
-                        $tagihan->status_pranota ?? '',
-                        $tagihan->pranota_id ?? ''
-                    ], ';');
-                }
-
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
+            return Excel::download(new DaftarTagihanKontainerSewaExport($filters), 'export_tagihan_kontainer_sewa_' . date('Y-m-d_His') . '.xlsx');
 
         } catch (\Exception $e) {
             Log::error('Error exporting data: ' . $e->getMessage());

@@ -716,9 +716,27 @@ class BiayaKapalController extends Controller
 
             // Normalize ship name for flexible matching (remove dots, extra spaces, lowercase)
             $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $namaKapal)));
-            $keywords = explode(' ', $normalizedKapal);
+            $allKeywords = explode(' ', $normalizedKapal);
             
-            Log::info('getVoyagesByShip keywords', ['keywords' => $keywords]);
+            // List of common prefixes to ignore during search
+            $ignorePrefixes = ['km', 'mv', 'mt', 'tb', 'spob', 'klm', 'lp', 'mp'];
+            
+            // Filter keywords
+            $keywords = array_filter($allKeywords, function($word) use ($ignorePrefixes) {
+                // Keep the word if it's NOT in the ignore list
+                // Also keep numerical parts regardless (e.g., '178')
+                return !in_array($word, $ignorePrefixes);
+            });
+            
+            // If filtering resulted in empty array (unlikely but possible), revert to all keywords
+            if (empty($keywords)) {
+                $keywords = $allKeywords;
+            }
+            
+            // Re-index array
+            $keywords = array_values($keywords);
+            
+            Log::info('getVoyagesByShip keywords', ['original' => $allKeywords, 'filtered' => $keywords]);
 
             // Use robust keyword matching for Naik Kapal query
             $voyagesFromNaikKapalQuery = DB::table('naik_kapal')
