@@ -179,7 +179,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No Surat Jalan</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Surat Jalan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Uang Jalan</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pengirim</th>
                          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tujuan</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supir</th>
@@ -193,7 +193,7 @@
                                 {{ $sj->no_surat_jalan }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-gray-500">
-                                {{ $sj->tanggal_surat_jalan->format('d/m/Y') }}
+                                {{ optional($sj->uangJalan)->tanggal_uang_jalan ? $sj->uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-gray-500">
                                 {{ $sj->pengirimRelation->nama ?? $sj->pengirim }}

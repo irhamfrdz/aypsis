@@ -82,7 +82,7 @@ class DashboardController extends Controller
         // Data Surat Jalan yang belum ada tanda terimanya (hanya yang sudah bayar uang jalan)
         $perPage = request('per_page', 10);
         $suratJalanBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
-            ->with(['pengirimRelation', 'tujuanPengirimanRelation'])
+            ->with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
             ->orderBy('tanggal_surat_jalan', 'desc')
