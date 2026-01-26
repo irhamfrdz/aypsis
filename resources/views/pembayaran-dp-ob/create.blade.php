@@ -155,7 +155,8 @@
                                 <select name="kas_bank"
                                         id="kas_bank"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kas_bank') border-red-300 @enderror">
+                                        data-placeholder="-- Pilih Akun Kas/Bank --"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 select2-kas @error('kas_bank') border-red-300 @enderror">
                                     <option value="">-- Pilih Akun Kas/Bank --</option>
                                     @foreach($kasBankList as $kasBank)
                                         <option value="{{ $kasBank->id }}" {{ old('kas_bank') == $kasBank->id ? 'selected' : '' }}>
@@ -974,6 +975,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const nomorField = document.getElementById('nomor_pembayaran');
     if (!nomorField.value.trim()) {
         generateNomor();
+    }
+
+    // Initialize select2 for Kas/Bank (searchable dropdown) if available
+    if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
+        $('.select2-kas').select2({
+            placeholder: function(){ return $(this).data('placeholder') || '-- Pilih Akun Kas/Bank --'; },
+            allowClear: true,
+            width: '100%'
+        });
     }
 
     // Initialize supir display
