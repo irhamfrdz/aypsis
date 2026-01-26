@@ -111,21 +111,53 @@ class CreateNextPeriodeTagihan extends Command
                         'periode' => $periode,
                     ];
 
-                    // Calculate period-specific values
+                    // Calculate days
                     $daysInPeriod = $periodStart->diffInDays($periodEnd) + 1;
                     $daysInFullMonth = $periodStart->daysInMonth;
                     $isFullMonth = $daysInPeriod >= $daysInFullMonth;
 
-                    $baseDpp = (float) ($baseRecord->dpp ?? 0);
-                    $periodDpp = $isFullMonth ? $baseDpp : round($baseDpp * ($daysInPeriod / $daysInFullMonth), 2);
+                    // Get base monthly price from pricelist if possible, else fallback to base record
+                    $monthlyPrice = null;
+                    
+                    // Try to find pricelist matching the period start
+                    $pr = \App\Models\MasterPricelistSewaKontainer::where('ukuran_kontainer', $baseRecord->size)
+                        ->where('vendor', $container->vendor)
+                        ->where(function($q) use ($periodStart){
+                            $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
+                              ->where(function($q2) use ($periodStart){ 
+                                  $q2->whereNull('tanggal_harga_akhir')
+                                     ->orWhere('tanggal_harga_akhir','>=',$periodStart->toDateString()); 
+                              });
+                        })->orderBy('tanggal_harga_awal','desc')->first();
+                    
+                    if ($pr) {
+                        $monthlyPrice = (float)$pr->harga;
+                    } else {
+                        // If no pricelist, check if baseRecord was a full month
+                        $baseStart = \Carbon\Carbon::parse($baseRecord->tanggal_awal);
+                        $baseEnd = \Carbon\Carbon::parse($baseRecord->tanggal_akhir);
+                        $baseDays = $baseStart->diffInDays($baseEnd) + 1;
+                        $baseFullMonthDays = $baseStart->daysInMonth;
+                        
+                        if ($baseDays >= $baseFullMonthDays) {
+                            $monthlyPrice = (float)$baseRecord->dpp;
+                        } else {
+                            // Reverse pro-rate to get approximate monthly price
+                            $monthlyPrice = round((float)$baseRecord->dpp * ($baseFullMonthDays / $baseDays), 2);
+                        }
+                    }
+
+                    $periodDpp = $isFullMonth ? $monthlyPrice : round($monthlyPrice * ($daysInPeriod / $daysInFullMonth), 2);
 
                     $values = [
                         'size' => $baseRecord->size,
                         'group' => $baseRecord->group,
-                        'tanggal_akhir' => $periodEnd->format('Y-m-d'), // Use calculated period end, not container end
+                        'tanggal_akhir' => $periodEnd->format('Y-m-d'), 
                         'masa' => $this->generateMasaString($periodStart, $periodEnd),
                         'tarif' => $isFullMonth ? 'Bulanan' : 'Harian',
                         'dpp' => $periodDpp,
+                        // Values below will be automatically recalculated by Model boot method anyway, 
+                        // but setting them here for initial firstOrCreate values consistency
                         'dpp_nilai_lain' => round($periodDpp * 11 / 12, 2),
                         'ppn' => round(($periodDpp * 11 / 12) * 0.12, 2),
                         'pph' => round($periodDpp * 0.02, 2),
@@ -137,7 +169,7 @@ class CreateNextPeriodeTagihan extends Command
 
                     if ($row->wasRecentlyCreated) {
                         $created++;
-                        $this->line("Created periode={$periode} for container {$container->nomor_kontainer} (vendor {$container->vendor})");
+                        $this->line("Created periode={$periode} for container {$container->nomor_kontainer} (vendor {$container->vendor}) - DPP: " . number_format($periodDpp, 2));
 
                         // Record debit to COA007 for new periode
                         $this->recordCoaTransaction($row, $periode);

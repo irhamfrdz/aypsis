@@ -73,17 +73,32 @@ try {
         
         $oldDpp = $tagihan->dpp;
         
+        // --- PRO-RATING LOGIC ---
+        // Parse dates from the record or its masa string
+        $start = \Carbon\Carbon::parse($tagihan->tanggal_awal);
+        $end = \Carbon\Carbon::parse($tagihan->tanggal_akhir);
+        
+        $daysInPeriod = $start->diffInDays($end) + 1;
+        $daysInFullMonth = $start->daysInMonth;
+        
+        $isFullMonth = $daysInPeriod >= $daysInFullMonth;
+        
+        $calculatedDpp = $isFullMonth ? $hargaBaru : round($hargaBaru * ($daysInPeriod / $daysInFullMonth), 2);
+        // ------------------------
+
         // Update data dasar
         $tagihan->vendor = $targetVendor;
         $tagihan->size = $targetSize;
-        $tagihan->dpp = $hargaBaru;
+        $tagihan->tarif = $isFullMonth ? 'Bulanan' : 'Harian';
+        $tagihan->dpp = $calculatedDpp;
         
         // Model DaftarTagihanKontainerSewa memiliki boot method saving() 
         // yang secara otomatis memanggil calculateGrandTotal() dan recalculateTaxes().
         // Ini akan memastikan PPN, PPH, dan Grand Total terupdate dengan benar.
         $tagihan->save();
         
-        echo "   ✅ DPP: " . number_format($oldDpp, 2) . " -> " . number_format($tagihan->dpp, 2) . "\n";
+        echo "   📅 Masa: " . $tagihan->masa . " ($daysInPeriod/$daysInFullMonth days)\n";
+        echo "   ✅ DPP: " . number_format($oldDpp, 2) . " -> " . number_format($tagihan->dpp, 2) . " (" . $tagihan->tarif . ")\n";
         echo "   ✅ PPN: " . number_format($tagihan->ppn, 2) . "\n";
         echo "   ✅ PPH: " . number_format($tagihan->pph, 2) . "\n";
         echo "   ✅ Grand Total: " . number_format($tagihan->grand_total, 2) . "\n\n";
