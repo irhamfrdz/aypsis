@@ -34,4 +34,9 @@ class StockBanDalam extends Model
     {
         return $this->belongsTo(NamaStockBan::class, 'nama_stock_ban_id');
     }
+
+    public function usages()
+    {
+        return $this->hasMany(StockBanDalamUsage::class);
+    }
 }

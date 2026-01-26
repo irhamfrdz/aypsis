@@ -18,7 +18,8 @@ class StockBanController extends Controller
     public function index()
     {
         $stockBans = StockBan::with('mobil')->latest()->get();
-        return view('stock-ban.index', compact('stockBans'));
+        $stockBanDalams = \App\Models\StockBanDalam::with('namaStockBan')->latest()->get();
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams'));
     }
 
     /**
@@ -47,7 +48,7 @@ class StockBanController extends Controller
                 'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
                 'qty' => 'required|integer|min:0',
                 'harga_beli' => 'required|numeric|min:0',
-                'ukuran' => 'required|string|max:255',
+                'ukuran' => 'nullable|string|max:255',
                 'tanggal_masuk' => 'required|date',
                 'lokasi' => 'required|string|max:255',
                 'keterangan' => 'nullable|string',
@@ -55,17 +56,37 @@ class StockBanController extends Controller
                 // 'status' is not in stock_ban_dalams table based on migration, assuming handled or not needed
             ]);
 
-            \App\Models\StockBanDalam::create([
-                'nama_stock_ban_id' => $request->nama_stock_ban_id,
-                'nomor_bukti' => $request->nomor_bukti,
-                'ukuran' => $request->ukuran,
-                'type' => 'pcs', // Force type to pcs as requested "dropdown pcs hanya berisi 'pcs'"
-                'qty' => $request->qty,
-                'harga_beli' => $request->harga_beli,
-                'tanggal_masuk' => $request->tanggal_masuk,
-                'lokasi' => $request->lokasi,
-                'keterangan' => $request->keterangan,
-            ]);
+
+            // Check for existing record to increment
+            $existingStock = \App\Models\StockBanDalam::where('nama_stock_ban_id', $request->nama_stock_ban_id)
+                ->where('ukuran', $request->ukuran)
+                ->where('lokasi', $request->lokasi)
+                ->where('type', 'pcs')
+                ->first();
+
+            if ($existingStock) {
+                // Increment qty
+                $existingStock->increment('qty', $request->qty);
+                // Optionally update last price or average it. Here we update to latest price/date
+                $existingStock->update([
+                    'harga_beli' => $request->harga_beli,
+                    'tanggal_masuk' => $request->tanggal_masuk,
+                    'nomor_bukti' => $request->nomor_bukti ?? $existingStock->nomor_bukti,
+                    'keterangan' => $request->keterangan ?? $existingStock->keterangan,
+                ]);
+            } else {
+                \App\Models\StockBanDalam::create([
+                    'nama_stock_ban_id' => $request->nama_stock_ban_id,
+                    'nomor_bukti' => $request->nomor_bukti,
+                    'ukuran' => $request->ukuran,
+                    'type' => 'pcs', // Force type to pcs as requested "dropdown pcs hanya berisi 'pcs'"
+                    'qty' => $request->qty,
+                    'harga_beli' => $request->harga_beli,
+                    'tanggal_masuk' => $request->tanggal_masuk,
+                    'lokasi' => $request->lokasi,
+                    'keterangan' => $request->keterangan,
+                ]);
+            }
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban Dalam berhasil ditambahkan');
         }
@@ -75,9 +96,9 @@ class StockBanController extends Controller
             'nomor_seri' => 'required|unique:stock_bans,nomor_seri',
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
-            'ukuran' => 'required|string|max:255',
+            'ukuran' => 'nullable|string|max:255',
             'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
-            'status' => 'required|in:Stok,Terpakai,Rusak,Hilang',
+
             'harga_beli' => 'required|numeric|min:0',
             'tanggal_masuk' => 'required|date',
             'lokasi' => 'required|string|max:255',
@@ -125,9 +146,9 @@ class StockBanController extends Controller
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'required|unique:stock_bans,nomor_seri,' . $stockBan->id,
             'merk' => 'required|string|max:255',
-            'ukuran' => 'required|string|max:255',
+            'ukuran' => 'nullable|string|max:255',
             'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
-            'status' => 'required|in:Stok,Terpakai,Rusak,Hilang',
+
             'harga_beli' => 'required|numeric|min:0',
             'tanggal_masuk' => 'required|date',
             'lokasi' => 'required|string|max:255',
@@ -151,4 +172,55 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban berhasil dihapus');
     }
+
+    /**
+     * Show the form for using Ban Dalam stock.
+     */
+    public function useBanDalam($id)
+    {
+        $stockBanDalam = \App\Models\StockBanDalam::findOrFail($id);
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        return view('stock-ban.use-ban-dalam', compact('stockBanDalam', 'mobils'));
+    }
+
+    /**
+     * Store the usage of Ban Dalam.
+     */
+    public function storeUsageBanDalam(Request $request, $id)
+    {
+        $stockBanDalam = \App\Models\StockBanDalam::findOrFail($id);
+
+        $request->validate([
+            'mobil_id' => 'required|exists:mobils,id',
+            'qty' => 'required|integer|min:1|max:' . $stockBanDalam->qty,
+            'tanggal_keluar' => 'required|date',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $stockBanDalam) {
+            // Create usage record
+            \App\Models\StockBanDalamUsage::create([
+                'stock_ban_dalam_id' => $stockBanDalam->id,
+                'mobil_id' => $request->mobil_id,
+                'qty' => $request->qty,
+                'tanggal_keluar' => $request->tanggal_keluar,
+                'keterangan' => $request->keterangan,
+            ]);
+
+            // Decrement stock
+            $stockBanDalam->decrement('qty', $request->qty);
+        });
+
+        return redirect()->route('stock-ban.index')->with('success', 'Penggunaan Ban Dalam berhasil dicatat');
+    }
+
+    /**
+     * Show details of Ban Dalam including usage history.
+     */
+    public function showBanDalam($id)
+    {
+        $stockBanDalam = \App\Models\StockBanDalam::with(['namaStockBan', 'usages.mobil'])->findOrFail($id);
+        return view('stock-ban.show-ban-dalam', compact('stockBanDalam'));
+    }
 }
+

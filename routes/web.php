@@ -1334,6 +1334,9 @@ Route::middleware([
          ->middleware('can:master-gudang-delete');
 
     // � Stock Ban (Tire Stock) Management with permissions
+    Route::get('stock-ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'useBanDalam'])->name('stock-ban-dalam.use')->middleware('can:stock-ban-update');
+    Route::post('stock-ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'storeUsageBanDalam'])->name('stock-ban-dalam.store-usage')->middleware('can:stock-ban-update');
+    Route::get('stock-ban-dalam/{id}', [\App\Http\Controllers\StockBanController::class, 'showBanDalam'])->name('stock-ban-dalam.show')->middleware('can:stock-ban-view');
     Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
          ->name('stock-ban.index')
          ->middleware('can:stock-ban-view');

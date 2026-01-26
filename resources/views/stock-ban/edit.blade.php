@@ -142,19 +142,7 @@
                         @enderror
                     </div>
 
-                    <!-- Status -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
-                        <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status') border-red-500 @enderror" required>
-                            <option value="Stok" {{ old('status', $stockBan->status) == 'Stok' ? 'selected' : '' }}>Stok (Tersedia)</option>
-                            <option value="Terpakai" {{ old('status', $stockBan->status) == 'Terpakai' ? 'selected' : '' }}>Terpakai (Dipasang)</option>
-                            <option value="Rusak" {{ old('status', $stockBan->status) == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                            <option value="Hilang" {{ old('status', $stockBan->status) == 'Hilang' ? 'selected' : '' }}>Hilang</option>
-                        </select>
-                        @error('status')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+
 
                     <!-- Mobil (Assign to Car) -->
                     <div>

@@ -119,14 +119,7 @@
                         @enderror
                     </div>
 
-                    <!-- Ukuran -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ukuran <span class="text-red-500">*</span></label>
-                        <input type="text" name="ukuran" value="{{ old('ukuran') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ukuran') border-red-500 @enderror" required placeholder="Contoh: 1000-20, 11R22.5">
-                        @error('ukuran')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+
 
                     <!-- Kondisi (Type) -->
                     <div>
@@ -147,19 +140,7 @@
                         @enderror
                     </div>
 
-                    <!-- Status -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
-                        <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status') border-red-500 @enderror" required>
-                            <option value="Stok" {{ old('status', 'Stok') == 'Stok' ? 'selected' : '' }}>Stok (Tersedia)</option>
-                            <option value="Terpakai" {{ old('status') == 'Terpakai' ? 'selected' : '' }}>Terpakai (Dipasang)</option>
-                            <option value="Rusak" {{ old('status') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                            <option value="Hilang" {{ old('status') == 'Hilang' ? 'selected' : '' }}>Hilang</option>
-                        </select>
-                        @error('status')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+
 
                     <!-- Mobil (Assign to Car) -->
                     <div>
@@ -469,11 +450,13 @@
                 const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
                 
                 const isBanDalam = selectedText.includes('ban dalam');
+                const mobilContainer = document.getElementById('mobil-select-container').closest('div');
 
                 if (isBanDalam) {
-                    // Hide Nomor Seri & Merk
+                    // Hide Nomor Seri & Merk & Mobil
                     nomorSeriContainer.classList.add('hidden');
                     merkContainer.classList.add('hidden');
+                    mobilContainer.classList.add('hidden');
                     
                     // Show Qty
                     qtyWrapper.classList.remove('hidden');
@@ -481,17 +464,16 @@
                     // Set Type to 'pcs' only
                     typeSelect.innerHTML = '<option value="pcs" selected>Pcs</option>';
                     
-                    // Disable requirements for hidden fields to allow form submission without them (if validation allows null)
-                    // Note: Backend validaton needs to handle "required_without" logic or similar.
-                    // For client side validation, we might need to remove 'required' attr.
+                    // Disable requirements for hidden fields
                     document.querySelector('input[name="nomor_seri"]').removeAttribute('required');
                     document.querySelector('select[name="merk_id"]').removeAttribute('required');
                     document.querySelector('input[name="qty"]').setAttribute('required', 'required');
 
                 } else {
-                    // Show Nomor Seri & Merk
+                    // Show Nomor Seri & Merk & Mobil
                     nomorSeriContainer.classList.remove('hidden');
                     merkContainer.classList.remove('hidden');
+                    mobilContainer.classList.remove('hidden');
                     
                     // Hide Qty
                     qtyWrapper.classList.add('hidden');
