@@ -1314,17 +1314,27 @@ Route::middleware([
          ]);
 
     // � Stock Ban (Tire Stock) Management with permissions
-    Route::resource('stock-ban', \App\Http\Controllers\StockBanController::class)
-         ->names('stock-ban')
-         ->middleware([
-             'index' => 'can:stock-ban-view',
-             'show' => 'can:stock-ban-view',
-             'create' => 'can:stock-ban-create',
-             'store' => 'can:stock-ban-create',
-             'edit' => 'can:stock-ban-update',
-             'update' => 'can:stock-ban-update',
-             'destroy' => 'can:stock-ban-delete'
-         ]);
+    Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
+         ->name('stock-ban.index')
+         ->middleware('can:stock-ban-view');
+    Route::get('stock-ban/create', [\App\Http\Controllers\StockBanController::class, 'create'])
+         ->name('stock-ban.create')
+         ->middleware('can:stock-ban-create');
+    Route::post('stock-ban', [\App\Http\Controllers\StockBanController::class, 'store'])
+         ->name('stock-ban.store')
+         ->middleware('can:stock-ban-create');
+    Route::get('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'show'])
+         ->name('stock-ban.show')
+         ->middleware('can:stock-ban-view');
+    Route::get('stock-ban/{stock_ban}/edit', [\App\Http\Controllers\StockBanController::class, 'edit'])
+         ->name('stock-ban.edit')
+         ->middleware('can:stock-ban-update');
+    Route::put('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'update'])
+         ->name('stock-ban.update')
+         ->middleware('can:stock-ban-update');
+    Route::delete('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'destroy'])
+         ->name('stock-ban.destroy')
+         ->middleware('can:stock-ban-delete');
 
     // �💰 Pricelist Uang Jalan Batam Management with permissions
     // Download Template & Import (must be before resource routes)
@@ -4167,16 +4177,27 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           // ═══════════════════════════════════════════════════════════════════════
           // 🔧 STOCK BAN MANAGEMENT
           // ═══════════════════════════════════════════════════════════════════════
-          Route::resource('stock-ban', \App\Http\Controllers\StockBanController::class)
-               ->middleware([
-                   'index' => 'can:stock-ban-view',
-                   'create' => 'can:stock-ban-create',
-                   'store' => 'can:stock-ban-create',
-                   'show' => 'can:stock-ban-view',
-                   'edit' => 'can:stock-ban-update',
-                   'update' => 'can:stock-ban-update',
-                   'destroy' => 'can:stock-ban-delete'
-               ]);
+          Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
+               ->name('stock-ban.index')
+               ->middleware('can:stock-ban-view');
+          Route::get('stock-ban/create', [\App\Http\Controllers\StockBanController::class, 'create'])
+               ->name('stock-ban.create')
+               ->middleware('can:stock-ban-create');
+          Route::post('stock-ban', [\App\Http\Controllers\StockBanController::class, 'store'])
+               ->name('stock-ban.store')
+               ->middleware('can:stock-ban-create');
+          Route::get('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'show'])
+               ->name('stock-ban.show')
+               ->middleware('can:stock-ban-view');
+          Route::get('stock-ban/{stock_ban}/edit', [\App\Http\Controllers\StockBanController::class, 'edit'])
+               ->name('stock-ban.edit')
+               ->middleware('can:stock-ban-update');
+          Route::put('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'update'])
+               ->name('stock-ban.update')
+               ->middleware('can:stock-ban-update');
+          Route::delete('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'destroy'])
+               ->name('stock-ban.destroy')
+               ->middleware('can:stock-ban-delete');
 
            // ═══════════════════════════════════════════════════════════════════════
            // 👥 KARYAWAN TIDAK TETAP MANAGEMENT

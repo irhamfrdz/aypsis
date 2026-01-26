@@ -11,9 +11,11 @@
                 <h1 class="text-2xl font-bold text-gray-800">Daftar Stock Ban</h1>
                 <p class="text-sm text-gray-600 mt-1">Kelola data stock ban di gudang (Individual per Serial Number)</p>
             </div>
+            @can('stock-ban-create')
             <a href="{{ route('stock-ban.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center">
                 <i class="fas fa-plus mr-2"></i> Tambah Stock Ban
             </a>
+            @endcan
         </div>
     </div>
 
@@ -83,9 +85,12 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex justify-end gap-2">
+                                @can('stock-ban-update')
                                 <a href="{{ route('stock-ban.edit', $ban->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('stock-ban-delete')
                                 <form action="{{ route('stock-ban.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                     @csrf
                                     @method('DELETE')
@@ -93,6 +98,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>
