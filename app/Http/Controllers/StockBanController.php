@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StockBan;
 use App\Models\Mobil;
 use App\Models\NamaStockBan;
+use App\Models\MerkBan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,8 @@ class StockBanController extends Controller
     {
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
-        return view('stock-ban.create', compact('mobils', 'namaStockBans'));
+        $merkBans = MerkBan::orderBy('nama')->get();
+        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans'));
     }
 
     /**
@@ -37,7 +39,8 @@ class StockBanController extends Controller
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'required|unique:stock_bans,nomor_seri',
-            'merk' => 'required|string|max:255',
+            'merk' => 'nullable|required_without:merk_id|string|max:255',
+            'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'required|string|max:255',
             'kondisi' => 'required|in:Baru,Vulkanisir,Bekas,Afkir',
             'status' => 'required|in:Stok,Terpakai,Rusak,Hilang',
@@ -49,10 +52,17 @@ class StockBanController extends Controller
             'nomor_bukti' => 'nullable|string|max:255',
         ]);
 
-        // Clean up numeric input if needed (though numeric validation usually handles it, sometimes format uses dots)
-        // Assuming simple input for now or standard format.
+        $data = $request->all();
+
+        // Handle merk_id from dropdown
+        if ($request->filled('merk_id')) {
+            $merkBan = MerkBan::find($request->merk_id);
+            if ($merkBan) {
+                $data['merk'] = $merkBan->nama;
+            }
+        }
         
-        StockBan::create($request->all());
+        StockBan::create($data);
 
         return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban berhasil ditambahkan');
     }
@@ -65,7 +75,8 @@ class StockBanController extends Controller
         $stockBan = StockBan::findOrFail($id);
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
-        return view('stock-ban.edit', compact('stockBan', 'mobils', 'namaStockBans'));
+        $merkBans = MerkBan::orderBy('nama')->get();
+        return view('stock-ban.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans'));
     }
 
     /**
