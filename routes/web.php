@@ -124,25 +124,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 Route::get('master/user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])
      ->name('master.user.permissions-for-copy');
 
-// Test route untuk debugging menu tujuan kirim
-Route::get('test-tujuan-kirim', function () {
-    return view('test-tujuan-kirim');
-})->name('test.tujuan-kirim')->middleware('auth');
-
-// Debug sidebar route
-Route::get('debug-sidebar', function () {
-    return view('debug-sidebar');
-})->name('debug.sidebar')->middleware('auth');
-
-// Test route untuk verifikasi tujuan kirim
-Route::get('test-tujuan-kirim-route', function () {
-    return view('test-tujuan-kirim-route');
-})->name('test.tujuan-kirim.route')->middleware('auth');
-
-// Test route tanpa middleware untuk debug navigasi
-Route::get('/test-no-middleware', function() {
-    return '<h1>Test Tanpa Middleware</h1><p>Ini test tanpa middleware apapun. Timestamp: ' . now() . '</p><a href="/dashboard">Ke Dashboard</a>';
-})->name('test.no.middleware');
 
 // Route untuk memperbaiki data nama kapal KM SUMBER ABADI - DELETED
 // Route::get('/fix-kapal-sumber-abadi', ...);
@@ -3968,122 +3949,9 @@ Route::prefix('realisasi-uang-muka')->name('realisasi-uang-muka.')->middleware([
     Route::get('/api/get-voyage-list', [RealisasiUangMukaController::class, 'getVoyageList']);
     Route::get('/api/get-supir-by-voyage', [RealisasiUangMukaController::class, 'getSupirByVoyage']);
 
-    // Debug route - no middleware to bypass permission issues
-    Route::post('/debug-test', [RealisasiUangMukaController::class, 'store'])->name('debug-test');
 
 });
 
-// Debug routes (outside middleware)
-Route::get('/realisasi-uang-muka/debug-simple', function() {
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Debug route works!',
-        'time' => now()->toDateTimeString()
-    ]);
-})->name('realisasi-uang-muka.debug-simple');
-
-// Route to view debug logs
-Route::get('/realisasi-uang-muka/debug-logs', function() {
-    $logFile = storage_path('logs/laravel.log');
-    if (!file_exists($logFile)) {
-        return response()->json(['error' => 'Log file not found']);
-    }
-
-    // Get last 50 lines of log file
-    $lines = [];
-    $handle = fopen($logFile, 'r');
-    if ($handle) {
-        while (($line = fgets($handle)) !== false) {
-            if (strpos($line, 'RealisasiUangMuka Debug') !== false) {
-                $lines[] = $line;
-            }
-        }
-        fclose($handle);
-    }
-
-    // Return last 5 debug entries
-    $recentLogs = array_slice($lines, -5);
-
-    return response('<pre>' . implode("\n", $recentLogs) . '</pre>');
-})->name('realisasi-uang-muka.debug-logs');
-
-Route::post('/realisasi-uang-muka/debug-submit', function(\Illuminate\Http\Request $request) {
-    $input = $request->all();
-
-    $penerimaFields = [];
-    $jumlahKaryawanFields = [];
-    $supirFields = [];
-    $jumlahSupirFields = [];
-    $mobilFields = [];
-    $jumlahMobilFields = [];
-
-    foreach ($input as $key => $value) {
-        if (strpos($key, 'penerima') === 0) {
-            $penerimaFields[$key] = $value;
-        } elseif (strpos($key, 'jumlah_karyawan') === 0) {
-            $jumlahKaryawanFields[$key] = $value;
-        } elseif (strpos($key, 'supir') === 0) {
-            $supirFields[$key] = $value;
-        } elseif (strpos($key, 'jumlah') === 0 && strpos($key, 'karyawan') === false && strpos($key, 'mobil') === false) {
-            $jumlahSupirFields[$key] = $value;
-        } elseif (strpos($key, 'mobil') === 0) {
-            $mobilFields[$key] = $value;
-        } elseif (strpos($key, 'jumlah_mobil') === 0) {
-            $jumlahMobilFields[$key] = $value;
-        }
-    }
-
-    $kegiatan = null;
-    if (isset($input['kegiatan'])) {
-        $kegiatan = \App\Models\MasterKegiatan::find($input['kegiatan']);
-    }
-
-    $activityAnalysis = [];
-    if ($kegiatan) {
-        $kegiatanNama = strtolower($kegiatan->nama_kegiatan);
-        $isMobil = (stripos($kegiatanNama, 'kir') !== false && stripos($kegiatanNama, 'stnk') !== false);
-        $isSupir = (stripos($kegiatanNama, 'ob') !== false && (stripos($kegiatanNama, 'muat') !== false || stripos($kegiatanNama, 'bongkar') !== false));
-        $isPenerima = !$isMobil && !$isSupir;
-
-        $activityAnalysis = [
-            'kegiatan_id' => $kegiatan->id,
-            'kegiatan_nama' => $kegiatan->nama_kegiatan,
-            'is_mobil_based' => $isMobil,
-            'is_supir_based' => $isSupir,
-            'is_penerima_based' => $isPenerima,
-            'expected_fields' => $isPenerima ? 'penerima[] + jumlah_karyawan[]' : ($isSupir ? 'supir[] + jumlah[]' : 'mobil[] + jumlah_mobil[]')
-        ];
-    }
-
-    return response()->json([
-        'status' => 'debug_success',
-        'message' => 'Form submission reached successfully - Debug Route',
-        'method' => $request->method(),
-        'has_debug_mode' => $request->has('debug_mode'),
-        'input_count' => count($request->all()),
-        'activity_analysis' => $activityAnalysis,
-        'field_analysis' => [
-            'penerima_fields' => $penerimaFields,
-            'jumlah_karyawan_fields' => $jumlahKaryawanFields,
-            'supir_fields' => $supirFields,
-            'jumlah_supir_fields' => $jumlahSupirFields,
-            'mobil_fields' => $mobilFields,
-            'jumlah_mobil_fields' => $jumlahMobilFields
-        ],
-        'validation_prediction' => [
-            'for_penerima' => count($penerimaFields) > 0 && count($jumlahKaryawanFields) > 0,
-            'for_supir' => count($supirFields) > 0 && count($jumlahSupirFields) > 0,
-            'for_mobil' => count($mobilFields) > 0 && count($jumlahMobilFields) > 0
-        ],
-        'basic_fields' => [
-            'kegiatan' => isset($input['kegiatan']) ? $input['kegiatan'] : 'missing',
-            'nomor_pembayaran' => isset($input['nomor_pembayaran']) ? $input['nomor_pembayaran'] : 'missing',
-            'tanggal_pembayaran' => isset($input['tanggal_pembayaran']) ? $input['tanggal_pembayaran'] : 'missing',
-            'kas_bank' => isset($input['kas_bank']) ? $input['kas_bank'] : 'missing',
-            'jenis_transaksi' => isset($input['jenis_transaksi']) ? $input['jenis_transaksi'] : 'missing'
-        ]
-    ]);
-})->name('realisasi-uang-muka.debug-submit');
 
 // Report Routes
 Route::middleware(['auth'])->prefix('report')->name('report.')->group(function () {
@@ -4129,20 +3997,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('audit-logs/model', [AuditLogController::class, 'getModelAuditLogs'])->name('audit-logs.model');
     Route::get('audit-logs/export/csv', [AuditLogController::class, 'export'])->name('audit-logs.export');
 
-    // Test route
-    Route::get('audit-logs-test', function () {
-        return view('audit-logs.test');
-    })->name('audit-logs.test');
 
-    // Simple audit logs route for debugging
-    Route::get('audit-logs-simple', function () {
-        return view('audit-logs.index', [
-            'auditLogs' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25),
-            'modules' => collect([]),
-            'actions' => collect([]),
-            'users' => collect([])
-        ]);
-    })->name('audit-logs.simple');
 
     // 🛒 Belanja Amprahan (simple CRUD)
     Route::resource('belanja-amprahan', \App\Http\Controllers\BelanjaAmprahanController::class)
@@ -4157,30 +4012,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                'destroy' => 'can:belanja-amprahan-delete'
           ]);
 
-    // Test audit modal
-    Route::get('audit-test-simple', function () {
-        return view('audit-test-simple');
-    })->name('audit.test.simple');
-
-    // Debug audit modal route
-    Route::get('debug-audit-modal', function () {
-        return view('debug-audit-modal');
-    })->name('debug.audit.modal');
-
-    // Simple AJAX test route
-    Route::get('simple-ajax-test', function () {
-        return view('simple-ajax-test');
-    })->name('simple.ajax.test');
-
-    // Auth check route
-    Route::get('auth-check', function () {
-        return view('auth-check');
-    })->name('auth.check');
-
-    // Debug NIK route
-    Route::get('debug-nik', function () {
-        return view('debug-nik');
-    })->name('debug.nik');
 
     // 📊 Prospek Management - Read Only
     Route::get('prospek', [ProspekController::class, 'index'])->name('prospek.index')
@@ -4400,32 +4231,3 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
 
 });
 
-// Test route for ZipArchive
-Route::get('/test-zip', function () {
-    $result = [];
-    
-    // Test 1: Check if extension is loaded
-    $result['extension_loaded'] = extension_loaded('zip');
-    
-    // Test 2: Check if class exists
-    $result['class_exists'] = class_exists('ZipArchive');
-    
-    // Test 3: Try to instantiate ZipArchive
-    try {
-        $zip = new ZipArchive();
-        $result['instantiate'] = 'Success';
-        $result['zip_object'] = get_class($zip);
-    } catch (Exception $e) {
-        $result['instantiate'] = 'Error: ' . $e->getMessage();
-    }
-    
-    // Test 4: Check loaded extensions
-    $result['loaded_extensions'] = get_loaded_extensions();
-    $result['zip_in_extensions'] = in_array('zip', $result['loaded_extensions']);
-    
-    // Test 5: PHP version and info
-    $result['php_version'] = phpversion();
-    $result['php_sapi'] = php_sapi_name();
-    
-    return response()->json($result, 200, [], JSON_PRETTY_PRINT);
-});
