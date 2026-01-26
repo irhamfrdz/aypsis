@@ -17,6 +17,10 @@
                         <i class="fas fa-search"></i>
                     </div>
                 </form>
+                <button onclick="document.getElementById('importModal').classList.remove('hidden')"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <i class="fas fa-file-excel mr-2"></i> Import
+                </button>
                 <a href="{{ route('karyawan-tidak-tetap.create') }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                     <i class="fas fa-plus mr-2"></i> Tambah
@@ -27,6 +31,23 @@
         @if (session('success'))
             <div class="mx-5 mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="mx-5 mt-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if (session('import_errors'))
+            <div class="mx-5 mt-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                <p class="font-bold">Beberapa baris gagal diimport:</p>
+                <ul class="list-disc list-inside mt-2 text-sm max-h-40 overflow-y-auto">
+                    @foreach (session('import_errors') as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -91,6 +112,64 @@
         </div>
         <div class="px-6 py-4 border-t border-gray-200">
             {{ $karyawans->links() }}
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="document.getElementById('importModal').classList.add('hidden')"></div>
+
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-file-import text-green-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Import Karyawan Tidak Tetap
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 mb-4">
+                                Silahkan upload file Excel (.xlsx, .xls) atau CSV untuk mengimport data karyawan tidak tetap.
+                            </p>
+                            
+                            <form action="{{ route('karyawan-tidak-tetap.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                                @csrf
+                                <div class="mt-2 text-left">
+                                    <label class="block text-sm font-medium text-gray-700">File Import</label>
+                                    <input type="file" name="file" required accept=".xlsx, .xls, .csv" class="mt-1 block w-full text-sm text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-full file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-green-50 file:text-green-700
+                                        hover:file:bg-green-100
+                                    "/>
+                                </div>
+                                
+                                <div class="mt-4 text-left">
+                                    <a href="{{ route('karyawan-tidak-tetap.template') }}" class="text-indigo-600 hover:text-indigo-900 text-sm flex items-center">
+                                        <i class="fas fa-download mr-1"></i> Download Template
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="submit" form="importForm" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Import
+                </button>
+                <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onclick="document.getElementById('importModal').classList.add('hidden')">
+                    Batal
+                </button>
+            </div>
         </div>
     </div>
 </div>

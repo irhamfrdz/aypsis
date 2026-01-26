@@ -4340,6 +4340,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
            // ═══════════════════════════════════════════════════════════════════════
            // 👥 KARYAWAN TIDAK TETAP MANAGEMENT
            // ═══════════════════════════════════════════════════════════════════════
+           Route::get('karyawan-tidak-tetap/template', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'downloadTemplate'])
+                ->name('karyawan-tidak-tetap.template')
+                ->middleware('can:karyawan-tidak-tetap-create');
+
+           Route::post('karyawan-tidak-tetap/import', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'import'])
+                ->name('karyawan-tidak-tetap.import')
+                ->middleware('can:karyawan-tidak-tetap-create');
+
            Route::resource('karyawan-tidak-tetap', \App\Http\Controllers\KaryawanTidakTetapController::class)
                 ->middleware([
                     'index'   => 'can:karyawan-tidak-tetap-view',

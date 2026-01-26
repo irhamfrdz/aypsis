@@ -132,4 +132,107 @@ class KaryawanTidakTetapController extends Controller
         return redirect()->route('karyawan-tidak-tetap.index')
             ->with('success', 'Data karyawan tidak tetap berhasil dihapus.');
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        $import = new \App\Imports\KaryawanTidakTetapImport();
+        $result = $import->import($request->file('file'));
+
+        if ($result === false) {
+            return back()->with('error', 'Gagal memproses file import.');
+        }
+
+        $message = "Berhasil mengimport {$result['success_count']} data.";
+        
+        if (!empty($result['errors'])) {
+            $message .= " Namun terdapat " . count($result['errors']) . " error.";
+            return redirect()->route('karyawan-tidak-tetap.index')
+                ->with('success', $message)
+                ->with('import_errors', $result['errors']);
+        }
+
+        return redirect()->route('karyawan-tidak-tetap.index')
+            ->with('success', $message);
+    }
+
+    public function downloadTemplate()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = [
+            'NIK',
+            'Nama Lengkap',
+            'Nama Panggilan',
+            'Divisi',
+            'Pekerjaan',
+            'Cabang',
+            'NIK KTP',
+            'Jenis Kelamin',
+            'Agama',
+            'RT/RW',
+            'Alamat Lengkap',
+            'Kelurahan',
+            'Kecamatan',
+            'Kabupaten',
+            'Provinsi',
+            'Kode Pos',
+            'Email',
+            'Tanggal Masuk (YYYY-MM-DD)',
+            'Status Pajak'
+        ];
+
+        // Set Headers
+        foreach ($headers as $index => $header) {
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
+            $sheet->setCellValue($column . '1', $header);
+            
+            // Make header bold
+            $sheet->getStyle($column . '1')->getFont()->setBold(true);
+            
+            // Auto size column
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Add Example Row
+        $exampleData = [
+            '12345',
+            'Budi Santoso',
+            'Budi',
+            'NON KARYAWAN',
+            'Sopir',
+            'JAKARTA',
+            '1234567890123456',
+            'Laki-laki',
+            'Islam',
+            '005/010',
+            'Jl. Contoh No. 1',
+            'Kelapa Gading',
+            'Kelapa Gading',
+            'Jakarta Utara',
+            'DKI Jakarta',
+            '14240',
+            'budi@example.com',
+            '2024-01-01',
+            'TK/0'
+        ];
+
+        foreach ($exampleData as $index => $value) {
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
+            $sheet->setCellValue($column . '2', $value);
+        }
+
+        // Create Excel file in temp directory
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $fileName = 'template_import_karyawan_tidak_tetap.xlsx';
+        $tempFile = sys_get_temp_dir() . '/' . $fileName;
+        
+        $writer->save($tempFile);
+
+        return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
+    }
 }
