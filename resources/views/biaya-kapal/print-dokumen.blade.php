@@ -8,27 +8,27 @@
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px', // Increased from 9px
-            'headerH1' => '16px', // Increased from 14px
-            'tableFont' => '10px', // Increased from 8px
+            'fontSize' => '13px', // Increased from 11px
+            'headerH1' => '20px', // Increased from 16px
+            'tableFont' => '12px', // Increased from 10px
         ],
         'Folio' => [
             'size' => '215.9mm 330.2mm',
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '13px', // Increased from 11px
-            'headerH1' => '20px', // Increased from 18px
-            'tableFont' => '11px', // Increased from 9px
+            'fontSize' => '15px', // Increased from 13px
+            'headerH1' => '24px', // Increased from 20px
+            'tableFont' => '13px', // Increased from 11px
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '13px', // Increased from 11px
-            'headerH1' => '20px', // Increased from 18px
-            'tableFont' => '11px', // Increased from 9px
+            'fontSize' => '15px', // Increased from 13px
+            'headerH1' => '24px', // Increased from 20px
+            'tableFont' => '13px', // Increased from 11px
         ],
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
