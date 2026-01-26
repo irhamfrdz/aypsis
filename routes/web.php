@@ -1301,17 +1301,27 @@ Route::middleware([
          ->name('master-gudang.import')
          ->middleware('can:master-gudang-create');
     
-    Route::resource('master-gudang', \App\Http\Controllers\MasterGudangController::class)
-         ->names('master-gudang')
-         ->middleware([
-             'index' => 'can:master-gudang-view',
-             'show' => 'can:master-gudang-view',
-             'create' => 'can:master-gudang-create',
-             'store' => 'can:master-gudang-create',
-             'edit' => 'can:master-gudang-edit',
-             'update' => 'can:master-gudang-edit',
-             'destroy' => 'can:master-gudang-delete'
-         ]);
+    Route::get('master-gudang', [\App\Http\Controllers\MasterGudangController::class, 'index'])
+         ->name('master-gudang.index')
+         ->middleware('can:master-gudang-view');
+    Route::get('master-gudang/create', [\App\Http\Controllers\MasterGudangController::class, 'create'])
+         ->name('master-gudang.create')
+         ->middleware('can:master-gudang-create');
+    Route::post('master-gudang', [\App\Http\Controllers\MasterGudangController::class, 'store'])
+         ->name('master-gudang.store')
+         ->middleware('can:master-gudang-create');
+    Route::get('master-gudang/{master_gudang}', [\App\Http\Controllers\MasterGudangController::class, 'show'])
+         ->name('master-gudang.show')
+         ->middleware('can:master-gudang-view');
+    Route::get('master-gudang/{master_gudang}/edit', [\App\Http\Controllers\MasterGudangController::class, 'edit'])
+         ->name('master-gudang.edit')
+         ->middleware('can:master-gudang-edit');
+    Route::put('master-gudang/{master_gudang}', [\App\Http\Controllers\MasterGudangController::class, 'update'])
+         ->name('master-gudang.update')
+         ->middleware('can:master-gudang-edit');
+    Route::delete('master-gudang/{master_gudang}', [\App\Http\Controllers\MasterGudangController::class, 'destroy'])
+         ->name('master-gudang.destroy')
+         ->middleware('can:master-gudang-delete');
 
     // � Stock Ban (Tire Stock) Management with permissions
     Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
