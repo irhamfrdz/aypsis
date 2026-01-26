@@ -4,7 +4,7 @@ use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\MasterPricelistSewaKontainer;
 
 // Configuration
-$nomorKontainer = 'FSCU8295150';
+$nomorKontainer = 'TCLU5328217';
 $targetVendor = 'ZONA';
 
 echo "Starting update for container: $nomorKontainer to vendor: $targetVendor\n";
