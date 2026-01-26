@@ -4363,6 +4363,20 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                     'destroy' => 'can:karyawan-tidak-tetap-delete',
                 ]);
 
+           // ═══════════════════════════════════════════════════════════════════════
+           // 📄 MASTER DOKUMEN PERIJINAN KAPAL
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::resource('master-dokumen-perijinan-kapal', \App\Http\Controllers\DokumenPerijinanKapalController::class)
+                ->middleware([
+                    'index'   => 'can:master-dokumen-perijinan-kapal-view',
+                    'create'  => 'can:master-dokumen-perijinan-kapal-create',
+                    'store'   => 'can:master-dokumen-perijinan-kapal-create',
+                    'show'    => 'can:master-dokumen-perijinan-kapal-view',
+                    'edit'    => 'can:master-dokumen-perijinan-kapal-update',
+                    'update'  => 'can:master-dokumen-perijinan-kapal-update',
+                    'destroy' => 'can:master-dokumen-perijinan-kapal-delete',
+                ]);
+
 });
 
 // Test route for ZipArchive
