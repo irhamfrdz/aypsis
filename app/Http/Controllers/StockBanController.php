@@ -18,8 +18,19 @@ class StockBanController extends Controller
     public function index()
     {
         $stockBans = StockBan::with('mobil')->latest()->get();
-        $stockBanDalams = \App\Models\StockBanDalam::with('namaStockBan')->latest()->get();
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams'));
+        // Separate Ban Dalam, Ban Perut, and Lock Kontainer
+        $stockBanDalamsOriginal = \App\Models\StockBanDalam::with('namaStockBan')->latest()->get();
+        $stockBanDalams = $stockBanDalamsOriginal->filter(function($item) {
+            return $item->namaStockBan && stripos($item->namaStockBan->nama, 'ban dalam') !== false;
+        });
+        $stockBanPeruts = $stockBanDalamsOriginal->filter(function($item) {
+             return $item->namaStockBan && stripos($item->namaStockBan->nama, 'ban perut') !== false;
+        });
+        $stockLockKontainers = $stockBanDalamsOriginal->filter(function($item) {
+             return $item->namaStockBan && stripos($item->namaStockBan->nama, 'lock kontainer') !== false;
+        });
+        
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers'));
     }
 
     /**
@@ -39,11 +50,11 @@ class StockBanController extends Controller
      */
     public function store(Request $request)
     {
-        // First check if it's Ban Dalam
+        // First check if it's Ban Dalam or Ban Perut or Lock Kontainer
         $namaStockBan = NamaStockBan::find($request->nama_stock_ban_id);
-        $isBanDalam = $namaStockBan && stripos($namaStockBan->nama, 'ban dalam') !== false;
+        $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false);
 
-        if ($isBanDalam) {
+        if ($isBulkItem) {
              $request->validate([
                 'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
                 'qty' => 'required|integer|min:0',
@@ -53,15 +64,21 @@ class StockBanController extends Controller
                 'lokasi' => 'required|string|max:255',
                 'keterangan' => 'nullable|string',
                 'nomor_bukti' => 'nullable|string|max:255',
-                // 'status' is not in stock_ban_dalams table based on migration, assuming handled or not needed
+                // For Ban Perut/Lock Kontainer, allow 'type' input if provided, otherwise default to 'pcs'
+                'type' => 'nullable|string|in:pcs,set', // Add more if needed, or remove validation if dynamic
             ]);
 
+            // Determine type: if provided in request use it, else default to 'pcs'
+            // For Ban Dalam code was forcing 'pcs'. Let's keep 'pcs' default but allow override if sent.
+            // However, previous code HARDCODED 'type' => 'pcs' in create/update.
+            // User requested "input type" for Ban Perut.
+            $type = $request->filled('type') ? $request->type : 'pcs';
 
             // Check for existing record to increment
             $existingStock = \App\Models\StockBanDalam::where('nama_stock_ban_id', $request->nama_stock_ban_id)
                 ->where('ukuran', $request->ukuran)
                 ->where('lokasi', $request->lokasi)
-                ->where('type', 'pcs')
+                ->where('type', $type)
                 ->first();
 
             if ($existingStock) {
@@ -79,7 +96,7 @@ class StockBanController extends Controller
                     'nama_stock_ban_id' => $request->nama_stock_ban_id,
                     'nomor_bukti' => $request->nomor_bukti,
                     'ukuran' => $request->ukuran,
-                    'type' => 'pcs', // Force type to pcs as requested "dropdown pcs hanya berisi 'pcs'"
+                    'type' => $type,
                     'qty' => $request->qty,
                     'harga_beli' => $request->harga_beli,
                     'tanggal_masuk' => $request->tanggal_masuk,
@@ -88,7 +105,7 @@ class StockBanController extends Controller
                 ]);
             }
 
-            return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban Dalam berhasil ditambahkan');
+            return redirect()->route('stock-ban.index')->with('success', 'Data Stock berhasil ditambahkan');
         }
 
         $request->validate([

@@ -245,6 +245,7 @@
 <script>
     (function() {
         function initMobilSelect() {
+            // ... (keep this function as is, it's just the searchable dropdown logic) ...
             const selectContainer = document.getElementById('mobil-select-container');
             const selectButton = document.getElementById('mobil-select-button');
             const selectDropdown = document.getElementById('mobil-select-dropdown');
@@ -255,18 +256,13 @@
             const selectedText = document.getElementById('mobil-selected-text');
 
             if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
-                console.warn('Mobil select: missing required DOM elements, aborting initialization.');
+                // elements might be hidden/removed by dynamic logic, but we should check strictly
+                // actually the dynamic logic only hides parents, elements exist in DOM.
                 return;
             }
-
-            // Prevent double-initialization (can cause open->close immediate toggle)
-            if (selectButton.dataset.mobilInit === '1') {
-                console.log('Mobil select: already initialized, skipping');
-                return;
-            }
+            
+            if (selectButton.dataset.mobilInit === '1') return;
             selectButton.dataset.mobilInit = '1';
-
-            console.log('Mobil select: initializing');
 
             function updateSelectedState(value) {
                 const options = optionsList.querySelectorAll('.custom-select-option');
@@ -286,24 +282,18 @@
                 updateSelectedState(id);
             }
 
-            // Initialize selected state
             updateSelectedState(hiddenInput.value);
 
-            // Toggle dropdown (robust: append dropdown to body to avoid clipping/z-index issues)
             let dropdownAppended = false;
             const originalParent = selectDropdown.parentNode;
             const placeholder = document.createComment('mobil-select-dropdown-placeholder');
 
             function openDropdown() {
-                console.log('Mobil select: openDropdown');
-                // reset search
                 searchInput.value = '';
                 const options = optionsList.querySelectorAll('.custom-select-option');
-                if (!options || options.length === 0) console.warn('Mobil select: no options found');
                 options.forEach(opt => opt.classList.remove('hidden'));
                 noResults.classList.add('hidden');
 
-                // compute position and move to body to avoid overflow/clipping
                 const rect = selectButton.getBoundingClientRect();
                 selectDropdown.style.position = 'absolute';
                 selectDropdown.style.left = rect.left + window.scrollX + 'px';
@@ -324,16 +314,10 @@
             }
 
             function closeDropdown() {
-                console.log('Mobil select: closeDropdown');
                 selectDropdown.style.display = 'none';
                 if (dropdownAppended) {
                     document.body.removeChild(selectDropdown);
                     originalParent.replaceChild(selectDropdown, placeholder);
-                    selectDropdown.style.position = '';
-                    selectDropdown.style.left = '';
-                    selectDropdown.style.top = '';
-                    selectDropdown.style.width = '';
-                    selectDropdown.style.zIndex = '';
                     dropdownAppended = false;
                 }
                 window.removeEventListener('scroll', repositionDropdown);
@@ -349,12 +333,9 @@
             }
 
             selectButton.addEventListener('click', function(e) {
-                console.log('Mobil select: button clicked');
                 e.preventDefault();
                 e.stopPropagation();
-                const isHidden = window.getComputedStyle(selectDropdown).display === 'none';
-                if (isHidden) {
-                    // close any other open custom dropdowns on page
+                if (window.getComputedStyle(selectDropdown).display === 'none') {
                     document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
                         if (dd !== selectDropdown) dd.style.display = 'none';
                     });
@@ -364,47 +345,32 @@
                 }
             });
 
-            // Search functionality
             searchInput.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
                 const options = optionsList.querySelectorAll('.custom-select-option');
                 let count = 0;
-                
                 options.forEach(opt => {
                     const searchData = opt.getAttribute('data-search') || '';
-                    const textData = opt.textContent.toLowerCase();
-                    if (searchData.includes(term) || textData.includes(term)) {
+                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
                         opt.classList.remove('hidden');
                         count++;
                     } else {
                         opt.classList.add('hidden');
                     }
                 });
-
                 noResults.classList.toggle('hidden', count > 0);
             });
 
-            // Option selection
             optionsList.addEventListener('click', function(e) {
                 const option = e.target.closest('.custom-select-option');
-                if (option) {
-                    const val = option.getAttribute('data-value');
-                    const txt = option.getAttribute('data-text');
-                    selectMobil(val, txt);
-                }
+                if (option) selectMobil(option.getAttribute('data-value'), option.getAttribute('data-text'));
             });
 
-            // Close when clicking outside
             document.addEventListener('click', function(e) {
-                if (!selectContainer.contains(e.target)) {
-                    closeDropdown();
-                }
+                if (!selectContainer.contains(e.target)) closeDropdown();
             });
 
-            // Prevent dropdown close when clicking search input
-            searchInput.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
+            searchInput.addEventListener('click', e => e.stopPropagation());
         }
 
         if (document.readyState === 'loading') {
@@ -415,45 +381,54 @@
 
         function initAll() {
             initMobilSelect();
-            initBanDalamLogic();
+            initBanBatchLogic();
         }
 
-        function initBanDalamLogic() {
+        function initBanBatchLogic() {
             const namaBarangSelect = document.querySelector('select[name="nama_stock_ban_id"]');
             const nomorSeriContainer = document.querySelector('input[name="nomor_seri"]').closest('div');
             const merkContainer = document.querySelector('select[name="merk_id"]').closest('div');
             const typeSelect = document.querySelector('select[name="kondisi"]');
             
-            // Create Stock Qty field
+            // Adjust label for "kondisi" to "Type" properly (it is labelled Type in HTML)
+            // But we need to change its name attribute to 'type' when submitting for bulk items if we want to be clean, 
+            // but the controller logic uses 'type' input if filled, or 'pcs' default.
+            // The HTML input name is 'kondisi'. If we treat 'kondisi' as 'type' for bulk items, we should rename it or add a hidden input.
+            // Actually, the controller checks `$request->type`. The select has `name="kondisi"`.
+            // So if I select from "kondisi" dropdown, it sends `kondisi`.
+            // I should change the name attribute dynamically or add a hidden field.
+            // Let's change the name attribute dynamically.
+
             const hargaBeliContainer = document.querySelector('input[name="harga_beli"]').closest('div');
+            const mobilContainer = document.getElementById('mobil-select-container').closest('div');
             
-            // Check if exists to prevent duplicates
+            // Create Stock Qty field
             let qtyWrapper = document.getElementById('qty-container');
             if (!qtyWrapper) {
-                // Create wrapper for Qty
                 qtyWrapper = document.createElement('div');
                 qtyWrapper.id = 'qty-container';
-                qtyWrapper.className = 'hidden'; // Initially hidden
+                qtyWrapper.className = 'hidden';
                 qtyWrapper.innerHTML = `
                     <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
                     <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0">
                 `;
-                
-                // Insert before Harga Beli
                 hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
             }
-            // Save original Type options to restore later
+
+            // Store original options
             const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
 
-            function checkBanDalam() {
+            function checkItemType() {
                 const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
                 const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
                 
                 const isBanDalam = selectedText.includes('ban dalam');
-                const mobilContainer = document.getElementById('mobil-select-container').closest('div');
+                const isBanPerut = selectedText.includes('ban perut');
+                const isLockKontainer = selectedText.includes('lock kontainer');
+                const isBulk = isBanDalam || isBanPerut || isLockKontainer;
 
-                if (isBanDalam) {
-                    // Hide Nomor Seri & Merk & Mobil
+                if (isBulk) {
+                    // Hide serialized fields
                     nomorSeriContainer.classList.add('hidden');
                     merkContainer.classList.add('hidden');
                     mobilContainer.classList.add('hidden');
@@ -461,47 +436,70 @@
                     // Show Qty
                     qtyWrapper.classList.remove('hidden');
                     
-                    // Set Type to 'pcs' only
-                    typeSelect.innerHTML = '<option value="pcs" selected>Pcs</option>';
-                    
                     // Disable requirements for hidden fields
                     document.querySelector('input[name="nomor_seri"]').removeAttribute('required');
                     document.querySelector('select[name="merk_id"]').removeAttribute('required');
                     document.querySelector('input[name="qty"]').setAttribute('required', 'required');
 
-                } else {
-                    // Show Nomor Seri & Merk & Mobil
-                    nomorSeriContainer.classList.remove('hidden');
-                    merkContainer.classList.remove('hidden');
-                    mobilContainer.classList.remove('hidden');
-                    
-                    // Hide Qty
-                    qtyWrapper.classList.add('hidden');
-                    
-                    // Restore Type options
-                    // Only restore if it was changed
-                    if (typeSelect.options.length === 1 && typeSelect.options[0].value === 'pcs') {
-                        typeSelect.innerHTML = '';
+                    // Change 'kondisi' input name to 'type' so controller picks it up
+                    typeSelect.setAttribute('name', 'type');
+
+                    // Adjust Type Options
+                    typeSelect.innerHTML = '';
+                    if (isBanDalam) {
+                        // Ban Dalam: Force Pcs
+                        const opt = document.createElement('option');
+                        opt.value = 'pcs';
+                        opt.text = 'Pcs';
+                        opt.selected = true;
+                        typeSelect.appendChild(opt);
+                    } else if (isBanPerut || isLockKontainer) {
+                         // Ban Perut or Lock Kontainer: Allow selection (Pcs, Set, etc)
+                         // Show all original options
                         originalTypeOptions.forEach(opt => {
                             const option = document.createElement('option');
                             option.value = opt.value;
                             option.text = opt.text;
-                            if (opt.value === "{{ old('kondisi') }}") option.selected = true;
+                            if (opt.value === "{{ old('type') }}") option.selected = true;
                             typeSelect.appendChild(option);
                         });
+                        // Set default to Pcs if no old value
+                        if (!"{{ old('type') }}") {
+                             Array.from(typeSelect.options).forEach(opt => {
+                                 if (opt.value === 'pcs') opt.selected = true;
+                             });
+                        }
                     }
 
-                    // Restore required attributes
+                } else {
+                    // Standard Stock Ban
+                    nomorSeriContainer.classList.remove('hidden');
+                    merkContainer.classList.remove('hidden');
+                    mobilContainer.classList.remove('hidden');
+                    
+                    qtyWrapper.classList.add('hidden');
+                    
                     document.querySelector('input[name="nomor_seri"]').setAttribute('required', 'required');
                     document.querySelector('select[name="merk_id"]').setAttribute('required', 'required');
                     document.querySelector('input[name="qty"]').removeAttribute('required');
+
+                    // Restore name to 'kondisi'
+                    typeSelect.setAttribute('name', 'kondisi');
+
+                    // Restore options
+                    typeSelect.innerHTML = '';
+                    originalTypeOptions.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.text = opt.text;
+                        if (opt.value === "{{ old('kondisi') }}") option.selected = true;
+                        typeSelect.appendChild(option);
+                    });
                 }
             }
 
-            namaBarangSelect.addEventListener('change', checkBanDalam);
-            
-            // Run once on init
-            checkBanDalam();
+            namaBarangSelect.addEventListener('change', checkItemType);
+            checkItemType();
         }
     })();
 </script>
