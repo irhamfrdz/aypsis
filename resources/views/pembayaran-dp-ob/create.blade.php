@@ -152,21 +152,24 @@
                                 <label for="kas_bank" class="block text-sm font-medium text-gray-700 mb-2">
                                     Pilih Kas/Bank <span class="text-red-500">*</span>
                                 </label>
-                                <select name="kas_bank"
-                                        id="kas_bank"
-                                        required
-                                        data-placeholder="-- Pilih Akun Kas/Bank --"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 select2-kas @error('kas_bank') border-red-300 @enderror">
-                                    <option value="">-- Pilih Akun Kas/Bank --</option>
-                                    @foreach($kasBankList as $kasBank)
-                                        <option value="{{ $kasBank->id }}" {{ old('kas_bank') == $kasBank->id ? 'selected' : '' }}>
-                                            {{ $kasBank->nomor_akun }} - {{ $kasBank->nama_akun }}
-                                            @if($kasBank->saldo != 0)
-                                                (Saldo: Rp {{ number_format($kasBank->saldo, 0, ',', '.') }})
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <div class="relative">
+                                    <input type="text" id="kas_bank_search" placeholder="-- Pilih Akun Kas/Bank --" autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                    <div id="kas_bank_dropdown" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto text-sm"></div>
+
+                                    {{-- Hidden select used for form submission and server-side validation --}}
+                                    <select name="kas_bank" id="kas_bank" required class="hidden">
+                                        <option value="">-- Pilih Akun Kas/Bank --</option>
+                                        @foreach($kasBankList as $kasBank)
+                                            <option value="{{ $kasBank->id }}" {{ old('kas_bank') == $kasBank->id ? 'selected' : '' }}>
+                                                {{ $kasBank->nomor_akun }} - {{ $kasBank->nama_akun }}
+                                                @if($kasBank->saldo != 0)
+                                                    (Saldo: Rp {{ number_format($kasBank->saldo, 0, ',', '.') }})
+                                                @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div> 
                                 @error('kas_bank')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -700,6 +703,92 @@ document.getElementById('kas_bank').addEventListener('change', function(e) {
     }
 });
 
+// Initialize Kas/Bank searchable dropdown (vanilla JS)
+function initKasSearch() {
+    const select = document.getElementById('kas_bank');
+    const input = document.getElementById('kas_bank_search');
+    const dropdown = document.getElementById('kas_bank_dropdown');
+    if (!select || !input || !dropdown) return;
+
+    function buildList() {
+        dropdown.innerHTML = '';
+        let any = false;
+        Array.from(select.options).forEach(opt => {
+            if (!opt.value) return;
+            const item = document.createElement('div');
+            item.className = 'px-3 py-2 cursor-pointer hover:bg-gray-100 text-gray-800';
+            item.textContent = opt.textContent.trim();
+            item.dataset.value = opt.value;
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                select.value = this.dataset.value;
+                input.value = this.textContent;
+                dropdown.classList.add('hidden');
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            dropdown.appendChild(item);
+            any = true;
+        });
+        if (!any) dropdown.innerHTML = '<div class="px-3 py-2 text-gray-500">Tidak ada akun</div>';
+    }
+
+    buildList();
+
+    // Filter on input
+    input.addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+        Array.from(dropdown.children).forEach(child => {
+            if (child.textContent.toLowerCase().includes(term)) {
+                child.style.display = 'block';
+            } else {
+                child.style.display = 'none';
+            }
+        });
+        dropdown.classList.remove('hidden');
+    });
+
+    // Toggle dropdown on click
+    input.addEventListener('click', function(e) {
+        e.stopPropagation();
+        buildList();
+        dropdown.classList.toggle('hidden');
+        if (!dropdown.classList.contains('hidden')) input.focus();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#kas_bank_dropdown') && !e.target.closest('#kas_bank_search')) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Keyboard navigation
+    let idx = -1;
+    input.addEventListener('keydown', function(e) {
+        const items = Array.from(dropdown.children).filter(ch => ch.style.display !== 'none');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            idx = Math.min(idx + 1, items.length - 1);
+            items.forEach((it,i)=> it.classList.toggle('bg-blue-50', i===idx));
+            if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            idx = Math.max(idx - 1, 0);
+            items.forEach((it,i)=> it.classList.toggle('bg-blue-50', i===idx));
+            if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (items[idx]) items[idx].click();
+        }
+    });
+
+    // Initialize display from old value if exists
+    if (select.value) {
+        const opt = select.options[select.selectedIndex];
+        if (opt) input.value = opt.textContent.trim();
+    }
+}
+
 // Handle paste event untuk input jumlah
 document.addEventListener('paste', function(e) {
     if (e.target.name && e.target.name.includes('jumlah_display')) {
@@ -977,14 +1066,8 @@ document.addEventListener('DOMContentLoaded', function() {
         generateNomor();
     }
 
-    // Initialize select2 for Kas/Bank (searchable dropdown) if available
-    if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
-        $('.select2-kas').select2({
-            placeholder: function(){ return $(this).data('placeholder') || '-- Pilih Akun Kas/Bank --'; },
-            allowClear: true,
-            width: '100%'
-        });
-    }
+    // Initialize Kas/Bank searchable dropdown (vanilla JS)
+    initKasSearch();
 
     // Initialize supir display
     updateSupirDisplay();
