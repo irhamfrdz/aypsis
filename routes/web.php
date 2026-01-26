@@ -1279,17 +1279,27 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print-trucking', [\App\Http\Controllers\BiayaKapalController::class, 'printTrucking'])
          ->name('biaya-kapal.print-trucking')
          ->middleware('can:biaya-kapal-view');
-    Route::resource('biaya-kapal', \App\Http\Controllers\BiayaKapalController::class)
-         ->names('biaya-kapal')
-         ->middleware([
-             'index' => 'can:biaya-kapal-view',
-             'show' => 'can:biaya-kapal-view',
-             'create' => 'can:biaya-kapal-create',
-             'store' => 'can:biaya-kapal-create',
-             'edit' => 'can:biaya-kapal-update',
-             'update' => 'can:biaya-kapal-update',
-             'destroy' => 'can:biaya-kapal-delete'
-         ]);
+    Route::get('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'index'])
+         ->name('biaya-kapal.index')
+         ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/create', [\App\Http\Controllers\BiayaKapalController::class, 'create'])
+         ->name('biaya-kapal.create')
+         ->middleware('can:biaya-kapal-create');
+    Route::post('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'store'])
+         ->name('biaya-kapal.store')
+         ->middleware('can:biaya-kapal-create');
+    Route::get('biaya-kapal/{biayaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'show'])
+         ->name('biaya-kapal.show')
+         ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/edit', [\App\Http\Controllers\BiayaKapalController::class, 'edit'])
+         ->name('biaya-kapal.edit')
+         ->middleware('can:biaya-kapal-update');
+    Route::put('biaya-kapal/{biayaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'update'])
+         ->name('biaya-kapal.update')
+         ->middleware('can:biaya-kapal-update');
+    Route::delete('biaya-kapal/{biayaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'destroy'])
+         ->name('biaya-kapal.destroy')
+         ->middleware('can:biaya-kapal-delete');
 
     // 🏢 Master Gudang (Warehouse Master) Management with permissions
     // Import & Template routes (must be before resource routes)
