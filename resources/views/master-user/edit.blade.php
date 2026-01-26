@@ -633,6 +633,40 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Karyawan --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['view']) && $userMatrixPermissions['master-karyawan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['create']) && $userMatrixPermissions['master-karyawan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['update']) && $userMatrixPermissions['master-karyawan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['delete']) && $userMatrixPermissions['master-karyawan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Karyawan Tidak Tetap --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Karyawan Tidak Tetap</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[karyawan-tidak-tetap][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['karyawan-tidak-tetap']['view']) && $userMatrixPermissions['karyawan-tidak-tetap']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[karyawan-tidak-tetap][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['karyawan-tidak-tetap']['create']) && $userMatrixPermissions['karyawan-tidak-tetap']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[karyawan-tidak-tetap][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['karyawan-tidak-tetap']['update']) && $userMatrixPermissions['karyawan-tidak-tetap']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[karyawan-tidak-tetap][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['karyawan-tidak-tetap']['delete']) && $userMatrixPermissions['karyawan-tidak-tetap']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Pengirim/Penerima --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

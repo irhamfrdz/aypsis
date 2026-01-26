@@ -4337,6 +4337,20 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                    'destroy' => 'can:stock-ban-delete'
                ]);
 
+           // ═══════════════════════════════════════════════════════════════════════
+           // 👥 KARYAWAN TIDAK TETAP MANAGEMENT
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::resource('karyawan-tidak-tetap', \App\Http\Controllers\KaryawanTidakTetapController::class)
+                ->middleware([
+                    'index'   => 'can:karyawan-tidak-tetap-view',
+                    'create'  => 'can:karyawan-tidak-tetap-create',
+                    'store'   => 'can:karyawan-tidak-tetap-create',
+                    'show'    => 'can:karyawan-tidak-tetap-view',
+                    'edit'    => 'can:karyawan-tidak-tetap-update',
+                    'update'  => 'can:karyawan-tidak-tetap-update',
+                    'destroy' => 'can:karyawan-tidak-tetap-delete',
+                ]);
+
 });
 
 // Test route for ZipArchive

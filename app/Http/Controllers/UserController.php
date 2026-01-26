@@ -977,6 +977,12 @@ class UserController extends Controller
                     $module = $parts[0];
                     $action = $parts[1];
 
+                    // Special handling for karyawan-tidak-tetap permissions
+                    if ($module === 'karyawan' && strpos($action, 'tidak-tetap-') === 0) {
+                        $action = str_replace('tidak-tetap-', '', $action);
+                        $module = 'karyawan-tidak-tetap';
+                    }
+
                     // Special handling for master-* permissions
                     if ($module === 'master' && strpos($action, '-') !== false) {
                         // Special handling for master-kode-nomor permissions
@@ -1994,6 +2000,27 @@ class UserController extends Controller
                                 'approve' => 'pergerakan-kontainer-approve',
                                 'print' => 'pergerakan-kontainer-print',
                                 'export' => 'pergerakan-kontainer-export'
+                            ];
+
+                            if (isset($actionMap[$action])) {
+                                $permissionName = $actionMap[$action];
+                                $directPermission = Permission::where('name', $permissionName)->first();
+                                if ($directPermission) {
+                                    $permissionIds[] = $directPermission->id;
+                                    $found = true;
+                                    continue; // Skip to next action
+                                }
+                            }
+                        }
+
+                        // DIRECT FIX: Handle karyawan-tidak-tetap permissions explicitly
+                        if ($module === 'karyawan-tidak-tetap' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                            // Map action to correct permission name
+                            $actionMap = [
+                                'view' => 'karyawan-tidak-tetap-view',
+                                'create' => 'karyawan-tidak-tetap-create',
+                                'update' => 'karyawan-tidak-tetap-update',
+                                'delete' => 'karyawan-tidak-tetap-delete'
                             ];
 
                             if (isset($actionMap[$action])) {
