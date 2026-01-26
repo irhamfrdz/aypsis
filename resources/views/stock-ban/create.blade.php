@@ -108,8 +108,13 @@
                     <!-- Merk -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Merk <span class="text-red-500">*</span></label>
-                        <input type="text" name="merk" value="{{ old('merk') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('merk') border-red-500 @enderror" required placeholder="Contoh: Bridgestone, Michelin">
-                        @error('merk')
+                        <select name="merk_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('merk_id') border-red-500 @enderror" required>
+                            <option value="">-- Pilih Merk --</option>
+                            @foreach($merkBans as $merk)
+                                <option value="{{ $merk->id }}" {{ old('merk_id') == $merk->id ? 'selected' : '' }}>{{ $merk->nama ?? $merk->nama_merk ?? $merk->merk }}</option>
+                            @endforeach
+                        </select>
+                        @error('merk_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
