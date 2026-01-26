@@ -235,4 +235,10 @@ class KaryawanTidakTetapController extends Controller
 
         return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
     }
+
+    public function printSingle(KaryawanTidakTetap $karyawanTidakTetap)
+    {
+        $karyawan = $karyawanTidakTetap;
+        return view('karyawan-tidak-tetap.print-single', compact('karyawan'));
+    }
 }

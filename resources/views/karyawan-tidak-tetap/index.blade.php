@@ -87,6 +87,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div class="flex justify-center space-x-3">
+                                    <a href="{{ route('karyawan-tidak-tetap.print-single', $karyawan->id) }}" class="text-gray-600 hover:text-gray-900" title="Print" target="_blank">
+                                        <i class="fas fa-print"></i>
+                                    </a>
                                     <a href="{{ route('karyawan-tidak-tetap.edit', $karyawan->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>

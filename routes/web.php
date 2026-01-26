@@ -4344,6 +4344,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('karyawan-tidak-tetap.template')
                 ->middleware('can:karyawan-tidak-tetap-create');
 
+           Route::get('karyawan-tidak-tetap/{karyawan_tidak_tetap}/print', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'printSingle'])
+                ->name('karyawan-tidak-tetap.print-single')
+                ->middleware('can:karyawan-tidak-tetap-view');
+
            Route::post('karyawan-tidak-tetap/import', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'import'])
                 ->name('karyawan-tidak-tetap.import')
                 ->middleware('can:karyawan-tidak-tetap-create');
