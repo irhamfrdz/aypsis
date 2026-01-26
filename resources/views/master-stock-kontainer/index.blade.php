@@ -43,6 +43,7 @@
                 Template CSV
             </a>
 
+            @can('master-stock-kontainer-create')
             <!-- Import Button -->
             <button type="button" onclick="document.getElementById('import-modal').style.display = 'block'"
                     class="inline-flex items-center px-3 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-600 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
@@ -51,7 +52,9 @@
                 </svg>
                 Import CSV
             </button>
+            @endcan
 
+            @can('master-stock-kontainer-update')
             <!-- Update Gudang Button -->
             <button type="button" onclick="document.getElementById('update-gudang-modal').style.display = 'block'"
                     class="inline-flex items-center px-3 py-2 border border-blue-600 text-sm font-medium rounded-md shadow-sm text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -60,12 +63,15 @@
                 </svg>
                 Update Gudang
             </button>
+            @endcan
         </div>
 
+        @can('master-stock-kontainer-create')
         <!-- Add New Button -->
         <a href="{{ route('master.stock-kontainer.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             Tambah Stock Kontainer
         </a>
+        @endcan
     </div>
 </div>
 
@@ -164,10 +170,12 @@
                 <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-3 text-[10px]">
                         <a href="{{ route('master.stock-kontainer.show', $stockKontainer) }}" class="text-green-600 hover:text-green-800 hover:underline font-medium" title="Lihat Detail">Detail</a>
+                        @can('master-stock-kontainer-update')
                         <span class="text-gray-300">|</span>
                         <a href="{{ route('master.stock-kontainer.edit', $stockKontainer) }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium" title="Edit Data">Edit</a>
-                        <span class="text-gray-300">|</span>
+                        @endcan
                         @can('audit-log-view')
+                        <span class="text-gray-300">|</span>
                             <button type="button" class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium"
                                     data-model="{{ get_class($stockKontainer) }}"
                                     data-id="{{ $stockKontainer->id }}"
@@ -175,12 +183,14 @@
                                 Riwayat
                             </button>
                         @endcan
+                        @can('master-stock-kontainer-delete')
                         <span class="text-gray-300">|</span>
                         <form action="{{ route('master.stock-kontainer.destroy', $stockKontainer) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus stock kontainer ini?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0" title="Hapus Data">Hapus</button>
                         </form>
+                        @endcan
                     </div>
                 </td>
             </tr>

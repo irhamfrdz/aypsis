@@ -1227,17 +1227,27 @@ Route::middleware([
          ->middleware('can:master-stock-kontainer-update');
 
     // 📊 Stock Kontainer (Container Stock) Management with permissions
-    Route::resource('master/stock-kontainer', \App\Http\Controllers\StockKontainerController::class)
-         ->names('master.stock-kontainer')
-         ->middleware([
-             'index' => 'can:master-stock-kontainer-view',
-             'show' => 'can:master-stock-kontainer-view',
-             'create' => 'can:master-stock-kontainer-create',
-             'store' => 'can:master-stock-kontainer-create',
-             'edit' => 'can:master-stock-kontainer-update',
-             'update' => 'can:master-stock-kontainer-update',
-             'destroy' => 'can:master-stock-kontainer-delete'
-         ]);
+    Route::get('master/stock-kontainer', [\App\Http\Controllers\StockKontainerController::class, 'index'])
+         ->name('master.stock-kontainer.index')
+         ->middleware('can:master-stock-kontainer-view');
+    Route::get('master/stock-kontainer/create', [\App\Http\Controllers\StockKontainerController::class, 'create'])
+         ->name('master.stock-kontainer.create')
+         ->middleware('can:master-stock-kontainer-create');
+    Route::post('master/stock-kontainer', [\App\Http\Controllers\StockKontainerController::class, 'store'])
+         ->name('master.stock-kontainer.store')
+         ->middleware('can:master-stock-kontainer-create');
+    Route::get('master/stock-kontainer/{stock_kontainer}', [\App\Http\Controllers\StockKontainerController::class, 'show'])
+         ->name('master.stock-kontainer.show')
+         ->middleware('can:master-stock-kontainer-view');
+    Route::get('master/stock-kontainer/{stock_kontainer}/edit', [\App\Http\Controllers\StockKontainerController::class, 'edit'])
+         ->name('master.stock-kontainer.edit')
+         ->middleware('can:master-stock-kontainer-update');
+    Route::put('master/stock-kontainer/{stock_kontainer}', [\App\Http\Controllers\StockKontainerController::class, 'update'])
+         ->name('master.stock-kontainer.update')
+         ->middleware('can:master-stock-kontainer-update');
+    Route::delete('master/stock-kontainer/{stock_kontainer}', [\App\Http\Controllers\StockKontainerController::class, 'destroy'])
+         ->name('master.stock-kontainer.destroy')
+         ->middleware('can:master-stock-kontainer-delete');
 
     // 🚢 Master Kapal - Download Template & Import (must be BEFORE resource routes)
     Route::get('master-kapal/download-template', [\App\Http\Controllers\MasterKapalController::class, 'downloadTemplate'])
