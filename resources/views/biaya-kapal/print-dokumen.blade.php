@@ -8,27 +8,27 @@
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '9px',
-            'headerH1' => '14px',
-            'tableFont' => '8px',
+            'fontSize' => '11px', // Increased from 9px
+            'headerH1' => '16px', // Increased from 14px
+            'tableFont' => '10px', // Increased from 8px
         ],
         'Folio' => [
             'size' => '215.9mm 330.2mm',
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px', // Increased from 11px
+            'headerH1' => '20px', // Increased from 18px
+            'tableFont' => '11px', // Increased from 9px
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px', // Increased from 11px
+            'headerH1' => '20px', // Increased from 18px
+            'tableFont' => '11px', // Increased from 9px
         ],
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
@@ -54,6 +54,7 @@
             height: {{ $currentPaper['height'] }};
             font-family: 'Arial', sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
+            font-weight: bold; /* Added bold */
             line-height: 1.4;
             color: #000;
             background: white;

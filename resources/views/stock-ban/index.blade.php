@@ -34,7 +34,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seri</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk / Ukuran</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi / Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type / Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Beli</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Masuk</th>
@@ -49,6 +49,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
                             {{ $ban->nomor_seri }}
+                            @if($ban->nomor_bukti)
+                                <div class="text-xs text-gray-500 font-normal mt-0.5">Ref: {{ $ban->nomor_bukti }}</div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <div class="font-bold text-blue-800">{{ $ban->namaStockBan ? $ban->namaStockBan->nama : '-' }}</div>
@@ -57,11 +60,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $ban->kondisi === 'Baru' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $ban->kondisi === 'Vulkanisir' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                {{ $ban->kondisi === 'Bekas' ? 'bg-gray-100 text-gray-800' : '' }}
-                                {{ $ban->kondisi === 'Afkir' ? 'bg-red-100 text-red-800' : '' }}">
-                                {{ $ban->kondisi }}
+                                {{ $ban->kondisi === 'asli' ? 'bg-green-100 text-green-800' : '' }}
+                                {{ $ban->kondisi === 'kanisir' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                {{ $ban->kondisi === 'afkir' ? 'bg-red-100 text-red-800' : '' }}
+                                {{ in_array($ban->kondisi, ['kaleng', 'karung', 'liter', 'pail', 'pcs']) ? 'bg-blue-100 text-blue-800' : '' }}">
+                                {{ ucfirst($ban->kondisi) }}
                             </span>
                             <div class="text-xs text-gray-500 mt-1">Status: <span class="font-medium 
                                 {{ $ban->status === 'Stok' ? 'text-blue-600' : '' }}

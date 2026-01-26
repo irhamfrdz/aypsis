@@ -82,6 +82,15 @@
                         @enderror
                     </div>
 
+                    <!-- Nomor Bukti (Opsional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Bukti</label>
+                        <input type="text" name="nomor_bukti" value="{{ old('nomor_bukti', $stockBan->nomor_bukti) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_bukti') border-red-500 @enderror" placeholder="Contoh: INV-2026-001">
+                        @error('nomor_bukti')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Nama Barang (Dropdown from nama_stock_bans) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nama Barang <span class="text-red-500">*</span></label>
@@ -114,14 +123,19 @@
                         @enderror
                     </div>
 
-                    <!-- Kondisi -->
+                    <!-- Kondisi (Type) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kondisi <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Type <span class="text-red-500">*</span></label>
                         <select name="kondisi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kondisi') border-red-500 @enderror" required>
-                            <option value="Baru" {{ old('kondisi', $stockBan->kondisi) == 'Baru' ? 'selected' : '' }}>Baru</option>
-                            <option value="Vulkanisir" {{ old('kondisi', $stockBan->kondisi) == 'Vulkanisir' ? 'selected' : '' }}>Vulkanisir</option>
-                            <option value="Bekas" {{ old('kondisi', $stockBan->kondisi) == 'Bekas' ? 'selected' : '' }}>Bekas</option>
-                            <option value="Afkir" {{ old('kondisi', $stockBan->kondisi) == 'Afkir' ? 'selected' : '' }}>Afkir</option>
+                            <option value="">-- Pilih Type --</option>
+                            <option value="asli" {{ old('kondisi', $stockBan->kondisi) == 'asli' ? 'selected' : '' }}>Asli</option>
+                            <option value="kanisir" {{ old('kondisi', $stockBan->kondisi) == 'kanisir' ? 'selected' : '' }}>Kanisir</option>
+                            <option value="afkir" {{ old('kondisi', $stockBan->kondisi) == 'afkir' ? 'selected' : '' }}>Afkir</option>
+                            <option value="kaleng" {{ old('kondisi', $stockBan->kondisi) == 'kaleng' ? 'selected' : '' }}>Kaleng</option>
+                            <option value="karung" {{ old('kondisi', $stockBan->kondisi) == 'karung' ? 'selected' : '' }}>Karung</option>
+                            <option value="liter" {{ old('kondisi', $stockBan->kondisi) == 'liter' ? 'selected' : '' }}>Liter</option>
+                            <option value="pail" {{ old('kondisi', $stockBan->kondisi) == 'pail' ? 'selected' : '' }}>Pail</option>
+                            <option value="pcs" {{ old('kondisi', $stockBan->kondisi) == 'pcs' ? 'selected' : '' }}>Pcs</option>
                         </select>
                         @error('kondisi')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -188,7 +202,12 @@
                     <!-- Lokasi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
-                        <input type="text" name="lokasi" value="{{ old('lokasi', $stockBan->lokasi) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror" required>
+                        <select name="lokasi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror" required>
+                            <option value="">-- Pilih Lokasi --</option>
+                            @foreach($gudangs as $gudang)
+                                <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi', $stockBan->lokasi) == $gudang->nama_gudang ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
+                            @endforeach
+                        </select>
                         @error('lokasi')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror

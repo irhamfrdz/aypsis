@@ -8,36 +8,36 @@
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px', // Increased
+            'headerH1' => '20px', // Increased
+            'tableFont' => '11px', // Increased
         ],
         'Half-Folio' => [
             'size' => '215.9mm 165.1mm',
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '12px',
-            'headerH1' => '18px',
-            'tableFont' => '10px',
+            'fontSize' => '13px', // Increased
+            'headerH1' => '20px', // Increased
+            'tableFont' => '11px', // Increased
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px', // Increased
+            'headerH1' => '20px', // Increased
+            'tableFont' => '11px', // Increased
         ],
         'Half-A4' => [
             'size' => '210mm 148.5mm',
             'width' => '210mm',
             'height' => '148.5mm',
             'containerWidth' => '210mm',
-            'fontSize' => '9px',
-            'headerH1' => '14px',
-            'tableFont' => '7px',
+            'fontSize' => '11px', // Increased
+            'headerH1' => '16px', // Increased
+            'tableFont' => '9px', // Increased
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
@@ -63,6 +63,7 @@
             height: {{ $currentPaper['height'] }};
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
+            font-weight: bold; /* Added bold */
             line-height: 1.2;
             color: #333;
             background: white;

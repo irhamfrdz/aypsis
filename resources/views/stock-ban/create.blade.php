@@ -128,14 +128,19 @@
                         @enderror
                     </div>
 
-                    <!-- Kondisi -->
+                    <!-- Kondisi (Type) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kondisi <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Type <span class="text-red-500">*</span></label>
                         <select name="kondisi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kondisi') border-red-500 @enderror" required>
-                            <option value="Baru" {{ old('kondisi') == 'Baru' ? 'selected' : '' }}>Baru</option>
-                            <option value="Vulkanisir" {{ old('kondisi') == 'Vulkanisir' ? 'selected' : '' }}>Vulkanisir</option>
-                            <option value="Bekas" {{ old('kondisi') == 'Bekas' ? 'selected' : '' }}>Bekas</option>
-                            <option value="Afkir" {{ old('kondisi') == 'Afkir' ? 'selected' : '' }}>Afkir</option>
+                            <option value="">-- Pilih Type --</option>
+                            <option value="asli" {{ old('kondisi') == 'asli' ? 'selected' : '' }}>Asli</option>
+                            <option value="kanisir" {{ old('kondisi') == 'kanisir' ? 'selected' : '' }}>Kanisir</option>
+                            <option value="afkir" {{ old('kondisi') == 'afkir' ? 'selected' : '' }}>Afkir</option>
+                            <option value="kaleng" {{ old('kondisi') == 'kaleng' ? 'selected' : '' }}>Kaleng</option>
+                            <option value="karung" {{ old('kondisi') == 'karung' ? 'selected' : '' }}>Karung</option>
+                            <option value="liter" {{ old('kondisi') == 'liter' ? 'selected' : '' }}>Liter</option>
+                            <option value="pail" {{ old('kondisi') == 'pail' ? 'selected' : '' }}>Pail</option>
+                            <option value="pcs" {{ old('kondisi') == 'pcs' ? 'selected' : '' }}>Pcs</option>
                         </select>
                         @error('kondisi')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -202,7 +207,12 @@
                     <!-- Lokasi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
-                        <input type="text" name="lokasi" value="{{ old('lokasi', 'Gudang Utama') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror" required>
+                        <select name="lokasi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror" required>
+                            <option value="">-- Pilih Lokasi --</option>
+                            @foreach($gudangs as $gudang)
+                                <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi', 'Gudang Utama') == $gudang->nama_gudang ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
+                            @endforeach
+                        </select>
                         @error('lokasi')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -417,9 +427,99 @@
         }
 
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initMobilSelect);
+            document.addEventListener('DOMContentLoaded', initAll);
         } else {
+            initAll();
+        }
+
+        function initAll() {
             initMobilSelect();
+            initBanDalamLogic();
+        }
+
+        function initBanDalamLogic() {
+            const namaBarangSelect = document.querySelector('select[name="nama_stock_ban_id"]');
+            const nomorSeriContainer = document.querySelector('input[name="nomor_seri"]').closest('div');
+            const merkContainer = document.querySelector('select[name="merk_id"]').closest('div');
+            const typeSelect = document.querySelector('select[name="kondisi"]');
+            
+            // Create Stock Qty field
+            const hargaBeliContainer = document.querySelector('input[name="harga_beli"]').closest('div');
+            
+            // Check if exists to prevent duplicates
+            let qtyWrapper = document.getElementById('qty-container');
+            if (!qtyWrapper) {
+                // Create wrapper for Qty
+                qtyWrapper = document.createElement('div');
+                qtyWrapper.id = 'qty-container';
+                qtyWrapper.className = 'hidden'; // Initially hidden
+                qtyWrapper.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
+                    <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0">
+                `;
+                
+                // Insert before Harga Beli
+                hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
+            }
+            // Save original Type options to restore later
+            const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
+
+            function checkBanDalam() {
+                const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
+                const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
+                
+                const isBanDalam = selectedText.includes('ban dalam');
+
+                if (isBanDalam) {
+                    // Hide Nomor Seri & Merk
+                    nomorSeriContainer.classList.add('hidden');
+                    merkContainer.classList.add('hidden');
+                    
+                    // Show Qty
+                    qtyWrapper.classList.remove('hidden');
+                    
+                    // Set Type to 'pcs' only
+                    typeSelect.innerHTML = '<option value="pcs" selected>Pcs</option>';
+                    
+                    // Disable requirements for hidden fields to allow form submission without them (if validation allows null)
+                    // Note: Backend validaton needs to handle "required_without" logic or similar.
+                    // For client side validation, we might need to remove 'required' attr.
+                    document.querySelector('input[name="nomor_seri"]').removeAttribute('required');
+                    document.querySelector('select[name="merk_id"]').removeAttribute('required');
+                    document.querySelector('input[name="qty"]').setAttribute('required', 'required');
+
+                } else {
+                    // Show Nomor Seri & Merk
+                    nomorSeriContainer.classList.remove('hidden');
+                    merkContainer.classList.remove('hidden');
+                    
+                    // Hide Qty
+                    qtyWrapper.classList.add('hidden');
+                    
+                    // Restore Type options
+                    // Only restore if it was changed
+                    if (typeSelect.options.length === 1 && typeSelect.options[0].value === 'pcs') {
+                        typeSelect.innerHTML = '';
+                        originalTypeOptions.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt.value;
+                            option.text = opt.text;
+                            if (opt.value === "{{ old('kondisi') }}") option.selected = true;
+                            typeSelect.appendChild(option);
+                        });
+                    }
+
+                    // Restore required attributes
+                    document.querySelector('input[name="nomor_seri"]').setAttribute('required', 'required');
+                    document.querySelector('select[name="merk_id"]').setAttribute('required', 'required');
+                    document.querySelector('input[name="qty"]').removeAttribute('required');
+                }
+            }
+
+            namaBarangSelect.addEventListener('change', checkBanDalam);
+            
+            // Run once on init
+            checkBanDalam();
         }
     })();
 </script>
