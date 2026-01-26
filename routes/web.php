@@ -4218,16 +4218,27 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
            // ═══════════════════════════════════════════════════════════════════════
            // 📄 MASTER DOKUMEN PERIJINAN KAPAL
            // ═══════════════════════════════════════════════════════════════════════
-           Route::resource('master-dokumen-perijinan-kapal', \App\Http\Controllers\DokumenPerijinanKapalController::class)
-                ->middleware([
-                    'index'   => 'can:master-dokumen-perijinan-kapal-view',
-                    'create'  => 'can:master-dokumen-perijinan-kapal-create',
-                    'store'   => 'can:master-dokumen-perijinan-kapal-create',
-                    'show'    => 'can:master-dokumen-perijinan-kapal-view',
-                    'edit'    => 'can:master-dokumen-perijinan-kapal-update',
-                    'update'  => 'can:master-dokumen-perijinan-kapal-update',
-                    'destroy' => 'can:master-dokumen-perijinan-kapal-delete',
-                ]);
+           Route::get('master-dokumen-perijinan-kapal', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'index'])
+                ->name('master-dokumen-perijinan-kapal.index')
+                ->middleware('can:master-dokumen-perijinan-kapal-view');
+           Route::get('master-dokumen-perijinan-kapal/create', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'create'])
+                ->name('master-dokumen-perijinan-kapal.create')
+                ->middleware('can:master-dokumen-perijinan-kapal-create');
+           Route::post('master-dokumen-perijinan-kapal', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'store'])
+                ->name('master-dokumen-perijinan-kapal.store')
+                ->middleware('can:master-dokumen-perijinan-kapal-create');
+           Route::get('master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal}', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'show'])
+                ->name('master-dokumen-perijinan-kapal.show')
+                ->middleware('can:master-dokumen-perijinan-kapal-view');
+           Route::get('master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal}/edit', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'edit'])
+                ->name('master-dokumen-perijinan-kapal.edit')
+                ->middleware('can:master-dokumen-perijinan-kapal-update');
+           Route::put('master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal}', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'update'])
+                ->name('master-dokumen-perijinan-kapal.update')
+                ->middleware('can:master-dokumen-perijinan-kapal-update');
+           Route::delete('master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal}', [\App\Http\Controllers\DokumenPerijinanKapalController::class, 'destroy'])
+                ->name('master-dokumen-perijinan-kapal.destroy')
+                ->middleware('can:master-dokumen-perijinan-kapal-delete');
 
 });
 

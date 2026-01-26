@@ -15,9 +15,11 @@
             <div class="p-6 bg-white border-b border-gray-200">
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-2xl font-bold text-gray-800">Daftar Dokumen Perijinan</h1>
+                    @can('master-dokumen-perijinan-kapal-create')
                     <a href="{{ route('master-dokumen-perijinan-kapal.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
                         Tambah Dokumen
                     </a>
+                    @endcan
                 </div>
 
                 @if(session('success'))
@@ -52,12 +54,16 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        @can('master-dokumen-perijinan-kapal-update')
                                         <a href="{{ route('master-dokumen-perijinan-kapal.edit', $dokumen->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                        @endcan
+                                        @can('master-dokumen-perijinan-kapal-delete')
                                         <form action="{{ route('master-dokumen-perijinan-kapal.destroy', $dokumen->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
                                         </form>
+                                        @endcan
                                     </td>
                                 </tr>
                             @empty
