@@ -4352,16 +4352,27 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('karyawan-tidak-tetap.import')
                 ->middleware('can:karyawan-tidak-tetap-create');
 
-           Route::resource('karyawan-tidak-tetap', \App\Http\Controllers\KaryawanTidakTetapController::class)
-                ->middleware([
-                    'index'   => 'can:karyawan-tidak-tetap-view',
-                    'create'  => 'can:karyawan-tidak-tetap-create',
-                    'store'   => 'can:karyawan-tidak-tetap-create',
-                    'show'    => 'can:karyawan-tidak-tetap-view',
-                    'edit'    => 'can:karyawan-tidak-tetap-update',
-                    'update'  => 'can:karyawan-tidak-tetap-update',
-                    'destroy' => 'can:karyawan-tidak-tetap-delete',
-                ]);
+           Route::get('karyawan-tidak-tetap', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'index'])
+                ->name('karyawan-tidak-tetap.index')
+                ->middleware('can:karyawan-tidak-tetap-view');
+           Route::get('karyawan-tidak-tetap/create', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'create'])
+                ->name('karyawan-tidak-tetap.create')
+                ->middleware('can:karyawan-tidak-tetap-create');
+           Route::post('karyawan-tidak-tetap', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'store'])
+                ->name('karyawan-tidak-tetap.store')
+                ->middleware('can:karyawan-tidak-tetap-create');
+           Route::get('karyawan-tidak-tetap/{karyawan_tidak_tetap}', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'show'])
+                ->name('karyawan-tidak-tetap.show')
+                ->middleware('can:karyawan-tidak-tetap-view');
+           Route::get('karyawan-tidak-tetap/{karyawan_tidak_tetap}/edit', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'edit'])
+                ->name('karyawan-tidak-tetap.edit')
+                ->middleware('can:karyawan-tidak-tetap-update');
+           Route::put('karyawan-tidak-tetap/{karyawan_tidak_tetap}', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'update'])
+                ->name('karyawan-tidak-tetap.update')
+                ->middleware('can:karyawan-tidak-tetap-update');
+           Route::delete('karyawan-tidak-tetap/{karyawan_tidak_tetap}', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'destroy'])
+                ->name('karyawan-tidak-tetap.destroy')
+                ->middleware('can:karyawan-tidak-tetap-delete');
 
            // ═══════════════════════════════════════════════════════════════════════
            // 📄 MASTER DOKUMEN PERIJINAN KAPAL

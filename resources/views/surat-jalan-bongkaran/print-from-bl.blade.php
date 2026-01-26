@@ -95,7 +95,7 @@
             position: absolute;
             top: 9cm; /* 9cm dari atas */
             left: 10.5cm; /* 10.5cm dari kiri */
-            font-size: 15px;
+            font-size: 10px;
             font-weight: bold;
         }
         /* Seal number: posisi absolute sesuai permintaan */
@@ -117,7 +117,7 @@
         /* Penerima: posisi absolute (atas 3.5cm, kiri 11cm) */
         .penerima-abs {
             position: absolute;
-            top: 3.5cm; /* 3.5cm dari atas */
+            top: 3cm; /* 3cm dari atas (naik 0.5cm) */
             left: 11cm; /* 11cm dari kiri */
             font-size: 14px;
             font-weight: bold;
