@@ -406,5 +406,25 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dimasak menjadi Kanisir.');
     }
+
+    /**
+     * Update the condition of multiple bans to 'kanisir'.
+     */
+    public function bulkMasak(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:stock_bans,id',
+        ]);
+
+        $count = StockBan::whereIn('id', $request->ids)
+            ->where('status', 'Stok')
+            ->where('kondisi', '!=', 'afkir')
+            ->update([
+                'kondisi' => 'kanisir'
+            ]);
+
+        return redirect()->route('stock-ban.index')->with('success', $count . ' Ban berhasil dimasak menjadi Kanisir.');
+    }
 }
 

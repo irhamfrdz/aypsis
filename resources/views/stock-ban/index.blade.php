@@ -82,6 +82,9 @@
                     <i class="fas fa-plus mr-2"></i> Tambah Stock Ban
                 </a>
                 @endcan
+                <button id="btn-bulk-masak" onclick="submitBulkAction('{{ route('stock-ban.bulk-masak') }}')" class="hidden bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center whitespace-nowrap w-full md:w-auto justify-center">
+                    <i class="fas fa-fire mr-2"></i> Masak Terpilih
+                </button>
             </div>
         </div>
     </div>
@@ -135,6 +138,9 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-6 py-3 text-left">
+                                <input type="checkbox" id="check-all-ban" onchange="toggleAllCheckboxes(this)" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seri</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk / Ukuran</th>
@@ -150,6 +156,9 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($stockBans as $index => $ban)
                         <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" name="ids[]" value="{{ $ban->id }}" onchange="toggleBulkButton()" class="row-checkbox rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $loop->iteration }}
                             </td>
@@ -244,7 +253,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="11" class="px-6 py-10 text-center text-gray-500">
                                 <i class="fas fa-circle-notch text-4xl mb-3 text-gray-300"></i>
                                 <p>Belum ada data stock ban.</p>
                             </td>
@@ -795,6 +804,56 @@
             opt.style.display = 'block';
             opt.classList.remove('selected');
         });
+    }
+
+    function toggleAllCheckboxes(source) {
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        checkboxes.forEach(cb => {
+            // Apply logic: only check if row is visible (filtered)
+            if (cb.closest('tr').style.display !== 'none') {
+                cb.checked = source.checked;
+            }
+        });
+        toggleBulkButton();
+    }
+
+    function toggleBulkButton() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        const btn = document.getElementById('btn-bulk-masak');
+        if (checkedCount > 0) {
+            btn.classList.remove('hidden');
+        } else {
+            btn.classList.add('hidden');
+        }
+    }
+
+    function submitBulkAction(url) {
+        const checked = document.querySelectorAll('.row-checkbox:checked');
+        if (checked.length === 0) return;
+        
+        if (!confirm('Apakah Anda yakin ingin melakukan aksi ini pada ' + checked.length + ' item terpilih?')) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        
+        // Add CSRF
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = "{{ csrf_token() }}";
+        form.appendChild(csrf);
+
+        checked.forEach(c => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = c.value;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
     }
 
     function initSearchableSelect(prefix, placeholder) {

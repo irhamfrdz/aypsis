@@ -4220,6 +4220,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::post('stock-ban', [\App\Http\Controllers\StockBanController::class, 'store'])
                ->name('stock-ban.store')
                ->middleware('can:stock-ban-create');
+               
+          // Custom Actions for StockBan
+          Route::put('stock-ban/{stock_ban}/masak', [\App\Http\Controllers\StockBanController::class, 'masak'])
+               ->name('stock-ban.masak')
+               ->middleware('can:stock-ban-update');
+          Route::post('stock-ban/bulk-masak', [\App\Http\Controllers\StockBanController::class, 'bulkMasak'])
+               ->name('stock-ban.bulk-masak')
+               ->middleware('can:stock-ban-update');
+          Route::post('stock-ban/{stock_ban}/use', [\App\Http\Controllers\StockBanController::class, 'storeUsage'])
+               ->name('stock-ban.use')
+               ->middleware('can:stock-ban-update');
+
           Route::get('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'show'])
                ->name('stock-ban.show')
                ->middleware('can:stock-ban-view');
