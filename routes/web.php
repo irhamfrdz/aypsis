@@ -290,6 +290,11 @@ Route::middleware([
              ->name('karyawan.export-excel-indonesia')
              ->middleware('can:master-karyawan-export');
 
+        // Export Single Data Karyawan
+        Route::get('karyawan/{karyawan}/export-single', [KaryawanController::class, 'exportSingle'])
+              ->name('karyawan.export-single')
+              ->middleware('can:master-karyawan-export');
+
         // Download CSV template for import (no special permission needed)
         Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
              ->name('karyawan.template');

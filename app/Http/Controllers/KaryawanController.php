@@ -428,6 +428,74 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Export single karyawan data as Excel-compatible CSV
+     */
+    public function exportSingle(Karyawan $karyawan)
+    {
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+        ];
+
+        $safeName = preg_replace('/[^a-zA-Z0-9]/', '_', $karyawan->nama_lengkap);
+        $fileName = 'karyawan_' . $safeName . '_' . date('Ymd_His') . '.csv';
+
+        $callback = function() use ($columns, $karyawan) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            
+            // Write header row with semicolon delimiter
+            fwrite($out, implode(";", $columns) . "\r\n");
+
+            $line = [];
+            foreach ($columns as $col) {
+                $val = $karyawan->{$col} ?? '';
+
+                // Format dates to dd/mmm/yyyy for Excel export
+                if ($val instanceof \DateTimeInterface) {
+                    $val = $val->format('d/M/Y');
+                } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
+                    // Handle date fields - format if not empty, keep empty if null
+                    if (!empty($val)) {
+                        try {
+                            $ts = strtotime($val);
+                            if ($ts !== false && $ts !== -1) {
+                                $val = date('d/M/Y', $ts);
+                            }
+                        } catch (\Throwable $e) {
+                            // Keep original value if parsing fails
+                        }
+                    } else {
+                        // Keep empty for null dates
+                        $val = '';
+                    }
+                }
+
+                // For numeric fields, add invisible zero-width space to prevent scientific notation
+                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                    $val = "\u{200B}" . $val; // Zero-width space
+                }
+
+                // Clean any problematic characters
+                $val = str_replace(["\r", "\n"], ' ', $val); 
+
+                $line[] = $val;
+            }
+            fwrite($out, implode(";", $line) . "\r\n");
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+        ]);
+    }
+
+    /**
      * Download CSV template for import
      */
     public function downloadTemplate(\Illuminate\Http\Request $request)

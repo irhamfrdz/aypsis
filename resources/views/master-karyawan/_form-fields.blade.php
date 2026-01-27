@@ -4,6 +4,24 @@
     <legend class="{{ $legendClasses }}">
         <i class="fa fa-user mr-2 text-blue-600"></i> Informasi Pribadi
     </legend>
+
+    <div class="mb-4 flex justify-end">
+        @if(isset($karyawan) && $karyawan->exists)
+            <a href="{{ route('karyawan.export-single', $karyawan->id) }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" title="Export data karyawan ini ke Excel">
+                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export Data Excel
+            </a>
+        @else
+            <a href="{{ route('karyawan.excel-template') }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" title="Download template untuk import data">
+                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Template Import
+            </a>
+        @endif
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label class="{{ $labelClasses }}" for="nik">NIK *</label>
