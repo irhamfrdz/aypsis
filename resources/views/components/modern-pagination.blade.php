@@ -47,7 +47,7 @@
             <div class="flex flex-col sm:flex-row items-center gap-2">
                 {{-- Page Jump Control --}}
                 <div class="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <form id="pageJumpForm" method="GET" action="{{ $routeName ? route($routeName) : url()->current() }}" class="flex items-center">
+                    <form id="pageJumpForm" method="GET" action="{{ $routeName ? route($routeName, request()->route()->parameters()) : url()->current() }}" class="flex items-center">
                         {{-- Preserve existing query parameters --}}
                         @foreach(request()->query() as $key => $value)
                             @if($key !== 'page')
