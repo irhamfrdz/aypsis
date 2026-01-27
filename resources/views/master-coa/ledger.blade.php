@@ -250,7 +250,7 @@
 
         <!-- Filter Section -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 no-print">
-            <form method="GET" action="{{ route('master-coa-ledger', ['coa' => $coa->id]) }}" class="flex items-center space-x-3">
+            <form method="GET" action="{{ route('master-coa-ledger', $coa->id) }}" class="flex items-center space-x-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
                     <input type="date" name="dari_tanggal" value="{{ request('dari_tanggal') }}" class="border border-gray-300 rounded-md text-sm px-3 py-2">
