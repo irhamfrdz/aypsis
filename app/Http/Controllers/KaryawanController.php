@@ -1356,6 +1356,15 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Print an empty form layout.
+     */
+    public function printEmpty()
+    {
+        $karyawan = new Karyawan();
+        return view('master-karyawan.print-single', compact('karyawan'));
+    }
+
+    /**
      * Show CSV import form.
      */
     public function importForm()

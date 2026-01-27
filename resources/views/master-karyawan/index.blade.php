@@ -36,7 +36,8 @@
                                 <a href="{{ route('master.karyawan.export-excel') }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <div class="flex items-center ml-1 bg-gray-100/50 rounded-md px-1">
                                     <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Daftar (List)"><i class="fas fa-list-ul"></i></a>
-                                    <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors" title="Cetak Formulir (Bulk Detail)"><i class="fas fa-id-card-alt"></i></a>
+                                    <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Formulir (Bulk Detail)"><i class="fas fa-id-card-alt"></i></a>
+                                    <a href="{{ route('master.karyawan.print.empty') }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors" title="Cetak Formulir Kosong"><i class="far fa-file"></i></a>
                                 </div>
                             </div>
                         </div>

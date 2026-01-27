@@ -179,6 +179,21 @@
                         @enderror
                     </div>
 
+                    <!-- Status (Conditional for Ban Luar) -->
+                    <div id="status-ban-luar-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
+                        <select name="status_ban_luar" id="status_ban_luar" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status_ban_luar') border-red-500 @enderror">
+                            <option value="">-- Pilih Status --</option>
+                            <option value="kawat" {{ old('status_ban_luar') == 'kawat' ? 'selected' : '' }}>Kawat</option>
+                            <option value="benang" {{ old('status_ban_luar') == 'benang' ? 'selected' : '' }}>Benang</option>
+                            <option value="claim" {{ old('status_ban_luar') == 'claim' ? 'selected' : '' }}>Claim</option>
+                            <option value="no seri hilang" {{ old('status_ban_luar') == 'no seri hilang' ? 'selected' : '' }}>No Seri Hilang</option>
+                        </select>
+                        @error('status_ban_luar')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
 
 
                     <!-- Mobil (Assign to Car) -->
@@ -947,6 +962,25 @@
                                     opt.classList.remove('selected');
                                 }
                             });
+                        }
+                    }
+                }
+
+                // Logic for Status Ban Luar
+                const statusBanLuarContainer = document.getElementById('status-ban-luar-container');
+                const statusBanLuarSelect = document.getElementById('status_ban_luar');
+
+                if (isBanLuar) {
+                    if (statusBanLuarContainer) {
+                        statusBanLuarContainer.classList.remove('hidden');
+                        if (statusBanLuarSelect) statusBanLuarSelect.setAttribute('required', 'required');
+                    }
+                } else {
+                    if (statusBanLuarContainer) {
+                        statusBanLuarContainer.classList.add('hidden');
+                        if (statusBanLuarSelect) {
+                            statusBanLuarSelect.removeAttribute('required');
+                            statusBanLuarSelect.value = '';
                         }
                     }
                 }

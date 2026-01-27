@@ -235,6 +235,7 @@ class StockBanController extends Controller
             'mobil_id' => 'nullable|exists:mobils,id',
             'nomor_bukti' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:karyawans,id',
+            'status_ban_luar' => 'nullable|string',
         ]);
 
         $data = $request->all();
@@ -288,6 +289,7 @@ class StockBanController extends Controller
             'mobil_id' => 'nullable|exists:mobils,id',
             'nomor_bukti' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:karyawans,id',
+            'status_ban_luar' => 'nullable|string',
         ]);
 
         $data = $request->all();

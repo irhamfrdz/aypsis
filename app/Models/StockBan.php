@@ -26,6 +26,7 @@ class StockBan extends Model
         'keterangan',
         'mobil_id',
         'penerima_id',
+        'status_ban_luar',
     ];
 
     public function namaStockBan()

@@ -256,6 +256,11 @@ Route::middleware([
              ->name('karyawan.print.forms')
              ->middleware('can:master-karyawan-print');
 
+        // Print empty form
+        Route::get('karyawan/print-empty', [KaryawanController::class, 'printEmpty'])
+             ->name('karyawan.print.empty')
+             ->middleware('can:master-karyawan-print');
+
         // Print single karyawan (form layout)
         Route::get('karyawan/{karyawan}/print', [KaryawanController::class, 'printSingle'])
              ->name('karyawan.print.single')
