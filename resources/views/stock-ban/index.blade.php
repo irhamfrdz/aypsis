@@ -66,15 +66,23 @@
 <div class="container mx-auto px-4 py-6">
     <div class="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
+            <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-800">Daftar Stock Ban</h1>
                 <p class="text-sm text-gray-600 mt-1">Kelola data stock ban di gudang (Individual per Serial Number)</p>
             </div>
-            @can('stock-ban-create')
-            <a href="{{ route('stock-ban.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center">
-                <i class="fas fa-plus mr-2"></i> Tambah Stock Ban
-            </a>
-            @endcan
+            <div class="flex flex-col md:flex-row items-center gap-3">
+                <div class="relative w-full md:w-64">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="global-search" onkeyup="filterTable()" placeholder="Cari data..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out font-medium">
+                </div>
+                @can('stock-ban-create')
+                <a href="{{ route('stock-ban.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center whitespace-nowrap w-full md:w-auto justify-center">
+                    <i class="fas fa-plus mr-2"></i> Tambah Stock Ban
+                </a>
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -696,6 +704,32 @@
             } else {
                 btn.classList.remove(...activeClasses);
                 btn.classList.add(...inactiveClasses);
+            }
+        });
+
+        // Re-apply search filter if any
+        filterTable();
+    }
+
+    function filterTable() {
+        const input = document.getElementById('global-search');
+        const filter = input.value.toLowerCase().trim();
+        
+        // Find active tab content
+        const activeTabContent = document.querySelector('div[id^="tab-content-"]:not([style*="display: none"])');
+        if (!activeTabContent) return;
+        
+        const rows = activeTabContent.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            // Skip informational rows (like "Belum ada data")
+            if (row.querySelector('td[colspan]')) return;
+            
+            const text = row.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
             }
         });
     }
