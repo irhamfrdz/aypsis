@@ -4,39 +4,60 @@
 @section('page_title', 'Form Pembayaran Pranota OB')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .select2-container--default .select2-selection--single {
-        height: 38px;
+    .custom-select-container {
+        position: relative;
+    }
+    .custom-select-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 0.75rem; /* p-2 equivalent approx */
+        background-color: #f9fafb; /* bg-gray-50 */
+        border: 1px solid #d1d5db; /* border-gray-300 */
+        border-radius: 0.375rem; /* rounded-md */
+        cursor: pointer;
+        text-align: left;
+        font-size: 0.875rem; /* text-sm */
+        line-height: 1.25rem;
+    }
+    .custom-select-button:focus {
+        outline: none;
+        border-color: #6366f1; /* indigo-500 */
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* ring-indigo-500 */
+    }
+    .custom-select-dropdown {
+        position: absolute;
+        z-index: 9999;
+        width: 100%;
+        margin-top: 0.25rem;
+        background-color: white;
         border: 1px solid #d1d5db;
         border-radius: 0.375rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        display: none;
+    }
+    .custom-select-search {
+        padding: 0.5rem;
         background-color: #f9fafb;
+        border-bottom: 1px solid #d1d5db;
     }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 38px;
-        padding-left: 12px;
+    .custom-select-option {
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
         font-size: 0.875rem;
     }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px;
+    .custom-select-option:hover {
+        background-color: #eff6ff; /* blue-50 */
     }
-    .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    .custom-select-option.selected {
+        background-color: #dbeafe; /* blue-100 */
+        color: #1e40af; /* blue-800 */
+        font-weight: 500;
     }
-    .select2-dropdown {
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-    }
-    .select2-search--dropdown .select2-search__field {
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        padding: 6px 12px;
-        font-size: 0.875rem;
-    }
-    .select2-results__option {
-        font-size: 0.875rem;
-        padding: 8px 12px;
+    .hidden {
+        display: none !important;
     }
 </style>
 @endpush
@@ -191,14 +212,44 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div>
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
-                                <select name="bank" id="bank" class="{{ $inputClasses }}" required>
-                                    <option value="">-- Pilih Bank --</option>
-                                    @foreach($akunCoa as $akun)
-                                        <option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? '000' }}" {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}>
-                                            {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <div class="custom-select-container" id="bank-select-container">
+                                    <input type="hidden" name="bank" id="bank" value="{{ old('bank') }}" data-kode="">
+                                    
+                                    <button type="button" id="bank-select-button" class="custom-select-button">
+                                        <span id="bank-selected-text" class="block truncate">
+                                            @if(old('bank'))
+                                                @php 
+                                                    $selectedBank = $akunCoa->firstWhere('nama_akun', old('bank')); 
+                                                @endphp
+                                                {{ $selectedBank ? $selectedBank->nomor_akun . ' - ' . $selectedBank->nama_akun : '-- Pilih Bank --' }}
+                                            @else
+                                                -- Pilih Bank --
+                                            @endif
+                                        </span>
+                                        <i class="fas fa-chevron-down text-gray-400"></i>
+                                    </button>
+
+                                    <div id="bank-select-dropdown" class="custom-select-dropdown">
+                                        <div class="custom-select-search">
+                                            <input type="text" id="bank-search-input" placeholder="Cari bank..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                        </div>
+                                        <div class="custom-select-options max-h-60 overflow-y-auto" id="bank-options-list">
+                                            <div class="custom-select-option" data-value="" data-text="-- Pilih Bank --" data-kode="000">-- Pilih Bank --</div>
+                                            @foreach($akunCoa as $akun)
+                                                <div class="custom-select-option {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}" 
+                                                        data-value="{{ $akun->nama_akun }}" 
+                                                        data-search="{{ strtolower($akun->nomor_akun . ' ' . $akun->nama_akun) }}"
+                                                        data-text="{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}"
+                                                        data-kode="{{ $akun->kode_nomor ?? '000' }}">
+                                                    {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div id="no-bank-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                            Bank tidak ditemukan
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
@@ -759,16 +810,165 @@
             }
         }
 
-        // Bank change
-        document.getElementById('bank').addEventListener('change', function() {
-            updateNomorPembayaran();
-        });
+        // Init Bank Select
+        function initBankSelect() {
+            const selectContainer = document.getElementById('bank-select-container');
+            const selectButton = document.getElementById('bank-select-button');
+            const selectDropdown = document.getElementById('bank-select-dropdown');
+            const searchInput = document.getElementById('bank-search-input');
+            const optionsList = document.getElementById('bank-options-list');
+            const noResults = document.getElementById('no-bank-results');
+            const hiddenInput = document.getElementById('bank');
+            const selectedText = document.getElementById('bank-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown) return;
+
+            // Set initial data-kode if value is present
+            if (hiddenInput.value) {
+                const selectedOption = Array.from(optionsList.querySelectorAll('.custom-select-option'))
+                    .find(opt => opt.getAttribute('data-value') === hiddenInput.value);
+                if (selectedOption) {
+                    hiddenInput.setAttribute('data-kode', selectedOption.getAttribute('data-kode'));
+                    updateNomorPembayaran(); // Ensure initial number is correct
+                }
+            }
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === value) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectBank(value, text, kode) {
+                hiddenInput.value = value;
+                hiddenInput.setAttribute('data-kode', kode);
+                selectedText.textContent = text;
+                closeDropdown();
+                updateSelectedState(value);
+                updateNomorPembayaran();
+            }
+
+            let dropdownAppended = false;
+            const originalParent = selectDropdown.parentNode;
+            const placeholder = document.createComment('bank-select-dropdown-placeholder');
+
+            function openDropdown() {
+                searchInput.value = '';
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => opt.classList.remove('hidden'));
+                noResults.classList.add('hidden');
+
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.display = 'block';
+                // Adjust position manually to ensure it floats above other elements
+                selectDropdown.style.position = 'absolute';
+                selectDropdown.style.zIndex = '9999';
+                selectDropdown.style.width = rect.width + 'px';
+                
+                // We'll append to body to avoid z-index clipping issues if needed,
+                // matching the stock-ban implementation.
+                if (!dropdownAppended) {
+                    // Update initial position relative to body
+                    selectDropdown.style.left = (rect.left + window.scrollX) + 'px';
+                    selectDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+                    
+                    originalParent.replaceChild(placeholder, selectDropdown);
+                    document.body.appendChild(selectDropdown);
+                    dropdownAppended = true;
+                }
+                
+                // Focus search
+                setTimeout(() => searchInput.focus(), 10);
+                
+                window.addEventListener('scroll', repositionDropdown);
+                window.addEventListener('resize', repositionDropdown);
+            }
+
+            function closeDropdown() {
+                selectDropdown.style.display = 'none';
+                if (dropdownAppended) {
+                    document.body.removeChild(selectDropdown);
+                    originalParent.replaceChild(selectDropdown, placeholder);
+                    dropdownAppended = false;
+                }
+                window.removeEventListener('scroll', repositionDropdown);
+                window.removeEventListener('resize', repositionDropdown);
+            }
+
+            function repositionDropdown() {
+                if (!dropdownAppended) return;
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.left = (rect.left + window.scrollX) + 'px';
+                selectDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+            }
+
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (selectDropdown.style.display !== 'block') {
+                    // Close other dropdowns if any
+                    document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
+                        if (dd !== selectDropdown) dd.style.display = 'none';
+                    });
+                    repositionDropdown(); // Calculate position before showing
+                    openDropdown();
+                } else {
+                    closeDropdown();
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+                noResults.classList.toggle('hidden', count === 0);
+            });
+
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) {
+                    selectBank(
+                        option.getAttribute('data-value'), 
+                        option.getAttribute('data-text'),
+                        option.getAttribute('data-kode')
+                    );
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (dropdownAppended) {
+                    if (!selectDropdown.contains(e.target) && !selectButton.contains(e.target)) {
+                        closeDropdown();
+                    }
+                } else {
+                     if (!selectContainer.contains(e.target)) closeDropdown();
+                }
+            });
+            
+            searchInput.addEventListener('click', e => e.stopPropagation());
+        }
+
+        initBankSelect();
 
         // Function to update nomor pembayaran
         function updateNomorPembayaran() {
-            const bankSelect = document.getElementById('bank');
-            const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-            const kode = selectedOption.getAttribute('data-kode') || '000';
+            const bankInput = document.getElementById('bank');
+            const kode = bankInput.getAttribute('data-kode') || '000';
             const counter = {{ $obPaymentCounter }};
             const now = new Date();
             const year = now.getFullYear().toString().slice(-2);
@@ -833,41 +1033,6 @@
     });
 </script>
 
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Initialize Select2 on bank dropdown
-        $('#bank').select2({
-            placeholder: '-- Pilih Bank --',
-            allowClear: true,
-            width: '100%',
-            language: {
-                noResults: function() {
-                    return "Tidak ada hasil yang ditemukan";
-                },
-                searching: function() {
-                    return "Mencari...";
-                }
-            }
-        });
-        
-        // Update nomor pembayaran when bank changes
-        $('#bank').on('select2:select', function(e) {
-            const selectedOption = e.params.data.element;
-            const kode = selectedOption.getAttribute('data-kode') || '000';
-            const counter = {{ $obPaymentCounter }};
-            const now = new Date();
-            const year = now.getFullYear().toString().slice(-2);
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const running = counter.toString().padStart(6, '0');
-            const print = '1';
-            const nomor = kode + print + year + month + running;
-            document.getElementById('nomor_pembayaran').value = nomor;
-            document.getElementById('nomor_pembayaran_hidden').value = nomor;
-        });
-    });
-</script>
-@endpush
+
 
 @endsection
