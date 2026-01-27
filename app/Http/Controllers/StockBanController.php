@@ -276,7 +276,8 @@ class StockBanController extends Controller
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri,' . $stockBan->id,
-            'merk' => 'required|string|max:255',
+            'merk' => 'nullable|required_without:merk_id|string|max:255',
+            'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'nullable|string|max:255',
             'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
 
@@ -289,7 +290,17 @@ class StockBanController extends Controller
             'penerima_id' => 'nullable|exists:karyawans,id',
         ]);
 
-        $stockBan->update($request->all());
+        $data = $request->all();
+
+        // Handle merk_id from dropdown
+        if ($request->filled('merk_id')) {
+            $merkBan = MerkBan::find($request->merk_id);
+            if ($merkBan) {
+                $data['merk'] = $merkBan->nama;
+            }
+        }
+
+        $stockBan->update($data);
 
         return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban berhasil diperbarui');
     }
