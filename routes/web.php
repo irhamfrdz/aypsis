@@ -295,6 +295,11 @@ Route::middleware([
               ->name('karyawan.export-single')
               ->middleware('can:master-karyawan-export');
 
+        // Export Empty Form Excel
+        Route::get('karyawan/export-empty-form', [KaryawanController::class, 'exportEmptyForm'])
+              ->name('karyawan.export-empty-form')
+              ->middleware('can:master-karyawan-export');
+
         // Download CSV template for import (no special permission needed)
         Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
              ->name('karyawan.template');

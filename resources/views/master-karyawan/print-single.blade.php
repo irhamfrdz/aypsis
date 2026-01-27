@@ -39,7 +39,7 @@
             <td style="padding:1px;border:1px solid #ddd;">{{ $karyawan->nik ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>2. Nama Lengkap</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>2. Nama s</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->nama_lengkap ?? '-' }}</td>
         </tr>
         <tr>

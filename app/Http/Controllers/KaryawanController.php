@@ -496,6 +496,19 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Download Excel-compatible form with empty fields
+     */
+    public function exportEmptyForm()
+    {
+        $fileName = 'form_data_karyawan_kosong_' . date('Ymd_His') . '.xls';
+
+        return response()->view('master-karyawan.excel-empty-form')
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"")
+            ->header('Cache-Control', 'max-age=0');
+    }
+
+    /**
      * Download CSV template for import
      */
     public function downloadTemplate(\Illuminate\Http\Request $request)
