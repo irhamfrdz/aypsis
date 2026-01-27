@@ -7,6 +7,8 @@ use App\Models\Mobil;
 use App\Models\NamaStockBan;
 use App\Models\MerkBan;
 use App\Models\Gudang;
+use App\Models\StockRingVelg;
+use App\Models\StockVelg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,7 +32,10 @@ class StockBanController extends Controller
              return $item->namaStockBan && stripos($item->namaStockBan->nama, 'lock kontainer') !== false;
         });
         
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers'));
+        $stockRingVelgs = StockRingVelg::with('namaStockBan')->latest()->get();
+        $stockVelgs = StockVelg::with('namaStockBan')->latest()->get();
+
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs'));
     }
 
     /**
@@ -52,6 +57,107 @@ class StockBanController extends Controller
     {
         // First check if it's Ban Dalam or Ban Perut or Lock Kontainer
         $namaStockBan = NamaStockBan::find($request->nama_stock_ban_id);
+        
+        // Check for Ring Velg
+        $isRingVelg = $namaStockBan && stripos($namaStockBan->nama, 'ring velg') !== false;
+
+        if ($isRingVelg) {
+             $request->validate([
+                'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
+                'qty' => 'required|integer|min:0',
+                'harga_beli' => 'required|numeric|min:0',
+                'ukuran' => 'nullable|string|max:255',
+                'tanggal_masuk' => 'required|date',
+                'lokasi' => 'required|string|max:255',
+                'keterangan' => 'nullable|string',
+                'nomor_bukti' => 'nullable|string|max:255',
+                'type' => 'nullable|string',
+            ]);
+
+            $type = $request->filled('type') ? $request->type : 'pcs';
+
+             // Check for existing record to increment
+            $existingStock = StockRingVelg::where('nama_stock_ban_id', $request->nama_stock_ban_id)
+                ->where('ukuran', $request->ukuran)
+                ->where('lokasi', $request->lokasi)
+                ->where('type', $type)
+                ->first();
+
+            if ($existingStock) {
+                // Increment qty
+                $existingStock->increment('qty', $request->qty);
+                $existingStock->update([
+                    'harga_beli' => $request->harga_beli,
+                    'tanggal_masuk' => $request->tanggal_masuk,
+                    'nomor_bukti' => $request->nomor_bukti ?? $existingStock->nomor_bukti,
+                    'keterangan' => $request->keterangan ?? $existingStock->keterangan,
+                ]);
+            } else {
+                StockRingVelg::create([
+                    'nama_stock_ban_id' => $request->nama_stock_ban_id,
+                    'nomor_bukti' => $request->nomor_bukti,
+                    'ukuran' => $request->ukuran,
+                    'type' => $type,
+                    'qty' => $request->qty,
+                    'harga_beli' => $request->harga_beli,
+                    'tanggal_masuk' => $request->tanggal_masuk,
+                    'lokasi' => $request->lokasi,
+                    'keterangan' => $request->keterangan,
+                ]);
+            }
+
+            return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ring Velg berhasil ditambahkan');
+        }
+
+        // Check for Velg (Explicitly Velg, not Ring Velg which is handled above)
+        $isVelg = $namaStockBan && stripos($namaStockBan->nama, 'velg') !== false;
+
+        if ($isVelg) {
+            $request->validate([
+                'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
+                'qty' => 'required|integer|min:0',
+                'harga_beli' => 'required|numeric|min:0',
+                'ukuran' => 'nullable|string|max:255',
+                'tanggal_masuk' => 'required|date',
+                'lokasi' => 'required|string|max:255',
+                'keterangan' => 'nullable|string',
+                'nomor_bukti' => 'nullable|string|max:255',
+                'type' => 'nullable|string',
+            ]);
+
+            $type = $request->filled('type') ? $request->type : 'pcs';
+
+            $existingStock = StockVelg::where('nama_stock_ban_id', $request->nama_stock_ban_id)
+                ->where('ukuran', $request->ukuran)
+                ->where('lokasi', $request->lokasi)
+                ->where('type', $type)
+                ->first();
+
+            if ($existingStock) {
+                $existingStock->increment('qty', $request->qty);
+                $existingStock->update([
+                    'harga_beli' => $request->harga_beli,
+                    'tanggal_masuk' => $request->tanggal_masuk,
+                    'nomor_bukti' => $request->nomor_bukti ?? $existingStock->nomor_bukti,
+                    'keterangan' => $request->keterangan ?? $existingStock->keterangan,
+                ]);
+            } else {
+                StockVelg::create([
+                    'nama_stock_ban_id' => $request->nama_stock_ban_id,
+                    'nomor_bukti' => $request->nomor_bukti,
+                    'ukuran' => $request->ukuran,
+                    'type' => $type,
+                    'qty' => $request->qty,
+                    'harga_beli' => $request->harga_beli,
+                    'tanggal_masuk' => $request->tanggal_masuk,
+                    'lokasi' => $request->lokasi,
+                    'keterangan' => $request->keterangan,
+                ]);
+            }
+
+            return redirect()->route('stock-ban.index')->with('success', 'Data Stock Velg berhasil ditambahkan');
+        }
+
         $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false);
 
         if ($isBulkItem) {

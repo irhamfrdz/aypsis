@@ -425,7 +425,9 @@
                 const isBanDalam = selectedText.includes('ban dalam');
                 const isBanPerut = selectedText.includes('ban perut');
                 const isLockKontainer = selectedText.includes('lock kontainer');
-                const isBulk = isBanDalam || isBanPerut || isLockKontainer;
+                const isRingVelg = selectedText.includes('ring velg');
+                const isVelg = selectedText.includes('velg'); // Covers 'velg' and 'ring velg', but keep distinct vars if needed
+                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg;
 
                 if (isBulk) {
                     // Hide serialized fields
@@ -453,7 +455,7 @@
                         opt.text = 'Pcs';
                         opt.selected = true;
                         typeSelect.appendChild(opt);
-                    } else if (isBanPerut || isLockKontainer) {
+                    } else if (isBanPerut || isLockKontainer || isRingVelg || isVelg) {
                          // Ban Perut or Lock Kontainer: Allow selection (Pcs, Set, etc)
                          // Show all original options
                         originalTypeOptions.forEach(opt => {

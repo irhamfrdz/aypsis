@@ -49,6 +49,16 @@
                          Lock Kontainer
                     </button>
                 </li>
+                <li class="mr-2" role="presentation">
+                    <button id="tab-btn-stock-ring-velg" onclick="switchTab('stock-ring-velg')" class="inline-block p-4 border-b-2 rounded-t-lg border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300" type="button" role="tab">
+                         Ring Velg
+                    </button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button id="tab-btn-stock-velg" onclick="switchTab('stock-velg')" class="inline-block p-4 border-b-2 rounded-t-lg border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300" type="button" role="tab">
+                         Stock Velg
+                    </button>
+                </li>
             </ul>
         </div>
 
@@ -354,6 +364,137 @@
                 </table>
             </div>
         </div>
+
+        {{-- Tab 5: Stock Ring Velg --}}
+        <div id="tab-content-stock-ring-velg" class="bg-white rounded-lg shadow-sm overflow-hidden" style="display: none;">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang / Ukuran</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Beli</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Masuk</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($stockRingVelgs as $index => $ring)
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="font-bold text-blue-800">{{ $ring->namaStockBan ? $ring->namaStockBan->nama : '-' }}</div>
+                                <div class="text-xs">{{ $ring->ukuran }}</div>
+                                @if($ring->nomor_bukti)
+                                    <div class="text-xs text-gray-500 font-normal mt-0.5">Ref: {{ $ring->nomor_bukti }}</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                {{ number_format($ring->qty, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    {{ ucfirst($ring->type) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $ring->lokasi }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Rp {{ number_format($ring->harga_beli, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ \Carbon\Carbon::parse($ring->tanggal_masuk)->format('d/m/Y') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end gap-2">
+                                    {{-- Assuming we might want detail/use buttons later, reusing view/route if possible or just placeholders --}}
+                                    {{-- Current implementation for StockBanDalam uses specific routes. I might need routes for RingVelg if I want these buttons to work perfectly. For now I'll just show nothing or placeholder. --}}
+                                    {{-- Actually better to not show broken buttons. --}}
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                                <i class="fas fa-circle-notch text-4xl mb-3 text-gray-300"></i>
+                                <p>Belum ada data ring velg.</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Tab 6: Stock Velg --}}
+        <div id="tab-content-stock-velg" class="bg-white rounded-lg shadow-sm overflow-hidden" style="display: none;">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang / Ukuran</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Beli</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Masuk</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($stockVelgs as $index => $item)
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="font-bold text-blue-800">{{ $item->namaStockBan ? $item->namaStockBan->nama : '-' }}</div>
+                                <div class="text-xs">{{ $item->ukuran }}</div>
+                                @if($item->nomor_bukti)
+                                    <div class="text-xs text-gray-500 font-normal mt-0.5">Ref: {{ $item->nomor_bukti }}</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                {{ number_format($item->qty, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    {{ ucfirst($item->type) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $item->lokasi }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Rp {{ number_format($item->harga_beli, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ \Carbon\Carbon::parse($item->tanggal_masuk)->format('d/m/Y') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end gap-2">
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                                <i class="fas fa-circle-notch text-4xl mb-3 text-gray-300"></i>
+                                <p>Belum ada data stock velg.</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -366,12 +507,14 @@
         document.getElementById('tab-content-stock-ban-dalam').style.display = 'none';
         document.getElementById('tab-content-stock-ban-perut').style.display = 'none';
         document.getElementById('tab-content-stock-lock-kontainer').style.display = 'none';
+        document.getElementById('tab-content-stock-ring-velg').style.display = 'none';
+        document.getElementById('tab-content-stock-velg').style.display = 'none';
         
         // Show selected content
         document.getElementById('tab-content-' + tabName).style.display = 'block';
         
         // Update button styles
-        const tabs = ['stock-ban', 'stock-ban-dalam', 'stock-ban-perut', 'stock-lock-kontainer'];
+        const tabs = ['stock-ban', 'stock-ban-dalam', 'stock-ban-perut', 'stock-lock-kontainer', 'stock-ring-velg', 'stock-velg'];
         const inactiveClasses = ['border-transparent', 'text-gray-500', 'hover:text-gray-600', 'hover:border-gray-300'];
         const activeClasses = ['border-blue-600', 'text-blue-600'];
         
