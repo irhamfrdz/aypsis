@@ -108,12 +108,42 @@
                     <!-- Merk -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Merk <span class="text-red-500">*</span></label>
-                        <select name="merk_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('merk_id') border-red-500 @enderror" required>
-                            <option value="">-- Pilih Merk --</option>
-                            @foreach($merkBans as $merk)
-                                <option value="{{ $merk->id }}" {{ old('merk_id') == $merk->id ? 'selected' : '' }}>{{ $merk->nama ?? $merk->nama_merk ?? $merk->merk }}</option>
-                            @endforeach
-                        </select>
+                        <div class="custom-select-container" id="merk-select-container">
+                            <input type="hidden" name="merk_id" id="merk_id" value="{{ old('merk_id') }}">
+                            
+                            <button type="button" id="merk-select-button" class="custom-select-button">
+                                <span id="merk-selected-text">
+                                    @if(old('merk_id'))
+                                        @php $selectedMerk = $merkBans->firstWhere('id', old('merk_id')); @endphp
+                                        {{ $selectedMerk ? ($selectedMerk->nama ?? $selectedMerk->nama_merk ?? $selectedMerk->merk) : '-- Pilih Merk --' }}
+                                    @else
+                                        -- Pilih Merk --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="merk-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="merk-search-input" placeholder="Cari merk..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="merk-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Merk --">-- Pilih Merk --</div>
+                                    @foreach($merkBans as $merk)
+                                        @php $merkName = $merk->nama ?? $merk->nama_merk ?? $merk->merk; @endphp
+                                        <div class="custom-select-option" 
+                                             data-value="{{ $merk->id }}" 
+                                             data-search="{{ strtolower($merkName) }}"
+                                             data-text="{{ $merkName }}">
+                                            {{ $merkName }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-merk-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Merk tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
                         @error('merk_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -197,13 +227,84 @@
                     <!-- Lokasi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
-                        <select name="lokasi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror">
-                            <option value="">-- Pilih Lokasi --</option>
-                            @foreach($gudangs as $gudang)
-                                <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi', 'Gudang Utama') == $gudang->nama_gudang ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
-                            @endforeach
-                        </select>
+                        <div class="custom-select-container" id="lokasi-select-container">
+                            <input type="hidden" name="lokasi" id="lokasi" value="{{ old('lokasi', 'Gudang Utama') }}">
+                            
+                            <button type="button" id="lokasi-select-button" class="custom-select-button">
+                                <span id="lokasi-selected-text">
+                                    @if(old('lokasi', 'Gudang Utama'))
+                                        {{ old('lokasi', 'Gudang Utama') }}
+                                    @else
+                                        -- Pilih Lokasi --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="lokasi-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="lokasi-search-input" placeholder="Cari lokasi..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="lokasi-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Lokasi --">-- Pilih Lokasi --</div>
+                                    @foreach($gudangs as $gudang)
+                                        <div class="custom-select-option {{ old('lokasi', 'Gudang Utama') == $gudang->nama_gudang ? 'selected' : '' }}" 
+                                             data-value="{{ $gudang->nama_gudang }}" 
+                                             data-search="{{ strtolower($gudang->nama_gudang) }}"
+                                             data-text="{{ $gudang->nama_gudang }}">
+                                            {{ $gudang->nama_gudang }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-lokasi-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Lokasi tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
                         @error('lokasi')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Penerima (Conditional for Ban Luar) -->
+                    <div id="penerima-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Penerima</label>
+                        <div class="custom-select-container" id="penerima-select-container">
+                            <input type="hidden" name="penerima_id" id="penerima_id" value="{{ old('penerima_id') }}">
+                            
+                            <button type="button" id="penerima-select-button" class="custom-select-button">
+                                <span id="penerima-selected-text">
+                                    @if(old('penerima_id'))
+                                        @php $selectedPenerima = $karyawans->firstWhere('id', old('penerima_id')); @endphp
+                                        {{ $selectedPenerima ? $selectedPenerima->nama_lengkap : '-- Pilih Penerima --' }}
+                                    @else
+                                        -- Pilih Penerima --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="penerima-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="penerima-search-input" placeholder="Cari penerima..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="penerima-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">-- Pilih Penerima --</div>
+                                    @foreach($karyawans as $karyawan)
+                                        <div class="custom-select-option" 
+                                             data-value="{{ $karyawan->id }}" 
+                                             data-search="{{ strtolower($karyawan->nama_lengkap) }}"
+                                             data-text="{{ $karyawan->nama_lengkap }}">
+                                            {{ $karyawan->nama_lengkap }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-penerima-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Penerima tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
+                        @error('penerima_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -382,6 +483,132 @@
             searchInput.addEventListener('click', e => e.stopPropagation());
         }
 
+        function initPenerimaSelect() {
+            const selectContainer = document.getElementById('penerima-select-container');
+            const selectButton = document.getElementById('penerima-select-button');
+            const selectDropdown = document.getElementById('penerima-select-dropdown');
+            const searchInput = document.getElementById('penerima-search-input');
+            const optionsList = document.getElementById('penerima-options-list');
+            const noResults = document.getElementById('no-penerima-results');
+            const hiddenInput = document.getElementById('penerima_id');
+            const selectedText = document.getElementById('penerima-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
+                return;
+            }
+            
+            if (selectButton.dataset.penerimaInit === '1') return;
+            selectButton.dataset.penerimaInit = '1';
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (value || '').toString()) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectPenerima(id, text) {
+                hiddenInput.value = id;
+                selectedText.textContent = text;
+                closeDropdown();
+                updateSelectedState(id);
+            }
+
+            updateSelectedState(hiddenInput.value);
+
+            let dropdownAppended = false;
+            const originalParent = selectDropdown.parentNode;
+            const placeholder = document.createComment('penerima-select-dropdown-placeholder');
+
+            function openDropdown() {
+                searchInput.value = '';
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => opt.classList.remove('hidden'));
+                noResults.classList.add('hidden');
+
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.position = 'absolute';
+                selectDropdown.style.left = rect.left + window.scrollX + 'px';
+                selectDropdown.style.top = rect.bottom + window.scrollY + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+                selectDropdown.style.display = 'block';
+                selectDropdown.style.zIndex = 9999;
+
+                if (!dropdownAppended) {
+                    originalParent.replaceChild(placeholder, selectDropdown);
+                    document.body.appendChild(selectDropdown);
+                    dropdownAppended = true;
+                }
+
+                setTimeout(() => searchInput.focus(), 10);
+                window.addEventListener('scroll', repositionDropdown);
+                window.addEventListener('resize', repositionDropdown);
+            }
+
+            function closeDropdown() {
+                selectDropdown.style.display = 'none';
+                if (dropdownAppended) {
+                    document.body.removeChild(selectDropdown);
+                    originalParent.replaceChild(selectDropdown, placeholder);
+                    dropdownAppended = false;
+                }
+                window.removeEventListener('scroll', repositionDropdown);
+                window.removeEventListener('resize', repositionDropdown);
+            }
+
+            function repositionDropdown() {
+                if (!dropdownAppended) return;
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.left = rect.left + window.scrollX + 'px';
+                selectDropdown.style.top = rect.bottom + window.scrollY + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+            }
+
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.getComputedStyle(selectDropdown).display === 'none') {
+                    document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
+                        if (dd !== selectDropdown) dd.style.display = 'none';
+                    });
+                    openDropdown();
+                } else {
+                    closeDropdown();
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+                noResults.classList.toggle('hidden', count > 0);
+            });
+
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) selectPenerima(option.getAttribute('data-value'), option.getAttribute('data-text'));
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!selectContainer.contains(e.target)) closeDropdown();
+            });
+
+            searchInput.addEventListener('click', e => e.stopPropagation());
+        }
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initAll);
         } else {
@@ -390,13 +617,268 @@
 
         function initAll() {
             initMobilSelect();
+            initPenerimaSelect();
+            initMerkSelect();
+            initLokasiSelect();
             initBanBatchLogic();
+        }
+
+        function initMerkSelect() {
+            const selectContainer = document.getElementById('merk-select-container');
+            const selectButton = document.getElementById('merk-select-button');
+            const selectDropdown = document.getElementById('merk-select-dropdown');
+            const searchInput = document.getElementById('merk-search-input');
+            const optionsList = document.getElementById('merk-options-list');
+            const noResults = document.getElementById('no-merk-results');
+            const hiddenInput = document.getElementById('merk_id');
+            const selectedText = document.getElementById('merk-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
+                return;
+            }
+            
+            if (selectButton.dataset.merkInit === '1') return;
+            selectButton.dataset.merkInit = '1';
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (value || '').toString()) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectMerk(id, text) {
+                hiddenInput.value = id;
+                selectedText.textContent = text;
+                closeDropdown();
+                updateSelectedState(id);
+            }
+
+            updateSelectedState(hiddenInput.value);
+
+            let dropdownAppended = false;
+            const originalParent = selectDropdown.parentNode;
+            const placeholder = document.createComment('merk-select-dropdown-placeholder');
+
+            function openDropdown() {
+                searchInput.value = '';
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => opt.classList.remove('hidden'));
+                noResults.classList.add('hidden');
+
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.position = 'absolute';
+                selectDropdown.style.left = rect.left + window.scrollX + 'px';
+                selectDropdown.style.top = rect.bottom + window.scrollY + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+                selectDropdown.style.display = 'block';
+                selectDropdown.style.zIndex = 9999;
+
+                if (!dropdownAppended) {
+                    originalParent.replaceChild(placeholder, selectDropdown);
+                    document.body.appendChild(selectDropdown);
+                    dropdownAppended = true;
+                }
+
+                setTimeout(() => searchInput.focus(), 10);
+                window.addEventListener('scroll', repositionDropdown);
+                window.addEventListener('resize', repositionDropdown);
+            }
+
+            function closeDropdown() {
+                selectDropdown.style.display = 'none';
+                if (dropdownAppended) {
+                    document.body.removeChild(selectDropdown);
+                    originalParent.replaceChild(selectDropdown, placeholder);
+                    dropdownAppended = false;
+                }
+                window.removeEventListener('scroll', repositionDropdown);
+                window.removeEventListener('resize', repositionDropdown);
+            }
+
+            function repositionDropdown() {
+                if (!dropdownAppended) return;
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.left = rect.left + window.scrollX + 'px';
+                selectDropdown.style.top = rect.bottom + window.scrollY + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+            }
+
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.getComputedStyle(selectDropdown).display === 'none') {
+                    document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
+                        if (dd !== selectDropdown) dd.style.display = 'none';
+                    });
+                    openDropdown();
+                } else {
+                    closeDropdown();
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+                noResults.classList.toggle('hidden', count > 0);
+            });
+
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) selectMerk(option.getAttribute('data-value'), option.getAttribute('data-text'));
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!selectContainer.contains(e.target)) closeDropdown();
+            });
+
+            searchInput.addEventListener('click', e => e.stopPropagation());
+        }
+
+        function initLokasiSelect() {
+            const selectContainer = document.getElementById('lokasi-select-container');
+            const selectButton = document.getElementById('lokasi-select-button');
+            const selectDropdown = document.getElementById('lokasi-select-dropdown');
+            const searchInput = document.getElementById('lokasi-search-input');
+            const optionsList = document.getElementById('lokasi-options-list');
+            const noResults = document.getElementById('no-lokasi-results');
+            const hiddenInput = document.getElementById('lokasi');
+            const selectedText = document.getElementById('lokasi-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
+                return;
+            }
+            
+            if (selectButton.dataset.lokasiInit === '1') return;
+            selectButton.dataset.lokasiInit = '1';
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (value || '').toString()) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectLokasi(value, text) {
+                hiddenInput.value = value;
+                selectedText.textContent = text;
+                closeDropdown();
+                updateSelectedState(value);
+            }
+
+            updateSelectedState(hiddenInput.value);
+
+            let dropdownAppended = false;
+            const originalParent = selectDropdown.parentNode;
+            const placeholder = document.createComment('lokasi-select-dropdown-placeholder');
+
+            function openDropdown() {
+                searchInput.value = '';
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => opt.classList.remove('hidden'));
+                noResults.classList.add('hidden');
+
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.position = 'absolute';
+                selectDropdown.style.left = rect.left + window.scrollX + 'px';
+                selectDropdown.style.top = rect.bottom + window.scrollY + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+                selectDropdown.style.display = 'block';
+                selectDropdown.style.zIndex = 9999;
+
+                if (!dropdownAppended) {
+                    originalParent.replaceChild(placeholder, selectDropdown);
+                    document.body.appendChild(selectDropdown);
+                    dropdownAppended = true;
+                }
+
+                setTimeout(() => searchInput.focus(), 10);
+                window.addEventListener('scroll', repositionDropdown);
+                window.addEventListener('resize', repositionDropdown);
+            }
+
+            function closeDropdown() {
+                selectDropdown.style.display = 'none';
+                if (dropdownAppended) {
+                    document.body.removeChild(selectDropdown);
+                    originalParent.replaceChild(selectDropdown, placeholder);
+                    dropdownAppended = false;
+                }
+                window.removeEventListener('scroll', repositionDropdown);
+                window.removeEventListener('resize', repositionDropdown);
+            }
+
+            function repositionDropdown() {
+                if (!dropdownAppended) return;
+                const rect = selectButton.getBoundingClientRect();
+                selectDropdown.style.left = rect.left + window.scrollX + 'px';
+                selectDropdown.style.top = rect.bottom + window.scrollY + 'px';
+                selectDropdown.style.width = rect.width + 'px';
+            }
+
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.getComputedStyle(selectDropdown).display === 'none') {
+                    document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
+                        if (dd !== selectDropdown) dd.style.display = 'none';
+                    });
+                    openDropdown();
+                } else {
+                    closeDropdown();
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+                noResults.classList.toggle('hidden', count > 0);
+            });
+
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) selectLokasi(option.getAttribute('data-value'), option.getAttribute('data-text'));
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!selectContainer.contains(e.target)) closeDropdown();
+            });
+
+            searchInput.addEventListener('click', e => e.stopPropagation());
         }
 
         function initBanBatchLogic() {
             const namaBarangSelect = document.querySelector('select[name="nama_stock_ban_id"]');
             const nomorSeriContainer = document.querySelector('input[name="nomor_seri"]').closest('div');
-            const merkContainer = document.querySelector('select[name="merk_id"]').closest('div');
+            const merkContainer = document.querySelector('input[name="merk_id"]').closest('div').closest('div'); // Needs to go up to the main container, not just the custom-select-container
             const typeSelect = document.querySelector('select[name="kondisi"]');
             
             // Adjust label for "kondisi" to "Type" properly (it is labelled Type in HTML)
@@ -408,26 +890,28 @@
             // I should change the name attribute dynamically or add a hidden field.
             // Let's change the name attribute dynamically.
 
-            const hargaBeliContainer = document.querySelector('input[name="harga_beli"]').closest('div');
-            const mobilContainer = document.getElementById('mobil-select-container').closest('div');
-            
-            // Create Stock Qty field
-            let qtyWrapper = document.getElementById('qty-container');
-            if (!qtyWrapper) {
-                qtyWrapper = document.createElement('div');
-                qtyWrapper.id = 'qty-container';
-                qtyWrapper.className = 'hidden';
-                qtyWrapper.innerHTML = `
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
-                    <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0">
-                `;
-                hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
-            }
 
-            // Store original options
-            const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
 
-            function checkItemType() {
+        const hargaBeliContainer = document.querySelector('input[name="harga_beli"]').closest('div');
+        const mobilContainer = document.getElementById('mobil-select-container').closest('div');
+        
+        // Create Stock Qty field
+        let qtyWrapper = document.getElementById('qty-container');
+        if (!qtyWrapper) {
+            qtyWrapper = document.createElement('div');
+            qtyWrapper.id = 'qty-container';
+            qtyWrapper.className = 'hidden';
+            qtyWrapper.innerHTML = `
+                <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
+                <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0">
+            `;
+            hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
+        }
+
+        // Store original options
+        const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
+
+        function checkItemType() {
                 const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
                 const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
                 
@@ -437,6 +921,35 @@
                 const isRingVelg = selectedText.includes('ring velg');
                 const isVelg = selectedText.includes('velg'); // Covers 'velg' and 'ring velg', but keep distinct vars if needed
                 const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg;
+                const isBanLuar = selectedText.includes('ban luar');
+                const penerimaContainer = document.getElementById('penerima-container');
+                const penerimaSelect = document.getElementById('penerima_id');
+                const penerimaSelectedText = document.getElementById('penerima-selected-text');
+
+                if (isBanLuar) {
+                    if (penerimaContainer) {
+                        penerimaContainer.classList.remove('hidden');
+                        // removed required
+                    }
+                } else {
+                    if (penerimaContainer) {
+                        penerimaContainer.classList.add('hidden');
+                        if (penerimaSelect) {
+                            penerimaSelect.value = '';
+                            if (penerimaSelectedText) penerimaSelectedText.textContent = '-- Pilih Penerima --';
+                            
+                            // Deselect options visually
+                            const options = document.querySelectorAll('#penerima-options-list .custom-select-option');
+                            options.forEach(opt => {
+                                if (opt.getAttribute('data-value') === '') {
+                                    opt.classList.add('selected');
+                                } else {
+                                    opt.classList.remove('selected');
+                                }
+                            });
+                        }
+                    }
+                }
 
                 if (isBulk) {
                     // Hide serialized fields
@@ -449,7 +962,7 @@
                     
                     // Disable requirements for hidden fields
                     document.querySelector('input[name="nomor_seri"]').removeAttribute('required');
-                    document.querySelector('select[name="merk_id"]').removeAttribute('required');
+                    // merk_id is now a hidden input, no required attribute needed
                     document.querySelector('input[name="qty"]').setAttribute('required', 'required');
 
                     // Change 'kondisi' input name to 'type' so controller picks it up
@@ -511,7 +1024,7 @@
                     
                     qtyWrapper.classList.add('hidden');
                     
-                    document.querySelector('select[name="merk_id"]').setAttribute('required', 'required');
+                    // merk_id is now a hidden input, no required attribute needed
                     document.querySelector('input[name="qty"]').removeAttribute('required');
 
                     // Restore name to 'kondisi'

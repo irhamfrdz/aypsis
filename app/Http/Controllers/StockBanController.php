@@ -47,7 +47,8 @@ class StockBanController extends Controller
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
         $merkBans = MerkBan::orderBy('nama')->get();
         $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
-        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs'));
+        $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'karyawans'));
     }
 
     /**
@@ -228,6 +229,7 @@ class StockBanController extends Controller
             'keterangan' => 'nullable|string',
             'mobil_id' => 'nullable|exists:mobils,id',
             'nomor_bukti' => 'nullable|string|max:255',
+            'penerima_id' => 'nullable|exists:karyawans,id',
         ]);
 
         $data = $request->all();
@@ -255,7 +257,8 @@ class StockBanController extends Controller
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
         $merkBans = MerkBan::orderBy('nama')->get();
         $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
-        return view('stock-ban.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans', 'gudangs'));
+        $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+        return view('stock-ban.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans', 'gudangs', 'karyawans'));
     }
 
     /**
@@ -278,6 +281,7 @@ class StockBanController extends Controller
             'keterangan' => 'nullable|string',
             'mobil_id' => 'nullable|exists:mobils,id',
             'nomor_bukti' => 'nullable|string|max:255',
+            'penerima_id' => 'nullable|exists:karyawans,id',
         ]);
 
         $stockBan->update($request->all());

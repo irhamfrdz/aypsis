@@ -108,8 +108,55 @@
                     <!-- Merk -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Merk <span class="text-red-500">*</span></label>
-                        <input type="text" name="merk" value="{{ old('merk', $stockBan->merk) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('merk') border-red-500 @enderror" required placeholder="Contoh: Bridgestone, Michelin">
-                        @error('merk')
+                        <div class="custom-select-container" id="merk-select-container">
+                            <!-- Try to match existing merk string to an ID if possible, otherwise just use empty. 
+                                 However, edit mode is tricky if we only have string. 
+                                 We will try to find matching ID from name. -->
+                            @php 
+                                $currentMerkId = old('merk_id');
+                                if (!$currentMerkId && $stockBan->merk) {
+                                    $match = $merkBans->first(function($m) use ($stockBan) {
+                                        return strtolower($m->nama ?? $m->nama_merk ?? $m->merk) === strtolower($stockBan->merk);
+                                    });
+                                    if ($match) $currentMerkId = $match->id;
+                                }
+                            @endphp
+                            <input type="hidden" name="merk_id" id="merk_id" value="{{ $currentMerkId }}">
+                            
+                            <button type="button" id="merk-select-button" class="custom-select-button">
+                                <span id="merk-selected-text">
+                                    @if($currentMerkId)
+                                        @php $selectedMerk = $merkBans->firstWhere('id', $currentMerkId); @endphp
+                                        {{ $selectedMerk ? ($selectedMerk->nama ?? $selectedMerk->nama_merk ?? $selectedMerk->merk) : '-- Pilih Merk --' }}
+                                    @else
+                                        -- Pilih Merk --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="merk-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="merk-search-input" placeholder="Cari merk..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="merk-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Merk --">-- Pilih Merk --</div>
+                                    @foreach($merkBans as $merk)
+                                        @php $merkName = $merk->nama ?? $merk->nama_merk ?? $merk->merk; @endphp
+                                        <div class="custom-select-option {{ $currentMerkId == $merk->id ? 'selected' : '' }}" 
+                                             data-value="{{ $merk->id }}" 
+                                             data-search="{{ strtolower($merkName) }}"
+                                             data-text="{{ $merkName }}">
+                                            {{ $merkName }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-merk-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Merk tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
+                        @error('merk_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -189,14 +236,85 @@
 
                     <!-- Lokasi -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
-                        <select name="lokasi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror" required>
-                            <option value="">-- Pilih Lokasi --</option>
-                            @foreach($gudangs as $gudang)
-                                <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi', $stockBan->lokasi) == $gudang->nama_gudang ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
+                        <div class="custom-select-container" id="lokasi-select-container">
+                            <input type="hidden" name="lokasi" id="lokasi" value="{{ old('lokasi', $stockBan->lokasi) }}">
+                            
+                            <button type="button" id="lokasi-select-button" class="custom-select-button">
+                                <span id="lokasi-selected-text">
+                                    @if(old('lokasi', $stockBan->lokasi))
+                                        {{ old('lokasi', $stockBan->lokasi) }}
+                                    @else
+                                        -- Pilih Lokasi --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="lokasi-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="lokasi-search-input" placeholder="Cari lokasi..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="lokasi-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Lokasi --">-- Pilih Lokasi --</div>
+                                    @foreach($gudangs as $gudang)
+                                        <div class="custom-select-option {{ old('lokasi', $stockBan->lokasi) == $gudang->nama_gudang ? 'selected' : '' }}" 
+                                             data-value="{{ $gudang->nama_gudang }}" 
+                                             data-search="{{ strtolower($gudang->nama_gudang) }}"
+                                             data-text="{{ $gudang->nama_gudang }}">
+                                            {{ $gudang->nama_gudang }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-lokasi-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Lokasi tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
                         @error('lokasi')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Penerima (Conditional for Ban Luar) -->
+                    <div id="penerima-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Penerima</label>
+                        <div class="custom-select-container" id="penerima-select-container">
+                            <input type="hidden" name="penerima_id" id="penerima_id" value="{{ old('penerima_id', $stockBan->penerima_id) }}">
+                            
+                            <button type="button" id="penerima-select-button" class="custom-select-button">
+                                <span id="penerima-selected-text">
+                                    @if(old('penerima_id', $stockBan->penerima_id))
+                                        @php $selectedPenerima = $karyawans->firstWhere('id', old('penerima_id', $stockBan->penerima_id)); @endphp
+                                        {{ $selectedPenerima ? $selectedPenerima->nama_lengkap : '-- Pilih Penerima --' }}
+                                    @else
+                                        -- Pilih Penerima --
+                                    @endif
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div id="penerima-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="penerima-search-input" placeholder="Cari penerima..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="penerima-options-list">
+                                    <div class="custom-select-option {{ !old('penerima_id', $stockBan->penerima_id) ? 'selected' : '' }}" data-value="" data-text="-- Pilih Penerima --">-- Pilih Penerima --</div>
+                                    @foreach($karyawans as $karyawan)
+                                        <div class="custom-select-option {{ old('penerima_id', $stockBan->penerima_id) == $karyawan->id ? 'selected' : '' }}" 
+                                             data-value="{{ $karyawan->id }}" 
+                                             data-search="{{ strtolower($karyawan->nama_lengkap) }}"
+                                             data-text="{{ $karyawan->nama_lengkap }}">
+                                            {{ $karyawan->nama_lengkap }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-penerima-results" class="hidden p-4 text-center text-sm text-gray-500">
+                                    Penerima tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
+                        @error('penerima_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -336,6 +454,349 @@
         searchInput.addEventListener('click', function(e) {
             e.stopPropagation();
         });
+
+        // Check for Ban Luar logic
+        const namaStockBanSelect = document.querySelector('select[name="nama_stock_ban_id"]');
+        const penerimaContainer = document.getElementById('penerima-container');
+        const penerimaSelect = document.getElementById('penerima_id');
+        const penerimaSelectedText = document.getElementById('penerima-selected-text');
+
+
+        function initPenerimaSelect() {
+            const selectContainer = document.getElementById('penerima-select-container');
+            const selectButton = document.getElementById('penerima-select-button');
+            const selectDropdown = document.getElementById('penerima-select-dropdown');
+            const searchInput = document.getElementById('penerima-search-input');
+            const optionsList = document.getElementById('penerima-options-list');
+            const noResults = document.getElementById('no-penerima-results');
+            const hiddenInput = document.getElementById('penerima_id');
+            const selectedText = document.getElementById('penerima-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
+                return;
+            }
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (value || '').toString()) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectPenerima(id, text) {
+                hiddenInput.value = id;
+                selectedText.textContent = text;
+                selectDropdown.style.display = 'none';
+                updateSelectedState(id);
+            }
+
+            // Toggle dropdown
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isHidden = window.getComputedStyle(selectDropdown).display === 'none';
+                
+                if (isHidden) {
+                    selectDropdown.style.display = 'block';
+                    searchInput.value = '';
+                    
+                    // Reset search results visibility
+                    const options = optionsList.querySelectorAll('.custom-select-option');
+                    options.forEach(opt => opt.classList.remove('hidden'));
+                    noResults.classList.add('hidden');
+                    
+                    setTimeout(() => searchInput.focus(), 10);
+                } else {
+                    selectDropdown.style.display = 'none';
+                }
+            });
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    const textData = opt.textContent.toLowerCase();
+                    if (searchData.includes(term) || textData.includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+
+                noResults.classList.toggle('hidden', count > 0);
+            });
+
+            // Option selection
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) {
+                    const val = option.getAttribute('data-value');
+                    const txt = option.getAttribute('data-text');
+                    selectPenerima(val, txt);
+                }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!selectContainer.contains(e.target)) {
+                    selectDropdown.style.display = 'none';
+                }
+            });
+
+            // Prevent dropdown close when clicking search input
+            searchInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        initPenerimaSelect();
+
+        function initMerkSelect() {
+            const selectContainer = document.getElementById('merk-select-container');
+            const selectButton = document.getElementById('merk-select-button');
+            const selectDropdown = document.getElementById('merk-select-dropdown');
+            const searchInput = document.getElementById('merk-search-input');
+            const optionsList = document.getElementById('merk-options-list');
+            const noResults = document.getElementById('no-merk-results');
+            const hiddenInput = document.getElementById('merk_id');
+            const selectedText = document.getElementById('merk-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
+                return;
+            }
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (value || '').toString()) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectMerk(id, text) {
+                hiddenInput.value = id;
+                selectedText.textContent = text;
+                selectDropdown.style.display = 'none';
+                updateSelectedState(id);
+            }
+
+            // Toggle dropdown
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isHidden = window.getComputedStyle(selectDropdown).display === 'none';
+                
+                if (isHidden) {
+                    selectDropdown.style.display = 'block';
+                    searchInput.value = '';
+                    
+                    // Reset search results visibility
+                    const options = optionsList.querySelectorAll('.custom-select-option');
+                    options.forEach(opt => opt.classList.remove('hidden'));
+                    noResults.classList.add('hidden');
+                    
+                    setTimeout(() => searchInput.focus(), 10);
+                } else {
+                    selectDropdown.style.display = 'none';
+                }
+            });
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    const textData = opt.textContent.toLowerCase();
+                    if (searchData.includes(term) || textData.includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+
+                noResults.classList.toggle('hidden', count > 0);
+            });
+
+            // Option selection
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) {
+                    const val = option.getAttribute('data-value');
+                    const txt = option.getAttribute('data-text');
+                    selectMerk(val, txt);
+                }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!selectContainer.contains(e.target)) {
+                    selectDropdown.style.display = 'none';
+                }
+            });
+
+            // Prevent dropdown close when clicking search input
+            searchInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        initMerkSelect();
+
+        function initLokasiSelect() {
+            const selectContainer = document.getElementById('lokasi-select-container');
+            const selectButton = document.getElementById('lokasi-select-button');
+            const selectDropdown = document.getElementById('lokasi-select-dropdown');
+            const searchInput = document.getElementById('lokasi-search-input');
+            const optionsList = document.getElementById('lokasi-options-list');
+            const noResults = document.getElementById('no-lokasi-results');
+            const hiddenInput = document.getElementById('lokasi');
+            const selectedText = document.getElementById('lokasi-selected-text');
+
+            if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
+                return;
+            }
+
+            function updateSelectedState(value) {
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (value || '').toString()) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
+
+            function selectLokasi(value, text) {
+                hiddenInput.value = value;
+                selectedText.textContent = text;
+                selectDropdown.style.display = 'none';
+                updateSelectedState(value);
+            }
+
+            // Toggle dropdown
+            selectButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isHidden = window.getComputedStyle(selectDropdown).display === 'none';
+                
+                if (isHidden) {
+                    selectDropdown.style.display = 'block';
+                    searchInput.value = '';
+                    
+                    // Reset search results visibility
+                    const options = optionsList.querySelectorAll('.custom-select-option');
+                    options.forEach(opt => opt.classList.remove('hidden'));
+                    noResults.classList.add('hidden');
+                    
+                    setTimeout(() => searchInput.focus(), 10);
+                } else {
+                    selectDropdown.style.display = 'none';
+                }
+            });
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const options = optionsList.querySelectorAll('.custom-select-option');
+                let count = 0;
+                
+                options.forEach(opt => {
+                    const searchData = opt.getAttribute('data-search') || '';
+                    const textData = opt.textContent.toLowerCase();
+                    if (searchData.includes(term) || textData.includes(term)) {
+                        opt.classList.remove('hidden');
+                        count++;
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+
+                noResults.classList.toggle('hidden', count > 0);
+            });
+
+            // Option selection
+            optionsList.addEventListener('click', function(e) {
+                const option = e.target.closest('.custom-select-option');
+                if (option) {
+                    const val = option.getAttribute('data-value');
+                    const txt = option.getAttribute('data-text');
+                    selectLokasi(val, txt);
+                }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!selectContainer.contains(e.target)) {
+                    selectDropdown.style.display = 'none';
+                }
+            });
+
+            // Prevent dropdown close when clicking search input
+            searchInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        initLokasiSelect();
+
+
+        function checkItemType() {
+            if (!namaStockBanSelect) return;
+            const selectedOption = namaStockBanSelect.options[namaStockBanSelect.selectedIndex];
+            const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
+            const isBanLuar = selectedText.includes('ban luar');
+
+            if (isBanLuar) {
+                if (penerimaContainer) {
+                    penerimaContainer.classList.remove('hidden');
+                    // removed required
+                }
+            } else {
+                if (penerimaContainer) {
+                    penerimaContainer.classList.add('hidden');
+                    if (penerimaSelect) {
+                        penerimaSelect.value = '';
+                        if (penerimaSelectedText) penerimaSelectedText.textContent = '-- Pilih Penerima --';
+                        
+                        // Deselect options visually
+                         const options = document.querySelectorAll('#penerima-options-list .custom-select-option');
+                         options.forEach(opt => {
+                             if (opt.getAttribute('data-value') === '') {
+                                 opt.classList.add('selected');
+                             } else {
+                                 opt.classList.remove('selected');
+                             }
+                         });
+                    }
+                }
+            }
+        }
+
+        if (namaStockBanSelect) {
+            namaStockBanSelect.addEventListener('change', checkItemType);
+            checkItemType(); // Initial check
+        }
+
     })();
 </script>
 @endpush
