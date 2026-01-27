@@ -1358,6 +1358,9 @@ Route::middleware([
     Route::put('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'update'])
          ->name('stock-ban.update')
          ->middleware('can:stock-ban-update');
+    Route::put('stock-ban/{stock_ban}/masak', [\App\Http\Controllers\StockBanController::class, 'masak'])
+         ->name('stock-ban.masak')
+         ->middleware('can:stock-ban-update');
     Route::delete('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'destroy'])
          ->name('stock-ban.destroy')
          ->middleware('can:stock-ban-delete');

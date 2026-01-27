@@ -390,5 +390,19 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil digunakan dan status diperbarui.');
     }
+
+    /**
+     * Update the condition of the ban to 'kanisir'.
+     */
+    public function masak($id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        $stockBan->update([
+            'kondisi' => 'kanisir'
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dimasak menjadi Kanisir.');
+    }
 }
 

@@ -219,6 +219,17 @@
                                     </button>
                                     @endif
                                     @endcan
+                                    @can('stock-ban-update')
+                                    @if($ban->status === 'Stok' && $ban->kondisi !== 'afkir')
+                                    <form action="{{ route('stock-ban.masak', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin memasak ban ini menjadi Kanisir?');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="text-orange-600 hover:text-orange-900 ml-2" title="Masak Ban">
+                                            <i class="fas fa-fire"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    @endcan
                                     @can('stock-ban-delete')
                                     <form action="{{ route('stock-ban.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                         @csrf
