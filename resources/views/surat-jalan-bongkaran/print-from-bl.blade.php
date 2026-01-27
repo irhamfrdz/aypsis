@@ -15,8 +15,8 @@
         /* Tanggal Surat Jalan: posisi absolute sesuai permintaan */
         .date-header {
             position: fixed; /* anchor to the page so it doesn't get cropped */
-            top: 1cm; /* 1cm dari atas */
-            left: 10.5cm;  /* 10.5cm dari kiri */
+            top: 4.8cm; /* 4.8cm dari atas - disamakan dengan Nama Kapal */
+            left: 8.5cm;  /* 8.5cm dari kiri */
             z-index: 1000; /* ensure visibility */
             color: #000; /* force black color on print */
             font-size: 16px;
