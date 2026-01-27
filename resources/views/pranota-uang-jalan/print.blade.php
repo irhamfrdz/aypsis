@@ -101,15 +101,14 @@
         .container {
             width: {{ $currentPaper['containerWidth'] }};
             max-width: {{ $currentPaper['containerWidth'] }};
-            height: {{ $currentPaper['height'] }};
-            max-height: {{ $currentPaper['height'] }};
+            min-height: {{ $currentPaper['height'] }}; /* Use min-height instead of fixed height */
             margin: 0 auto;
             padding: 5mm 5mm 5mm 5mm;
             position: relative;
-            padding-bottom: 60px;
+            padding-bottom: 20px; /* Reduced from 60px since signature is no longer absolute */
             box-sizing: border-box;
-            overflow: hidden;
             background: white;
+            /* Removed overflow: hidden to allow multi-page */
         }
 
         .header {
@@ -201,14 +200,11 @@
         }
 
         .signature-section {
-            margin-top: auto;
+            margin-top: 30px; /* Add space above signature */
             text-align: center;
             page-break-inside: avoid;
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
             width: 100%;
+            /* Removed absolute positioning so it flows naturally */
         }
 
         .signature-table {
@@ -298,38 +294,28 @@
                 print-color-adjust: exact !important;
             }
 
-            html {
+            html, body {
                 width: {{ $currentPaper['width'] }};
-                height: {{ $currentPaper['height'] }};
-            }
-
-            body {
-                width: {{ $currentPaper['width'] }};
-                height: {{ $currentPaper['height'] }};
+                height: auto; /* Allow dynamic height */
+                min-height: {{ $currentPaper['height'] }};
                 margin: 0;
                 padding: 0;
                 font-size: {{ $currentPaper['fontSize'] }};
                 color: #000;
-                position: relative;
                 overflow: visible;
             }
 
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
-                height: 6.5in;
-                max-height: 6.5in;
-                border-bottom: 2px dashed #999;
-                padding: 5mm 5mm 5mm 5mm;
-                padding-bottom: 40px;
+                height: auto; /* Allow dynamic height */
+                min-height: {{ $currentPaper['height'] }};
+                max-height: none; /* Remove max-height constraint */
+                border-bottom: none; /* Remove dashed border for actual print */
+                padding: 5mm;
                 margin: 0;
                 box-sizing: border-box;
-                overflow: hidden;
+                overflow: visible; /* Allow overflow */
                 position: relative;
-                page-break-after: avoid;
-            }
-
-            .no-print {
-                display: none !important;
             }
 
             .header h1 {
@@ -337,9 +323,14 @@
             }
 
             table {
-                page-break-inside: avoid;
+                page-break-inside: auto; /* Allow page break inside table */
                 margin-bottom: 5px;
                 font-size: {{ $currentPaper['tableFont'] }};
+            }
+
+            tr {
+                page-break-inside: avoid; /* Keep rows together */
+                page-break-after: auto;
             }
 
             th, td {
@@ -354,13 +345,12 @@
                 color: #000 !important;
                 border: 1px solid #000 !important;
                 font-weight: bold !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
             }
 
             .signature-section {
-                position: absolute;
-                bottom: 10mm;
+                position: static; /* Flow naturally */
+                margin-top: 20px;
+                page-break-inside: avoid;
             }
 
             .summary {
