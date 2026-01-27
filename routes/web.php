@@ -1346,6 +1346,9 @@ Route::middleware([
     Route::post('stock-ban', [\App\Http\Controllers\StockBanController::class, 'store'])
          ->name('stock-ban.store')
          ->middleware('can:stock-ban-create');
+    Route::post('stock-ban/{id}/use', [\App\Http\Controllers\StockBanController::class, 'storeUsage'])
+         ->name('stock-ban.store-usage')
+         ->middleware('can:stock-ban-update');
     Route::get('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'show'])
          ->name('stock-ban.show')
          ->middleware('can:stock-ban-view');

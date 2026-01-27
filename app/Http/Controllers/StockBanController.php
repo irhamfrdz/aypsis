@@ -35,7 +35,12 @@ class StockBanController extends Controller
         $stockRingVelgs = StockRingVelg::with('namaStockBan')->latest()->get();
         $stockVelgs = StockVelg::with('namaStockBan')->latest()->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs'));
+        // Data for "Gunakan" modal
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        // Assuming receivers are employees/karyawans
+        $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans'));
     }
 
     /**
@@ -348,6 +353,31 @@ class StockBanController extends Controller
     {
         $stockBanDalam = \App\Models\StockBanDalam::with(['namaStockBan', 'usages.mobil'])->findOrFail($id);
         return view('stock-ban.show-ban-dalam', compact('stockBanDalam'));
+    }
+
+    /**
+     * Store the usage of Lock Kontainer/Stock Ban Biasa (Pakai Ban).
+     */
+    public function storeUsage(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        $request->validate([
+            'mobil_id' => 'required|exists:mobils,id',
+            'penerima_id' => 'required|exists:karyawans,id',
+            'tanggal_keluar' => 'required|date',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $stockBan->update([
+            'status' => 'Terpakai',
+            'mobil_id' => $request->mobil_id,
+            'penerima_id' => $request->penerima_id,
+            'tanggal_keluar' => $request->tanggal_keluar,
+            'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Pemakaian: " . $request->keterangan . "]") : $stockBan->keterangan,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil digunakan dan status diperbarui.');
     }
 }
 

@@ -3,6 +3,65 @@
 @section('title', 'Stock Ban')
 @section('page_title', 'Stock Ban')
 
+@push('styles')
+<style>
+    .custom-select-container {
+        position: relative;
+        z-index: 50;
+    }
+    .custom-select-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        text-align: left;
+    }
+    .custom-select-button:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+    .custom-select-dropdown {
+        position: absolute;
+        z-index: 9999;
+        width: 100%;
+        margin-top: 0.25rem;
+        background-color: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        max-height: 15rem;
+        overflow-y: auto;
+    }
+    .custom-select-search {
+        position: sticky;
+        top: 0;
+        padding: 0.5rem;
+        background-color: #f9fafb;
+        border-bottom: 1px solid #d1d5db;
+    }
+    .custom-select-option {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+    .custom-select-option:hover {
+        background-color: #eff6ff;
+    }
+    .custom-select-option.selected {
+        background-color: #dbeafe;
+        font-weight: 500;
+    }
+    .hidden {
+        display: none !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <div class="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
@@ -129,6 +188,13 @@
                                     <a href="{{ route('stock-ban.edit', $ban->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endcan
+                                    @can('stock-ban-update')
+                                    @if($ban->status === 'Stok')
+                                    <button onclick="openPakaiModal('{{ $ban->id }}')" class="text-blue-600 hover:text-blue-900 ml-2" title="Gunakan">
+                                        <i class="fas fa-wrench"></i>
+                                    </button>
+                                    @endif
                                     @endcan
                                     @can('stock-ban-delete')
                                     <form action="{{ route('stock-ban.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
@@ -496,6 +562,95 @@
             </div>
         </div>
     </div>
+    </div>
+
+    {{-- Modal Pakai Ban --}}
+    <div id="modal-pakai-ban" class="fixed z-50 inset-0 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form action="" method="POST" id="form-pakai-ban">
+                    @csrf
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                                    Pakai Ban
+                                </h3>
+                                <div class="mt-2 space-y-4">
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Mobil</label>
+                                        <div class="custom-select-container">
+                                            <input type="hidden" name="mobil_id" id="modal_mobil_id" required>
+                                            <button type="button" class="custom-select-button" id="mobil-select-button">
+                                                <span class="placeholder">-- Pilih Mobil --</span>
+                                                <i class="fas fa-chevron-down text-gray-400"></i>
+                                            </button>
+                                            <div class="custom-select-dropdown hidden" id="mobil-select-dropdown">
+                                                <div class="custom-select-search">
+                                                    <input type="text" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Cari mobil..." id="mobil-search-input">
+                                                </div>
+                                                <div class="custom-select-options max-h-60 overflow-y-auto">
+                                                    <div class="custom-select-option text-gray-500 italic" data-value="">-- Pilih Mobil --</div>
+                                                    @foreach($mobils as $mobil)
+                                                        <div class="custom-select-option" data-value="{{ $mobil->id }}" data-text="{{ $mobil->nomor_polisi }}">
+                                                            {{ $mobil->nomor_polisi }}
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Penerima</label>
+                                        <div class="custom-select-container">
+                                            <input type="hidden" name="penerima_id" id="modal_penerima_id" required>
+                                            <button type="button" class="custom-select-button" id="penerima-select-button">
+                                                <span class="placeholder">-- Pilih Penerima --</span>
+                                                <i class="fas fa-chevron-down text-gray-400"></i>
+                                            </button>
+                                            <div class="custom-select-dropdown hidden" id="penerima-select-dropdown">
+                                                <div class="custom-select-search">
+                                                    <input type="text" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Cari penerima..." id="penerima-search-input">
+                                                </div>
+                                                <div class="custom-select-options max-h-60 overflow-y-auto">
+                                                    <div class="custom-select-option text-gray-500 italic" data-value="">-- Pilih Penerima --</div>
+                                                    @foreach($karyawans as $karyawan)
+                                                        <div class="custom-select-option" data-value="{{ $karyawan->id }}" data-text="{{ $karyawan->nama_lengkap }}">
+                                                            {{ $karyawan->nama_lengkap }}
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Keluar</label>
+                                        <input type="date" name="tanggal_keluar" id="modal_tanggal_keluar" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value="{{ date('Y-m-d') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Keterangan</label>
+                                        <textarea name="keterangan" id="modal_keterangan" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Simpan
+                        </button>
+                        <button type="button" onclick="closePakaiModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -528,6 +683,164 @@
                 btn.classList.add(...inactiveClasses);
             }
         });
+    }
+
+    function openPakaiModal(id) {
+        const form = document.getElementById('form-pakai-ban');
+        // Manually construct URL since accessing named route dynamically in JS with ID substitution is tricky without a dedicated library or dummy placeholder
+        // Assuming the route is /stock-ban/{id}/use
+        // Use Blade to generate base URL
+        const baseUrl = "{{ url('/') }}";
+        form.action = baseUrl + "/stock-ban/" + id + "/use";
+        document.getElementById('modal-pakai-ban').classList.remove('hidden');
+    }
+
+    function closePakaiModal() {
+        document.getElementById('modal-pakai-ban').classList.add('hidden');
+        
+        // Reset Mobil
+        const mobilInput = document.getElementById('modal_mobil_id');
+        const mobilButton = document.getElementById('mobil-select-button');
+        const mobilSpan = mobilButton ? mobilButton.querySelector('span') : null;
+        const mobilSearch = document.getElementById('mobil-search-input');
+        const mobilDropdown = document.getElementById('mobil-select-dropdown');
+        
+        mobilInput.value = '';
+        if (mobilSpan) {
+            mobilSpan.textContent = '-- Pilih Mobil --';
+            mobilSpan.classList.add('placeholder');
+        }
+        mobilSearch.value = '';
+        mobilDropdown.classList.add('hidden');
+        mobilDropdown.querySelectorAll('.custom-select-option').forEach(opt => {
+            opt.style.display = 'block';
+            opt.classList.remove('selected');
+        });
+
+        // Reset Penerima
+        const penerimaInput = document.getElementById('modal_penerima_id');
+        const penerimaButton = document.getElementById('penerima-select-button');
+        const penerimaSpan = penerimaButton ? penerimaButton.querySelector('span') : null;
+        const penerimaSearch = document.getElementById('penerima-search-input');
+        const penerimaDropdown = document.getElementById('penerima-select-dropdown');
+        
+        penerimaInput.value = '';
+        if (penerimaSpan) {
+            penerimaSpan.textContent = '-- Pilih Penerima --';
+            penerimaSpan.classList.add('placeholder');
+        }
+        penerimaSearch.value = '';
+        penerimaDropdown.classList.add('hidden');
+        penerimaDropdown.querySelectorAll('.custom-select-option').forEach(opt => {
+            opt.style.display = 'block';
+            opt.classList.remove('selected');
+        });
+    }
+
+    function initSearchableSelect(prefix, placeholder) {
+        const button = document.getElementById(`${prefix}-select-button`);
+        if (!button || button.dataset.initialized) return;
+        
+        console.log('Initializing searchable select for:', prefix);
+        const dropdown = document.getElementById(`${prefix}-select-dropdown`);
+        const searchInput = document.getElementById(`${prefix}-search-input`);
+        const hiddenInput = document.getElementById(`modal_${prefix}_id`);
+
+        if (!button || !dropdown || !searchInput) return;
+
+        button.addEventListener('click', (e) => {
+            console.log('Button clicked for:', prefix);
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.custom-select-container').forEach(c => {
+                if (c !== button.closest('.custom-select-container')) {
+                    c.style.zIndex = "";
+                    c.querySelector('.custom-select-dropdown').classList.add('hidden');
+                }
+            });
+
+            if (isHidden) {
+                console.log('Opening dropdown for:', prefix);
+                dropdown.classList.remove('hidden');
+                button.closest('.custom-select-container').style.zIndex = "100";
+                searchInput.value = '';
+                const options = dropdown.querySelectorAll('.custom-select-option');
+                options.forEach(opt => opt.style.display = 'block');
+                setTimeout(() => searchInput.focus(), 100);
+            } else {
+                console.log('Closing dropdown for:', prefix);
+                dropdown.classList.add('hidden');
+                button.closest('.custom-select-container').style.zIndex = "";
+            }
+        });
+
+        searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const options = dropdown.querySelectorAll('.custom-select-option');
+            options.forEach(option => {
+                const text = (option.getAttribute('data-text') || '').toLowerCase();
+                if (text.includes(searchTerm) || option.getAttribute('data-value') === '') {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+
+        dropdown.addEventListener('click', (e) => {
+            const option = e.target.closest('.custom-select-option');
+            if (!option) return;
+            
+            e.stopPropagation();
+            const value = option.getAttribute('data-value');
+            const text = option.getAttribute('data-text') || placeholder;
+
+            hiddenInput.value = value;
+            const span = button.querySelector('span');
+            if (span) {
+                span.textContent = text;
+                span.classList.remove('placeholder');
+            }
+            
+            dropdown.classList.add('hidden');
+            button.closest('.custom-select-container').style.zIndex = "";
+            
+            dropdown.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+        });
+
+        button.dataset.initialized = "true";
+    }
+
+    // Global listener for closing dropdowns (only once)
+    if (!window.dropdownGlobalListenerAttached) {
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-select-container')) {
+                document.querySelectorAll('.custom-select-container').forEach(c => {
+                    c.style.zIndex = "";
+                    c.querySelector('.custom-select-dropdown').classList.add('hidden');
+                });
+            }
+        });
+        window.dropdownGlobalListenerAttached = true;
+    }
+
+    // Initialize
+    function initAll() {
+        initSearchableSelect('mobil', '-- Pilih Mobil --');
+        initSearchableSelect('penerima', '-- Pilih Penerima --');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAll);
+    } else {
+        initAll();
     }
 </script>
 @endpush

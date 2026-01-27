@@ -21,6 +21,7 @@ class StockBan extends Model
         'status',
         'harga_beli',
         'tanggal_masuk',
+        'tanggal_keluar',
         'lokasi',
         'keterangan',
         'mobil_id',
@@ -40,5 +41,6 @@ class StockBan extends Model
     protected $casts = [
         'harga_beli' => 'decimal:2',
         'tanggal_masuk' => 'date',
+        'tanggal_keluar' => 'date',
     ];
 }
