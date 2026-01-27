@@ -73,10 +73,10 @@
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <!-- Nomor Seri (Wajib, Unik) -->
+                    <!-- Nomor Seri (Opsional, Unik jika diisi) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Seri / Kode Ban <span class="text-red-500">*</span></label>
-                        <input type="text" name="nomor_seri" value="{{ old('nomor_seri') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_seri') border-red-500 @enderror" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Seri / Kode Ban</label>
+                        <input type="text" name="nomor_seri" value="{{ old('nomor_seri') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_seri') border-red-500 @enderror">
                         @error('nomor_seri')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -115,6 +115,15 @@
                             @endforeach
                         </select>
                         @error('merk_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Ukuran -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ukuran</label>
+                        <input type="text" name="ukuran" value="{{ old('ukuran') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ukuran') border-red-500 @enderror" placeholder="Contoh: 1000, 1100, 750">
+                        @error('ukuran')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -448,6 +457,27 @@
 
                     // Adjust Type Options
                     typeSelect.innerHTML = '';
+                    // Ukuran logic
+                    const ukuranInput = document.querySelector('input[name="ukuran"]');
+                    const ukuranContainer = ukuranInput ? ukuranInput.closest('div') : null;
+                    if (ukuranContainer) {
+                        const label = ukuranContainer.querySelector('label');
+                        const input = ukuranContainer.querySelector('input');
+                        
+                        if (isBanDalam || isBanPerut) {
+                            ukuranContainer.classList.add('hidden');
+                        } else {
+                            ukuranContainer.classList.remove('hidden');
+                            if (isRingVelg || isVelg) {
+                                label.textContent = 'Lobang';
+                                input.placeholder = 'Contoh: 8, 10, etc';
+                            } else {
+                                label.textContent = 'Ukuran';
+                                input.placeholder = 'Contoh: 1000, 1100, 750';
+                            }
+                        }
+                    }
+
                     if (isBanDalam) {
                         // Ban Dalam: Force Pcs
                         const opt = document.createElement('option');
@@ -481,7 +511,6 @@
                     
                     qtyWrapper.classList.add('hidden');
                     
-                    document.querySelector('input[name="nomor_seri"]').setAttribute('required', 'required');
                     document.querySelector('select[name="merk_id"]').setAttribute('required', 'required');
                     document.querySelector('input[name="qty"]').removeAttribute('required');
 
@@ -497,6 +526,11 @@
                         if (opt.value === "{{ old('kondisi') }}") option.selected = true;
                         typeSelect.appendChild(option);
                     });
+
+                    // Ensure Ukuran is shown
+                    const ukuranInput = document.querySelector('input[name="ukuran"]');
+                    const ukuranContainer = ukuranInput ? ukuranInput.closest('div') : null;
+                    if (ukuranContainer) ukuranContainer.classList.remove('hidden');
                 }
             }
 

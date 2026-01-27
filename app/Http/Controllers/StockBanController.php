@@ -216,7 +216,7 @@ class StockBanController extends Controller
 
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
-            'nomor_seri' => 'required|unique:stock_bans,nomor_seri',
+            'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri',
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'nullable|string|max:255',
@@ -267,7 +267,7 @@ class StockBanController extends Controller
 
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
-            'nomor_seri' => 'required|unique:stock_bans,nomor_seri,' . $stockBan->id,
+            'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri,' . $stockBan->id,
             'merk' => 'required|string|max:255',
             'ukuran' => 'nullable|string|max:255',
             'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
