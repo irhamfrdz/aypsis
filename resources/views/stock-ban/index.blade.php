@@ -132,6 +132,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk / Ukuran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type / Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Beli</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Masuk</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -170,10 +172,23 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $ban->lokasi }}
-                                @if($ban->mobil_id)
-                                    <div class="text-xs text-blue-600 mt-1 font-medium">
-                                        <i class="fas fa-truck mr-1"></i> {{ $ban->mobil->nomor_polisi }}
-                                    </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @if($ban->mobil)
+                                    <span class="font-medium text-blue-600">
+                                        <i class="fas fa-truck mr-1 text-xs"></i> {{ $ban->mobil->nomor_polisi }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @if($ban->penerima)
+                                    <span class="font-medium text-gray-700">
+                                        <i class="fas fa-user mr-1 text-xs"></i> {{ $ban->penerima->nama_lengkap }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
