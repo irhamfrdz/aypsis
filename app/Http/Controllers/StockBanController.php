@@ -415,14 +415,36 @@ class StockBanController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:stock_bans,id',
+            'nomor_invoice' => 'nullable|string|max:255',
+            'tanggal_masuk_kanisir' => 'required|date',
+            'vendor' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
         ]);
 
-        $count = StockBan::whereIn('id', $request->ids)
+        $bans = StockBan::whereIn('id', $request->ids)
             ->where('status', 'Stok')
             ->where('kondisi', '!=', 'afkir')
-            ->update([
-                'kondisi' => 'kanisir'
-            ]);
+            ->get();
+
+        $count = 0;
+
+        foreach ($bans as $ban) {
+            $ban->kondisi = 'kanisir';
+            $ban->nomor_bukti = $request->nomor_invoice;
+            $ban->tanggal_masuk = $request->tanggal_masuk_kanisir; // Update date to kanisir date
+            $ban->harga_beli = $request->harga; // Update price/cost
+            
+            // Append vendor info to keterangan
+            $vendorNote = "[Masak Kanisir] Vendor: " . $request->vendor . ", Tgl: " . date('d-m-Y', strtotime($request->tanggal_masuk_kanisir));
+            if ($ban->keterangan) {
+                 $ban->keterangan .= "\n" . $vendorNote;
+            } else {
+                 $ban->keterangan = $vendorNote;
+            }
+
+            $ban->save();
+            $count++;
+        }
 
         return redirect()->route('stock-ban.index')->with('success', $count . ' Ban berhasil dimasak menjadi Kanisir.');
     }

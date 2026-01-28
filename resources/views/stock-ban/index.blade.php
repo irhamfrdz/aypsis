@@ -28,58 +28,98 @@
         display: block;
     }
 
-    /* Custom Searchable Select Styles */
-    .custom-select-container {
-        position: relative;
+    /* Refined Custom Dropdown & Form Styles */
+    .dropdown-menu-custom {
+        display: none;
+        position: fixed;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        z-index: 999999;
+        max-height: 300px;
+        overflow-y: auto;
+        min-width: 250px;
+        border: 1px solid #3b82f633;
     }
-    .custom-select-button {
+    .dropdown-search-container {
+        position: sticky;
+        top: 0;
+        background-color: #f9fafb;
+        padding: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+        z-index: 10;
+    }
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        color: #4b5563;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .dropdown-item:last-child {
+        border-bottom: none;
+    }
+    .dropdown-item:hover {
+        background-color: #eff6ff;
+        color: #2563eb;
+        padding-left: 1.25rem;
+    }
+    .dropdown-item.selected {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    /* Premium Input Styling */
+    .form-input-premium {
+        width: 100%;
+        background-color: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.625rem 1rem;
+        color: #111827;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    .form-input-premium:focus {
+        background-color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+    .form-label-premium {
+        display: block;
+        margin-bottom: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+    }
+    .btn-dropdown-premium {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        padding: 0.5rem 1rem;
-        background-color: white;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        text-align: left;
-    }
-    .custom-select-button:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-    }
-    .custom-select-dropdown {
-        position: absolute;
-        z-index: 9999;
-        width: 100%;
-        margin-top: 0.25rem;
-        background-color: white;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        max-height: 15rem;
-        overflow-y: auto;
-        display: none;
-    }
-    .custom-select-search {
-        position: sticky;
-        top: 0;
-        padding: 0.5rem;
         background-color: #f9fafb;
-        border-bottom: 1px solid #d1d5db;
-    }
-    .custom-select-option {
-        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.625rem 1rem;
+        color: #111827;
+        font-size: 0.875rem;
+        transition: all 0.2s;
         cursor: pointer;
     }
-    .custom-select-option:hover {
-        background-color: #eff6ff;
+    .btn-dropdown-premium:hover {
+        border-color: #9ca3af;
     }
-    .custom-select-option.selected {
-        background-color: #dbeafe;
-        font-weight: 500;
+    .btn-dropdown-premium:focus {
+        background-color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
     }
+
     .hidden {
         display: none !important;
     }
@@ -125,9 +165,9 @@
         <div id="tab-ban-luar" class="tab-content active p-4">
             <form action="{{ route('stock-ban.bulk-masak') }}" method="POST" id="bulk-masak-form">
                 @csrf
-                <div class="mb-4 flex justify-end">
-                     <button type="submit" class="px-3 py-1 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 transition" onclick="return confirm('Apakah anda yakin ingin memasak ban yang dipilih menjadi kanisir?')">
-                        <i class="fas fa-fire mr-1"></i> Masak Kanisir (Bulk)
+                <div class="mb-4 flex justify-end hidden" id="bulk-action-container">
+                     <button type="button" class="px-4 py-2 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 shadow-md transition flex items-center" onclick="openKanisirModal(event)">
+                        <i class="fas fa-fire mr-2"></i> Masak Kanisir (Bulk)
                      </button>
                 </div>
                 
@@ -136,7 +176,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    <input type="checkbox" id="check-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <input type="checkbox" id="check-all-ban-luar" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seri / Kode</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk & Ukuran</th>
@@ -263,6 +303,64 @@
     </div>
 </div>
 
+<!-- Modal Masak Kanisir (Bulk) -->
+<div id="kanisirModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeKanisirModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-fire text-orange-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Proses Masak Kanisir
+                        </h3>
+                        <div class="mt-4 space-y-4">
+                            <div>
+                                <label for="kanisir_invoice" class="form-label-premium">Nomor Invoice</label>
+                                <input type="text" id="kanisir_invoice" class="form-input-premium" placeholder="Contoh: INV-001">
+                            </div>
+                            
+                            <div>
+                                <label for="kanisir_tanggal" class="form-label-premium">Tanggal Masuk Kanisir <span class="text-red-500">*</span></label>
+                                <input type="date" id="kanisir_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                            </div>
+
+                            <div>
+                                <label for="kanisir_vendor" class="form-label-premium">Vendor <span class="text-red-500">*</span></label>
+                                <input type="text" id="kanisir_vendor" class="form-input-premium" placeholder="Nama Vendor" required>
+                            </div>
+
+                            <div>
+                                <label for="kanisir_harga" class="form-label-premium">Harga (Total/Satuan) <span class="text-red-500">*</span></label>
+                                <div class="mt-1 relative rounded-lg shadow-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                                    </div>
+                                    <input type="number" id="kanisir_harga" class="form-input-premium pl-10" placeholder="0" required>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-400 italic">Harga yang dimasukkan akan diupdate ke data ban.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                <button type="button" onclick="submitKanisirForm(event)" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-orange-600 text-base font-semibold text-white hover:bg-orange-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
+                    Simpan
+                </button>
+                <button type="button" onclick="closeKanisirModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:ml-0 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Gunakan Ban Luar -->
 <div id="usageModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -279,76 +377,72 @@
                     </h3>
                     
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mobil</label>
-                        <div class="custom-select-container" id="mobil-select-container">
-                            <input type="hidden" name="mobil_id" id="mobil_id" required>
-                            <button type="button" id="mobil-select-button" class="custom-select-button">
-                                <span id="mobil-selected-text">-- Pilih Mobil --</span>
-                                <i class="fas fa-chevron-down text-gray-400"></i>
-                            </button>
-                            <div id="mobil-select-dropdown" class="custom-select-dropdown">
-                                <div class="custom-select-search">
-                                    <input type="text" id="mobil-search-input" placeholder="Cari mobil..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                </div>
-                                <div class="custom-select-options" id="mobil-options-list">
-                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Mobil --">-- Pilih Mobil --</div>
-                                    @foreach($mobils as $mobil)
-                                        <div class="custom-select-option" 
-                                             data-value="{{ $mobil->id }}" 
-                                             data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}"
-                                             data-text="{{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})">
-                                            {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div id="no-mobil-results" class="hidden p-4 text-center text-sm text-gray-500">Mobil tidak ditemukan</div>
+                        <label class="form-label-premium">Mobil</label>
+                        <input type="hidden" name="mobil_id" id="mobil_id" required>
+                        <button type="button" id="btn-mobil" class="btn-dropdown-premium" onclick="DropdownManager.toggle('mobil', this)">
+                            <span class="block truncate" id="text-mobil">-- Pilih Mobil --</span>
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </button>
+                        
+                        <!-- Dropdown Content (Hidden Loop) -->
+                        <div id="dropdown-content-mobil" class="hidden">
+                            <div class="dropdown-search-container">
+                                <input type="text" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 p-2" placeholder="Cari mobil..." onkeyup="DropdownManager.filter(this)">
+                            </div>
+                            <div class="dropdown-list">
+                                <div class="dropdown-item" onclick="DropdownManager.select('mobil', '', '-- Pilih Mobil --')">-- Pilih Mobil --</div>
+                                @foreach($mobils as $mobil)
+                                    <div class="dropdown-item" 
+                                         onclick="DropdownManager.select('mobil', '{{ $mobil->id }}', '{{ $mobil->nomor_polisi }}')"
+                                         data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}">
+                                        {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Penerima (Supir/Kenek)</label>
-                        <div class="custom-select-container" id="penerima-select-container">
-                            <input type="hidden" name="penerima_id" id="penerima_id" required>
-                            <button type="button" id="penerima-select-button" class="custom-select-button">
-                                <span id="penerima-selected-text">-- Pilih Penerima --</span>
-                                <i class="fas fa-chevron-down text-gray-400"></i>
-                            </button>
-                            <div id="penerima-select-dropdown" class="custom-select-dropdown">
-                                <div class="custom-select-search">
-                                    <input type="text" id="penerima-search-input" placeholder="Cari penerima..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                </div>
-                                <div class="custom-select-options" id="penerima-options-list">
-                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">-- Pilih Penerima --</div>
-                                    @foreach($karyawans as $karyawan)
-                                        <div class="custom-select-option" 
-                                             data-value="{{ $karyawan->id }}" 
-                                             data-search="{{ strtolower($karyawan->nama_lengkap) }}"
-                                             data-text="{{ $karyawan->nama_lengkap }}">
-                                            {{ $karyawan->nama_lengkap }}
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div id="no-penerima-results" class="hidden p-4 text-center text-sm text-gray-500">Penerima tidak ditemukan</div>
+                        <label class="form-label-premium">Penerima (Supir/Kenek)</label>
+                        <input type="hidden" name="penerima_id" id="penerima_id" required>
+                        <button type="button" id="btn-penerima" class="btn-dropdown-premium" onclick="DropdownManager.toggle('penerima', this)">
+                            <span class="block truncate" id="text-penerima">-- Pilih Penerima --</span>
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </button>
+                        
+                        <!-- Dropdown Content (Hidden Loop) -->
+                        <div id="dropdown-content-penerima" class="hidden">
+                            <div class="dropdown-search-container">
+                                <input type="text" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 p-2" placeholder="Cari penerima..." onkeyup="DropdownManager.filter(this)">
+                            </div>
+                            <div class="dropdown-list">
+                                <div class="dropdown-item" onclick="DropdownManager.select('penerima', '', '-- Pilih Penerima --')">-- Pilih Penerima --</div>
+                                @foreach($karyawans as $karyawan)
+                                    <div class="dropdown-item" 
+                                         onclick="DropdownManager.select('penerima', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')"
+                                         data-search="{{ strtolower($karyawan->nama_lengkap) }}">
+                                        {{ $karyawan->nama_lengkap }}
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pasang / Keluar</label>
-                        <input type="date" name="tanggal_keluar" required value="{{ date('Y-m-d') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <label class="form-label-premium">Tanggal Pasang / Keluar</label>
+                        <input type="date" name="tanggal_keluar" required value="{{ date('Y-m-d') }}" class="form-input-premium">
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                        <textarea name="keterangan" rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        <label class="form-label-premium">Keterangan</label>
+                        <textarea name="keterangan" rows="3" class="form-input-premium" placeholder="Tambahkan catatan pemakaian..."></textarea>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-blue-600 text-base font-semibold text-white hover:bg-blue-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
                         Simpan
                     </button>
-                    <button type="button" onclick="closeUsageModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="closeUsageModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:ml-0 sm:w-auto sm:text-sm">
                         Batal
                     </button>
                 </div>
@@ -376,182 +470,153 @@
             });
         });
 
-        // Check All Logic
-        const checkAll = document.getElementById('check-all');
-        const checkItems = document.querySelectorAll('.check-item');
+        // Bulk Action & Check All Logic (specific for Ban Luar)
+        const bulkActionContainer = document.getElementById('bulk-action-container');
         
-        if(checkAll) {
-            checkAll.addEventListener('change', function() {
-                checkItems.forEach(item => item.checked = this.checked);
+        function updateBulkButton() {
+            if (!bulkActionContainer) return;
+            const checkedCount = document.querySelectorAll('#tab-ban-luar .check-item:checked').length;
+            
+            if (checkedCount > 0) {
+                bulkActionContainer.classList.remove('hidden');
+            } else {
+                bulkActionContainer.classList.add('hidden');
+            }
+        }
+
+        // Listen for changes on the unique check-all box
+        const checkAllBanLuar = document.getElementById('check-all-ban-luar');
+        if (checkAllBanLuar) {
+            checkAllBanLuar.addEventListener('change', function(e) {
+                const isChecked = e.target.checked;
+                // Only target check-items within the ban-luar tab to avoid cross-tab pollution
+                const container = document.getElementById('tab-ban-luar');
+                if(container) {
+                    container.querySelectorAll('.check-item').forEach(item => {
+                        item.checked = isChecked;
+                    });
+                }
+                updateBulkButton();
             });
         }
 
-        // Initialize custom selects
-        initMobilSelectIndex();
-        initPenerimaSelectIndex();
+        // Delegated listener for individual checkboxes
+        document.getElementById('tab-ban-luar').addEventListener('change', function(e) {
+            if (e.target.classList.contains('check-item')) {
+                updateBulkButton();
+            }
+        });
+
+        // Initialize state
+        updateBulkButton();
     });
 
-    // Helper to setup a custom dropdown with Portal Pattern
-    function setupCustomSelect(containerId, buttonId, dropdownId, searchId, listId, resultId, inputId, textId) {
-        const container = document.getElementById(containerId);
-        const button = document.getElementById(buttonId);
-        const dropdown = document.getElementById(dropdownId);
-        const searchInput = document.getElementById(searchId);
-        const optionsList = document.getElementById(listId);
-        const noResults = document.getElementById(resultId);
-        const hiddenInput = document.getElementById(inputId);
-        const selectedText = document.getElementById(textId);
+    const DropdownManager = {
+        activeDropdownId: null,
+        activeMenu: null,
 
-        if (!container || !button || !dropdown) return;
-
-        // Placeholder to mark original position
-        const placeholder = document.createComment('dropdown-placeholder');
-        let isAppendedToBody = false;
-
-        function updateSelectedState(value) {
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            options.forEach(opt => {
-                if (opt.getAttribute('data-value') === (value || '').toString()) {
-                    opt.classList.add('selected');
-                    selectedText.textContent = opt.getAttribute('data-text');
-                } else {
-                    opt.classList.remove('selected');
-                }
-            });
-        }
-
-        function selectItem(id, text) {
-            hiddenInput.value = id;
-            selectedText.textContent = text;
-            closeDropdown();
-            updateSelectedState(id);
-        }
-
-        function updatePosition() {
-            if (dropdown.style.display !== 'none') {
-                const rect = button.getBoundingClientRect();
-                dropdown.style.left = rect.left + 'px';
-                dropdown.style.top = rect.bottom + 'px';
-                dropdown.style.width = rect.width + 'px';
+        toggle: function(id, button) {
+            if (this.activeDropdownId === id) {
+                this.close();
+                return;
             }
-        }
+            this.open(id, button);
+        },
 
-        function openDropdown() {
-            // Close others
-            document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
-                if(dd !== dropdown && dd.style.display !== 'none') {
-                    // We can't reach the close method of others easily, so just hide them.
-                    // Ideal: trigger a click on body or custom event.
-                    dd.style.display = 'none';
-                }
-            });
+        open: function(id, button) {
+            this.close(); // Close existing
 
-            // Move to body if not already
-            if (!isAppendedToBody) {
-                dropdown.parentNode.replaceChild(placeholder, dropdown);
-                document.body.appendChild(dropdown);
-                isAppendedToBody = true;
+            // Create/Get Menu
+            let menu = document.getElementById('dropdown-menu-overlay-' + id);
+            if (!menu) {
+                // Clone the content template
+                const template = document.getElementById('dropdown-content-' + id);
+                if (!template) return;
+
+                menu = document.createElement('div');
+                menu.id = 'dropdown-menu-overlay-' + id;
+                menu.className = 'dropdown-menu-custom';
+                menu.innerHTML = template.innerHTML;
+                document.body.appendChild(menu);
+
+                // Prevent click bubbling from menu
+                menu.addEventListener('click', (e) => e.stopPropagation());
             }
 
-            // Position and Show
-            dropdown.style.position = 'fixed';
-            dropdown.style.zIndex = '999999';
-            updatePosition();
-            dropdown.style.display = 'block';
+            // Position it
+            const rect = button.getBoundingClientRect();
+            menu.style.width = rect.width + 'px';
+            menu.style.left = rect.left + 'px';
+            menu.style.top = (rect.bottom + window.scrollY) + 'px';
+            menu.style.display = 'block';
 
             // Reset search
-            searchInput.value = '';
-            optionsList.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('hidden'));
-            noResults.classList.add('hidden');
-
-            setTimeout(() => {
+            const searchInput = menu.querySelector('input');
+            if(searchInput) {
+                searchInput.value = '';
                 searchInput.focus();
-                // Add position listeners
-                window.addEventListener('scroll', updatePosition, true);
-                window.addEventListener('resize', updatePosition);
-            }, 10);
-        }
-
-        function closeDropdown() {
-            dropdown.style.display = 'none';
-            // Cleanup position listeners
-            window.removeEventListener('scroll', updatePosition, true);
-            window.removeEventListener('resize', updatePosition);
-            
-            // Optional: Move back to original position to keep DOM clean, 
-            // but keeping it in body is also fine for performance if frequently used.
-            // Let's move it back to ensure proper cleanup if modal closes.
-            if (isAppendedToBody) {
-                placeholder.parentNode.replaceChild(dropdown, placeholder);
-                isAppendedToBody = false;
+                this.filter(searchInput); // Reset filter
             }
-        }
 
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (dropdown.style.display === 'block') {
-                closeDropdown();
-            } else {
-                openDropdown();
+            this.activeDropdownId = id;
+            this.activeMenu = menu;
+
+            // Add scroll listener to update position
+            window.addEventListener('scroll', this.reposition, true);
+            window.addEventListener('resize', this.reposition);
+        },
+
+        close: function() {
+            if (this.activeMenu) {
+                this.activeMenu.style.display = 'none';
+                this.activeDropdownId = null;
+                this.activeMenu = null;
+                window.removeEventListener('scroll', this.reposition, true);
+                window.removeEventListener('resize', this.reposition);
             }
-        });
+        },
 
-        searchInput.addEventListener('input', function() {
-            const term = this.value.toLowerCase().trim();
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            let count = 0;
-            options.forEach(opt => {
-                const searchData = opt.getAttribute('data-search') || '';
-                if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
-                    opt.classList.remove('hidden');
-                    count++;
+        reposition: function() {
+            if (!DropdownManager.activeDropdownId || !DropdownManager.activeMenu) return;
+            // Find the button (re-query in case context changed?) - we assume button ID convention
+            const button = document.getElementById('btn-' + DropdownManager.activeDropdownId);
+            if(button) {
+                const rect = button.getBoundingClientRect();
+                DropdownManager.activeMenu.style.left = rect.left + 'px';
+                DropdownManager.activeMenu.style.top = (rect.bottom + window.scrollY) + 'px';
+                DropdownManager.activeMenu.style.width = rect.width + 'px';
+            }
+        },
+
+        select: function(id, value, text) {
+            document.getElementById(id).value = value;
+            const textEl = document.getElementById('text-' + id);
+            if (textEl) textEl.textContent = text;
+            this.close();
+        },
+
+        filter: function(input) {
+            const term = input.value.toLowerCase();
+            const items = input.closest('.dropdown-menu-custom').querySelectorAll('.dropdown-item');
+            items.forEach(item => {
+                const search = item.getAttribute('data-search') || '';
+                if (!term || search.includes(term) || item.textContent.toLowerCase().includes(term)) {
+                    item.style.display = 'block';
                 } else {
-                    opt.classList.add('hidden');
+                    item.style.display = 'none';
                 }
             });
-            noResults.classList.toggle('hidden', count > 0);
-        });
+        }
+    };
 
-        optionsList.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const option = e.target.closest('.custom-select-option');
-            if (option) selectItem(option.getAttribute('data-value'), option.getAttribute('data-text'));
-        });
-
-        // Prevent click inside dropdown from closing it
-        dropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-
-        // Close on outside click
-        document.addEventListener('click', function(e) {
-            const isClickInsideButton = button.contains(e.target);
-            const isClickInsideDropdown = dropdown.contains(e.target);
-            
-            if (!isClickInsideButton && !isClickInsideDropdown) {
-                if (dropdown.style.display === 'block') {
-                    closeDropdown();
-                }
-            }
-        });
-    }
-
-    function initMobilSelectIndex() {
-        setupCustomSelect(
-            'mobil-select-container', 'mobil-select-button', 'mobil-select-dropdown',
-            'mobil-search-input', 'mobil-options-list', 'no-mobil-results',
-            'mobil_id', 'mobil-selected-text'
-        );
-    }
-
-    function initPenerimaSelectIndex() {
-        setupCustomSelect(
-            'penerima-select-container', 'penerima-select-button', 'penerima-select-dropdown',
-            'penerima-search-input', 'penerima-options-list', 'no-penerima-results',
-            'penerima_id', 'penerima-selected-text'
-        );
-    }
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+        // If click is not on a dropdown button and not inside a menu
+        if (!e.target.closest('button[onclick^="DropdownManager.toggle"]') && 
+            !e.target.closest('.dropdown-menu-custom')) {
+            DropdownManager.close();
+        }
+    });
 
     function openUsageModal(id, seri) {
         document.getElementById('modal-ban-seri').textContent = seri;
@@ -559,15 +624,60 @@
         
         // Reset selections
         document.getElementById('mobil_id').value = '';
-        document.getElementById('mobil-selected-text').textContent = '-- Pilih Mobil --';
+        document.getElementById('text-mobil').textContent = '-- Pilih Mobil --';
         document.getElementById('penerima_id').value = '';
-        document.getElementById('penerima-selected-text').textContent = '-- Pilih Penerima --';
+        document.getElementById('text-penerima').textContent = '-- Pilih Penerima --';
         
         document.getElementById('usageModal').classList.remove('hidden');
     }
 
     function closeUsageModal() {
         document.getElementById('usageModal').classList.add('hidden');
+        DropdownManager.close();
+    }
+
+    // Kanisir Modal Logic
+    function openKanisirModal(e) {
+        e.preventDefault();
+        document.getElementById('kanisirModal').classList.remove('hidden');
+    }
+
+    function closeKanisirModal() {
+        document.getElementById('kanisirModal').classList.add('hidden');
+    }
+
+    function submitKanisirForm(e) {
+        e.preventDefault();
+        
+        const form = document.getElementById('bulk-masak-form');
+        const modal = document.getElementById('kanisirModal');
+        
+        // Get values
+        const invoice = document.getElementById('kanisir_invoice').value;
+        const tanggal = document.getElementById('kanisir_tanggal').value;
+        const vendor = document.getElementById('kanisir_vendor').value;
+        const harga = document.getElementById('kanisir_harga').value;
+        
+        if (!tanggal || !vendor || !harga) {
+            alert('Mohon lengkapi data Tanggal, Vendor, dan Harga.');
+            return;
+        }
+
+        // Helper to append hidden input
+        const appendHidden = (name, value) => {
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        };
+
+        appendHidden('nomor_invoice', invoice);
+        appendHidden('tanggal_masuk_kanisir', tanggal);
+        appendHidden('vendor', vendor);
+        appendHidden('harga', harga);
+
+        form.submit();
     }
 </script>
 @endpush

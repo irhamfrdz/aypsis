@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
 use App\Models\TandaTerimaLclKontainerPivot;
@@ -598,7 +599,7 @@ class TandaTerimaLclController extends Controller
 
         DB::transaction(function () use ($ids, $request, $shouldCreateProspek, $nomorSeal, &$prospekCreated, &$prospekMessage) {
             // Get current max urutan for this container
-            $maxUrutan = \App\Models\KontainerTandaTerimaLcl::where('nomor_kontainer', $request->nomor_kontainer)
+            $maxUrutan = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
                 ->max('urutan_dalam_kontainer') ?? 0;
 
             foreach ($ids as $index => $id) {
@@ -618,7 +619,7 @@ class TandaTerimaLclController extends Controller
                     ]);
                 } else {
                     // Create new container pivot
-                    \App\Models\KontainerTandaTerimaLcl::create([
+                    \App\Models\TandaTerimaLclKontainerPivot::create([
                         'tanda_terima_lcl_id' => $id,
                         'nomor_kontainer' => $request->nomor_kontainer,
                         'urutan_dalam_kontainer' => $maxUrutan + $index + 1,
@@ -1294,6 +1295,18 @@ class TandaTerimaLclController extends Controller
                 return $item->nomor_kontainer . '|' . ($item->nomor_seal ?? 'unsealed');
             })
             ->map(function($items) {
+                // Fetch Prospek status
+                $firstItem = $items->first();
+                $nomorKontainer = $firstItem->nomor_kontainer;
+                $nomorSeal = $firstItem->nomor_seal;
+                
+                $prospek = \App\Models\Prospek::where('nomor_kontainer', $nomorKontainer)
+                    ->when($nomorSeal, function($q) use ($nomorSeal) {
+                        return $q->where('no_seal', $nomorSeal);
+                    })
+                    ->latest()
+                    ->first();
+
                 return [
                     'nomor_kontainer' => $items->first()->nomor_kontainer,
                     'size_kontainer' => $items->first()->size_kontainer,
@@ -1306,6 +1319,7 @@ class TandaTerimaLclController extends Controller
                         return $item->tandaTerima ? $item->tandaTerima->items->sum('tonase') : 0;
                     }),
                     'items' => $items, // Add the actual pivot items
+                    'prospek' => $prospek, // Pass the whole prospek object
                 ];
             });
         

@@ -4301,8 +4301,20 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('karyawan-tidak-tetap.update')
                 ->middleware('can:karyawan-tidak-tetap-update');
            Route::delete('karyawan-tidak-tetap/{karyawan_tidak_tetap}', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'destroy'])
-                ->name('karyawan-tidak-tetap.destroy')
-                ->middleware('can:karyawan-tidak-tetap-delete');
+                 ->name('karyawan-tidak-tetap.destroy')
+                 ->middleware('can:karyawan-tidak-tetap-delete');
+
+           // ═══════════════════════════════════════════════════════════════════════
+           // 🏢 VENDOR KANISIR MANAGEMENT
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::resource('vendor-kanisir', \App\Http\Controllers\VendorKanisirController::class)
+                 ->names('vendor-kanisir')
+                 ->middleware([
+                     'index' => 'can:stock-ban-view',
+                     'store' => 'can:stock-ban-create',
+                     'update' => 'can:stock-ban-update',
+                     'destroy' => 'can:stock-ban-delete'
+                 ]);
 
            // ═══════════════════════════════════════════════════════════════════════
            // 📄 MASTER DOKUMEN PERIJINAN KAPAL

@@ -229,12 +229,30 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($groupedByContainer as $container)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            @php
+                                $prospek = $container['prospek'] ?? null;
+                                $isShipped = $prospek && $prospek->status == 'sudah_muat';
+                                $isActive = $prospek && $prospek->status == 'aktif';
+                            @endphp
+                            <tr class="hover:bg-gray-50 transition-colors {{ $isShipped ? 'bg-green-50 border-l-4 border-l-green-500' : ($isActive ? 'border-l-4 border-l-blue-500' : '') }}">
                                 <td class="px-4 py-4">
                                     <input type="checkbox" class="container-checkbox rounded border-gray-300 text-blue-600" value="{{ $container['nomor_kontainer'] }}">
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-gray-900">{{ $container['nomor_kontainer'] }}</div>
+                                    @if($isShipped)
+                                        <div class="text-xs text-green-600 font-bold mt-1 inline-flex items-center">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Sudah Naik Kapal
+                                        </div>
+                                        @if($prospek->nama_kapal)
+                                            <div class="text-xs text-green-500 mt-0.5">{{ $prospek->nama_kapal }}</div>
+                                        @endif
+                                    @elseif($isActive)
+                                        <div class="text-xs text-blue-600 font-medium mt-1">Status: Aktif</div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">
