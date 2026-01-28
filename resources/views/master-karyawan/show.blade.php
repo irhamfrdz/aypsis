@@ -453,7 +453,7 @@
                                     <td class="border border-gray-300 px-3 py-2">{{ $index + 1 }}</td>
                                     <td class="border border-gray-300 px-3 py-2">{{ $familyMember->hubungan ?? '-' }}</td>
                                     <td class="border border-gray-300 px-3 py-2 font-medium">{{ $familyMember->nama ?? '-' }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->tanggal_lahir ? $formatDate($familyMember->tanggal_lahir, 'd/m/Y') : '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->tanggal_lahir ? $formatDate($familyMember->tanggal_lahir, 'd/M/Y') : '-' }}</td>
                                     <td class="border border-gray-300 px-3 py-2">{{ $familyMember->alamat ?? '-' }}</td>
                                     <td class="border border-gray-300 px-3 py-2">{{ $familyMember->no_telepon ?? '-' }}</td>
                                     <td class="border border-gray-300 px-3 py-2">{{ $familyMember->nik_ktp ?? '-' }}</td>
