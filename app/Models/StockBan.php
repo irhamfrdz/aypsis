@@ -49,4 +49,23 @@ class StockBan extends Model
         'tanggal_masuk' => 'date',
         'tanggal_keluar' => 'date',
     ];
+
+    public static function generateNextInvoice()
+    {
+        $yearMonth = date('Ym');
+        $prefix = 'INV-KS-' . $yearMonth . '-';
+        
+        $lastInvoice = self::where('nomor_bukti', 'like', $prefix . '%')
+            ->orderBy('nomor_bukti', 'desc')
+            ->first();
+
+        if (!$lastInvoice) {
+            return $prefix . '001';
+        }
+
+        $lastNumber = intval(substr($lastInvoice->nomor_bukti, -3));
+        $nextNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+
+        return $prefix . $nextNumber;
+    }
 }

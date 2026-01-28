@@ -39,8 +39,9 @@ class StockBanController extends Controller
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         // Assuming receivers are employees/karyawans
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+        $nextInvoice = StockBan::generateNextInvoice();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans', 'nextInvoice'));
     }
 
     /**
@@ -53,7 +54,8 @@ class StockBanController extends Controller
         $merkBans = MerkBan::orderBy('nama')->get();
         $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
-        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'karyawans'));
+        $nextInvoice = StockBan::generateNextInvoice(); // Using the same generator for now
+        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'karyawans', 'nextInvoice'));
     }
 
     /**

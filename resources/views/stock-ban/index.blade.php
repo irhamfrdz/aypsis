@@ -322,7 +322,7 @@
                         <div class="mt-4 space-y-4">
                             <div>
                                 <label for="kanisir_invoice" class="form-label-premium">Nomor Invoice</label>
-                                <input type="text" id="kanisir_invoice" class="form-input-premium" placeholder="Contoh: INV-001">
+                                <input type="text" id="kanisir_invoice" class="form-input-premium bg-gray-100" value="{{ $nextInvoice }}" readonly>
                             </div>
                             
                             <div>
