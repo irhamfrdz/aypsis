@@ -13,8 +13,8 @@ class VendorKanisir extends Model
     protected $fillable = [
         'kode',
         'nama',
-        'alamat',
-        'no_telp',
+        'nama_barang',
+        'harga',
         'keterangan',
         'catatan',
         'status',

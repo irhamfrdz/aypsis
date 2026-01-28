@@ -25,8 +25,8 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kode</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Vendor</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Telepon</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Alamat</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -36,8 +36,8 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{{ $vendor->kode ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">{{ $vendor->nama }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $vendor->no_telp ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500 truncate max-w-xs">{{ $vendor->alamat ?? '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $vendor->nama_barang ?? '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">Rp {{ number_format($vendor->harga, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $vendor->status == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ ucfirst($vendor->status) }}
@@ -92,12 +92,12 @@
                             <input type="text" name="nama" required class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Nama perusahaan / perorangan">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">No. Telepon</label>
-                            <input type="text" name="no_telp" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="08xxxxxxxxxx">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang</label>
+                            <input type="text" name="nama_barang" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Contoh: Kanisir 10.00-20">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Alamat</label>
-                            <textarea name="alamat" rows="2" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Alamat lengkap vendor"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Harga (Rp)</label>
+                            <input type="number" name="harga" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="0">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan</label>
@@ -139,12 +139,12 @@
                             <input type="text" name="nama" id="edit_nama" required class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">No. Telepon</label>
-                            <input type="text" name="no_telp" id="edit_no_telp" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang</label>
+                            <input type="text" name="nama_barang" id="edit_nama_barang" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Alamat</label>
-                            <textarea name="alamat" id="edit_alamat" rows="2" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Harga (Rp)</label>
+                            <input type="number" name="harga" id="edit_harga" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Status</label>
@@ -182,8 +182,8 @@
         document.getElementById('editVendorForm').action = "/vendor-kanisir/" + vendor.id;
         document.getElementById('edit_kode').value = vendor.kode || '';
         document.getElementById('edit_nama').value = vendor.nama;
-        document.getElementById('edit_no_telp').value = vendor.no_telp || '';
-        document.getElementById('edit_alamat').value = vendor.alamat || '';
+        document.getElementById('edit_nama_barang').value = vendor.nama_barang || '';
+        document.getElementById('edit_harga').value = vendor.harga || 0;
         document.getElementById('edit_status').value = vendor.status;
         openModal('editVendorModal');
     }
