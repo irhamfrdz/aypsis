@@ -80,6 +80,12 @@
                                 value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
                                 class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
                         </div>
+                        <div class="mt-2">
+                            <label for="tanggal_pembayaran" class="{{ $labelClasses }}">Tanggal Pembayaran</label>
+                            <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran"
+                                value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
+                                class="{{ $inputClasses }}">
+                        </div>
                     </div>
                 </div>
 
@@ -125,12 +131,11 @@
                                         value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
                                         class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
                                 </div>
-                                <div>
-                                    <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas <span class="text-red-500">*</span></label>
-                                    <input type="date" name="tanggal_kas" id="tanggal_kas"
-                                        value="{{ old('tanggal_kas', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
+                                 <div>
+                                    <label for="tanggal_pembayaran" class="{{ $labelClasses }}">Tanggal Pembayaran <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran"
+                                        value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
                                         class="{{ $inputClasses }}" required>
-                                    <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}">
                                 </div>
                             </div>
                         </div>
@@ -362,13 +367,6 @@
                     }
                 }
 
-                // Sync tanggal_kas with tanggal_pembayaran
-                const tanggalKas = document.getElementById('tanggal_kas');
-                const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
-                
-                tanggalKas.addEventListener('change', function() {
-                    tanggalPembayaran.value = this.value;
-                });
 
                 // Calculate total after adjustment
                 const totalPembayaran = document.getElementById('total_pembayaran');

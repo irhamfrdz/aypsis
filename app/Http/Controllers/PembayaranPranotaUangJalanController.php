@@ -348,6 +348,7 @@ class PembayaranPranotaUangJalanController extends Controller
         if ($pembayaranPranotaUangJalan->isPaid()) {
             $request->validate([
                 'nomor_accurate' => 'nullable|string|max:255',
+                'tanggal_pembayaran' => 'nullable|date',
             ]);
 
             DB::beginTransaction();
@@ -355,6 +356,7 @@ class PembayaranPranotaUangJalanController extends Controller
             try {
                 $pembayaranPranotaUangJalan->update([
                     'nomor_accurate' => $request->nomor_accurate,
+                    'tanggal_pembayaran' => $request->tanggal_pembayaran ?: $pembayaranPranotaUangJalan->tanggal_pembayaran,
                     'updated_by' => Auth::id(),
                 ]);
 
