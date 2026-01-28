@@ -266,8 +266,8 @@
                                             @csrf
                                             <input type="hidden" name="nomor_kontainer" value="{{ $container['nomor_kontainer'] }}">
                                             <input type="hidden" name="nomor_seal" value="{{ $firstPivot->nomor_seal }}">
-                                            <button type="submit" class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded border border-yellow-300 transition-colors" title="Klik untuk sinkronisasi data ke Prospek">
-                                                Sync Prospek
+                                            <button type="submit" class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded border border-yellow-300 transition-colors" title="Klik untuk mengirim data ini ke Gudang/Prospek">
+                                                Kirim ke Gudang
                                             </button>
                                         </form>
                                     @endif
