@@ -16,6 +16,8 @@ use App\Http\Controllers\CabangController;
 use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MasterBankController;
 use App\Http\Controllers\Master\KlasifikasiBiayaController;
+use App\Http\Controllers\TandaTerimaLclController;
+use App\Http\Controllers\VendorKanisirController;
 
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\TujuanKegiatanUtamaController;

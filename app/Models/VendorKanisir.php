@@ -42,4 +42,22 @@ class VendorKanisir extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    /**
+     * Generate next sequential code
+     */
+    public static function generateNextCode(): string
+    {
+        $lastVendor = self::orderBy('id', 'desc')->first();
+        
+        if (!$lastVendor || !$lastVendor->kode) {
+            return 'VK-001';
+        }
+
+        $lastCode = $lastVendor->kode;
+        $number = (int) str_replace('VK-', '', $lastCode);
+        $nextNumber = $number + 1;
+        
+        return 'VK-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    }
 }

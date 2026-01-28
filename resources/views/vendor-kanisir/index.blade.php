@@ -44,7 +44,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                <button onclick='editVendor(@json($vendor))' class="text-blue-600 hover:text-blue-900 transition-colors">
+                                <button data-vendor='@json($vendor)' onclick='editVendor(this)' class="text-blue-600 hover:text-blue-900 transition-colors">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <form action="{{ route('vendor-kanisir.destroy', $vendor->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus vendor ini?')">
@@ -85,7 +85,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Vendor</label>
-                            <input type="text" name="kode" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Contoh: VK-001">
+                            <input type="text" name="kode" value="{{ $nextKode }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-500 cursor-not-allowed outline-none" placeholder="Otomatis: VK-001">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
@@ -132,7 +132,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Vendor</label>
-                            <input type="text" name="kode" id="edit_kode" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <input type="text" name="kode" id="edit_kode" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-500 cursor-not-allowed outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
@@ -177,7 +177,8 @@
         document.getElementById(id).classList.add('hidden');
     }
 
-    function editVendor(vendor) {
+    function editVendor(el) {
+        const vendor = JSON.parse(el.getAttribute('data-vendor'));
         document.getElementById('editVendorForm').action = "/vendor-kanisir/" + vendor.id;
         document.getElementById('edit_kode').value = vendor.kode || '';
         document.getElementById('edit_nama').value = vendor.nama;

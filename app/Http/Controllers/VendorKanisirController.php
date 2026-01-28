@@ -15,7 +15,8 @@ class VendorKanisirController extends Controller
     public function index()
     {
         $vendors = VendorKanisir::latest()->get();
-        return view('vendor-kanisir.index', compact('vendors'));
+        $nextKode = VendorKanisir::generateNextCode();
+        return view('vendor-kanisir.index', compact('vendors', 'nextKode'));
     }
 
     /**
@@ -40,6 +41,7 @@ class VendorKanisirController extends Controller
         ]);
 
         $data = $request->all();
+        $data['kode'] = $request->kode ?: VendorKanisir::generateNextCode();
         $data['created_by'] = Auth::id();
 
         VendorKanisir::create($data);
