@@ -4,6 +4,15 @@
 @section('page_title','Tambah Karyawan')
 
 @section('content')
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .flatpickr-input[readonly] {
+        background-color: #f3f4f6 !important; /* matches bg-gray-100 */
+    }
+</style>
+@endpush
+
 <div class="space-y-6 max-w-4xl mx-auto">
 
     {{-- Notifikasi --}}
@@ -431,7 +440,9 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
             const divisiSelect = document.getElementById('divisi');
             const pekerjaanSelect = document.getElementById('pekerjaan');
@@ -488,8 +499,8 @@
                         <td class="border border-gray-300 px-2 py-2">
                             <input type="text" name="family_members[${index}][nama]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Nama lengkap" required>
                         </td>
-                        <td class="border border-gray-300 px-2 py-2">
-                            <input type="date" name="family_members[${index}][tanggal_lahir]" class="w-full rounded border-gray-300 text-xs p-1">
+                         <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][tanggal_lahir]" class="family-datepicker w-full rounded border-gray-300 text-xs p-1" placeholder="dd/mmm/yyyy">
                         </td>
                         <td class="border border-gray-300 px-2 py-2">
                             <input type="text" name="family_members[${index}][alamat]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Alamat">
@@ -511,8 +522,17 @@
 
             // Add family member
             addFamilyMemberBtn.addEventListener('click', function() {
-                const familyMemberHtml = createFamilyMemberForm(familyMemberCounter);
+                const index = familyMemberCounter;
+                const familyMemberHtml = createFamilyMemberForm(index);
                 familyMembersContainer.insertAdjacentHTML('beforeend', familyMemberHtml);
+                
+                // Initialize flatpickr for the new row
+                flatpickr(`.family-datepicker[name="family_members[${index}][tanggal_lahir]"]`, {
+                    altInput: true,
+                    altFormat: "d/M/Y",
+                    dateFormat: "Y-m-d",
+                });
+
                 familyMemberCounter++;
                 updateFamilyMemberNumbers();
             });
@@ -562,6 +582,19 @@
                 const combinedAddress = alamatParts.join(', ');
                 alamatLengkapTextarea.value = combinedAddress;
             }
+
+            // Initialize flatpickr for main date fields
+            const dateConfig = {
+                altInput: true,
+                altFormat: "d/M/Y",
+                dateFormat: "Y-m-d",
+            };
+
+            flatpickr("#tanggal_lahir", dateConfig);
+            flatpickr("#tanggal_masuk", dateConfig);
+            flatpickr("#tanggal_berhenti", dateConfig);
+            flatpickr("#tanggal_masuk_sebelumnya", dateConfig);
+            flatpickr("#tanggal_berhenti_sebelumnya", dateConfig);
 
             // Jalankan fungsi saat halaman dimuat
             updatePekerjaanOptions();
