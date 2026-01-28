@@ -391,7 +391,7 @@
         initPenerimaSelectIndex();
     });
 
-    // Helper to setup a custom dropdown
+    // Helper to setup a custom dropdown with Portal Pattern
     function setupCustomSelect(containerId, buttonId, dropdownId, searchId, listId, resultId, inputId, textId) {
         const container = document.getElementById(containerId);
         const button = document.getElementById(buttonId);
@@ -403,6 +403,10 @@
         const selectedText = document.getElementById(textId);
 
         if (!container || !button || !dropdown) return;
+
+        // Placeholder to mark original position
+        const placeholder = document.createComment('dropdown-placeholder');
+        let isAppendedToBody = false;
 
         function updateSelectedState(value) {
             const options = optionsList.querySelectorAll('.custom-select-option');
@@ -419,28 +423,77 @@
         function selectItem(id, text) {
             hiddenInput.value = id;
             selectedText.textContent = text;
-            dropdown.style.display = 'none';
+            closeDropdown();
             updateSelectedState(id);
+        }
+
+        function updatePosition() {
+            if (dropdown.style.display !== 'none') {
+                const rect = button.getBoundingClientRect();
+                dropdown.style.left = rect.left + 'px';
+                dropdown.style.top = rect.bottom + 'px';
+                dropdown.style.width = rect.width + 'px';
+            }
+        }
+
+        function openDropdown() {
+            // Close others
+            document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
+                if(dd !== dropdown && dd.style.display !== 'none') {
+                    // We can't reach the close method of others easily, so just hide them.
+                    // Ideal: trigger a click on body or custom event.
+                    dd.style.display = 'none';
+                }
+            });
+
+            // Move to body if not already
+            if (!isAppendedToBody) {
+                dropdown.parentNode.replaceChild(placeholder, dropdown);
+                document.body.appendChild(dropdown);
+                isAppendedToBody = true;
+            }
+
+            // Position and Show
+            dropdown.style.position = 'fixed';
+            dropdown.style.zIndex = '999999';
+            updatePosition();
+            dropdown.style.display = 'block';
+
+            // Reset search
+            searchInput.value = '';
+            optionsList.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('hidden'));
+            noResults.classList.add('hidden');
+
+            setTimeout(() => {
+                searchInput.focus();
+                // Add position listeners
+                window.addEventListener('scroll', updatePosition, true);
+                window.addEventListener('resize', updatePosition);
+            }, 10);
+        }
+
+        function closeDropdown() {
+            dropdown.style.display = 'none';
+            // Cleanup position listeners
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+            
+            // Optional: Move back to original position to keep DOM clean, 
+            // but keeping it in body is also fine for performance if frequently used.
+            // Let's move it back to ensure proper cleanup if modal closes.
+            if (isAppendedToBody) {
+                placeholder.parentNode.replaceChild(dropdown, placeholder);
+                isAppendedToBody = false;
+            }
         }
 
         button.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Close others
-            document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
-                if(dd !== dropdown) dd.style.display = 'none';
-            });
-
             if (dropdown.style.display === 'block') {
-                dropdown.style.display = 'none';
+                closeDropdown();
             } else {
-                dropdown.style.display = 'block';
-                searchInput.value = '';
-                // Reset search
-                optionsList.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('hidden'));
-                noResults.classList.add('hidden');
-                setTimeout(() => searchInput.focus(), 10);
+                openDropdown();
             }
         });
 
@@ -457,7 +510,7 @@
                     opt.classList.add('hidden');
                 }
             });
-            noResults.classList.toggle('hidden', count === 0);
+            noResults.classList.toggle('hidden', count > 0);
         });
 
         optionsList.addEventListener('click', function(e) {
@@ -466,14 +519,20 @@
             if (option) selectItem(option.getAttribute('data-value'), option.getAttribute('data-text'));
         });
 
+        // Prevent click inside dropdown from closing it
         dropdown.addEventListener('click', function(e) {
             e.stopPropagation();
         });
 
         // Close on outside click
         document.addEventListener('click', function(e) {
-            if (!container.contains(e.target)) {
-                dropdown.style.display = 'none';
+            const isClickInsideButton = button.contains(e.target);
+            const isClickInsideDropdown = dropdown.contains(e.target);
+            
+            if (!isClickInsideButton && !isClickInsideDropdown) {
+                if (dropdown.style.display === 'block') {
+                    closeDropdown();
+                }
             }
         });
     }
