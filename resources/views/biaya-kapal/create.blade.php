@@ -1407,6 +1407,7 @@
             }
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
+        // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {
             if (document.getElementById('tkbm_wrapper')) {
                 document.getElementById('tkbm_wrapper').classList.remove('hidden');
@@ -1447,6 +1448,15 @@
             if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
             if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
             if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            
+            // Hide Biaya Buruh fields for Biaya TKBM
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            
+            // Show DP fields for Biaya TKBM
+            dpWrapper.classList.remove('hidden');
+            sisaPembayaranWrapper.classList.remove('hidden');
+            calculateSisaPembayaran();
         }
         // Show barang wrapper if "Operasional" is selected (SAME AS BURUH)
         else if (selectedText.toLowerCase().includes('operasional')) {
@@ -1493,13 +1503,8 @@
                 document.getElementById('tkbm_wrapper').classList.add('hidden');
                 clearAllTkbmSections();
             }
-        }
             
-            // Hide Biaya Buruh fields for Biaya TKBM
-            barangWrapper.classList.add('hidden');
-            clearAllKapalSections();
-            
-            // Show DP fields for Biaya TKBM
+            // Show DP fields for Biaya Operasional (Like Buruh)
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
