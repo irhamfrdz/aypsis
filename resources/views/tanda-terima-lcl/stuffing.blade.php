@@ -262,6 +262,14 @@
                                             </svg>
                                             Belum Masuk Prospek
                                         </div>
+                                        <form action="{{ route('tanda-terima-lcl.sync-prospek') }}" method="POST" class="inline-block ml-2">
+                                            @csrf
+                                            <input type="hidden" name="nomor_kontainer" value="{{ $container['nomor_kontainer'] }}">
+                                            <input type="hidden" name="nomor_seal" value="{{ $firstPivot->nomor_seal }}">
+                                            <button type="submit" class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded border border-yellow-300 transition-colors" title="Klik untuk sinkronisasi data ke Prospek">
+                                                Sync Prospek
+                                            </button>
+                                        </form>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">

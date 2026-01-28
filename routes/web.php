@@ -4303,7 +4303,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
            Route::delete('karyawan-tidak-tetap/{karyawan_tidak_tetap}', [\App\Http\Controllers\KaryawanTidakTetapController::class, 'destroy'])
                  ->name('karyawan-tidak-tetap.destroy')
                  ->middleware('can:karyawan-tidak-tetap-delete');
-
+    Route::post('tanda-terima-lcl/sync-prospek', [TandaTerimaLclController::class, 'syncProspek'])->name('tanda-terima-lcl.sync-prospek')
+         ->middleware('can:tanda-terima-lcl-edit');
            // ═══════════════════════════════════════════════════════════════════════
            // 🏢 VENDOR KANISIR MANAGEMENT
            // ═══════════════════════════════════════════════════════════════════════

@@ -2017,4 +2017,100 @@ class TandaTerimaLclController extends Controller
             ], 500);
         }
     }
+    /**
+     * Sync sealed container to Prospek
+     */
+    public function syncProspek(Request $request)
+    {
+        try {
+            $request->validate([
+                'nomor_kontainer' => 'required|string|max:255',
+                'nomor_seal' => 'required|string|max:255',
+                'tanggal_seal' => 'nullable|date',
+            ]);
+
+            // Cek apakah sudah ada prospek
+            $existingProspek = Prospek::where('nomor_kontainer', $request->nomor_kontainer)
+                ->where('no_seal', $request->nomor_seal)
+                ->first();
+
+            if ($existingProspek) {
+                return redirect()->back()
+                    ->with('success', "Prospek untuk kontainer {$request->nomor_kontainer} sudah ada (ID: {$existingProspek->id}).");
+            }
+
+            // Ambil data dari pivot
+            $pivotRecords = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->where('nomor_seal', $request->nomor_seal)
+                ->with(['tandaTerima.items'])
+                ->get();
+
+            if ($pivotRecords->isEmpty()) {
+                return redirect()->back()
+                    ->with('error', "Data stuffing untuk kontainer {$request->nomor_kontainer} dengan seal {$request->nomor_seal} tidak ditemukan.");
+            }
+
+            // Ambil data pertama
+            $firstPivot = $pivotRecords->first();
+            $tanggal = $request->tanggal_seal ?? $firstPivot->tanggal_seal ?? now();
+
+            // Hitung total
+            $totalVolume = $pivotRecords->sum(function($pivot) {
+                return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('meter_kubik') : 0;
+            });
+            
+            $totalTon = $pivotRecords->sum(function($pivot) {
+                return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('tonase') : 0;
+            });
+
+            // Kumpulkan info
+            $ptPengirimList = $pivotRecords->map(function($pivot) {
+                return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
+            })->filter()->unique()->implode(', ');
+
+            if (strlen($ptPengirimList) > 180) {
+                $ptPengirimList = substr($ptPengirimList, 0, 177) . '...';
+            }
+
+            $barangList = $pivotRecords->map(function($pivot) {
+                if (!$pivot->tandaTerima || !$pivot->tandaTerima->items) return null;
+                return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
+            })->filter()->unique()->implode(', ');
+
+            if (strlen($barangList) > 180) {
+                $barangList = substr($barangList, 0, 177) . '...';
+            }
+
+            // Cari tujuan terbanyak atau pertama
+            $tujuan = $pivotRecords->map(function($pivot) {
+                return $pivot->tandaTerima && $pivot->tandaTerima->tujuanPengiriman ? $pivot->tandaTerima->tujuanPengiriman->nama_tujuan : null;
+            })->filter()->mode()[0] ?? ($pivotRecords->first()->tandaTerima->tujuanPengiriman->nama_tujuan ?? '-');
+
+            // Create prospek
+            $prospek = Prospek::create([
+                'tanggal' => $tanggal,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'no_seal' => $request->nomor_seal,
+                'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
+                'tipe' => $firstPivot->tipe_kontainer,
+                'pt_pengirim' => $ptPengirimList ?: null,
+                'barang' => $barangList ?: 'LCL',
+                'total_volume' => $totalVolume,
+                'total_ton' => $totalTon,
+                'kuantitas' => $pivotRecords->count(),
+                'tujuan_pengiriman' => $tujuan,
+                'status' => Prospek::STATUS_AKTIF,
+                'keterangan' => "Synced from LCL Stuffing",
+                'created_by' => Auth::id(),
+            ]);
+
+            return redirect()->back()
+                ->with('success', "✓ Berhasil sinkronisasi Prospek untuk kontainer {$request->nomor_kontainer} (ID: {$prospek->id}).");
+
+        } catch (\Exception $e) {
+            \Log::error('Error syncing prospek: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', "Gagal sinkronisasi: " . $e->getMessage());
+        }
+    }
 }
