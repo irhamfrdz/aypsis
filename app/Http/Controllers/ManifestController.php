@@ -323,6 +323,59 @@ class ManifestController extends Controller
     }
 
     /**
+     * Auto update nomor urut (FCL 1,2.. LCL 1,2..) for a ship/voyage
+     */
+    public function autoUpdateNomorUrut(Request $request)
+    {
+        $namaKapal = $request->input('nama_kapal');
+        $noVoyage = $request->input('no_voyage');
+
+        if (!$namaKapal || !$noVoyage) {
+            return response()->json(['success' => false, 'message' => 'Data kapal dan voyage tidak valid'], 400);
+        }
+
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+        $noVoyage = trim($noVoyage);
+
+        // Get all manifests for this voyage, ordered by ID (creation order)
+        $manifests = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $noVoyage)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $fclCounter = 1;
+        $lclCounter = 1;
+        $updated = 0;
+
+        foreach ($manifests as $manifest) {
+            $isLcl = false;
+            
+            // Determine if LCL based on tipe_kontainer or size_kontainer
+            if (
+                (!empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'LCL') !== false) ||
+                (!empty($manifest->size_kontainer) && stripos($manifest->size_kontainer, 'LCL') !== false)
+            ) {
+                $isLcl = true;
+            }
+
+            if ($isLcl) {
+                $manifest->nomor_urut = $lclCounter++;
+            } else {
+                $manifest->nomor_urut = $fclCounter++;
+            }
+
+            $manifest->save();
+            $updated++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil update nomor urut untuk {$updated} data manifest (FCL: " . ($fclCounter - 1) . ", LCL: " . ($lclCounter - 1) . ")",
+        ]);
+    }
+
+    /**
      * Update nomor urut via AJAX
      */
     public function updateNomorUrut(Request $request, string $id)

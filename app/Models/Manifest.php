@@ -8,6 +8,7 @@ class Manifest extends Model
 {
     protected $fillable = [
         'nomor_bl',
+        'nomor_urut',
         'nomor_manifest',
         'nomor_tanda_terima',
         'prospek_id',

@@ -20,6 +20,13 @@
                 </div>
                 @can('manifest-create')
                 <div class="flex gap-2">
+                    <button onclick="autoUpdateNomorUrutGlobal('{{ $namaKapal }}', '{{ $noVoyage }}')"
+                       class="inline-flex items-center justify-center px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Update No. Urut
+                    </button>
                     <a href="{{ route('report.manifests.export', request()->all()) }}"
                        class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -586,6 +593,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    function autoUpdateNomorUrutGlobal(namaKapal, noVoyage) {
+        if (!confirm('Apakah Anda yakin ingin mengupdate nomor urut secara otomatis? (FCL 1,2.. dan LCL 1,2..)')) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        fetch('{{ route("report.manifests.auto-update-nomor-urut") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                nama_kapal: namaKapal,
+                no_voyage: noVoyage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Terjadi kesalahan network');
+        });
+    }
+
     function updateNomorBl(manifestId, newValue, element) {
         // Show loading state
         element.classList.add('opacity-50');
