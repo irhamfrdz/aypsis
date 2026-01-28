@@ -7,12 +7,14 @@ use App\Models\Manifest;
 use App\Models\Prospek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ManifestTableExport;
 
 class ManifestController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:manifest-view')->only(['index', 'show']);
+        $this->middleware('permission:manifest-view')->only(['index', 'show', 'export']);
         $this->middleware('permission:manifest-create')->only(['create', 'store']);
         $this->middleware('permission:manifest-edit')->only(['edit', 'update']);
         $this->middleware('permission:manifest-delete')->only(['destroy']);
@@ -114,6 +116,54 @@ class ManifestController extends Controller
         ]);
 
         return view('manifests.index', compact('manifests', 'namaKapal', 'noVoyage'));
+    }
+
+    /**
+     * Export manifest data to Excel
+     */
+    public function export(Request $request)
+    {
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+
+        if (!$namaKapal || !$noVoyage) {
+            return redirect()->back()->with('error', 'Nama Kapal dan No Voyage harus ada untuk export');
+        }
+
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+        $noVoyage = trim($noVoyage);
+
+        $query = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $noVoyage);
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_bl', 'LIKE', "%{$search}%")
+                  ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_barang', 'LIKE', "%{$search}%")
+                  ->orWhere('pengirim', 'LIKE', "%{$search}%")
+                  ->orWhere('penerima', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Filter by tipe kontainer
+        if ($request->filled('tipe_kontainer')) {
+            $query->where('tipe_kontainer', $request->tipe_kontainer);
+        }
+
+        // Filter by size kontainer
+        if ($request->filled('size_kontainer')) {
+            $query->where('size_kontainer', $request->size_kontainer);
+        }
+
+        $manifests = $query->orderBy('created_at', 'desc')->get();
+
+        $filename = 'Manifest_' . str_replace(' ', '_', $namaKapal) . '_' . str_replace('/', '-', $noVoyage) . '.xlsx';
+
+        return Excel::download(new ManifestTableExport($manifests), $filename);
     }
 
     /**
