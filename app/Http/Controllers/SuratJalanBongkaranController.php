@@ -941,6 +941,7 @@ class SuratJalanBongkaranController extends Controller
                                      ?? $manifest->pelabuhan_bongkar ?? '';      // or manifests.pelabuhan_bongkar
         $printData->size_kontainer = $manifest->size_kontainer ?? '';           // manifests.size_kontainer
         $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';        // manifests.tipe_kontainer
+        $printData->nomor_urut = $manifest->nomor_urut ?? '';                   // manifests.nomor_urut
         
         // Create fake bl relation for compatibility with existing print view
         $printData->bl = $manifest;
