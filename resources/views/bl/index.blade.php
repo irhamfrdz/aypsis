@@ -207,9 +207,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Info Kontainer
                             </th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
+
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                                 Aksi
                             </th>
@@ -288,24 +286,6 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-4 whitespace-nowrap">
-                                    <div class="status-bongkar-container" data-bl-id="{{ $bl->id }}">
-                                        <div class="status-bongkar-display cursor-pointer hover:opacity-80 transition" title="Klik untuk edit">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                                {{ $bl->status_bongkar === 'Sudah Bongkar' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                <span class="w-2 h-2 mr-1.5 rounded-full {{ $bl->status_bongkar === 'Sudah Bongkar' ? 'bg-green-400' : 'bg-yellow-400' }}"></span>
-                                                {{ $bl->status_bongkar }}
-                                            </span>
-                                        </div>
-                                        <div class="status-bongkar-edit hidden mt-1 flex items-center gap-1">
-                                            <select class="status-bongkar-select text-xs border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500 py-1 px-2">
-                                                <option value="Belum Bongkar" {{ $bl->status_bongkar === 'Belum Bongkar' ? 'selected' : '' }}>Belum</option>
-                                                <option value="Sudah Bongkar" {{ $bl->status_bongkar === 'Sudah Bongkar' ? 'selected' : '' }}>Sudah</option>
-                                            </select>
-                                            <button class="save-status-bongkar text-green-600 text-xs"><i class="fas fa-check"></i></button>
-                                            <button class="cancel-status-bongkar text-red-600 text-xs"><i class="fas fa-times"></i></button>
-                                        </div>
-                                    </div>
                                     <div class="text-xs text-gray-400 mt-1">
                                         {{ $bl->created_at->format('d/m/y H:i') }}
                                     </div>
@@ -673,17 +653,7 @@
             (val) => ({ size_kontainer: val })
         );
         
-        // 3. Status Bongkar
-        setupInlineEditor(
-            '.status-bongkar-container', 
-            '.status-bongkar-edit', 
-            '.status-bongkar-display', 
-            '.save-status-bongkar', 
-            '.cancel-status-bongkar', 
-            '.status-bongkar-select',
-            (id) => `/bl/${id}/status-bongkar`,
-            (val) => ({ status_bongkar: val })
-        );
+
     });
 </script>
 @endpush
