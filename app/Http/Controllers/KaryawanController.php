@@ -428,6 +428,42 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Export empty karyawan data form as Excel-compatible CSV
+     */
+    public function exportEmpty()
+    {
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor','tanggungan'
+        ];
+
+        $fileName = 'form_karyawan_kosong_' . date('Ymd_His') . '.csv';
+
+        $callback = function() use ($columns) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            
+            // Write header row with semicolon delimiter
+            fwrite($out, implode(";", $columns) . "\r\n");
+
+            // Write one empty line
+            $emptyLine = array_fill(0, count($columns), '');
+            fwrite($out, implode(";", $emptyLine) . "\r\n");
+            
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+        ]);
+    }
+
+    /**
      * Export single karyawan data as Excel-compatible CSV
      */
     public function exportSingle(Karyawan $karyawan)

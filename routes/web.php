@@ -290,6 +290,11 @@ Route::middleware([
              ->name('karyawan.export-excel-indonesia')
              ->middleware('can:master-karyawan-export');
 
+        // Export Empty Form Data (Form Karyawan Kosong)
+        Route::get('karyawan/export-empty', [KaryawanController::class, 'exportEmpty'])
+             ->name('karyawan.export-empty')
+             ->middleware('can:master-karyawan-export');
+
         // Export Single Data Karyawan
         Route::get('karyawan/{karyawan}/export-single', [KaryawanController::class, 'exportSingle'])
               ->name('karyawan.export-single')

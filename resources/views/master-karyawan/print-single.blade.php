@@ -8,9 +8,9 @@
             Export Excel
         </a>
     @else
-        <a href="{{ route('master.karyawan.excel-template') }}" 
+        <a href="{{ route('master.karyawan.export-empty') }}" 
            style="display:inline-block; padding:8px 12px; background:#10b981; color:#fff; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px;">
-            Download Template Excel
+            Export Excel
         </a>
     @endif
 </div>
