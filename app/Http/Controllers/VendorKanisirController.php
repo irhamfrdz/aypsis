@@ -34,8 +34,9 @@ class VendorKanisirController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'nama_barang' => 'nullable|string|max:255',
+            'ukuran' => 'nullable|string|max:255',
             'harga' => 'nullable|numeric|min:0',
+            'tipe' => 'nullable|string|in:benang,kawat',
             'kode' => 'nullable|string|unique:vendor_kanisirs,kode',
             'keterangan' => 'nullable|string',
         ]);
@@ -74,8 +75,9 @@ class VendorKanisirController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:255',
-            'nama_barang' => 'nullable|string|max:255',
+            'ukuran' => 'nullable|string|max:255',
             'harga' => 'nullable|numeric|min:0',
+            'tipe' => 'nullable|string|in:benang,kawat',
             'kode' => 'nullable|string|unique:vendor_kanisirs,kode,' . $id,
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
