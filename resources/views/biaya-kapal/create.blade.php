@@ -1447,6 +1447,53 @@
             if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
             if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
             if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+        }
+        // Show barang wrapper if "Operasional" is selected (SAME AS BURUH)
+        else if (selectedText.toLowerCase().includes('operasional')) {
+            barangWrapper.classList.remove('hidden');
+            initializeKapalSections();
+            
+            // Hide Nama Kapal and Nomor Voyage fields (already in section)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            
+            // Hide BL wrapper
+            blWrapper.classList.add('hidden');
+            clearBlSelections();
+            
+            // Hide PPN/PPH fields
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            
+            // Hide vendor wrapper
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide PPH Dokumen fields
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
+            
+            // Hide Biaya Air fields
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
+            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
+            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            
+            // Hide TKBM wrapper
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+        }
             
             // Hide Biaya Buruh fields for Biaya TKBM
             barangWrapper.classList.add('hidden');
