@@ -152,6 +152,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Urut</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
@@ -201,6 +202,7 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $suratJalans->firstItem() + $index }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->manifest->nomor_urut ?? '-' }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         <span class="font-semibold text-gray-900">{{ $sj->nomor_surat_jalan ?: '-' }}</span>
                                     </td>
@@ -236,6 +238,7 @@
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Urut</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
@@ -308,6 +311,7 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifests->firstItem() + $index }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nomor_urut ?? '-' }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         <span class="font-semibold text-gray-900">{{ $manifest->nomor_bl ?: '-' }}</span>
                                     </td>
