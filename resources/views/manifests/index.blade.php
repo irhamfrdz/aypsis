@@ -156,6 +156,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Urut</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -171,6 +172,28 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ ($manifests->currentPage() - 1) * $manifests->perPage() + $index + 1 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @can('manifest-edit')
+                                <div class="flex items-center gap-2">
+                                    <input type="number" 
+                                           class="text-sm font-medium text-gray-900 border border-gray-300 rounded px-2 py-1 w-16 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 urut-input" 
+                                           data-manifest-id="{{ $manifest->id }}"
+                                           data-original-value="{{ $manifest->nomor_urut }}"
+                                           value="{{ $manifest->nomor_urut }}"
+                                           title="Edit nomor urut, lalu klik Simpan">
+                                    <button type="button" 
+                                            class="save-urut-btn px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors hidden"
+                                            data-manifest-id="{{ $manifest->id }}"
+                                            title="Simpan">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                @else
+                                <div class="text-sm text-gray-900">{{ $manifest->nomor_urut ?? '-' }}</div>
+                                @endcan
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @can('manifest-edit')
@@ -462,6 +485,73 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Nomor Urut functionality
+    const urutInputs = document.querySelectorAll('.urut-input');
+    urutInputs.forEach(input => {
+        const manifestId = input.dataset.manifestId;
+        const saveBtn = document.querySelector(`.save-urut-btn[data-manifest-id="${manifestId}"]`);
+
+        input.addEventListener('focus', function() {
+            saveBtn.classList.remove('hidden');
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                updateNomorUrut(manifestId, this.value, this);
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.value = this.dataset.originalValue;
+                saveBtn.classList.add('hidden');
+            }
+        });
+    });
+
+    document.querySelectorAll('.save-urut-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const manifestId = this.dataset.manifestId;
+            const input = document.querySelector(`.urut-input[data-manifest-id="${manifestId}"]`);
+            updateNomorUrut(manifestId, input.value, input);
+        });
+    });
+
+    function updateNomorUrut(manifestId, newValue, element) {
+        element.classList.add('opacity-50');
+        const saveBtn = document.querySelector(`.save-urut-btn[data-manifest-id="${manifestId}"]`);
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        
+        fetch(`/report/manifests/${manifestId}/update-nomor-urut`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ nomor_urut: newValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            element.classList.remove('opacity-50');
+            if (data.success) {
+                element.dataset.originalValue = data.nomor_urut;
+                saveBtn.classList.add('hidden');
+                showToast('success', data.message);
+                element.classList.add('bg-green-100');
+                setTimeout(() => element.classList.remove('bg-green-100'), 1000);
+            } else {
+                showToast('error', data.message);
+                element.value = element.dataset.originalValue;
+            }
+        })
+        .catch(error => {
+            element.classList.remove('opacity-50');
+            element.value = element.dataset.originalValue;
+            showToast('error', 'Terjadi kesalahan');
+        });
+    }
     
     // Save button click handlers
     saveBtns.forEach(btn => {

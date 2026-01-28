@@ -182,6 +182,7 @@ class ManifestController extends Controller
     {
         $validated = $request->validate([
             'nomor_bl' => 'required|string|max:255',
+            'nomor_urut' => 'nullable|integer',
             'prospek_id' => 'nullable|exists:prospek,id',
             'nomor_kontainer' => 'required|string|max:255',
             'no_seal' => 'nullable|string|max:255',
@@ -246,6 +247,7 @@ class ManifestController extends Controller
 
         $validated = $request->validate([
             'nomor_bl' => 'required|string|max:255',
+            'nomor_urut' => 'nullable|integer',
             'prospek_id' => 'nullable|exists:prospek,id',
             'nomor_kontainer' => 'required|string|max:255',
             'no_seal' => 'nullable|string|max:255',
@@ -317,6 +319,28 @@ class ManifestController extends Controller
             'success' => true,
             'message' => 'Nomor BL berhasil diperbarui',
             'nomor_bl' => $manifest->nomor_bl
+        ]);
+    }
+
+    /**
+     * Update nomor urut via AJAX
+     */
+    public function updateNomorUrut(Request $request, string $id)
+    {
+        $manifest = Manifest::findOrFail($id);
+
+        $validated = $request->validate([
+            'nomor_urut' => 'nullable|integer',
+        ]);
+
+        $validated['updated_by'] = Auth::id();
+
+        $manifest->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nomor urut berhasil diperbarui',
+            'nomor_urut' => $manifest->nomor_urut
         ]);
     }
 

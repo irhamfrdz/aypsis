@@ -27,6 +27,15 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi BL & Kontainer</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
+                        <label for="nomor_urut" class="block text-sm font-medium text-gray-700 mb-2">No. Urut</label>
+                        <input type="number" name="nomor_urut" id="nomor_urut" value="{{ old('nomor_urut', $manifest->nomor_urut) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 @error('nomor_urut') border-red-500 @enderror">
+                        @error('nomor_urut')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="nomor_bl" class="block text-sm font-medium text-gray-700 mb-2">No. BL <span class="text-red-500">*</span></label>
                         <input type="text" name="nomor_bl" id="nomor_bl" value="{{ old('nomor_bl', $manifest->nomor_bl) }}" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 @error('nomor_bl') border-red-500 @enderror">
