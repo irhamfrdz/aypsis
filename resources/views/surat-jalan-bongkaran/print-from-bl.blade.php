@@ -130,6 +130,16 @@
             font-size: 14px;
             font-weight: bold;
         }
+
+        /* Nomor Urut: posisi absolute sesuai permintaan (atas 3.5cm, kiri 8.5cm) */
+        .nomor-urut-abs {
+            position: absolute;
+            top: 3.5cm;    /* 3.5cm dari atas */
+            left: 8.5cm;   /* 8.5cm dari kiri */
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+        }
     </style>
     <style>
         /* Print-specific overrides to avoid browser margins or headers/scale issues */
@@ -160,6 +170,11 @@
         <!-- Nomor Voyage (posisi top 5cm, left 3.5cm) - Data dari Manifest -->
         <div class="no-voyage">
             {{ strtoupper($printData->no_voyage ?? '') }}
+        </div>
+
+        <!-- Nomor Urut (posisi top 3.5cm, left 8.5cm) - Data dari Manifest -->
+        <div class="nomor-urut-abs">
+            {{ $printData->nomor_urut ? $printData->nomor_urut : '' }}
         </div>
 
         <!-- Nama Kapal (posisi top 6cm, left 3.5cm) - Data dari Manifest -->
