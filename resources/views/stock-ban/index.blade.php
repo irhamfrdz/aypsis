@@ -332,7 +332,12 @@
 
                             <div>
                                 <label for="kanisir_vendor" class="form-label-premium">Vendor <span class="text-red-500">*</span></label>
-                                <input type="text" id="kanisir_vendor" class="form-input-premium" placeholder="Nama Vendor" required>
+                                <select id="kanisir_vendor" class="form-input-premium" required>
+                                    <option value="">-- Pilih Vendor --</option>
+                                    @foreach($vendors as $vendor)
+                                        <option value="{{ $vendor->nama }}">{{ $vendor->nama }}</option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div>

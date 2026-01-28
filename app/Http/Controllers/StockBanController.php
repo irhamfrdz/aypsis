@@ -9,6 +9,7 @@ use App\Models\MerkBan;
 use App\Models\Gudang;
 use App\Models\StockRingVelg;
 use App\Models\StockVelg;
+use App\Models\VendorKanisir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -40,8 +41,9 @@ class StockBanController extends Controller
         // Assuming receivers are employees/karyawans
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = StockBan::generateNextInvoice();
+        $vendors = VendorKanisir::where('status', 'aktif')->orderBy('nama')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans', 'nextInvoice'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans', 'nextInvoice', 'vendors'));
     }
 
     /**
