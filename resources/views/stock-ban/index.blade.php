@@ -361,24 +361,20 @@
 
 @push('scripts')
 <script>
-    function initializeCustomSelects() {
-        console.log('Initializing Custom Selects...');
-        
+    document.addEventListener('DOMContentLoaded', function() {
         // Tab Logic
         const tabs = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
 
-        if (tabs.length > 0) {
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    contents.forEach(c => c.classList.remove('active'));
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
 
-                    tab.classList.add('active');
-                    document.getElementById(tab.dataset.target).classList.add('active');
-                });
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.target).classList.add('active');
             });
-        }
+        });
 
         // Check All Logic
         const checkAll = document.getElementById('check-all');
@@ -393,287 +389,109 @@
         // Initialize custom selects
         initMobilSelectIndex();
         initPenerimaSelectIndex();
-    }
+    });
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeCustomSelects);
-    } else {
-        initializeCustomSelects();
+    // Helper to setup a custom dropdown
+    function setupCustomSelect(containerId, buttonId, dropdownId, searchId, listId, resultId, inputId, textId) {
+        const container = document.getElementById(containerId);
+        const button = document.getElementById(buttonId);
+        const dropdown = document.getElementById(dropdownId);
+        const searchInput = document.getElementById(searchId);
+        const optionsList = document.getElementById(listId);
+        const noResults = document.getElementById(resultId);
+        const hiddenInput = document.getElementById(inputId);
+        const selectedText = document.getElementById(textId);
+
+        if (!container || !button || !dropdown) return;
+
+        function updateSelectedState(value) {
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.getAttribute('data-value') === (value || '').toString()) {
+                    opt.classList.add('selected');
+                    selectedText.textContent = opt.getAttribute('data-text');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+
+        function selectItem(id, text) {
+            hiddenInput.value = id;
+            selectedText.textContent = text;
+            dropdown.style.display = 'none';
+            updateSelectedState(id);
+        }
+
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Close others
+            document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
+                if(dd !== dropdown) dd.style.display = 'none';
+            });
+
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            } else {
+                dropdown.style.display = 'block';
+                searchInput.value = '';
+                // Reset search
+                optionsList.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('hidden'));
+                noResults.classList.add('hidden');
+                setTimeout(() => searchInput.focus(), 10);
+            }
+        });
+
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            let count = 0;
+            options.forEach(opt => {
+                const searchData = opt.getAttribute('data-search') || '';
+                if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                    opt.classList.remove('hidden');
+                    count++;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+            noResults.classList.toggle('hidden', count === 0);
+        });
+
+        optionsList.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const option = e.target.closest('.custom-select-option');
+            if (option) selectItem(option.getAttribute('data-value'), option.getAttribute('data-text'));
+        });
+
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function(e) {
+            if (!container.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     }
 
     function initMobilSelectIndex() {
-        const selectContainer = document.getElementById('mobil-select-container');
-        const selectButton = document.getElementById('mobil-select-button');
-        const selectDropdown = document.getElementById('mobil-select-dropdown');
-        const searchInput = document.getElementById('mobil-search-input');
-        const optionsList = document.getElementById('mobil-options-list');
-        const noResults = document.getElementById('no-mobil-results');
-        const hiddenInput = document.getElementById('mobil_id');
-        const selectedText = document.getElementById('mobil-selected-text');
-
-        if (!selectContainer || !selectButton || !selectDropdown) {
-            console.error('Mobil Select elements not found');
-            return;
-        }
-
-        let dropdownAppended = false;
-        const originalParent = selectDropdown.parentNode;
-        const placeholder = document.createComment('mobil-select-dropdown-placeholder');
-
-        function updateSelectedState(value) {
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            options.forEach(opt => {
-                if (opt.getAttribute('data-value') === (value || '').toString()) {
-                    opt.classList.add('selected');
-                    selectedText.textContent = opt.getAttribute('data-text');
-                } else {
-                    opt.classList.remove('selected');
-                }
-            });
-        }
-
-        function selectMobil(id, text) {
-            hiddenInput.value = id;
-            selectedText.textContent = text;
-            closeDropdown();
-            updateSelectedState(id);
-        }
-
-        function openDropdown() {
-            searchInput.value = '';
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            options.forEach(opt => opt.classList.remove('hidden'));
-            noResults.classList.add('hidden');
-
-            const rect = selectButton.getBoundingClientRect();
-            // Use fixed position and append to body to ensure it's on top of everything
-            selectDropdown.style.position = 'fixed';
-            selectDropdown.style.left = rect.left + 'px';
-            selectDropdown.style.top = rect.bottom + 'px';
-            selectDropdown.style.width = rect.width + 'px';
-            selectDropdown.style.display = 'block';
-            selectDropdown.style.zIndex = '99999'; // Very high z-index
-
-            if (!dropdownAppended) {
-                originalParent.replaceChild(placeholder, selectDropdown);
-                document.body.appendChild(selectDropdown);
-                dropdownAppended = true;
-            }
-
-            setTimeout(() => searchInput.focus(), 10);
-            window.addEventListener('scroll', repositionDropdown, true);
-            window.addEventListener('resize', repositionDropdown);
-        }
-
-        function closeDropdown() {
-            selectDropdown.style.display = 'none';
-            if (dropdownAppended) {
-                document.body.removeChild(selectDropdown);
-                originalParent.replaceChild(selectDropdown, placeholder);
-                dropdownAppended = false;
-            }
-            window.removeEventListener('scroll', repositionDropdown, true);
-            window.removeEventListener('resize', repositionDropdown);
-        }
-
-        function repositionDropdown() {
-            if (!dropdownAppended) return;
-            // Recalculate position
-            const rect = selectButton.getBoundingClientRect();
-            selectDropdown.style.left = rect.left + 'px';
-            selectDropdown.style.top = rect.bottom + 'px';
-            selectDropdown.style.width = rect.width + 'px'; // Ensure width stays consistent
-            // If button is hidden (e.g. modal closed), hide dropdown
-            if (rect.width === 0 && rect.height === 0) {
-                closeDropdown();
-            }
-        }
-
-        selectButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (window.getComputedStyle(selectDropdown).display === 'none') {
-                // Close other dropdowns first
-                const otherDropdowns = document.querySelectorAll('.custom-select-dropdown');
-                otherDropdowns.forEach(dd => {
-                    if (dd !== selectDropdown && dd.style.display !== 'none') {
-                        // We can't easily access the close function of others, but hiding them is a safe fallback
-                        dd.style.display = 'none'; 
-                    }
-                });
-                openDropdown();
-            } else {
-                closeDropdown();
-            }
-        });
-
-        searchInput.addEventListener('input', function() {
-            const term = this.value.toLowerCase().trim();
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            let count = 0;
-            options.forEach(opt => {
-                const searchData = opt.getAttribute('data-search') || '';
-                if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
-                    opt.classList.remove('hidden');
-                    count++;
-                } else {
-                    opt.classList.add('hidden');
-                }
-            });
-            noResults.classList.toggle('hidden', count > 0);
-        });
-
-        optionsList.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent closing when clicking non-option areas in list
-            const option = e.target.closest('.custom-select-option');
-            if (option) selectMobil(option.getAttribute('data-value'), option.getAttribute('data-text'));
-        });
-
-        document.addEventListener('click', function(e) {
-            // Close if click is outside container AND outside dropdown (which might be in body)
-            if (!selectContainer.contains(e.target) && !selectDropdown.contains(e.target)) {
-                closeDropdown();
-            }
-        });
-        
-        // Prevent click in search/dropdown from bubbling up
-        selectDropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+        setupCustomSelect(
+            'mobil-select-container', 'mobil-select-button', 'mobil-select-dropdown',
+            'mobil-search-input', 'mobil-options-list', 'no-mobil-results',
+            'mobil_id', 'mobil-selected-text'
+        );
     }
 
     function initPenerimaSelectIndex() {
-        const selectContainer = document.getElementById('penerima-select-container');
-        const selectButton = document.getElementById('penerima-select-button');
-        const selectDropdown = document.getElementById('penerima-select-dropdown');
-        const searchInput = document.getElementById('penerima-search-input');
-        const optionsList = document.getElementById('penerima-options-list');
-        const noResults = document.getElementById('no-penerima-results');
-        const hiddenInput = document.getElementById('penerima_id');
-        const selectedText = document.getElementById('penerima-selected-text');
-
-        if (!selectContainer || !selectButton || !selectDropdown) {
-             console.error('Penerima Select elements not found');
-             return;
-        }
-
-        let dropdownAppended = false;
-        const originalParent = selectDropdown.parentNode;
-        const placeholder = document.createComment('penerima-select-dropdown-placeholder');
-
-        function updateSelectedState(value) {
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            options.forEach(opt => {
-                if (opt.getAttribute('data-value') === (value || '').toString()) {
-                    opt.classList.add('selected');
-                    selectedText.textContent = opt.getAttribute('data-text');
-                } else {
-                    opt.classList.remove('selected');
-                }
-            });
-        }
-
-        function selectPenerima(id, text) {
-            hiddenInput.value = id;
-            selectedText.textContent = text;
-            closeDropdown();
-            updateSelectedState(id);
-        }
-
-        function openDropdown() {
-            searchInput.value = '';
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            options.forEach(opt => opt.classList.remove('hidden'));
-            noResults.classList.add('hidden');
-
-            const rect = selectButton.getBoundingClientRect();
-            selectDropdown.style.position = 'fixed';
-            selectDropdown.style.left = rect.left + 'px';
-            selectDropdown.style.top = rect.bottom + 'px';
-            selectDropdown.style.width = rect.width + 'px';
-            selectDropdown.style.display = 'block';
-            selectDropdown.style.zIndex = '99999';
-
-            if (!dropdownAppended) {
-                originalParent.replaceChild(placeholder, selectDropdown);
-                document.body.appendChild(selectDropdown);
-                dropdownAppended = true;
-            }
-
-            setTimeout(() => searchInput.focus(), 10);
-            window.addEventListener('scroll', repositionDropdown, true);
-            window.addEventListener('resize', repositionDropdown);
-        }
-
-        function closeDropdown() {
-            selectDropdown.style.display = 'none';
-            if (dropdownAppended) {
-                document.body.removeChild(selectDropdown);
-                originalParent.replaceChild(selectDropdown, placeholder);
-                dropdownAppended = false;
-            }
-            window.removeEventListener('scroll', repositionDropdown, true);
-            window.removeEventListener('resize', repositionDropdown);
-        }
-
-        function repositionDropdown() {
-            if (!dropdownAppended) return;
-            const rect = selectButton.getBoundingClientRect();
-            selectDropdown.style.left = rect.left + 'px';
-            selectDropdown.style.top = rect.bottom + 'px';
-            selectDropdown.style.width = rect.width + 'px';
-             if (rect.width === 0 && rect.height === 0) {
-                closeDropdown();
-            }
-        }
-
-        selectButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (window.getComputedStyle(selectDropdown).display === 'none') {
-                 const otherDropdowns = document.querySelectorAll('.custom-select-dropdown');
-                otherDropdowns.forEach(dd => {
-                    if (dd !== selectDropdown && dd.style.display !== 'none') {
-                        dd.style.display = 'none';
-                    }
-                });
-                openDropdown();
-            } else {
-                closeDropdown();
-            }
-        });
-
-        searchInput.addEventListener('input', function() {
-            const term = this.value.toLowerCase().trim();
-            const options = optionsList.querySelectorAll('.custom-select-option');
-            let count = 0;
-            options.forEach(opt => {
-                const searchData = opt.getAttribute('data-search') || '';
-                if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
-                    opt.classList.remove('hidden');
-                    count++;
-                } else {
-                    opt.classList.add('hidden');
-                }
-            });
-            noResults.classList.toggle('hidden', count > 0);
-        });
-
-        optionsList.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const option = e.target.closest('.custom-select-option');
-            if (option) selectPenerima(option.getAttribute('data-value'), option.getAttribute('data-text'));
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!selectContainer.contains(e.target) && !selectDropdown.contains(e.target)) {
-                closeDropdown();
-            }
-        });
-        
-        selectDropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+        setupCustomSelect(
+            'penerima-select-container', 'penerima-select-button', 'penerima-select-dropdown',
+            'penerima-search-input', 'penerima-options-list', 'no-penerima-results',
+            'penerima_id', 'penerima-selected-text'
+        );
     }
 
     function openUsageModal(id, seri) {
