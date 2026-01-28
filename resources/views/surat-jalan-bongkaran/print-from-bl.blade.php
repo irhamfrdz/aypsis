@@ -94,8 +94,8 @@
         .nama-barang-abs {
             position: absolute;
             top: 9cm; /* 9cm dari atas */
-            left: 10.5cm; /* 10.5cm dari kiri */
-            font-size: 10px;
+            left: 11cm; /* 11cm dari kiri (digeser ke kanan 0.5cm) */
+            font-size: 12px;
             font-weight: bold;
         }
         /* Seal number: posisi absolute sesuai permintaan */
@@ -174,7 +174,7 @@
 
         <!-- Nomor Urut (posisi top 3.5cm, left 8.5cm) - Data dari Manifest -->
         <div class="nomor-urut-abs">
-            {{ $printData->nomor_urut ? $printData->nomor_urut : '' }}
+            {{ $printData->nomor_urut ? 'SJ-' . $printData->nomor_urut : '' }}
         </div>
 
         <!-- Nama Kapal (posisi top 6cm, left 3.5cm) - Data dari Manifest -->
