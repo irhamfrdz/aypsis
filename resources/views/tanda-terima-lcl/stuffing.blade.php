@@ -230,11 +230,14 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($groupedByContainer as $container)
                             @php
+                                $firstPivot = $container['items']->first();
+                                $hasSealed = $firstPivot && $firstPivot->nomor_seal;
                                 $prospek = $container['prospek'] ?? null;
                                 $isShipped = $prospek && $prospek->status == 'sudah_muat';
                                 $isActive = $prospek && $prospek->status == 'aktif';
+                                $isSealedNoProspek = $hasSealed && !$prospek;
                             @endphp
-                            <tr class="hover:bg-gray-50 transition-colors {{ $isShipped ? 'bg-green-50 border-l-4 border-l-green-500' : ($isActive ? 'border-l-4 border-l-blue-500' : '') }}">
+                            <tr class="hover:bg-gray-50 transition-colors {{ $isShipped ? 'bg-green-50 border-l-4 border-l-green-500' : ($isActive ? 'border-l-4 border-l-blue-500' : ($isSealedNoProspek ? 'border-l-4 border-l-yellow-400' : '')) }}">
                                 <td class="px-4 py-4">
                                     <input type="checkbox" class="container-checkbox rounded border-gray-300 text-blue-600" value="{{ $container['nomor_kontainer'] }}">
                                 </td>
@@ -252,6 +255,13 @@
                                         @endif
                                     @elseif($isActive)
                                         <div class="text-xs text-blue-600 font-medium mt-1">Status: Aktif</div>
+                                    @elseif($isSealedNoProspek)
+                                        <div class="text-xs text-yellow-600 font-medium mt-1 inline-flex items-center" title="Container sudah diseal tapi belum masuk data Prospek">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                            Belum Masuk Prospek
+                                        </div>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">

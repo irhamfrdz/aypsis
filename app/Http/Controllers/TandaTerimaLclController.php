@@ -1304,6 +1304,10 @@ class TandaTerimaLclController extends Controller
                     ->when($nomorSeal, function($q) use ($nomorSeal) {
                         return $q->where('no_seal', $nomorSeal);
                     })
+                    ->when(!$nomorSeal, function($q) {
+                        // If current group is unsealed, do not match with old 'shipped' prospeks
+                        return $q->where('status', '!=', 'sudah_muat');
+                    })
                     ->latest()
                     ->first();
 
