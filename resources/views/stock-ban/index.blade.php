@@ -27,6 +27,62 @@
     .tab-content.active {
         display: block;
     }
+
+    /* Custom Searchable Select Styles */
+    .custom-select-container {
+        position: relative;
+    }
+    .custom-select-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        text-align: left;
+    }
+    .custom-select-button:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+    .custom-select-dropdown {
+        position: absolute;
+        z-index: 9999;
+        width: 100%;
+        margin-top: 0.25rem;
+        background-color: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        max-height: 15rem;
+        overflow-y: auto;
+        display: none;
+    }
+    .custom-select-search {
+        position: sticky;
+        top: 0;
+        padding: 0.5rem;
+        background-color: #f9fafb;
+        border-bottom: 1px solid #d1d5db;
+    }
+    .custom-select-option {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+    .custom-select-option:hover {
+        background-color: #eff6ff;
+    }
+    .custom-select-option.selected {
+        background-color: #dbeafe;
+        font-weight: 500;
+    }
+    .hidden {
+        display: none !important;
+    }
 </style>
 @endpush
 
@@ -224,22 +280,58 @@
                     
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Mobil</label>
-                        <select name="mobil_id" required class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">-- Pilih Mobil --</option>
-                            @foreach($mobils as $mobil)
-                            <option value="{{ $mobil->id }}">{{ $mobil->nomor_polisi }}</option>
-                            @endforeach
-                        </select>
+                        <div class="custom-select-container" id="mobil-select-container">
+                            <input type="hidden" name="mobil_id" id="mobil_id" required>
+                            <button type="button" id="mobil-select-button" class="custom-select-button">
+                                <span id="mobil-selected-text">-- Pilih Mobil --</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="mobil-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="mobil-search-input" placeholder="Cari mobil..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="mobil-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Mobil --">-- Pilih Mobil --</div>
+                                    @foreach($mobils as $mobil)
+                                        <div class="custom-select-option" 
+                                             data-value="{{ $mobil->id }}" 
+                                             data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}"
+                                             data-text="{{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})">
+                                            {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-mobil-results" class="hidden p-4 text-center text-sm text-gray-500">Mobil tidak ditemukan</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Penerima (Supir/Kenek)</label>
-                        <select name="penerima_id" required class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">-- Pilih Penerima --</option>
-                            @foreach($karyawans as $karyawan)
-                            <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
-                            @endforeach
-                        </select>
+                        <div class="custom-select-container" id="penerima-select-container">
+                            <input type="hidden" name="penerima_id" id="penerima_id" required>
+                            <button type="button" id="penerima-select-button" class="custom-select-button">
+                                <span id="penerima-selected-text">-- Pilih Penerima --</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="penerima-select-dropdown" class="custom-select-dropdown">
+                                <div class="custom-select-search">
+                                    <input type="text" id="penerima-search-input" placeholder="Cari penerima..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="custom-select-options" id="penerima-options-list">
+                                    <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">-- Pilih Penerima --</div>
+                                    @foreach($karyawans as $karyawan)
+                                        <div class="custom-select-option" 
+                                             data-value="{{ $karyawan->id }}" 
+                                             data-search="{{ strtolower($karyawan->nama_lengkap) }}"
+                                             data-text="{{ $karyawan->nama_lengkap }}">
+                                            {{ $karyawan->nama_lengkap }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="no-penerima-results" class="hidden p-4 text-center text-sm text-gray-500">Penerima tidak ditemukan</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -269,20 +361,24 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    function initializeCustomSelects() {
+        console.log('Initializing Custom Selects...');
+        
         // Tab Logic
         const tabs = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
+        if (tabs.length > 0) {
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
 
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.target).classList.add('active');
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.target).classList.add('active');
+                });
             });
-        });
+        }
 
         // Check All Logic
         const checkAll = document.getElementById('check-all');
@@ -293,16 +389,308 @@
                 checkItems.forEach(item => item.checked = this.checked);
             });
         }
-    });
+
+        // Initialize custom selects
+        initMobilSelectIndex();
+        initPenerimaSelectIndex();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeCustomSelects);
+    } else {
+        initializeCustomSelects();
+    }
+
+    function initMobilSelectIndex() {
+        const selectContainer = document.getElementById('mobil-select-container');
+        const selectButton = document.getElementById('mobil-select-button');
+        const selectDropdown = document.getElementById('mobil-select-dropdown');
+        const searchInput = document.getElementById('mobil-search-input');
+        const optionsList = document.getElementById('mobil-options-list');
+        const noResults = document.getElementById('no-mobil-results');
+        const hiddenInput = document.getElementById('mobil_id');
+        const selectedText = document.getElementById('mobil-selected-text');
+
+        if (!selectContainer || !selectButton || !selectDropdown) {
+            console.error('Mobil Select elements not found');
+            return;
+        }
+
+        let dropdownAppended = false;
+        const originalParent = selectDropdown.parentNode;
+        const placeholder = document.createComment('mobil-select-dropdown-placeholder');
+
+        function updateSelectedState(value) {
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.getAttribute('data-value') === (value || '').toString()) {
+                    opt.classList.add('selected');
+                    selectedText.textContent = opt.getAttribute('data-text');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+
+        function selectMobil(id, text) {
+            hiddenInput.value = id;
+            selectedText.textContent = text;
+            closeDropdown();
+            updateSelectedState(id);
+        }
+
+        function openDropdown() {
+            searchInput.value = '';
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            options.forEach(opt => opt.classList.remove('hidden'));
+            noResults.classList.add('hidden');
+
+            const rect = selectButton.getBoundingClientRect();
+            // Use fixed position and append to body to ensure it's on top of everything
+            selectDropdown.style.position = 'fixed';
+            selectDropdown.style.left = rect.left + 'px';
+            selectDropdown.style.top = rect.bottom + 'px';
+            selectDropdown.style.width = rect.width + 'px';
+            selectDropdown.style.display = 'block';
+            selectDropdown.style.zIndex = '99999'; // Very high z-index
+
+            if (!dropdownAppended) {
+                originalParent.replaceChild(placeholder, selectDropdown);
+                document.body.appendChild(selectDropdown);
+                dropdownAppended = true;
+            }
+
+            setTimeout(() => searchInput.focus(), 10);
+            window.addEventListener('scroll', repositionDropdown, true);
+            window.addEventListener('resize', repositionDropdown);
+        }
+
+        function closeDropdown() {
+            selectDropdown.style.display = 'none';
+            if (dropdownAppended) {
+                document.body.removeChild(selectDropdown);
+                originalParent.replaceChild(selectDropdown, placeholder);
+                dropdownAppended = false;
+            }
+            window.removeEventListener('scroll', repositionDropdown, true);
+            window.removeEventListener('resize', repositionDropdown);
+        }
+
+        function repositionDropdown() {
+            if (!dropdownAppended) return;
+            // Recalculate position
+            const rect = selectButton.getBoundingClientRect();
+            selectDropdown.style.left = rect.left + 'px';
+            selectDropdown.style.top = rect.bottom + 'px';
+            selectDropdown.style.width = rect.width + 'px'; // Ensure width stays consistent
+            // If button is hidden (e.g. modal closed), hide dropdown
+            if (rect.width === 0 && rect.height === 0) {
+                closeDropdown();
+            }
+        }
+
+        selectButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.getComputedStyle(selectDropdown).display === 'none') {
+                // Close other dropdowns first
+                const otherDropdowns = document.querySelectorAll('.custom-select-dropdown');
+                otherDropdowns.forEach(dd => {
+                    if (dd !== selectDropdown && dd.style.display !== 'none') {
+                        // We can't easily access the close function of others, but hiding them is a safe fallback
+                        dd.style.display = 'none'; 
+                    }
+                });
+                openDropdown();
+            } else {
+                closeDropdown();
+            }
+        });
+
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            let count = 0;
+            options.forEach(opt => {
+                const searchData = opt.getAttribute('data-search') || '';
+                if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                    opt.classList.remove('hidden');
+                    count++;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+            noResults.classList.toggle('hidden', count > 0);
+        });
+
+        optionsList.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent closing when clicking non-option areas in list
+            const option = e.target.closest('.custom-select-option');
+            if (option) selectMobil(option.getAttribute('data-value'), option.getAttribute('data-text'));
+        });
+
+        document.addEventListener('click', function(e) {
+            // Close if click is outside container AND outside dropdown (which might be in body)
+            if (!selectContainer.contains(e.target) && !selectDropdown.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+        
+        // Prevent click in search/dropdown from bubbling up
+        selectDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    function initPenerimaSelectIndex() {
+        const selectContainer = document.getElementById('penerima-select-container');
+        const selectButton = document.getElementById('penerima-select-button');
+        const selectDropdown = document.getElementById('penerima-select-dropdown');
+        const searchInput = document.getElementById('penerima-search-input');
+        const optionsList = document.getElementById('penerima-options-list');
+        const noResults = document.getElementById('no-penerima-results');
+        const hiddenInput = document.getElementById('penerima_id');
+        const selectedText = document.getElementById('penerima-selected-text');
+
+        if (!selectContainer || !selectButton || !selectDropdown) {
+             console.error('Penerima Select elements not found');
+             return;
+        }
+
+        let dropdownAppended = false;
+        const originalParent = selectDropdown.parentNode;
+        const placeholder = document.createComment('penerima-select-dropdown-placeholder');
+
+        function updateSelectedState(value) {
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.getAttribute('data-value') === (value || '').toString()) {
+                    opt.classList.add('selected');
+                    selectedText.textContent = opt.getAttribute('data-text');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+
+        function selectPenerima(id, text) {
+            hiddenInput.value = id;
+            selectedText.textContent = text;
+            closeDropdown();
+            updateSelectedState(id);
+        }
+
+        function openDropdown() {
+            searchInput.value = '';
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            options.forEach(opt => opt.classList.remove('hidden'));
+            noResults.classList.add('hidden');
+
+            const rect = selectButton.getBoundingClientRect();
+            selectDropdown.style.position = 'fixed';
+            selectDropdown.style.left = rect.left + 'px';
+            selectDropdown.style.top = rect.bottom + 'px';
+            selectDropdown.style.width = rect.width + 'px';
+            selectDropdown.style.display = 'block';
+            selectDropdown.style.zIndex = '99999';
+
+            if (!dropdownAppended) {
+                originalParent.replaceChild(placeholder, selectDropdown);
+                document.body.appendChild(selectDropdown);
+                dropdownAppended = true;
+            }
+
+            setTimeout(() => searchInput.focus(), 10);
+            window.addEventListener('scroll', repositionDropdown, true);
+            window.addEventListener('resize', repositionDropdown);
+        }
+
+        function closeDropdown() {
+            selectDropdown.style.display = 'none';
+            if (dropdownAppended) {
+                document.body.removeChild(selectDropdown);
+                originalParent.replaceChild(selectDropdown, placeholder);
+                dropdownAppended = false;
+            }
+            window.removeEventListener('scroll', repositionDropdown, true);
+            window.removeEventListener('resize', repositionDropdown);
+        }
+
+        function repositionDropdown() {
+            if (!dropdownAppended) return;
+            const rect = selectButton.getBoundingClientRect();
+            selectDropdown.style.left = rect.left + 'px';
+            selectDropdown.style.top = rect.bottom + 'px';
+            selectDropdown.style.width = rect.width + 'px';
+             if (rect.width === 0 && rect.height === 0) {
+                closeDropdown();
+            }
+        }
+
+        selectButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.getComputedStyle(selectDropdown).display === 'none') {
+                 const otherDropdowns = document.querySelectorAll('.custom-select-dropdown');
+                otherDropdowns.forEach(dd => {
+                    if (dd !== selectDropdown && dd.style.display !== 'none') {
+                        dd.style.display = 'none';
+                    }
+                });
+                openDropdown();
+            } else {
+                closeDropdown();
+            }
+        });
+
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            const options = optionsList.querySelectorAll('.custom-select-option');
+            let count = 0;
+            options.forEach(opt => {
+                const searchData = opt.getAttribute('data-search') || '';
+                if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
+                    opt.classList.remove('hidden');
+                    count++;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+            noResults.classList.toggle('hidden', count > 0);
+        });
+
+        optionsList.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const option = e.target.closest('.custom-select-option');
+            if (option) selectPenerima(option.getAttribute('data-value'), option.getAttribute('data-text'));
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!selectContainer.contains(e.target) && !selectDropdown.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+        
+        selectDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
 
     function openUsageModal(id, seri) {
         document.getElementById('modal-ban-seri').textContent = seri;
         document.getElementById('usageForm').action = "{{ url('stock-ban') }}/" + id + "/use";
+        
+        // Reset selections
+        document.getElementById('mobil_id').value = '';
+        document.getElementById('mobil-selected-text').textContent = '-- Pilih Mobil --';
+        document.getElementById('penerima_id').value = '';
+        document.getElementById('penerima-selected-text').textContent = '-- Pilih Penerima --';
+        
         document.getElementById('usageModal').classList.remove('hidden');
     }
 
     function closeUsageModal() {
-        document.getElementById('usageModal').classList.add('hidden')
+        document.getElementById('usageModal').classList.add('hidden');
     }
 </script>
 @endpush
