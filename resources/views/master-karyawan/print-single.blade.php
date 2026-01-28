@@ -1,6 +1,12 @@
 @extends('layouts.print')
 
 @section('content')
+<div class="no-print" style="text-align:right; max-width:800px; margin:0 auto 10px auto;">
+    <a href="{{ route('master.karyawan.export-single', $karyawan->id) }}" 
+       style="display:inline-block; padding:8px 12px; background:#10b981; color:#fff; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px;">
+        Export Excel
+    </a>
+</div>
 <div style="padding:12px;max-width:800px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#000;font-weight:bold;">
     @php use Carbon\Carbon; @endphp
     <style>
@@ -39,7 +45,7 @@
             <td style="padding:1px;border:1px solid #ddd;">{{ $karyawan->nik ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>2. Nama s</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>2. Nama Lengkap</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->nama_lengkap ?? '-' }}</td>
         </tr>
         <tr>
@@ -54,9 +60,12 @@
             <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>5. JKN/BPJS Kesehatan</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->jkn ?? '-' }}</td>
         </tr>
-
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>6. Jenis Kelamin</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>6. BP Jamsostek</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->no_ketenagakerjaan ?? $karyawan->no_bpjs_ketenagakerjaan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>7. Jenis Kelamin</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">
                 @if($karyawan->jenis_kelamin == 'L')
                     Laki-Laki
@@ -68,95 +77,95 @@
             </td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>7. Tempat / Tanggal Lahir</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>8. Tempat / Tanggal Lahir</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ ($karyawan->tempat_lahir ?? '-') . ' / ' . ($karyawan->tanggal_lahir ? Carbon::parse($karyawan->tanggal_lahir)->format('d/M/Y') : '-') }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>8. Agama</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>9. Agama</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->agama ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>9. No. Handphone</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>10. No. Handphone</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->no_hp ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>10. Status Kawin</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>11. Status Kawin</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->status_perkawinan ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>11. Tanggal Masuk Kerja</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>12. Tanggal Masuk Kerja</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->tanggal_masuk ? Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>12. Tanggungan (Anak)</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>13. Tanggungan (Anak)</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->tanggungan_anak ?? $karyawan->tanggungan ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>13. Alamat Lengkap</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>14. Alamat Lengkap</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->alamat_lengkap ?? $karyawan->alamat ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>14. Kelurahan</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>15. Kelurahan</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->kelurahan ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>15. Kecamatan</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>16. Kecamatan</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->kecamatan ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>16. Kota / Kabupaten</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>17. Kota / Kabupaten</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->kabupaten ?? $karyawan->kota ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>17. Provinsi</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>18. Provinsi</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->provinsi ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>18. Kode Pos</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>19. Kode Pos</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->kode_pos ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>19. Email</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>20. Email</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->email ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>20. Divisi</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>21. Divisi</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->divisi ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>21. Pekerjaan</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>22. Pekerjaan</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->pekerjaan ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>22. Supervisor</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>23. Supervisor</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->supervisor ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>23. Kantor Cabang</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>24. Kantor Cabang</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->cabang ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>24. Status Pajak</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>25. Status Pajak</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->status_pajak ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>25. Nama Bank</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>26. Nama Bank</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->nama_bank ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>26. Cabang Bank</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>27. Cabang Bank</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->bank_cabang ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>27. Nomor Rekening</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>28. Nomor Rekening</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->akun_bank ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>28. Atas Nama Rekening</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>29. Atas Nama Rekening</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->atas_nama ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>29. Catatan</strong></td>
+            <td style="padding:3px;border:1px solid #ddd;background:#f7fafc;"><strong>30. Catatan</strong></td>
             <td style="padding:3px;border:1px solid #ddd;">{{ $karyawan->catatan ?? '-' }}</td>
         </tr>
     </table>

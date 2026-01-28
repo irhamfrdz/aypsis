@@ -20,12 +20,6 @@
                 </svg>
                 Download Template Import
             </a>
-            <a href="{{ route('karyawan.export-empty-form') }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" title="Download form formulir data karyawan form kosong excel" style="margin-left: 8px;">
-                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Download Form Kosong
-            </a>
         @endif
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

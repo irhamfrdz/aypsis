@@ -433,7 +433,7 @@ class KaryawanController extends Controller
     public function exportSingle(Karyawan $karyawan)
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor','tanggungan'
         ];
 
         $safeName = preg_replace('/[^a-zA-Z0-9]/', '_', $karyawan->nama_lengkap);
@@ -450,7 +450,11 @@ class KaryawanController extends Controller
 
             $line = [];
             foreach ($columns as $col) {
-                $val = $karyawan->{$col} ?? '';
+                if ($col === 'tanggungan') {
+                    $val = $karyawan->tanggungan_anak ?? $karyawan->tanggungan ?? '';
+                } else {
+                    $val = $karyawan->{$col} ?? '';
+                }
 
                 // Format dates to dd/mmm/yyyy for Excel export
                 if ($val instanceof \DateTimeInterface) {
@@ -493,19 +497,6 @@ class KaryawanController extends Controller
             'Pragma' => 'no-cache',
             'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
         ]);
-    }
-
-    /**
-     * Download Excel-compatible form with empty fields
-     */
-    public function exportEmptyForm()
-    {
-        $fileName = 'form_data_karyawan_kosong_' . date('Ymd_His') . '.xls';
-
-        return response()->view('master-karyawan.excel-empty-form')
-            ->header('Content-Type', 'application/vnd.ms-excel')
-            ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"")
-            ->header('Cache-Control', 'max-age=0');
     }
 
     /**
