@@ -428,112 +428,33 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Export empty karyawan data form as Excel-compatible CSV
+     * Export empty karyawan data form as Excel (HTML format)
      */
     public function exportEmpty()
     {
-        $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor','tanggungan'
-        ];
+        $karyawan = new Karyawan(); // Empty instance
+        $fileName = 'form_karyawan_kosong_' . date('Ymd_His') . '.xls';
 
-        $fileName = 'form_karyawan_kosong_' . date('Ymd_His') . '.csv';
-
-        $callback = function() use ($columns) {
-            $out = fopen('php://output', 'w');
-            
-            // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            
-            // Write header row with semicolon delimiter
-            fwrite($out, implode(";", $columns) . "\r\n");
-
-            // Write one empty line
-            $emptyLine = array_fill(0, count($columns), '');
-            fwrite($out, implode(";", $emptyLine) . "\r\n");
-            
-            fclose($out);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma' => 'no-cache',
-            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
-        ]);
+        return response(view('master-karyawan.export-excel-form', compact('karyawan')))
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"")
+            ->header('Cache-Control', 'max-age=0');
     }
 
     /**
-     * Export single karyawan data as Excel-compatible CSV
+     * Export single karyawan data as Excel (HTML format)
      */
     public function exportSingle(Karyawan $karyawan)
     {
-        $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor','tanggungan'
-        ];
-
         $safeName = preg_replace('/[^a-zA-Z0-9]/', '_', $karyawan->nama_lengkap);
-        $fileName = 'karyawan_' . $safeName . '_' . date('Ymd_His') . '.csv';
+        $fileName = 'karyawan_' . $safeName . '_' . date('Ymd_His') . '.xls';
 
-        $callback = function() use ($columns, $karyawan) {
-            $out = fopen('php://output', 'w');
-            
-            // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            
-            // Write header row with semicolon delimiter
-            fwrite($out, implode(";", $columns) . "\r\n");
-
-            $line = [];
-            foreach ($columns as $col) {
-                if ($col === 'tanggungan') {
-                    $val = $karyawan->tanggungan_anak ?? $karyawan->tanggungan ?? '';
-                } else {
-                    $val = $karyawan->{$col} ?? '';
-                }
-
-                // Format dates to dd/mmm/yyyy for Excel export
-                if ($val instanceof \DateTimeInterface) {
-                    $val = $val->format('d/M/Y');
-                } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
-                    // Handle date fields - format if not empty, keep empty if null
-                    if (!empty($val)) {
-                        try {
-                            $ts = strtotime($val);
-                            if ($ts !== false && $ts !== -1) {
-                                $val = date('d/M/Y', $ts);
-                            }
-                        } catch (\Throwable $e) {
-                            // Keep original value if parsing fails
-                        }
-                    } else {
-                        // Keep empty for null dates
-                        $val = '';
-                    }
-                }
-
-                // For numeric fields, add invisible zero-width space to prevent scientific notation
-                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                    $val = "\u{200B}" . $val; // Zero-width space
-                }
-
-                // Clean any problematic characters
-                $val = str_replace(["\r", "\n"], ' ', $val); 
-
-                $line[] = $val;
-            }
-            fwrite($out, implode(";", $line) . "\r\n");
-            fclose($out);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma' => 'no-cache',
-            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
-        ]);
+        return response(view('master-karyawan.export-excel-form', compact('karyawan')))
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"")
+            ->header('Cache-Control', 'max-age=0');
     }
+
 
     /**
      * Download CSV template for import
