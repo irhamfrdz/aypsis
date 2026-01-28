@@ -27,7 +27,8 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
                 $m->nomor_tanda_terima ?? '-',
                 $m->nomor_kontainer,
                 $m->no_seal ?? '-',
-                $m->tipe_kontainer . " - " . $m->size_kontainer . "'",
+                $m->tipe_kontainer,
+                $m->size_kontainer,
                 $m->nama_barang,
                 $m->pengirim,
                 $m->penerima,
@@ -45,7 +46,8 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
             'No. Tanda Terima',
             'No. Kontainer',
             'No. Seal',
-            'Tipe & Size',
+            'Tipe',
+            'Size',
             'Nama Barang',
             'Pengirim',
             'Penerima',
@@ -57,12 +59,12 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:I1')->getFont()->setBold(true);
-                $sheet->getStyle('A1:I1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:J1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:J1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 
                 // Add cell borders to all data
                 $lastRow = count($this->manifests) + 1;
-                $sheet->getStyle('A1:I' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                $sheet->getStyle('A1:J' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
             }
         ];
     }
