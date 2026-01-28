@@ -4242,6 +4242,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('stock-ban.use')
                ->middleware('can:stock-ban-update');
 
+
+          // Ban Dalam Routes
+          Route::get('stock-ban/ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'useBanDalam'])
+               ->name('stock-ban.ban-dalam.use')
+               ->middleware('can:stock-ban-update');
+          Route::post('stock-ban/ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'storeUsageBanDalam'])
+               ->name('stock-ban.ban-dalam.store-usage')
+               ->middleware('can:stock-ban-update');
+          Route::get('stock-ban/ban-dalam/{id}', [\App\Http\Controllers\StockBanController::class, 'showBanDalam'])
+               ->name('stock-ban.ban-dalam.show')
+               ->middleware('can:stock-ban-view');
+
           Route::get('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'show'])
                ->name('stock-ban.show')
                ->middleware('can:stock-ban-view');
