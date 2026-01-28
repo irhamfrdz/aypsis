@@ -593,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    function autoUpdateNomorUrutGlobal(namaKapal, noVoyage) {
+    window.autoUpdateNomorUrutGlobal = function(namaKapal, noVoyage) {
         if (!confirm('Apakah Anda yakin ingin mengupdate nomor urut secara otomatis? (FCL 1,2.. dan LCL 1,2..)')) {
             return;
         }
