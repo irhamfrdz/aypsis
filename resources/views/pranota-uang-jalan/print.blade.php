@@ -10,10 +10,10 @@
         'width' => '8.5in',
         'height' => '6.5in',
         'containerWidth' => '8.5in',
-        'fontSize' => '11px',
-        'headerH1' => '16px',
-        'tableFont' => '11px',
-        'signatureBottom' => '5mm'
+        'fontSize' => '10px',
+        'headerH1' => '14px',
+        'tableFont' => '10px',
+        'signatureBottom' => '3mm'
     ];
 @endphp
 <head>
@@ -103,9 +103,9 @@
             max-width: {{ $currentPaper['containerWidth'] }};
             min-height: {{ $currentPaper['height'] }}; /* Use min-height instead of fixed height */
             margin: 0 auto;
-            padding: 5mm 5mm 5mm 5mm;
+            padding: 3mm 4mm;
             position: relative;
-            padding-bottom: 20px; /* Reduced from 60px since signature is no longer absolute */
+            padding-bottom: 10px; /* Reduced further */
             box-sizing: border-box;
             background: white;
             /* Removed overflow: hidden to allow multi-page */
@@ -114,8 +114,8 @@
         .header {
             text-align: center;
             border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-            margin-bottom: 8px;
+            padding-bottom: 2px;
+            margin-bottom: 5px;
         }
 
         .header h1 {
@@ -150,7 +150,7 @@
 
         th, td {
             border: 1px solid #333;
-            padding: 4px 3px;
+            padding: 2px 2px;
             text-align: left;
             vertical-align: middle;
             font-size: {{ $currentPaper['tableFont'] }};
@@ -200,7 +200,7 @@
         }
 
         .signature-section {
-            margin-top: 30px; /* Add space above signature */
+            margin-top: 15px; /* Add space above signature */
             text-align: center;
             page-break-inside: avoid;
             width: 100%;
@@ -215,15 +215,15 @@
 
         .signature-cell {
             width: 33.33%;
-            padding: 8px 4px;
+            padding: 4px 2px;
             text-align: center;
             vertical-align: top;
         }
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: 20px;
-            font-size: 10px;
+            margin-bottom: 15px;
+            font-size: 9px;
         }
 
         .signature-name {
@@ -311,7 +311,7 @@
                 min-height: {{ $currentPaper['height'] }};
                 max-height: none; /* Remove max-height constraint */
                 border-bottom: none; /* Remove dashed border for actual print */
-                padding: 5mm;
+                padding: 3mm;
                 margin: 0;
                 box-sizing: border-box;
                 overflow: visible; /* Allow overflow */
@@ -319,7 +319,7 @@
             }
 
             .header h1 {
-                font-size: 14px;
+                font-size: 12px;
             }
 
             table {
@@ -513,23 +513,23 @@
 
 
         <!-- Signature Section -->
-        <div class="signature-section" style="margin-top: 30px;">
+        <div class="signature-section" style="margin-top: 10px;">
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
+                        <div style="border-bottom: 1px dotted #333; margin-bottom: 25px; height: 1px;"></div>
                         <div style="font-size: 9px;">
                             (Pemohon)
                         </div>
                     </td>
-                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
+                        <div style="border-bottom: 1px dotted #333; margin-bottom: 25px; height: 1px;"></div>
                         <div style="font-size: 9px;">
                             (Pemeriksa)
                         </div>
                     </td>
-                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
-                        <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
+                    <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
+                        <div style="border-bottom: 1px dotted #333; margin-bottom: 25px; height: 1px;"></div>
                         <div style="font-size: 9px;">
                             (Kasir)
                         </div>
