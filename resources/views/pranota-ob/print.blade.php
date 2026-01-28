@@ -72,12 +72,12 @@
 
                     $filteredPerSupirCounts = collect($perSupirCounts)->filter(function($counts, $name) use($normalizeName) {
                         $k = $normalizeName($name);
-                        return $k !== '' && $k !== 'perusahaan' && $k !== 'tl';
+                        return $k !== '' && $k !== 'perusahaan';
                     })->toArray();
 
                     $filteredPerSupir = collect($perSupir)->filter(function($sum, $name) use($normalizeName) {
                         $k = $normalizeName($name);
-                        return $k !== '' && $k !== 'perusahaan' && $k !== 'tl';
+                        return $k !== '' && $k !== 'perusahaan';
                     })->toArray();
 
                     // Calculate totals from filtered data before rendering table
@@ -250,8 +250,27 @@
             };
 
             $sortedItems = collect($displayItems)->filter(function($item) use($normalizeName) {
-                $name = $normalizeName($item['supir'] ?? ($item['nama_supir'] ?? ''));
-                return $name !== '' && $name !== 'perusahaan';
+                $rawName = $item['supir'] ?? ($item['nama_supir'] ?? '');
+                $name = $normalizeName($rawName);
+                $isTl = ($item['is_tl'] ?? false) == 1 || 
+                        ($item['is_tl'] ?? false) === true || 
+                        ($item['is_tl'] ?? false) === '1' ||
+                        (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0);
+                
+                return ($name !== '' && $name !== 'perusahaan') || $isTl;
+            })->map(function($item) use($normalizeName) {
+                $rawName = $item['supir'] ?? ($item['nama_supir'] ?? '');
+                $name = $normalizeName($rawName);
+                if ($name === '' || $name === 'perusahaan') {
+                    $isTl = ($item['is_tl'] ?? false) == 1 || 
+                            ($item['is_tl'] ?? false) === true || 
+                            ($item['is_tl'] ?? false) === '1' ||
+                            (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0);
+                    if ($isTl) {
+                        $item['supir'] = 'TL';
+                    }
+                }
+                return $item;
             })->sortBy('supir')->values();
             $totalItems = $sortedItems->count();
             $halfCount = ceil($totalItems / 2);

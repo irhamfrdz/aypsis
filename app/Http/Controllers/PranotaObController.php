@@ -109,7 +109,16 @@ class PranotaObController extends Controller
             
             $amount = (float)($item['biaya'] ?? 0);
             $totalBiaya += $amount;
-            $key = trim($item['supir'] ?? 'Perusahaan');
+            
+            $supirName = trim($item['supir'] ?? '');
+            if (($supirName === '' || strtolower($supirName) === 'perusahaan') && $isTl) {
+                $supirName = 'TL';
+            }
+            if ($supirName === '') {
+                $supirName = 'Perusahaan';
+            }
+            $key = $supirName;
+
             if (!isset($perSupir[$key])) $perSupir[$key] = 0;
             $perSupir[$key] += $amount;
 
