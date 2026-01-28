@@ -17,7 +17,6 @@ use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MasterBankController;
 use App\Http\Controllers\Master\KlasifikasiBiayaController;
 use App\Http\Controllers\TandaTerimaLclController;
-use App\Http\Controllers\VendorKanisirController;
 
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\TujuanKegiatanUtamaController;
@@ -4310,17 +4309,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                  ->middleware('can:karyawan-tidak-tetap-delete');
     Route::post('tanda-terima-lcl/sync-prospek', [TandaTerimaLclController::class, 'syncProspek'])->name('tanda-terima-lcl.sync-prospek')
          ->middleware('can:tanda-terima-lcl-edit');
-           // ═══════════════════════════════════════════════════════════════════════
-           // 🏢 VENDOR KANISIR MANAGEMENT
-           // ═══════════════════════════════════════════════════════════════════════
-           Route::resource('vendor-kanisir', \App\Http\Controllers\VendorKanisirController::class)
-                 ->names('vendor-kanisir')
-                 ->middleware([
-                     'index' => 'can:stock-ban-view',
-                     'store' => 'can:stock-ban-create',
-                     'update' => 'can:stock-ban-update',
-                     'destroy' => 'can:stock-ban-delete'
-                 ]);
 
            // ═══════════════════════════════════════════════════════════════════════
            // 📄 MASTER DOKUMEN PERIJINAN KAPAL

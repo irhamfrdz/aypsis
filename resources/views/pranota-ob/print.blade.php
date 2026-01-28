@@ -22,13 +22,13 @@
     
     /* Adjust font sizes for smaller paper */
     .print-container h2 {
-        font-size: 12px;
+        font-size: 14px;
     }
     .print-container p, .print-container td, .print-container th {
-        font-size: 8px;
+        font-size: 10px;
     }
     .print-container table {
-        font-size: 9px;
+        font-size: 11px;
     }
     
     /* Pertebal border table */
@@ -60,7 +60,7 @@
         </div>
 
         <div class="mb-2">
-            <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 8px;">Ringkasan Per Supir</h4>
+            <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 10px;">Ringkasan Per Supir</h4>
             @php
                     // Hanya tampilkan supir yang memiliki nama (exclude TL / Perusahaan / kosong / '-' dll)
                     $normalizeName = function($n) {
@@ -95,7 +95,7 @@
 
                     $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
                 @endphp
-            <table class="min-w-full table-auto border-collapse" style="font-size: 8px;">
+            <table class="min-w-full table-auto border-collapse" style="font-size: 10px;">
                 <thead>
                     <tr>
                         <th class="border px-2 py-1 text-center" rowspan="2"></th>
@@ -199,7 +199,7 @@
             </table>
         </div>
 
-        <div class="flex justify-between" style="font-size: 8px; margin-top: 6px;">
+        <div class="flex justify-between" style="font-size: 10px; margin-top: 6px;">
             <div>
                 <p style="margin: 0;">Catatan: {{ $pranota->catatan ?? '-' }}</p>
             </div>
@@ -211,19 +211,19 @@
                 <tr>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
                         <div style="margin-bottom: 30px; height: 1px;"></div>
-                        <div style="font-size: 8px;">
+                        <div style="font-size: 10px;">
                             (Pemohon)
                         </div>
                     </td>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
                         <div style="margin-bottom: 30px; height: 1px;"></div>
-                        <div style="font-size: 8px;">
+                        <div style="font-size: 10px;">
                             (Pemeriksa)
                         </div>
                     </td>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 5px;">
                         <div style="margin-bottom: 30px; height: 1px;"></div>
-                        <div style="font-size: 8px;">
+                        <div style="font-size: 10px;">
                             (Kasir)
                         </div>
                     </td>
@@ -251,7 +251,7 @@
 
             $sortedItems = collect($displayItems)->filter(function($item) use($normalizeName) {
                 $name = $normalizeName($item['supir'] ?? ($item['nama_supir'] ?? ''));
-                return $name !== '' && $name !== 'perusahaan' && $name !== 'tl';
+                return $name !== '' && $name !== 'perusahaan';
             })->sortBy('supir')->values();
             $totalItems = $sortedItems->count();
             $halfCount = ceil($totalItems / 2);
@@ -262,13 +262,13 @@
         <div style="display: flex; gap: 8px;">
             {{-- Kolom Kiri --}}
             <div style="flex: 1;">
-                <table class="table-auto border-collapse" style="width: 100%; font-size: 7px;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 11px;">
                     <thead>
                         <tr style="background-color: #f3f4f6;">
-                            <th class="border px-1 py-0.5 text-center" style="width: 6%;">No</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 55%;">No.Container</th>
-                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 24%;">NamaSupir</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 25%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 10%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 60%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -276,7 +276,7 @@
                         @forelse($leftItems as $item)
                             <tr>
                                 <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
-                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
                                 <td class="border px-1 py-0.5 text-center">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
@@ -289,7 +289,7 @@
                                         }
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
                         @empty
                             <tr>
@@ -304,13 +304,13 @@
 
             {{-- Kolom Kanan --}}
             <div style="flex: 1;">
-                <table class="table-auto border-collapse" style="width: 100%; font-size: 7px;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 11px;">
                     <thead>
                         <tr style="background-color: #f3f4f6;">
-                            <th class="border px-1 py-0.5 text-center" style="width: 6%;">No</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 55%;">No.Container</th>
-                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 24%;">NamaSupir</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 25%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 10%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 60%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -318,7 +318,7 @@
                         @forelse($rightItems as $item)
                             <tr>
                                 <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
-                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
                                 <td class="border px-1 py-0.5 text-center">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
@@ -331,7 +331,7 @@
                                         }
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-0.5" style="font-size: 6.5px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
                         @empty
                             <tr>

@@ -667,9 +667,7 @@
                                         <span class="text-xs">Vendor Kontainer Sewa</span>
                                     </a>
                                 @endif
-                                <a href="{{ route('vendor-kanisir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('vendor-kanisir.index') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                    <span class="text-xs">Vendor Kanisir</span>
-                                </a>
+
                             </div>
                         </div>
                         @endif
