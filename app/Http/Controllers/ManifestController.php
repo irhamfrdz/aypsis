@@ -350,7 +350,16 @@ class ManifestController extends Controller
 
         foreach ($manifests as $manifest) {
             $isLcl = false;
+            $isCargo = false;
             
+            // Determine if Cargo based on tipe_kontainer or size_kontainer
+            if (
+                (!empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'Cargo') !== false) ||
+                (!empty($manifest->size_kontainer) && stripos($manifest->size_kontainer, 'Cargo') !== false)
+            ) {
+                $isCargo = true;
+            }
+
             // Determine if LCL based on tipe_kontainer or size_kontainer
             if (
                 (!empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'LCL') !== false) ||
@@ -359,7 +368,9 @@ class ManifestController extends Controller
                 $isLcl = true;
             }
 
-            if ($isLcl) {
+            if ($isCargo) {
+                $manifest->nomor_urut = null; // Cargo gets no number
+            } elseif ($isLcl) {
                 $manifest->nomor_urut = $lclCounter++;
             } else {
                 $manifest->nomor_urut = $fclCounter++;
