@@ -2499,9 +2499,15 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage</label>
-                    <select name="air[${sectionIndex}][voyage]" class="voyage-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
-                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select name="air[${sectionIndex}][voyage]" class="voyage-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
+                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                        </select>
+                        <input type="text" name="air[${sectionIndex}][voyage]" class="voyage-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 hidden" disabled placeholder="Ketik No. Voyage">
+                        <button type="button" class="voyage-manual-btn-air px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Air Tawar</label>
@@ -2626,6 +2632,45 @@
         const biayaAgenInput = section.querySelector('.biaya-agen-input');
         biayaAgenInput.addEventListener('input', function() {
             calculateAirSectionTotal(sectionIndex);
+        });
+
+        // Setup manual voyage toggle
+        const voyageSelect = section.querySelector('.voyage-select-air');
+        const voyageInput = section.querySelector('.voyage-input-air');
+        const voyageManualBtn = section.querySelector('.voyage-manual-btn-air');
+
+        voyageManualBtn.addEventListener('click', function() {
+            if (voyageInput.classList.contains('hidden')) {
+                // Switch to manual input
+                voyageSelect.classList.add('hidden');
+                voyageSelect.disabled = true;
+                
+                voyageInput.classList.remove('hidden');
+                voyageInput.disabled = false;
+                voyageInput.focus();
+                
+                this.classList.remove('bg-gray-200', 'text-gray-600');
+                this.classList.add('bg-cyan-200', 'text-cyan-700');
+                this.innerHTML = '<i class="fas fa-list"></i>';
+            } else {
+                // Switch to select list
+                voyageInput.classList.add('hidden');
+                voyageInput.disabled = true;
+                
+                voyageSelect.classList.remove('hidden');
+                
+                // Only enable select if kapal is selected
+                const kapalSelect = section.querySelector('.kapal-select-air');
+                if (kapalSelect && kapalSelect.value) {
+                    voyageSelect.disabled = false;
+                } else {
+                    voyageSelect.disabled = true;
+                }
+                
+                this.classList.add('bg-gray-200', 'text-gray-600');
+                this.classList.remove('bg-cyan-200', 'text-cyan-700');
+                this.innerHTML = '<i class="fas fa-keyboard"></i>';
+            }
         });
     }
     
