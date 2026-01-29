@@ -231,10 +231,19 @@
                 {{-- Ke Input --}}
                 <div>
                     <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Ke (Semua)</label>
-                    <input type="text"
-                           id="bulk_ke"
-                           placeholder="Isi untuk mengubah semua"
-                           class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="bulk_ke"
+                            class="select2-gudang w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Isi untuk mengubah semua</option>
+                        @foreach($gudangs as $gudang)
+                            <option value="{{ $gudang->nama_gudang }}">
+                                {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                            </option>
+                        @endforeach
+                        <!-- Add option for Nama Kapal if needed -->
+                        @if($namaKapal)
+                             <option value="{{ $namaKapal }}">{{ $namaKapal }}</option>
+                        @endif
+                    </select>
                     <p class="text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">Isi untuk mengubah tujuan semua kontainer</p>
                 </div>
             </div>
@@ -598,12 +607,30 @@
                         </td>
                         <td class="px-1 py-1 text-xs text-gray-900">
                             <div class="flex items-center gap-1">
-                                <input type="text" 
-                                       class="editable-ke w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                                       data-id="{{ $bl->id }}" 
-                                       data-type="bl"
-                                       value="{{ $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '') }}"
-                                       placeholder="Tujuan...">
+                                <!-- CHANGED: Input text 'ke' replaced with select dropdown (editable-ke) -->
+                                <select class="editable-ke select2-gudang w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                                        data-id="{{ $bl->id }}" 
+                                        data-type="bl">
+                                    <option value="">Tujuan...</option>
+                                    @php
+                                        // Determine the selected value:
+                                        // 1. Use existing $bl->ke value if present
+                                        // 2. Fallback to $namaKapal if activity is 'muat' (similar to logic in original code, though context implies 'ke' might be destination)
+                                        //    Original logic: $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '')
+                                        $selectedValue = $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '');
+                                    @endphp
+                                    @foreach($gudangs as $gudang)
+                                        <option value="{{ $gudang->nama_gudang }}" {{ $selectedValue == $gudang->nama_gudang ? 'selected' : '' }}>
+                                            {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                                        </option>
+                                    @endforeach
+                                    <!-- Add option for Nama Kapal if it's the default but not in gudangs list, or generally available -->
+                                    @if($namaKapal && $selectedValue == $namaKapal)
+                                         <option value="{{ $namaKapal }}" selected>{{ $namaKapal }}</option>
+                                    @elseif($namaKapal)
+                                         <option value="{{ $namaKapal }}">{{ $namaKapal }}</option>
+                                    @endif
+                                </select>
                                 <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
                                         class="text-green-600 hover:text-green-900 transition duration-150"
                                         title="Simpan">
