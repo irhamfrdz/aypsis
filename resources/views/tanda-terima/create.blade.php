@@ -153,11 +153,12 @@
                                     <!-- Input Gudang -->
                                     <div class="mt-3">
                                         <label for="gudang" class="block text-xs font-medium text-gray-500 mb-2">
-                                            Gudang
+                                            Gudang <span class="text-red-500">*</span>
                                         </label>
                                         <select name="gudang_id"
                                                 id="gudang"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-gudang @error('gudang_id') border-red-500 @enderror">
+                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-gudang @error('gudang_id') border-red-500 @enderror"
+                                                required>
                                             <option value="">-- Pilih Gudang --</option>
                                             @foreach($gudangs as $gudang)
                                                 <option value="{{ $gudang->id }}"
@@ -1162,21 +1163,6 @@
                 language: {
                     noResults: function() {
                         return "Kenek tidak ditemukan";
-                    },
-                    searching: function() {
-                        return "Mencari...";
-                    }
-                }
-            });
-            
-            // Initialize Select2 for gudang
-            $('.select2-gudang').select2({
-                placeholder: '-- Pilih Gudang --',
-                allowClear: true,
-                width: '100%',
-                language: {
-                    noResults: function() {
-                        return "Gudang tidak ditemukan";
                     },
                     searching: function() {
                         return "Mencari...";

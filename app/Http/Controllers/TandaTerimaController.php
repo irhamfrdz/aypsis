@@ -518,7 +518,7 @@ class TandaTerimaController extends Controller
             // Validation for uploaded images
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
-            'gudang_id' => 'nullable|exists:gudangs,id',
+            'gudang_id' => 'required|exists:gudangs,id',
         ]);
 
         DB::beginTransaction();
