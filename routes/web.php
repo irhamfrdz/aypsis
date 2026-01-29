@@ -2204,6 +2204,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-bongkaran.list')
          ->middleware('can:surat-jalan-bongkaran-view');
 
+    Route::get('surat-jalan-bongkaran/export', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'export'])
+         ->name('surat-jalan-bongkaran.export')
+         ->middleware('can:surat-jalan-bongkaran-view');
+
     Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
          ->name('surat-jalan-bongkaran.create')
          ->middleware('can:surat-jalan-bongkaran-create');

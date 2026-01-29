@@ -13,7 +13,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Exports\SuratJalanBongkaranTableExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SuratJalanBongkaranController extends Controller
 {
@@ -213,6 +216,74 @@ class SuratJalanBongkaranController extends Controller
         $terms = \App\Models\Term::orderBy('kode')->get();
 
         return view('surat-jalan-bongkaran.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
+    }
+
+    /**
+     * Export data to Excel.
+     */
+    public function export(Request $request)
+    {
+        $selectedKapal = $request->nama_kapal;
+        $selectedVoyage = $request->no_voyage;
+        $mode = $request->get('mode', 'bl');
+
+        if ($mode === 'surat_jalan') {
+            $query = SuratJalanBongkaran::with('manifest');
+            if ($selectedKapal) {
+                $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                    $q->where('nama_kapal', $selectedKapal)
+                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                });
+            }
+            if ($selectedVoyage) {
+                $query->where('no_voyage', $selectedVoyage);
+            }
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+                $query->where(function($q) use ($search, $searchClean) {
+                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                      ->orWhere('no_kontainer', 'like', "%{$search}%")
+                      ->orWhere('no_seal', 'like', "%{$search}%")
+                      ->orWhere('term', 'like', "%{$search}%")
+                      ->orWhere('jenis_barang', 'like', "%{$search}%")
+                      ->orWhere('supir', 'like', "%{$search}%")
+                      ->orWhere('no_plat', 'like', "%{$search}%");
+                });
+            }
+            $data = $query->orderBy('created_at', 'desc')->get();
+            $filename = 'Surat_Jalan_Bongkaran_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
+        } else {
+            $query = Manifest::query();
+            $query->leftJoin('terms as t', 'manifests.term', '=', 't.kode')
+                ->select('manifests.*', 't.nama_status as term_nama');
+            if ($selectedKapal) {
+                $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                    $q->where('manifests.nama_kapal', $selectedKapal)
+                      ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                });
+            }
+            if ($selectedVoyage) {
+                $query->where('manifests.no_voyage', $selectedVoyage);
+            }
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_bl', 'like', "%{$search}%")
+                      ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                      ->orWhere('no_seal', 'like', "%{$search}%")
+                      ->orWhere('term', 'like', "%{$search}%")
+                      ->orWhere('nama_barang', 'like', "%{$search}%")
+                      ->orWhere('penerima', 'like', "%{$search}%");
+                });
+            }
+            $data = $query->orderBy('manifests.created_at', 'desc')->get();
+            $filename = 'Manifest_Bongkaran_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
+        }
+
+        return Excel::download(new SuratJalanBongkaranTableExport($data, $mode), $filename);
     }
 
     /**
