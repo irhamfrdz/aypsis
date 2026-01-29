@@ -51,7 +51,7 @@
                         </label>
                         <input type="date" 
                                name="start_date" 
-                               value="{{ old('start_date', now()->subDays(30)->format('Y-m-d')) }}"
+                               value="{{ old('start_date', now()->format('Y-m-d')) }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
                                required>
                     </div>
