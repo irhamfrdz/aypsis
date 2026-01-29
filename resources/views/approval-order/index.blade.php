@@ -145,7 +145,7 @@ use Illuminate\Support\Str;
                                 <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($order->tanggal_order)->format('d M Y') }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $order->pengirim->nama ?? '-' }}</div>
+                                <div class="text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-900">{{ $order->tujuan_kirim ?? '-' }}</div>
