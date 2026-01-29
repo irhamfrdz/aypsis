@@ -2655,20 +2655,26 @@
             .then(data => {
                 console.log('Voyages response for', kapalNama, data);
                 voyageSelect.disabled = false;
+                
+                let options = '<option value="">-- Pilih Voyage --</option>';
+                // Tambahkan DOCK sesuai permintaan user
+                options += '<option value="DOCK">DOCK</option>';
+                
                 if (data && data.success && data.voyages && data.voyages.length > 0) {
-                    let options = '<option value="">-- Pilih Voyage --</option>';
                     data.voyages.forEach(voyage => {
                         options += `<option value="${voyage}">${voyage}</option>`;
                     });
-                    voyageSelect.innerHTML = options;
-                } else {
-                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                } else if (!data || !data.voyages || data.voyages.length === 0) {
+                    // Jika tidak ada voyage, tetap tampilkan DOCK
                 }
+                
+                voyageSelect.innerHTML = options;
             })
             .catch(error => {
                 console.error('Error loading voyages:', error);
                 voyageSelect.disabled = false;
-                voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+                // Tetap izinkan pilihan DOCK meskipun fetch gagal
+                voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option><option value="DOCK">DOCK</option>';
             });
     }
     
