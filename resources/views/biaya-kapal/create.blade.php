@@ -3698,6 +3698,22 @@
     const operasionalSectionsContainer = document.getElementById('operasional_sections_container');
     const addOperasionalSectionBtn = document.getElementById('add_operasional_section_btn');
     const addOperasionalSectionBottomBtn = document.getElementById('add_operasional_section_bottom_btn');
+    
+    // Initialize cache for voyages
+    const cachedVoyages = {};
+    
+    // Helper function to format currency inputs
+    function formatCurrency(input) {
+        // Remove non-numeric chars
+        let value = input.value.replace(/\D/g, '');
+        
+        // Format with thousand separator
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        
+        input.value = value;
+    }
 
     if (addOperasionalSectionBtn) {
         addOperasionalSectionBtn.addEventListener('click', function() {
