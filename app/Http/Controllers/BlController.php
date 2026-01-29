@@ -11,6 +11,7 @@ use App\Models\Kontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -1599,15 +1600,7 @@ class BlController extends Controller
 
         $query = Bl::with(['prospek.suratJalan']);
 
-        // Apply filters
-        if ($request->filled('nama_kapal')) {
-            $query->where('nama_kapal', $request->nama_kapal);
-        }
-
-        if ($request->filled('no_voyage')) {
-            $query->where('no_voyage', $request->no_voyage);
-        }
-
+        // Filter berdasarkan search (Matched with index logic)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -1617,6 +1610,32 @@ class BlController extends Controller
                   ->orWhere('nama_kapal', 'like', "%{$search}%")
                   ->orWhere('nama_barang', 'like', "%{$search}%");
             });
+        }
+
+        // Filter berdasarkan kapal (Matched with index logic)
+        if ($request->filled('kapal')) {
+            $kapal = trim($request->kapal);
+            $kapalPattern = str_replace('.', '', $kapal);
+            $query->where(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+        }
+        
+        // Filter berdasarkan nama_kapal (Matched with index logic)
+        if ($request->filled('nama_kapal')) {
+            $namaKapal = trim($request->nama_kapal);
+            $kapalPattern = str_replace('.', '', $namaKapal);
+            $query->where(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+        }
+
+        // Filter berdasarkan voyage (Matched with index logic)
+        if ($request->filled('voyage')) {
+            $voyage = trim($request->voyage);
+            $query->where('no_voyage', $voyage);
+        }
+        
+        // Filter berdasarkan no_voyage (Matched with index logic)
+        if ($request->filled('no_voyage')) {
+            $noVoyage = trim($request->no_voyage);
+            $query->where('no_voyage', $noVoyage);
         }
 
         // Get data
