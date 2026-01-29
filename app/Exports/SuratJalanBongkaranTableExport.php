@@ -2,173 +2,51 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use Carbon\Carbon;
 
-class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class SuratJalanBongkaranTableExport implements FromView, ShouldAutoSize, WithEvents
 {
     protected $data;
     protected $mode;
-    protected $kapal;
-    protected $voyage;
+    protected $nama_kapal;
+    protected $no_voyage;
 
-    public function __construct($data, $mode = 'manifest', $kapal = '', $voyage = '')
+    public function __construct($data, $mode = 'manifest', $nama_kapal = '', $no_voyage = '')
     {
         $this->data = $data;
         $this->mode = $mode;
-        $this->kapal = $kapal;
-        $this->voyage = $voyage;
+        $this->nama_kapal = $nama_kapal;
+        $this->no_voyage = $no_voyage;
     }
 
-    public function collection()
+    public function view(): View
     {
-        return $this->data->map(function($item, $index) {
-            if ($this->mode === 'surat_jalan') {
-                $feets = $item->size ?: '-';
-                if ($feets !== '-' && !str_contains($feets, '"')) {
-                    $feets .= '"';
-                }
-
-                return [
-                    $index + 1,
-                    $item->manifest->nomor_urut ?? '-',
-                    ($item->no_kontainer ?: '-') . ($item->no_seal ? ' / ' . $item->no_seal : ''),
-                    $item->penerima ?: '-',
-                    $feets,
-                    '', // TGL KRM
-                    '', // TR
-                    '', // TGL KBL
-                    '', // TR
-                    '', // AYP
-                    '', // PR
-                    '', // 20
-                    '', // 40
-                    '', // SPPB
-                    $item->jenis_barang ?: '-',
-                    $item->tujuan_alamat ?: '-',
-                ];
-            } else {
-                $feets = $item->size_kontainer ?: '-';
-                if ($feets !== '-' && !str_contains($feets, '"')) {
-                    $feets .= '"';
-                }
-
-                return [
-                    $index + 1,
-                    $item->nomor_urut ?? '-',
-                    ($item->nomor_kontainer ?: '-') . ($item->no_seal ? ' / ' . $item->no_seal : ''),
-                    $item->penerima ?: '-',
-                    $feets,
-                    '', // TGL KRM
-                    '', // TR
-                    '', // TGL KBL
-                    '', // TR
-                    '', // AYP
-                    '', // PR
-                    '', // 20
-                    '', // 40
-                    '', // SPPB
-                    $item->nama_barang ?: '-',
-                    $item->alamat_pengiriman ?: '-',
-                ];
-            }
-        });
-    }
-
-    public function headings(): array
-    {
-        $date = Carbon::now()->format('d-M-y');
-        return [
-            [
-                strtoupper($this->kapal), 
-                '', '', '', '', '', '', 
-                'VOY.' . strtoupper($this->voyage ?? ''), 
-                '', '', '', '', '', '', '', 
-                $date
-            ],
-            [
-                'NO', 
-                'BL', 
-                'MARK AND NUMBERS', 
-                'RELASI', 
-                'FEET', 
-                'TGL KRM', 
-                'TR', 
-                'TGL KBL', 
-                'TR', 
-                'CHASIS', 
-                '', '', '', 
-                'SPPB', 
-                'JENIS BARANG', 
-                'ALAMAT'
-            ],
-            [
-                '', '', '', '', '', '', '', '', '', 
-                'AYP', 
-                'PR', 
-                '20', 
-                '40', 
-                '', '', ''
-            ]
-        ];
+        return view('exports.surat-jalan-bongkaran', [
+            'data' => $this->data,
+            'mode' => $this->mode,
+            'nama_kapal' => $this->nama_kapal,
+            'no_voyage' => $this->no_voyage,
+            'date' => now()->format('d-M-y'), // Format e.g., 17-Jan-26 (using current date as per request context, or ideally voyage date if available)
+        ]);
     }
 
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
+                // Additional styling can be applied here if needed beyond HTML/CSS
+                // For example, ensuring specific column widths or print layout
                 $sheet = $event->sheet->getDelegate();
                 
-                // Style Top Header (Row 1)
-                $sheet->getStyle('A1:P1')->getFont()->setBold(true)->setSize(12);
-                $sheet->getStyle('A1')->getFont()->setUnderline(true);
-                // Align Voyage to center and Date to right
-                $sheet->getStyle('H1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('P1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-
-                // Table Headings (Row 2 & 3)
-                $headerRange = 'A2:P3';
-                $sheet->getStyle($headerRange)->getFont()->setBold(true);
-                $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle($headerRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-                
-                // Merge CHASIS in Row 2
-                $sheet->mergeCells('J2:M2');
-                
-                // Merge single-row headers across Row 2 and 3
-                $colsToMerge = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'N', 'O', 'P'];
-                foreach ($colsToMerge as $col) {
-                    $sheet->mergeCells($col . '2:' . $col . '3');
-                }
-
-                // Table Borders
-                $lastRow = count($this->data) + 3;
-                if ($lastRow > 3) {
-                    $sheet->getStyle('A2:P' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                    
-                    // Center align some data columns
-                    $sheet->getStyle('A4:B' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle('E4:N' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                }
-
-                // Auto-sizing or fixed widths
-                $sheet->getColumnDimension('A')->setWidth(5);
-                $sheet->getColumnDimension('B')->setWidth(8);
-                $sheet->getColumnDimension('C')->setWidth(25);
-                $sheet->getColumnDimension('D')->setWidth(30);
-                $sheet->getColumnDimension('E')->setWidth(8);
-                $sheet->getColumnDimension('O')->setWidth(35);
-                $sheet->getColumnDimension('P')->setWidth(40);
-                
-                // Set row height for headers
-                $sheet->getRowDimension(2)->setRowHeight(20);
-                $sheet->getRowDimension(3)->setRowHeight(20);
+                // Example: Set specific column widths if AutoSize isn't perfect
+                // $sheet->getColumnDimension('A')->setWidth(5);
+                // $sheet->getColumnDimension('B')->setWidth(8);
             }
         ];
     }
