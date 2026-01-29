@@ -12,7 +12,7 @@
             <form method="GET" action="{{ route('pranota-uang-rit.create') }}" class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                 <div>
                     <label for="start_date" class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $start_date ?? now()->subDays(30)->format('Y-m-d')) }}" required
+                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $start_date ?? now()->format('Y-m-d')) }}" required
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div>

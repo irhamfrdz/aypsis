@@ -10,6 +10,8 @@ use App\Models\PricelistTkbm;
 use App\Models\BiayaKapalBarang;
 use App\Models\BiayaKapalAir;
 use App\Models\BiayaKapalTkbm;
+use App\Models\BiayaKapalOperasional;
+use App\Models\BiayaKapalOperasionalItem;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -201,6 +203,17 @@ class BiayaKapalController extends Controller
             'tkbm_sections.*.barang' => 'nullable|array',
             'tkbm_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_tkbms,id',
             'tkbm_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
+
+            // Operasional sections structure
+            'operasional_sections' => 'nullable|array',
+            'operasional_sections.*.kapal' => 'nullable|string|max:255',
+            'operasional_sections.*.voyage' => 'nullable|string|max:255',
+            'operasional_sections.*.items' => 'nullable|array',
+            'operasional_sections.*.items.*.deskripsi' => 'nullable|string',
+            'operasional_sections.*.items.*.nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.dp' => 'nullable|numeric|min:0',
+            'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -528,6 +541,59 @@ class BiayaKapalController extends Controller
                         }
                     }
                 }
+            }
+
+            // BIAYA OPERASIONAL SECTIONS: Store Operasional details
+            $operasionalDetails = [];
+            if ($request->has('operasional_sections') && !empty($request->operasional_sections)) {
+                foreach ($request->operasional_sections as $sectionIndex => $section) {
+                    $kapalName = $section['kapal'] ?? null;
+                    $voyageName = $section['voyage'] ?? null;
+                    
+                    if (isset($section['items']) && is_array($section['items'])) {
+                        foreach ($section['items'] as $item) {
+                            $deskripsi = $item['deskripsi'] ?? null;
+                            $nominalRaw = $item['nominal'] ?? 0;
+                            
+                            // Convert comma decimal
+                            if (is_string($nominalRaw)) {
+                                if (strpos($nominalRaw, ',') !== false) {
+                                    $nominalSanitized = str_replace('.', '', $nominalRaw);
+                                    $nominalSanitized = str_replace(',', '.', $nominalSanitized);
+                                } else {
+                                    // Remove dot separators if any for standard number inputs just in case
+                                    // Depending on frontend format. Assuming standard ID format 1.000,00 handled above.
+                                    // If raw number 1000, kept as is.
+                                    $nominalSanitized = $nominalRaw;
+                                }
+                            } else {
+                                $nominalSanitized = $nominalRaw;
+                            }
+                            $nominal = floatval($nominalSanitized ?: 0);
+                            
+                            if (empty($deskripsi) || $nominal <= 0) {
+                               continue;
+                            }
+                            
+                            $sectionTotalNominal = isset($section['total_nominal']) ? str_replace('.', '', $section['total_nominal']) : 0;
+                            $sectionDp = isset($section['dp']) ? str_replace('.', '', $section['dp']) : 0;
+                            $sectionSisa = isset($section['sisa_pembayaran']) ? str_replace('.', '', $section['sisa_pembayaran']) : 0;
+                            
+                            BiayaKapalOperasional::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'keterangan' => $deskripsi,
+                                'nominal' => $nominal,
+                                'total_nominal' => $sectionTotalNominal,
+                                'dp' => $sectionDp,
+                                'sisa_pembayaran' => $sectionSisa,
+                            ]);
+                            
+                            $operasionalDetails[] = "[$kapalName - Voyage $voyageName] " . $deskripsi . ' = Rp ' . number_format($nominal, 0, ',', '.');
+                        }
+                    }
+
                 
                 // Update keterangan with TKBM details (REMOVED as per user request to keep keterangan clean)
                 /*
@@ -539,6 +605,7 @@ class BiayaKapalController extends Controller
                     $biayaKapal->save();
                 }
                 */
+            }
             }
 
             DB::commit();
@@ -638,23 +705,42 @@ class BiayaKapalController extends Controller
      */
     public function update(Request $request, BiayaKapal $biayaKapal)
     {
+        // Clean up all currency fields before validation
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
+        foreach ($fieldsToClean as $field) {
+            if ($request->has($field) && $request->$field) {
+                $request->merge([
+                    $field => str_replace('.', '', $request->$field)
+                ]);
+            }
+        }
+
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'nomor_invoice' => 'required|string|max:20|unique:biaya_kapals,nomor_invoice,' . $biayaKapal->id,
+            'nomor_invoice' => 'required|string|max:50|unique:biaya_kapals,nomor_invoice,' . $biayaKapal->id,
             'nomor_referensi' => 'nullable|string|max:100',
-            'nama_kapal' => 'required|string|max:255',
+            'nama_kapal' => 'nullable|string|max:255', // Made nullable as it might be hidden
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
             'nama_vendor' => 'nullable|string|max:255',
             'nomor_rekening' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            
+            // Operasional sections validation
+            'operasional_sections' => 'nullable|array',
+            'operasional_sections.*.kapal' => 'nullable|string|max:255',
+            'operasional_sections.*.voyage' => 'nullable|string|max:255',
+            'operasional_sections.*.items' => 'nullable|array',
+            'operasional_sections.*.items.*.deskripsi' => 'nullable|string',
+            'operasional_sections.*.items.*.nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.dp' => 'nullable|numeric|min:0',
+            'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
         ]);
 
         try {
-            // Remove formatting from nominal (remove dots, convert comma to dot)
-            $nominal = str_replace(['.', ','], ['', '.'], $validated['nominal']);
-            $validated['nominal'] = $nominal;
+            DB::beginTransaction();
 
             // Handle file upload
             if ($request->hasFile('bukti')) {
@@ -669,12 +755,65 @@ class BiayaKapalController extends Controller
                 $validated['bukti'] = $filePath;
             }
 
+            // Clean currency fields in validated data if they exist
+            // (nominal is already cleaned above but others might need explicitly setting if not passed to update)
+            // Actually $request->merge handles it for the request instance, so $validated will have cleaned values.
+            
             $biayaKapal->update($validated);
+
+            // HANDLE OPERASIONAL UPDATE
+            // If operasional_sections is present, we replace existing ones
+            if ($request->has('operasional_sections')) {
+                // Delete existing records
+                // Assuming cascade delete works for items when deleting parent operasional
+                // BiayaKapalOperasionalItem is child of BiayaKapalOperasional
+                // BiayaKapalOperasional is child of BiayaKapal
+                
+                // Fetch IDs to delete to ensure items are deleted if cascade isn't set on DB level
+                // But typically we can just delete by relationship
+                foreach ($biayaKapal->operasionalDetails as $existingOp) {
+                    $existingOp->deleteAllItems(); // If method exists, or just delete()->delete()
+                    $existingOp->delete();
+                }
+                
+                // Or simpler:
+                BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                
+                // Create new records
+                if (!empty($request->operasional_sections)) {
+                    foreach ($request->operasional_sections as $section) {
+                        $operasional = BiayaKapalOperasional::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'keterangan' => $section['keterangan'] ?? null,
+                            'nominal' => str_replace('.', '', $section['nominal']) ?? 0,
+                            'total_nominal' => str_replace('.', '', $section['total_nominal']) ?? 0, // already cleaned by merge? key names might differ
+                            'dp' => str_replace('.', '', $section['dp']) ?? 0,
+                            'sisa_pembayaran' => str_replace('.', '', $section['sisa_pembayaran']) ?? 0,
+                        ]);
+    
+                        if (isset($section['items']) && is_array($section['items'])) {
+                            foreach ($section['items'] as $item) {
+                                // Need to import BiayaKapalOperasionalItem model
+                                \App\Models\BiayaKapalOperasionalItem::create([
+                                    'biaya_kapal_operasional_id' => $operasional->id,
+                                    'deskripsi' => $item['deskripsi'] ?? null,
+                                    'nominal' => str_replace('.', '', $item['nominal']) ?? 0,
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
 
             return redirect()
                 ->route('biaya-kapal.index')
                 ->with('success', 'Data biaya kapal berhasil diperbarui.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()
                 ->back()
                 ->withInput()

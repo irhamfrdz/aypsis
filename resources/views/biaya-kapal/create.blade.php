@@ -416,8 +416,27 @@
                     </button>
                 </div>
 
+                <!-- Operasional (for Biaya Operasional) -->
+                <div id="operasional_wrapper" class="md:col-span-2 hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Operasional <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" id="add_operasional_section_btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Kapal</span>
+                        </button>
+                    </div>
+                    <div id="operasional_sections_container"></div>
+                    
+                    <button type="button" id="add_operasional_section_bottom_btn" class="mt-2 w-full py-2 border-2 border-dashed border-indigo-300 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition flex items-center justify-center gap-2 font-medium">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Tambah Kapal Lainnya</span>
+                    </button>
+                </div>
+
                 <!-- Nominal -->
-                <div id="nominal_wrapper">
+                <div id="nominal_wrapper" class="hidden">
                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-2">
                         Nominal <span class="text-red-500">*</span>
                     </label>
@@ -893,6 +912,7 @@
     const kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
     const kuantitasAirInput = document.getElementById('kuantitas_air');
     const jasaAirWrapper = document.getElementById('jasa_air_wrapper');
+    const operasionalWrapper = document.getElementById('operasional_wrapper');
     const jasaAirInput = document.getElementById('jasa_air');
     const pphAirWrapper = document.getElementById('pph_air_wrapper');
     const pphAirInput = document.getElementById('pph_air');
@@ -1205,6 +1225,16 @@
             dpWrapper.classList.add('hidden');
             sisaPembayaranWrapper.classList.add('hidden');
             
+            // Hide TKBM wrapper
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            
+            // Hide Operasional wrapper
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            
             // Show standard fields
             kapalWrapper.classList.remove('hidden');
             voyageWrapper.classList.remove('hidden');
@@ -1354,6 +1384,16 @@
             if (jasaAirInput) jasaAirInput.value = '0';
             if (pphAirInput) pphAirInput.value = '0';
             if (grandTotalAirInput) grandTotalAirInput.value = '0';
+            
+            // Hide TKBM wrapper
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            
+            // Hide Operasional wrapper
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
         }
         // Show barang wrapper if "Biaya Buruh" is selected
         else if (selectedText.toLowerCase().includes('buruh')) {
@@ -1405,14 +1445,21 @@
                 document.getElementById('tkbm_wrapper').classList.add('hidden');
                 clearAllTkbmSections();
             }
+            
+            // Hide Operasional wrapper for Biaya Buruh
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
         // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {
-            if (document.getElementById('tkbm_wrapper')) {
                 document.getElementById('tkbm_wrapper').classList.remove('hidden');
                 initializeTkbmSections();
             }
+            
+            // Hide Operasional wrapper for Biaya TKBM
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
             
             // Hide Nama Kapal and Nomor Voyage fields (already in section)
             kapalWrapper.classList.add('hidden');
@@ -1458,10 +1505,16 @@
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
         }
-        // Show barang wrapper if "Operasional" is selected (SAME AS BURUH)
+        // Show operasional wrapper if "Operasional" is selected
         else if (selectedText.toLowerCase().includes('operasional')) {
-            barangWrapper.classList.remove('hidden');
-            initializeKapalSections();
+            operasionalWrapper.classList.remove('hidden');
+            if (operasionalSectionsContainer.children.length === 0) {
+                addOperasionalSection();
+            }
+            
+            // Hide other wrappers
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
             
             // Hide Nama Kapal and Nomor Voyage fields (already in section)
             kapalWrapper.classList.add('hidden');
@@ -1552,6 +1605,16 @@
             // Show BL wrapper for Biaya Penumpukan
             blWrapper.classList.remove('hidden');
             
+            // Hide TKBM wrapper for Biaya Penumpukan
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+
+            // Hide Operasional wrapper
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            
             // Calculate initial total
             calculateTotalBiaya();
         } else {
@@ -1563,6 +1626,10 @@
                 document.getElementById('tkbm_wrapper').classList.add('hidden');
                 clearAllTkbmSections();
             }
+            
+            // Hide Operasional wrapper for other types
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
             
             // Hide PPN/PPH fields for other types
             ppnWrapper.classList.add('hidden');
@@ -2801,8 +2868,8 @@
     const hiddenKapalInputs = document.getElementById('hidden_kapal_inputs');
     const kapalOptions = document.querySelectorAll('.kapal-option');
     const kapalSelectedCount = document.getElementById('kapalSelectedCount');
-    const selectAllKapalBtn = document.getElementById('selectAllKapalBtn');
-    const clearAllKapalBtn = document.getElementById('clearAllKapalBtn');
+    const btnSelectAllKapal = document.getElementById('selectAllKapalBtn');
+    const btnClearAllKapal = document.getElementById('clearAllKapalBtn');
     
     let selectedKapals = [];
     const oldKapalValue = @json(old('nama_kapal', []));
@@ -2903,31 +2970,35 @@
         updateVoyages();
     };
     
-    selectAllKapalBtn.addEventListener('click', function() {
-        kapalOptions.forEach(option => {
-            const id = option.getAttribute('data-id');
-            const nama = option.getAttribute('data-nama');
+    if (btnSelectAllKapal) {
+        btnSelectAllKapal.addEventListener('click', function() {
+            kapalOptions.forEach(option => {
+                const id = option.getAttribute('data-id');
+                const nama = option.getAttribute('data-nama');
+                
+                if (!selectedKapals.find(k => k.nama === nama)) {
+                    selectedKapals.push({ id, nama });
+                    addKapalChip(id, nama);
+                    option.classList.add('selected');
+                }
+            });
             
-            if (!selectedKapals.find(k => k.nama === nama)) {
-                selectedKapals.push({ id, nama });
-                addKapalChip(id, nama);
-                option.classList.add('selected');
-            }
+            updateKapalHiddenInputs();
+            updateKapalSelectedCount();
+            updateVoyages();
         });
-        
-        updateKapalHiddenInputs();
-        updateKapalSelectedCount();
-        updateVoyages();
-    });
+    }
     
-    clearAllKapalBtn.addEventListener('click', function() {
-        selectedKapals = [];
-        selectedKapalChips.innerHTML = '';
-        hiddenKapalInputs.innerHTML = '';
-        kapalOptions.forEach(option => option.classList.remove('selected'));
-        updateKapalSelectedCount();
-        updateVoyages();
-    });
+    if (btnClearAllKapal) {
+        btnClearAllKapal.addEventListener('click', function() {
+            selectedKapals = [];
+            selectedKapalChips.innerHTML = '';
+            hiddenKapalInputs.innerHTML = '';
+            kapalOptions.forEach(option => option.classList.remove('selected'));
+            updateKapalSelectedCount();
+            updateVoyages();
+        });
+    }
     
     function updateKapalHiddenInputs() {
         hiddenKapalInputs.innerHTML = '';
@@ -2950,8 +3021,8 @@
     const selectedVoyageChips = document.getElementById('selected_voyage_chips');
     const hiddenVoyageInputs = document.getElementById('hidden_voyage_inputs');
     const voyageSelectedCount = document.getElementById('voyageSelectedCount');
-    const selectAllVoyageBtn = document.getElementById('selectAllVoyageBtn');
-    const clearAllVoyageBtn = document.getElementById('clearAllVoyageBtn');
+    const btnSelectAllVoyage = document.getElementById('selectAllVoyageBtn');
+    const btnClearAllVoyage = document.getElementById('clearAllVoyageBtn');
     
     let selectedVoyages = [];
     let availableVoyages = [];
@@ -3023,32 +3094,36 @@
         updateBls();
     };
     
-    selectAllVoyageBtn.addEventListener('click', function() {
-        selectedVoyages = [...availableVoyages];
-        selectedVoyageChips.innerHTML = '';
-        availableVoyages.forEach(voyage => {
-            addVoyageChip(voyage);
+    if (btnSelectAllVoyage) {
+        btnSelectAllVoyage.addEventListener('click', function() {
+            selectedVoyages = [...availableVoyages];
+            selectedVoyageChips.innerHTML = '';
+            availableVoyages.forEach(voyage => {
+                addVoyageChip(voyage);
+            });
+            
+            const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
+            voyageOptions.forEach(option => option.classList.add('selected'));
+            
+            updateVoyageHiddenInputs();
+            updateVoyageSelectedCount();
+            updateBls();
         });
-        
-        const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
-        voyageOptions.forEach(option => option.classList.add('selected'));
-        
-        updateVoyageHiddenInputs();
-        updateVoyageSelectedCount();
-        updateBls();
-    });
+    }
     
-    clearAllVoyageBtn.addEventListener('click', function() {
-        selectedVoyages = [];
-        selectedVoyageChips.innerHTML = '';
-        hiddenVoyageInputs.innerHTML = '';
-        
-        const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
-        voyageOptions.forEach(option => option.classList.remove('selected'));
-        
-        updateBls();
-        updateVoyageSelectedCount();
-    });
+    if (btnClearAllVoyage) {
+        btnClearAllVoyage.addEventListener('click', function() {
+            selectedVoyages = [];
+            selectedVoyageChips.innerHTML = '';
+            hiddenVoyageInputs.innerHTML = '';
+            
+            const voyageOptions = voyageDropdown.querySelectorAll('.voyage-option');
+            voyageOptions.forEach(option => option.classList.remove('selected'));
+            
+            updateBls();
+            updateVoyageSelectedCount();
+        });
+    }
     
     function updateVoyageHiddenInputs() {
         hiddenVoyageInputs.innerHTML = '';
@@ -3156,8 +3231,8 @@
     const selectedBlChips = document.getElementById('selected_bl_chips');
     const hiddenBlInputs = document.getElementById('hidden_bl_inputs');
     const blSelectedCount = document.getElementById('blSelectedCount');
-    const selectAllBlBtn = document.getElementById('selectAllBlBtn');
-    const clearAllBlBtn = document.getElementById('clearAllBlBtn');
+    const btnSelectAllBl = document.getElementById('selectAllBlBtn');
+    const btnClearAllBl = document.getElementById('clearAllBlBtn');
     
     let selectedBls = {}; // Changed to object to store {id: {kontainer, seal}}
     let availableBls = {}; // Changed to object to store {id: {kontainer, seal}}
@@ -3240,33 +3315,37 @@
         calculateDokumenNominal();
     };
     
-    selectAllBlBtn.addEventListener('click', function() {
-        selectedBls = {...availableBls};
-        selectedBlChips.innerHTML = '';
-        Object.keys(availableBls).forEach(blId => {
-            const blData = availableBls[blId];
-            addBlChip(blId, blData.kontainer, blData.seal);
+    if (btnSelectAllBl) {
+        btnSelectAllBl.addEventListener('click', function() {
+            selectedBls = {...availableBls};
+            selectedBlChips.innerHTML = '';
+            Object.keys(availableBls).forEach(blId => {
+                const blData = availableBls[blId];
+                addBlChip(blId, blData.kontainer, blData.seal);
+            });
+            
+            const blOptions = blDropdown.querySelectorAll('.bl-option');
+            blOptions.forEach(option => option.classList.add('selected'));
+            
+            updateBlHiddenInputs();
+            updateBlSelectedCount();
+            calculateDokumenNominal();
         });
-        
-        const blOptions = blDropdown.querySelectorAll('.bl-option');
-        blOptions.forEach(option => option.classList.add('selected'));
-        
-        updateBlHiddenInputs();
-        updateBlSelectedCount();
-        calculateDokumenNominal();
-    });
+    }
     
-    clearAllBlBtn.addEventListener('click', function() {
-        selectedBls = {};
-        selectedBlChips.innerHTML = '';
-        hiddenBlInputs.innerHTML = '';
-        
-        const blOptions = blDropdown.querySelectorAll('.bl-option');
-        blOptions.forEach(option => option.classList.remove('selected'));
-        
-        updateBlSelectedCount();
-        calculateDokumenNominal();
-    });
+    if (btnClearAllBl) {
+        btnClearAllBl.addEventListener('click', function() {
+            selectedBls = {};
+            selectedBlChips.innerHTML = '';
+            hiddenBlInputs.innerHTML = '';
+            
+            const blOptions = blDropdown.querySelectorAll('.bl-option');
+            blOptions.forEach(option => option.classList.remove('selected'));
+            
+            updateBlSelectedCount();
+            calculateDokumenNominal();
+        });
+    }
     
     function updateBlHiddenInputs() {
         hiddenBlInputs.innerHTML = '';
@@ -3614,4 +3693,223 @@
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 </style>
+    // ============= OPERASIONAL SECTION LOGIC =============
+    let operasionalSectionCounter = 0;
+    const operasionalSectionsContainer = document.getElementById('operasional_sections_container');
+    const addOperasionalSectionBtn = document.getElementById('add_operasional_section_btn');
+    const addOperasionalSectionBottomBtn = document.getElementById('add_operasional_section_bottom_btn');
+
+    if (addOperasionalSectionBtn) {
+        addOperasionalSectionBtn.addEventListener('click', function() {
+            addOperasionalSection();
+        });
+    }
+
+    if (addOperasionalSectionBottomBtn) {
+        addOperasionalSectionBottomBtn.addEventListener('click', function() {
+            addOperasionalSection();
+        });
+    }
+
+    function addOperasionalSection() {
+        operasionalSectionCounter++;
+        const sectionIndex = operasionalSectionCounter;
+        
+        const section = document.createElement('div');
+        section.className = 'operasional-section mb-6 p-4 border-2 border-indigo-200 rounded-lg bg-indigo-50';
+        section.setAttribute('data-section-index', sectionIndex);
+        
+        // Kapal Options
+        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+        });
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-md font-semibold text-indigo-800">
+                    <i class="fas fa-ship mr-2"></i>Kapal ${sectionIndex} (Operasional)
+                </h4>
+                ${sectionIndex > 0 ? `<button type="button" onclick="removeOperasionalSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
+                    <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required onchange="loadVoyageForOperasional(this, ${sectionIndex})">
+                        ${kapalOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage</label>
+                    <select name="operasional_sections[${sectionIndex}][voyage]" id="voyage_operasional_${sectionIndex}" class="voyage-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" disabled required>
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Detail Operasional</label>
+                    <button type="button" onclick="addOperasionalItem(${sectionIndex})" class="px-3 py-1 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 text-xs rounded transition flex items-center gap-1">
+                        <i class="fas fa-plus"></i> Tambah Item
+                    </button>
+                </div>
+                
+                <div id="operasional_items_container_${sectionIndex}" class="space-y-3">
+                    <!-- Items will be added here -->
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-indigo-200 pt-4 mt-4">
+                <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">Total Nominal</label>
+                     <input type="text" id="operasional_total_${sectionIndex}" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-semibold" value="0" readonly>
+                     <input type="hidden" name="operasional_sections[${sectionIndex}][total_nominal]" id="operasional_total_hidden_${sectionIndex}" value="0">
+                </div>
+                <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">DP</label>
+                     <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
+                        <input type="text" name="operasional_sections[${sectionIndex}][dp]" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="0" oninput="formatCurrency(this); calculateOperasionalSisa(${sectionIndex})">
+                     </div>
+                </div>
+                <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">Sisa Pembayaran</label>
+                     <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
+                        <input type="text" name="operasional_sections[${sectionIndex}][sisa_pembayaran]" id="operasional_sisa_${sectionIndex}" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="0" readonly>
+                     </div>
+                </div>
+            </div>
+        `;
+        
+        operasionalSectionsContainer.appendChild(section);
+        
+        // Add one empty item by default
+        addOperasionalItem(sectionIndex);
+    }
+
+    function removeOperasionalSection(index) {
+        const section = document.querySelector(`.operasional-section[data-section-index="${index}"]`);
+        if (section) section.remove();
+        calculateTotalFromAllOperasionalSections();
+    }
+    
+    function addOperasionalItem(sectionIndex) {
+        const container = document.getElementById(`operasional_items_container_${sectionIndex}`);
+        const itemIndex = container.children.length + 1;
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'flex gap-2 items-start operasional-item';
+        
+        itemDiv.innerHTML = `
+            <div class="flex-1">
+                <input type="text" name="operasional_sections[${sectionIndex}][items][${itemIndex}][deskripsi]" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Keterangan Operasional" required>
+            </div>
+            <div class="w-1/3 relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
+                <input type="text" name="operasional_sections[${sectionIndex}][items][${itemIndex}][nominal]" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 text-right operasional-nominal-input" placeholder="0" oninput="formatCurrency(this); calculateOperasionalTotal(${sectionIndex})" required>
+            </div>
+            <button type="button" onclick="this.parentElement.remove(); calculateOperasionalTotal(${sectionIndex})" class="p-2 text-red-500 hover:text-red-700 transition">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        
+        container.appendChild(itemDiv);
+    }
+    
+    function loadVoyageForOperasional(selectElement, sectionIndex) {
+        const namaKapal = selectElement.value;
+        const voyageSelect = document.getElementById(`voyage_operasional_${sectionIndex}`);
+        
+        voyageSelect.innerHTML = '<option value="">Memuat...</option>';
+        voyageSelect.disabled = true;
+        
+        if (!namaKapal) {
+             voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+             return;
+        }
+
+        // Use cached voyages if available
+        if (cachedVoyages[namaKapal]) {
+            populateVoyageSelect(voyageSelect, cachedVoyages[namaKapal]);
+        } else {
+            // Fetch voyages
+            fetch(`/api/get-voyages?kapal=${encodeURIComponent(namaKapal)}`)
+                .then(response => response.json())
+                .then(data => {
+                    cachedVoyages[namaKapal] = data; // Cache it
+                    populateVoyageSelect(voyageSelect, data);
+                })
+                .catch(error => {
+                    console.error('Error fetching voyages:', error);
+                    voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
+                });
+        }
+    }
+    
+    function populateVoyageSelect(selectElement, voyages) {
+        if (voyages.length === 0) {
+            selectElement.innerHTML = '<option value="">Tidak ada voyage aktif</option>';
+            selectElement.disabled = false; // Allow selection even if empty? No.
+        } else {
+            let options = '<option value="">-- Pilih Voyage --</option>';
+            voyages.forEach(v => {
+                options += `<option value="${v.nomor_voyage}">${v.nomor_voyage}</option>`;
+            });
+            selectElement.innerHTML = options;
+            selectElement.disabled = false;
+        }
+    }
+
+    function calculateOperasionalTotal(sectionIndex) {
+        const container = document.getElementById(`operasional_items_container_${sectionIndex}`);
+        const inputs = container.querySelectorAll('.operasional-nominal-input');
+        let total = 0;
+        
+        inputs.forEach(input => {
+            const val = parseInt(input.value.replace(/\D/g, '') || 0);
+            total += val;
+        });
+        
+        document.getElementById(`operasional_total_${sectionIndex}`).value = 'Rp ' + total.toLocaleString('id-ID');
+        document.getElementById(`operasional_total_hidden_${sectionIndex}`).value = total;
+        
+        calculateOperasionalSisa(sectionIndex);
+        calculateTotalFromAllOperasionalSections();
+    }
+    
+    function calculateOperasionalSisa(sectionIndex) {
+        const total = parseInt(document.getElementById(`operasional_total_hidden_${sectionIndex}`).value || 0);
+        const dpInput = document.querySelector(`input[name="operasional_sections[${sectionIndex}][dp]"]`);
+        const dp = parseInt(dpInput.value.replace(/\D/g, '') || 0);
+        
+        const sisa = total - dp;
+        document.getElementById(`operasional_sisa_${sectionIndex}`).value = (sisa >= 0 ? sisa.toLocaleString('id-ID') : 0);
+    }
+    
+    function calculateTotalFromAllOperasionalSections() {
+        let grandTotal = 0;
+        document.querySelectorAll('input[name^="operasional_sections"][name$="[total_nominal]"]').forEach(input => {
+            grandTotal += parseInt(input.value || 0);
+        });
+        
+        if (nominalInput) {
+            nominalInput.value = grandTotal.toLocaleString('id-ID');
+            calculateSisaPembayaran(); // If global DP/Sisa is used - but Operasional has per-section DP/Sisa? 
+            // The request says "create backend specifically for handling operational costs".
+            // Typically "Biaya Kapal" creates one main record + details.
+            // If we have multiple sections with multiple DPs, the main record might just start with 0 or sum of DPs?
+            // "Biaya Buruh" seems to sum up totals.
+            // Let's check calculateTotalFromAllKapalSections() logic for Buruh.
+        }
+    }
+    
+    function clearAllOperasionalSections() {
+        operasionalSectionsContainer.innerHTML = '';
+        operasionalSectionCounter = 0;
+        if (nominalInput) nominalInput.value = '';
+    }
+
 @endpush
