@@ -283,7 +283,7 @@ class SuratJalanBongkaranController extends Controller
             $filename = 'Manifest_Bongkaran_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
         }
 
-        return Excel::download(new SuratJalanBongkaranTableExport($data, $mode), $filename);
+        return Excel::download(new SuratJalanBongkaranTableExport($data, $mode, $selectedKapal, $selectedVoyage), $filename);
     }
 
     /**

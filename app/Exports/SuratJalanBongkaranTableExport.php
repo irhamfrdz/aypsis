@@ -9,75 +9,114 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Carbon\Carbon;
 
 class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
 {
     protected $data;
     protected $mode;
+    protected $kapal;
+    protected $voyage;
 
-    public function __construct($data, $mode = 'manifest')
+    public function __construct($data, $mode = 'manifest', $kapal = '', $voyage = '')
     {
         $this->data = $data;
         $this->mode = $mode;
+        $this->kapal = $kapal;
+        $this->voyage = $voyage;
     }
 
     public function collection()
     {
-        if ($this->mode === 'surat_jalan') {
-            return $this->data->map(function($sj) {
+        return $this->data->map(function($item, $index) {
+            if ($this->mode === 'surat_jalan') {
+                $feets = $item->size ?: '-';
+                if ($feets !== '-' && !str_contains($feets, '"')) {
+                    $feets .= '"';
+                }
+
                 return [
-                    $sj->manifest->nomor_urut ?? '-',
-                    $sj->nomor_surat_jalan ?: '-',
-                    $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-',
-                    $sj->term ?: '-',
-                    $sj->supir ?: '-',
-                    $sj->no_plat ?: '-',
-                    $sj->no_kontainer ?: '-',
-                    $sj->jenis_barang ?: '-',
+                    $index + 1,
+                    $item->manifest->nomor_urut ?? '-',
+                    ($item->no_kontainer ?: '-') . ($item->no_seal ? ' / ' . $item->no_seal : ''),
+                    $item->penerima ?: '-',
+                    $feets,
+                    '', // TGL KRM
+                    '', // TR
+                    '', // TGL KBL
+                    '', // TR
+                    '', // AYP
+                    '', // PR
+                    '', // 20
+                    '', // 40
+                    '', // SPPB
+                    $item->jenis_barang ?: '-',
+                    $item->tujuan_alamat ?: '-',
                 ];
-            });
-        } else {
-            // Manifest mode
-            return $this->data->map(function($m) {
+            } else {
+                $feets = $item->size_kontainer ?: '-';
+                if ($feets !== '-' && !str_contains($feets, '"')) {
+                    $feets .= '"';
+                }
+
                 return [
-                    $m->nomor_urut ?? '-',
-                    $m->nomor_bl ?: '-',
-                    $m->nomor_kontainer ?: '-',
-                    $m->no_seal ?: '-',
-                    $m->size_kontainer ?: '-',
-                    $m->term ? ($m->term_nama ? $m->term . ' - ' . $m->term_nama : $m->term) : '-',
-                    $m->nama_barang ?: '-',
-                    $m->penerima ?: '-',
+                    $index + 1,
+                    $item->nomor_urut ?? '-',
+                    ($item->nomor_kontainer ?: '-') . ($item->no_seal ? ' / ' . $item->no_seal : ''),
+                    $item->penerima ?: '-',
+                    $feets,
+                    '', // TGL KRM
+                    '', // TR
+                    '', // TGL KBL
+                    '', // TR
+                    '', // AYP
+                    '', // PR
+                    '', // 20
+                    '', // 40
+                    '', // SPPB
+                    $item->nama_barang ?: '-',
+                    $item->alamat_pengiriman ?: '-',
                 ];
-            });
-        }
+            }
+        });
     }
 
     public function headings(): array
     {
-        if ($this->mode === 'surat_jalan') {
-            return [
-                'No. Urut',
-                'Nomor Surat Jalan',
-                'Tanggal',
-                'Term',
-                'Supir',
-                'No Plat',
-                'Nomor Container',
-                'Jenis Barang',
-            ];
-        } else {
-            return [
-                'No. Urut',
-                'Nomor BL',
-                'Nomor Container',
-                'No Seal',
-                'Size',
-                'Term',
-                'Nama Barang',
-                'Penerima',
-            ];
-        }
+        $date = Carbon::now()->format('d-M-y');
+        return [
+            [
+                strtoupper($this->kapal), 
+                '', '', '', '', '', '', 
+                'VOY.' . strtoupper($this->voyage ?? ''), 
+                '', '', '', '', '', '', '', 
+                $date
+            ],
+            [
+                'NO', 
+                'BL', 
+                'MARK AND NUMBERS', 
+                'RELASI', 
+                'FEET', 
+                'TGL KRM', 
+                'TR', 
+                'TGL KBL', 
+                'TR', 
+                'CHASIS', 
+                '', '', '', 
+                'SPPB', 
+                'JENIS BARANG', 
+                'ALAMAT'
+            ],
+            [
+                '', '', '', '', '', '', '', '', '', 
+                'AYP', 
+                'PR', 
+                '20', 
+                '40', 
+                '', '', ''
+            ]
+        ];
     }
 
     public function registerEvents(): array
@@ -85,20 +124,51 @@ class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, Sh
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $columnCount = 'H'; // Both have 8 columns
-                $headerRange = 'A1:' . $columnCount . '1';
                 
+                // Style Top Header (Row 1)
+                $sheet->getStyle('A1:P1')->getFont()->setBold(true)->setSize(12);
+                $sheet->getStyle('A1')->getFont()->setUnderline(true);
+                // Align Voyage to center and Date to right
+                $sheet->getStyle('H1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('P1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                // Table Headings (Row 2 & 3)
+                $headerRange = 'A2:P3';
                 $sheet->getStyle($headerRange)->getFont()->setBold(true);
                 $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle($headerRange)->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                    ->getStartColor()->setARGB('FFE0E0E0');
-
-                // Add cell borders to all data
-                $lastRow = count($this->data) + 1;
-                if ($lastRow > 1) {
-                    $sheet->getStyle('A1:' . $columnCount . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                $sheet->getStyle($headerRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                
+                // Merge CHASIS in Row 2
+                $sheet->mergeCells('J2:M2');
+                
+                // Merge single-row headers across Row 2 and 3
+                $colsToMerge = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'N', 'O', 'P'];
+                foreach ($colsToMerge as $col) {
+                    $sheet->mergeCells($col . '2:' . $col . '3');
                 }
+
+                // Table Borders
+                $lastRow = count($this->data) + 3;
+                if ($lastRow > 3) {
+                    $sheet->getStyle('A2:P' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    
+                    // Center align some data columns
+                    $sheet->getStyle('A4:B' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('E4:N' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                }
+
+                // Auto-sizing or fixed widths
+                $sheet->getColumnDimension('A')->setWidth(5);
+                $sheet->getColumnDimension('B')->setWidth(8);
+                $sheet->getColumnDimension('C')->setWidth(25);
+                $sheet->getColumnDimension('D')->setWidth(30);
+                $sheet->getColumnDimension('E')->setWidth(8);
+                $sheet->getColumnDimension('O')->setWidth(35);
+                $sheet->getColumnDimension('P')->setWidth(40);
+                
+                // Set row height for headers
+                $sheet->getRowDimension(2)->setRowHeight(20);
+                $sheet->getRowDimension(3)->setRowHeight(20);
             }
         ];
     }
