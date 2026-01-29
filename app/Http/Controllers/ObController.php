@@ -1958,15 +1958,21 @@ class ObController extends Controller
                 ]);
             }
 
+            $normalizedKapal = $this->normalizeShipName($namaKapal);
+            
+            // Mirror logic from showOBData to select the table
+            $hasBl = $kegiatan !== 'muat' && Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage)
+                ->exists();
+
             $updatedCount = 0;
 
-            // Determine which table to update based on kegiatan
-            if ($kegiatan === 'bongkar' || $request->has('nomor_bl')) {
+            if ($hasBl) {
                 // Update BL table
-                $query = Bl::where('nama_kapal', $namaKapal)
+                $query = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                     ->where('no_voyage', $noVoyage);
 
-                // Apply filters
+                // Apply filters (Matched with index logic)
                 if ($request->filled('status_ob')) {
                     $query->where('sudah_ob', $request->input('status_ob') === 'sudah');
                 }
@@ -1976,16 +1982,18 @@ class ObController extends Controller
                 if ($request->filled('size_kontainer')) {
                     $query->where('size_kontainer', $request->input('size_kontainer'));
                 }
+                if ($request->filled('nomor_kontainer')) {
+                    $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
+                    $query->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
+                }
                 if ($request->filled('search')) {
                     $search = $request->input('search');
-                    $query->where(function($q) use ($search) {
-                        $q->where('nomor_kontainer', 'like', "%{$search}%")
+                    $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                    $query->where(function($q) use ($search, $searchNum) {
+                        $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
                           ->orWhere('no_seal', 'like', "%{$search}%")
                           ->orWhere('nama_barang', 'like', "%{$search}%");
                     });
-                }
-                if ($request->filled('nomor_kontainer')) {
-                    $query->where('nomor_kontainer', 'like', '%' . $request->input('nomor_kontainer') . '%');
                 }
 
                 $updateData = [];
@@ -2013,10 +2021,10 @@ class ObController extends Controller
                 }
             } else {
                 // Update NaikKapal table
-                $query = NaikKapal::where('nama_kapal', $namaKapal)
+                $query = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                     ->where('no_voyage', $noVoyage);
 
-                // Apply filters
+                // Apply filters (Matched with index logic)
                 if ($request->filled('status_ob')) {
                     $query->where('sudah_ob', $request->input('status_ob') === 'sudah');
                 }
@@ -2026,16 +2034,18 @@ class ObController extends Controller
                 if ($request->filled('size_kontainer')) {
                     $query->where('size_kontainer', $request->input('size_kontainer'));
                 }
+                if ($request->filled('nomor_kontainer')) {
+                    $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
+                    $query->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
+                }
                 if ($request->filled('search')) {
                     $search = $request->input('search');
-                    $query->where(function($q) use ($search) {
-                        $q->where('nomor_kontainer', 'like', "%{$search}%")
+                    $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
+                    $query->where(function($q) use ($search, $searchNum) {
+                        $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]) 
                           ->orWhere('no_seal', 'like', "%{$search}%")
                           ->orWhere('jenis_barang', 'like', "%{$search}%");
                     });
-                }
-                if ($request->filled('nomor_kontainer')) {
-                    $query->where('nomor_kontainer', 'like', '%' . $request->input('nomor_kontainer') . '%');
                 }
 
                 $updateData = [];

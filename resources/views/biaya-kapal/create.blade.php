@@ -3549,24 +3549,9 @@
         }
     }
 
-    // Generate invoice number on page load
+    // Form submit handler removed - sanitization now handled more robustly in backend
     document.addEventListener('DOMContentLoaded', function() {
         generateInvoiceNumber();
-        
-        // Form submit handler: convert comma decimal to period before submission
-        const form = document.querySelector('form[action*="biaya-kapal"]');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                // Convert all jumlah inputs from comma to period
-                const jumlahInputs = document.querySelectorAll('.jumlah-input-item, .jumlah-input');
-                jumlahInputs.forEach(input => {
-                    if (input.value) {
-                        // Replace comma with period for proper decimal
-                        input.value = input.value.replace(',', '.');
-                    }
-                });
-            });
-        }
     });
 
     // ============= OPERASIONAL SECTION LOGIC =============

@@ -130,15 +130,68 @@ class BiayaKapalController extends Controller
      */
     public function store(Request $request)
     {
-        // Clean up all currency fields before validation (remove thousand separator)
+        // Clean up all currency and numeric fields before validation
+        $data = $request->all();
+        
+        // Root fields
         $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
         foreach ($fieldsToClean as $field) {
-            if ($request->has($field) && $request->$field) {
-                $request->merge([
-                    $field => str_replace('.', '', $request->$field)
-                ]);
+            if (isset($data[$field]) && $data[$field] !== null) {
+                $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
             }
         }
+        
+        // Kapal Sections (Buruh)
+        if (isset($data['kapal_sections']) && is_array($data['kapal_sections'])) {
+            foreach ($data['kapal_sections'] as &$section) {
+                if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
+                if (isset($section['dp'])) $section['dp'] = str_replace(',', '.', str_replace('.', '', $section['dp']));
+                if (isset($section['sisa_pembayaran'])) $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
+                
+                if (isset($section['barang']) && is_array($section['barang'])) {
+                    foreach ($section['barang'] as &$barang) {
+                        if (isset($barang['jumlah'])) $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
+                    }
+                }
+            }
+        }
+        
+        // Air Sections
+        if (isset($data['air']) && is_array($data['air'])) {
+            foreach ($data['air'] as &$section) {
+                $numericAir = ['kuantitas', 'harga', 'jasa_air', 'biaya_agen', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                foreach ($numericAir as $f) {
+                    if (isset($section[$f])) $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                }
+            }
+        }
+        
+        // TKBM Sections
+        if (isset($data['tkbm_sections']) && is_array($data['tkbm_sections'])) {
+            foreach ($data['tkbm_sections'] as &$section) {
+                if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['grand_total'])) $section['grand_total'] = str_replace(',', '.', str_replace('.', '', $section['grand_total']));
+                
+                if (isset($section['barang']) && is_array($section['barang'])) {
+                    foreach ($section['barang'] as &$barang) {
+                        if (isset($barang['jumlah'])) $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
+                    }
+                }
+            }
+        }
+        
+        // Operasional Sections
+        if (isset($data['operasional_sections']) && is_array($data['operasional_sections'])) {
+            foreach ($data['operasional_sections'] as &$section) {
+                if (isset($section['nominal'])) $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
+                if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
+                if (isset($section['dp'])) $section['dp'] = str_replace(',', '.', str_replace('.', '', $section['dp']));
+                if (isset($section['sisa_pembayaran'])) $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
+            }
+        }
+        
+        $request->replace($data);
         
         $validated = $request->validate([
             'tanggal' => 'required|date',
@@ -208,9 +261,7 @@ class BiayaKapalController extends Controller
             'operasional_sections' => 'nullable|array',
             'operasional_sections.*.kapal' => 'nullable|string|max:255',
             'operasional_sections.*.voyage' => 'nullable|string|max:255',
-            'operasional_sections.*.items' => 'nullable|array',
-            'operasional_sections.*.items.*.deskripsi' => 'nullable|string',
-            'operasional_sections.*.items.*.nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.nominal' => 'nullable|numeric|min:0',
             'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'operasional_sections.*.dp' => 'nullable|numeric|min:0',
             'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
@@ -262,9 +313,9 @@ class BiayaKapalController extends Controller
                 foreach ($request->kapal_sections as $sectionIndex => $section) {
                     $kapalName = $section['kapal'];
                     $voyageName = $section['voyage'];
-                    $sectionTotalNominal = isset($section['total_nominal']) ? str_replace('.', '', $section['total_nominal']) : 0;
-                    $sectionDp = isset($section['dp']) ? str_replace('.', '', $section['dp']) : 0;
-                    $sectionSisa = isset($section['sisa_pembayaran']) ? str_replace('.', '', $section['sisa_pembayaran']) : 0;
+                    $sectionTotalNominal = $section['total_nominal'] ?? 0;
+                    $sectionDp = $section['dp'] ?? 0;
+                    $sectionSisa = $section['sisa_pembayaran'] ?? 0;
                     
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
@@ -272,22 +323,7 @@ class BiayaKapalController extends Controller
                             $barangIdRaw = $item['barang_id'] ?? null;
                             $barangId = is_string($barangIdRaw) ? trim($barangIdRaw) : $barangIdRaw;
 
-                            $jumlahRaw = $item['jumlah'] ?? 0;
-                            // Convert comma decimal and remove thousand separators if any
-                            // Convert comma decimal and remove thousand separators if any
-                            if (is_string($jumlahRaw)) {
-                                // If contains comma, assume ID format (1.000,00) -> remove dots, replace comma with dot
-                                if (strpos($jumlahRaw, ',') !== false) {
-                                    $jumlahSanitized = str_replace('.', '', $jumlahRaw);
-                                    $jumlahSanitized = str_replace(',', '.', $jumlahSanitized);
-                                } else {
-                                    // If no comma, assume standard/US format (6.7) or plain number -> keep dots
-                                    $jumlahSanitized = $jumlahRaw;
-                                }
-                            } else {
-                                $jumlahSanitized = $jumlahRaw;
-                            }
-                            $jumlah = floatval($jumlahSanitized ?: 0);
+                            $jumlah = floatval($item['jumlah'] ?? 0);
 
                             // Basic validation: skip if missing barang id or non-positive jumlah
                             if (empty($barangId) || $jumlah <= 0) {
@@ -381,36 +417,16 @@ class BiayaKapalController extends Controller
                         continue;
                     }
                     
-                    // Clean numeric values
-                    $kuantitas = isset($section['kuantitas']) ? floatval(str_replace(['.', ','], ['', '.'], $section['kuantitas'])) : 0;
-                    $harga = isset($section['harga']) ? floatval(str_replace(['.', ','], ['', '.'], $section['harga'])) : 0;
-                    $jasaAir = isset($section['jasa_air']) ? floatval(str_replace(['.', ','], ['', '.'], $section['jasa_air'])) : 0;
-                    $biayaAgen = isset($section['biaya_agen']) ? floatval(str_replace(['.', ','], ['', '.'], $section['biaya_agen'])) : 0;
+                    // Values are already cleaned before validation
+                    $kuantitas = floatval($section['kuantitas'] ?? 0);
+                    $harga = floatval($section['harga'] ?? 0);
+                    $jasaAir = floatval($section['jasa_air'] ?? 0);
+                    $biayaAgen = floatval($section['biaya_agen'] ?? 0);
                     
-                    // Prefer numeric fields submitted as 'sub_total', 'pph', 'grand_total' (hidden inputs). Fall back to older *_value names if present.
-                    if (isset($section['sub_total'])) {
-                        $subTotal = floatval(str_replace([',', '.'], ['', '.'], $section['sub_total']));
-                    } elseif (isset($section['sub_total_value'])) {
-                        $subTotal = floatval(str_replace([',', '.'], ['', '.'], $section['sub_total_value']));
-                    } else {
-                        $subTotal = 0;
-                    }
-
-                    if (isset($section['pph'])) {
-                        $pph = floatval(str_replace([',', '.'], ['', '.'], $section['pph']));
-                    } elseif (isset($section['pph_value'])) {
-                        $pph = floatval(str_replace([',', '.'], ['', '.'], $section['pph_value']));
-                    } else {
-                        $pph = 0;
-                    }
-
-                    if (isset($section['grand_total'])) {
-                        $grandTotal = floatval(str_replace([',', '.'], ['', '.'], $section['grand_total']));
-                    } elseif (isset($section['grand_total_value'])) {
-                        $grandTotal = floatval(str_replace([',', '.'], ['', '.'], $section['grand_total_value']));
-                    } else {
-                        $grandTotal = 0;
-                    }
+                    // Use already cleaned values
+                    $subTotal = floatval($section['sub_total'] ?? $section['sub_total_value'] ?? 0);
+                    $pph = floatval($section['pph'] ?? $section['pph_value'] ?? 0);
+                    $grandTotal = floatval($section['grand_total'] ?? $section['grand_total_value'] ?? 0);
                     
                     // Get type keterangan from pricelist
                     $typeKeterangan = null;
@@ -484,19 +500,7 @@ class BiayaKapalController extends Controller
                             $barangIdRaw = $item['barang_id'] ?? null;
                             $barangId = is_string($barangIdRaw) ? trim($barangIdRaw) : $barangIdRaw;
                             
-                            $jumlahRaw = $item['jumlah'] ?? 0;
-                            // Convert comma decimal
-                            if (is_string($jumlahRaw)) {
-                                if (strpos($jumlahRaw, ',') !== false) {
-                                    $jumlahSanitized = str_replace('.', '', $jumlahRaw);
-                                    $jumlahSanitized = str_replace(',', '.', $jumlahSanitized);
-                                } else {
-                                    $jumlahSanitized = $jumlahRaw;
-                                }
-                            } else {
-                                $jumlahSanitized = $jumlahRaw;
-                            }
-                            $jumlah = floatval($jumlahSanitized ?: 0);
+                            $jumlah = floatval($item['jumlah'] ?? 0);
                             
                             // Skip if missing barang id or non-positive jumlah
                             if (empty($barangId) || $jumlah <= 0) {
@@ -517,9 +521,9 @@ class BiayaKapalController extends Controller
                             }
                             
                             $subtotal = $barang->tarif * $jumlah;
-                            $sectionTotalNominal = isset($section['total_nominal']) ? str_replace('.', '', $section['total_nominal']) : 0;
-                            $sectionPph = isset($section['pph']) ? str_replace('.', '', $section['pph']) : 0;
-                            $sectionGrandTotal = isset($section['grand_total']) ? str_replace('.', '', $section['grand_total']) : 0;
+                            $sectionTotalNominal = $section['total_nominal'] ?? 0;
+                            $sectionPph = $section['pph'] ?? 0;
+                            $sectionGrandTotal = $section['grand_total'] ?? 0;
                             
                             // Save to biaya_kapal_tkbm table
                             BiayaKapalTkbm::create([
@@ -550,19 +554,7 @@ class BiayaKapalController extends Controller
                     $kapalName = $section['kapal'] ?? null;
                     $voyageName = $section['voyage'] ?? null;
                     
-                    $nominalRaw = $section['nominal'] ?? 0;
-                    // Convert comma decimal
-                    if (is_string($nominalRaw)) {
-                        if (strpos($nominalRaw, ',') !== false) {
-                            $nominalSanitized = str_replace('.', '', $nominalRaw);
-                            $nominalSanitized = str_replace(',', '.', $nominalSanitized);
-                        } else {
-                            $nominalSanitized = $nominalRaw;
-                        }
-                    } else {
-                        $nominalSanitized = $nominalRaw;
-                    }
-                    $nominal = floatval($nominalSanitized ?: 0);
+                    $nominal = floatval($section['nominal'] ?? 0);
                     
                     // Skip if completely empty
                     if (empty($kapalName) && $nominal <= 0) {
@@ -686,15 +678,25 @@ class BiayaKapalController extends Controller
      */
     public function update(Request $request, BiayaKapal $biayaKapal)
     {
-        // Clean up all currency fields before validation
+        // Clean up all currency and numeric fields before validation
+        $data = $request->all();
+        
+        // Root fields
         $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
         foreach ($fieldsToClean as $field) {
-            if ($request->has($field) && $request->$field) {
-                $request->merge([
-                    $field => str_replace('.', '', $request->$field)
-                ]);
+            if (isset($data[$field]) && $data[$field] !== null) {
+                $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
             }
         }
+        
+        // Operasional Sections
+        if (isset($data['operasional_sections']) && is_array($data['operasional_sections'])) {
+            foreach ($data['operasional_sections'] as &$section) {
+                if (isset($section['nominal'])) $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
+            }
+        }
+        
+        $request->replace($data);
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
@@ -746,16 +748,7 @@ class BiayaKapalController extends Controller
                 // Create new records
                 if (!empty($request->operasional_sections)) {
                     foreach ($request->operasional_sections as $section) {
-                        $nominalRaw = $section['nominal'] ?? 0;
-                        if (is_string($nominalRaw)) {
-                             // Assuming clean value already handled in loop or validation if passed as raw, 
-                             // but update request merge above only handles root fields. Array fields like sections need handling.
-                             // But 'numeric' validation might pass if it's already cleaned or standard.
-                             // Let's safe clean it again just in case.
-                             $nominal = str_replace('.', '', $nominalRaw);
-                        } else {
-                             $nominal = $nominalRaw;
-                        }
+                        $nominal = floatval($section['nominal'] ?? 0);
 
                         BiayaKapalOperasional::create([
                             'biaya_kapal_id' => $biayaKapal->id,
