@@ -16,6 +16,7 @@ use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\HistoryKontainer;
 use Carbon\Carbon;
 use App\Exports\ObExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -1871,6 +1872,7 @@ class ObController extends Controller
     public function saveAsalKe(Request $request)
     {
         try {
+            DB::beginTransaction();
             $id = $request->input('id');
             $type = $request->input('type');
             $asalKontainer = $request->input('asal_kontainer');
@@ -1898,32 +1900,59 @@ class ObController extends Controller
                 ]);
             }
 
+            // Check if location 'ke' changed to record in history
+            $oldKe = $record->ke;
+            
             $record->asal_kontainer = $asalKontainer;
             $record->ke = $ke;
             $record->save();
 
-            // UPDATE STOCK KONTAINER LOCATION
+            // UPDATE STOCK KONTAINER LOCATION AND RECORD HISTORY
             if (!empty($ke)) {
                 $gudang = \App\Models\Gudang::where('nama_gudang', $ke)->first();
                 if ($gudang) {
                     $noKontainer = $record->nomor_kontainer;
                     
                     if ($noKontainer) {
-                        \App\Models\Kontainer::where('nomor_seri_gabungan', $noKontainer)
-                            ->update(['gudangs_id' => $gudang->id]);
-                            
-                        \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)
-                            ->update(['gudangs_id' => $gudang->id]);
+                        // Find container to update location and get its type for history
+                        $typeKontainer = null;
+                        $knt = \App\Models\Kontainer::where('nomor_seri_gabungan', $noKontainer)->first();
+                        
+                        if ($knt) {
+                            $typeKontainer = 'kontainer';
+                            $knt->update(['gudangs_id' => $gudang->id]);
+                        } else {
+                            $knt = \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)->first();
+                            if ($knt) {
+                                $typeKontainer = 'stock';
+                                $knt->update(['gudangs_id' => $gudang->id]);
+                            }
+                        }
+                        
+                        // Record history if it's a new location or even if same as before to track the OB event
+                        if ($knt) {
+                            HistoryKontainer::create([
+                                'nomor_kontainer' => $noKontainer,
+                                'tipe_kontainer' => $typeKontainer,
+                                'jenis_kegiatan' => 'Masuk',
+                                'tanggal_kegiatan' => now(),
+                                'gudang_id' => $gudang->id,
+                                'keterangan' => 'Overbrengen dari Kapal: ' . ($record->nama_kapal ?? '-') . '. Voyage: ' . ($record->no_voyage ?? '-'),
+                                'created_by' => Auth::id(),
+                            ]);
+                        }
                     }
                 }
             }
 
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil menyimpan data'
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -1937,6 +1966,7 @@ class ObController extends Controller
     public function saveAsalKeBulk(Request $request)
     {
         try {
+            DB::beginTransaction();
             $bulkAsal = $request->input('bulk_asal_kontainer');
             $bulkKe = $request->input('bulk_ke');
             $namaKapal = $request->input('nama_kapal');
@@ -1966,6 +1996,12 @@ class ObController extends Controller
                 ->exists();
 
             $updatedCount = 0;
+            $containerNumbers = [];
+            $gudang = null;
+
+            if ($bulkKe) {
+                $gudang = \App\Models\Gudang::where('nama_gudang', $bulkKe)->first();
+            }
 
             if ($hasBl) {
                 // Update BL table
@@ -2000,25 +2036,13 @@ class ObController extends Controller
                 if ($bulkAsal) $updateData['asal_kontainer'] = $bulkAsal;
                 if ($bulkKe) $updateData['ke'] = $bulkKe;
 
-                // Get container numbers before update for location synchronization
-                $containerNumbers = [];
+                // Get container numbers before update for location synchronization and history
                 if ($bulkKe) {
                     $containerNumbers = (clone $query)->pluck('nomor_kontainer')->filter()->toArray();
                 }
 
                 $updatedCount = $query->update($updateData);
 
-                // Sync locations to Kontainer and StockKontainer
-                if ($bulkKe && !empty($containerNumbers)) {
-                    $gudang = \App\Models\Gudang::where('nama_gudang', $bulkKe)->first();
-                    if ($gudang) {
-                        \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
-                            ->update(['gudangs_id' => $gudang->id]);
-                            
-                        \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
-                            ->update(['gudangs_id' => $gudang->id]);
-                    }
-                }
             } else {
                 // Update NaikKapal table
                 $query = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
@@ -2052,27 +2076,46 @@ class ObController extends Controller
                 if ($bulkAsal) $updateData['asal_kontainer'] = $bulkAsal;
                 if ($bulkKe) $updateData['ke'] = $bulkKe;
 
-                // Get container numbers before update for location synchronization
-                $containerNumbers = [];
+                // Get container numbers before update for location synchronization and history
                 if ($bulkKe) {
                     $containerNumbers = (clone $query)->pluck('nomor_kontainer')->filter()->toArray();
                 }
 
                 $updatedCount = $query->update($updateData);
+            }
 
-                // Sync locations to Kontainer and StockKontainer
-                if ($bulkKe && !empty($containerNumbers)) {
-                    $gudang = \App\Models\Gudang::where('nama_gudang', $bulkKe)->first();
-                    if ($gudang) {
-                        \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
-                            ->update(['gudangs_id' => $gudang->id]);
-                            
-                        \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
-                            ->update(['gudangs_id' => $gudang->id]);
+            // SYNC LOCATIONS AND RECORD HISTORY IN BULK
+            if ($bulkKe && $gudang && !empty($containerNumbers)) {
+                foreach ($containerNumbers as $noKontainer) {
+                    $typeKontainer = null;
+                    $knt = \App\Models\Kontainer::where('nomor_seri_gabungan', $noKontainer)->first();
+                    
+                    if ($knt) {
+                        $typeKontainer = 'kontainer';
+                        $knt->update(['gudangs_id' => $gudang->id]);
+                    } else {
+                        $knt = \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)->first();
+                        if ($knt) {
+                            $typeKontainer = 'stock';
+                            $knt->update(['gudangs_id' => $gudang->id]);
+                        }
+                    }
+                    
+                    if ($knt) {
+                        HistoryKontainer::create([
+                            'nomor_kontainer' => $noKontainer,
+                            'tipe_kontainer' => $typeKontainer,
+                            'jenis_kegiatan' => 'Masuk',
+                            'tanggal_kegiatan' => now(),
+                            'gudang_id' => $gudang->id,
+                            'keterangan' => "Bulk Overbrengen. Kapal: {$namaKapal}. Voyage: {$noVoyage}",
+                            'created_by' => Auth::id(),
+                        ]);
                     }
                 }
             }
 
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil mengupdate {$updatedCount} data",
@@ -2080,6 +2123,7 @@ class ObController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

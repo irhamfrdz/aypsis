@@ -1,23 +1,28 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use App\Models\Manifest;
-
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-
-$voyage = 'SP01BJ26';
-$newDate = '2026-01-19';
-
-echo "Updating tanggal_berangkat for voyage '$voyage' to '$newDate'...\n";
+use Illuminate\Support\Facades\DB;
 
 try {
-    $count = Manifest::where('no_voyage', $voyage)
-        ->update(['tanggal_berangkat' => $newDate]);
+    DB::beginTransaction();
 
-    echo "Success! Updated $count records in 'manifests' table.\n";
+    $voyage = 'ST02BJ26';
+    $tanggalBaru = '2026-01-26';
+
+    $count = Manifest::where('no_voyage', $voyage)->count();
+
+    if ($count > 0) {
+        Manifest::where('no_voyage', $voyage)->update([
+            'tanggal_berangkat' => $tanggalBaru
+        ]);
+        
+        DB::commit();
+        echo "Berhasil memperbarui {$count} data manifest untuk voyage {$voyage} menjadi tanggal {$tanggalBaru}.\n";
+    } else {
+        echo "Tidak ditemukan data manifest dengan nomor voyage {$voyage}.\n";
+    }
+
 } catch (\Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
+    DB::rollBack();
+    echo "Terjadi kesalahan: " . $e->getMessage() . "\n";
 }
