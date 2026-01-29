@@ -1451,11 +1451,9 @@
             clearAllOperasionalSections();
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
-        // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {
-                document.getElementById('tkbm_wrapper').classList.remove('hidden');
-                initializeTkbmSections();
-            }
+            document.getElementById('tkbm_wrapper').classList.remove('hidden');
+            initializeTkbmSections();
             
             // Hide Operasional wrapper for Biaya TKBM
             operasionalWrapper.classList.add('hidden');
@@ -3380,7 +3378,7 @@
         blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat kontainer...</p>';
         
         // Fetch BLs for all selected voyages
-        fetch('{{ url('biaya-kapal/get-bls-by-voyages') }}', {
+        fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -3570,129 +3568,7 @@
             });
         }
     });
-</script>
-@endpush
-@endsection
 
-@push('styles')
-<style>
-    /* Select2 Styling */
-    .select2-container {
-        width: 100% !important;
-    }
-    .select2-container .select2-selection--single {
-        height: 42px !important;
-        padding: 6px 12px !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 0.5rem !important;
-    }
-    .select2-container .select2-selection--single .select2-selection__rendered {
-        line-height: 28px !important;
-        padding-left: 0 !important;
-    }
-    .select2-container .select2-selection--single .select2-selection__arrow {
-        height: 40px !important;
-    }
-    .select2-dropdown {
-        border: 1px solid #d1d5db !important;
-        border-radius: 0.5rem !important;
-    }
-    .select2-container--open .select2-selection--single {
-        border-color: #3b82f6 !important;
-    }
-    .select2-results__option--highlighted {
-        background-color: #3b82f6 !important;
-    }
-
-    /* Searchable Multi-Select Styling */
-    #kapal_container, #voyage_container_input {
-        transition: all 0.15s ease;
-    }
-    
-    #kapal_container:focus-within, #voyage_container_input:focus-within {
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .selected-chip {
-        display: inline-flex;
-        align-items: center;
-        background-color: #3b82f6;
-        color: white;
-        font-size: 0.75rem;
-        padding: 4px 8px;
-        border-radius: 4px;
-        margin: 1px;
-        gap: 6px;
-    }
-    
-    .selected-chip .remove-chip {
-        margin-left: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 0.875rem;
-        opacity: 0.8;
-    }
-    
-    .selected-chip .remove-chip:hover {
-        opacity: 1;
-    }
-    
-    .kapal-option, .voyage-option, .bl-option {
-        transition: background-color 0.15s ease;
-        position: relative;
-    }
-    
-    .kapal-option:hover, .voyage-option:hover, .bl-option:hover {
-        background-color: #eff6ff !important;
-    }
-    
-    .kapal-option.selected, .voyage-option.selected, .bl-option.selected {
-        background-color: #dbeafe !important;
-        border-left: 3px solid #3b82f6;
-        padding-left: 9px;
-    }
-    
-    .kapal-option.selected::after, .voyage-option.selected::after, .bl-option.selected::after, .jenis-biaya-option.selected::after {
-        content: '\u2713';
-        position: absolute;
-        right: 12px;
-        color: #3b82f6;
-        font-weight: bold;
-        font-size: 1rem;
-    }
-    
-    .jenis-biaya-option {
-        transition: background-color 0.15s ease;
-        position: relative;
-    }
-    
-    .jenis-biaya-option:hover {
-        background-color: #eff6ff !important;
-    }
-    
-    .jenis-biaya-option.selected {
-        background-color: #dbeafe !important;
-        border-left: 3px solid #3b82f6;
-        padding-left: 9px;
-    }
-    
-    #jenis_biaya_container {
-        transition: all 0.15s ease;
-    }
-    
-    #jenis_biaya_container:focus-within {
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    #kapal_search::placeholder, #voyage_search::placeholder {
-        color: #9ca3af;
-    }
-    
-    #kapal_dropdown, #voyage_dropdown {
-        border-top: none;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-</style>
     // ============= OPERASIONAL SECTION LOGIC =============
     let operasionalSectionCounter = 0;
     const operasionalSectionsContainer = document.getElementById('operasional_sections_container');
@@ -3927,5 +3803,128 @@
         operasionalSectionCounter = 0;
         if (nominalInput) nominalInput.value = '';
     }
+</script>
+@endpush
+@endsection
+
+@push('styles')
+<style>
+    /* Select2 Styling */
+    .select2-container {
+        width: 100% !important;
+    }
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+        padding: 6px 12px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.5rem !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        padding-left: 0 !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.5rem !important;
+    }
+    .select2-container--open .select2-selection--single {
+        border-color: #3b82f6 !important;
+    }
+    .select2-results__option--highlighted {
+        background-color: #3b82f6 !important;
+    }
+
+    /* Searchable Multi-Select Styling */
+    #kapal_container, #voyage_container_input {
+        transition: all 0.15s ease;
+    }
+    
+    #kapal_container:focus-within, #voyage_container_input:focus-within {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .selected-chip {
+        display: inline-flex;
+        align-items: center;
+        background-color: #3b82f6;
+        color: white;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin: 1px;
+        gap: 6px;
+    }
+    
+    .selected-chip .remove-chip {
+        margin-left: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+    
+    .selected-chip .remove-chip:hover {
+        opacity: 1;
+    }
+    
+    .kapal-option, .voyage-option, .bl-option {
+        transition: background-color 0.15s ease;
+        position: relative;
+    }
+    
+    .kapal-option:hover, .voyage-option:hover, .bl-option:hover {
+        background-color: #eff6ff !important;
+    }
+    
+    .kapal-option.selected, .voyage-option.selected, .bl-option.selected {
+        background-color: #dbeafe !important;
+        border-left: 3px solid #3b82f6;
+        padding-left: 9px;
+    }
+    
+    .kapal-option.selected::after, .voyage-option.selected::after, .bl-option.selected::after, .jenis-biaya-option.selected::after {
+        content: '\u2713';
+        position: absolute;
+        right: 12px;
+        color: #3b82f6;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+    
+    .jenis-biaya-option {
+        transition: background-color 0.15s ease;
+        position: relative;
+    }
+    
+    .jenis-biaya-option:hover {
+        background-color: #eff6ff !important;
+    }
+    
+    .jenis-biaya-option.selected {
+        background-color: #dbeafe !important;
+        border-left: 3px solid #3b82f6;
+        padding-left: 9px;
+    }
+    
+    #jenis_biaya_container {
+        transition: all 0.15s ease;
+    }
+    
+    #jenis_biaya_container:focus-within {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    #kapal_search::placeholder, #voyage_search::placeholder {
+        color: #9ca3af;
+    }
+    
+    #kapal_dropdown, #voyage_dropdown {
+        border-top: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+</style>
 
 @endpush
