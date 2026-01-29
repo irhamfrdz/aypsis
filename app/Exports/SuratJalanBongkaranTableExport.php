@@ -24,9 +24,8 @@ class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, Sh
     public function collection()
     {
         if ($this->mode === 'surat_jalan') {
-            return $this->data->map(function($sj, $index) {
+            return $this->data->map(function($sj) {
                 return [
-                    $index + 1,
                     $sj->manifest->nomor_urut ?? '-',
                     $sj->nomor_surat_jalan ?: '-',
                     $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-',
@@ -39,9 +38,8 @@ class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, Sh
             });
         } else {
             // Manifest mode
-            return $this->data->map(function($m, $index) {
+            return $this->data->map(function($m) {
                 return [
-                    $index + 1,
                     $m->nomor_urut ?? '-',
                     $m->nomor_bl ?: '-',
                     $m->nomor_kontainer ?: '-',
@@ -59,7 +57,6 @@ class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, Sh
     {
         if ($this->mode === 'surat_jalan') {
             return [
-                'No',
                 'No. Urut',
                 'Nomor Surat Jalan',
                 'Tanggal',
@@ -71,7 +68,6 @@ class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, Sh
             ];
         } else {
             return [
-                'No',
                 'No. Urut',
                 'Nomor BL',
                 'Nomor Container',
@@ -89,7 +85,7 @@ class SuratJalanBongkaranTableExport implements FromCollection, WithHeadings, Sh
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $columnCount = $this->mode === 'surat_jalan' ? 'I' : 'I'; // Both have 9 columns
+                $columnCount = 'H'; // Both have 8 columns
                 $headerRange = 'A1:' . $columnCount . '1';
                 
                 $sheet->getStyle($headerRange)->getFont()->setBold(true);
