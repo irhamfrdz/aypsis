@@ -11,6 +11,7 @@ use App\Models\StockKontainer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\HistoryKontainer;
 
 class CheckpointKontainerKeluarController extends Controller
 {
@@ -332,6 +333,17 @@ class CheckpointKontainerKeluarController extends Controller
                 $stockRecord->update(['gudangs_id' => null]);
             }
 
+            // Create History Entry
+            HistoryKontainer::create([
+                'nomor_kontainer' => $kontainerData['no_kontainer'],
+                'tipe_kontainer' => ($kontainerRecord) ? 'kontainer' : 'stock',
+                'jenis_kegiatan' => 'Keluar',
+                'tanggal_kegiatan' => Carbon::parse($request->tanggal_kirim),
+                'gudang_id' => $request->gudangs_id,
+                'keterangan' => 'Dikirim ke: ' . $request->tujuan . ($request->keterangan ? '. Ket: ' . $request->keterangan : ''),
+                'created_by' => Auth::id(),
+            ]);
+
             DB::commit();
 
             return redirect()->back()->with('success', 'Kontainer berhasil dikirim dan masuk ke Kontainer Dalam Perjalanan');
@@ -374,6 +386,17 @@ class CheckpointKontainerKeluarController extends Controller
                 'keterangan' => ($kontainer->keterangan ? $kontainer->keterangan . ' | ' : '') . 
                                'Dikembalikan pada ' . Carbon::parse($request->tanggal_pengembalian)->format('d/m/Y') . 
                                ($request->keterangan ? ': ' . $request->keterangan : ''),
+            ]);
+
+            // Create History Entry
+            HistoryKontainer::create([
+                'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
+                'tipe_kontainer' => $request->kontainer_tipe, // 'kontainer' or 'stock' from request
+                'jenis_kegiatan' => 'Keluar',
+                'tanggal_kegiatan' => Carbon::parse($request->tanggal_pengembalian),
+                'gudang_id' => $request->gudangs_id,
+                'keterangan' => 'Pengembalian Kontainer. ' . ($request->keterangan ?? ''),
+                'created_by' => Auth::id(),
             ]);
 
             // Optional: Create a log or history record here if needed

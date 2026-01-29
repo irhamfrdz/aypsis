@@ -12,6 +12,7 @@ use App\Models\KontainerPerjalanan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\HistoryKontainer;
 
 class CheckpointKontainerMasukController extends Controller
 {
@@ -154,6 +155,18 @@ class CheckpointKontainerMasukController extends Controller
                         $stockKontainer->update(['gudangs_id' => $gudang->id]);
                     }
                 }
+
+                // Create History Entry
+                HistoryKontainer::create([
+                    'nomor_kontainer' => $request->nomor_kontainer,
+                    // Determine type - minimal heuristic if records were just fetched
+                    'tipe_kontainer' => ($kontainer) ? 'kontainer' : (($stockKontainer ?? false) ? 'stock' : null),
+                    'jenis_kegiatan' => 'Masuk',
+                    'tanggal_kegiatan' => $waktuTiba,
+                    'gudang_id' => $gudang->id,
+                    'keterangan' => 'Diterima dari: ' . ($kontainerPerjalanan->suratJalan->tujuan_pengiriman ?? 'Perjalanan') . '. ' . ($request->catatan_masuk ?? ''),
+                    'created_by' => Auth::id(),
+                ]);
             }
 
             DB::commit();
@@ -215,6 +228,17 @@ class CheckpointKontainerMasukController extends Controller
                     $stockKontainer->update(['gudangs_id' => $gudang->id]);
                 }
             }
+
+            // Create History Entry
+            HistoryKontainer::create([
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'tipe_kontainer' => ($kontainer) ? 'kontainer' : (($stockKontainer ?? false) ? 'stock' : null),
+                'jenis_kegiatan' => 'Masuk',
+                'tanggal_kegiatan' => $waktuTiba,
+                'gudang_id' => $gudang->id,
+                'keterangan' => 'Manual Entry Masuk. ' . ($request->catatan_masuk ?? ''),
+                'created_by' => Auth::id(),
+            ]);
 
             DB::commit();
 

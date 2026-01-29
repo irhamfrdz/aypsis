@@ -8,9 +8,13 @@ use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use App\Models\Gudang;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\HistoryKontainer;
 
 class PergerakanKontainerController extends Controller
 {
+    // ...
+
     public function index(Request $request)
     {
         // Get filter parameters
@@ -123,8 +127,27 @@ class PergerakanKontainerController extends Controller
                 ]);
             }
 
-            // You can create a movement log here if needed
-            // Example: PergerakanKontainerLog::create([...]);
+            // Log History Keluar from Origin
+            HistoryKontainer::create([
+                'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
+                'tipe_kontainer' => $request->source_table,
+                'jenis_kegiatan' => 'Keluar',
+                'tanggal_kegiatan' => \Carbon\Carbon::parse($request->tanggal_pergerakan),
+                'gudang_id' => $gudangAsal,
+                'keterangan' => 'Mutasi ke Gudang: ' . (Gudang::find($request->gudang_tujuan_id)->nama_gudang ?? '-') . '. ' . ($request->keterangan ?? ''),
+                'created_by' => Auth::id(),
+            ]);
+
+            // Log History Masuk to Destination
+            HistoryKontainer::create([
+                'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
+                'tipe_kontainer' => $request->source_table,
+                'jenis_kegiatan' => 'Masuk',
+                'tanggal_kegiatan' => \Carbon\Carbon::parse($request->tanggal_pergerakan),
+                'gudang_id' => $request->gudang_tujuan_id,
+                'keterangan' => 'Mutasi dari Gudang: ' . (Gudang::find($gudangAsal)->nama_gudang ?? '-') . '. ' . ($request->keterangan ?? ''),
+                'created_by' => Auth::id(),
+            ]);
 
             DB::commit();
 
