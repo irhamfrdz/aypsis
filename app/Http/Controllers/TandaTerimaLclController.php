@@ -18,6 +18,8 @@ use App\Models\MasterTujuanKirim;
 use App\Models\MasterPengirimPenerima;
 use App\Models\Karyawan;
 use App\Models\Prospek;
+use App\Models\Gudang;
+use App\Models\HistoryKontainer;
 
 class TandaTerimaLclController extends Controller
 {
@@ -1378,6 +1380,9 @@ class TandaTerimaLclController extends Controller
         // Get master tujuan kirim for dropdown
         $masterTujuanKirim = MasterTujuanKirim::active()->orderBy('nama_tujuan')->get();
         
+        // Get all warehouses for selection
+        $gudangs = Gudang::orderBy('nama_gudang')->get();
+        
         return view('tanda-terima-lcl.stuffing', compact(
             'pivotData', 
             'groupedByContainer', 
@@ -1385,7 +1390,8 @@ class TandaTerimaLclController extends Controller
             'unstuffedLcl',
             'uniqueContainers',
             'stats',
-            'masterTujuanKirim'
+            'masterTujuanKirim',
+            'gudangs'
         ));
     }
     
@@ -1526,12 +1532,15 @@ class TandaTerimaLclController extends Controller
                 'nomor_seal' => 'required|string|max:255',
                 'tanggal_seal' => 'required|date',
                 'tujuan' => 'required|string|max:255',
+                'gudang_id' => 'required|exists:gudangs,id',
             ], [
                 'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
                 'nomor_seal.required' => 'Nomor seal wajib diisi',
                 'tanggal_seal.required' => 'Tanggal seal wajib diisi',
                 'tanggal_seal.date' => 'Format tanggal seal tidak valid',
                 'tujuan.required' => 'Tujuan pengiriman wajib diisi',
+                'gudang_id.required' => 'Gudang wajib dipilih',
+                'gudang_id.exists' => 'Gudang tidak valid',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
@@ -1628,11 +1637,29 @@ class TandaTerimaLclController extends Controller
             ]);
 
             // Update status kontainer menjadi selesai (jika ada di tabel kontainer)
+            $kontainerUpdateData = [
+                'status' => 'selesai',
+                'gudangs_id' => $request->gudang_id,
+                'updated_at' => now()
+            ];
+
             Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
-                ->update([
-                    'status' => 'selesai',
-                    'updated_at' => now()
-                ]);
+                ->update($kontainerUpdateData);
+            
+            // Also update StockKontainer if exists
+            StockKontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
+                ->update(['gudangs_id' => $request->gudang_id]);
+
+            // Create History Entry
+            HistoryKontainer::create([
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'tipe_kontainer' => 'lcl',
+                'jenis_kegiatan' => 'Masuk',
+                'tanggal_kegiatan' => $request->tanggal_seal,
+                'gudang_id' => $request->gudang_id,
+                'keterangan' => 'Update lokasi saat seal kontainer LCL. Seal: ' . $request->nomor_seal . '. Tujuan: ' . $request->tujuan,
+                'created_by' => Auth::id(),
+            ]);
 
             DB::commit();
 

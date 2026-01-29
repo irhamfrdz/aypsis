@@ -106,6 +106,7 @@
                                     $tipeClass = match($history->tipe_kontainer) {
                                         'kontainer' => 'bg-blue-50 text-blue-600 border-blue-100',
                                         'stock' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                        'lcl' => 'bg-purple-50 text-purple-600 border-purple-100',
                                         default => 'bg-gray-50 text-gray-500 border-gray-100',
                                     };
                                 @endphp
