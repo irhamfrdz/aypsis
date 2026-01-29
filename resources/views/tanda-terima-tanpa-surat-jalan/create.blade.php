@@ -1348,6 +1348,7 @@
             
             if (noKontainerInput) noKontainerInput.removeAttribute('required');
             if (noSealInput) noSealInput.removeAttribute('required');
+            if (gudangInput) gudangInput.removeAttribute('required'); // Added
         } else {
             // Show kontainer fields for FCL and LCL
             sizeKontainerField.style.display = 'block';
@@ -1359,6 +1360,7 @@
             // Add required attribute back for FCL and LCL
             if (noKontainerInput) noKontainerInput.setAttribute('required', 'required');
             if (noSealInput) noSealInput.setAttribute('required', 'required');
+            if (gudangInput) gudangInput.setAttribute('required', 'required'); // Added
         }
     }
 
