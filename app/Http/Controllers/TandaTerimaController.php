@@ -446,7 +446,10 @@ class TandaTerimaController extends Controller
         // Get all master pengirim/penerima for dropdown
         $masterPenerimaList = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'karyawanSupirs', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList'));
+        // Get all gudangs for dropdown
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'karyawanSupirs', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList', 'gudangs'));
     }
 
     /**
@@ -515,6 +518,7 @@ class TandaTerimaController extends Controller
             // Validation for uploaded images
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
+            'gudang_id' => 'nullable|exists:gudangs,id',
         ]);
 
         DB::beginTransaction();
@@ -659,6 +663,52 @@ class TandaTerimaController extends Controller
                 });
                 if (!empty($noSeals)) {
                     $tandaTerima->no_seal = implode(',', $noSeals);
+                }
+            }
+
+            // Update gudangs_id for containers if gudang_id is present
+            if ($request->filled('gudang_id')) {
+                $gudangId = $request->gudang_id;
+                
+                // Get container numbers to update
+                $containersToUpdate = [];
+                if (!empty($tandaTerima->no_kontainer)) {
+                    // Split comma-separated string
+                    $containersToUpdate = array_map('trim', explode(',', $tandaTerima->no_kontainer));
+                } elseif (!empty($suratJalan->no_kontainer)) {
+                    $containersToUpdate = array_map('trim', explode(',', $suratJalan->no_kontainer));
+                }
+
+                if (!empty($containersToUpdate)) {
+                    // Update StockKontainer (deprecated but sometimes used) and Kontainer
+                    \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)->update(['gudangs_id' => $gudangId]);
+                    
+                    // Update Kontainer (Active ones preferable)
+                    $affectedContainers = \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)
+                        ->where('status', 'tersedia') // Or 'active'
+                        ->get();
+
+                    foreach ($affectedContainers as $kontainer) {
+                         $kontainer->update(['gudangs_id' => $gudangId]);
+                         
+                         // Log History Masuk
+                         \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
+                            'tipe_kontainer' => 'kontainer', // Assuming 'kontainer' source
+                            'jenis_kegiatan' => 'Masuk',
+                            'tanggal_kegiatan' => now(), // Or use TandaTerima date if preferred
+                            'gudang_id' => $gudangId,
+                            'keterangan' => 'Masuk via Tanda Terima: ' . $tandaTerima->no_surat_jalan,
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
+                        
+                    // Log update (optional but good for tracking)
+                    Log::info('Updated gudang_id and history for containers via Tanda Terima', [
+                        'gudang_id' => $gudangId,
+                        'containers' => $containersToUpdate,
+                        'tanda_terima_id' => $tandaTerima->id ?? 'new'
+                    ]);
                 }
             }
 
