@@ -434,7 +434,7 @@
     </div>
 </div>
 
-{{-- Export Modal --}}
+<!-- Export Modal -->
 <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
         <div class="p-6 border-b border-gray-200">
@@ -443,19 +443,42 @@
             </h3>
         </div>
         <form action="{{ route('bl.export') }}" method="GET" class="p-6">
-            <!-- Filter fields hidden -->
-            <input type="hidden" name="search" value="{{ request('search') }}">
-            <input type="hidden" name="nama_kapal" value="{{ request('nama_kapal') }}">
-            <input type="hidden" name="no_voyage" value="{{ request('no_voyage') }}">
+            <p class="text-sm text-gray-600 mb-6">Silakan pilih filter data yang ingin di-export ke Excel.</p>
             
-            <p class="text-gray-600 mb-6">Download data BL sebagai file Excel. Filter yang aktif saat ini akan diterapkan pada file export.</p>
+            <div class="space-y-4 mb-6">
+                {{-- Search Filter (Hidden/Read-only representation) --}}
+                @if(request('search'))
+                <div class="p-2 bg-gray-50 rounded border border-gray-200">
+                    <span class="text-xs text-gray-500 block">Pencarian Aktif:</span>
+                    <span class="text-sm font-medium">"{{ request('search') }}"</span>
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                </div>
+                @endif
+
+                {{-- Kapal Selection --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Kapal</label>
+                    <select name="nama_kapal" id="export_nama_kapal" class="w-full select2-export">
+                        <option value="">-- Semua Kapal --</option>
+                        {{-- Data will be loaded via JS or passed from controller if available --}}
+                    </select>
+                </div>
+
+                {{-- Voyage Selection --}}
+                <div id="export_voyage_container" class="">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilih No. Voyage</label>
+                    <select name="no_voyage" id="export_no_voyage" class="w-full select2-export">
+                        <option value="">-- Pilih Voyage --</option>
+                    </select>
+                </div>
+            </div>
             
             <div class="flex justify-end gap-3">
-                 <button type="button" onclick="closeExportModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                 <button type="button" onclick="closeExportModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
                     Batal
                 </button>
-                <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm">
-                    <i class="fas fa-download mr-1"></i> Download
+                <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm flex items-center transition">
+                    <i class="fas fa-download mr-1"></i> Download Excel
                 </button>
             </div>
         </form>
@@ -482,11 +505,61 @@
     function openExportModal() {
         document.getElementById('exportModal').classList.remove('hidden');
         document.getElementById('exportModal').classList.add('flex');
+        
+        // Initialize Select2 if not already done
+        $('.select2-export').select2({
+            dropdownParent: $('#exportModal'),
+            placeholder: 'Pilih...',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Load Ships
+        loadExportShips();
     }
     
     function closeExportModal() {
         document.getElementById('exportModal').classList.add('hidden');
         document.getElementById('exportModal').classList.remove('flex');
+    }
+
+    function loadExportShips() {
+        const kapalSelect = $('#export_nama_kapal');
+        kapalSelect.empty().append('<option value="">-- Semua Kapal --</option>');
+        
+        fetch('{{ route("bl.get-ships") }}')
+            .then(response => response.json())
+            .then(data => {
+                data.ships.forEach(ship => {
+                    const selected = ship === "{{ request('nama_kapal') }}" ? 'selected' : '';
+                    kapalSelect.append(`<option value="${ship}" ${selected}>${ship}</option>`);
+                });
+                
+                if ("{{ request('nama_kapal') }}") {
+                    loadExportVoyages("{{ request('nama_kapal') }}");
+                }
+            });
+    }
+
+    $('#export_nama_kapal').on('change', function() {
+        const shipName = $(this).val();
+        loadExportVoyages(shipName);
+    });
+
+    function loadExportVoyages(shipName) {
+        const voyageSelect = $('#export_no_voyage');
+        voyageSelect.empty().append('<option value="">-- Pilih Voyage --</option>');
+        
+        if (!shipName) return;
+
+        fetch(`{{ route("bl.get-voyages") }}?nama_kapal=${encodeURIComponent(shipName)}`)
+            .then(response => response.json())
+            .then(data => {
+                data.voyages.forEach(voyage => {
+                    const selected = voyage === "{{ request('no_voyage') }}" ? 'selected' : '';
+                    voyageSelect.append(`<option value="${voyage}" ${selected}>${voyage}</option>`);
+                });
+            });
     }
 
     function closeSplitModal() {
