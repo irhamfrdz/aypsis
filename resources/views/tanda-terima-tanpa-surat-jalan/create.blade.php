@@ -778,6 +778,26 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div id="gudang_field">
+                            <label for="gudang_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                Gudang
+                            </label>
+                            <select name="gudang_id" id="gudang_id"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('gudang_id') border-red-500 @enderror">
+                                <option value="">-- Pilih Gudang --</option>
+                                @if(isset($gudangs))
+                                    @foreach($gudangs as $gudang)
+                                        <option value="{{ $gudang->id }}" {{ old('gudang_id') == $gudang->id ? 'selected' : '' }}>
+                                            {{ $gudang->nama_gudang }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('gudang_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -1304,8 +1324,10 @@
         const noKontainerField = document.getElementById('no_kontainer_field');
         const noSealField = document.getElementById('no_seal_field');
         const tanggalSealField = document.getElementById('tanggal_seal_field');
+        const gudangField = document.getElementById('gudang_field'); // Added
         const noKontainerInput = document.getElementById('no_kontainer');
         const noSealInput = document.getElementById('no_seal');
+        const gudangInput = document.getElementById('gudang_id'); // Added
         
         if (tipeKontainer === 'cargo') {
             // Hide kontainer fields for cargo
@@ -1313,6 +1335,8 @@
             noKontainerField.style.display = 'none';
             noSealField.style.display = 'none';
             tanggalSealField.style.display = 'none';
+            if (gudangField) gudangField.style.display = 'none'; // Added
+            
             // Clear kontainer fields when cargo is selected and remove required attribute
             if (noKontainerInput) noKontainerInput.value = '';
             const sizeKontainerInput = document.getElementById('size_kontainer');
@@ -1320,6 +1344,8 @@
             if (noSealInput) noSealInput.value = '';
             const tanggalSealInput = document.getElementById('tanggal_seal');
             if (tanggalSealInput) tanggalSealInput.value = '';
+            if (gudangInput) gudangInput.value = ''; // Added
+            
             if (noKontainerInput) noKontainerInput.removeAttribute('required');
             if (noSealInput) noSealInput.removeAttribute('required');
         } else {
@@ -1328,6 +1354,8 @@
             noKontainerField.style.display = 'block';
             noSealField.style.display = 'block';
             tanggalSealField.style.display = 'block';
+            if (gudangField) gudangField.style.display = 'block'; // Added
+            
             // Add required attribute back for FCL and LCL
             if (noKontainerInput) noKontainerInput.setAttribute('required', 'required');
             if (noSealInput) noSealInput.setAttribute('required', 'required');

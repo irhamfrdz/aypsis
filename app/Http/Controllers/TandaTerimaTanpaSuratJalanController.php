@@ -232,7 +232,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         $containerOptions = array_values($merged);
 
-        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'masterPengirimPenerima', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions', 'kegiatanSuratJalan'));
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+
+        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'masterPengirimPenerima', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'tipe', 'containerOptions', 'kegiatanSuratJalan', 'gudangs'));
     }
 
     /**
@@ -430,6 +432,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'estimasi_naik_kapal' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
             'tanggal_seal' => 'nullable|date',
+            'gudang_id' => 'nullable|exists:gudangs,id',
             // Barang - Array format dari form
             'nama_barang' => 'nullable|array',
             'nama_barang.*' => 'nullable|string|max:255',
@@ -624,6 +627,20 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
 
             \Log::info('Dimensi items count after creation', ['count' => $tandaTerima->dimensiItems()->count()]);
+
+            // UPDATE STOCK KONTAINER LOCATION
+            if ($request->filled('gudang_id') && $request->filled('no_kontainer')) {
+                $gudangId = $request->input('gudang_id');
+                $noKontainer = $request->input('no_kontainer');
+                
+                // Update Kontainer
+                Kontainer::where('nomor_seri_gabungan', $noKontainer)
+                    ->update(['gudangs_id' => $gudangId]);
+                    
+                // Update StockKontainer
+                StockKontainer::where('nomor_seri_gabungan', $noKontainer)
+                    ->update(['gudangs_id' => $gudangId]);
+            }
 
             // Auto-create prospek for all tanda terima (sesuai permintaan user)
             if ($request->filled('simpan_ke_prospek') || true) { // Always create prospek
