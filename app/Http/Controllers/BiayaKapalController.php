@@ -550,62 +550,37 @@ class BiayaKapalController extends Controller
                     $kapalName = $section['kapal'] ?? null;
                     $voyageName = $section['voyage'] ?? null;
                     
-                    if (isset($section['items']) && is_array($section['items'])) {
-                        foreach ($section['items'] as $item) {
-                            $deskripsi = $item['deskripsi'] ?? null;
-                            $nominalRaw = $item['nominal'] ?? 0;
-                            
-                            // Convert comma decimal
-                            if (is_string($nominalRaw)) {
-                                if (strpos($nominalRaw, ',') !== false) {
-                                    $nominalSanitized = str_replace('.', '', $nominalRaw);
-                                    $nominalSanitized = str_replace(',', '.', $nominalSanitized);
-                                } else {
-                                    // Remove dot separators if any for standard number inputs just in case
-                                    // Depending on frontend format. Assuming standard ID format 1.000,00 handled above.
-                                    // If raw number 1000, kept as is.
-                                    $nominalSanitized = $nominalRaw;
-                                }
-                            } else {
-                                $nominalSanitized = $nominalRaw;
-                            }
-                            $nominal = floatval($nominalSanitized ?: 0);
-                            
-                            if (empty($deskripsi) || $nominal <= 0) {
-                               continue;
-                            }
-                            
-                            $sectionTotalNominal = isset($section['total_nominal']) ? str_replace('.', '', $section['total_nominal']) : 0;
-                            $sectionDp = isset($section['dp']) ? str_replace('.', '', $section['dp']) : 0;
-                            $sectionSisa = isset($section['sisa_pembayaran']) ? str_replace('.', '', $section['sisa_pembayaran']) : 0;
-                            
-                            BiayaKapalOperasional::create([
-                                'biaya_kapal_id' => $biayaKapal->id,
-                                'kapal' => $kapalName,
-                                'voyage' => $voyageName,
-                                'keterangan' => $deskripsi,
-                                'nominal' => $nominal,
-                                'total_nominal' => $sectionTotalNominal,
-                                'dp' => $sectionDp,
-                                'sisa_pembayaran' => $sectionSisa,
-                            ]);
-                            
-                            $operasionalDetails[] = "[$kapalName - Voyage $voyageName] " . $deskripsi . ' = Rp ' . number_format($nominal, 0, ',', '.');
+                    $nominalRaw = $section['nominal'] ?? 0;
+                    // Convert comma decimal
+                    if (is_string($nominalRaw)) {
+                        if (strpos($nominalRaw, ',') !== false) {
+                            $nominalSanitized = str_replace('.', '', $nominalRaw);
+                            $nominalSanitized = str_replace(',', '.', $nominalSanitized);
+                        } else {
+                            $nominalSanitized = $nominalRaw;
                         }
+                    } else {
+                        $nominalSanitized = $nominalRaw;
                     }
-
-                
-                // Update keterangan with TKBM details (REMOVED as per user request to keep keterangan clean)
-                /*
-                if (!empty($tkbmDetails)) {
-                    $keteranganTkbm = "Detail Biaya TKBM:\n" . implode("\n", $tkbmDetails);
-                    $biayaKapal->keterangan = $biayaKapal->keterangan 
-                        ? $biayaKapal->keterangan . "\n\n" . $keteranganTkbm 
-                        : $keteranganTkbm;
-                    $biayaKapal->save();
+                    $nominal = floatval($nominalSanitized ?: 0);
+                    
+                    // Skip if completely empty
+                    if (empty($kapalName) && $nominal <= 0) {
+                        continue;
+                    }
+                    
+                    BiayaKapalOperasional::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $kapalName,
+                        'voyage' => $voyageName,
+                        'nominal' => $nominal,
+                        'total_nominal' => 0,
+                        'dp' => 0,
+                        'sisa_pembayaran' => 0,
+                    ]);
+                    
+                    $operasionalDetails[] = "[$kapalName - Voyage $voyageName] = Rp " . number_format($nominal, 0, ',', '.');
                 }
-                */
-            }
             }
 
             DB::commit();
@@ -636,7 +611,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails']);
         
         // Check if it's Biaya Dokumen and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
@@ -661,6 +636,12 @@ class BiayaKapalController extends Controller
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'tkbm') !== false) {
             return view('biaya-kapal.print-tkbm', compact('biayaKapal'));
+        }
+
+        // Check if it's Biaya Operasional and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'operasional') !== false) {
+            return view('biaya-kapal.print-operasional', compact('biayaKapal'));
         }
         
         return view('biaya-kapal.print', compact('biayaKapal'));
@@ -731,12 +712,7 @@ class BiayaKapalController extends Controller
             'operasional_sections' => 'nullable|array',
             'operasional_sections.*.kapal' => 'nullable|string|max:255',
             'operasional_sections.*.voyage' => 'nullable|string|max:255',
-            'operasional_sections.*.items' => 'nullable|array',
-            'operasional_sections.*.items.*.deskripsi' => 'nullable|string',
-            'operasional_sections.*.items.*.nominal' => 'nullable|numeric|min:0',
-            'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
-            'operasional_sections.*.dp' => 'nullable|numeric|min:0',
-            'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'operasional_sections.*.nominal' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -765,44 +741,31 @@ class BiayaKapalController extends Controller
             // If operasional_sections is present, we replace existing ones
             if ($request->has('operasional_sections')) {
                 // Delete existing records
-                // Assuming cascade delete works for items when deleting parent operasional
-                // BiayaKapalOperasionalItem is child of BiayaKapalOperasional
-                // BiayaKapalOperasional is child of BiayaKapal
-                
-                // Fetch IDs to delete to ensure items are deleted if cascade isn't set on DB level
-                // But typically we can just delete by relationship
-                foreach ($biayaKapal->operasionalDetails as $existingOp) {
-                    $existingOp->deleteAllItems(); // If method exists, or just delete()->delete()
-                    $existingOp->delete();
-                }
-                
-                // Or simpler:
                 BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 
                 // Create new records
                 if (!empty($request->operasional_sections)) {
                     foreach ($request->operasional_sections as $section) {
-                        $operasional = BiayaKapalOperasional::create([
+                        $nominalRaw = $section['nominal'] ?? 0;
+                        if (is_string($nominalRaw)) {
+                             // Assuming clean value already handled in loop or validation if passed as raw, 
+                             // but update request merge above only handles root fields. Array fields like sections need handling.
+                             // But 'numeric' validation might pass if it's already cleaned or standard.
+                             // Let's safe clean it again just in case.
+                             $nominal = str_replace('.', '', $nominalRaw);
+                        } else {
+                             $nominal = $nominalRaw;
+                        }
+
+                        BiayaKapalOperasional::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $section['kapal'] ?? null,
                             'voyage' => $section['voyage'] ?? null,
-                            'keterangan' => $section['keterangan'] ?? null,
-                            'nominal' => str_replace('.', '', $section['nominal']) ?? 0,
-                            'total_nominal' => str_replace('.', '', $section['total_nominal']) ?? 0, // already cleaned by merge? key names might differ
-                            'dp' => str_replace('.', '', $section['dp']) ?? 0,
-                            'sisa_pembayaran' => str_replace('.', '', $section['sisa_pembayaran']) ?? 0,
+                            'nominal' => $nominal,
+                            'total_nominal' => 0,
+                            'dp' => 0,
+                            'sisa_pembayaran' => 0,
                         ]);
-    
-                        if (isset($section['items']) && is_array($section['items'])) {
-                            foreach ($section['items'] as $item) {
-                                // Need to import BiayaKapalOperasionalItem model
-                                \App\Models\BiayaKapalOperasionalItem::create([
-                                    'biaya_kapal_operasional_id' => $operasional->id,
-                                    'deskripsi' => $item['deskripsi'] ?? null,
-                                    'nominal' => str_replace('.', '', $item['nominal']) ?? 0,
-                                ]);
-                            }
-                        }
                     }
                 }
             }

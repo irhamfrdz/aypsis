@@ -3625,7 +3625,7 @@
                 ${sectionIndex > 0 ? `<button type="button" onclick="removeOperasionalSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
                     <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required onchange="loadVoyageForOperasional(this, ${sectionIndex})">
@@ -3638,77 +3638,23 @@
                         <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="mb-4">
-                <div class="flex items-center justify-between mb-2">
-                    <label class="block text-sm font-medium text-gray-700">Detail Operasional</label>
-                    <button type="button" onclick="addOperasionalItem(${sectionIndex})" class="px-3 py-1 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 text-xs rounded transition flex items-center gap-1">
-                        <i class="fas fa-plus"></i> Tambah Item
-                    </button>
-                </div>
-                
-                <div id="operasional_items_container_${sectionIndex}" class="space-y-3">
-                    <!-- Items will be added here -->
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-indigo-200 pt-4 mt-4">
                 <div>
-                     <label class="block text-sm font-medium text-gray-700 mb-1">Total Nominal</label>
-                     <input type="text" id="operasional_total_${sectionIndex}" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-semibold" value="0" readonly>
-                     <input type="hidden" name="operasional_sections[${sectionIndex}][total_nominal]" id="operasional_total_hidden_${sectionIndex}" value="0">
-                </div>
-                <div>
-                     <label class="block text-sm font-medium text-gray-700 mb-1">DP</label>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">Nominal</label>
                      <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                        <input type="text" name="operasional_sections[${sectionIndex}][dp]" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="0" oninput="formatCurrency(this); calculateOperasionalSisa(${sectionIndex})">
-                     </div>
-                </div>
-                <div>
-                     <label class="block text-sm font-medium text-gray-700 mb-1">Sisa Pembayaran</label>
-                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                        <input type="text" name="operasional_sections[${sectionIndex}][sisa_pembayaran]" id="operasional_sisa_${sectionIndex}" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="0" readonly>
+                        <input type="text" name="operasional_sections[${sectionIndex}][nominal]" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="0" oninput="formatCurrency(this); calculateTotalFromAllOperasionalSections()" required>
                      </div>
                 </div>
             </div>
         `;
         
         operasionalSectionsContainer.appendChild(section);
-        
-        // Add one empty item by default
-        addOperasionalItem(sectionIndex);
     }
 
     function removeOperasionalSection(index) {
         const section = document.querySelector(`.operasional-section[data-section-index="${index}"]`);
         if (section) section.remove();
         calculateTotalFromAllOperasionalSections();
-    }
-    
-    function addOperasionalItem(sectionIndex) {
-        const container = document.getElementById(`operasional_items_container_${sectionIndex}`);
-        const itemIndex = container.children.length + 1;
-        
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'flex gap-2 items-start operasional-item';
-        
-        itemDiv.innerHTML = `
-            <div class="flex-1">
-                <input type="text" name="operasional_sections[${sectionIndex}][items][${itemIndex}][deskripsi]" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Keterangan Operasional" required>
-            </div>
-            <div class="w-1/3 relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                <input type="text" name="operasional_sections[${sectionIndex}][items][${itemIndex}][nominal]" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 text-right operasional-nominal-input" placeholder="0" oninput="formatCurrency(this); calculateOperasionalTotal(${sectionIndex})" required>
-            </div>
-            <button type="button" onclick="this.parentElement.remove(); calculateOperasionalTotal(${sectionIndex})" class="p-2 text-red-500 hover:text-red-700 transition">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        `;
-        
-        container.appendChild(itemDiv);
     }
     
     function loadVoyageForOperasional(selectElement, sectionIndex) {
@@ -3728,11 +3674,13 @@
             populateVoyageSelect(voyageSelect, cachedVoyages[namaKapal]);
         } else {
             // Fetch voyages
-            fetch(`/api/get-voyages?kapal=${encodeURIComponent(namaKapal)}`)
+            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(namaKapal)}`)
                 .then(response => response.json())
                 .then(data => {
-                    cachedVoyages[namaKapal] = data; // Cache it
-                    populateVoyageSelect(voyageSelect, data);
+                    // Adapt to the response format (data.voyages which is array of strings)
+                    const voyages = data.voyages ? data.voyages.map(v => ({ nomor_voyage: v })) : [];
+                    cachedVoyages[namaKapal] = voyages; // Cache it
+                    populateVoyageSelect(voyageSelect, voyages);
                 })
                 .catch(error => {
                     console.error('Error fetching voyages:', error);
@@ -3744,7 +3692,7 @@
     function populateVoyageSelect(selectElement, voyages) {
         if (voyages.length === 0) {
             selectElement.innerHTML = '<option value="">Tidak ada voyage aktif</option>';
-            selectElement.disabled = false; // Allow selection even if empty? No.
+            selectElement.disabled = false; 
         } else {
             let options = '<option value="">-- Pilih Voyage --</option>';
             voyages.forEach(v => {
@@ -3754,47 +3702,18 @@
             selectElement.disabled = false;
         }
     }
-
-    function calculateOperasionalTotal(sectionIndex) {
-        const container = document.getElementById(`operasional_items_container_${sectionIndex}`);
-        const inputs = container.querySelectorAll('.operasional-nominal-input');
-        let total = 0;
-        
-        inputs.forEach(input => {
-            const val = parseInt(input.value.replace(/\D/g, '') || 0);
-            total += val;
-        });
-        
-        document.getElementById(`operasional_total_${sectionIndex}`).value = 'Rp ' + total.toLocaleString('id-ID');
-        document.getElementById(`operasional_total_hidden_${sectionIndex}`).value = total;
-        
-        calculateOperasionalSisa(sectionIndex);
-        calculateTotalFromAllOperasionalSections();
-    }
-    
-    function calculateOperasionalSisa(sectionIndex) {
-        const total = parseInt(document.getElementById(`operasional_total_hidden_${sectionIndex}`).value || 0);
-        const dpInput = document.querySelector(`input[name="operasional_sections[${sectionIndex}][dp]"]`);
-        const dp = parseInt(dpInput.value.replace(/\D/g, '') || 0);
-        
-        const sisa = total - dp;
-        document.getElementById(`operasional_sisa_${sectionIndex}`).value = (sisa >= 0 ? sisa.toLocaleString('id-ID') : 0);
-    }
     
     function calculateTotalFromAllOperasionalSections() {
         let grandTotal = 0;
-        document.querySelectorAll('input[name^="operasional_sections"][name$="[total_nominal]"]').forEach(input => {
-            grandTotal += parseInt(input.value || 0);
+        document.querySelectorAll('input[name^="operasional_sections"][name$="[nominal]"]').forEach(input => {
+            grandTotal += parseInt(input.value.replace(/\D/g, '') || 0);
         });
         
         if (nominalInput) {
-            nominalInput.value = grandTotal.toLocaleString('id-ID');
-            calculateSisaPembayaran(); // If global DP/Sisa is used - but Operasional has per-section DP/Sisa? 
-            // The request says "create backend specifically for handling operational costs".
-            // Typically "Biaya Kapal" creates one main record + details.
-            // If we have multiple sections with multiple DPs, the main record might just start with 0 or sum of DPs?
-            // "Biaya Buruh" seems to sum up totals.
-            // Let's check calculateTotalFromAllKapalSections() logic for Buruh.
+            nominalInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '';
+            if (typeof calculateSisaPembayaran === 'function') {
+                calculateSisaPembayaran(); 
+            }
         }
     }
     
