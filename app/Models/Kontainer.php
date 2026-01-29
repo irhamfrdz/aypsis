@@ -33,7 +33,8 @@ class Kontainer extends Model
         'tanggal_checkpoint_supir',
         'status_gate_in',
         'tanggal_gate_in',
-        'terminal_id'
+        'terminal_id',
+        'gudangs_id'
     ];
 
     /**

@@ -275,6 +275,15 @@
             </svg>
             Import Tanggal Sewa
         </button>
+
+        <!-- Update Gudang Button -->
+        <button onclick="openUpdateGudangModal()"
+                class="inline-flex items-center px-4 py-2 border border-yellow-600 text-sm font-medium rounded-md shadow-sm text-yellow-600 bg-white hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            Update Gudang
+        </button>
     </div>
 
     <div>
@@ -791,6 +800,85 @@
     </div>
 </div>
 
+
+{{-- Update Gudang Modal --}}
+<div id="updateGudangModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeUpdateGudangModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="updateGudangForm" action="{{ route('master.kontainer.update-gudang') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Update Gudang Kontainer
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Upload file CSV untuk mengupdate data gudang pada kontainer.
+                                </p>
+                                
+                                <div class="mb-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label for="gudang_file" class="block text-sm font-medium text-gray-700">
+                                            Pilih File CSV
+                                        </label>
+                                        <a href="{{ route('master.kontainer.download-template-gudang') }}" class="text-sm text-indigo-600 hover:text-indigo-900">
+                                            Download Template
+                                        </a>
+                                    </div>
+                                    <input type="file"
+                                           id="gudang_file"
+                                           name="gudang_file"
+                                           accept=".csv"
+                                           required
+                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                </div>
+
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                                    <div class="flex">
+                                        <svg class="h-5 w-5 text-yellow-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="ml-3">
+                                            <h4 class="text-sm font-medium text-yellow-800">Perhatian:</h4>
+                                            <div class="mt-1 text-sm text-yellow-700">
+                                                <ul class="list-disc pl-5 space-y-1">
+                                                    <li>Pastikan nama gudang sesuai dengan data Master Gudang.</li>
+                                                    <li>Nomor kontainer harus berupa Nomor Seri Gabungan (11 digit).</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-600 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <span class="upload-text-gudang">Upload & Update</span>
+                        <span class="upload-loading-gudang hidden">Processing...</span>
+                    </button>
+                    <button type="button"
+                            onclick="closeUpdateGudangModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 <script>
@@ -1119,6 +1207,77 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+    // Update Gudang Modal Functions
+    function openUpdateGudangModal() {
+        const modal = document.getElementById('updateGudangModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeUpdateGudangModal() {
+        const modal = document.getElementById('updateGudangModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+
+            const form = document.getElementById('updateGudangForm');
+            if (form) {
+                form.reset();
+            }
+
+            const submitBtn = document.querySelector('#updateGudangForm button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text-gudang');
+                const uploadLoading = submitBtn.querySelector('.upload-loading-gudang');
+
+                if (uploadText) uploadText.classList.remove('hidden');
+                if (uploadLoading) uploadLoading.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    window.openUpdateGudangModal = openUpdateGudangModal;
+    window.closeUpdateGudangModal = closeUpdateGudangModal;
+
+    // Handle form submission for update gudang
+    const updateGudangForm = document.getElementById('updateGudangForm');
+    if (updateGudangForm) {
+        updateGudangForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text-gudang');
+                const uploadLoading = submitBtn.querySelector('.upload-loading-gudang');
+
+                if (uploadText) uploadText.classList.add('hidden');
+                if (uploadLoading) uploadLoading.classList.remove('hidden');
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
+    // Close update gudang modal when clicking outside
+    const updateGudangModal = document.getElementById('updateGudangModal');
+    if (updateGudangModal) {
+        updateGudangModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUpdateGudangModal();
+            }
+        });
+    }
+
+    // Close with escape key (augmented existing listener)
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const updateGudangModal = document.getElementById('updateGudangModal');
+            if (updateGudangModal && !updateGudangModal.classList.contains('hidden')) {
+                closeUpdateGudangModal();
+            }
+        }
+    });
+
 });
 </script>
 

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
 
 class KontainerImportController extends Controller
 {
@@ -1285,6 +1286,137 @@ class KontainerImportController extends Controller
 
         } catch (Exception $e) {
             return back()->with('error', 'Gagal export data: ' . $e->getMessage());
+        }
+    }
+    /**
+     * Download template CSV untuk update gudang
+     */
+    public function downloadTemplateGudang()
+    {
+        try {
+            $fileName = 'template_update_gudang_kontainer_' . date('Y-m-d_H-i-s') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            ];
+
+            $csvData = [
+                ['Nomor Kontainer', 'Nama Gudang'],
+                ['ABCD1234567', 'Gudang Utama'],
+                ['EFGH7654321', 'Gudang Pelabuhan']
+            ];
+
+            $callback = function() use ($csvData) {
+                $file = fopen('php://output', 'w');
+                fputs($file, "\xEF\xBB\xBF"); // BOM
+                foreach ($csvData as $row) {
+                    fputcsv($file, $row, ';');
+                }
+                fclose($file);
+            };
+
+            return Response::stream($callback, 200, $headers);
+
+        } catch (Exception $e) {
+            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update gudang_id pada table kontainers berdasarkan file CSV
+     */
+    public function updateGudang(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'gudang_file' => 'required|file|mimes:csv,txt|max:5120'
+        ]);
+
+        if ($validator->fails()) {
+            return back()->with('error', 'File harus format CSV dan maksimal 5MB.');
+        }
+
+        try {
+            $file = $request->file('gudang_file');
+            $path = $file->getRealPath();
+            
+            $csvData = [];
+            if (($handle = fopen($path, 'r')) !== FALSE) {
+                stream_filter_append($handle, 'convert.iconv.UTF-8/UTF-8//IGNORE');
+                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+                    $csvData[] = array_map(function($field) {
+                        return trim($field, " \t\n\r\0\x0B\xEF\xBB\xBF");
+                    }, $data);
+                }
+                fclose($handle);
+            }
+
+            if (empty($csvData)) {
+                return back()->with('error', 'File kosong.');
+            }
+
+            $header = array_shift($csvData); // Skip header
+
+            $updated = 0;
+            $notFound = 0;
+            $gudangNotFound = [];
+            $errors = [];
+            $rowNumber = 1;
+
+            DB::beginTransaction();
+
+            foreach ($csvData as $row) {
+                $rowNumber++;
+                if (empty(array_filter($row))) continue;
+
+                if (count($row) < 2) {
+                    $errors[] = "Baris $rowNumber: Format salah (harus ada Nomor Kontainer dan Nama Gudang)";
+                    continue;
+                }
+
+                $nomorKontainer = trim($row[0]);
+                $namaGudang = trim($row[1]);
+
+                if (empty($nomorKontainer)) continue;
+
+                $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+
+                if (!$kontainer) {
+                    $notFound++;
+                    continue;
+                }
+
+                $gudangId = null;
+                if (!empty($namaGudang)) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $namaGudang . '%')->first();
+                    if ($gudang) {
+                        $gudangId = $gudang->id;
+                    } else {
+                        if (!in_array($namaGudang, $gudangNotFound)) {
+                            $gudangNotFound[] = $namaGudang;
+                        }
+                        $errors[] = "Baris $rowNumber: Gudang '$namaGudang' tidak ditemukan";
+                        continue;
+                    }
+                }
+
+                $kontainer->update(['gudangs_id' => $gudangId]);
+                $updated++;
+            }
+
+            DB::commit();
+
+            $message = "Update selesai: $updated kontainer diperbarui. ";
+            if ($notFound > 0) $message .= "$notFound kontainer tidak ditemukan. ";
+            if (!empty($gudangNotFound)) $message .= "Gudang tidak ditemukan: " . implode(', ', $gudangNotFound) . ". ";
+            if (!empty($errors)) $message .= count($errors) . " error terjadi.";
+
+            $type = (!empty($errors) || !empty($gudangNotFound)) ? 'warning' : 'success';
+            return back()->with($type, $message);
+
+        } catch (Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }
