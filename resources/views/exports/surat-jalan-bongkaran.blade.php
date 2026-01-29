@@ -72,7 +72,7 @@
                     <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
                     <td style="border: 1px solid #000000; text-align: center;">{{ $item->nomor_urut ?? $item->nomor_bl }}</td>
                     <td style="border: 1px solid #000000;">{{ $item->nomor_kontainer }}</td>
-                    <td style="border: 1px solid #000000;">"LCL BONGKAR GUDANG"</td>
+                    <td style="border: 1px solid #000000;">{{ $item->penerima }}</td>
                     <td style="border: 1px solid #000000; text-align: center;">{{ $item->size_kontainer }}"</td>
                     <td style="border: 1px solid #000000;"></td>
                     <td style="border: 1px solid #000000;"></td>
