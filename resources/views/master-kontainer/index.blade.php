@@ -379,6 +379,10 @@
                 </th>
 
                 <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Gudang
+                </th>
+
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tanggal Mulai Sewa
                 </th>
 
@@ -413,6 +417,10 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">{{$kontainer->vendor ?? '-'}}</div>
+                </td>
+
+                <td class="px-4 py-2 whitespace-nowrap text-center">
+                    <div class="text-sm text-gray-500">{{$kontainer->gudang->nama_gudang ?? '-'}}</div>
                 </td>
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
