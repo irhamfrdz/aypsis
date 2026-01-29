@@ -6,7 +6,7 @@
             <th colspan="7" style="font-weight: bold; font-size: 14px; text-align: right; text-decoration: underline;">{{ $date }}</th>
         </tr>
         <tr style="border: 1px solid #000000; text-align: center; font-weight: bold;">
-            <th rowspan="2" style="border: 1px solid #000000; vertical-align: middle; width: 50px;">NO</th>
+            <th rowspan="2" style="border: 1px solid #000000; vertical-align: middle; width: 50px;">NO URUT</th>
             <th rowspan="2" style="border: 1px solid #000000; vertical-align: middle; width: 80px;">BL</th>
             <th rowspan="2" style="border: 1px solid #000000; vertical-align: middle; width: 150px;">MARK AND NUMBERS</th>
             <th rowspan="2" style="border: 1px solid #000000; vertical-align: middle; width: 200px;">RELASI</th>
