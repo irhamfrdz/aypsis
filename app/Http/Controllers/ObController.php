@@ -1902,6 +1902,22 @@ class ObController extends Controller
             $record->ke = $ke;
             $record->save();
 
+            // UPDATE STOCK KONTAINER LOCATION
+            if (!empty($ke)) {
+                $gudang = \App\Models\Gudang::where('nama_gudang', $ke)->first();
+                if ($gudang) {
+                    $noKontainer = $record->nomor_kontainer;
+                    
+                    if ($noKontainer) {
+                        \App\Models\Kontainer::where('nomor_seri_gabungan', $noKontainer)
+                            ->update(['gudangs_id' => $gudang->id]);
+                            
+                        \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)
+                            ->update(['gudangs_id' => $gudang->id]);
+                    }
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil menyimpan data'
@@ -1976,7 +1992,25 @@ class ObController extends Controller
                 if ($bulkAsal) $updateData['asal_kontainer'] = $bulkAsal;
                 if ($bulkKe) $updateData['ke'] = $bulkKe;
 
+                // Get container numbers before update for location synchronization
+                $containerNumbers = [];
+                if ($bulkKe) {
+                    $containerNumbers = (clone $query)->pluck('nomor_kontainer')->filter()->toArray();
+                }
+
                 $updatedCount = $query->update($updateData);
+
+                // Sync locations to Kontainer and StockKontainer
+                if ($bulkKe && !empty($containerNumbers)) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', $bulkKe)->first();
+                    if ($gudang) {
+                        \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
+                            ->update(['gudangs_id' => $gudang->id]);
+                            
+                        \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
+                            ->update(['gudangs_id' => $gudang->id]);
+                    }
+                }
             } else {
                 // Update NaikKapal table
                 $query = NaikKapal::where('nama_kapal', $namaKapal)
@@ -2008,7 +2042,25 @@ class ObController extends Controller
                 if ($bulkAsal) $updateData['asal_kontainer'] = $bulkAsal;
                 if ($bulkKe) $updateData['ke'] = $bulkKe;
 
+                // Get container numbers before update for location synchronization
+                $containerNumbers = [];
+                if ($bulkKe) {
+                    $containerNumbers = (clone $query)->pluck('nomor_kontainer')->filter()->toArray();
+                }
+
                 $updatedCount = $query->update($updateData);
+
+                // Sync locations to Kontainer and StockKontainer
+                if ($bulkKe && !empty($containerNumbers)) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', $bulkKe)->first();
+                    if ($gudang) {
+                        \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
+                            ->update(['gudangs_id' => $gudang->id]);
+                            
+                        \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containerNumbers)
+                            ->update(['gudangs_id' => $gudang->id]);
+                    }
+                }
             }
 
             return response()->json([
