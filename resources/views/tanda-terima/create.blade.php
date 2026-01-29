@@ -267,7 +267,7 @@
                                         @foreach($masterPenerimaList as $penerima)
                                             <option value="{{ $penerima->nama }}"
                                                     data-alamat="{{ $penerima->alamat }}"
-                                                    {{ old('penerima') == $penerima->nama ? 'selected' : '' }}>
+                                                    {{ old('penerima', $suratJalan->order->penerima ?? '') == $penerima->nama ? 'selected' : '' }}>
                                                 {{ $penerima->nama }}
                                             </option>
                                         @endforeach
@@ -287,7 +287,7 @@
                                               id="alamat_penerima"
                                               rows="3"
                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_penerima') border-red-500 @enderror"
-                                              placeholder="Alamat lengkap penerima">{{ old('alamat_penerima') }}</textarea>
+                                              placeholder="Alamat lengkap penerima">{{ old('alamat_penerima', $suratJalan->order->alamat_penerima ?? '') }}</textarea>
                                     @error('alamat_penerima')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
