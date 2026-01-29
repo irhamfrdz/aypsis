@@ -2548,6 +2548,22 @@ Route::middleware(['auth'])->group(function () {
          ->middleware('can:tanda-terima-export');
 
     // ═══════════════════════════════════════════════════════════════════════
+    // 🚚 PERGERAKAN KONTAINER (CONTAINER MOVEMENT)
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::get('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'index'])
+         ->name('pergerakan-kontainer.index')
+         ->middleware('can:pergerakan-kontainer-view');
+    Route::post('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'store'])
+         ->name('pergerakan-kontainer.store')
+         ->middleware('can:pergerakan-kontainer-create');
+
+    // 🕒 HISTORY KONTAINER (CONTAINER HISTORY)
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::get('history-kontainer', [\App\Http\Controllers\HistoryKontainerController::class, 'index'])
+         ->name('history-kontainer.index')
+         ->middleware('can:master-kontainer-view');
+
+    // ═══════════════════════════════════════════════════════════════════════
     // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
 
