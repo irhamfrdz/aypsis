@@ -250,6 +250,7 @@ class BiayaKapalController extends Controller
             'air.*.grand_total' => 'nullable|numeric|min:0',
             'air.*.penerima' => 'nullable|string|max:255',
             'air.*.nomor_rekening' => 'nullable|string|max:100',
+            'air.*.tanggal_invoice_vendor' => 'nullable|date',
             // TKBM sections structure
             'tkbm_sections' => 'nullable|array',
             'tkbm_sections.*.kapal' => 'nullable|string|max:255',
@@ -459,6 +460,7 @@ class BiayaKapalController extends Controller
                         'penerima' => $section['penerima'] ?? null,
                         'nomor_rekening' => $section['nomor_rekening'] ?? null,
                         'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                        'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                     ]);
                     
                     // Build keterangan string
@@ -726,6 +728,16 @@ class BiayaKapalController extends Controller
             unset($section);
         }
         
+        // Air Sections Cleaning
+        if (isset($data['air']) && is_array($data['air'])) {
+            foreach ($data['air'] as &$section) {
+                $numericAir = ['kuantitas', 'harga', 'jasa_air', 'biaya_agen', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                foreach ($numericAir as $f) {
+                    if (isset($section[$f])) $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                }
+            }
+        }
+        
         $request->replace($data);
 
         $validated = $request->validate([
@@ -745,6 +757,18 @@ class BiayaKapalController extends Controller
             'operasional_sections.*.kapal' => 'nullable|string|max:255',
             'operasional_sections.*.voyage' => 'nullable|string|max:255',
             'operasional_sections.*.nominal' => 'nullable|numeric|min:0',
+            
+            // Air sections validation
+            'air' => 'nullable|array',
+            'air.*.kapal' => 'nullable|string|max:255',
+            'air.*.voyage' => 'nullable|string|max:255',
+            'air.*.vendor' => 'nullable|string|max:255',
+            'air.*.kuantitas' => 'nullable|numeric|min:0',
+            'air.*.harga' => 'nullable|numeric|min:0',
+            'air.*.penerima' => 'nullable|string|max:255',
+            'air.*.nomor_rekening' => 'nullable|string|max:100',
+            'air.*.nomor_referensi' => 'nullable|string|max:100',
+            'air.*.tanggal_invoice_vendor' => 'nullable|date',
         ]);
 
         try {
@@ -768,6 +792,64 @@ class BiayaKapalController extends Controller
             // Actually $request->merge handles it for the request instance, so $validated will have cleaned values.
             
             $biayaKapal->update($validated);
+
+            // HANDLE AIR UPDATE
+            // If air data is present (even empty array), we replace existing ones
+            if ($request->has('air')) {
+                // Delete existing records
+                BiayaKapalAir::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                
+                // Create new records
+                if (!empty($request->air)) {
+                    foreach ($request->air as $section) {
+                        // Skip empty sections
+                        if (empty($section['kapal']) && empty($section['vendor'])) {
+                            continue;
+                        }
+                        
+                        // Values are already cleaned before validation
+                        $kuantitas = floatval($section['kuantitas'] ?? 0);
+                        $harga = floatval($section['harga'] ?? 0);
+                        $jasaAir = floatval($section['jasa_air'] ?? 0);
+                        $biayaAgen = floatval($section['biaya_agen'] ?? 0);
+                        
+                        // Use already cleaned values
+                        $subTotal = floatval($section['sub_total'] ?? $section['sub_total_value'] ?? 0);
+                        $pph = floatval($section['pph'] ?? $section['pph_value'] ?? 0);
+                        $grandTotal = floatval($section['grand_total'] ?? $section['grand_total_value'] ?? 0);
+                        
+                        // Get type keterangan from pricelist
+                        $typeKeterangan = null;
+                        if (!empty($section['type'])) {
+                            $typeData = DB::table('master_pricelist_air_tawar')
+                                ->where('id', $section['type'])
+                                ->first();
+                            $typeKeterangan = $typeData ? $typeData->keterangan : null;
+                        }
+
+                        BiayaKapalAir::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'vendor' => $section['vendor'] ?? null,
+                            'lokasi' => $section['lokasi'] ?? null,
+                            'type_id' => $section['type'] ?? null,
+                            'type_keterangan' => $typeKeterangan,
+                            'kuantitas' => $kuantitas,
+                            'harga' => $harga,
+                            'jasa_air' => $jasaAir,
+                            'biaya_agen' => $biayaAgen,
+                            'sub_total' => $subTotal,
+                            'pph' => $pph,
+                            'grand_total' => $grandTotal,
+                            'penerima' => $section['penerima'] ?? null,
+                            'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                            'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                            'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                        ]);
+                    }
+                }
+            }
 
             // HANDLE OPERASIONAL UPDATE
             // If operasional_sections is present, we replace existing ones

@@ -26,6 +26,7 @@ class BiayaKapalAir extends Model
         'grand_total',
         'penerima',
         'nomor_rekening',
+        'tanggal_invoice_vendor',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class BiayaKapalAir extends Model
         'sub_total' => 'decimal:2',
         'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'tanggal_invoice_vendor' => 'date',
     ];
 
     /**

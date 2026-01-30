@@ -231,6 +231,7 @@
                 <th style="width: 15%;">Tanggal</th>
                 <th style="width: 15%;">No. Voyage</th>
                 <th style="width: 20%;">No. Referensi</th>
+                <th style="width: 15%;">Tgl Invoice Vendor</th>
                 <th style="width: 20%;">Biaya</th>
             </tr>
         </thead>
@@ -242,15 +243,16 @@
                 <td class="text-center">{{ $biayaKapal->tanggal->format('d/M/Y') }}</td>
                 <td>{{ $detail->voyage ?? '-' }}</td>
                 <td>{{ $detail->nomor_referensi ?? '-' }}</td>
+                <td class="text-center">{{ $detail->tanggal_invoice_vendor ? \Carbon\Carbon::parse($detail->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
                 <td class="text-right">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">Tidak ada data detail.</td>
+                <td colspan="7" class="text-center">Tidak ada data detail.</td>
             </tr>
             @endforelse
             <tr class="total-row">
-                <td colspan="5" style="text-align: left; padding-left: 10px;">TOTAL PEMBAYARAN</td>
+                <td colspan="6" style="text-align: left; padding-left: 10px;">TOTAL PEMBAYARAN</td>
                 <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
             </tr>
         </tbody>

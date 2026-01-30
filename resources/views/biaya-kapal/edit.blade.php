@@ -784,7 +784,8 @@
                 'biaya_agen' => $air->biaya_agen,
                 'penerima' => $air->penerima,
                 'nomor_rekening' => $air->nomor_rekening,
-                'nomor_referensi' => $air->nomor_referensi
+                'nomor_referensi' => $air->nomor_referensi,
+                'tanggal_invoice_vendor' => $air->tanggal_invoice_vendor,
             ];
         }
 
@@ -914,6 +915,7 @@
                  if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
                  if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
                  if(data.nomor_referensi) sec.querySelector('input[name="air['+sectionIndex+'][nomor_referensi]"]').value = data.nomor_referensi;
+                 if(data.tanggal_invoice_vendor) sec.querySelector('input[name="air['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
                  
                  calculateAirSectionTotal(sectionIndex);
              });
@@ -2828,6 +2830,10 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>
                     <input type="text" name="air[${sectionIndex}][nomor_referensi]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan No. Referensi">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Invoice Vendor</label>
+                    <input type="date" name="air[${sectionIndex}][tanggal_invoice_vendor]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
                 </div>
             </div>
         `;
