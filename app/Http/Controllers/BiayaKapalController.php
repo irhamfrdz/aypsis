@@ -668,7 +668,10 @@ class BiayaKapalController extends Controller
      */
     public function edit(BiayaKapal $biayaKapal)
     {
-        // Get list of ships for dropdown (optional enhancement)
+        // Load relationships
+        $biayaKapal->load(['barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails']);
+
+        // Get list of ships for dropdown
         $kapals = MasterKapal::where('status', 'aktif')
             ->orderBy('nama_kapal')
             ->get();
@@ -676,7 +679,25 @@ class BiayaKapalController extends Controller
         // Get active klasifikasi biaya for jenis biaya dropdown
         $klasifikasiBiayas = KlasifikasiBiaya::where('is_active', true)->orderBy('nama')->get();
 
-        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals', 'klasifikasiBiayas'));
+        // Get active pricelist buruh for barang selection
+        $pricelistBuruh = PricelistBuruh::where('is_active', true)->orderBy('barang')->get();
+
+        // Get karyawans for penerima dropdown
+        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+
+        // Get active pricelist biaya dokumen for vendor selection
+        $pricelistBiayaDokumen = DB::table('pricelist_biaya_dokumen')
+            ->where('status', 'aktif')
+            ->orderBy('nama_vendor')
+            ->get();
+        
+        // Get active pricelist air tawar for biaya air
+        $pricelistAirTawar = \App\Models\MasterPricelistAirTawar::orderBy('nama_agen')->get();
+
+        // Get active pricelist TKBM for biaya TKBM barang selection
+        $pricelistTkbm = \App\Models\PricelistTkbm::where('status', 'active')->orderBy('nama_barang')->get();
+
+        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm'));
     }
 
     /**
