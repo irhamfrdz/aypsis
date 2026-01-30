@@ -3688,8 +3688,12 @@
 
         // Add event listener for kapal change
         const kapalSelect = section.querySelector('.kapal-select-operasional');
+        // Get the specific voyage select within THIS section, preventing ID mix-ups
+        const voyageSelect = section.querySelector('.voyage-select-operasional');
+        
         kapalSelect.addEventListener('change', function() {
-            loadVoyageForOperasional(this, sectionIndex);
+            // Pass the element directly, avoiding "voyage_operasional_${sectionIndex}" lookup
+            loadVoyageForOperasional(this, voyageSelect);
         });
     }
 
@@ -3699,9 +3703,23 @@
         calculateTotalFromAllOperasionalSections();
     }
     
-    function loadVoyageForOperasional(selectElement, sectionIndex) {
+    function loadVoyageForOperasional(selectElement, voyageSelectOrIndex) {
         const namaKapal = selectElement.value;
-        const voyageSelect = document.getElementById(`voyage_operasional_${sectionIndex}`);
+        
+        let voyageSelect;
+        // Handle both element (new safe way) and index (legacy way)
+        if (typeof voyageSelectOrIndex === 'object') {
+            voyageSelect = voyageSelectOrIndex;
+        } else {
+             voyageSelect = document.getElementById(`voyage_operasional_${voyageSelectOrIndex}`);
+        }
+        
+        if (!voyageSelect) {
+            console.error('Voyage select element not found for', namaKapal);
+            return;
+        }
+        
+        console.log('Loading voyage for:', namaKapal);
         
         voyageSelect.innerHTML = '<option value="">Memuat...</option>';
         voyageSelect.disabled = true;

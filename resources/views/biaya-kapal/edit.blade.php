@@ -945,25 +945,7 @@
         }
 
         // 5. OPERASIONAL SECTIONS
-        if(existingOperasionalSections.length > 0) {
-            clearAllOperasionalSections();
-            existingOperasionalSections.forEach(data => {
-                 addOperasionalSection();
-                 const sectionIndex = operasionalSectionCounter;
-                 const sec = document.querySelector(`.operasional-section[data-section-index="${sectionIndex}"]`);
-                 
-                 sec.querySelector('.kapal-select-operasional').value = data.kapal;
-                 
-                 const voySel = sec.querySelector('.voyage-select-operasional');
-                 voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
-                 voySel.value = data.voyage;
-                 voySel.disabled = false;
-                 
-                 const nomInput = sec.querySelector('input[name="operasional_sections['+sectionIndex+'][nominal]"]');
-                 nomInput.value = parseInt(data.nominal).toLocaleString('id-ID');
-            });
-            calculateTotalFromAllOperasionalSections();
-        }
+        initializeOperasionalSections();
     }
 
     // New helper for TKBM
@@ -3923,8 +3905,10 @@
         
         // Add event listener for kapal change
         const kapalSelect = section.querySelector('.kapal-select-operasional');
+        const voyageSelect = section.querySelector('.voyage-select-operasional');
+
         kapalSelect.addEventListener('change', function() {
-            loadVoyageForOperasional(this, sectionIndex);
+            loadVoyageForOperasional(this, voyageSelect);
         });
     }
 
@@ -3934,9 +3918,20 @@
         calculateTotalFromAllOperasionalSections();
     }
     
-    function loadVoyageForOperasional(selectElement, sectionIndex) {
+    function loadVoyageForOperasional(selectElement, voyageSelectOrIndex) {
         const namaKapal = selectElement.value;
-        const voyageSelect = document.getElementById(`voyage_operasional_${sectionIndex}`);
+        
+        let voyageSelect;
+        if (typeof voyageSelectOrIndex === 'object') {
+            voyageSelect = voyageSelectOrIndex;
+        } else {
+            voyageSelect = document.getElementById(`voyage_operasional_${voyageSelectOrIndex}`);
+        }
+
+        if (!voyageSelect) {
+            console.error('Voyage select element not found');
+            return;
+        }
         
         voyageSelect.innerHTML = '<option value="">Memuat...</option>';
         voyageSelect.disabled = true;
@@ -4000,8 +3995,8 @@
             clearAllOperasionalSections();
             existingOperasionalSections.forEach(data => {
                  addOperasionalSection();
-                 const sectionIndex = operasionalSectionCounter;
-                 const sec = document.querySelector(`.operasional-section[data-section-index="${sectionIndex}"]`);
+                 const sec = operasionalSectionsContainer.lastElementChild;
+                 const sectionIndex = sec.getAttribute('data-section-index');
                  
                  sec.querySelector('.kapal-select-operasional').value = data.kapal;
                  
