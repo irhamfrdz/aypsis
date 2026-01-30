@@ -228,7 +228,7 @@ class InvoiceAktivitasLainController extends Controller
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
-            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+            if ($klasifikasiBiaya && (stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
                 $isLabuhTambat = true;
             }
         }
@@ -504,7 +504,7 @@ class InvoiceAktivitasLainController extends Controller
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
-            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+            if ($klasifikasiBiaya && (stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
                 $isLabuhTambat = true;
             }
         }
@@ -679,7 +679,7 @@ class InvoiceAktivitasLainController extends Controller
         
         // Pastikan ini invoice labuh tambat
         $isLabuhTambat = false;
-        if ($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+        if ($invoice->klasifikasiBiaya && (stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
             $isLabuhTambat = true;
         }
         

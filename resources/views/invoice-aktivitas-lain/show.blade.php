@@ -39,7 +39,7 @@
                         </svg>
                         Print Listrik
                     </a>
-                @elseif($invoice->klasifikasiBiaya && str_contains(strtolower($invoice->klasifikasiBiaya->nama), 'labuh tambat'))
+                @elseif($invoice->klasifikasiBiaya && (str_contains(strtolower($invoice->klasifikasiBiaya->nama), 'labuh tambat') || str_contains(strtolower($invoice->klasifikasiBiaya->nama), 'labuh tambah')))
                     <a href="{{ route('invoice-aktivitas-lain.print-labuh-tambat', $invoice->id) }}" target="_blank"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
