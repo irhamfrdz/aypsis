@@ -20,19 +20,6 @@
             font-weight: bold;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 8px;
-        }
-        
-        .header h1 {
-            font-size: 18px;
-            margin-bottom: 4px;
-            color: #1a1a1a;
-        }
-        
         .invoice-info {
             margin-bottom: 12px;
             display: grid;
@@ -138,10 +125,6 @@
 </head>
 <body>
     <button class="print-button no-print" onclick="window.print()">🖨️ Cetak Invoice</button>
-
-    <div class="header">
-        <h1>PERMOHONAN PEMBAYARAN LABUH TAMBAT</h1>
-    </div>
 
     <div class="invoice-info">
         <div class="info-item">
