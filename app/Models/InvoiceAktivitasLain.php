@@ -30,6 +30,7 @@ class InvoiceAktivitasLain extends Model
         'tipe_penyesuaian',
         'detail_pembayaran',
         'penerima',
+        'subtotal',
         'vendor_listrik',
         'vendor_labuh_tambat',
         'total',
@@ -46,6 +47,7 @@ class InvoiceAktivitasLain extends Model
 
     protected $casts = [
         'tanggal_invoice' => 'date',
+        'subtotal' => 'decimal:2',
         'total' => 'decimal:2',
         'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',

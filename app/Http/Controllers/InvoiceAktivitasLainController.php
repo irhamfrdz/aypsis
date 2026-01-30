@@ -263,6 +263,8 @@ class InvoiceAktivitasLainController extends Controller
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
             'vendor_listrik' => 'nullable|string|max:255',
             'vendor_labuh_tambat' => $vendorLabuhTambatValidation,
+            'sub_total_labuh' => 'nullable|numeric|min:0',
+            'pph_labuh' => 'nullable|numeric|min:0',
             'total' => $totalValidation, // Conditional: nullable for biaya listrik, required for others
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
@@ -317,6 +319,17 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
             $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
+        }
+
+        // Map Labuh Tambat fields to database columns
+        if ($isLabuhTambat) {
+            $validated['subtotal'] = $request->sub_total_labuh;
+            $validated['pph'] = $request->pph_labuh;
+            $validated['grand_total'] = $request->total;
+            
+            // Remove request-only fields
+            unset($validated['sub_total_labuh']);
+            unset($validated['pph_labuh']);
         }
 
         // Set default status
@@ -523,6 +536,8 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
             'vendor_labuh_tambat' => 'nullable|string|max:255',
+            'sub_total_labuh' => 'nullable|numeric|min:0',
+            'pph_labuh' => 'nullable|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
@@ -555,6 +570,17 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
             $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
+        }
+
+        // Map Labuh Tambat fields to database columns
+        if ($isLabuhTambat) {
+            $validated['subtotal'] = $request->sub_total_labuh;
+            $validated['pph'] = $request->pph_labuh;
+            $validated['grand_total'] = $request->total;
+
+            // Remove request-only fields
+            unset($validated['sub_total_labuh']);
+            unset($validated['pph_labuh']);
         }
 
         $invoice->update($validated);
@@ -639,5 +665,26 @@ class InvoiceAktivitasLainController extends Controller
         }
         
         return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrikEntries'));
+    }
+
+    /**
+     * Print invoice khusus untuk Labuh Tambat (dengan PPH 2%)
+     */
+    public function printLabuhTambat(string $id)
+    {
+        $invoice = InvoiceAktivitasLain::with(['creator', 'approver', 'klasifikasiBiaya', 'klasifikasiBiayaUmum'])->findOrFail($id);
+        
+        // Pastikan ini invoice labuh tambat
+        $isLabuhTambat = false;
+        if ($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+            $isLabuhTambat = true;
+        }
+        
+        if (!$isLabuhTambat) {
+            return redirect()->route('invoice-aktivitas-lain.print', $id)
+                ->with('warning', 'Print khusus labuh tambat hanya untuk invoice labuh tambat.');
+        }
+        
+        return view('invoice-aktivitas-lain.print-labuh-tambat', compact('invoice'));
     }
 }

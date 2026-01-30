@@ -26,13 +26,13 @@
                     Edit Invoice
                 </a>
                 @endcan
-                @if($invoice->klasifikasiBiayaUmum && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik'))
-                <a href="{{ route('invoice-aktivitas-lain.print-listrik', $invoice->id) }}" target="_blank"
+                @elseif($invoice->klasifikasiBiaya && str_contains(strtolower($invoice->klasifikasiBiaya->nama), 'labuh tambat'))
+                <a href="{{ route('invoice-aktivitas-lain.print-labuh-tambat', $invoice->id) }}" target="_blank"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                     </svg>
-                    Print Listrik
+                    Print Labuh Tambat
                 </a>
                 @else
                 <a href="{{ route('invoice-aktivitas-lain.print', $invoice->id) }}" target="_blank"
@@ -235,6 +235,27 @@
                             </div>
                         </div>
                         @endif
+                    </div>
+                    @endif
+
+                    <!-- Labuh Tambat Detail -->
+                    @if($invoice->klasifikasiBiaya && str_contains(strtolower($invoice->klasifikasiBiaya->nama), 'labuh tambat'))
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Detail Biaya Labuh Tambat</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Sub Total</label>
+                                <p class="text-gray-900 font-bold">Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</p>
+                            </div>
+                            <div class="p-4 bg-red-50 rounded-lg text-red-800">
+                                <label class="block text-xs font-medium text-red-600 mb-1">PPH (2%)</label>
+                                <p class="text-red-900 font-bold">- Rp {{ number_format($invoice->pph, 0, ',', '.') }}</p>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-lg text-green-800">
+                                <label class="block text-xs font-medium text-green-600 mb-1">Total Akhir</label>
+                                <p class="text-green-900 font-bold">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
                     </div>
                     @endif
 

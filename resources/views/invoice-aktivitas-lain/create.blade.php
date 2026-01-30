@@ -341,6 +341,55 @@
                     @enderror
                 </div>
 
+                <!-- Perhitungan Labuh Tambat (conditional for Labuh Tambat) -->
+                <div id="labuh_tambat_calculation_wrapper" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="sub_total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                            Sub Total <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                            <input type="text" 
+                                   id="sub_total_labuh" 
+                                   name="sub_total_labuh"
+                                   class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                   placeholder="0">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="pph_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                            PPH 2%
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                            <input type="text" 
+                                   id="pph_labuh" 
+                                   name="pph_labuh"
+                                   class="w-full pl-10 bg-gray-100 cursor-not-allowed border-gray-300 rounded-md shadow-sm"
+                                   style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                   placeholder="0"
+                                   readonly>
+                        </div>
+                        <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Sub Total</p>
+                    </div>
+                    <div>
+                        <label for="total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                            Total
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                            <input type="text" 
+                                   id="total_labuh" 
+                                   class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed border-gray-300 rounded-md shadow-sm"
+                                   style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                   placeholder="0"
+                                   readonly>
+                        </div>
+                        <p class="mt-1 text-xs text-green-600 font-medium">Total = Sub Total - PPH</p>
+                    </div>
+                </div>
+
                 <!-- Nama Barang dan Jumlah (conditional for Klasifikasi Biaya "buruh") -->
                 <div id="barang_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -1041,6 +1090,10 @@ console.log('Akun COAs data:', akunCoasData);
         const dppInput = document.getElementById('dpp');
         const vendorLabuhTambatWrapper = document.getElementById('vendor_labuh_tambat_wrapper');
         const vendorLabuhTambatInput = document.getElementById('vendor_labuh_tambat');
+        const labuhTambatCalculationWrapper = document.getElementById('labuh_tambat_calculation_wrapper');
+        const subTotalLabuhInput = document.getElementById('sub_total_labuh');
+        const pphLabuhInput = document.getElementById('pph_labuh');
+        const totalLabuhInput = document.getElementById('total_labuh');
         const totalWrapper = document.getElementById('total_wrapper');
         const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
 
@@ -1068,6 +1121,14 @@ console.log('Akun COAs data:', akunCoasData);
                 }
                 if (grandTotalInput && grandTotalInput.value) {
                     grandTotalInput.value = grandTotalInput.value.replace(/\./g, '');
+                }
+                
+                // Strip formatting from Labuh Tambat fields
+                if (subTotalLabuhInput && subTotalLabuhInput.value) {
+                    subTotalLabuhInput.value = subTotalLabuhInput.value.replace(/\./g, '');
+                }
+                if (pphLabuhInput && pphLabuhInput.value) {
+                    pphLabuhInput.value = pphLabuhInput.value.replace(/\./g, '');
                 }
                 
                 // Strip formatting from all detail_biaya inputs
@@ -1216,6 +1277,35 @@ console.log('Akun COAs data:', akunCoasData);
             
             // Trigger PPH calculation when DPP changes
             calculatePph();
+        }
+
+        // Calculate Labuh Tambat (Sub Total - PPH 2%)
+        function calculateLabuhTambat() {
+            if (!subTotalLabuhInput) return;
+            
+            let value = subTotalLabuhInput.value.replace(/[^0-9]/g, '');
+            let subTotal = parseInt(value) || 0;
+            
+            // Format input value
+            subTotalLabuhInput.value = subTotal ? subTotal.toLocaleString('id-ID') : '';
+            
+            // Calculate PPH (2%)
+            let pph = Math.round(subTotal * 0.02);
+            pphLabuhInput.value = pph ? pph.toLocaleString('id-ID') : '0';
+            
+            // Calculate Total
+            let total = subTotal - pph;
+            totalLabuhInput.value = total ? total.toLocaleString('id-ID') : '0';
+            
+            // Sync with main total
+            if (totalInput) {
+                totalInput.value = total ? total.toLocaleString('id-ID') : '';
+            }
+        }
+
+        // Setup Labuh Tambat calculation event listeners
+        if (subTotalLabuhInput) {
+            subTotalLabuhInput.addEventListener('input', calculateLabuhTambat);
         }
 
         // Setup PPJU calculation event listeners
@@ -1420,76 +1510,54 @@ console.log('Akun COAs data:', akunCoasData);
                         referensiWrapper.classList.remove('hidden');
                     }
                     
-                    // Show total field for other jenis biaya
-                    if (totalWrapper) {
-                        totalWrapper.classList.remove('hidden');
-                        if (totalInput) totalInput.setAttribute('required', 'required');
+                    // Handle Labuh Tambah/Tambat for Pembayaran Lain-lain
+                    if (namaJenisBiaya.includes('labuh tambat') || namaJenisBiaya.includes('labuh tambah')) {
+                        if (vendorLabuhTambatWrapper) {
+                            vendorLabuhTambatWrapper.classList.remove('hidden');
+                            if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
+                        }
+                        if (labuhTambatCalculationWrapper) {
+                            labuhTambatCalculationWrapper.classList.remove('hidden');
+                        }
+                        if (totalWrapper) {
+                            totalWrapper.classList.add('hidden');
+                            if (totalInput) totalInput.removeAttribute('required');
+                        }
+                    } else {
+                        // Show total field for other jenis biaya
+                        if (totalWrapper) {
+                            totalWrapper.classList.remove('hidden');
+                            if (totalInput) totalInput.setAttribute('required', 'required');
+                        }
+                        if (vendorLabuhTambatWrapper) {
+                            vendorLabuhTambatWrapper.classList.add('hidden');
+                            if (vendorLabuhTambatInput) {
+                                vendorLabuhTambatInput.value = '';
+                                vendorLabuhTambatInput.removeAttribute('required');
+                            }
+                        }
+                        if (labuhTambatCalculationWrapper) {
+                            labuhTambatCalculationWrapper.classList.add('hidden');
+                        }
                     }
                     
                     // Hide PPh and LWBP fields for other jenis biaya
-                    pphWrapper.classList.add('hidden');
-                    grandTotalWrapper.classList.add('hidden');
-                    if (lwbpBaruWrapper) {
-                        lwbpBaruWrapper.classList.add('hidden');
-                        if (lwbpBaruInput) {
-                            lwbpBaruInput.value = '';
-                            lwbpBaruInput.removeAttribute('required');
-                        }
-                    }
-                    if (lwbpLamaWrapper) {
-                        lwbpLamaWrapper.classList.add('hidden');
-                        if (lwbpLamaInput) {
-                            lwbpLamaInput.value = '';
-                            lwbpLamaInput.removeAttribute('required');
-                        }
-                    }
-                    if (lwbpWrapper) {
-                        lwbpWrapper.classList.add('hidden');
-                        if (lwbpInput) lwbpInput.value = '';
-                    }
-                    if (wbpWrapper) {
-                        wbpWrapper.classList.add('hidden');
-                        if (wbpInput) wbpInput.value = '';
-                    }
-                    if (lwbpTarifWrapper) {
-                        lwbpTarifWrapper.classList.add('hidden');
-                        if (lwbpTarifInput) {
-                            lwbpTarifInput.value = '';
-                            lwbpTarifInput.removeAttribute('required');
-                        }
-                    }
-                    if (wbpTarifWrapper) {
-                        wbpTarifWrapper.classList.add('hidden');
-                        if (wbpTarifInput) {
-                            wbpTarifInput.value = '';
-                            wbpTarifInput.removeAttribute('required');
-                        }
-                    }
-                    if (tarif1Wrapper) {
-                        tarif1Wrapper.classList.add('hidden');
-                        if (tarif1Input) tarif1Input.value = '';
-                    }
-                    if (tarif2Wrapper) {
-                        tarif2Wrapper.classList.add('hidden');
-                        if (tarif2Input) tarif2Input.value = '';
-                    }
-                    if (biayaBebanWrapper) {
-                        biayaBebanWrapper.classList.add('hidden');
-                        if (biayaBebanInput) {
-                            biayaBebanInput.value = '';
-                            biayaBebanInput.removeAttribute('required');
-                        }
-                    }
-                    if (ppjuWrapper) {
-                        ppjuWrapper.classList.add('hidden');
-                        if (ppjuInput) ppjuInput.value = '';
-                    }
-                    if (dppWrapper) {
-                        dppWrapper.classList.add('hidden');
-                        if (dppInput) dppInput.value = '';
-                    }
-                    pphInput.value = '0';
-                    grandTotalInput.value = '';
+                    if (pphWrapper) pphWrapper.classList.add('hidden');
+                    if (grandTotalWrapper) grandTotalWrapper.classList.add('hidden');
+                    if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
+                    if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
+                    if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
+                    if (wbpWrapper) wbpWrapper.classList.add('hidden');
+                    if (lwbpTarifWrapper) lwbpTarifWrapper.classList.add('hidden');
+                    if (wbpTarifWrapper) wbpTarifWrapper.classList.add('hidden');
+                    if (tarif1Wrapper) tarif1Wrapper.classList.add('hidden');
+                    if (tarif2Wrapper) tarif2Wrapper.classList.add('hidden');
+                    if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
+                    if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
+                    if (dppWrapper) dppWrapper.classList.add('hidden');
+
+                    if (pphInput) pphInput.value = '0';
+                    if (grandTotalInput) grandTotalInput.value = '';
                 }
             });
         }
@@ -1569,6 +1637,13 @@ console.log('Akun COAs data:', akunCoasData);
                     vendorLabuhTambatInput.value = '';
                     vendorLabuhTambatInput.removeAttribute('required');
                 }
+            }
+
+            if (labuhTambatCalculationWrapper) {
+                labuhTambatCalculationWrapper.classList.add('hidden');
+                if (subTotalLabuhInput) subTotalLabuhInput.value = '';
+                if (pphLabuhInput) pphLabuhInput.value = '0';
+                if (totalLabuhInput) totalLabuhInput.value = '0';
             }
             
             barangWrapper.classList.add('hidden');
@@ -1807,10 +1882,16 @@ console.log('Akun COAs data:', akunCoasData);
                     setTimeout(() => {
                         $('#vendor_dokumen_select').select2({ placeholder: 'Pilih Vendor Dokumen', allowClear: true, width: '100%' });
                     }, 100);
-                } else if (namaKlasifikasi.includes('labuh tambat')) {
+                } else if (namaKlasifikasi.includes('labuh tambat') || namaKlasifikasi.includes('labuh tambah')) {
                     if (vendorLabuhTambatWrapper) {
                         vendorLabuhTambatWrapper.classList.remove('hidden');
                         vendorLabuhTambatInput.setAttribute('required', 'required');
+                    }
+                    if (labuhTambatCalculationWrapper) {
+                        labuhTambatCalculationWrapper.classList.remove('hidden');
+                    }
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
                     }
                 }
             });
