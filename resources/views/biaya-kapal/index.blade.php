@@ -176,7 +176,13 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-right font-medium">
-                                Rp {{ number_format($biaya->nominal ?? 0, 0, ',', '.') }}
+                                @php
+                                    $displayNominal = $biaya->nominal;
+                                    if(isset($biaya->operasionalDetails) && $biaya->operasionalDetails->count() > 0) {
+                                        $displayNominal = $biaya->operasionalDetails->sum('nominal');
+                                    }
+                                @endphp
+                                Rp {{ number_format($displayNominal ?? 0, 0, ',', '.') }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center text-xs font-medium">
                                 <div class="flex items-center justify-center gap-1">

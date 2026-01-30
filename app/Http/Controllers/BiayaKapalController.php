@@ -25,7 +25,7 @@ class BiayaKapalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = BiayaKapal::with(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
+        $query = BiayaKapal::with(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'operasionalDetails']);
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
