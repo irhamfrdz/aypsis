@@ -575,6 +575,12 @@ class BiayaKapalController extends Controller
                 }
             }
 
+            // AUTO-CALCULATE NOMINAL FOR OPERASIONAL
+            if (!empty($operasionalDetails)) {
+                $totalOperasional = BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->sum('nominal');
+                $biayaKapal->update(['nominal' => $totalOperasional]);
+            }
+
             DB::commit();
 
             return redirect()
@@ -761,6 +767,10 @@ class BiayaKapalController extends Controller
                         ]);
                     }
                 }
+
+                // AUTO-CALCULATE NOMINAL FOR OPERASIONAL
+                $totalOperasional = BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->sum('nominal');
+                $biayaKapal->update(['nominal' => $totalOperasional]);
             }
 
             DB::commit();
