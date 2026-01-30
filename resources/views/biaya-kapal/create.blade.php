@@ -2860,7 +2860,7 @@
         
         // Calculate Jasa Air / Total Base summary
         if (jasaAirInput) jasaAirInput.value = totalBase > 0 ? totalBase.toLocaleString('id-ID') : '0';
-        
+         
         // Calculate PPH total
         if (pphAirInput) pphAirInput.value = totalPph > 0 ? totalPph.toLocaleString('id-ID') : '0';
         
@@ -3664,7 +3664,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
-                    <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required onchange="loadVoyageForOperasional(this, ${sectionIndex})">
+                    <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
                         ${kapalOptions}
                     </select>
                 </div>
@@ -3685,6 +3685,12 @@
         `;
         
         operasionalSectionsContainer.appendChild(section);
+
+        // Add event listener for kapal change
+        const kapalSelect = section.querySelector('.kapal-select-operasional');
+        kapalSelect.addEventListener('change', function() {
+            loadVoyageForOperasional(this, sectionIndex);
+        });
     }
 
     function removeOperasionalSection(index) {

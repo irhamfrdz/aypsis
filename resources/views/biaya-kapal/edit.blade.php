@@ -1019,6 +1019,9 @@
 
     // Store pricelist TKBM data for Biaya TKBM
     var pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
+    
+    // Store kapals data (required for dynamic sections)
+    var allKapalsData = {!! json_encode($kapals) !!};
 
     // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
     var jenisBiayaSearch = document.getElementById('jenis_biaya_search');
@@ -3879,9 +3882,11 @@
         
         // Kapal Options
         let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
-        allKapalsData.forEach(kapal => {
-            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
-        });
+        if (typeof allKapalsData !== 'undefined') {
+            allKapalsData.forEach(kapal => {
+                kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+            });
+        }
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -3894,7 +3899,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
-                    <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required onchange="loadVoyageForOperasional(this, ${sectionIndex})">
+                    <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
                         ${kapalOptions}
                     </select>
                 </div>
@@ -3915,6 +3920,12 @@
         `;
         
         operasionalSectionsContainer.appendChild(section);
+        
+        // Add event listener for kapal change
+        const kapalSelect = section.querySelector('.kapal-select-operasional');
+        kapalSelect.addEventListener('change', function() {
+            loadVoyageForOperasional(this, sectionIndex);
+        });
     }
 
     function removeOperasionalSection(index) {
