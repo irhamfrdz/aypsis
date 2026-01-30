@@ -232,6 +232,11 @@
             <span class="info-value">{{ $invoice->vendor_labuh_tambat ?? '-' }}</span>
         </div>
         <div class="info-item">
+            <span class="info-label">Tgl Invoice Vendor</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $invoice->tanggal_invoice_vendor ? \Carbon\Carbon::parse($invoice->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</span>
+        </div>
+        <div class="info-item">
             <span class="info-label">Nomor Rekening</span>
             <span class="info-separator">:</span>
             <span class="info-value">{{ $invoice->nomor_rekening_labuh ?? '-' }}</span>

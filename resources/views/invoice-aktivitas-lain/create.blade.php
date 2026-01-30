@@ -339,6 +339,19 @@
                     @error('vendor_labuh_tambat')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+
+                    <label for="tanggal_invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2 mt-4">
+                        Tanggal Invoice Vendor
+                    </label>
+                    <input type="date" 
+                           name="tanggal_invoice_vendor" 
+                           id="tanggal_invoice_vendor" 
+                           value="{{ old('tanggal_invoice_vendor') }}"
+                           class="w-full {{ $errors->has('tanggal_invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    @error('tanggal_invoice_vendor')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Perhitungan Labuh Tambat (conditional for Labuh Tambat) -->
@@ -1655,6 +1668,10 @@ console.log('Akun COAs data:', akunCoasData);
                 if (vendorLabuhTambatInput) {
                     vendorLabuhTambatInput.value = '';
                     vendorLabuhTambatInput.removeAttribute('required');
+                }
+                const tanggalInvoiceVendorInput = document.getElementById('tanggal_invoice_vendor');
+                if (tanggalInvoiceVendorInput) {
+                    tanggalInvoiceVendorInput.value = '';
                 }
             }
 

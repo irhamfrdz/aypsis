@@ -311,6 +311,7 @@ class InvoiceAktivitasLainController extends Controller
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
             'vendor_listrik' => 'nullable|string|max:255',
             'vendor_labuh_tambat' => $vendorLabuhTambatValidation,
+            'tanggal_invoice_vendor' => 'nullable|date',
             'nomor_rekening_labuh' => 'nullable|string|max:255',
             'sub_total_labuh' => 'nullable|numeric|min:0',
             'pph_labuh' => 'nullable|numeric|min:0',
@@ -590,7 +591,8 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.no_bukti' => 'nullable|string',
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
-            'vendor_labuh_tambat' => 'nullable|string|max:255',
+            'vendor_labuh_tambat' => $vendorLabuhTambatValidation,
+            'tanggal_invoice_vendor' => 'nullable|date',
             'nomor_rekening_labuh' => 'nullable|string|max:255',
             'sub_total_labuh' => 'nullable|numeric|min:0',
             'pph_labuh' => 'nullable|numeric|min:0',
