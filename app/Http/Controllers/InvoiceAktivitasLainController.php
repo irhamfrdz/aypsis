@@ -232,6 +232,12 @@ class InvoiceAktivitasLainController extends Controller
                 $isLabuhTambat = true;
             }
         }
+        if (!$isLabuhTambat && $request->has('klasifikasi_biaya_umum_id')) {
+            $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
+            if ($klasifikasiBiaya && (stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
+                $isLabuhTambat = true;
+            }
+        }
         $vendorLabuhTambatValidation = $isLabuhTambat ? 'required|string|max:255' : 'nullable|string|max:255';
         
         $validated = $request->validate([
@@ -508,6 +514,12 @@ class InvoiceAktivitasLainController extends Controller
                 $isLabuhTambat = true;
             }
         }
+        if (!$isLabuhTambat && $request->has('klasifikasi_biaya_umum_id')) {
+            $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
+            if ($klasifikasiBiaya && (stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
+                $isLabuhTambat = true;
+            }
+        }
         $vendorLabuhTambatValidation = $isLabuhTambat ? 'required|string|max:255' : 'nullable|string|max:255';
 
         $validated = $request->validate([
@@ -640,7 +652,30 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function print(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['createdBy'])->findOrFail($id);
+        $invoice = InvoiceAktivitasLain::with(['createdBy', 'klasifikasiBiaya', 'klasifikasiBiayaUmum', 'biayaListrik'])->findOrFail($id);
+
+        // check for labuh tambat
+        $isLabuhTambat = false;
+        if ($invoice->klasifikasiBiaya && (stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
+            $isLabuhTambat = true;
+        }
+        if (!$isLabuhTambat && $invoice->klasifikasiBiayaUmum && (stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambah') !== false)) {
+            $isLabuhTambat = true;
+        }
+
+        if($isLabuhTambat){
+            return view('invoice-aktivitas-lain.print-labuh-tambat', compact('invoice'));
+        }
+
+        // check for listrik
+        if ($invoice->klasifikasiBiayaUmum && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik')) {
+            $biayaListrikEntries = $invoice->biayaListrik;
+            if ($biayaListrikEntries->isEmpty()) {
+                return redirect()->route('invoice-aktivitas-lain.show', $id)
+                    ->with('error', 'Data biaya listrik tidak ditemukan untuk invoice ini.');
+            }
+            return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrikEntries'));
+        }
         
         return view('invoice-aktivitas-lain.print', compact('invoice'));
     }
@@ -680,6 +715,9 @@ class InvoiceAktivitasLainController extends Controller
         // Pastikan ini invoice labuh tambat
         $isLabuhTambat = false;
         if ($invoice->klasifikasiBiaya && (stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
+            $isLabuhTambat = true;
+        }
+        if (!$isLabuhTambat && $invoice->klasifikasiBiayaUmum && (stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambah') !== false)) {
             $isLabuhTambat = true;
         }
         
