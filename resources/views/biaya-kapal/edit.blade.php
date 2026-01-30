@@ -1012,20 +1012,20 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     // Store pricelist buruh data
-    const pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
+    var pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
 
     // Store pricelist TKBM data for Biaya TKBM
-    const pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
+    var pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
 
     // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
-    const jenisBiayaSearch = document.getElementById('jenis_biaya_search');
-    const jenisBiayaContainer = document.getElementById('jenis_biaya_container');
-    const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
-    const jenisBiayaHiddenInput = document.getElementById('jenis_biaya');
-    const selectedJenisBiayaDisplay = document.getElementById('selected_jenis_biaya_display');
-    const jenisBiayaOptions = document.querySelectorAll('.jenis-biaya-option');
-    const clearJenisBiayaBtn = document.getElementById('clearJenisBiayaBtn');
-    const jenisBiayaSelectedCount = document.getElementById('jenisBiayaSelectedCount');
+    var jenisBiayaSearch = document.getElementById('jenis_biaya_search');
+    var jenisBiayaContainer = document.getElementById('jenis_biaya_container');
+    var jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
+    var jenisBiayaHiddenInput = document.getElementById('jenis_biaya');
+    var selectedJenisBiayaDisplay = document.getElementById('selected_jenis_biaya_display');
+    var jenisBiayaOptions = document.querySelectorAll('.jenis-biaya-option');
+    var clearJenisBiayaBtn = document.getElementById('clearJenisBiayaBtn');
+    var jenisBiayaSelectedCount = document.getElementById('jenisBiayaSelectedCount');
     
     let selectedJenisBiaya = { kode: '', nama: '' };
     const oldJenisBiayaValue = "{{ old('jenis_biaya') }}";
@@ -1128,60 +1128,60 @@
     }
     
     // Declare all input elements at the top
-    const nominalInput = document.getElementById('nominal');
-    const jenisBiayaSelect = document.getElementById('jenis_biaya');
-    const barangWrapper = document.getElementById('barang_wrapper');
-    const addBarangBtn = document.getElementById('add_barang_btn');
-    const ppnWrapper = document.getElementById('ppn_wrapper');
-    const pphWrapper = document.getElementById('pph_wrapper');
-    const totalBiayaWrapper = document.getElementById('total_biaya_wrapper');
-    const ppnInput = document.getElementById('ppn');
-    const pphInput = document.getElementById('pph');
-    const totalBiayaInput = document.getElementById('total_biaya');
-    const blWrapper = document.getElementById('bl_wrapper');
-    const kapalWrapper = document.getElementById('kapal_wrapper');
-    const voyageWrapper = document.getElementById('voyage_wrapper');
-    const dpWrapper = document.getElementById('dp_wrapper');
-    const sisaPembayaranWrapper = document.getElementById('sisa_pembayaran_wrapper');
-    const dpInput = document.getElementById('dp');
-    const sisaPembayaranInput = document.getElementById('sisa_pembayaran');
-    const vendorWrapper = document.getElementById('vendor_wrapper');
-    const vendorSelect = document.getElementById('vendor');
-    const biayaMateraiWrapper = document.getElementById('biaya_materai_wrapper');
-    const biayaMateraiInput = document.getElementById('biaya_materai');
+    var nominalInput = document.getElementById('nominal');
+    var jenisBiayaSelect = document.getElementById('jenis_biaya');
+    var barangWrapper = document.getElementById('barang_wrapper');
+    var addBarangBtn = document.getElementById('add_barang_btn');
+    var ppnWrapper = document.getElementById('ppn_wrapper');
+    var pphWrapper = document.getElementById('pph_wrapper');
+    var totalBiayaWrapper = document.getElementById('total_biaya_wrapper');
+    var ppnInput = document.getElementById('ppn');
+    var pphInput = document.getElementById('pph');
+    var totalBiayaInput = document.getElementById('total_biaya');
+    var blWrapper = document.getElementById('bl_wrapper');
+    var kapalWrapper = document.getElementById('kapal_wrapper');
+    var voyageWrapper = document.getElementById('voyage_wrapper');
+    var dpWrapper = document.getElementById('dp_wrapper');
+    var sisaPembayaranWrapper = document.getElementById('sisa_pembayaran_wrapper');
+    var dpInput = document.getElementById('dp');
+    var sisaPembayaranInput = document.getElementById('sisa_pembayaran');
+    var vendorWrapper = document.getElementById('vendor_wrapper');
+    var vendorSelect = document.getElementById('vendor');
+    var biayaMateraiWrapper = document.getElementById('biaya_materai_wrapper');
+    var biayaMateraiInput = document.getElementById('biaya_materai');
     
     // Biaya Dokumen specific fields
-    const pphDokumenWrapper = document.getElementById('pph_dokumen_wrapper');
-    const grandTotalDokumenWrapper = document.getElementById('grand_total_dokumen_wrapper');
-    const pphDokumenInput = document.getElementById('pph_dokumen');
-    const grandTotalDokumenInput = document.getElementById('grand_total_dokumen');
+    var pphDokumenWrapper = document.getElementById('pph_dokumen_wrapper');
+    var grandTotalDokumenWrapper = document.getElementById('grand_total_dokumen_wrapper');
+    var pphDokumenInput = document.getElementById('pph_dokumen');
+    var grandTotalDokumenInput = document.getElementById('grand_total_dokumen');
     
     // Biaya Air specific fields
-    const airWrapper = document.getElementById('air_wrapper');
-    const vendorAirWrapper = document.getElementById('vendor_air_wrapper');
-    const vendorAirSelect = document.getElementById('vendor_air');
-    const typeAirWrapper = document.getElementById('type_air_wrapper');
-    const typeAirInput = document.getElementById('type_air');
-    const kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
-    const kuantitasAirInput = document.getElementById('kuantitas_air');
-    const jasaAirWrapper = document.getElementById('jasa_air_wrapper');
-    const operasionalWrapper = document.getElementById('operasional_wrapper');
-    const jasaAirInput = document.getElementById('jasa_air');
-    const pphAirWrapper = document.getElementById('pph_air_wrapper');
-    const pphAirInput = document.getElementById('pph_air');
-    const grandTotalAirWrapper = document.getElementById('grand_total_air_wrapper');
-    const grandTotalAirInput = document.getElementById('grand_total_air');
+    var airWrapper = document.getElementById('air_wrapper');
+    var vendorAirWrapper = document.getElementById('vendor_air_wrapper');
+    var vendorAirSelect = document.getElementById('vendor_air');
+    var typeAirWrapper = document.getElementById('type_air_wrapper');
+    var typeAirInput = document.getElementById('type_air');
+    var kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
+    var kuantitasAirInput = document.getElementById('kuantitas_air');
+    var jasaAirWrapper = document.getElementById('jasa_air_wrapper');
+    var operasionalWrapper = document.getElementById('operasional_wrapper');
+    var jasaAirInput = document.getElementById('jasa_air');
+    var pphAirWrapper = document.getElementById('pph_air_wrapper');
+    var pphAirInput = document.getElementById('pph_air');
+    var grandTotalAirWrapper = document.getElementById('grand_total_air_wrapper');
+    var grandTotalAirInput = document.getElementById('grand_total_air');
     
     // Standard field wrappers
-    const nominalWrapper = document.getElementById('nominal_wrapper');
-    const penerimaWrapper = document.getElementById('penerima_wrapper');
-    const penerimaInput = document.getElementById('penerima');
-    const namaVendorWrapper = document.getElementById('nama_vendor_wrapper');
-    const nomorRekeningWrapper = document.getElementById('nomor_rekening_wrapper');
-    const nomorReferensiWrapper = document.getElementById('nomor_referensi_wrapper');
+    var nominalWrapper = document.getElementById('nominal_wrapper');
+    var penerimaWrapper = document.getElementById('penerima_wrapper');
+    var penerimaInput = document.getElementById('penerima');
+    var namaVendorWrapper = document.getElementById('nama_vendor_wrapper');
+    var nomorRekeningWrapper = document.getElementById('nomor_rekening_wrapper');
+    var nomorReferensiWrapper = document.getElementById('nomor_referensi_wrapper');
 
     // Pricelist Air Tawar data
-    const pricelistAirTawarData = {!! json_encode($pricelistAirTawar) !!};
+    var pricelistAirTawarData = {!! json_encode($pricelistAirTawar) !!};
 
     // Format nominal input with thousand separator
     
