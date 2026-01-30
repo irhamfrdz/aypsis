@@ -251,25 +251,48 @@
     <table class="details-table">
         <thead>
             <tr>
-                <th style="width: 70%;">Deskripsi</th>
-                <th style="width: 30%; text-align: right;">Jumlah</th>
+                <th style="width: 5%; text-align: center;">No</th>
+                <th style="width: 15%; text-align: center;">Tanggal Invoice Vendor</th>
+                <th style="width: 25%;">Referensi</th>
+                <th style="width: 30%;">Jenis Biaya</th>
+                <th style="width: 25%; text-align: right;">Total</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Sub Total Biaya Labuh Tambat</td>
+                <td style="text-align: center;">1</td>
+                <td style="text-align: center;">{{ $invoice->tanggal_invoice_vendor ? \Carbon\Carbon::parse($invoice->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
+                <td>{{ $invoice->referensi ?? '-' }}</td>
+                <td>
+                    @if($invoice->klasifikasiBiaya)
+                        {{ $invoice->klasifikasiBiaya->nama }}
+                    @elseif($invoice->klasifikasiBiayaUmum)
+                        {{ $invoice->klasifikasiBiayaUmum->nama }}
+                    @else
+                        -
+                    @endif
+                </td>
                 <td class="number">Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</td>
-            </tr>
-            <tr>
-                <td>PPH 2%</td>
-                <td class="number">Rp {{ number_format($invoice->pph, 0, ',', '.') }}</td>
-            </tr>
-            <tr class="grand-total-row">
-                <td>TOTAL PEMBAYARAN (Sub Total - PPH)</td>
-                <td class="number">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+        <table style="width: 40%; border-collapse: collapse; font-size: 10px;">
+            <tr>
+                <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">Sub Total</td>
+                <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">PPH 2%</td>
+                <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->pph, 0, ',', '.') }}</td>
+            </tr>
+            <tr style="background-color: #d4edda;">
+                <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">Total</td>
+                <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</td>
+            </tr>
+        </table>
+    </div>
 
     @if($invoice->deskripsi || $invoice->catatan)
     <div class="notes">
