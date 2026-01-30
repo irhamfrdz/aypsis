@@ -89,6 +89,7 @@
                     <div class="relative">
                         <input type="text" 
                                id="nomor_invoice_display" 
+                               name="nomor_invoice"
                                value="{{ old('nomor_invoice', $biayaKapal->nomor_invoice) }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-gray-800"
                                placeholder="Nomor Invoice"
