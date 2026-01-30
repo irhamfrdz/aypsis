@@ -33,6 +33,7 @@ class InvoiceAktivitasLain extends Model
         'subtotal',
         'vendor_listrik',
         'vendor_labuh_tambat',
+        'tanggal_invoice_vendor',
         'nomor_rekening_labuh',
         'total',
         'pph',
@@ -48,6 +49,7 @@ class InvoiceAktivitasLain extends Model
 
     protected $casts = [
         'tanggal_invoice' => 'date',
+        'tanggal_invoice_vendor' => 'date',
         'subtotal' => 'decimal:2',
         'total' => 'decimal:2',
         'pph' => 'decimal:2',
