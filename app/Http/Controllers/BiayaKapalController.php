@@ -172,13 +172,14 @@ class BiayaKapalController extends Controller
                 if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['grand_total'])) $section['grand_total'] = str_replace(',', '.', str_replace('.', '', $section['grand_total']));
-                
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
                         if (isset($barang['jumlah'])) $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
                     }
+                    unset($barang);
                 }
             }
+            unset($section);
         }
         
         // Operasional Sections
@@ -189,6 +190,7 @@ class BiayaKapalController extends Controller
                 if (isset($section['dp'])) $section['dp'] = str_replace(',', '.', str_replace('.', '', $section['dp']));
                 if (isset($section['sisa_pembayaran'])) $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
             }
+            unset($section);
         }
         
         $request->replace($data);
@@ -721,6 +723,7 @@ class BiayaKapalController extends Controller
             foreach ($data['operasional_sections'] as &$section) {
                 if (isset($section['nominal'])) $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
             }
+            unset($section);
         }
         
         $request->replace($data);
