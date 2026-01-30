@@ -227,32 +227,28 @@
         <thead>
             <tr>
                 <th style="width: 5%;">No</th>
-                <th>Nama Kapal</th>
                 <th style="width: 15%;">Tanggal</th>
-                <th style="width: 15%;">No. Voyage</th>
-                <th style="width: 20%;">No. Referensi</th>
-                <th style="width: 15%;">Tgl Invoice Vendor</th>
-                <th style="width: 20%;">Biaya</th>
+                <th style="width: 20%;">Referensi</th>
+                <th>Jenis Biaya</th>
+                <th style="width: 20%;">Total</th>
             </tr>
         </thead>
         <tbody>
             @forelse($biayaKapal->airDetails as $index => $detail)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $detail->kapal ?? '-' }}</td>
-                <td class="text-center">{{ $biayaKapal->tanggal->format('d/M/Y') }}</td>
-                <td>{{ $detail->voyage ?? '-' }}</td>
-                <td>{{ $detail->nomor_referensi ?? '-' }}</td>
                 <td class="text-center">{{ $detail->tanggal_invoice_vendor ? \Carbon\Carbon::parse($detail->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
+                <td>{{ $detail->nomor_referensi ?? '-' }}</td>
+                <td>Biaya Air {{ $detail->kapal ?? '' }} {{ $detail->voyage ? '('.$detail->voyage.')' : '' }}</td>
                 <td class="text-right">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center">Tidak ada data detail.</td>
+                <td colspan="5" class="text-center">Tidak ada data detail.</td>
             </tr>
             @endforelse
             <tr class="total-row">
-                <td colspan="6" style="text-align: left; padding-left: 10px;">TOTAL PEMBAYARAN</td>
+                <td colspan="4" style="text-align: left; padding-left: 10px;">TOTAL PEMBAYARAN</td>
                 <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
             </tr>
         </tbody>
