@@ -262,7 +262,7 @@
                         -
                     @endif
                 </td>
-                <td class="number">Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</td>
+                <td class="number">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
