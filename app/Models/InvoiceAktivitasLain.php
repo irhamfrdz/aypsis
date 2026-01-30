@@ -31,6 +31,7 @@ class InvoiceAktivitasLain extends Model
         'detail_pembayaran',
         'penerima',
         'vendor_listrik',
+        'vendor_labuh_tambat',
         'total',
         'pph',
         'grand_total',

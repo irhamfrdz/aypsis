@@ -224,6 +224,15 @@ class InvoiceAktivitasLainController extends Controller
         // Conditional validation rules
         $totalValidation = $isBiayaListrik ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
         
+        $isLabuhTambat = false;
+        if ($request->has('klasifikasi_biaya_id')) {
+            $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
+            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+                $isLabuhTambat = true;
+            }
+        }
+        $vendorLabuhTambatValidation = $isLabuhTambat ? 'required|string|max:255' : 'nullable|string|max:255';
+        
         $validated = $request->validate([
             'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice',
             'tanggal_invoice' => 'required|date',
@@ -253,6 +262,7 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
             'vendor_listrik' => 'nullable|string|max:255',
+            'vendor_labuh_tambat' => $vendorLabuhTambatValidation,
             'total' => $totalValidation, // Conditional: nullable for biaya listrik, required for others
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
@@ -476,6 +486,15 @@ class InvoiceAktivitasLainController extends Controller
     {
         $invoice = InvoiceAktivitasLain::findOrFail($id);
         
+        $isLabuhTambat = false;
+        if ($request->has('klasifikasi_biaya_id')) {
+            $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
+            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+                $isLabuhTambat = true;
+            }
+        }
+        $vendorLabuhTambatValidation = $isLabuhTambat ? 'required|string|max:255' : 'nullable|string|max:255';
+
         $validated = $request->validate([
             'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice,' . $id,
             'tanggal_invoice' => 'required|date',
@@ -503,6 +522,7 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.no_bukti' => 'nullable|string',
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
+            'vendor_labuh_tambat' => 'nullable|string|max:255',
             'total' => 'required|numeric|min:0',
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',

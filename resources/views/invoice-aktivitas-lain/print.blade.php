@@ -348,6 +348,9 @@
                         @if($invoice->penerima)
                             <br>Penerima: {{ $invoice->penerima }}
                         @endif
+                        @if($invoice->vendor_labuh_tambat)
+                            <br>Vendor Labuh Tambat: {{ $invoice->vendor_labuh_tambat }}
+                        @endif
                         @if($invoice->keterangan)
                             <br><em>{{ $invoice->keterangan }}</em>
                         @endif

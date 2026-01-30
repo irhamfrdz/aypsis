@@ -274,6 +274,23 @@
                     @enderror
                 </div>
 
+                <!-- Vendor Labuh Tambat (conditional for Klasifikasi Biaya "biaya labuh tambat") -->
+                <div id="vendor_labuh_tambat_wrapper" class="hidden">
+                    <label for="vendor_labuh_tambat" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor Labuh Tambat <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="vendor_labuh_tambat" 
+                           id="vendor_labuh_tambat" 
+                           value="{{ old('vendor_labuh_tambat', $invoice->vendor_labuh_tambat) }}"
+                           class="w-full {{ $errors->has('vendor_labuh_tambat') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan nama vendor labuh tambat">
+                    @error('vendor_labuh_tambat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Nama Barang dan Jumlah (conditional for Klasifikasi Biaya "buruh") -->
                 <div id="barang_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -646,6 +663,8 @@ console.log('Existing invoice data:', existingInvoice);
         const jenisPenyesuaianWrapper = document.getElementById('jenis_penyesuaian_wrapper');
         const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
         const tipePenyesuaianWrapper = document.getElementById('tipe_penyesuaian_wrapper');
+        const vendorLabuhTambatWrapper = document.getElementById('vendor_labuh_tambat_wrapper');
+        const vendorLabuhTambatInput = document.getElementById('vendor_labuh_tambat');
         const detailPembayaranWrapper = document.getElementById('detail_pembayaran_wrapper');
 
         function toggleConditionalFields() {
@@ -693,6 +712,13 @@ console.log('Existing invoice data:', existingInvoice);
             vendorDokumenWrapper.classList.add('hidden');
             vendorDokumenSelect.removeAttribute('required');
             $('#vendor_dokumen_select').val('').trigger('change');
+
+            if (vendorLabuhTambatWrapper) {
+                vendorLabuhTambatWrapper.classList.add('hidden');
+                if (vendorLabuhTambatInput) {
+                    vendorLabuhTambatInput.removeAttribute('required');
+                }
+            }
             
             barangWrapper.classList.add('hidden');
             clearBarangInputs();
@@ -910,12 +936,14 @@ console.log('Existing invoice data:', existingInvoice);
                 const selectedOption = $(this).find('option:selected');
                 const namaKlasifikasi = selectedOption.text().toLowerCase();
                 
-                // Hide all conditional fields first
-                barangWrapper.classList.add('hidden');
-                clearBarangInputs();
                 vendorDokumenWrapper.classList.add('hidden');
                 vendorDokumenSelect.removeAttribute('required');
                 $('#vendor_dokumen_select').val('').trigger('change');
+                
+                if (vendorLabuhTambatWrapper) {
+                    vendorLabuhTambatWrapper.classList.add('hidden');
+                    vendorLabuhTambatInput.removeAttribute('required');
+                }
                 
                 // Show relevant field based on klasifikasi biaya
                 if (namaKlasifikasi.includes('buruh')) {
@@ -929,6 +957,11 @@ console.log('Existing invoice data:', existingInvoice);
                     setTimeout(() => {
                         $('#vendor_dokumen_select').select2({ placeholder: 'Pilih Vendor Dokumen', allowClear: true, width: '100%' });
                     }, 100);
+                } else if (namaKlasifikasi.includes('labuh tambat')) {
+                    if (vendorLabuhTambatWrapper) {
+                        vendorLabuhTambatWrapper.classList.remove('hidden');
+                        vendorLabuhTambatInput.setAttribute('required', 'required');
+                    }
                 }
             });
             

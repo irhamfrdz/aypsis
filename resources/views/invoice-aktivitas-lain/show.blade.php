@@ -77,6 +77,12 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
                             <p class="text-gray-900">{{ $invoice->penerima ?? '-' }}</p>
                         </div>
+                        @if($invoice->vendor_labuh_tambat)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Labuh Tambat</label>
+                            <p class="text-gray-900 font-semibold">{{ $invoice->vendor_labuh_tambat }}</p>
+                        </div>
+                        @endif
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                             @php
