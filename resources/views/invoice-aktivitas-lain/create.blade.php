@@ -2881,6 +2881,64 @@ console.log('Akun COAs data:', akunCoasData);
             }
         });
 
+        // Labuh Tambat Calculation
+        function setupLabuhTambatCalculations() {
+            const subTotalLabuhInput = document.getElementById('sub_total_labuh');
+            const pphLabuhInput = document.getElementById('pph_labuh');
+            const totalLabuhInput = document.getElementById('total_labuh');
+            const totalInput = document.getElementById('total');
+
+            if (subTotalLabuhInput) {
+                // Initialize if value exists
+                if (subTotalLabuhInput.value) {
+                    calculateLabuhTambat();
+                }
+
+                subTotalLabuhInput.addEventListener('input', function(e) {
+                    // Format currency for display
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value) {
+                        const numValue = parseFloat(value);
+                        e.target.value = numValue.toLocaleString('id-ID');
+                    }
+                    calculateLabuhTambat();
+                });
+            }
+
+            function calculateLabuhTambat() {
+                const value = subTotalLabuhInput.value.replace(/\./g, '').replace(/,/g, '');
+                
+                if (value) {
+                    const numValue = parseFloat(value);
+                    
+                    // Calculate PPH 2%
+                    const pph = Math.round(numValue * 0.02);
+                    if (pphLabuhInput) {
+                        pphLabuhInput.value = pph.toLocaleString('id-ID');
+                    }
+                    
+                    // Calculate Total (Sub Total - PPH)
+                    const total = numValue - pph;
+                    
+                    if (totalLabuhInput) {
+                        totalLabuhInput.value = total.toLocaleString('id-ID');
+                    }
+                    
+                    // Connect to main Total input (critical for backend)
+                    if (totalInput) {
+                         totalInput.value = total.toLocaleString('id-ID');
+                    }
+                } else {
+                    if (pphLabuhInput) pphLabuhInput.value = '0';
+                    if (totalLabuhInput) totalLabuhInput.value = '0';
+                    if (totalInput) totalInput.value = '';
+                }
+            }
+        }
+
+        // Initialize Labuh Tambat
+        setupLabuhTambatCalculations();
+
         console.log('Select2 initialized for invoice-aktivitas-lain');
     }
 

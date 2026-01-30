@@ -213,6 +213,47 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function store(Request $request)
     {
+        // Clean up numeric fields - remove currency formatting
+        $inputs = $request->all();
+        $fieldsToClean = [
+            'sub_total_labuh', 
+            'pph_labuh', 
+            'total', 
+            'pph', 
+            'grand_total',
+            'subtotal',
+            'lwbp_baru',
+            'lwbp_lama',
+            'lwbp',
+            'wbp',
+            'lwbp_tarif',
+            'wbp_tarif',
+            'tarif_1',
+            'tarif_2',
+            'biaya_beban',
+            'ppju',
+            'dpp',
+            'nominal'
+        ];
+        
+        foreach ($fieldsToClean as $field) {
+            if (isset($inputs[$field]) && is_string($inputs[$field])) {
+                $inputs[$field] = str_replace(['.', ','], '', $inputs[$field]);
+            }
+        }
+
+        // Handle nested arrays cleaning
+        if (isset($inputs['biaya_listrik']) && is_array($inputs['biaya_listrik'])) {
+            foreach ($inputs['biaya_listrik'] as &$item) {
+                foreach ($item as $key => $value) {
+                    if (is_string($value) && in_array($key, ['nominal_debit', 'nominal_kredit', 'lwbp_baru', 'lwbp_lama', 'lwbp', 'wbp', 'lwbp_tarif', 'wbp_tarif', 'tarif_1', 'tarif_2', 'biaya_beban', 'ppju', 'dpp', 'pph', 'grand_total'])) {
+                        $item[$key] = str_replace(['.', ','], '', $value);
+                    }
+                }
+            }
+        }
+        
+        $request->merge($inputs);
         // Check if this is biaya listrik invoice
         $isBiayaListrik = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
