@@ -3820,21 +3820,6 @@
         }, 1000);
     }
 
-    // Generate Invoice Number (for display only)
-    async function generateInvoiceNumber() {
-        const invoiceInput = document.getElementById('nomor_invoice_display');
-        const loader = document.getElementById('invoice_loader');
-        
-        try {
-            const response = await fetch("{{ route('biaya-kapal.get-next-invoice-number') }}", {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-
-
     // ============= OPERASIONAL SECTION LOGIC =============
     var operasionalSectionCounter = 0;
     var operasionalSectionsContainer = document.getElementById('operasional_sections_container');
