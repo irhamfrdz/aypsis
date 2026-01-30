@@ -236,6 +236,11 @@
             <span class="info-separator">:</span>
             <span class="info-value">{{ $invoice->nomor_rekening_labuh ?? '-' }}</span>
         </div>
+        <div class="info-item">
+            <span class="info-label">Penerima</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $invoice->penerima ?? '-' }}</span>
+        </div>
     </div>
 
     <table class="details-table">
