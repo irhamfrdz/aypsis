@@ -1639,15 +1639,17 @@ class BlController extends Controller
         }
 
         // Get data
-        $bls = $query->orderBy('created_at', 'desc')->get();
+        $bls = $query->with(['createdBy', 'updatedBy', 'supir'])->orderBy('created_at', 'desc')->get();
 
         // Define all available columns
         $availableColumns = [
+            'id' => 'ID',
             'nomor_bl' => 'Nomor BL',
             'nomor_kontainer' => 'Nomor Kontainer',
             'no_seal' => 'No Seal',
             'nama_kapal' => 'Nama Kapal',
             'no_voyage' => 'No Voyage',
+            'tanggal_berangkat' => 'Tanggal Berangkat',
             'pelabuhan_asal' => 'Pelabuhan Asal',
             'pelabuhan_tujuan' => 'Pelabuhan Tujuan',
             'nama_barang' => 'Nama Barang',
@@ -1658,14 +1660,26 @@ class BlController extends Controller
             'kuantitas' => 'Kuantitas',
             'satuan' => 'Satuan',
             'term' => 'Term',
+            'pengirim' => 'Pengirim',
             'penerima' => 'Penerima',
             'no_surat_jalan' => 'No. Surat Jalan',
             'alamat_pengiriman' => 'Alamat Pengiriman',
             'contact_person' => 'Contact Person',
-            'supir_ob' => 'Supir OB',
+            'asal_kontainer' => 'Asal Kontainer',
+            'ke' => 'Ke',
+            'penerimaan' => 'Penerimaan',
             'status_bongkar' => 'Status Bongkar',
             'sudah_ob' => 'Sudah OB',
-            'created_at' => 'Tanggal Dibuat'
+            'tanggal_ob' => 'Tanggal OB',
+            'catatan_ob' => 'Catatan OB',
+            'supir_ob' => 'Supir OB',
+            'supir_id' => 'Supir ID',
+            'sudah_tl' => 'Sudah TL',
+            'prospek_id' => 'Prospek ID',
+            'created_by' => 'Created By',
+            'updated_by' => 'Updated By',
+            'created_at' => 'Tanggal Dibuat',
+            'updated_at' => 'Tanggal Update'
         ];
 
         // Get selected columns
@@ -1736,6 +1750,16 @@ class BlController extends Controller
                     case 'sudah_ob':
                         $value = $bl->sudah_ob ? 'Ya' : 'Tidak';
                         break;
+                    case 'sudah_tl':
+                        $value = $bl->sudah_tl ? 'Ya' : 'Tidak';
+                        break;
+                    case 'tanggal_ob':
+                        $value = $bl->tanggal_ob ? $bl->tanggal_ob->format('d/m/Y H:i') : '';
+                        break;
+                    case 'tanggal_berangkat':
+                         // tanggal_berangkat is usually string, but check if it casts to date
+                        $value = $bl->tanggal_berangkat ? Carbon::parse($bl->tanggal_berangkat)->format('d/m/Y') : '';
+                        break;
                     case 'created_at':
                         $value = $bl->created_at ? $bl->created_at->format('d/m/Y H:i') : '';
                         break;
@@ -1747,6 +1771,19 @@ class BlController extends Controller
                         break;
                     case 'no_surat_jalan':
                         $value = ($bl->prospek && $bl->prospek->suratJalan) ? $bl->prospek->suratJalan->no_surat_jalan : '';
+                        break;
+                    case 'created_by':
+                        $value = $bl->createdBy ? $bl->createdBy->name : ($bl->created_by ?? '');
+                        break;
+                    case 'updated_by':
+                         $value = $bl->updatedBy ? $bl->updatedBy->name : ($bl->updated_by ?? '');
+                        break;
+                    case 'supir_id':
+                        // If we want to show the supir's name for supir_id, we can, but columns list says "Supir ID"
+                        // However, user probably prefers name if available.
+                        // But we also have 'supir_ob' column which is string.
+                        // Let's output supir->name for supir_id if relation exists, else id.
+                         $value = $bl->supir ? $bl->supir->nama : ($bl->supir_id ?? '');
                         break;
                     default:
                         // Handle all other fields safely
