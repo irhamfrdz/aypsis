@@ -1965,10 +1965,10 @@
     }
 
     // ============= NEW KAPAL SECTIONS MANAGEMENT =============
-    let kapalSectionCounter = 0;
-    const kapalSectionsContainer = document.getElementById('kapal_sections_container');
-    const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
-    const allKapalsData = @json($kapals);
+    var kapalSectionCounter = 0;
+    var kapalSectionsContainer = document.getElementById('kapal_sections_container');
+    var addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
+    var allKapalsData = @json($kapals);
     
     function initializeKapalSections() {
         kapalSectionsContainer.innerHTML = '';
@@ -2303,10 +2303,10 @@
     }
 
     // ============= TKBM SECTIONS MANAGEMENT =============
-    let tkbmSectionCounter = 0;
-    const tkbmSectionsContainer = document.getElementById('tkbm_sections_container');
-    const addTkbmSectionBtn = document.getElementById('add_tkbm_section_btn');
-    const addTkbmSectionBottomBtn = document.getElementById('add_tkbm_section_bottom_btn');
+    var tkbmSectionCounter = 0;
+    var tkbmSectionsContainer = document.getElementById('tkbm_sections_container');
+    var addTkbmSectionBtn = document.getElementById('add_tkbm_section_btn');
+    var addTkbmSectionBottomBtn = document.getElementById('add_tkbm_section_bottom_btn');
     
     function initializeTkbmSections() {
         if (!tkbmSectionsContainer) return;
@@ -2678,9 +2678,9 @@
     }
 
     // ============= AIR SECTIONS MANAGEMENT =============
-    let airSectionCounter = 0;
-    const airSectionsContainer = document.getElementById('air_sections_container');
-    const addAirSectionBtn = document.getElementById('add_air_section_btn');
+    var airSectionCounter = 0;
+    var airSectionsContainer = document.getElementById('air_sections_container');
+    var addAirSectionBtn = document.getElementById('add_air_section_btn');
     
     function initializeAirSections() {
         airSectionsContainer.innerHTML = '';
@@ -3883,13 +3883,13 @@
     */
 
     // ============= OPERASIONAL SECTION LOGIC =============
-    let operasionalSectionCounter = 0;
-    const operasionalSectionsContainer = document.getElementById('operasional_sections_container');
-    const addOperasionalSectionBtn = document.getElementById('add_operasional_section_btn');
-    const addOperasionalSectionBottomBtn = document.getElementById('add_operasional_section_bottom_btn');
+    var operasionalSectionCounter = 0;
+    var operasionalSectionsContainer = document.getElementById('operasional_sections_container');
+    var addOperasionalSectionBtn = document.getElementById('add_operasional_section_btn');
+    var addOperasionalSectionBottomBtn = document.getElementById('add_operasional_section_bottom_btn');
     
     // Initialize cache for voyages
-    const cachedVoyages = {};
+    var cachedVoyages = {};
     
     // Helper function to format currency inputs
     function formatCurrency(input) {
