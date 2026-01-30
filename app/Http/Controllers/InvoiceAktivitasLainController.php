@@ -50,7 +50,7 @@ class InvoiceAktivitasLainController extends Controller
         $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
         
         // Get voyages from both bls and pergerakan_kapal tables
-        $voyagesBl = \DB::table('bls')
+        $voyagesBl = DB::table('bls')
             ->select('no_voyage as voyage', 'nama_kapal')
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
@@ -58,7 +58,7 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('no_voyage')
             ->get();
             
-        $voyagesPergerakan = \DB::table('pergerakan_kapal')
+        $voyagesPergerakan = DB::table('pergerakan_kapal')
             ->select('voyage', 'nama_kapal')
             ->whereNotNull('voyage')
             ->where('voyage', '!=', '')
@@ -94,26 +94,26 @@ class InvoiceAktivitasLainController extends Controller
         $voyages = $allVoyages->sortBy('voyage')->values();
         
         // Get surat jalans for adjustment payments from surat_jalans table
-        $suratJalansRegular = \DB::table('surat_jalans')
+        $suratJalansRegular = DB::table('surat_jalans')
             ->select(
                 'id',
                 'no_surat_jalan',
                 'tujuan_pengiriman',
                 'uang_jalan',
-                \DB::raw("'regular' as source")
+                DB::raw("'regular' as source")
             )
             ->whereNotNull('no_surat_jalan')
             ->where('no_surat_jalan', '!=', '')
             ->get();
         
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
-        $suratJalansBongkar = \DB::table('surat_jalan_bongkarans')
+        $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->select(
                 'id',
-                \DB::raw('nomor_surat_jalan as no_surat_jalan'),
+                DB::raw('nomor_surat_jalan as no_surat_jalan'),
                 'tujuan_pengiriman',
                 'uang_jalan',
-                \DB::raw("'bongkar' as source")
+                DB::raw("'bongkar' as source")
             )
             ->whereNotNull('nomor_surat_jalan')
             ->where('nomor_surat_jalan', '!=', '')
@@ -125,7 +125,7 @@ class InvoiceAktivitasLainController extends Controller
             ->values();
         
         // Get BLs for pembayaran kapal
-        $bls = \DB::table('bls')
+        $bls = DB::table('bls')
             ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'no_voyage', 'pengirim')
             ->whereNotNull('nomor_bl')
             ->where('nomor_bl', '!=', '')
@@ -133,21 +133,21 @@ class InvoiceAktivitasLainController extends Controller
             ->get();
         
         // Get klasifikasi biaya for pembayaran kapal
-        $klasifikasiBiayas = \DB::table('klasifikasi_biayas')
+        $klasifikasiBiayas = DB::table('klasifikasi_biayas')
             ->select('id', 'nama')
             ->where('is_active', true)
             ->orderBy('nama')
             ->get();
         
         // Get pricelist buruh for pembayaran kapal with klasifikasi biaya "buruh"
-        $pricelistBuruh = \DB::table('pricelist_buruh')
+        $pricelistBuruh = DB::table('pricelist_buruh')
             ->select('id', 'barang', 'size', 'tipe', 'tarif')
             ->where('is_active', true)
             ->orderBy('barang')
             ->get();
         
         // Get pricelist biaya dokumen for klasifikasi biaya "biaya dokumen"
-        $pricelistBiayaDokumen = \DB::table('pricelist_biaya_dokumen')
+        $pricelistBiayaDokumen = DB::table('pricelist_biaya_dokumen')
             ->select('id', 'nama_vendor', 'biaya')
             ->where('status', 'aktif')
             ->orderBy('nama_vendor')
@@ -161,7 +161,7 @@ class InvoiceAktivitasLainController extends Controller
             ->toArray();
         
         // Get akun COA for biaya listrik
-        $akunCoas = \DB::table('akun_coa')
+        $akunCoas = DB::table('akun_coa')
             ->select('id', 'nomor_akun', 'nama_akun')
             ->orderBy('nomor_akun')
             ->get();
@@ -429,7 +429,7 @@ class InvoiceAktivitasLainController extends Controller
         $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
         
         // Get voyages from both bls and pergerakan_kapal tables
-        $voyagesBl = \DB::table('bls')
+        $voyagesBl = DB::table('bls')
             ->select('no_voyage as voyage', 'nama_kapal')
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
@@ -437,7 +437,7 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('no_voyage')
             ->get();
             
-        $voyagesPergerakan = \DB::table('pergerakan_kapal')
+        $voyagesPergerakan = DB::table('pergerakan_kapal')
             ->select('voyage', 'nama_kapal')
             ->whereNotNull('voyage')
             ->where('voyage', '!=', '')
@@ -473,26 +473,26 @@ class InvoiceAktivitasLainController extends Controller
         $voyages = $allVoyages->sortBy('voyage')->values();
         
         // Get surat jalans for adjustment payments from surat_jalans table
-        $suratJalansRegular = \DB::table('surat_jalans')
+        $suratJalansRegular = DB::table('surat_jalans')
             ->select(
                 'id',
                 'no_surat_jalan',
                 'tujuan_pengiriman',
                 'uang_jalan',
-                \DB::raw("'regular' as source")
+                DB::raw("'regular' as source")
             )
             ->whereNotNull('no_surat_jalan')
             ->where('no_surat_jalan', '!=', '')
             ->get();
         
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
-        $suratJalansBongkar = \DB::table('surat_jalan_bongkarans')
+        $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->select(
                 'id',
-                \DB::raw('nomor_surat_jalan as no_surat_jalan'),
+                DB::raw('nomor_surat_jalan as no_surat_jalan'),
                 'tujuan_pengiriman',
                 'uang_jalan',
-                \DB::raw("'bongkar' as source")
+                DB::raw("'bongkar' as source")
             )
             ->whereNotNull('nomor_surat_jalan')
             ->where('nomor_surat_jalan', '!=', '')
@@ -504,7 +504,7 @@ class InvoiceAktivitasLainController extends Controller
             ->values();
         
         // Get BLs for pembayaran kapal
-        $bls = \DB::table('bls')
+        $bls = DB::table('bls')
             ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'no_voyage', 'pengirim')
             ->whereNotNull('nomor_bl')
             ->where('nomor_bl', '!=', '')
@@ -512,21 +512,21 @@ class InvoiceAktivitasLainController extends Controller
             ->get();
         
         // Get klasifikasi biaya for pembayaran kapal
-        $klasifikasiBiayas = \DB::table('klasifikasi_biayas')
+        $klasifikasiBiayas = DB::table('klasifikasi_biayas')
             ->select('id', 'nama')
             ->where('is_active', true)
             ->orderBy('nama')
             ->get();
         
         // Get pricelist buruh for pembayaran kapal with klasifikasi biaya "buruh"
-        $pricelistBuruh = \DB::table('pricelist_buruh')
+        $pricelistBuruh = DB::table('pricelist_buruh')
             ->select('id', 'barang', 'size', 'tipe', 'tarif')
             ->where('is_active', true)
             ->orderBy('barang')
             ->get();
         
         // Get pricelist biaya dokumen for klasifikasi biaya "biaya dokumen"
-        $pricelistBiayaDokumen = \DB::table('pricelist_biaya_dokumen')
+        $pricelistBiayaDokumen = DB::table('pricelist_biaya_dokumen')
             ->select('id', 'nama_vendor', 'biaya')
             ->where('status', 'aktif')
             ->orderBy('nama_vendor')

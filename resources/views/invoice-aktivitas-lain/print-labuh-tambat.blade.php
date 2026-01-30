@@ -242,11 +242,10 @@
         <thead>
             <tr>
                 <th style="width: 5%; text-align: center;">No</th>
-                <th style="width: 12%; text-align: center;">Tanggal Invoice Vendor</th>
-                <th style="width: 18%;">Referensi</th>
-                <th style="width: 20%;">Jenis Biaya</th>
-                <th style="width: 25%;">Keterangan</th>
-                <th style="width: 20%; text-align: right;">Total</th>
+                <th style="width: 15%; text-align: center;">Tanggal Invoice Vendor</th>
+                <th style="width: 25%;">Referensi</th>
+                <th style="width: 30%;">Jenis Biaya</th>
+                <th style="width: 25%; text-align: right;">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -263,7 +262,6 @@
                         -
                     @endif
                 </td>
-                <td></td>
                 <td class="number">Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</td>
             </tr>
         </tbody>
@@ -301,6 +299,10 @@
         @endif
     </div>
     @endif
+
+    <div style="border: 2px solid #333; padding: 10px; margin-top: 20px; margin-bottom: 20px;">
+        <div style="font-weight: bold; margin-bottom: 30px;">Keterangan:</div>
+    </div>
 
     <div class="footer">
         <div class="signatures">
