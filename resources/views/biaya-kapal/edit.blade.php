@@ -807,12 +807,26 @@
         }
         
         // Map Operasional
-        foreach($biayaKapal->operasionalDetails as $op) {
-            $editOperasionalSections[] = [
-                'kapal' => $op->kapal,
-                'voyage' => $op->voyage,
-                'nominal' => $op->nominal
-            ];
+        if(old('operasional_sections')) {
+            foreach(old('operasional_sections') as $oldOp) {
+                // Nominal in old input might be formatted (e.g. 1.000.000)
+                // We need to clean it for the JS to integers properly
+                $rawNominal = isset($oldOp['nominal']) ? str_replace('.', '', $oldOp['nominal']) : 0;
+                
+                $editOperasionalSections[] = [
+                    'kapal' => $oldOp['kapal'] ?? '',
+                    'voyage' => $oldOp['voyage'] ?? '',
+                    'nominal' => $rawNominal
+                ];
+            }
+        } else {
+            foreach($biayaKapal->operasionalDetails as $op) {
+                $editOperasionalSections[] = [
+                    'kapal' => $op->kapal,
+                    'voyage' => $op->voyage,
+                    'nominal' => $op->nominal
+                ];
+            }
         }
     @endphp
 
@@ -3969,6 +3983,31 @@
         }
     }
     
+    function initializeOperasionalSections() {
+        // Only initialize if we have data to show, otherwise default logic (adding 1 empty) applies or is handled by caller
+        if(existingOperasionalSections.length > 0) {
+            clearAllOperasionalSections();
+            existingOperasionalSections.forEach(data => {
+                 addOperasionalSection();
+                 const sectionIndex = operasionalSectionCounter;
+                 const sec = document.querySelector(`.operasional-section[data-section-index="${sectionIndex}"]`);
+                 
+                 sec.querySelector('.kapal-select-operasional').value = data.kapal;
+                 
+                 const voySel = sec.querySelector('.voyage-select-operasional');
+                 voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
+                 voySel.value = data.voyage;
+                 voySel.disabled = false;
+                 
+                 const nomInput = sec.querySelector('input[name="operasional_sections['+sectionIndex+'][nominal]"]');
+                 if(nomInput) nomInput.value = parseInt(data.nominal).toLocaleString('id-ID');
+            });
+            calculateTotalFromAllOperasionalSections();
+        } else if (operasionalSectionsContainer.children.length === 0) {
+            addOperasionalSection();
+        }
+    }
+
     function clearAllOperasionalSections() {
         operasionalSectionsContainer.innerHTML = '';
         operasionalSectionCounter = 0;
