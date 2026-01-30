@@ -20,6 +20,25 @@
             font-weight: bold;
         }
         
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+        }
+        
+        .header p {
+            font-size: 9px;
+            color: #666;
+            line-height: 1.2;
+        }
+        
         .invoice-info {
             margin-bottom: 12px;
             display: grid;
@@ -48,16 +67,26 @@
             font-weight: bold;
         }
         
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 8px;
+            padding: 6px 10px;
+            background-color: #f0f0f0;
+            border-left: 3px solid #2563eb;
+        }
+        
         .details-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
-            font-size: 11px;
+            font-size: 10px;
         }
         
         .details-table th,
         .details-table td {
-            padding: 8px 10px;
+            padding: 6px 8px;
             border: 2px solid #333;
             text-align: left;
             font-weight: bold;
@@ -67,6 +96,37 @@
             background-color: #f8f9fa;
             font-weight: bold;
             color: #1a1a1a;
+            font-size: 10px;
+        }
+        
+        .details-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        
+        .details-table .label-col {
+            width: 60%;
+            font-weight: bold;
+        }
+        
+        .details-table .value-col {
+            width: 40%;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .calculation-row {
+            background-color: #e3f2fd !important;
+        }
+        
+        .total-row {
+            background-color: #fff3cd !important;
+            font-weight: bold;
+        }
+        
+        .grand-total-row {
+            background-color: #d4edda !important;
+            font-weight: bold;
+            font-size: 11px;
         }
         
         .number {
@@ -75,7 +135,7 @@
         }
         
         .footer {
-            margin-top: 30px;
+            margin-top: 15px;
             padding-top: 10px;
             border-top: 1px solid #ddd;
         }
@@ -93,19 +153,38 @@
         }
         
         .signature-line {
-            margin-top: 60px;
+            margin-top: 50px;
             border-top: 1px solid #333;
             padding-top: 3px;
             font-weight: bold;
         }
         
+        .notes {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #ffc107;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        
+        .notes-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
         @media print {
+            body {
+                padding: 10px;
+            }
+            
             .no-print {
                 display: none;
             }
+            
             @page {
                 margin: 1cm;
-                size: A4;
+                size: 21.6cm 33cm;
             }
         }
         
@@ -119,18 +198,28 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 12px;
             z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .print-button:hover {
+            background-color: #1d4ed8;
         }
     </style>
 </head>
 <body>
     <button class="print-button no-print" onclick="window.print()">🖨️ Cetak Invoice</button>
 
+    <div class="header">
+        <h1>PERMOHONAN TRANSFER</h1>
+    </div>
+
     <div class="invoice-info">
         <div class="info-item">
             <span class="info-label">Nomor Invoice</span>
             <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->nomor_invoice }}</span>
+            <span class="info-value"><strong>{{ $invoice->nomor_invoice }}</strong></span>
         </div>
         <div class="info-item">
             <span class="info-label">Tanggal Invoice</span>
@@ -170,20 +259,25 @@
                 <td>PPH 2%</td>
                 <td class="number">Rp {{ number_format($invoice->pph, 0, ',', '.') }}</td>
             </tr>
-            <tr style="background-color: #f0f0f0; font-size: 12px;">
-                <td style="font-weight: bold;">TOTAL PEMBAYARAN (Sub Total - PPH)</td>
-                <td class="number" style="font-weight: bold;">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</td>
+            <tr class="grand-total-row">
+                <td>TOTAL PEMBAYARAN (Sub Total - PPH)</td>
+                <td class="number">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
 
     @if($invoice->deskripsi || $invoice->catatan)
-    <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border: 1px solid #ddd;">
+    <div class="notes">
         @if($invoice->deskripsi)
-            <p><strong>Deskripsi:</strong> {{ $invoice->deskripsi }}</p>
+        <div>
+            <span class="notes-title">Deskripsi:</span> {{ $invoice->deskripsi }}
+        </div>
         @endif
+        
         @if($invoice->catatan)
-            <p><strong>Catatan:</strong> {{ $invoice->catatan }}</p>
+        <div style="margin-top: 5px;">
+            <span class="notes-title">Catatan:</span> {{ $invoice->catatan }}
+        </div>
         @endif
     </div>
     @endif
@@ -192,19 +286,28 @@
         <div class="signatures">
             <div class="signature-box">
                 <div>Dibuat Oleh</div>
-                <div class="signature-line">{{ $invoice->creator->name ?? '-' }}</div>
+                <div class="signature-line">
+                    {{ $invoice->creator->name ?? '-' }}
+                </div>
             </div>
+            
             <div class="signature-box">
                 <div>Diperiksa Oleh</div>
-                <div class="signature-line">&nbsp;</div>
+                <div class="signature-line">
+                    &nbsp;
+                </div>
             </div>
+            
             <div class="signature-box">
                 <div>Disetujui Oleh</div>
-                <div class="signature-line">{{ $invoice->approver->name ?? '-' }}</div>
+                <div class="signature-line">
+                    {{ $invoice->approver->name ?? '-' }}
+                </div>
             </div>
         </div>
-        <div style="text-align: center; margin-top: 20px; font-size: 8px; color: #999;">
-            Dicetak pada: {{ now()->format('d/m/Y H:i') }}
+        
+        <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
+            Dicetak: {{ now()->format('d/m/Y H:i') }}
         </div>
     </div>
 </body>
