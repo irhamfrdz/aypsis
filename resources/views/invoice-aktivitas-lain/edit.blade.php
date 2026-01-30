@@ -291,6 +291,74 @@
                     @enderror
                 </div>
 
+                <!-- Perhitungan Labuh Tambat (conditional for Labuh Tambat) -->
+                <div id="labuh_tambat_calculation_wrapper" class="hidden md:col-span-2 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        <div>
+                            <label for="nomor_rekening_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nomor Rekening
+                            </label>
+                            <input type="text" 
+                                   id="nomor_rekening_labuh" 
+                                   name="nomor_rekening_labuh"
+                                   value="{{ old('nomor_rekening_labuh', $invoice->nomor_rekening_labuh) }}"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                   placeholder="Masukkan nomor rekening...">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="sub_total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                Sub Total <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                                <input type="text" 
+                                       id="sub_total_labuh" 
+                                       name="sub_total_labuh"
+                                       value="{{ old('sub_total_labuh', number_format($invoice->subtotal, 0, ',', '.')) }}"
+                                       class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                       placeholder="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="pph_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                PPH 2%
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                                <input type="text" 
+                                       id="pph_labuh" 
+                                       name="pph_labuh"
+                                       value="{{ old('pph_labuh', number_format($invoice->pph, 0, ',', '.')) }}"
+                                       class="w-full pl-10 bg-gray-100 cursor-not-allowed border-gray-300 rounded-md shadow-sm"
+                                       style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                       placeholder="0"
+                                       readonly>
+                            </div>
+                            <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Sub Total</p>
+                        </div>
+                        <div>
+                            <label for="total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                Total
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                                <input type="text" 
+                                       id="total_labuh" 
+                                       value="{{ old('total_labuh', number_format($invoice->grand_total, 0, ',', '.')) }}"
+                                       class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed border-gray-300 rounded-md shadow-sm"
+                                       style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                       placeholder="0"
+                                       readonly>
+                            </div>
+                            <p class="mt-1 text-xs text-green-600 font-medium">Total = Sub Total - PPH</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Nama Barang dan Jumlah (conditional for Klasifikasi Biaya "buruh") -->
                 <div id="barang_wrapper" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -626,6 +694,12 @@ console.log('Existing invoice data:', existingInvoice);
         $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
         $('#penerima').select2({ placeholder: 'Pilih Penerima', allowClear: true, width: '100%' });
 
+        const subTotalLabuhInput = document.getElementById('sub_total_labuh');
+        const pphLabuhInput = document.getElementById('pph_labuh');
+        const totalLabuhInput = document.getElementById('total_labuh');
+        const totalWrapper = document.getElementById('total').closest('div');
+        const labuhTambatCalculationWrapper = document.getElementById('labuh_tambat_calculation_wrapper');
+
         // Format currency input
         const totalInput = document.getElementById('total');
         if (totalInput) {
@@ -638,8 +712,41 @@ console.log('Existing invoice data:', existingInvoice);
                 const plainValue = totalInput.value.replace(/\./g, '');
                 totalInput.value = plainValue;
                 
+                // Strip formatting from Labuh Tambat fields
+                if (subTotalLabuhInput && subTotalLabuhInput.value) {
+                    subTotalLabuhInput.value = subTotalLabuhInput.value.replace(/\./g, '');
+                }
+                if (pphLabuhInput && pphLabuhInput.value) {
+                    pphLabuhInput.value = pphLabuhInput.value.replace(/\./g, '');
+                }
+                
                 // No need to collect tipe penyesuaian data - it's already in the form as tipe_penyesuaian_detail array
             });
+        }
+
+        if (subTotalLabuhInput) {
+            subTotalLabuhInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                if (value) value = parseInt(value).toLocaleString('id-ID');
+                e.target.value = value;
+                calculateLabuhTambat();
+            });
+        }
+
+        function calculateLabuhTambat() {
+            if (!subTotalLabuhInput) return;
+            
+            const subTotal = parseFloat(subTotalLabuhInput.value.replace(/\./g, '')) || 0;
+            const pph = Math.round(subTotal * 0.02);
+            const total = subTotal - pph;
+            
+            pphLabuhInput.value = pph.toLocaleString('id-ID');
+            totalLabuhInput.value = total.toLocaleString('id-ID');
+            
+            // Set main total input too
+            if (totalInput) {
+                totalInput.value = total.toLocaleString('id-ID');
+            }
         }
 
         // Toggle conditional fields
@@ -789,6 +896,76 @@ console.log('Existing invoice data:', existingInvoice);
                 setTimeout(() => {
                     $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
                 }, 100);
+
+                // Handle Labuh Tambah/Tambat for Pembayaran Lain-lain
+                const selectedJenisBiaya = $('#jenis_biaya_dropdown').find('option:selected');
+                const namaJenisBiaya = selectedJenisBiaya.text().toLowerCase();
+
+                if (namaJenisBiaya.includes('labuh tambat') || namaJenisBiaya.includes('labuh tambah')) {
+                    if (vendorLabuhTambatWrapper) {
+                        vendorLabuhTambatWrapper.classList.remove('hidden');
+                        if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
+                    }
+                    if (labuhTambatCalculationWrapper) {
+                        labuhTambatCalculationWrapper.classList.remove('hidden');
+                    }
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
+                        if (totalInput) totalInput.removeAttribute('required');
+                    }
+                } else {
+                    // Show total field for other jenis biaya
+                    if (totalWrapper) {
+                        totalWrapper.classList.remove('hidden');
+                        if (totalInput) totalInput.setAttribute('required', 'required');
+                    }
+                    if (vendorLabuhTambatWrapper) {
+                        vendorLabuhTambatWrapper.classList.add('hidden');
+                        if (vendorLabuhTambatInput) {
+                            vendorLabuhTambatInput.removeAttribute('required');
+                        }
+                    }
+                    if (labuhTambatCalculationWrapper) {
+                        labuhTambatCalculationWrapper.classList.add('hidden');
+                    }
+                }
+
+                // Add event listener for jenis biaya dropdown change
+                $('#jenis_biaya_dropdown').off('change').on('change', function() {
+                    const selectedBiaya = $(this).find('option:selected');
+                    const namaBiaya = selectedBiaya.text().toLowerCase();
+                    
+                    if (namaBiaya.includes('labuh tambat') || namaBiaya.includes('labuh tambah')) {
+                        if (vendorLabuhTambatWrapper) {
+                            vendorLabuhTambatWrapper.classList.remove('hidden');
+                            if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
+                        }
+                        if (labuhTambatCalculationWrapper) {
+                            labuhTambatCalculationWrapper.classList.remove('hidden');
+                        }
+                        if (totalWrapper) {
+                            totalWrapper.classList.add('hidden');
+                            if (totalInput) totalInput.removeAttribute('required');
+                        }
+                    } else {
+                        if (vendorLabuhTambatWrapper) {
+                            vendorLabuhTambatWrapper.classList.add('hidden');
+                            if (vendorLabuhTambatInput) {
+                                vendorLabuhTambatInput.value = '';
+                                vendorLabuhTambatInput.removeAttribute('required');
+                            }
+                        }
+                        if (labuhTambatCalculationWrapper) {
+                            labuhTambatCalculationWrapper.classList.add('hidden');
+                        }
+                        if (totalWrapper) {
+                            totalWrapper.classList.remove('hidden');
+                            if (totalInput) {
+                                totalInput.setAttribute('required', 'required');
+                            }
+                        }
+                    }
+                });
             }
         }
 

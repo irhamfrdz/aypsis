@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\InvoiceAktivitasLain;
 use App\Models\Karyawan;
 use App\Models\Mobil;
@@ -263,6 +264,7 @@ class InvoiceAktivitasLainController extends Controller
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
             'vendor_listrik' => 'nullable|string|max:255',
             'vendor_labuh_tambat' => $vendorLabuhTambatValidation,
+            'nomor_rekening_labuh' => 'nullable|string|max:255',
             'sub_total_labuh' => 'nullable|numeric|min:0',
             'pph_labuh' => 'nullable|numeric|min:0',
             'total' => $totalValidation, // Conditional: nullable for biaya listrik, required for others
@@ -536,6 +538,7 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.penerima' => 'nullable|string',
             'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
             'vendor_labuh_tambat' => 'nullable|string|max:255',
+            'nomor_rekening_labuh' => 'nullable|string|max:255',
             'sub_total_labuh' => 'nullable|numeric|min:0',
             'pph_labuh' => 'nullable|numeric|min:0',
             'total' => 'required|numeric|min:0',

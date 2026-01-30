@@ -342,51 +342,66 @@
                 </div>
 
                 <!-- Perhitungan Labuh Tambat (conditional for Labuh Tambat) -->
-                <div id="labuh_tambat_calculation_wrapper" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label for="sub_total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
-                            Sub Total <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                <div id="labuh_tambat_calculation_wrapper" class="hidden md:col-span-2 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        <div>
+                            <label for="nomor_rekening_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nomor Rekening
+                            </label>
                             <input type="text" 
-                                   id="sub_total_labuh" 
-                                   name="sub_total_labuh"
-                                   class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                   style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                                   placeholder="0">
+                                   id="nomor_rekening_labuh" 
+                                   name="nomor_rekening_labuh"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                   placeholder="Masukkan nomor rekening...">
                         </div>
                     </div>
-                    <div>
-                        <label for="pph_labuh" class="block text-sm font-medium text-gray-700 mb-2">
-                            PPH 2%
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                            <input type="text" 
-                                   id="pph_labuh" 
-                                   name="pph_labuh"
-                                   class="w-full pl-10 bg-gray-100 cursor-not-allowed border-gray-300 rounded-md shadow-sm"
-                                   style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                                   placeholder="0"
-                                   readonly>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="sub_total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                Sub Total <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                                <input type="text" 
+                                       id="sub_total_labuh" 
+                                       name="sub_total_labuh"
+                                       class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                       placeholder="0">
+                            </div>
                         </div>
-                        <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Sub Total</p>
-                    </div>
-                    <div>
-                        <label for="total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
-                            Total
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                            <input type="text" 
-                                   id="total_labuh" 
-                                   class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed border-gray-300 rounded-md shadow-sm"
-                                   style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                                   placeholder="0"
-                                   readonly>
+                        <div>
+                            <label for="pph_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                PPH 2%
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                                <input type="text" 
+                                       id="pph_labuh" 
+                                       name="pph_labuh"
+                                       class="w-full pl-10 bg-gray-100 cursor-not-allowed border-gray-300 rounded-md shadow-sm"
+                                       style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                       placeholder="0"
+                                       readonly>
+                            </div>
+                            <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 2% × Sub Total</p>
                         </div>
-                        <p class="mt-1 text-xs text-green-600 font-medium">Total = Sub Total - PPH</p>
+                        <div>
+                            <label for="total_labuh" class="block text-sm font-medium text-gray-700 mb-2">
+                                Total
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                                <input type="text" 
+                                       id="total_labuh" 
+                                       class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed border-gray-300 rounded-md shadow-sm"
+                                       style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                                       placeholder="0"
+                                       readonly>
+                            </div>
+                            <p class="mt-1 text-xs text-green-600 font-medium">Total = Sub Total - PPH</p>
+                        </div>
                     </div>
                 </div>
 
@@ -1129,6 +1144,10 @@ console.log('Akun COAs data:', akunCoasData);
                 }
                 if (pphLabuhInput && pphLabuhInput.value) {
                     pphLabuhInput.value = pphLabuhInput.value.replace(/\./g, '');
+                }
+                if (totalLabuhInput && totalLabuhInput.value) {
+                    // Update: also strip total_labuh just in case it's used
+                    // totalLabuhInput doesn't have a name but better be safe
                 }
                 
                 // Strip formatting from all detail_biaya inputs

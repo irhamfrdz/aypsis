@@ -33,6 +33,7 @@ class InvoiceAktivitasLain extends Model
         'subtotal',
         'vendor_listrik',
         'vendor_labuh_tambat',
+        'nomor_rekening_labuh',
         'total',
         'pph',
         'grand_total',
