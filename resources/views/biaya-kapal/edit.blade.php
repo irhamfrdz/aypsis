@@ -827,10 +827,10 @@
         }
     @endphp
 
-    const existingKapalSections = @json($editKapalSections);
-    const existingAirSections = @json($editAirSections);
-    const existingTkbmSections = @json($editTkbmSections);
-    const existingOperasionalSections = @json($editOperasionalSections);
+    var existingKapalSections = @json($editKapalSections);
+    var existingAirSections = @json($editAirSections);
+    var existingTkbmSections = @json($editTkbmSections);
+    var existingOperasionalSections = @json($editOperasionalSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
