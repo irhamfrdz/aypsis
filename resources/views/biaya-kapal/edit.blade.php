@@ -1027,8 +1027,8 @@
     var clearJenisBiayaBtn = document.getElementById('clearJenisBiayaBtn');
     var jenisBiayaSelectedCount = document.getElementById('jenisBiayaSelectedCount');
     
-    let selectedJenisBiaya = { kode: '', nama: '' };
-    const oldJenisBiayaValue = "{{ old('jenis_biaya') }}";
+    var selectedJenisBiaya = { kode: '', nama: '' };
+    var oldJenisBiayaValue = "{{ old('jenis_biaya') }}";
     
     // Show dropdown on focus
     jenisBiayaSearch.addEventListener('focus', function() {
@@ -3185,17 +3185,17 @@
     }
 
     // ============= KAPAL MULTI-SELECT =============
-    const kapalSearch = document.getElementById('kapal_search');
-    const kapalDropdown = document.getElementById('kapal_dropdown');
-    const selectedKapalChips = document.getElementById('selected_kapal_chips');
-    const hiddenKapalInputs = document.getElementById('hidden_kapal_inputs');
-    const kapalOptions = document.querySelectorAll('.kapal-option');
-    const kapalSelectedCount = document.getElementById('kapalSelectedCount');
-    const btnSelectAllKapal = document.getElementById('selectAllKapalBtn');
-    const btnClearAllKapal = document.getElementById('clearAllKapalBtn');
+    var kapalSearch = document.getElementById('kapal_search');
+    var kapalDropdown = document.getElementById('kapal_dropdown');
+    var selectedKapalChips = document.getElementById('selected_kapal_chips');
+    var hiddenKapalInputs = document.getElementById('hidden_kapal_inputs');
+    var kapalOptions = document.querySelectorAll('.kapal-option');
+    var kapalSelectedCount = document.getElementById('kapalSelectedCount');
+    var btnSelectAllKapal = document.getElementById('selectAllKapalBtn');
+    var btnClearAllKapal = document.getElementById('clearAllKapalBtn');
     
-    let selectedKapals = [];
-    const oldKapalValue = @json(old('nama_kapal', $biayaKapal->nama_kapal ?? []));
+    var selectedKapals = [];
+    var oldKapalValue = @json(old('nama_kapal', $biayaKapal->nama_kapal ?? []));
     
     // Show kapal dropdown on focus
     kapalSearch.addEventListener('focus', function() {
@@ -3339,17 +3339,17 @@
     }
 
     // ============= VOYAGE MULTI-SELECT =============
-    const voyageSearch = document.getElementById('voyage_search');
-    const voyageDropdown = document.getElementById('voyage_dropdown');
-    const selectedVoyageChips = document.getElementById('selected_voyage_chips');
-    const hiddenVoyageInputs = document.getElementById('hidden_voyage_inputs');
-    const voyageSelectedCount = document.getElementById('voyageSelectedCount');
-    const btnSelectAllVoyage = document.getElementById('selectAllVoyageBtn');
-    const btnClearAllVoyage = document.getElementById('clearAllVoyageBtn');
+    var voyageSearch = document.getElementById('voyage_search');
+    var voyageDropdown = document.getElementById('voyage_dropdown');
+    var selectedVoyageChips = document.getElementById('selected_voyage_chips');
+    var hiddenVoyageInputs = document.getElementById('hidden_voyage_inputs');
+    var voyageSelectedCount = document.getElementById('voyageSelectedCount');
+    var btnSelectAllVoyage = document.getElementById('selectAllVoyageBtn');
+    var btnClearAllVoyage = document.getElementById('clearAllVoyageBtn');
     
-    let selectedVoyages = [];
-    let availableVoyages = [];
-    const oldVoyageValue = @json(old('no_voyage', []));
+    var selectedVoyages = [];
+    var availableVoyages = [];
+    var oldVoyageValue = @json(old('no_voyage', []));
     
     // Show voyage dropdown on focus
     voyageSearch.addEventListener('focus', function() {
@@ -3549,17 +3549,17 @@
     }
     
     // ============= BL MULTI-SELECT =============
-    const blSearch = document.getElementById('bl_search');
-    const blDropdown = document.getElementById('bl_dropdown');
-    const selectedBlChips = document.getElementById('selected_bl_chips');
-    const hiddenBlInputs = document.getElementById('hidden_bl_inputs');
-    const blSelectedCount = document.getElementById('blSelectedCount');
-    const btnSelectAllBl = document.getElementById('selectAllBlBtn');
-    const btnClearAllBl = document.getElementById('clearAllBlBtn');
+    var blSearch = document.getElementById('bl_search');
+    var blDropdown = document.getElementById('bl_dropdown');
+    var selectedBlChips = document.getElementById('selected_bl_chips');
+    var hiddenBlInputs = document.getElementById('hidden_bl_inputs');
+    var blSelectedCount = document.getElementById('blSelectedCount');
+    var btnSelectAllBl = document.getElementById('selectAllBlBtn');
+    var btnClearAllBl = document.getElementById('clearAllBlBtn');
     
-    let selectedBls = {}; // Changed to object to store {id: {kontainer, seal}}
-    let availableBls = {}; // Changed to object to store {id: {kontainer, seal}}
-    const oldBlValue = @json(old('no_bl', []));
+    var selectedBls = {}; // Changed to object to store {id: {kontainer, seal}}
+    var availableBls = {}; // Changed to object to store {id: {kontainer, seal}}
+    var oldBlValue = @json(old('no_bl', []));
     
     // Show BL dropdown on focus
     blSearch.addEventListener('focus', function() {
