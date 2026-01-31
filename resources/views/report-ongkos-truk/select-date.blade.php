@@ -57,10 +57,9 @@
                 {{-- Plat Mobil --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Plat Mobil
+                        Plat Mobil (Bisa pilih lebih dari satu)
                     </label>
-                    <select name="no_plat" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg select2">
-                        <option value="">-- Semua Plat Mobil --</option>
+                    <select name="no_plat[]" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg select2" multiple="multiple">
                         @foreach($allPlats as $plat)
                             <option value="{{ $plat }}">{{ $plat }}</option>
                         @endforeach

@@ -17,7 +17,7 @@
                     <p class="text-gray-600">
                         Periode: <span class="font-semibold text-blue-600">{{ $startDate->format('d/M/Y') }}</span> s/d <span class="font-semibold text-blue-600">{{ $endDate->format('d/M/Y') }}</span>
                         @if($noPlat)
-                            | Unit: <span class="font-semibold text-blue-600">{{ $noPlat }}</span>
+                            | Unit: <span class="font-semibold text-blue-600">{{ is_array($noPlat) ? implode(', ', $noPlat) : $noPlat }}</span>
                         @endif
                     </p>
                 </div>

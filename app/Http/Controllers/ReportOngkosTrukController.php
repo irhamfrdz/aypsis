@@ -40,7 +40,7 @@ class ReportOngkosTrukController extends Controller
         $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'no_plat' => 'nullable|string'
+            'no_plat' => 'nullable|array'
         ]);
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
@@ -63,9 +63,9 @@ class ReportOngkosTrukController extends Controller
               ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
-        if ($noPlat) {
-            $querySj->where('no_plat', $noPlat);
-            $querySjb->where('no_plat', $noPlat);
+        if ($noPlat && count($noPlat) > 0) {
+            $querySj->whereIn('no_plat', $noPlat);
+            $querySjb->whereIn('no_plat', $noPlat);
         }
 
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation'])->get();
@@ -129,7 +129,7 @@ class ReportOngkosTrukController extends Controller
         $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'no_plat' => 'nullable|string'
+            'no_plat' => 'nullable|array'
         ]);
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
@@ -152,9 +152,9 @@ class ReportOngkosTrukController extends Controller
               ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
-        if ($noPlat) {
-            $querySj->where('no_plat', $noPlat);
-            $querySjb->where('no_plat', $noPlat);
+        if ($noPlat && count($noPlat) > 0) {
+            $querySj->whereIn('no_plat', $noPlat);
+            $querySjb->whereIn('no_plat', $noPlat);
         }
 
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation'])->get();
@@ -218,7 +218,7 @@ class ReportOngkosTrukController extends Controller
         $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'no_plat' => 'nullable|string'
+            'no_plat' => 'nullable|array'
         ]);
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
@@ -241,9 +241,9 @@ class ReportOngkosTrukController extends Controller
               ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
-        if ($noPlat) {
-            $querySj->where('no_plat', $noPlat);
-            $querySjb->where('no_plat', $noPlat);
+        if ($noPlat && count($noPlat) > 0) {
+            $querySj->whereIn('no_plat', $noPlat);
+            $querySjb->whereIn('no_plat', $noPlat);
         }
 
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation'])->get();
