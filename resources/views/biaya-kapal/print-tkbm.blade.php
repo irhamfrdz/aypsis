@@ -294,13 +294,12 @@
                 <thead>
                     <tr>
                         <th style="width: 8%;">No</th>
-                        <th style="width: 20%;">Nama Kapal</th>
-                        <th style="width: 12%;">No. Voyage</th>
-                        <th style="width: 12%;">No. Ref</th>
-                        <th style="width: 14%;">Tgl Invoice Vendor</th>
-                        <th style="width: 14%;">Biaya</th>
-                        <th style="width: 10%;">PPH (2%)</th>
-                        <th style="width: 14%;">Grand Total</th>
+                        <th style="width: 16%;">Tgl Invoice Vendor</th>
+                        <th style="width: 14%;">No. Voyage</th>
+                        <th style="width: 15%;">No. Ref</th>
+                        <th style="width: 15%;">Biaya</th>
+                        <th style="width: 12%;">PPH (2%)</th>
+                        <th style="width: 20%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -333,10 +332,9 @@
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
-                                <td>{{ $groupKapal }}</td>
+                                <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
                                 <td class="text-center">{{ $groupRef }}</td>
-                                <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
@@ -348,8 +346,7 @@
                         @for($i = 0; $i < $maxCount; $i++)
                         <tr>
                             <td class="text-center">{{ $i + 1 }}</td>
-                            <td>{{ $namaKapals[$i] ?? ($i == 0 ? '-' : '') }}</td>
-                            <td class="text-center">{{ $i == 0 ? \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') : '' }}</td>
+                            <td class="text-center">-</td>
                             <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
                             <td class="text-center">-</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
@@ -360,7 +357,7 @@
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
