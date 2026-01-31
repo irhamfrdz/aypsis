@@ -8,36 +8,36 @@
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
         'Half-Folio' => [
             'size' => '215.9mm 165.1mm',
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '12px',
-            'headerH1' => '18px',
-            'tableFont' => '10px',
+            'fontSize' => '14px',
+            'headerH1' => '20px',
+            'tableFont' => '12px',
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '11px',
-            'headerH1' => '18px',
-            'tableFont' => '9px',
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
         'Half-A4' => [
             'size' => '210mm 148.5mm',
             'width' => '210mm',
             'height' => '148.5mm',
             'containerWidth' => '210mm',
-            'fontSize' => '9px',
-            'headerH1' => '14px',
-            'tableFont' => '7px',
+            'fontSize' => '11px',
+            'headerH1' => '16px',
+            'tableFont' => '9px',
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
@@ -64,10 +64,11 @@
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
             line-height: 1.2;
-            color: #333;
+            color: #000;
             background: white;
             margin: 0;
             padding: 0;
+            font-weight: bold;
         }
 
         .container {
@@ -95,7 +96,7 @@
 
         .info-section {
             margin-bottom: 12px;
-            font-size: 9px;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .info-table {
@@ -112,6 +113,10 @@
 
         .info-table td:first-child {
             font-weight: bold;
+        }
+
+        .info-table td {
+             font-weight: bold;
         }
 
         .table {
@@ -140,6 +145,7 @@
 
         .table td {
             font-size: {{ $currentPaper['tableFont'] }};
+            font-weight: bold;
         }
 
         .text-right {
@@ -175,7 +181,8 @@
         
         .signature-box {
             text-align: center;
-            font-size: 10px;
+            font-size: {{ $currentPaper['fontSize'] }};
+            font-weight: bold;
         }
         
         .signature-line {
