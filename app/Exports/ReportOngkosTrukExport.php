@@ -35,7 +35,6 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $item['no_surat_jalan'],
                 $item['no_plat'],
                 $item['supir'],
-                $item['keterangan'],
                 $item['tujuan'],
                 $item['ongkos_truck'],
             ];
@@ -50,7 +49,6 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
             'No Surat Jalan',
             'Plat Mobil',
             'Supir',
-            'Keterangan',
             'Tujuan',
             'Ongkos Truk',
         ];
@@ -59,7 +57,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
     public function columnFormats(): array
     {
         return [
-            'H' => '#,##0',
+            'G' => '#,##0',
         ];
     }
 
@@ -68,7 +66,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $lastRow = $event->sheet->getHighestRow();
-                $lastCol = 'H';
+                $lastCol = 'G';
 
                 // Style header
                 $event->sheet->getStyle('A1:' . $lastCol . '1')->applyFromArray([
@@ -93,8 +91,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
 
                 // Add Row Total
                 $totalRow = $lastRow + 1;
-                $event->sheet->setCellValue('G' . $totalRow, 'TOTAL');
-                $event->sheet->setCellValue('H' . $totalRow, '=SUM(H2:H' . $lastRow . ')');
+                $event->sheet->setCellValue('F' . $totalRow, 'TOTAL');
+                $event->sheet->setCellValue('G' . $totalRow, '=SUM(G2:G' . $lastRow . ')');
                 
                 $event->sheet->getStyle('A1:' . $lastCol . $totalRow)->applyFromArray([
                     'borders' => [
@@ -104,8 +102,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                     ],
                 ]);
 
-                $event->sheet->getStyle('G' . $totalRow . ':H' . $totalRow)->getFont()->setBold(true);
-                $event->sheet->getStyle('H2:H' . $totalRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $event->sheet->getStyle('F' . $totalRow . ':G' . $totalRow)->getFont()->setBold(true);
+                $event->sheet->getStyle('G2:G' . $totalRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
                 // Add Title
                 $event->sheet->insertNewRowBefore(1, 2);
