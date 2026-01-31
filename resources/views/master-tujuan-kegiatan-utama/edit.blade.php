@@ -277,3 +277,14 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Auto sync ongkos truck 20ft to 40ft
+    $('#ongkos_truk_20ft').on('input', function() {
+        $('#ongkos_truk_40ft').val($(this).val());
+    });
+});
+</script>
+@endpush

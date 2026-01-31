@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TujuanKegiatanUtamaController extends Controller
 {
@@ -493,5 +494,27 @@ class TujuanKegiatanUtamaController extends Controller
         }
 
         return 'TA' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Samakan ongkos truk 40ft dengan ongkos truk 20ft untuk semua data.
+     */
+    public function syncOngkos()
+    {
+        try {
+            \DB::table('tujuan_kegiatan_utamas')->update([
+                'ongkos_truk_40ft' => \DB::raw('ongkos_truk_20ft')
+            ]);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Semua data ongkos truk 40ft berhasil disamakan dengan 20ft!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Gagal menyamakan data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

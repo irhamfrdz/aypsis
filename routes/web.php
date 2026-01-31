@@ -485,6 +485,9 @@ Route::middleware([
         Route::post('tujuan-kegiatan-utama/import', [TujuanKegiatanUtamaController::class, 'import'])
              ->name('tujuan-kegiatan-utama.import')
              ->middleware('can:master-tujuan-kirim-create');
+        Route::post('tujuan-kegiatan-utama/sync-ongkos', [TujuanKegiatanUtamaController::class, 'syncOngkos'])
+             ->name('tujuan-kegiatan-utama.sync-ongkos')
+             ->middleware('can:master-tujuan-kirim-update');
 
         // Resource routes (HARUS SETELAH ROUTES SPESIFIK)
         Route::post('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'store'])

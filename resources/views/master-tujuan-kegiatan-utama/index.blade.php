@@ -40,6 +40,12 @@
                     Print
                 </a>
 
+                <!-- Sync Button -->
+                <button type="button" id="syncOngkosBtn" class="inline-flex items-center px-3 py-2 border border-red-600 text-sm font-medium rounded-md shadow-sm text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Samakan Ongkos 40ft
+                </button>
+
                 <!-- Add New Button -->
                 <a href="{{ route('master.tujuan-kegiatan-utama.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                     <i class="fas fa-plus mr-2"></i>
@@ -207,6 +213,36 @@
 <script>
 $(document).ready(function() {
     initResizableTable('masterTujuanKegiatanUtamaTable');
+
+    $('#syncOngkosBtn').on('click', function() {
+        if (confirm('Apakah Anda yakin ingin menyamakan SEMUA data Ongkos Truk 40ft dengan Ongkos Truk 20ft? Tindakan ini tidak dapat dibatalkan.')) {
+            const btn = $(this);
+            const originalHtml = btn.html();
+            
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
+
+            $.ajax({
+                url: "{{ route('master.tujuan-kegiatan-utama.sync-ongkos') }}",
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                        btn.prop('disabled', false).html(originalHtml);
+                    }
+                },
+                error: function(xhr) {
+                    alert('Terjadi kesalahan pada server.');
+                    btn.prop('disabled', false).html(originalHtml);
+                }
+            });
+        }
+    });
 });
 </script>
 @endpush
