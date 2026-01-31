@@ -9,6 +9,8 @@ use App\Models\Mobil;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ReportOngkosTrukExport;
 
 class ReportOngkosTrukController extends Controller
 {
@@ -262,37 +264,12 @@ class ReportOngkosTrukController extends Controller
 
         $data = $data->sortBy('tanggal');
 
-        $filename = 'report_ongkos_truk_' . date('Ymd_His') . '.csv';
-        $headers = [
-            'Content-type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=$filename",
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
-        ];
-
-        $callback = function() use ($data) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['No', 'Tanggal', 'No Surat Jalan', 'Plat Mobil', 'Supir', 'Keterangan', 'Tujuan', 'Ongkos Truk']);
-
-            foreach ($data as $index => $row) {
-                fputcsv($file, [
-                    $index + 1,
-                    $row['tanggal'],
-                    $row['no_surat_jalan'],
-                    $row['no_plat'],
-                    $row['supir'],
-                    $row['keterangan'],
-                    $row['tujuan'],
-                    $row['ongkos_truck']
-                ]);
-            }
-
-            fputcsv($file, ['', '', '', '', '', '', 'TOTAL', $data->sum('ongkos_truck')]);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        $filename = 'report_ongkos_truk_' . date('Ymd_His') . '.xlsx';
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ReportOngkosTrukExport($data, $startDate, $endDate), 
+            $filename
+        );
     }
 
     private function calculateOngkosTruk($item)
