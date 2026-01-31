@@ -4055,6 +4055,12 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/rit/print', [App\Http\Controllers\ReportRitController::class, 'print'])->name('rit.print');
     Route::get('/rit/export', [App\Http\Controllers\ReportRitController::class, 'export'])->name('rit.export');
 
+    // Report Ongkos Truk
+    Route::get('/ongkos-truk', [App\Http\Controllers\ReportOngkosTrukController::class, 'index'])->name('ongkos-truk.index');
+    Route::get('/ongkos-truk/view', [App\Http\Controllers\ReportOngkosTrukController::class, 'view'])->name('ongkos-truk.view');
+    Route::get('/ongkos-truk/print', [App\Http\Controllers\ReportOngkosTrukController::class, 'print'])->name('ongkos-truk.print');
+    Route::get('/ongkos-truk/export', [App\Http\Controllers\ReportOngkosTrukController::class, 'export'])->name('ongkos-truk.export');
+
     // Manifest
     Route::get('manifests/select-ship', [App\Http\Controllers\ManifestController::class, 'selectShip'])->name('manifests.select-ship');
     Route::get('manifests/download-template', [App\Http\Controllers\ManifestController::class, 'downloadTemplate'])->name('manifests.download-template');
