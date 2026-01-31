@@ -97,6 +97,7 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sj->no_plat,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
                 'keterangan' => ($sj->pengirim ?? '-') . ' ke ' . ($sj->tujuan_pengiriman ?? '-'),
+                'tujuan' => $sj->tujuan_pengambilan ?? '-',
                 'rit' => $sj->rit,
                 'ongkos_truck' => $ongkosTruk,
                 'type' => 'regular'
@@ -120,6 +121,7 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sjb->no_plat,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
                 'keterangan' => ($sjb->pengirim ?? '-') . ' ke ' . ($sjb->tujuan_pengiriman ?? '-'),
+                'tujuan' => $sjb->tujuan_pengambilan ?? '-',
                 'rit' => $sjb->rit,
                 'ongkos_truck' => $ongkosTruk,
                 'type' => 'bongkaran'
@@ -186,6 +188,7 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sj->no_plat,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
                 'keterangan' => ($sj->pengirim ?? '-') . ' ke ' . ($sj->tujuan_pengiriman ?? '-'),
+                'tujuan' => $sj->tujuan_pengambilan ?? '-',
                 'rit' => $sj->rit,
                 'ongkos_truck' => $ongkosTruk,
                 'type' => 'regular'
@@ -209,6 +212,7 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sjb->no_plat,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
                 'keterangan' => ($sjb->pengirim ?? '-') . ' ke ' . ($sjb->tujuan_pengiriman ?? '-'),
+                'tujuan' => $sjb->tujuan_pengambilan ?? '-',
                 'rit' => $sjb->rit,
                 'ongkos_truck' => $ongkosTruk,
                 'type' => 'bongkaran'
@@ -275,6 +279,7 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sj->no_plat,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
                 'keterangan' => ($sj->pengirim ?? '-') . ' ke ' . ($sj->tujuan_pengiriman ?? '-'),
+                'tujuan' => $sj->tujuan_pengambilan ?? '-',
                 'rit' => $sj->rit,
                 'ongkos_truck' => $ongkosTruk
             ]);
@@ -297,6 +302,7 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sjb->no_plat,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
                 'keterangan' => ($sjb->pengirim ?? '-') . ' ke ' . ($sjb->tujuan_pengiriman ?? '-'),
+                'tujuan' => $sjb->tujuan_pengambilan ?? '-',
                 'rit' => $sjb->rit,
                 'ongkos_truck' => $ongkosTruk
             ]);
@@ -315,7 +321,7 @@ class ReportOngkosTrukController extends Controller
 
         $callback = function() use ($data) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['No', 'Tanggal', 'No Surat Jalan', 'Plat Mobil', 'Supir', 'Keterangan', 'Rit', 'Ongkos Truk']);
+            fputcsv($file, ['No', 'Tanggal', 'No Surat Jalan', 'Plat Mobil', 'Supir', 'Keterangan', 'Tujuan', 'Ongkos Truk']);
 
             foreach ($data as $index => $row) {
                 fputcsv($file, [
@@ -325,7 +331,7 @@ class ReportOngkosTrukController extends Controller
                     $row['no_plat'],
                     $row['supir'],
                     $row['keterangan'],
-                    $row['rit'],
+                    $row['tujuan'],
                     $row['ongkos_truck']
                 ]);
             }

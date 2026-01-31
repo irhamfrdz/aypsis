@@ -45,7 +45,7 @@
                         <th class="px-6 py-4 border-b">Plat Mobil</th>
                         <th class="px-6 py-4 border-b">Supir</th>
                         <th class="px-6 py-4 border-b">Keterangan</th>
-                        <th class="px-6 py-4 border-b text-center">Rit</th>
+                        <th class="px-6 py-4 border-b">Tujuan</th>
                         <th class="px-6 py-4 border-b text-right">Ongkos Truk</th>
                     </tr>
                 </thead>
@@ -58,13 +58,7 @@
                             <td class="px-6 py-4">{{ $item['no_plat'] }}</td>
                             <td class="px-6 py-4">{{ $item['supir'] }}</td>
                             <td class="px-6 py-4">{{ $item['keterangan'] }}</td>
-                            <td class="px-6 py-4 text-center">
-                                @if($item['rit'] == 'menggunakan_rit')
-                                    <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Ya</span>
-                                @else
-                                    <span class="text-gray-400 font-medium">Tidak</span>
-                                @endif
-                            </td>
+                            <td class="px-6 py-4">{{ $item['tujuan'] }}</td>
                             <td class="px-6 py-4 text-right font-semibold text-gray-800">
                                 Rp {{ number_format($item['ongkos_truck'], 0, ',', '.') }}
                             </td>
