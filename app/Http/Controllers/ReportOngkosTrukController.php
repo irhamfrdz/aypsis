@@ -24,9 +24,16 @@ class ReportOngkosTrukController extends Controller
         $platsSj = SuratJalan::select('no_plat')->distinct()->whereNotNull('no_plat')->pluck('no_plat');
         $platsSjb = SuratJalanBongkaran::select('no_plat')->distinct()->whereNotNull('no_plat')->pluck('no_plat');
         
-        $allPlats = $platsSj->merge($platsSjb)->unique()->sort()->values();
+        $allPlatStrings = $platsSj->merge($platsSjb)->unique()->toArray();
+        
+        // Get Mobil data for the plates
+        $mobils = Mobil::whereIn('nomor_polisi', $allPlatStrings)->get();
+        
+        // Any plates not in Mobil table (if any)
+        $knownPlats = $mobils->pluck('nomor_polisi')->toArray();
+        $unknownPlats = array_diff($allPlatStrings, $knownPlats);
 
-        return view('report-ongkos-truk.select-date', compact('allPlats'));
+        return view('report-ongkos-truk.select-date', compact('mobils', 'unknownPlats'));
     }
 
     public function view(Request $request)
