@@ -161,7 +161,17 @@ class BiayaKapalController extends Controller
             foreach ($data['air'] as &$section) {
                 $numericAir = ['kuantitas', 'harga', 'jasa_air', 'biaya_agen', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
                 foreach ($numericAir as $f) {
-                    if (isset($section[$f])) $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        if (str_contains($section[$f], ',') && !str_contains($section[$f], '.')) {
+                            $section[$f] = str_replace(',', '.', $section[$f]);
+                        } elseif (str_contains($section[$f], '.') && str_contains($section[$f], ',')) {
+                            $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                        } elseif (str_contains($section[$f], '.') && !str_contains($section[$f], ',')) {
+                            if (preg_match('/\.\d{3}($|\.)/', $section[$f]) || substr_count($section[$f], '.') > 1) {
+                                $section[$f] = str_replace('.', '', $section[$f]);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -814,9 +824,14 @@ class BiayaKapalController extends Controller
                         $biayaAgen = floatval($section['biaya_agen'] ?? 0);
                         
                         // Use already cleaned values
-                        $subTotal = floatval($section['sub_total'] ?? $section['sub_total_value'] ?? 0);
-                        $pph = floatval($section['pph'] ?? $section['pph_value'] ?? 0);
-                        $grandTotal = floatval($section['grand_total'] ?? $section['grand_total_value'] ?? 0);
+                        // Values for sub_total, pph, grand_total should be handled same as store
+                        $subTotalRaw = $section['sub_total'] ?? $section['sub_total_value'] ?? 0;
+                        $pphRaw = $section['pph'] ?? $section['pph_value'] ?? 0;
+                        $grandTotalRaw = $section['grand_total'] ?? $section['grand_total_value'] ?? 0;
+
+                        $subTotal = is_string($subTotalRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $subTotalRaw)))) : floatval($subTotalRaw);
+                        $pph = is_string($pphRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $pphRaw)))) : floatval($pphRaw);
+                        $grandTotal = is_string($grandTotalRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $grandTotalRaw)))) : floatval($grandTotalRaw);
                         
                         // Get type keterangan from pricelist
                         $typeKeterangan = null;

@@ -173,7 +173,9 @@
         $totalQty = 0;
         $totalWaterCost = 0;
         $totalJasaAir = 0;
+        $countJasaAir = 0;
         $totalBiayaAgen = 0;
+        $countBiayaAgen = 0;
         $totalPPH = 0;
         $totalGrandTotal = 0;
         
@@ -181,12 +183,19 @@
             $totalQty += $detail->kuantitas;
             
             // Perhitungan Harga Murni Air (Qty * Harga Satuan)
-            // Jika harga null/0, maka 0.
             $waterCost = $detail->kuantitas * ($detail->harga ?? 0);
             $totalWaterCost += $waterCost;
             
-            $totalJasaAir += $detail->jasa_air;
-            $totalBiayaAgen += $detail->biaya_agen;
+            if ($detail->jasa_air > 0) {
+                $totalJasaAir += $detail->jasa_air;
+                $countJasaAir++;
+            }
+            
+            if ($detail->biaya_agen > 0) {
+                $totalBiayaAgen += $detail->biaya_agen;
+                $countBiayaAgen++;
+            }
+            
             $totalPPH += $detail->pph;
             $totalGrandTotal += $detail->grand_total;
         }
@@ -271,27 +280,29 @@
             @php $no = 1; @endphp
             
             <!-- Row 1: Air Tawar (Base Cost) -->
+            @if($totalWaterCost > 0 || $totalQty > 0)
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
                 <td>AIR TAWAR</td>
                 <td class="text-center">{{ number_format($totalQty, 2, ',', '.') }}</td>
                 <td class="text-right">
                     @if($totalQty > 0)
-                        Rp {{ number_format($totalWaterCost / $totalQty, 0, ',', '.') }}
+                        Rp {{ number_format($totalWaterCost / $totalQty, 2, ',', '.') }}
                     @else
                         -
                     @endif
                 </td>
                 <td class="text-right">Rp {{ number_format($totalWaterCost, 0, ',', '.') }}</td>
             </tr>
+            @endif
             
             <!-- Row 2: Jasa Air (Jika ada value) -->
             @if($totalJasaAir > 0)
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
                 <td>JASA AIR</td>
-                <td class="text-center">1</td>
-                <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
+                <td class="text-center">{{ $countJasaAir }}</td>
+                <td class="text-right">Rp {{ number_format($totalJasaAir / $countJasaAir, 0, ',', '.') }}</td>
                 <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
             </tr>
             @endif
@@ -301,8 +312,8 @@
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
                 <td>BIAYA AGEN</td>
-                <td class="text-center">1</td>
-                <td class="text-right">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
+                <td class="text-center">{{ $countBiayaAgen }}</td>
+                <td class="text-right">Rp {{ number_format($totalBiayaAgen / $countBiayaAgen, 0, ',', '.') }}</td>
                 <td class="text-right">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
             </tr>
             @endif
@@ -313,8 +324,8 @@
                 <td class="text-center">{{ $no++ }}</td>
                 <td>PPH (2%)</td>
                 <td class="text-center">1</td>
-                <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-                <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                <td class="text-right text-red-600">(Rp {{ number_format($totalPPH, 0, ',', '.') }})</td>
+                <td class="text-right text-red-600">(Rp {{ number_format($totalPPH, 0, ',', '.') }})</td>
             </tr>
             @endif
             

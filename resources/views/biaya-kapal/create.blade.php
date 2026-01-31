@@ -2639,6 +2639,7 @@
         });
 
         // Setup manual voyage toggle
+        // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.voyage-select-air');
         const voyageInput = section.querySelector('.voyage-input-air');
         const voyageManualBtn = section.querySelector('.voyage-manual-btn-air');
@@ -2676,6 +2677,9 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+        
+        // Trigger initial calculation for this section
+        calculateAirSectionTotal(sectionIndex);
     }
     
     window.removeAirSection = function(sectionIndex) {
@@ -3026,7 +3030,6 @@
     if (btnSelectAllKapal) {
         btnSelectAllKapal.addEventListener('click', function() {
             kapalOptions.forEach(option => {
-                const id = option.getAttribute('data-id');
                 const nama = option.getAttribute('data-nama');
                 
                 if (!selectedKapals.find(k => k.nama === nama)) {
@@ -3035,7 +3038,6 @@
                     option.classList.add('selected');
                 }
             });
-            
             updateKapalHiddenInputs();
             updateKapalSelectedCount();
             updateVoyages();
