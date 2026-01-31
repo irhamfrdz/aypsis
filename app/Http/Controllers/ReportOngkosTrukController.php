@@ -81,15 +81,7 @@ class ReportOngkosTrukController extends Controller
         $data = collect();
 
         foreach ($suratJalans as $sj) {
-            $ongkosTruk = 0;
-            if ($sj->tujuanPengambilanRelation) {
-                $size = strtolower($sj->size ?? '');
-                if (str_contains($size, '40')) {
-                    $ongkosTruk = $sj->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
-                } else {
-                    $ongkosTruk = $sj->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
-                }
-            }
+            $ongkosTruk = $this->calculateOngkosTruk($sj);
 
             $data->push([
                 'tanggal' => $sj->tanggal_surat_jalan,
@@ -105,15 +97,7 @@ class ReportOngkosTrukController extends Controller
         }
 
         foreach ($suratJalanBongkarans as $sjb) {
-            $ongkosTruk = 0;
-            if ($sjb->tujuanPengambilanRelation) {
-                $size = strtolower($sjb->size ?? '');
-                if (str_contains($size, '40')) {
-                    $ongkosTruk = $sjb->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
-                } else {
-                    $ongkosTruk = $sjb->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
-                }
-            }
+            $ongkosTruk = $this->calculateOngkosTruk($sjb);
 
             $data->push([
                 'tanggal' => $sjb->tanggal_surat_jalan,
@@ -172,15 +156,7 @@ class ReportOngkosTrukController extends Controller
         $data = collect();
 
         foreach ($suratJalans as $sj) {
-            $ongkosTruk = 0;
-            if ($sj->tujuanPengambilanRelation) {
-                $size = strtolower($sj->size ?? '');
-                if (str_contains($size, '40')) {
-                    $ongkosTruk = $sj->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
-                } else {
-                    $ongkosTruk = $sj->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
-                }
-            }
+            $ongkosTruk = $this->calculateOngkosTruk($sj);
 
             $data->push([
                 'tanggal' => $sj->tanggal_surat_jalan,
@@ -196,15 +172,7 @@ class ReportOngkosTrukController extends Controller
         }
 
         foreach ($suratJalanBongkarans as $sjb) {
-            $ongkosTruk = 0;
-            if ($sjb->tujuanPengambilanRelation) {
-                $size = strtolower($sjb->size ?? '');
-                if (str_contains($size, '40')) {
-                    $ongkosTruk = $sjb->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
-                } else {
-                    $ongkosTruk = $sjb->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
-                }
-            }
+            $ongkosTruk = $this->calculateOngkosTruk($sjb);
 
             $data->push([
                 'tanggal' => $sjb->tanggal_surat_jalan,
@@ -263,15 +231,7 @@ class ReportOngkosTrukController extends Controller
         $data = collect();
 
         foreach ($suratJalans as $sj) {
-            $ongkosTruk = 0;
-            if ($sj->tujuanPengambilanRelation) {
-                $size = strtolower($sj->size ?? '');
-                if (str_contains($size, '40')) {
-                    $ongkosTruk = $sj->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
-                } else {
-                    $ongkosTruk = $sj->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
-                }
-            }
+            $ongkosTruk = $this->calculateOngkosTruk($sj);
 
             $data->push([
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
@@ -286,15 +246,7 @@ class ReportOngkosTrukController extends Controller
         }
 
         foreach ($suratJalanBongkarans as $sjb) {
-            $ongkosTruk = 0;
-            if ($sjb->tujuanPengambilanRelation) {
-                $size = strtolower($sjb->size ?? '');
-                if (str_contains($size, '40')) {
-                    $ongkosTruk = $sjb->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
-                } else {
-                    $ongkosTruk = $sjb->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
-                }
-            }
+            $ongkosTruk = $this->calculateOngkosTruk($sjb);
 
             $data->push([
                 'tanggal' => $sjb->tanggal_surat_jalan->format('d/m/Y'),
@@ -341,5 +293,25 @@ class ReportOngkosTrukController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function calculateOngkosTruk($item)
+    {
+        $ongkosTruk = 0;
+        if ($item->tujuanPengambilanRelation) {
+            $size = strtolower($item->size ?? '');
+            if (str_contains($size, '40')) {
+                $ongkosTruk = $item->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0;
+            } else {
+                $ongkosTruk = $item->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
+            }
+        }
+
+        // Hardcoded override for specific destination
+        if ($item->tujuan_pengambilan == "PULO GADUNG ( BESI SCRAP )") {
+            $ongkosTruk = 1050000;
+        }
+
+        return $ongkosTruk;
     }
 }
