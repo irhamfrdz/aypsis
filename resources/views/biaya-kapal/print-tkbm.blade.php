@@ -289,7 +289,7 @@
 
         <!-- Detail Biaya Kapal -->
         <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya TKBM:</strong>
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya KTKBM:</strong>
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
@@ -367,7 +367,7 @@
         @if($biayaKapal->tkbmDetails && $biayaKapal->tkbmDetails->count() > 0)
         <!-- Detail Barang TKBM -->
         <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang TKBM:</strong>
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang KTKBM:</strong>
             
             @php
                 // Combine all barang across groups into one list
@@ -381,6 +381,15 @@
                     ];
                 })->values();
                 $overallTotal = $combinedBarang->sum('subtotal');
+                
+                // Calculate total PPH from unique groups
+                $totalPph = $biayaKapal->tkbmDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                })->sum(function($group) {
+                     return $group->first()->pph ?? 0;
+                });
+                
+                $finalTotal = $overallTotal - $totalPph;
             @endphp
 
             <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
@@ -407,9 +416,17 @@
                         <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
-                    <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>TOTAL BIAYA</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>PPH (2%)</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalPph, 0, ',', '.') }}</strong></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($finalTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>

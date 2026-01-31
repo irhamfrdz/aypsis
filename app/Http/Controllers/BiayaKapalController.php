@@ -890,6 +890,18 @@ class BiayaKapalController extends Controller
                         }
                     }
                 }
+
+                // AUTO-CALCULATE NOMINAL FOR TKBM
+                $totalGrandTotal = BiayaKapalTkbm::where('biaya_kapal_id', $biayaKapal->id)
+                    ->get()
+                    ->groupBy(function($item) {
+                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                    })
+                    ->map(function($group) {
+                        return $group->first()->grand_total ?? 0;
+                    })
+                    ->sum();
+                $biayaKapal->update(['nominal' => $totalGrandTotal]);
             }
 
             // OPERASIONAL UPDATE
