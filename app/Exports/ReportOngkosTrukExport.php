@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 
 class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents, WithColumnFormatting
@@ -36,7 +35,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $item['no_plat'],
                 $item['supir'],
                 $item['tujuan'],
-                $item['ongkos_truck'],
+                (float)$item['ongkos_truck'], // Ensure it's a number
             ];
         });
     }
@@ -65,11 +64,26 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $lastRow = $event->sheet->getHighestRow();
+                $sheet = $event->sheet->getDelegate();
+                
+                // 1. Insert Title rows FIRST to get correct row numbers
+                $sheet->insertNewRowBefore(1, 3);
+                $sheet->setCellValue('A1', 'LAPORAN ONGKOS TRUK');
+                $sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
+                
                 $lastCol = 'G';
+                $headerRow = 4; // Now headers are at row 4
+                $dataStartRow = 5; // Data starts at row 5
+                
+                // Merge title
+                $sheet->mergeCells("A1:{$lastCol}1");
+                $sheet->mergeCells("A2:{$lastCol}2");
+                $sheet->getStyle("A1:A2")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("A1")->getFont()->setBold(true)->setSize(14);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
 
-                // Style header
-                $event->sheet->getStyle('A1:' . $lastCol . '1')->applyFromArray([
+                // 2. Style Header (Row 4)
+                $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -89,12 +103,16 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                     ],
                 ]);
 
-                // Add Row Total
-                $totalRow = $lastRow + 1;
-                $event->sheet->setCellValue('F' . $totalRow, 'TOTAL');
-                $event->sheet->setCellValue('G' . $totalRow, '=SUM(G2:G' . $lastRow . ')');
+                // 3. Find Last Data Row and Add Total
+                $lastDataRow = $sheet->getHighestRow();
+                $totalRow = $lastDataRow + 1;
+
+                $sheet->setCellValue("F{$totalRow}", 'TOTAL');
+                // SUM from G5 to G{lastDataRow}
+                $sheet->setCellValue("G{$totalRow}", "=SUM(G{$dataStartRow}:G{$lastDataRow})");
                 
-                $event->sheet->getStyle('A1:' . $lastCol . $totalRow)->applyFromArray([
+                // Style the entire table borders
+                $sheet->getStyle("A{$headerRow}:{$lastCol}{$totalRow}")->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -102,22 +120,13 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                     ],
                 ]);
 
-                $event->sheet->getStyle('F' . $totalRow . ':G' . $totalRow)->getFont()->setBold(true);
-                $event->sheet->getStyle('G2:G' . $totalRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-
-                // Add Title
-                $event->sheet->insertNewRowBefore(1, 2);
-                $event->sheet->setCellValue('A1', 'LAPORAN ONGKOS TRUK');
-                $event->sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
+                // Style Total Row
+                $sheet->getStyle("F{$totalRow}:G{$totalRow}")->getFont()->setBold(true);
+                $sheet->getStyle("G{$dataStartRow}:G{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 
-                $event->sheet->mergeCells('A1:' . $lastCol . '1');
-                $event->sheet->mergeCells('A2:' . $lastCol . '2');
-                
-                $event->sheet->getStyle('A1:A2')->applyFromArray([
-                    'font' => ['bold' => true],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-                ]);
-                $event->sheet->getStyle('A1')->getFont()->setSize(14);
+                // Auto height for rows
+                $sheet->getRowDimension('1')->setRowHeight(25);
+                $sheet->getRowDimension('2')->setRowHeight(20);
             },
         ];
     }
