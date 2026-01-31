@@ -294,13 +294,13 @@
                 <thead>
                     <tr>
                         <th style="width: 8%;">No</th>
-                        <th style="width: 27%;">Nama Kapal</th>
-                        <th style="width: 15%;">Tanggal</th>
-                        <th style="width: 15%;">No. Voyage</th>
-                        <th style="width: 15%;">No. Ref</th>
-                        <th style="width: 15%;">Biaya</th>
-                        <th style="width: 12%;">PPH (2%)</th>
-                        <th style="width: 15%;">Grand Total</th>
+                        <th style="width: 20%;">Nama Kapal</th>
+                        <th style="width: 12%;">No. Voyage</th>
+                        <th style="width: 12%;">No. Ref</th>
+                        <th style="width: 14%;">Tgl Invoice Vendor</th>
+                        <th style="width: 14%;">Biaya</th>
+                        <th style="width: 10%;">PPH (2%)</th>
+                        <th style="width: 14%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -308,7 +308,7 @@
                         // Untuk biaya TKBM, ambil kapal dan voyage dari tkbmDetails
                         if ($biayaKapal->tkbmDetails && $biayaKapal->tkbmDetails->count() > 0) {
                             $groupedDetails = $biayaKapal->tkbmDetails->groupBy(function($item) {
-                                 return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                                 return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
                             });
                         } else {
                             $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
@@ -334,9 +334,9 @@
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td>{{ $groupKapal }}</td>
-                                <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
                                 <td class="text-center">{{ $groupRef }}</td>
+                                <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>

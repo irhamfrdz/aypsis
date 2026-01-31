@@ -14,6 +14,7 @@ class BiayaKapalTkbm extends Model
         'kapal',
         'voyage',
         'no_referensi',
+        'tanggal_invoice_vendor',
         'jumlah',
         'tarif',
         'subtotal',

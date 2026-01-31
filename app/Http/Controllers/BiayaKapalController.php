@@ -269,6 +269,7 @@ class BiayaKapalController extends Controller
             'tkbm_sections.*.barang' => 'nullable|array',
             'tkbm_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_tkbms,id',
             'tkbm_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.tanggal_invoice_vendor' => 'nullable|date',
 
             // Operasional sections structure
             'operasional_sections' => 'nullable|array',
@@ -552,6 +553,7 @@ class BiayaKapalController extends Controller
                                 'total_nominal' => $sectionTotalNominal,
                                 'pph' => $sectionPph,
                                 'grand_total' => $sectionGrandTotal,
+                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                             ]);
                             
                             // Build keterangan string
@@ -754,7 +756,7 @@ class BiayaKapalController extends Controller
             'tanggal' => 'required|date',
             'nomor_invoice' => 'required|string|max:50|unique:biaya_kapals,nomor_invoice,' . $biayaKapal->id,
             'nomor_referensi' => 'nullable|string|max:100',
-            'nama_kapal' => 'nullable|string|max:255', // Made nullable as it might be hidden
+            'nama_kapal' => 'nullable|string|max:255', 
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'nominal' => 'required|numeric|min:0',
             'nama_vendor' => 'nullable|string|max:255',
@@ -779,52 +781,43 @@ class BiayaKapalController extends Controller
             'air.*.nomor_rekening' => 'nullable|string|max:100',
             'air.*.nomor_referensi' => 'nullable|string|max:100',
             'air.*.tanggal_invoice_vendor' => 'nullable|date',
+            
+            // TKBM sections validation
+            'tkbm_sections' => 'nullable|array',
+            'tkbm_sections.*.kapal' => 'nullable|string|max:255',
+            'tkbm_sections.*.voyage' => 'nullable|string|max:255',
+            'tkbm_sections.*.no_referensi' => 'nullable|string|max:100',
+            'tkbm_sections.*.tanggal_invoice_vendor' => 'nullable|date',
+            'tkbm_sections.*.barang' => 'nullable|array',
+            'tkbm_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_tkbms,id',
+            'tkbm_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.pph' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.grand_total' => 'nullable|numeric|min:0',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Handle file upload
             if ($request->hasFile('bukti')) {
-                // Delete old file if exists
                 if ($biayaKapal->bukti) {
                     Storage::disk('public')->delete($biayaKapal->bukti);
                 }
-
                 $file = $request->file('bukti');
                 $fileName = time() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('biaya-kapal', $fileName, 'public');
                 $validated['bukti'] = $filePath;
             }
-
-            // Clean currency fields in validated data if they exist
-            // (nominal is already cleaned above but others might need explicitly setting if not passed to update)
-            // Actually $request->merge handles it for the request instance, so $validated will have cleaned values.
             
             $biayaKapal->update($validated);
 
-            // HANDLE AIR UPDATE
-            // If air data is present (even empty array), we replace existing ones
+            // AIR UPDATE
             if ($request->has('air')) {
-                // Delete existing records
                 BiayaKapalAir::where('biaya_kapal_id', $biayaKapal->id)->delete();
-                
-                // Create new records
                 if (!empty($request->air)) {
                     foreach ($request->air as $section) {
-                        // Skip empty sections
-                        if (empty($section['kapal']) && empty($section['vendor'])) {
-                            continue;
-                        }
+                        if (empty($section['kapal']) && empty($section['vendor'])) continue;
                         
-                        // Values are already cleaned before validation
-                        $kuantitas = floatval($section['kuantitas'] ?? 0);
-                        $harga = floatval($section['harga'] ?? 0);
-                        $jasaAir = floatval($section['jasa_air'] ?? 0);
-                        $biayaAgen = floatval($section['biaya_agen'] ?? 0);
-                        
-                        // Use already cleaned values
-                        // Values for sub_total, pph, grand_total should be handled same as store
                         $subTotalRaw = $section['sub_total'] ?? $section['sub_total_value'] ?? 0;
                         $pphRaw = $section['pph'] ?? $section['pph_value'] ?? 0;
                         $grandTotalRaw = $section['grand_total'] ?? $section['grand_total_value'] ?? 0;
@@ -833,12 +826,9 @@ class BiayaKapalController extends Controller
                         $pph = is_string($pphRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $pphRaw)))) : floatval($pphRaw);
                         $grandTotal = is_string($grandTotalRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $grandTotalRaw)))) : floatval($grandTotalRaw);
                         
-                        // Get type keterangan from pricelist
                         $typeKeterangan = null;
                         if (!empty($section['type'])) {
-                            $typeData = DB::table('master_pricelist_air_tawar')
-                                ->where('id', $section['type'])
-                                ->first();
+                            $typeData = DB::table('master_pricelist_air_tawar')->where('id', $section['type'])->first();
                             $typeKeterangan = $typeData ? $typeData->keterangan : null;
                         }
 
@@ -850,10 +840,10 @@ class BiayaKapalController extends Controller
                             'lokasi' => $section['lokasi'] ?? null,
                             'type_id' => $section['type'] ?? null,
                             'type_keterangan' => $typeKeterangan,
-                            'kuantitas' => $kuantitas,
-                            'harga' => $harga,
-                            'jasa_air' => $jasaAir,
-                            'biaya_agen' => $biayaAgen,
+                            'kuantitas' => floatval($section['kuantitas'] ?? 0),
+                            'harga' => floatval($section['harga'] ?? 0),
+                            'jasa_air' => floatval($section['jasa_air'] ?? 0),
+                            'biaya_agen' => floatval($section['biaya_agen'] ?? 0),
                             'sub_total' => $subTotal,
                             'pph' => $pph,
                             'grand_total' => $grandTotal,
@@ -866,45 +856,66 @@ class BiayaKapalController extends Controller
                 }
             }
 
-            // HANDLE OPERASIONAL UPDATE
-            // If operasional_sections is present, we replace existing ones
+            // TKBM UPDATE
+            if ($request->has('tkbm_sections')) {
+                BiayaKapalTkbm::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (!empty($request->tkbm_sections)) {
+                    foreach ($request->tkbm_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['barang'])) continue;
+                        
+                        if (isset($section['barang']) && is_array($section['barang'])) {
+                            foreach ($section['barang'] as $item) {
+                                $barangId = is_string($item['barang_id'] ?? null) ? trim($item['barang_id']) : ($item['barang_id'] ?? null);
+                                $jumlah = floatval($item['jumlah'] ?? 0);
+                                if (empty($barangId) || $jumlah <= 0) continue;
+                                
+                                $barang = PricelistTkbm::find($barangId);
+                                if (!$barang) continue;
+                                
+                                BiayaKapalTkbm::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'pricelist_tkbm_id' => $barang->id,
+                                    'kapal' => $section['kapal'] ?? null,
+                                    'voyage' => $section['voyage'] ?? null,
+                                    'no_referensi' => $section['no_referensi'] ?? null,
+                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'jumlah' => $jumlah,
+                                    'tarif' => $barang->tarif,
+                                    'subtotal' => $barang->tarif * $jumlah,
+                                    'total_nominal' => is_string($section['total_nominal'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['total_nominal'])))) : floatval($section['total_nominal'] ?? 0),
+                                    'pph' => is_string($section['pph'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['pph'])))) : floatval($section['pph'] ?? 0),
+                                    'grand_total' => is_string($section['grand_total'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['grand_total'])))) : floatval($section['grand_total'] ?? 0),
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // OPERASIONAL UPDATE
             if ($request->has('operasional_sections')) {
-                // Delete existing records
                 BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->delete();
-                
-                // Create new records
                 if (!empty($request->operasional_sections)) {
                     foreach ($request->operasional_sections as $section) {
-                        $nominal = floatval($section['nominal'] ?? 0);
-
                         BiayaKapalOperasional::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $section['kapal'] ?? null,
                             'voyage' => $section['voyage'] ?? null,
-                            'nominal' => $nominal,
+                            'nominal' => floatval($section['nominal'] ?? 0),
                             'total_nominal' => 0,
                             'dp' => 0,
                             'sisa_pembayaran' => 0,
                         ]);
                     }
                 }
-
-                // AUTO-CALCULATE NOMINAL FOR OPERASIONAL
-                $totalOperasional = BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->sum('nominal');
-                $biayaKapal->update(['nominal' => $totalOperasional]);
+                $biayaKapal->update(['nominal' => BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->sum('nominal')]);
             }
 
             DB::commit();
-
-            return redirect()
-                ->route('biaya-kapal.index')
-                ->with('success', 'Data biaya kapal berhasil diperbarui.');
+            return redirect()->route('biaya-kapal.index')->with('success', 'Data biaya kapal berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Gagal memperbarui data biaya kapal: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data biaya kapal: ' . $e->getMessage());
         }
     }
 
