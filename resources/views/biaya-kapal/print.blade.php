@@ -371,6 +371,9 @@
             @if($biayaKapal->jenis_biaya === 'KB024' && isset($groupedDetails) && $groupedDetails->count() > 0)
                 {{-- Biaya Buruh: Gabungkan semua barang menjadi satu tabel (gabungan semua kapal) --}}
                 @php
+                    // DEBUG: Show all barangDetails raw data
+                    $allSubtotalFromGroups = $groupedDetails->flatten()->sum('subtotal');
+                    
                     // Combine all barang across groups into one list, excluding placeholder records
                     $combinedBarang = $biayaKapal->barangDetails
                         ->filter(function($item) {
@@ -384,6 +387,7 @@
                                 'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
                                 'jumlah' => $items->sum('jumlah'),
                                 'subtotal' => $items->sum('subtotal'),
+                                'item_count' => $items->count(),
                             ];
                         })->values();
                     $overallTotal = $combinedBarang->sum('subtotal');
@@ -391,6 +395,11 @@
 
                 <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
                     <strong>Detail Barang (Gabungan Semua Kapal)</strong>
+                    <!-- DEBUG COMPARISON: 
+                         Total from Groups: Rp {{ number_format($allSubtotalFromGroups, 0, ',', '.') }} 
+                         Total from Combined: Rp {{ number_format($overallTotal, 0, ',', '.') }} 
+                         Nominal Biaya Kapal: Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}
+                    -->
                 </div>
 
                 <table class="table" style="margin-top: 6px; margin-bottom: 0;">
@@ -407,7 +416,7 @@
                         @foreach($combinedBarang as $index => $item)
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $item['barang'] }}</td>
+                            <td>{{ $item['barang'] }} <!-- Count: {{ $item['item_count'] }} items --></td>
                             <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
