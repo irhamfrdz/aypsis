@@ -1783,21 +1783,25 @@
         
         kapalSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup kapal change listener with proper closure
         const kapalSelect = section.querySelector('.kapal-select');
-        kapalSelect.addEventListener('change', function() {
-            loadVoyagesForSection(sectionIndex, this.value);
-        });
-        
-        // Setup voyage change listener for auto-fill barang
         const voyageSelect = section.querySelector('.voyage-select');
-        voyageSelect.addEventListener('change', function() {
-            const kapalNama = kapalSelect.value;
-            const voyageValue = this.value;
-            if (kapalNama && voyageValue) {
-                autoFillBarangForSection(sectionIndex, kapalNama, voyageValue);
-            }
-        });
+        
+        // Capture sectionIndex in closure properly
+        (function(capturedIndex, capturedKapalSelect, capturedVoyageSelect) {
+            capturedKapalSelect.addEventListener('change', function() {
+                loadVoyagesForSection(capturedIndex, this.value);
+            });
+            
+            // Setup voyage change listener for auto-fill barang
+            capturedVoyageSelect.addEventListener('change', function() {
+                const kapalNama = capturedKapalSelect.value;
+                const voyageValue = this.value;
+                if (kapalNama && voyageValue) {
+                    autoFillBarangForSection(capturedIndex, kapalNama, voyageValue);
+                }
+            });
+        })(sectionIndex, kapalSelect, voyageSelect);
         
         // Add first barang input
         addBarangToSection(sectionIndex);
