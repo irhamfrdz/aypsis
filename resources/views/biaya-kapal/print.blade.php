@@ -330,13 +330,9 @@
                             @php
                                 $rowNumber++;
                                 list($groupKapal, $groupVoyage) = explode('|', $groupKey);
-                                // FIXED: Use only non-placeholder records for consistent calculation
-                                $validDetails = $details->filter(function($item) {
-                                    return $item->pricelist_buruh_id !== null;
-                                });
-                                $groupSubtotal = $validDetails->sum('subtotal');
+                                $groupSubtotal = $details->sum('subtotal');
                             @endphp
-                            <!-- DEBUG: Group {{ $rowNumber }} - Key: {{ $groupKey }}, Total Items: {{ $details->count() }}, Valid Items: {{ $validDetails->count() }}, Subtotal: {{ $groupSubtotal }} -->
+                            <!-- DEBUG: Group {{ $rowNumber }} - Key: {{ $groupKey }}, Items: {{ $details->count() }}, Subtotal: {{ $groupSubtotal }} -->
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td>{{ $groupKapal }}</td>
@@ -361,17 +357,7 @@
                     
                     <tr class="total-row">
                         <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
-                        @if($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
-                            @php
-                                // For biaya buruh, calculate consistent total from valid barang details only
-                                $consistentTotal = $biayaKapal->barangDetails
-                                    ->filter(fn($item) => $item->pricelist_buruh_id !== null)
-                                    ->sum('subtotal');
-                            @endphp
-                            <td class="text-right"><strong>Rp {{ number_format($consistentTotal, 0, ',', '.') }}</strong></td>
-                        @else
-                            <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
-                        @endif
+                        <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -388,7 +374,7 @@
                     // DEBUG: Show all barangDetails raw data
                     $allSubtotalFromGroups = $groupedDetails->flatten()->sum('subtotal');
                     
-                    // FIXED: Use stored subtotal from database instead of recalculating to ensure consistency
+                    // Combine all barang across groups into one list, excluding placeholder records
                     $combinedBarang = $biayaKapal->barangDetails
                         ->filter(function($item) {
                             return $item->pricelist_buruh_id !== null; // Exclude placeholder records
@@ -400,23 +386,20 @@
                                 'barang' => $first->pricelistBuruh->barang ?? '-',
                                 'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
                                 'jumlah' => $items->sum('jumlah'),
-                                // USE DATABASE SUBTOTAL - don't recalculate to avoid rounding differences
-                                'subtotal' => $items->sum('subtotal'), // This uses stored subtotal from DB
+                                'subtotal' => $items->sum('subtotal'),
                                 'item_count' => $items->count(),
-                                // FOR COMPARISON: Recalculated subtotal 
-                                'recalc_subtotal' => ($first->pricelistBuruh->tarif ?? 0) * $items->sum('jumlah'),
                             ];
                         })->values();
-                    $overallTotal = $combinedBarang->sum('subtotal'); // Uses DB subtotal
-                    $recalcTotal = $combinedBarang->sum('recalc_subtotal'); // Recalculated
+                    $overallTotal = $combinedBarang->sum('subtotal');
                 @endphp
 
                 <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
                     <strong>Detail Barang (Gabungan Semua Kapal)</strong>
-                    <div style="font-size: 8px; color: red; margin-top: 2px;">
-                         🔍 DEBUG: Groups=Rp {{ number_format($allSubtotalFromGroups, 0, ',', '.') }} | DB=Rp {{ number_format($overallTotal, 0, ',', '.') }} | Recalc=Rp {{ number_format($recalcTotal, 0, ',', '.') }} | Nominal=Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}
-                         | Records: {{ $biayaKapal->barangDetails->count() }} total, {{ $biayaKapal->barangDetails->filter(fn($item) => $item->pricelist_buruh_id !== null)->count() }} non-null
-                    </div>
+                    <!-- DEBUG COMPARISON: 
+                         Total from Groups: Rp {{ number_format($allSubtotalFromGroups, 0, ',', '.') }} 
+                         Total from Combined: Rp {{ number_format($overallTotal, 0, ',', '.') }} 
+                         Nominal Biaya Kapal: Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}
+                    -->
                 </div>
 
                 <table class="table" style="margin-top: 6px; margin-bottom: 0;">
