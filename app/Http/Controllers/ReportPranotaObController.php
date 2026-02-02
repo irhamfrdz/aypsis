@@ -98,7 +98,9 @@ class ReportPranotaObController extends Controller
             ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
             ->whereNotNull('pranota_ob_items.supir')
+            ->where('pranota_ob_items.supir', '!=', '')
             ->whereNotNull('pranota_ob_items.biaya')
+            ->where('pranota_ob_items.biaya', '>', 0)
             ->select(
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
@@ -143,7 +145,9 @@ class ReportPranotaObController extends Controller
             ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
             ->whereNotNull('pranota_ob_items.supir')
+            ->where('pranota_ob_items.supir', '!=', '')
             ->whereNotNull('pranota_ob_items.biaya')
+            ->where('pranota_ob_items.biaya', '>', 0)
             ->select(
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
