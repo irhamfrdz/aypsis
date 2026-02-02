@@ -345,6 +345,8 @@ class BiayaKapalController extends Controller
                         'barang_count' => isset($section['barang']) ? count($section['barang']) : 0,
                     ]);
                     
+                    $sectionHasData = false; // Track if section has any saved items
+                    
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
                             // Normalize inputs (trim strings, convert decimals)
@@ -389,6 +391,8 @@ class BiayaKapalController extends Controller
                                 'dp' => $sectionDp,
                                 'sisa_pembayaran' => $sectionSisa,
                             ]);
+                            
+                            $sectionHasData = true; // Mark that section has saved data
 
                             // Build keterangan string with kapal, voyage, and DP info
                             $barangDetails[] = "[$kapalName - Voyage $voyageName] " . $barang->barang . ' x ' . $jumlah . ' = Rp ' . number_format($subtotal, 0, ',', '.');
@@ -400,6 +404,29 @@ class BiayaKapalController extends Controller
                                              " | DP: Rp " . number_format($sectionDp, 0, ',', '.') . 
                                              " | Sisa: Rp " . number_format($sectionSisa, 0, ',', '.');
                         }
+                    }
+                    
+                    // IMPORTANT: If section has kapal/voyage but no valid barang data saved,
+                    // create a placeholder record so the kapal appears in print
+                    if (!$sectionHasData && !empty($kapalName) && !empty($voyageName)) {
+                        \Log::warning("Section $sectionIndex has no barang data, creating placeholder", [
+                            'kapal' => $kapalName,
+                            'voyage' => $voyageName,
+                        ]);
+                        
+                        // Create placeholder with null pricelist_buruh_id and 0 values
+                        BiayaKapalBarang::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'pricelist_buruh_id' => null,
+                            'kapal' => $kapalName,
+                            'voyage' => $voyageName,
+                            'jumlah' => 0,
+                            'tarif' => 0,
+                            'subtotal' => 0,
+                            'total_nominal' => $sectionTotalNominal,
+                            'dp' => $sectionDp,
+                            'sisa_pembayaran' => $sectionSisa,
+                        ]);
                     }
                 }
             }

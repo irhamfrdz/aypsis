@@ -371,16 +371,21 @@
             @if($biayaKapal->jenis_biaya === 'KB024' && isset($groupedDetails) && $groupedDetails->count() > 0)
                 {{-- Biaya Buruh: Gabungkan semua barang menjadi satu tabel (gabungan semua kapal) --}}
                 @php
-                    // Combine all barang across groups into one list
-                    $combinedBarang = $biayaKapal->barangDetails->groupBy('pricelist_buruh_id')->map(function($items) {
-                        $first = $items->first();
-                        return [
-                            'barang' => $first->pricelistBuruh->barang ?? '-',
-                            'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
-                            'jumlah' => $items->sum('jumlah'),
-                            'subtotal' => $items->sum('subtotal'),
-                        ];
-                    })->values();
+                    // Combine all barang across groups into one list, excluding placeholder records
+                    $combinedBarang = $biayaKapal->barangDetails
+                        ->filter(function($item) {
+                            return $item->pricelist_buruh_id !== null; // Exclude placeholder records
+                        })
+                        ->groupBy('pricelist_buruh_id')
+                        ->map(function($items) {
+                            $first = $items->first();
+                            return [
+                                'barang' => $first->pricelistBuruh->barang ?? '-',
+                                'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
+                                'jumlah' => $items->sum('jumlah'),
+                                'subtotal' => $items->sum('subtotal'),
+                            ];
+                        })->values();
                     $overallTotal = $combinedBarang->sum('subtotal');
                 @endphp
 
@@ -429,16 +434,21 @@
                     </thead>
                     <tbody>
                         @php
-                            // Gabungkan semua barang yang sama
-                            $combinedBarang = $biayaKapal->barangDetails->groupBy('pricelist_buruh_id')->map(function($items) {
-                                $first = $items->first();
-                                return [
-                                    'barang' => $first->pricelistBuruh->barang ?? '-',
-                                    'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
-                                    'jumlah' => $items->sum('jumlah'),
-                                    'subtotal' => $items->sum('subtotal'),
-                                ];
-                            })->values();
+                            // Gabungkan semua barang yang sama, exclude placeholder
+                            $combinedBarang = $biayaKapal->barangDetails
+                                ->filter(function($item) {
+                                    return $item->pricelist_buruh_id !== null;
+                                })
+                                ->groupBy('pricelist_buruh_id')
+                                ->map(function($items) {
+                                    $first = $items->first();
+                                    return [
+                                        'barang' => $first->pricelistBuruh->barang ?? '-',
+                                        'harga_satuan' => $first->pricelistBuruh->tarif ?? 0,
+                                        'jumlah' => $items->sum('jumlah'),
+                                        'subtotal' => $items->sum('subtotal'),
+                                    ];
+                                })->values();
                         @endphp
                         @foreach($combinedBarang as $index => $item)
                         <tr>
