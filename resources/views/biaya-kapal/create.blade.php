@@ -1812,6 +1812,14 @@
                     <i class="fas fa-plus mr-1"></i> Tambah Barang
                 </button>
             </div>
+            
+            <!-- Nominal Per Kapal Display -->
+            <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-700">Nominal Kapal ${sectionIndex}:</span>
+                    <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
+                </div>
+            </div>
         `;
         
         kapalSectionsContainer.appendChild(section);
@@ -2074,6 +2082,9 @@
         document.querySelectorAll('.kapal-section').forEach(section => {
             const barangSelects = section.querySelectorAll('.barang-select-item');
             const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+            const nominalDisplay = section.querySelector('.section-nominal-display');
+            
+            let sectionTotal = 0;
             
             barangSelects.forEach((select, index) => {
                 const selectedOption = select.options[select.selectedIndex];
@@ -2081,8 +2092,15 @@
                 // Convert comma to period for proper decimal parsing (Indonesian format)
                 const jumlahRaw = jumlahInputs[index].value.replace(',', '.');
                 const jumlah = parseFloat(jumlahRaw) || 0;
-                grandTotal += tarif * jumlah;
+                sectionTotal += tarif * jumlah;
             });
+            
+            // Update section nominal display
+            if (nominalDisplay) {
+                nominalDisplay.textContent = sectionTotal > 0 ? `Rp ${Math.round(sectionTotal).toLocaleString('id-ID')}` : 'Rp 0';
+            }
+            
+            grandTotal += sectionTotal;
         });
         
         if (grandTotal > 0) {
