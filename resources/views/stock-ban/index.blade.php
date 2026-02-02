@@ -331,8 +331,29 @@
                             </div>
 
                             <div>
-                                <label for="kanisir_vendor" class="form-label-premium">Vendor <span class="text-red-500">*</span></label>
-                                <input type="text" id="kanisir_vendor" class="form-input-premium" placeholder="Masukkan nama vendor" required>
+                                <label class="form-label-premium">Vendor <span class="text-red-500">*</span></label>
+                                <input type="hidden" id="kanisir_vendor" required>
+                                <button type="button" id="btn-kanisir_vendor" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('kanisir_vendor', this)">
+                                    <span class="block truncate" id="text-kanisir_vendor">-- Pilih Vendor --</span>
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </button>
+                                
+                                <!-- Dropdown Content -->
+                                <div id="dropdown-content-kanisir_vendor" class="hidden">
+                                    <div class="dropdown-search-container">
+                                        <input type="text" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 p-2" placeholder="Cari vendor..." onkeyup="DropdownManager.filter(this)">
+                                    </div>
+                                    <div class="dropdown-list">
+                                        <div class="dropdown-item" onclick="DropdownManager.select('kanisir_vendor', '', '-- Pilih Vendor --')">-- Pilih Vendor --</div>
+                                        @foreach($pricelistKanisirBans as $pricelist)
+                                            <div class="dropdown-item" 
+                                                 onclick="DropdownManager.select('kanisir_vendor', '{{ $pricelist->vendor }}', '{{ $pricelist->vendor }}')"
+                                                 data-search="{{ strtolower($pricelist->vendor) }}">
+                                                {{ $pricelist->vendor }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
 
                             <div>
@@ -663,6 +684,10 @@
     // Kanisir Modal Logic
     function openKanisirModal(e) {
         e.preventDefault();
+        
+        // Reset vendor selection
+        document.getElementById('kanisir_vendor').value = '';
+        document.getElementById('text-kanisir_vendor').textContent = '-- Pilih Vendor --';
         
         const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
         const container = document.getElementById('kanisir_selected_ban_container');
