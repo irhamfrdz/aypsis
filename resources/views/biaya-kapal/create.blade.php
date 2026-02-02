@@ -1057,8 +1057,16 @@
         const sections = document.querySelectorAll('.kapal-section');
         console.log('=== FORM SUBMIT DEBUG ===');
         console.log('Total sections found:', sections.length);
+        
+        // Check for duplicate data-section-index
+        const indexMap = {};
         sections.forEach((section, idx) => {
             const sectionIdx = section.getAttribute('data-section-index');
+            if (indexMap[sectionIdx]) {
+                console.error('DUPLICATE data-section-index found!', sectionIdx);
+            }
+            indexMap[sectionIdx] = true;
+            
             const kapalSelect = section.querySelector('.kapal-select');
             const voyageSelect = section.querySelector('.voyage-select');
             const kapalInputName = kapalSelect ? kapalSelect.getAttribute('name') : 'N/A';
@@ -1069,6 +1077,12 @@
                 voyage: voyageSelect ? voyageSelect.value : 'N/A',
                 voyageInputName: voyageInputName
             });
+        });
+        
+        // Check all kapal_sections inputs
+        console.log('=== ALL KAPAL_SECTIONS INPUTS ===');
+        document.querySelectorAll('[name^="kapal_sections"]').forEach(input => {
+            console.log(input.name, '=', input.value);
         });
         console.log('=========================');
         
