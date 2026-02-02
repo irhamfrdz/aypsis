@@ -324,12 +324,26 @@ class BiayaKapalController extends Controller
             
             // NEW STRUCTURE: kapal sections (for multi-kapal biaya buruh)
             if ($request->has('kapal_sections') && !empty($request->kapal_sections)) {
+                // Debug log: Log all kapal sections received
+                \Log::info('Kapal sections received in store method', [
+                    'biaya_kapal_id' => $biayaKapal->id,
+                    'sections_count' => count($request->kapal_sections),
+                    'sections_data' => $request->kapal_sections,
+                ]);
+                
                 foreach ($request->kapal_sections as $sectionIndex => $section) {
                     $kapalName = $section['kapal'];
                     $voyageName = $section['voyage'];
                     $sectionTotalNominal = $section['total_nominal'] ?? 0;
                     $sectionDp = $section['dp'] ?? 0;
                     $sectionSisa = $section['sisa_pembayaran'] ?? 0;
+                    
+                    \Log::info("Processing kapal section $sectionIndex", [
+                        'kapal' => $kapalName,
+                        'voyage' => $voyageName,
+                        'total_nominal' => $sectionTotalNominal,
+                        'barang_count' => isset($section['barang']) ? count($section['barang']) : 0,
+                    ]);
                     
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {

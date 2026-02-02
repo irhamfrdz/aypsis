@@ -305,9 +305,15 @@
                     @php
                         // Untuk biaya buruh (KB024), ambil kapal dan voyage dari barangDetails
                         if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
+                            // Debug: Dump barangDetails untuk melihat data mentah
+                            // dd($biayaKapal->barangDetails->toArray());
+                            
                             $groupedDetails = $biayaKapal->barangDetails->groupBy(function($item) {
                                 return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
                             });
+                            
+                            // Debug: Dump groupedDetails untuk melihat hasil grouping
+                            // dd($groupedDetails->toArray());
                         } else {
                             $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
                             $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
