@@ -42,10 +42,11 @@ class ReportPranotaObController extends Controller
         // Get items grouped by voyage and supir
         $items = \DB::table('pranota_ob_items')
             ->join('pranota_obs', 'pranota_ob_items.pranota_ob_id', '=', 'pranota_obs.id')
-            ->leftJoin('karyawans', function($join) {
-                $join->on('pranota_ob_items.supir', '=', 'karyawans.nama_panggilan')
-                     ->orOn('pranota_ob_items.supir', '=', 'karyawans.nama_lengkap');
-            })
+            ->leftJoin(\DB::raw('(SELECT supir_name, MIN(nik) as nik FROM (
+                SELECT nama_panggilan as supir_name, nik FROM karyawans WHERE nama_panggilan IS NOT NULL
+                UNION
+                SELECT nama_lengkap as supir_name, nik FROM karyawans WHERE nama_lengkap IS NOT NULL
+            ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
             ->select(
                 'pranota_obs.tanggal_ob',
@@ -54,7 +55,7 @@ class ReportPranotaObController extends Controller
                 'karyawans.nik',
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'karyawans.nik', 'pranota_obs.tanggal_ob')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
@@ -90,19 +91,20 @@ class ReportPranotaObController extends Controller
         // Get items grouped by voyage and supir
         $items = \DB::table('pranota_ob_items')
             ->join('pranota_obs', 'pranota_ob_items.pranota_ob_id', '=', 'pranota_obs.id')
-            ->leftJoin('karyawans', function($join) {
-                $join->on('pranota_ob_items.supir', '=', 'karyawans.nama_panggilan')
-                     ->orOn('pranota_ob_items.supir', '=', 'karyawans.nama_lengkap');
-            })
+            ->leftJoin(\DB::raw('(SELECT supir_name, MIN(nik) as nik FROM (
+                SELECT nama_panggilan as supir_name, nik FROM karyawans WHERE nama_panggilan IS NOT NULL
+                UNION
+                SELECT nama_lengkap as supir_name, nik FROM karyawans WHERE nama_lengkap IS NOT NULL
+            ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
             ->select(
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
                 'pranota_ob_items.supir',
-                \DB::raw('MIN(karyawans.nik) as nik'),
+                'karyawans.nik',
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
@@ -132,19 +134,20 @@ class ReportPranotaObController extends Controller
         // Get items grouped by voyage and supir
         $items = \DB::table('pranota_ob_items')
             ->join('pranota_obs', 'pranota_ob_items.pranota_ob_id', '=', 'pranota_obs.id')
-            ->leftJoin('karyawans', function($join) {
-                $join->on('pranota_ob_items.supir', '=', 'karyawans.nama_panggilan')
-                     ->orOn('pranota_ob_items.supir', '=', 'karyawans.nama_lengkap');
-            })
+            ->leftJoin(\DB::raw('(SELECT supir_name, MIN(nik) as nik FROM (
+                SELECT nama_panggilan as supir_name, nik FROM karyawans WHERE nama_panggilan IS NOT NULL
+                UNION
+                SELECT nama_lengkap as supir_name, nik FROM karyawans WHERE nama_lengkap IS NOT NULL
+            ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
             ->select(
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
                 'pranota_ob_items.supir',
-                \DB::raw('MIN(karyawans.nik) as nik'),
+                'karyawans.nik',
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
