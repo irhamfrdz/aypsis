@@ -233,9 +233,20 @@
                             @endif
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-2">Nama Kenek</label>
-                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
-                                   value="{{ $tandaTerima->suratJalan->kenek ?? '-' }}" readonly disabled>
+                            <label for="kenek" class="block text-xs font-medium text-gray-500 mb-2">Nama Kenek</label>
+                            <select name="kenek" id="kenek"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm select2-kenek @error('kenek') border-red-500 @enderror">
+                                <option value="">-- Pilih Kenek --</option>
+                                @foreach($keneks as $kenek)
+                                    <option value="{{ $kenek->nama_lengkap }}"
+                                            {{ old('kenek', $tandaTerima->suratJalan->kenek ?? '') == $kenek->nama_lengkap ? 'selected' : '' }}>
+                                        {{ $kenek->nama_lengkap }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('kenek')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label for="kenek_pengganti" class="block text-xs font-medium text-gray-500 mb-2">Kenek Pengganti</label>
@@ -692,7 +703,7 @@
         
         jQuery(document).ready(function($) {
             if (typeof $.fn.select2 !== 'undefined') {
-                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek-pengganti, .select2-krani-pengganti').select2({
+                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek, .select2-kenek-pengganti, .select2-krani-pengganti').select2({
                     placeholder: function() {
                         return $(this).data('placeholder') || '-- Pilih --';
                     },
