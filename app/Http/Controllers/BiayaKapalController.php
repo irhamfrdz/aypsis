@@ -332,8 +332,11 @@ class BiayaKapalController extends Controller
                 ]);
                 
                 foreach ($request->kapal_sections as $sectionIndex => $section) {
-                    $kapalName = $section['kapal'];
-                    $voyageName = $section['voyage'];
+                    // Debug: Log raw section data
+                    \Log::info("Raw section data for index $sectionIndex", ['section' => $section]);
+                    
+                    $kapalName = $section['kapal'] ?? null;
+                    $voyageName = $section['voyage'] ?? null;
                     $sectionTotalNominal = $section['total_nominal'] ?? 0;
                     $sectionDp = $section['dp'] ?? 0;
                     $sectionSisa = $section['sisa_pembayaran'] ?? 0;
