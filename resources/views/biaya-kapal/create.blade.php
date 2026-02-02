@@ -1783,25 +1783,28 @@
         
         kapalSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener with proper closure
+        // Setup kapal change listener - use data attribute to get correct section
         const kapalSelect = section.querySelector('.kapal-select');
         const voyageSelect = section.querySelector('.voyage-select');
         
-        // Capture sectionIndex in closure properly
-        (function(capturedIndex, capturedKapalSelect, capturedVoyageSelect) {
-            capturedKapalSelect.addEventListener('change', function() {
-                loadVoyagesForSection(capturedIndex, this.value);
-            });
-            
-            // Setup voyage change listener for auto-fill barang
-            capturedVoyageSelect.addEventListener('change', function() {
-                const kapalNama = capturedKapalSelect.value;
-                const voyageValue = this.value;
-                if (kapalNama && voyageValue) {
-                    autoFillBarangForSection(capturedIndex, kapalNama, voyageValue);
-                }
-            });
-        })(sectionIndex, kapalSelect, voyageSelect);
+        kapalSelect.addEventListener('change', function() {
+            const currentSection = this.closest('.kapal-section');
+            const currentIndex = parseInt(currentSection.getAttribute('data-section-index'));
+            console.log('Kapal changed in section:', currentIndex, 'Value:', this.value);
+            loadVoyagesForSection(currentIndex, this.value);
+        });
+        
+        voyageSelect.addEventListener('change', function() {
+            const currentSection = this.closest('.kapal-section');
+            const currentIndex = parseInt(currentSection.getAttribute('data-section-index'));
+            const currentKapalSelect = currentSection.querySelector('.kapal-select');
+            const kapalNama = currentKapalSelect.value;
+            const voyageValue = this.value;
+            console.log('Voyage changed in section:', currentIndex, 'Kapal:', kapalNama, 'Voyage:', voyageValue);
+            if (kapalNama && voyageValue) {
+                autoFillBarangForSection(currentIndex, kapalNama, voyageValue);
+            }
+        });
         
         // Add first barang input
         addBarangToSection(sectionIndex);
