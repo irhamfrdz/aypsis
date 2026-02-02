@@ -364,7 +364,7 @@ class BlController extends Controller
 
         // Validate input
         $request->validate([
-            'size_kontainer' => 'nullable|in:20,40',
+            'size_kontainer' => 'nullable|in:20,40,45',
         ]);
 
         try {

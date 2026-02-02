@@ -266,19 +266,24 @@
                                 <td class="px-3 py-4 whitespace-nowrap">
                                     <div class="flex flex-col gap-1">
                                         <div class="size-kontainer-container" data-bl-id="{{ $bl->id }}">
-                                            <div class="size-kontainer-display cursor-pointer hover:bg-gray-100 rounded px-1 flex items-center w-fit">
+                                            <div class="size-kontainer-display cursor-pointer hover:bg-gray-100 rounded px-1 flex items-center w-fit transition-colors" title="Klik untuk edit size">
                                                 <span class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                    {{ $bl->size_kontainer }}' {{ $bl->tipe_kontainer }}
+                                                    {{ $bl->size_kontainer }}ft {{ $bl->tipe_kontainer }}
                                                 </span>
                                                 <i class="fas fa-edit text-xs text-gray-400 ml-1"></i>
                                             </div>
                                             <div class="size-kontainer-edit hidden flex items-center gap-1 mt-1">
-                                                <select class="size-kontainer-select text-xs border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500 py-1 px-2">
-                                                    <option value="20" {{ $bl->size_kontainer == '20' ? 'selected' : '' }}>20</option>
-                                                    <option value="40" {{ $bl->size_kontainer == '40' ? 'selected' : '' }}>40</option>
+                                                <select class="size-kontainer-select text-xs border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500 py-1 px-2" data-original="{{ $bl->size_kontainer }}">
+                                                    <option value="20" {{ $bl->size_kontainer == '20' ? 'selected' : '' }}>20ft</option>
+                                                    <option value="40" {{ $bl->size_kontainer == '40' ? 'selected' : '' }}>40ft</option>
+                                                    <option value="45" {{ $bl->size_kontainer == '45' ? 'selected' : '' }}>45ft</option>
                                                 </select>
-                                                <button class="save-size-kontainer text-green-600 text-xs"><i class="fas fa-check"></i></button>
-                                                <button class="cancel-size-kontainer text-red-600 text-xs"><i class="fas fa-times"></i></button>
+                                                <button class="save-size-kontainer text-green-600 hover:text-green-800 text-xs transition-colors" title="Simpan">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="cancel-size-kontainer text-red-600 hover:text-red-800 text-xs transition-colors" title="Batal">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
                                             </div>
                                         </div>
                                         <div class="text-xs text-gray-500">
