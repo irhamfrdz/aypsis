@@ -1752,6 +1752,11 @@
                 ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
             </div>
             
+            <!-- Hidden inputs for section totals -->
+            <input type="hidden" name="kapal_sections[${sectionIndex}][total_nominal]" class="section-total-hidden" value="0">
+            <input type="hidden" name="kapal_sections[${sectionIndex}][dp]" class="section-dp-hidden" value="0">
+            <input type="hidden" name="kapal_sections[${sectionIndex}][sisa_pembayaran]" class="section-sisa-hidden" value="0">
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
