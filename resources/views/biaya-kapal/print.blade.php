@@ -324,12 +324,15 @@
                     @if($groupedDetails)
                         {{-- Biaya Buruh: Tampilkan per grup kapal + voyage --}}
                         @php $rowNumber = 0; @endphp
+                        {{-- Debug: Show group count --}}
+                        <!-- DEBUG: Total groups = {{ $groupedDetails->count() }} -->
                         @foreach($groupedDetails as $groupKey => $details)
                             @php
                                 $rowNumber++;
                                 list($groupKapal, $groupVoyage) = explode('|', $groupKey);
                                 $groupSubtotal = $details->sum('subtotal');
                             @endphp
+                            <!-- DEBUG: Group {{ $rowNumber }} - Key: {{ $groupKey }}, Items: {{ $details->count() }}, Subtotal: {{ $groupSubtotal }} -->
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td>{{ $groupKapal }}</td>
