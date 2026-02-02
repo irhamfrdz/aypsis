@@ -184,6 +184,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masak</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
@@ -235,6 +236,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ date('d-m-Y', strtotime($ban->tanggal_masuk)) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="flex flex-col">
+                                        <span class="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full w-fit
+                                            {{ $ban->status_masak == 'sudah' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600' }}">
+                                            {{ ucfirst($ban->status_masak) }}
+                                        </span>
+                                        @if($ban->jumlah_masak > 0)
+                                            <span class="text-[10px] text-gray-400 mt-1">{{ $ban->jumlah_masak }}x masak</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end gap-2">

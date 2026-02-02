@@ -7,6 +7,7 @@
 <style>
     .custom-select-container {
         position: relative;
+        z-index: 50;
     }
     .custom-select-button {
         display: flex;

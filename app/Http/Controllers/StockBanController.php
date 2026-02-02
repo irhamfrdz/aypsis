@@ -405,7 +405,9 @@ class StockBanController extends Controller
         $stockBan = StockBan::findOrFail($id);
 
         $stockBan->update([
-            'kondisi' => 'kanisir'
+            'kondisi' => 'kanisir',
+            'status_masak' => 'sudah',
+            'jumlah_masak' => $stockBan->jumlah_masak + 1
         ]);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dimasak menjadi Kanisir.');
@@ -434,6 +436,8 @@ class StockBanController extends Controller
 
         foreach ($bans as $ban) {
             $ban->kondisi = 'kanisir';
+            $ban->status_masak = 'sudah';
+            $ban->jumlah_masak = ($ban->jumlah_masak ?? 0) + 1;
             $ban->nomor_bukti = $request->nomor_invoice;
             $ban->tanggal_masuk = $request->tanggal_masuk_kanisir; // Update date to kanisir date
             $ban->harga_beli = $request->harga; // Update price/cost
