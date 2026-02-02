@@ -166,8 +166,8 @@ class ReportPranotaObController extends Controller
             ->orderBy('pranota_ob_items.supir', 'asc')
             ->get();
 
-        // Group items by voyage for Excel
-        $groupedByVoyage = $items->groupBy('no_voyage');
+        // Flatten items for simple listing
+        $allItems = $items;
 
         // Create new Spreadsheet
         $spreadsheet = new Spreadsheet();
@@ -206,58 +206,29 @@ class ReportPranotaObController extends Controller
         $no = 1;
         $totalKeseluruhan = 0;
 
-        foreach ($groupedByVoyage as $voyage => $items) {
-            // Add voyage header row
-            $sheet->setCellValue('A' . $row, 'VOYAGE: ' . ($voyage ?? 'Tidak Ada Voyage'));
-            $sheet->mergeCells('A' . $row . ':E' . $row);
-            $voyageHeaderStyle = [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '5B9BD5']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-            ];
-            $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray($voyageHeaderStyle);
-            $row++;
-            
-            $subtotalVoyage = 0;
-            foreach ($items as $item) {
-                // Skip items with invalid supir or zero total
-                if (!$item->supir || $item->total_biaya <= 0) {
-                    continue;
-                }
-                
-                $totalKeseluruhan += $item->total_biaya;
-                $subtotalVoyage += $item->total_biaya;
-                
-                $sheet->setCellValue('A' . $row, $no++);
-                $sheet->setCellValue('B' . $row, Carbon::parse($item->tanggal_ob)->format('d/m/Y'));
-                $sheet->setCellValue('C' . $row, $item->no_voyage ?? '-');
-                $sheet->setCellValue('D' . $row, $item->supir ?? '-');
-                $sheet->setCellValue('E' . $row, 'Rp ' . number_format($item->total_biaya, 0, ',', '.'));
-                
-                // Style data rows
-                $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
-                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-                ]);
-                $sheet->getStyle('E' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                
-                $row++;
+        // Loop through all items directly without grouping
+        foreach ($allItems as $item) {
+            // Skip items with invalid supir or zero total
+            if (!$item->supir || $item->total_biaya <= 0) {
+                continue;
             }
             
-            // Add subtotal row for this voyage
-            $sheet->setCellValue('D' . $row, 'Subtotal ' . ($voyage ?? 'Tidak Ada Voyage') . ':');
-            $sheet->setCellValue('E' . $row, 'Rp ' . number_format($subtotalVoyage, 0, ',', '.'));
-            $subtotalStyle = [
-                'font' => ['bold' => true],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E7E6E6']],
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-            ];
-            $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray($subtotalStyle);
-            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-            $sheet->getStyle('E' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-            $row++;
+            $totalKeseluruhan += $item->total_biaya;
             
-            // Empty row for separation
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, Carbon::parse($item->tanggal_ob)->format('d/m/Y'));
+            $sheet->setCellValue('C' . $row, $item->no_voyage ?? '-');
+            $sheet->setCellValue('D' . $row, $item->supir ?? '-');
+            $sheet->setCellValue('E' . $row, 'Rp ' . number_format($item->total_biaya, 0, ',', '.'));
+            
+            // Style data rows with alternating colors
+            $bgColor = ($row % 2 == 0) ? 'F2F2F2' : 'FFFFFF';
+            $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $bgColor]],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+            $sheet->getStyle('E' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            
             $row++;
         }
 

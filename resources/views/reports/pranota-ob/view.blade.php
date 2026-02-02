@@ -34,7 +34,7 @@
             <a href="{{ route('report.pranota-ob.export', ['dari_tanggal' => request('dari_tanggal'), 'sampai_tanggal' => request('sampai_tanggal')]) }}" 
                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
                 <i class="fas fa-file-excel mr-2"></i>
-                Export CSV
+                Export EXCEL
             </a>
         </div>
     </div>
