@@ -40,7 +40,11 @@ class StockBanController extends Controller
         // Assuming receivers are employees/karyawans
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = StockBan::generateNextInvoice();
-        $pricelistKanisirBans = \App\Models\MasterPricelistKanisirBan::where('status', 'aktif')->orderBy('vendor')->get();
+        $pricelistKanisirBans = \App\Models\MasterPricelistKanisirBan::whereIn('status', ['active', 'aktif'])
+            ->select('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->get();
 
         return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans', 'nextInvoice', 'pricelistKanisirBans'));
     }
