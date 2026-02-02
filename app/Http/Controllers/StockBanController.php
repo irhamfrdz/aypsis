@@ -35,14 +35,11 @@ class StockBanController extends Controller
         $stockRingVelgs = StockRingVelg::with('namaStockBan')->latest()->get();
         $stockVelgs = StockVelg::with('namaStockBan')->latest()->get();
 
-        // Data for "Gunakan" modal
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         // Assuming receivers are employees/karyawans
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
-        $nextInvoice = StockBan::generateNextInvoice();
+        $nextInvoice = \App\Models\StockBan::generateNextInvoice();
         $pricelistKanisirBans = \App\Models\MasterPricelistKanisirBan::whereIn('status', ['active', 'aktif'])
-            ->select('vendor')
-            ->distinct()
             ->orderBy('vendor')
             ->get();
 

@@ -194,6 +194,8 @@
                                     @if($ban->status == 'Stok' && $ban->kondisi != 'afkir')
                                     <input type="checkbox" name="ids[]" value="{{ $ban->id }}" 
                                         data-type="{{ ucfirst($ban->kondisi) }}" 
+                                        data-ukuran="{{ $ban->ukuran }}"
+                                        data-status-luar="{{ $ban->status_ban_luar }}"
                                         data-harga="{{ number_format($ban->harga_beli, 0, ',', '.') }}"
                                         class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                     @endif
@@ -560,6 +562,9 @@
         // Initialize state
         updateBulkButton();
     });
+    
+    // Global data for price lookup
+    const pricelistData = @json($pricelistKanisirBans);
 
     const DropdownManager = {
         activeDropdownId: null,
@@ -643,6 +648,11 @@
             const textEl = document.getElementById('text-' + id);
             if (textEl) textEl.textContent = text;
             this.close();
+
+            // Custom trigger for kanisir vendor
+            if (id === 'kanisir_vendor') {
+                updateKanisirPrices(value);
+            }
         },
 
         filter: function(input) {
@@ -707,10 +717,13 @@
             const noSeriContent = row.cells[1].innerHTML;
             const merkUkuranContent = row.cells[2].innerHTML;
             const typeValue = cb.getAttribute('data-type') || '-';
-            const hargaValue = cb.getAttribute('data-harga') || '0';
+            const banId = cb.value;
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-orange-50/30 transition-colors";
+            tr.setAttribute('data-ban-id', banId);
+            tr.setAttribute('data-ukuran', cb.getAttribute('data-ukuran') || '');
+            tr.setAttribute('data-status-luar', cb.getAttribute('data-status-luar') || '');
             
             const td1 = document.createElement('td');
             td1.className = "px-4 py-3 whitespace-nowrap text-xs font-semibold text-gray-900";
@@ -728,8 +741,8 @@
             td3.appendChild(typeSpan);
 
             const td4 = document.createElement('td');
-            td4.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-900 font-bold text-right";
-            td4.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>${hargaValue}`;
+            td4.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-900 font-bold text-right kanisir-price-col";
+            td4.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>-`;
 
             tr.appendChild(td1);
             tr.appendChild(td2);
@@ -738,7 +751,44 @@
             container.appendChild(tr);
         });
 
+        // If vendor already selected (unlikely on open, but for safety)
+        const currentVendor = document.getElementById('kanisir_vendor').value;
+        if (currentVendor) updateKanisirPrices(currentVendor);
+
         document.getElementById('kanisirModal').classList.remove('hidden');
+    }
+
+    function updateKanisirPrices(vendorName) {
+        if (!vendorName) return;
+        
+        const pricelist = pricelistData.find(p => p.vendor === vendorName);
+        if (!pricelist) return;
+
+        const rows = document.querySelectorAll('#kanisir_selected_ban_container tr');
+        let totalHarga = 0;
+
+        rows.forEach(row => {
+            const ukuran = row.getAttribute('data-ukuran');
+            const status = row.getAttribute('data-status-luar');
+            
+            // Map status to column suffix
+            const suffix = status === 'kawat' ? 'kawat' : (status === 'benang' ? 'benang' : null);
+            let harga = 0;
+            
+            if (suffix && ukuran) {
+                const colName = `harga_${ukuran}_${suffix}`;
+                harga = parseFloat(pricelist[colName]) || 0;
+            }
+
+            const priceCol = row.querySelector('.kanisir-price-col');
+            if (priceCol) {
+                priceCol.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>${new Intl.NumberFormat('id-ID').format(harga)}`;
+            }
+            totalHarga += harga;
+        });
+
+        // Update the main harga input in the modal based on total selected prices
+        document.getElementById('kanisir_harga').value = totalHarga;
     }
 
     function closeKanisirModal() {
