@@ -309,7 +309,7 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeKanisirModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -344,6 +344,30 @@
                                     <input type="number" id="kanisir_harga" class="form-input-premium pl-10" placeholder="0" required>
                                 </div>
                                 <p class="mt-2 text-xs text-gray-400 italic">Harga yang dimasukkan akan diupdate ke data ban.</p>
+                            </div>
+
+                            {{-- Selected Ban Table --}}
+                            <div class="mt-6 border-t border-gray-100 pt-4">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ban yang Dipilih:</h4>
+                                <div class="overflow-hidden border border-gray-200 rounded-xl shadow-sm bg-gray-50">
+                                    <div class="overflow-y-auto max-h-48">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-100 sticky top-0">
+                                                <tr>
+                                                    <th scope="col" class="px-4 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">No Seri</th>
+                                                    <th scope="col" class="px-4 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">Merk / Ukuran</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="kanisir_selected_ban_container" class="bg-white divide-y divide-gray-100">
+                                                <!-- Dynamic Content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="bg-white px-4 py-2 border-t border-gray-100 flex justify-between items-center text-xs font-medium text-gray-500">
+                                        <span>Total Terpilih:</span>
+                                        <span id="kanisir_total_terpilih" class="text-orange-600 font-bold">0</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -639,6 +663,36 @@
     // Kanisir Modal Logic
     function openKanisirModal(e) {
         e.preventDefault();
+        
+        const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
+        const container = document.getElementById('kanisir_selected_ban_container');
+        const totalSpan = document.getElementById('kanisir_total_terpilih');
+        
+        container.innerHTML = '';
+        totalSpan.textContent = selectedCheckboxes.length;
+
+        selectedCheckboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            // Clone cells for No Seri and Merk/Ukuran
+            const noSeriContent = row.cells[1].innerHTML;
+            const merkUkuranContent = row.cells[2].innerHTML;
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-orange-50/30 transition-colors";
+            
+            const td1 = document.createElement('td');
+            td1.className = "px-4 py-3 whitespace-nowrap text-xs font-semibold text-gray-900";
+            td1.innerHTML = noSeriContent;
+
+            const td2 = document.createElement('td');
+            td2.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
+            td2.innerHTML = merkUkuranContent;
+
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            container.appendChild(tr);
+        });
+
         document.getElementById('kanisirModal').classList.remove('hidden');
     }
 
