@@ -99,10 +99,10 @@ class ReportPranotaObController extends Controller
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
                 'pranota_ob_items.supir',
-                'karyawans.nik',
+                \DB::raw('MIN(karyawans.nik) as nik'),
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'karyawans.nik', 'pranota_obs.tanggal_ob')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
@@ -141,10 +141,10 @@ class ReportPranotaObController extends Controller
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
                 'pranota_ob_items.supir',
-                'karyawans.nik',
+                \DB::raw('MIN(karyawans.nik) as nik'),
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'karyawans.nik', 'pranota_obs.tanggal_ob')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
