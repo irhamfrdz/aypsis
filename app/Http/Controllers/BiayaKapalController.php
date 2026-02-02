@@ -152,8 +152,10 @@ class BiayaKapalController extends Controller
                     foreach ($section['barang'] as &$barang) {
                         if (isset($barang['jumlah'])) $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
                     }
+                    unset($barang); // CRITICAL: Unset reference to prevent variable reference bug
                 }
             }
+            unset($section); // CRITICAL: Unset reference to prevent variable reference bug
         }
         
         // Air Sections
@@ -174,6 +176,7 @@ class BiayaKapalController extends Controller
                     }
                 }
             }
+            unset($section); // CRITICAL: Unset reference to prevent variable reference bug
         }
         
         // TKBM Sections
@@ -792,6 +795,7 @@ class BiayaKapalController extends Controller
                     if (isset($section[$f])) $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                 }
             }
+            unset($section); // CRITICAL: Unset reference to prevent variable reference bug
         }
         
         $request->replace($data);
