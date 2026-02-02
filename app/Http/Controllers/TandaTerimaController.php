@@ -457,6 +457,10 @@ class TandaTerimaController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if tipe kontainer is cargo to make gudang_id optional
+        $suratJalan = \App\Models\SuratJalan::find($request->surat_jalan_id);
+        $isCargo = $suratJalan && strtolower($suratJalan->tipe_kontainer ?? '') == 'cargo';
+
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
             // Field yang akan disinkronkan ke surat jalan
@@ -518,8 +522,9 @@ class TandaTerimaController extends Controller
             // Validation for uploaded images
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
-            'gudang_id' => 'required|exists:gudangs,id',
+            'gudang_id' => ($isCargo ? 'nullable' : 'required') . '|exists:gudangs,id',
         ]);
+
 
         DB::beginTransaction();
         try {

@@ -157,8 +157,8 @@
                                         </label>
                                         <select name="gudang_id"
                                                 id="gudang"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-gudang @error('gudang_id') border-red-500 @enderror"
-                                                required>
+                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-gudang @error('gudang_id') border-red-500 @enderror">
+
                                             <option value="">-- Pilih Gudang --</option>
                                             @foreach($gudangs as $gudang)
                                                 <option value="{{ $gudang->id }}"
