@@ -1053,6 +1053,25 @@
 
     // Before form submit, remove formatting from all currency fields
     document.querySelector('form').addEventListener('submit', function(e) {
+        // DEBUG: Log all kapal sections data before submit
+        const sections = document.querySelectorAll('.kapal-section');
+        console.log('=== FORM SUBMIT DEBUG ===');
+        console.log('Total sections found:', sections.length);
+        sections.forEach((section, idx) => {
+            const sectionIdx = section.getAttribute('data-section-index');
+            const kapalSelect = section.querySelector('.kapal-select');
+            const voyageSelect = section.querySelector('.voyage-select');
+            const kapalInputName = kapalSelect ? kapalSelect.getAttribute('name') : 'N/A';
+            const voyageInputName = voyageSelect ? voyageSelect.getAttribute('name') : 'N/A';
+            console.log(`Section DOM[${idx}] data-section-index=${sectionIdx}:`, {
+                kapal: kapalSelect ? kapalSelect.value : 'N/A',
+                kapalInputName: kapalInputName,
+                voyage: voyageSelect ? voyageSelect.value : 'N/A',
+                voyageInputName: voyageInputName
+            });
+        });
+        console.log('=========================');
+        
         nominalInput.value = nominalInput.value.replace(/\./g, '');
         ppnInput.value = ppnInput.value.replace(/\./g, '');
         pphInput.value = pphInput.value.replace(/\./g, '');
