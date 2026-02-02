@@ -192,7 +192,10 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($ban->status == 'Stok' && $ban->kondisi != 'afkir')
-                                    <input type="checkbox" name="ids[]" value="{{ $ban->id }}" class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <input type="checkbox" name="ids[]" value="{{ $ban->id }}" 
+                                        data-type="{{ ucfirst($ban->kondisi) }}" 
+                                        data-harga="{{ number_format($ban->harga_beli, 0, ',', '.') }}"
+                                        class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -309,7 +312,7 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeKanisirModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -377,6 +380,8 @@
                                                 <tr>
                                                     <th scope="col" class="px-4 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">No Seri</th>
                                                     <th scope="col" class="px-4 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">Merk / Ukuran</th>
+                                                    <th scope="col" class="px-4 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">Type</th>
+                                                    <th scope="col" class="px-4 py-2 text-left text-[10px] font-bold text-gray-600 uppercase text-right">Harga</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="kanisir_selected_ban_container" class="bg-white divide-y divide-gray-100">
@@ -698,9 +703,11 @@
 
         selectedCheckboxes.forEach(cb => {
             const row = cb.closest('tr');
-            // Clone cells for No Seri and Merk/Ukuran
+            // Clone data from row and checkbox attributes
             const noSeriContent = row.cells[1].innerHTML;
             const merkUkuranContent = row.cells[2].innerHTML;
+            const typeValue = cb.getAttribute('data-type') || '-';
+            const hargaValue = cb.getAttribute('data-harga') || '0';
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-orange-50/30 transition-colors";
@@ -713,8 +720,21 @@
             td2.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
             td2.innerHTML = merkUkuranContent;
 
+            const td3 = document.createElement('td');
+            td3.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
+            const typeSpan = document.createElement('span');
+            typeSpan.className = "px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium";
+            typeSpan.textContent = typeValue;
+            td3.appendChild(typeSpan);
+
+            const td4 = document.createElement('td');
+            td4.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-900 font-bold text-right";
+            td4.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>${hargaValue}`;
+
             tr.appendChild(td1);
             tr.appendChild(td2);
+            tr.appendChild(td3);
+            tr.appendChild(td4);
             container.appendChild(tr);
         });
 
