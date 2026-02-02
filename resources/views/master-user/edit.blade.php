@@ -1349,6 +1349,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Kanisir Ban --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Kanisir Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-kanisir-ban][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-kanisir-ban']['view']) && $userMatrixPermissions['master-pricelist-kanisir-ban']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-kanisir-ban][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-kanisir-ban']['create']) && $userMatrixPermissions['master-pricelist-kanisir-ban']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-kanisir-ban][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-kanisir-ban']['update']) && $userMatrixPermissions['master-pricelist-kanisir-ban']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-kanisir-ban][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-kanisir-ban']['delete']) && $userMatrixPermissions['master-pricelist-kanisir-ban']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Biaya Dokumen --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

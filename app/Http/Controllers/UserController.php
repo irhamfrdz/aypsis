@@ -1003,6 +1003,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-cat-', '', $action);
                             $module = 'master-pricelist-cat';
                         }
+                        // Special handling for master-pricelist-kanisir-ban permissions
+                        elseif (strpos($action, 'pricelist-kanisir-ban-') === 0) {
+                            // For master-pricelist-kanisir-ban-view, extract the action
+                            $action = str_replace('pricelist-kanisir-ban-', '', $action);
+                            $module = 'master-pricelist-kanisir-ban';
+                        }
                         // Special handling for master-pricelist-ob permissions
                         elseif (strpos($action, 'pricelist-ob-') === 0) {
                             // For master-pricelist-ob-view, extract the action
@@ -2300,6 +2306,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-cat-create',
                             'update' => 'master-pricelist-cat-update',
                             'delete' => 'master-pricelist-cat-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-kanisir-ban permissions explicitly
+                    if ($module === 'master-pricelist-kanisir-ban' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-kanisir-ban-view',
+                            'create' => 'master-pricelist-kanisir-ban-create',
+                            'update' => 'master-pricelist-kanisir-ban-update',
+                            'delete' => 'master-pricelist-kanisir-ban-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
