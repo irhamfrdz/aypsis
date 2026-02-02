@@ -97,6 +97,8 @@ class ReportPranotaObController extends Controller
                 SELECT nama_lengkap as supir_name, nik FROM karyawans WHERE nama_lengkap IS NOT NULL
             ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
+            ->whereNotNull('pranota_ob_items.supir')
+            ->whereNotNull('pranota_ob_items.biaya')
             ->select(
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
@@ -140,6 +142,8 @@ class ReportPranotaObController extends Controller
                 SELECT nama_lengkap as supir_name, nik FROM karyawans WHERE nama_lengkap IS NOT NULL
             ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
+            ->whereNotNull('pranota_ob_items.supir')
+            ->whereNotNull('pranota_ob_items.biaya')
             ->select(
                 'pranota_obs.tanggal_ob',
                 'pranota_obs.no_voyage',
