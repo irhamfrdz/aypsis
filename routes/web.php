@@ -73,6 +73,7 @@ use App\Http\Controllers\SuratJalanController;
 use App\Http\Controllers\SuratJalanBongkaranController;
 use App\Http\Controllers\MasterPricelistObController;
 use App\Http\Controllers\MasterPricelistAirTawarController;
+use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
 
 /*
@@ -930,6 +931,31 @@ Route::middleware([
         Route::delete('pricelist-air-tawar/{pricelistAirTawar}', [MasterPricelistAirTawarController::class, 'destroy'])
              ->name('pricelist-air-tawar.destroy')
              ->middleware('can:master-pricelist-air-tawar-delete');
+
+        // Pricelist Kanisir Ban Management
+        Route::get('pricelist-kanisir-ban', [MasterPricelistKanisirBanController::class, 'index'])
+             ->name('pricelist-kanisir-ban.index')
+             ->middleware('can:master-pricelist-kanisir-ban-view');
+        
+        Route::get('pricelist-kanisir-ban/create', [MasterPricelistKanisirBanController::class, 'create'])
+             ->name('pricelist-kanisir-ban.create')
+             ->middleware('can:master-pricelist-kanisir-ban-create');
+        
+        Route::post('pricelist-kanisir-ban', [MasterPricelistKanisirBanController::class, 'store'])
+             ->name('pricelist-kanisir-ban.store')
+             ->middleware('can:master-pricelist-kanisir-ban-create');
+        
+        Route::get('pricelist-kanisir-ban/{id}/edit', [MasterPricelistKanisirBanController::class, 'edit'])
+             ->name('pricelist-kanisir-ban.edit')
+             ->middleware('can:master-pricelist-kanisir-ban-update');
+        
+        Route::put('pricelist-kanisir-ban/{id}', [MasterPricelistKanisirBanController::class, 'update'])
+             ->name('pricelist-kanisir-ban.update')
+             ->middleware('can:master-pricelist-kanisir-ban-update');
+        
+        Route::delete('pricelist-kanisir-ban/{id}', [MasterPricelistKanisirBanController::class, 'destroy'])
+             ->name('pricelist-kanisir-ban.destroy')
+             ->middleware('can:master-pricelist-kanisir-ban-delete');
 
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
