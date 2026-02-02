@@ -2072,9 +2072,34 @@
         const container = button.closest('.barang-container-section');
         if (container.children.length > 1) {
             button.closest('.flex').remove();
+            
+            // CRITICAL FIX: Reindex all barang inputs after removal to prevent gaps in array indices
+            reindexBarangInputs(container);
+            
             calculateTotalFromAllSections();
         }
     };
+    
+    // Helper function to reindex barang input names after deletion
+    function reindexBarangInputs(container) {
+        const section = container.closest('.kapal-section');
+        const sectionIndex = section.getAttribute('data-section-index');
+        const inputGroups = container.querySelectorAll('.flex');
+        
+        inputGroups.forEach((group, newIndex) => {
+            // Update barang_id input name
+            const barangSelect = group.querySelector('.barang-select-item');
+            if (barangSelect) {
+                barangSelect.name = `kapal_sections[${sectionIndex}][barang][${newIndex}][barang_id]`;
+            }
+            
+            // Update jumlah input name
+            const jumlahInput = group.querySelector('.jumlah-input-item');
+            if (jumlahInput) {
+                jumlahInput.name = `kapal_sections[${sectionIndex}][barang][${newIndex}][jumlah]`;
+            }
+        });
+    }
     
     function calculateTotalFromAllSections() {
         let grandTotal = 0;
