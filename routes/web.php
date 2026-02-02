@@ -4090,6 +4090,12 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/ongkos-truk/print', [App\Http\Controllers\ReportOngkosTrukController::class, 'print'])->name('ongkos-truk.print');
     Route::get('/ongkos-truk/export', [App\Http\Controllers\ReportOngkosTrukController::class, 'export'])->name('ongkos-truk.export');
 
+    // Report Pranota OB
+    Route::get('/pranota-ob', [App\Http\Controllers\ReportPranotaObController::class, 'index'])->name('pranota-ob.index');
+    Route::get('/pranota-ob/view', [App\Http\Controllers\ReportPranotaObController::class, 'view'])->name('pranota-ob.view');
+    Route::get('/pranota-ob/print', [App\Http\Controllers\ReportPranotaObController::class, 'print'])->name('pranota-ob.print');
+    Route::get('/pranota-ob/export', [App\Http\Controllers\ReportPranotaObController::class, 'export'])->name('pranota-ob.export');
+
     // Manifest
     Route::get('manifests/select-ship', [App\Http\Controllers\ManifestController::class, 'selectShip'])->name('manifests.select-ship');
     Route::get('manifests/download-template', [App\Http\Controllers\ManifestController::class, 'downloadTemplate'])->name('manifests.download-template');

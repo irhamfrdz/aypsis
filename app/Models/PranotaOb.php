@@ -10,6 +10,7 @@ class PranotaOb extends Model
         'nomor_pranota',
         'nama_kapal',
         'no_voyage',
+        'tanggal_ob',
         'items',
         'status',
         'created_by',
