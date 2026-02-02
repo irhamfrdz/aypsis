@@ -181,17 +181,22 @@ class ReportPranotaObController extends Controller
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
             // Headers
-            fputcsv($file, ['No', 'Tanggal', 'Voyage', 'NIK', 'Supir', 'Total']);
+            fputcsv($file, ['No', 'Tanggal', 'Voyage', 'Supir', 'Total']);
 
             $no = 1;
             $totalKeseluruhan = 0;
 
             foreach ($groupedByVoyage as $voyage => $items) {
                 // Add voyage header row
-                fputcsv($file, ['', 'VOYAGE: ' . ($voyage ?? 'Tidak Ada Voyage'), '', '', '', '']);
+                fputcsv($file, ['', 'VOYAGE: ' . ($voyage ?? 'Tidak Ada Voyage'), '', '', '']);
                 
                 $subtotalVoyage = 0;
                 foreach ($items as $item) {
+                    // Skip items with invalid supir or zero total
+                    if (!$item->supir || $item->total_biaya <= 0) {
+                        continue;
+                    }
+                    
                     $totalKeseluruhan += $item->total_biaya;
                     $subtotalVoyage += $item->total_biaya;
                     
@@ -199,19 +204,18 @@ class ReportPranotaObController extends Controller
                         $no++,
                         Carbon::parse($item->tanggal_ob)->format('d/m/Y'),
                         $item->no_voyage ?? '-',
-                        $item->nik ?? '-',
                         $item->supir ?? '-',
                         number_format($item->total_biaya, 0, ',', '.'),
                     ]);
                 }
                 
                 // Add subtotal row for this voyage
-                fputcsv($file, ['', '', '', '', 'Subtotal ' . ($voyage ?? 'Tidak Ada Voyage') . ':', number_format($subtotalVoyage, 0, ',', '.')]);
-                fputcsv($file, ['', '', '', '', '', '']); // Empty row for separation
+                fputcsv($file, ['', '', '', 'Subtotal ' . ($voyage ?? 'Tidak Ada Voyage') . ':', number_format($subtotalVoyage, 0, ',', '.')]);
+                fputcsv($file, ['', '', '', '', '']); // Empty row for separation
             }
 
             // Add total row
-            fputcsv($file, ['', '', '', '', 'TOTAL:', number_format($totalKeseluruhan, 0, ',', '.')]);
+            fputcsv($file, ['', '', '', 'TOTAL KESELURUHAN:', number_format($totalKeseluruhan, 0, ',', '.')]);
 
             fclose($file);
         };
