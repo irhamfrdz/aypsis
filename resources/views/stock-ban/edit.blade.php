@@ -189,6 +189,21 @@
                         @enderror
                     </div>
 
+                    <!-- Status (Conditional for Ban Luar) -->
+                    <div id="status-ban-luar-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
+                        <select name="status_ban_luar" id="status_ban_luar" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status_ban_luar') border-red-500 @enderror">
+                            <option value="">-- Pilih Status --</option>
+                            <option value="kawat" {{ old('status_ban_luar', $stockBan->status_ban_luar) == 'kawat' ? 'selected' : '' }}>Kawat</option>
+                            <option value="benang" {{ old('status_ban_luar', $stockBan->status_ban_luar) == 'benang' ? 'selected' : '' }}>Benang</option>
+                            <option value="claim" {{ old('status_ban_luar', $stockBan->status_ban_luar) == 'claim' ? 'selected' : '' }}>Claim</option>
+                            <option value="no seri hilang" {{ old('status_ban_luar', $stockBan->status_ban_luar) == 'no seri hilang' ? 'selected' : '' }}>No Seri Hilang</option>
+                        </select>
+                        @error('status_ban_luar')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
 
 
                     <!-- Mobil (Assign to Car) -->
@@ -861,40 +876,149 @@
             initPenerimaSelect();
             initMerkSelect();
             initLokasiSelect();
-            checkItemType();
+            initBanBatchLogic();
         }
 
-        const namaStockBanSelect = document.querySelector('select[name="nama_stock_ban_id"]');
-        const penerimaContainer = document.getElementById('penerima-container');
-        const penerimaSelect = document.getElementById('penerima_id');
-        const penerimaSelectedText = document.getElementById('penerima-selected-text');
+        function initBanBatchLogic() {
+            const namaBarangSelect = document.querySelector('select[name="nama_stock_ban_id"]');
+            const nomorSeriContainer = document.querySelector('input[name="nomor_seri"]').closest('div');
+            const merkContainer = document.getElementById('merk-select-container').closest('div');
+            const typeSelect = document.querySelector('select[name="kondisi"]');
+            const hargaBeliContainer = document.querySelector('input[name="harga_beli"]').closest('div');
+            const mobilContainer = document.getElementById('mobil-select-container').closest('div');
+            
+            // Create Stock Qty field if it doesn't exist
+            let qtyWrapper = document.getElementById('qty-container');
+            if (!qtyWrapper) {
+                qtyWrapper = document.createElement('div');
+                qtyWrapper.id = 'qty-container';
+                qtyWrapper.className = 'hidden';
+                qtyWrapper.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
+                    <input type="number" name="qty" value="{{ old('qty', $stockBan->qty ?? 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0">
+                `;
+                hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
+            }
 
-        function checkItemType() {
-            if (!namaStockBanSelect) return;
-            const selectedOption = namaStockBanSelect.options[namaStockBanSelect.selectedIndex];
-            const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
-            const isBanLuar = selectedText.includes('ban luar');
+            // Store original options
+            const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
 
-            if (isBanLuar) {
-                if (penerimaContainer) penerimaContainer.classList.remove('hidden');
-            } else {
+            function checkItemType() {
+                const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
+                const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
+                
+                const isBanDalam = selectedText.includes('ban dalam');
+                const isBanPerut = selectedText.includes('ban perut');
+                const isLockKontainer = selectedText.includes('lock kontainer');
+                const isRingVelg = selectedText.includes('ring velg');
+                const isVelg = selectedText.includes('velg');
+                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg;
+                const isBanLuar = selectedText.includes('ban luar');
+                
+                const penerimaContainer = document.getElementById('penerima-container');
+                const statusBanLuarContainer = document.getElementById('status-ban-luar-container');
+                const statusBanLuarSelect = document.getElementById('status_ban_luar');
+
+                // Penerima Visibility
                 if (penerimaContainer) {
-                    penerimaContainer.classList.add('hidden');
-                    if (penerimaSelect) {
-                        penerimaSelect.value = '';
-                        if (penerimaSelectedText) penerimaSelectedText.textContent = '-- Pilih Penerima --';
-                        const options = document.querySelectorAll('#penerima-options-list .custom-select-option');
-                        options.forEach(opt => {
-                            if (opt.getAttribute('data-value') === '') opt.classList.add('selected');
-                            else opt.classList.remove('selected');
+                    if (isBanLuar) {
+                        penerimaContainer.classList.remove('hidden');
+                    } else {
+                        penerimaContainer.classList.add('hidden');
+                    }
+                }
+
+                // Status Ban Luar Visibility
+                if (statusBanLuarContainer) {
+                    if (isBanLuar) {
+                        statusBanLuarContainer.classList.remove('hidden');
+                        if (statusBanLuarSelect) statusBanLuarSelect.setAttribute('required', 'required');
+                    } else {
+                        statusBanLuarContainer.classList.add('hidden');
+                        if (statusBanLuarSelect) {
+                            statusBanLuarSelect.removeAttribute('required');
+                            statusBanLuarSelect.value = '';
+                        }
+                    }
+                }
+
+                if (isBulk) {
+                    nomorSeriContainer.classList.add('hidden');
+                    merkContainer.classList.add('hidden');
+                    mobilContainer.classList.add('hidden');
+                    qtyWrapper.classList.remove('hidden');
+                    
+                    document.querySelector('input[name="nomor_seri"]').removeAttribute('required');
+                    document.querySelector('input[name="qty"]').setAttribute('required', 'required');
+                    typeSelect.setAttribute('name', 'type');
+
+                    // Adjust Ukuran label
+                    const ukuranInput = document.querySelector('input[name="ukuran"]');
+                    const ukuranContainer = ukuranInput ? ukuranInput.closest('div') : null;
+                    if (ukuranContainer) {
+                        const label = ukuranContainer.querySelector('label');
+                        if (isBanDalam || isBanPerut) {
+                            ukuranContainer.classList.add('hidden');
+                        } else {
+                            ukuranContainer.classList.remove('hidden');
+                            if (isRingVelg || isVelg) {
+                                label.textContent = 'Lobang';
+                            } else {
+                                label.textContent = 'Ukuran';
+                            }
+                        }
+                    }
+
+                    // Adjust Type Options
+                    typeSelect.innerHTML = '';
+                    if (isBanDalam) {
+                        const opt = document.createElement('option');
+                        opt.value = 'pcs';
+                        opt.text = 'Pcs';
+                        opt.selected = true;
+                        typeSelect.appendChild(opt);
+                    } else {
+                        originalTypeOptions.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt.value;
+                            option.text = opt.text;
+                            if (opt.value === "{{ old('type', $stockBan->type ?? 'pcs') }}") option.selected = true;
+                            typeSelect.appendChild(option);
                         });
+                    }
+                } else {
+                    nomorSeriContainer.classList.remove('hidden');
+                    merkContainer.classList.remove('hidden');
+                    mobilContainer.classList.remove('hidden');
+                    qtyWrapper.classList.add('hidden');
+                    
+                    document.querySelector('input[name="qty"]').removeAttribute('required');
+                    typeSelect.setAttribute('name', 'kondisi');
+
+                    // Restore Type Options
+                    typeSelect.innerHTML = '';
+                    originalTypeOptions.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.text = opt.text;
+                        if (opt.value === "{{ old('kondisi', $stockBan->kondisi) }}") option.selected = true;
+                        typeSelect.appendChild(option);
+                    });
+
+                    const ukuranInput = document.querySelector('input[name="ukuran"]');
+                    const ukuranContainer = ukuranInput ? ukuranInput.closest('div') : null;
+                    if (ukuranContainer) {
+                        ukuranContainer.classList.remove('hidden');
+                        const label = ukuranContainer.querySelector('label');
+                        if (label) label.textContent = 'Ukuran';
                     }
                 }
             }
-        }
 
-        if (namaStockBanSelect) {
-            namaStockBanSelect.addEventListener('change', checkItemType);
+            if (namaBarangSelect) {
+                namaBarangSelect.addEventListener('change', checkItemType);
+                checkItemType();
+            }
         }
 
         if (document.readyState === 'loading') {
