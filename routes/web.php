@@ -49,6 +49,7 @@ use App\Http\Controllers\RealisasiUangMukaController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\TipeAkunController;
 use App\Http\Controllers\PengirimController;
+use App\Http\Controllers\PenerimaController;
 use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TipeBarangController;
@@ -1501,6 +1502,19 @@ Route::middleware([
              'edit' => 'can:master-pengirim-update',
              'update' => 'can:master-pengirim-update',
              'destroy' => 'can:master-pengirim-delete'
+         ]);
+
+    // 📦 Penerima (Receiver) Management with permissions
+    Route::resource('master/penerima', PenerimaController::class)
+         ->names('penerima')
+         ->middleware([
+             'index' => 'can:master-penerima-view',
+             'create' => 'can:master-penerima-create',
+             'store' => 'can:master-penerima-create',
+             'show' => 'can:master-penerima-view',
+             'edit' => 'can:master-penerima-update',
+             'update' => 'can:master-penerima-update',
+             'destroy' => 'can:master-penerima-delete'
          ]);
 
     // 📥 Pengirim - Download Template & Import CSV

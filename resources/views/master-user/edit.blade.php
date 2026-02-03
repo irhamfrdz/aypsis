@@ -684,6 +684,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Penerima --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Penerima</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-penerima][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-penerima']['view']) && $userMatrixPermissions['master-penerima']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-penerima][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-penerima']['create']) && $userMatrixPermissions['master-penerima']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-penerima][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-penerima']['update']) && $userMatrixPermissions['master-penerima']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-penerima][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-penerima']['delete']) && $userMatrixPermissions['master-penerima']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Jenis Layanan Pelabuhan --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

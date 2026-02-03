@@ -440,7 +440,7 @@
                                 @endif
                                 @if($user && $user->can('master-penerima-view'))
                                     <a href="{{ route('penerima.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('penerima.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Penerima</span>
+                                        <span class="text-xs">Master Penerima</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pengirim-penerima-view'))
