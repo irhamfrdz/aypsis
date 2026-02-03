@@ -38,11 +38,9 @@
                         <th class="px-6 py-3">No</th>
                         <th class="px-6 py-3">Tanggal</th>
                         <th class="px-6 py-3">No Surat Jalan</th>
-                        <th class="px-6 py-3">Jenis</th>
                         <th class="px-6 py-3">Plat Mobil</th>
                         <th class="px-6 py-3">Supir</th>
                         <th class="px-6 py-3">Kenek</th>
-                        <th class="px-6 py-3">Customer</th>
                         <th class="px-6 py-3">Rute</th>
                         <th class="px-6 py-3">Uang Jalan</th>
                         <th class="px-6 py-3">Nomor Bukti</th>
@@ -61,13 +59,6 @@
                                 {{ $item['no_surat_jalan'] }}
                             </td>
                             <td class="px-6 py-4">
-                                @if($item['jenis'] == 'Muat')
-                                    <span class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Muat</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full">Bongkar</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4">
                                 {{ $item['no_plat'] }}
                             </td>
                             <td class="px-6 py-4">
@@ -75,9 +66,6 @@
                             </td>
                             <td class="px-6 py-4">
                                 {{ $item['kenek'] }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ $item['customer'] }}
                             </td>
                             <td class="px-6 py-4">
                                 {{ $item['rute'] }}
@@ -91,7 +79,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-4xl mb-3 text-gray-300"></i>
                                     <p>Tidak ada data surat jalan pada periode ini.</p>
