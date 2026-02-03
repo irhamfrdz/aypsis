@@ -24,6 +24,18 @@
                         <dt class="text-sm font-medium text-gray-500">Nama Penerima</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $penerima->nama_penerima }}</dd>
                     </div>
+                    <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">NPWP</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $penerima->npwp ?: '-' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">NITKU</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $penerima->nitku ?: '-' }}</dd>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <dt class="text-sm font-medium text-gray-500">Alamat</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $penerima->alamat ?: '-' }}</dd>
+                    </div>
                     <div class="sm:col-span-2">
                         <dt class="text-sm font-medium text-gray-500">Catatan</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $penerima->catatan ?: '-' }}</dd>

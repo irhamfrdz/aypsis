@@ -12,6 +12,9 @@ class Penerima extends Model
     protected $fillable = [
         'kode',
         'nama_penerima',
+        'alamat',
+        'npwp',
+        'nitku',
         'catatan',
         'status'
     ];

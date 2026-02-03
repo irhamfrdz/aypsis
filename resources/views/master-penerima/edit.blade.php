@@ -41,6 +41,36 @@
                         </div>
 
                         <div class="sm:col-span-6">
+                            <label for="alamat" class="block text-sm font-medium text-gray-700">Alamat</label>
+                            <div class="mt-1">
+                                <textarea name="alamat" id="alamat" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ old('alamat', $penerima->alamat) }}</textarea>
+                            </div>
+                            @error('alamat')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="sm:col-span-3">
+                            <label for="npwp" class="block text-sm font-medium text-gray-700">NPWP</label>
+                            <div class="mt-1">
+                                <input type="text" name="npwp" id="npwp" value="{{ old('npwp', $penerima->npwp) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            @error('npwp')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="sm:col-span-3">
+                            <label for="nitku" class="block text-sm font-medium text-gray-700">NITKU</label>
+                            <div class="mt-1">
+                                <input type="text" name="nitku" id="nitku" value="{{ old('nitku', $penerima->nitku) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            @error('nitku')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="sm:col-span-6">
                             <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
                             <div class="mt-1">
                                 <textarea name="catatan" id="catatan" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ old('catatan', $penerima->catatan) }}</textarea>

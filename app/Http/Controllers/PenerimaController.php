@@ -48,6 +48,9 @@ class PenerimaController extends Controller
         $request->validate([
             'kode' => 'required|string|unique:penerimas,kode',
             'nama_penerima' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string',
+            'nitku' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
@@ -85,6 +88,9 @@ class PenerimaController extends Controller
         $request->validate([
             'kode' => 'required|string|unique:penerimas,kode,' . $id,
             'nama_penerima' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string',
+            'nitku' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
