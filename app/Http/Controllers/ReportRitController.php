@@ -577,8 +577,8 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima'])->get();
-        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima'])->get();
+        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
@@ -592,13 +592,16 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $sj->supir ?: $sj->supir2,
+                'nik_supir' => $sj->supir_nik,
+                'nama_lengkap_supir' => $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: $sj->supir2),
+                'kenek' => $sj->kenek,
+                'nik_kenek' => $sj->kenek_nik,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirim,
                 'penerima' => $sj->tujuan_pengiriman,
                 'jenis_barang' => $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
-                'kenek' => $sj->kenek,
                 'order' => $sj->order,
                 'created_at' => $sj->created_at,
             ]);
@@ -613,8 +616,11 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $sjb->supir ?: $sjb->supir2,
-                'no_plat' => $sjb->no_plat,
+                'nik_supir' => $sjb->supir_nik,
+                'nama_lengkap_supir' => $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: $sjb->supir2),
                 'kenek' => $sjb->kenek,
+                'nik_kenek' => $sjb->kenek_nik,
+                'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
                 'jenis_barang' => $sjb->jenis_barang,

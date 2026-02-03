@@ -53,11 +53,13 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             // Kegiatan
             $kegiatan = ucfirst(strtolower($get('kegiatan') ? $get('kegiatan') : 'tarik isi'));
 
-            // Supir
-            $supir = $get('supir') ? $get('supir') : ($get('supir2') ? $get('supir2') : '-');
+            // Supir - menggunakan nama lengkap
+            $supirNamaLengkap = $get('nama_lengkap_supir') ? $get('nama_lengkap_supir') : ($get('supir') ? $get('supir') : '-');
+            $nikSupir = $get('nik_supir') ? $get('nik_supir') : '-';
 
             // Kenek
             $kenek = $get('kenek') ? $get('kenek') : '-';
+            $nikKenek = $get('nik_kenek') ? $get('nik_kenek') : '-';
 
             // Pengirim, Penerima, Jenis Barang
             $pengirim = $get('pengirim') ? $get('pengirim') : '-';
@@ -77,8 +79,10 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $tanggal,
                 $noSuratJalan,
                 $kegiatan,
-                $supir,
+                $supirNamaLengkap,
+                $nikSupir,
                 $kenek,
+                $nikKenek,
                 $get('no_plat') ? $get('no_plat') : '-',
                 $pengirim,
                 $penerima,
@@ -97,7 +101,9 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             'No. Surat Jalan',
             'Kegiatan',
             'Supir',
+            'NIK Supir',
             'Kenek',
+            'NIK Kenek',
             'No. Plat',
             'Pengirim',
             'Penerima',
@@ -112,7 +118,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Style header
-                $event->sheet->getStyle('A1:L1')->applyFromArray([
+                $event->sheet->getStyle('A1:N1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -135,7 +141,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
                 // Add borders to all cells with data
                 $lastRow = $event->sheet->getHighestRow();
-                $event->sheet->getStyle('A1:L' . $lastRow)->applyFromArray([
+                $event->sheet->getStyle('A1:N' . $lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -152,10 +158,10 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $event->sheet->setCellValue('A1', 'REPORT RIT');
                 $event->sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
                 
-                $event->sheet->mergeCells('A1:L1');
-                $event->sheet->mergeCells('A2:L2');
+                $event->sheet->mergeCells('A1:N1');
+                $event->sheet->mergeCells('A2:N2');
                 
-                $event->sheet->getStyle('A1:L1')->applyFromArray([
+                $event->sheet->getStyle('A1:N1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 14,
@@ -166,7 +172,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                     ],
                 ]);
 
-                $event->sheet->getStyle('A2:L2')->applyFromArray([
+                $event->sheet->getStyle('A2:N2')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ],
