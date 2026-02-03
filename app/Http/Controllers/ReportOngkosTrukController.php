@@ -231,13 +231,14 @@ class ReportOngkosTrukController extends Controller
             $querySjb->whereIn('no_plat', $noPlat);
         }
 
-        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation'])->get();
-        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation'])->get();
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan'])->get();
 
         $data = collect();
 
         foreach ($suratJalans as $sj) {
             $ongkosTruk = $this->calculateOngkosTruk($sj);
+            $uangJalan = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
 
             $data->push([
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
@@ -247,12 +248,14 @@ class ReportOngkosTrukController extends Controller
                 'keterangan' => ($sj->pengirim ?? '-') . ' ke ' . ($sj->tujuan_pengiriman ?? '-'),
                 'tujuan' => $sj->tujuan_pengambilan ?? '-',
                 'rit' => $sj->rit,
-                'ongkos_truck' => $ongkosTruk
+                'ongkos_truck' => $ongkosTruk,
+                'uang_jalan' => $uangJalan
             ]);
         }
 
         foreach ($suratJalanBongkarans as $sjb) {
             $ongkosTruk = $this->calculateOngkosTruk($sjb);
+            $uangJalan = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
 
             $data->push([
                 'tanggal' => $sjb->tanggal_surat_jalan->format('d/m/Y'),
@@ -262,7 +265,8 @@ class ReportOngkosTrukController extends Controller
                 'keterangan' => ($sjb->pengirim ?? '-') . ' ke ' . ($sjb->tujuan_pengiriman ?? '-'),
                 'tujuan' => $sjb->tujuan_pengambilan ?? '-',
                 'rit' => $sjb->rit,
-                'ongkos_truck' => $ongkosTruk
+                'ongkos_truck' => $ongkosTruk,
+                'uang_jalan' => $uangJalan
             ]);
         }
 

@@ -35,7 +35,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $item['no_plat'],
                 $item['supir'],
                 $item['tujuan'],
-                (float)$item['ongkos_truck'], // Ensure it's a number
+                (float)$item['ongkos_truck'],
+                (float)$item['uang_jalan'],
             ];
         });
     }
@@ -50,6 +51,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
             'Supir',
             'Tujuan',
             'Ongkos Truk',
+            'Uang Jalan',
         ];
     }
 
@@ -57,6 +59,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
     {
         return [
             'G' => '#,##0',
+            'H' => '#,##0',
         ];
     }
 
@@ -71,7 +74,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $sheet->setCellValue('A1', 'LAPORAN ONGKOS TRUK');
                 $sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
                 
-                $lastCol = 'G';
+                $lastCol = 'H';
                 $headerRow = 4; // Now headers are at row 4
                 $dataStartRow = 5; // Data starts at row 5
                 
@@ -108,8 +111,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $totalRow = $lastDataRow + 1;
 
                 $sheet->setCellValue("F{$totalRow}", 'TOTAL');
-                // SUM from G5 to G{lastDataRow}
                 $sheet->setCellValue("G{$totalRow}", "=SUM(G{$dataStartRow}:G{$lastDataRow})");
+                $sheet->setCellValue("H{$totalRow}", "=SUM(H{$dataStartRow}:H{$lastDataRow})");
                 
                 // Style the entire table borders
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$totalRow}")->applyFromArray([
@@ -121,8 +124,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 ]);
 
                 // Style Total Row
-                $sheet->getStyle("F{$totalRow}:G{$totalRow}")->getFont()->setBold(true);
-                $sheet->getStyle("G{$dataStartRow}:G{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("F{$totalRow}:H{$totalRow}")->getFont()->setBold(true);
+                $sheet->getStyle("G{$dataStartRow}:H{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 
                 // Auto height for rows
                 $sheet->getRowDimension('1')->setRowHeight(25);
