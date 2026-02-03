@@ -231,14 +231,29 @@ class ReportOngkosTrukController extends Controller
             $querySjb->whereIn('no_plat', $noPlat);
         }
 
-        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan'])->get();
-        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan'])->get();
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
 
         $data = collect();
 
         foreach ($suratJalans as $sj) {
             $ongkosTruk = $this->calculateOngkosTruk($sj);
             $uangJalan = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
+
+            $nomorBukti = '-';
+            if ($sj->uangJalan && $sj->uangJalan->pranotaUangJalan) {
+                $buktis = collect();
+                foreach ($sj->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        foreach ($pranota->pembayaranPranotaUangJalans as $pembayaran) {
+                            if ($pembayaran->nomor_accurate) {
+                                $buktis->push($pembayaran->nomor_accurate);
+                            }
+                        }
+                    }
+                }
+                $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
+            }
 
             $data->push([
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
@@ -249,13 +264,29 @@ class ReportOngkosTrukController extends Controller
                 'tujuan' => $sj->tujuan_pengambilan ?? '-',
                 'rit' => $sj->rit,
                 'ongkos_truck' => $ongkosTruk,
-                'uang_jalan' => $uangJalan
+                'uang_jalan' => $uangJalan,
+                'nomor_bukti' => $nomorBukti
             ]);
         }
 
         foreach ($suratJalanBongkarans as $sjb) {
             $ongkosTruk = $this->calculateOngkosTruk($sjb);
             $uangJalan = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
+
+            $nomorBukti = '-';
+            if ($sjb->uangJalan && $sjb->uangJalan->pranotaUangJalan) {
+                $buktis = collect();
+                foreach ($sjb->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        foreach ($pranota->pembayaranPranotaUangJalans as $pembayaran) {
+                            if ($pembayaran->nomor_accurate) {
+                                $buktis->push($pembayaran->nomor_accurate);
+                            }
+                        }
+                    }
+                }
+                $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
+            }
 
             $data->push([
                 'tanggal' => $sjb->tanggal_surat_jalan->format('d/m/Y'),
@@ -266,7 +297,8 @@ class ReportOngkosTrukController extends Controller
                 'tujuan' => $sjb->tujuan_pengambilan ?? '-',
                 'rit' => $sjb->rit,
                 'ongkos_truck' => $ongkosTruk,
-                'uang_jalan' => $uangJalan
+                'uang_jalan' => $uangJalan,
+                'nomor_bukti' => $nomorBukti
             ]);
         }
 

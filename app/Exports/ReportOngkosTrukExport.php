@@ -37,6 +37,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $item['tujuan'],
                 (float)$item['ongkos_truck'],
                 (float)$item['uang_jalan'],
+                $item['nomor_bukti'] ?? '-',
             ];
         });
     }
@@ -52,6 +53,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
             'Tujuan',
             'Ongkos Truk',
             'Uang Jalan',
+            'Nomor Bukti',
         ];
     }
 
@@ -74,7 +76,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $sheet->setCellValue('A1', 'LAPORAN ONGKOS TRUK');
                 $sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
                 
-                $lastCol = 'H';
+                $lastCol = 'I';
                 $headerRow = 4; // Now headers are at row 4
                 $dataStartRow = 5; // Data starts at row 5
                 
