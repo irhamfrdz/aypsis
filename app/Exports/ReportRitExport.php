@@ -53,13 +53,17 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             // Kegiatan
             $kegiatan = ucfirst(strtolower($get('kegiatan') ? $get('kegiatan') : 'tarik isi'));
 
+
             // Supir - menggunakan nama lengkap
             $supirNamaLengkap = $get('nama_lengkap_supir') ? $get('nama_lengkap_supir') : ($get('supir') ? $get('supir') : '-');
-            $nikSupir = $get('nik_supir') ? $get('nik_supir') : '-';
+            // Format NIK as text by adding a single quote prefix for Excel
+            $nikSupir = $get('nik_supir') ? "'" . $get('nik_supir') : '-';
 
             // Kenek
             $kenek = $get('kenek') ? $get('kenek') : '-';
-            $nikKenek = $get('nik_kenek') ? $get('nik_kenek') : '-';
+            // Format NIK as text by adding a single quote prefix for Excel
+            $nikKenek = $get('nik_kenek') ? "'" . $get('nik_kenek') : '-';
+
 
             // Pengirim, Penerima, Jenis Barang
             $pengirim = $get('pengirim') ? $get('pengirim') : '-';
