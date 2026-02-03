@@ -12,6 +12,7 @@ class PranotaOb extends Model
         'no_voyage',
         'tanggal_ob',
         'nomor_accurate',
+        'adjustment',
         'items',
         'status',
         'created_by',

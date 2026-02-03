@@ -199,6 +199,16 @@
                         <td class="px-2 py-1 text-xs font-medium">Total Biaya</td>
                         <td class="px-2 py-1 text-xs">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
                     </tr>
+                    @if(isset($pranota->adjustment) && $pranota->adjustment != 0)
+                    <tr>
+                        <td class="px-2 py-1 text-xs font-medium">Adjustment</td>
+                        <td class="px-2 py-1 text-xs">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="font-bold border-t border-gray-400">
+                        <td class="px-2 py-1 text-xs font-medium">Total Bayar</td>
+                        <td class="px-2 py-1 text-xs">Rp {{ number_format($totalBiaya + $pranota->adjustment, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
         </div>

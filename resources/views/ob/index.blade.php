@@ -1484,10 +1484,35 @@ function openPranotaModal() {
 
     // Set total biaya
     const totalBiayaP = document.getElementById('total-biaya');
+    totalBiayaP.dataset.original = totalBiaya;
     totalBiayaP.textContent = `Total Biaya: Rp ${totalBiaya.toLocaleString('id-ID')}`;
+    
+    // Reset adjustment default (should be empty as per closePranotaModal) but just in case
+    // document.getElementById('adjustment').value = ''; 
     
     document.getElementById('pranotaModal').classList.remove('hidden');
 }
+
+// Function to update total biaya based on adjustment
+function updateTotalBiaya() {
+    const totalBiayaP = document.getElementById('total-biaya');
+    const adjustmentInput = document.getElementById('adjustment');
+    
+    const originalTotal = parseFloat(totalBiayaP.dataset.original || 0);
+    const adjustment = parseFloat(adjustmentInput.value || 0);
+    
+    const finalTotal = originalTotal + adjustment;
+    
+    totalBiayaP.textContent = `Total Biaya: Rp ${finalTotal.toLocaleString('id-ID')}`;
+}
+
+// Add event listener for adjustment input
+document.addEventListener('DOMContentLoaded', function() {
+    const adjustmentInput = document.getElementById('adjustment');
+    if (adjustmentInput) {
+        adjustmentInput.addEventListener('input', updateTotalBiaya);
+    }
+});
 
 function closePranotaModal() {
     document.getElementById('pranotaModal').classList.add('hidden');

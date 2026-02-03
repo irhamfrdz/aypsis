@@ -1649,6 +1649,7 @@ class ObController extends Controller
                 'no_voyage' => $noVoyage,
                 'tanggal_ob' => $request->tanggal_ob,
                 'nomor_accurate' => $request->nomor_accurate,
+                'adjustment' => $request->adjustment ?? 0,
                 'items' => $itemsToSave,
                 'created_by' => $user->id,
             ]);
