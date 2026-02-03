@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterPricelistObController;
 use App\Http\Controllers\MasterPricelistAirTawarController;
 use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
+use App\Http\Controllers\MasterNamaBarangAmprahanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -243,6 +244,9 @@ Route::middleware([
 
     Route::prefix('master')->name('master.')->group(function() {
      Route::post('pengirim-import', [App\Http\Controllers\PengirimController::class, 'import'])->name('pengirim.import.process')->middleware('can:master-pengirim-create');
+
+        // Master Nama Barang Amprahan
+        Route::resource('nama-barang-amprahan', MasterNamaBarangAmprahanController::class);
 
         // ═══════════════════════════════════════════════════════════════════════
         // 👥 KARYAWAN (EMPLOYEE) MANAGEMENT

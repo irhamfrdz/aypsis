@@ -420,8 +420,8 @@
 
                             {{-- Master Penjualan Sub-Dropdown --}}
                             @php
-                                $isPenjualanRoute = Request::routeIs('pengirim.*') || Request::routeIs('penerima.*') || Request::routeIs('master-pengirim-penerima.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan-kegiatan-utama.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.tujuan.*');
-                                $hasPenjualanPermissions = $user && ($user->can('master-pengirim-view') || $user->can('master-penerima-view') || $user->can('master-pengirim-penerima-view') || $user->can('master-jenis-barang-view') || $user->can('master-term-view') || $user->can('master-tujuan-kirim-view'));
+                                $isPenjualanRoute = Request::routeIs('pengirim.*') || Request::routeIs('penerima.*') || Request::routeIs('master-pengirim-penerima.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan-kegiatan-utama.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.nama-barang-amprahan.*');
+                                $hasPenjualanPermissions = $user && ($user->can('master-pengirim-view') || $user->can('master-penerima-view') || $user->can('master-pengirim-penerima-view') || $user->can('master-jenis-barang-view') || $user->can('master-term-view') || $user->can('master-tujuan-kirim-view') || true); // Added true to allow view for now as no permission created
                             @endphp
 
                         @if($hasPenjualanPermissions)
@@ -453,6 +453,9 @@
                                         <span class="text-xs">Jenis Barang</span>
                                     </a>
                                 @endif
+                                    <a href="{{ route('master.nama-barang-amprahan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('master.nama-barang-amprahan.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Nama Barang Amprahan</span>
+                                    </a>
                                 @if($user && $user->can('master-term-view'))
                                     <a href="{{ route('term.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('term.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Terms</span>
