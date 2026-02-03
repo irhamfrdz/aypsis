@@ -143,10 +143,10 @@ class ReportPranotaObController extends Controller
         // Get items grouped by voyage and supir
         $items = \DB::table('pranota_ob_items')
             ->join('pranota_obs', 'pranota_ob_items.pranota_ob_id', '=', 'pranota_obs.id')
-            ->leftJoin(\DB::raw('(SELECT supir_name, MIN(nik) as nik FROM (
-                SELECT nama_panggilan as supir_name, nik FROM karyawans WHERE nama_panggilan IS NOT NULL
+            ->leftJoin(\DB::raw('(SELECT supir_name, MIN(nik) as nik, MAX(real_nama_lengkap) as nama_lengkap FROM (
+                SELECT nama_panggilan as supir_name, nik, nama_lengkap as real_nama_lengkap FROM karyawans WHERE nama_panggilan IS NOT NULL
                 UNION
-                SELECT nama_lengkap as supir_name, nik FROM karyawans WHERE nama_lengkap IS NOT NULL
+                SELECT nama_lengkap as supir_name, nik, nama_lengkap as real_nama_lengkap FROM karyawans WHERE nama_lengkap IS NOT NULL
             ) sub GROUP BY supir_name) karyawans'), 'pranota_ob_items.supir', '=', 'karyawans.supir_name')
             ->whereBetween('pranota_obs.tanggal_ob', [$dariTanggal, $sampaiTanggal])
             ->whereNotNull('pranota_ob_items.supir')
@@ -158,9 +158,11 @@ class ReportPranotaObController extends Controller
                 'pranota_obs.no_voyage',
                 'pranota_ob_items.supir',
                 'karyawans.nik',
+                'karyawans.nama_lengkap',
+                'pranota_obs.nomor_pranota',
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik', 'karyawans.nama_lengkap', 'pranota_obs.nomor_pranota')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
@@ -184,9 +186,10 @@ class ReportPranotaObController extends Controller
         $sheet->setCellValue('B1', 'Tanggal');
         $sheet->setCellValue('C1', 'Voyage');
         $sheet->setCellValue('D1', 'Nomor Pranota');
-        $sheet->setCellValue('E1', 'Supir');
-        $sheet->setCellValue('F1', 'Total');
-        $sheet->setCellValue('G1', 'Keterangan');
+        $sheet->setCellValue('E1', 'NIK');
+        $sheet->setCellValue('F1', 'Supir');
+        $sheet->setCellValue('G1', 'Total');
+        $sheet->setCellValue('H1', 'Keterangan');
         
         // Style header
         $headerStyle = [
@@ -195,16 +198,17 @@ class ReportPranotaObController extends Controller
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
         ];
-        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
         
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(15);
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(25);
-        $sheet->getColumnDimension('E')->setWidth(30);
-        $sheet->getColumnDimension('F')->setWidth(20);
-        $sheet->getColumnDimension('G')->setWidth(15);
+        $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->getColumnDimension('F')->setWidth(30);
+        $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('H')->setWidth(15);
 
         $row = 2;
         $no = 1;
@@ -219,36 +223,40 @@ class ReportPranotaObController extends Controller
             
             $totalKeseluruhan += $item->total_biaya;
             
+            // Use nama_lengkap if available, otherwise fallback to supir (panggilan)
+            $displayName = $item->nama_lengkap ?? $item->supir;
+
             $sheet->setCellValue('A' . $row, $no++);
             $sheet->setCellValue('B' . $row, Carbon::parse($item->tanggal_ob)->format('d/m/Y'));
             $sheet->setCellValue('C' . $row, $item->no_voyage ?? '-');
             $sheet->setCellValue('D' . $row, $item->nomor_pranota ?? '-');
-            $sheet->setCellValue('E' . $row, $item->supir ?? '-');
-            $sheet->setCellValue('F' . $row, 'Rp ' . number_format($item->total_biaya, 0, ',', '.'));
-            $sheet->setCellValue('G' . $row, 'Biaya OB');
+            $sheet->setCellValue('E' . $row, $item->nik ?? '-');
+            $sheet->setCellValue('F' . $row, $displayName);
+            $sheet->setCellValue('G' . $row, 'Rp ' . number_format($item->total_biaya, 0, ',', '.'));
+            $sheet->setCellValue('H' . $row, 'Biaya OB');
             
             // Style data rows with alternating colors
             $bgColor = ($row % 2 == 0) ? 'F2F2F2' : 'FFFFFF';
-            $sheet->getStyle('A' . $row . ':G' . $row)->applyFromArray([
+            $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $bgColor]],
                 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
             ]);
-            $sheet->getStyle('F' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle('G' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             
             $row++;
         }
 
         // Add total keseluruhan row
-        $sheet->setCellValue('E' . $row, 'TOTAL KESELURUHAN:');
-        $sheet->setCellValue('F' . $row, 'Rp ' . number_format($totalKeseluruhan, 0, ',', '.'));
+        $sheet->setCellValue('F' . $row, 'TOTAL KESELURUHAN:');
+        $sheet->setCellValue('G' . $row, 'Rp ' . number_format($totalKeseluruhan, 0, ',', '.'));
         $totalStyle = [
             'font' => ['bold' => true, 'size' => 12],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFC000']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]]
         ];
-        $sheet->getStyle('A' . $row . ':G' . $row)->applyFromArray($totalStyle);
-        $sheet->getStyle('E' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray($totalStyle);
         $sheet->getStyle('F' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('G' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // Create Excel file
         $filename = 'Report_Pranota_OB_' . $request->dari_tanggal . '_to_' . $request->sampai_tanggal . '.xlsx';
