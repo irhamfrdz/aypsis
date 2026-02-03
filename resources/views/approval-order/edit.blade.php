@@ -62,7 +62,6 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         z-index: 1000;
         display: none;
-        max-height: 320px;
         overflow: hidden;
     }
     .custom-select-dropdown.active {
@@ -71,7 +70,7 @@
     .custom-select-search {
         padding: 0.75rem;
         border-bottom: 1px solid #e5e7eb;
-        background-color: #f9fafb;
+        background-color: white;
     }
     .custom-select-search input {
         width: 100%;
@@ -92,20 +91,20 @@
     .custom-select-options {
         max-height: 250px;
         overflow-y: auto;
-        padding: 0.25rem 0;
     }
     .custom-select-options::-webkit-scrollbar {
-        width: 8px;
+        width: 12px;
     }
     .custom-select-options::-webkit-scrollbar-track {
-        background: #f1f1f1;
+        background: #f9fafb;
     }
     .custom-select-options::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
+        background: #d1d5db;
+        border-radius: 6px;
+        border: 3px solid #f9fafb;
     }
     .custom-select-options::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
+        background: #9ca3af;
     }
     .custom-select-option {
         padding: 0.625rem 0.75rem;
@@ -114,9 +113,13 @@
         font-size: 0.875rem;
         color: #111827;
         user-select: none;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .custom-select-option:last-child {
+        border-bottom: none;
     }
     .custom-select-option:hover {
-        background-color: #f3f4f6;
+        background-color: #f9fafb;
     }
     .custom-select-option.selected {
         background-color: #eef2ff;
@@ -126,11 +129,16 @@
     .custom-select-option.hidden {
         display: none;
     }
-    .no-results {
-        padding: 1rem 0.75rem;
-        text-align: center;
+    .custom-select-placeholder-option {
         color: #6b7280;
+        font-style: italic;
+    }
+    .no-results {
+        padding: 1.5rem 0.75rem;
+        text-align: center;
+        color: #9ca3af;
         font-size: 0.875rem;
+        font-style: italic;
     }
 </style>
 @endsection
@@ -252,7 +260,7 @@
                             </label>
                             <div class="custom-select-wrapper">
                                 <div class="custom-select-trigger" id="penerima-trigger">
-                                    <span class="trigger-text placeholder">-- Pilih Penerima --</span>
+                                    <span class="trigger-text placeholder">Select an option</span>
                                     <span class="arrow">▼</span>
                                 </div>
                                 <div class="custom-select-dropdown" id="penerima-dropdown">
@@ -260,8 +268,8 @@
                                         <input type="text" placeholder="Search..." id="penerima-search" autocomplete="off">
                                     </div>
                                     <div class="custom-select-options" id="penerima-options">
-                                        <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">
-                                            -- Pilih Penerima --
+                                        <div class="custom-select-option custom-select-placeholder-option" data-value="" data-text="Select an option">
+                                            Select an option
                                         </div>
                                         @foreach($penerimas as $penerima)
                                             <div class="custom-select-option {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}" 
