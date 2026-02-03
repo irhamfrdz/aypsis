@@ -5,37 +5,95 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .select2-container--default .select2-selection--single {
-        height: 42px;
+    .custom-select-wrapper {
+        position: relative;
+    }
+    .custom-select-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
+        background-color: white;
+        cursor: pointer;
+        min-height: 42px;
     }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 26px;
-        color: #111827;
+    .custom-select-trigger:hover {
+        border-color: #9ca3af;
     }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 40px;
-    }
-    .select2-container--default.select2-container--focus .select2-selection--single {
+    .custom-select-trigger.active {
         border-color: #6366f1;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
-    .select2-dropdown {
+    .custom-select-trigger .placeholder {
+        color: #9ca3af;
+    }
+    .custom-select-trigger .arrow {
+        transition: transform 0.2s;
+        color: #6b7280;
+    }
+    .custom-select-trigger.active .arrow {
+        transform: rotate(180deg);
+    }
+    .custom-select-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 0.25rem;
+        background: white;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 50;
+        display: none;
+        max-height: 300px;
+        overflow: hidden;
     }
-    .select2-search--dropdown .select2-search__field {
+    .custom-select-dropdown.active {
+        display: block;
+    }
+    .custom-select-search {
+        padding: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .custom-select-search input {
+        width: 100%;
+        padding: 0.5rem;
         border: 1px solid #d1d5db;
         border-radius: 0.375rem;
-        padding: 0.5rem;
+        outline: none;
     }
-    .select2-results__option--highlighted {
-        background-color: #6366f1 !important;
+    .custom-select-search input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .custom-select-options {
+        max-height: 240px;
+        overflow-y: auto;
+    }
+    .custom-select-option {
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.1s;
+    }
+    .custom-select-option:hover {
+        background-color: #f3f4f6;
+    }
+    .custom-select-option.selected {
+        background-color: #eef2ff;
+        color: #4f46e5;
+    }
+    .custom-select-option.hidden {
+        display: none;
+    }
+    .no-results {
+        padding: 0.75rem;
+        text-align: center;
+        color: #6b7280;
     }
 </style>
 @endsection
@@ -155,16 +213,30 @@
                             <label for="penerima_id" class="block text-sm font-medium text-gray-700 mb-2">
                                 Penerima
                             </label>
-                            <select name="penerima_id" id="penerima_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('penerima_id') border-red-300 @enderror">
-                                <option value="">-- Pilih Penerima --</option>
-                                @foreach($penerimas as $penerima)
-                                    <option value="{{ $penerima->id }}" 
-                                            {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
-                                        {{ $penerima->nama_penerima }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select-trigger" id="penerima-trigger">
+                                    <span class="placeholder">-- Pilih Penerima --</span>
+                                    <span class="arrow">▼</span>
+                                </div>
+                                <div class="custom-select-dropdown" id="penerima-dropdown">
+                                    <div class="custom-select-search">
+                                        <input type="text" placeholder="Search..." id="penerima-search">
+                                    </div>
+                                    <div class="custom-select-options" id="penerima-options">
+                                        <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">
+                                            -- Pilih Penerima --
+                                        </div>
+                                        @foreach($penerimas as $penerima)
+                                            <div class="custom-select-option {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}" 
+                                                 data-value="{{ $penerima->id }}" 
+                                                 data-text="{{ $penerima->nama_penerima }}">
+                                                {{ $penerima->nama_penerima }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <input type="hidden" name="penerima_id" id="penerima_id" value="{{ old('penerima_id', $order->penerima_id) }}">
+                            </div>
                             @error('penerima_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -298,25 +370,106 @@
 
     </div>
 </div>
+@endsection
 
-<!-- Select2 JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@push('scripts')
 <script>
-    $(document).ready(function() {
-        $('#penerima_id').select2({
-            placeholder: '-- Pilih Penerima --',
-            allowClear: true,
-            width: '100%',
-            language: {
-                noResults: function() {
-                    return "Tidak ada hasil ditemukan";
-                },
-                searching: function() {
-                    return "Mencari...";
+    document.addEventListener('DOMContentLoaded', function() {
+        const trigger = document.getElementById('penerima-trigger');
+        const dropdown = document.getElementById('penerima-dropdown');
+        const searchInput = document.getElementById('penerima-search');
+        const optionsContainer = document.getElementById('penerima-options');
+        const hiddenInput = document.getElementById('penerima_id');
+        const options = optionsContainer.querySelectorAll('.custom-select-option');
+
+        // Toggle dropdown
+        trigger.addEventListener('click', function() {
+            trigger.classList.toggle('active');
+            dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                searchInput.focus();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                trigger.classList.remove('active');
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasResults = false;
+
+            options.forEach(option => {
+                const text = option.dataset.text.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.classList.remove('hidden');
+                    hasResults = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+
+            // Show/hide no results message
+            let noResultsMsg = optionsContainer.querySelector('.no-results');
+            if (!hasResults) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.className = 'no-results';
+                    noResultsMsg.textContent = 'Tidak ada hasil ditemukan';
+                    optionsContainer.appendChild(noResultsMsg);
+                }
+            } else {
+                if (noResultsMsg) {
+                    noResultsMsg.remove();
                 }
             }
         });
+
+        // Select option
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.dataset.value;
+                const text = this.dataset.text;
+
+                // Update hidden input
+                hiddenInput.value = value;
+
+                // Update trigger text
+                const triggerText = trigger.querySelector('span:first-child');
+                if (value === '') {
+                    triggerText.textContent = text;
+                    triggerText.classList.add('placeholder');
+                } else {
+                    triggerText.textContent = text;
+                    triggerText.classList.remove('placeholder');
+                }
+
+                // Update selected state
+                options.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+
+                // Close dropdown
+                trigger.classList.remove('active');
+                dropdown.classList.remove('active');
+
+                // Clear search
+                searchInput.value = '';
+                options.forEach(opt => opt.classList.remove('hidden'));
+            });
+        });
+
+        // Set initial selected value
+        const selectedOption = optionsContainer.querySelector('.custom-select-option.selected');
+        if (selectedOption) {
+            const triggerText = trigger.querySelector('span:first-child');
+            triggerText.textContent = selectedOption.dataset.text;
+            triggerText.classList.remove('placeholder');
+        }
     });
 </script>
-@endsection
+@endpush
