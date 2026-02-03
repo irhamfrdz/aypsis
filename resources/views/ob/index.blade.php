@@ -1017,6 +1017,21 @@
                 </div>
 
                 <div class="mb-4">
+                    <label for="ke_gudang_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Ke <span class="text-red-500">*</span>
+                    </label>
+                    <select id="ke_gudang_id" name="ke_gudang_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Pilih Lokasi Tujuan</option>
+                        @foreach($gudangs as $gudang)
+                            <option value="{{ $gudang->id }}">
+                                {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-4">
                     <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
                         Catatan (Opsional)
                     </label>
@@ -1161,12 +1176,14 @@ function openSupirModal(type, id) {
     
     document.getElementById('catatan').value = '';
     document.getElementById('retur_barang').value = '';
+    document.getElementById('ke_gudang_id').value = '';
     document.getElementById('supirModal').classList.remove('hidden');
 }
 
 function closeSupirModal() {
     document.getElementById('supirModal').classList.add('hidden');
     document.getElementById('formMarkOB').reset();
+    document.getElementById('ke_gudang_id').value = '';
     
     // Reset Select2 on close
     if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
@@ -1422,11 +1439,17 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     const recordType = document.getElementById('record_type').value;
     const recordId = document.getElementById('record_id').value;
     const supirId = document.getElementById('supir_id').value;
+    const keGudangId = document.getElementById('ke_gudang_id').value;
     const catatan = document.getElementById('catatan').value;
     const returBarang = document.getElementById('retur_barang').value;
     
     if (!supirId) {
         alert('Silakan pilih supir terlebih dahulu');
+        return;
+    }
+    
+    if (!keGudangId) {
+        alert('Silakan pilih lokasi tujuan (Ke) terlebih dahulu');
         return;
     }
     
@@ -1439,6 +1462,7 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     let requestData = {
         naik_kapal_id: recordId,
         supir_id: supirId,
+        ke_gudang_id: keGudangId,
         catatan: catatan,
         retur_barang: returBarang
     };
@@ -1448,6 +1472,7 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
         requestData = {
             bl_id: recordId,
             supir_id: supirId,
+            ke_gudang_id: keGudangId,
             catatan: catatan,
             retur_barang: returBarang
         };

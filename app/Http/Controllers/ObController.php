@@ -16,6 +16,7 @@ use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\HistoryKontainer;
 use Carbon\Carbon;
 use App\Exports\ObExport;
@@ -741,6 +742,7 @@ class ObController extends Controller
             $request->validate([
                 'naik_kapal_id' => 'required|exists:naik_kapal,id',
                 'supir_id' => 'required|exists:karyawans,id',
+                'ke_gudang_id' => 'required|exists:gudangs,id',
                 'catatan' => 'nullable|string'
             ]);
 
@@ -768,22 +770,42 @@ class ObController extends Controller
             $naikKapal->save();
             \Log::info("Updated naik_kapal OB status");
 
-            // Update gudangs_id to ON BOARD for stock_kontainers and kontainers
+            // Update gudangs_id in stock_kontainers and kontainers
             try {
-                $gudangOnBoard = \App\Models\Gudang::where('nama_gudang', 'LIKE', '%ON BOARD%')->first();
-                if ($gudangOnBoard && $naikKapal->nomor_kontainer) {
+                if ($naikKapal->nomor_kontainer) {
+                    $targetGudangId = $request->ke_gudang_id;
+                    
                     // Update stock_kontainers
                     \App\Models\StockKontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
-                        ->update(['gudangs_id' => $gudangOnBoard->id]);
+                        ->update(['gudangs_id' => $targetGudangId]);
                     
                     // Update kontainers
                     \App\Models\Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
-                        ->update(['gudangs_id' => $gudangOnBoard->id]);
+                        ->update(['gudangs_id' => $targetGudangId]);
                     
-                    \Log::info("Updated gudangs_id to ON BOARD for container: " . $naikKapal->nomor_kontainer);
+                    \Log::info("Updated gudangs_id to ID: $targetGudangId for container: " . $naikKapal->nomor_kontainer);
+
+                    // Update 'ke' field in naik_kapal for record keeping
+                    $gudang = \App\Models\Gudang::find($targetGudangId);
+                    if ($gudang) {
+                        $naikKapal->ke = $gudang->nama_gudang;
+                        $naikKapal->save();
+
+                        // Record history
+                        $typeKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
+                        HistoryKontainer::create([
+                            'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                            'tipe_kontainer' => $typeKontainer,
+                            'jenis_kegiatan' => 'Masuk',
+                            'tanggal_kegiatan' => now(),
+                            'gudang_id' => $gudang->id,
+                            'keterangan' => 'OB (Overbrengen) dari Kapal: ' . ($naikKapal->nama_kapal ?? '-') . '. Voyage: ' . ($naikKapal->no_voyage ?? '-'),
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                 }
             } catch (\Exception $e) {
-                \Log::warning('Failed to update gudangs_id to ON BOARD: ' . $e->getMessage());
+                \Log::warning('Failed to update gudangs_id or history: ' . $e->getMessage());
             }
 
             // Also clear TL flag on related BLs (if any)
@@ -1199,6 +1221,7 @@ class ObController extends Controller
             $request->validate([
                 'bl_id' => 'required|exists:bls,id',
                 'supir_id' => 'required|exists:karyawans,id',
+                'ke_gudang_id' => 'required|exists:gudangs,id',
                 'catatan' => 'nullable|string',
                 'retur_barang' => 'nullable|string'
             ]);
@@ -1220,40 +1243,42 @@ class ObController extends Controller
             }
             $bl->save();
 
-            // Update gudangs_id based on 'ke' field (kegiatan bongkar) or ON BOARD (kegiatan muat)
+            // Update gudangs_id in stock_kontainers and kontainers
             try {
-                $gudangTarget = null;
-                
-                // Jika kolom 'ke' terisi, gunakan gudang dari 'ke' (untuk kegiatan bongkar)
-                if (!empty($bl->ke)) {
-                    $gudangTarget = \App\Models\Gudang::where('nama_gudang', 'LIKE', '%' . $bl->ke . '%')->first();
-                    if ($gudangTarget) {
-                        \Log::info("Found gudang from 'ke' field: " . $gudangTarget->nama_gudang);
-                    }
-                }
-                
-                // Jika tidak ada gudang dari 'ke' atau tidak ditemukan, gunakan ON BOARD sebagai fallback
-                if (!$gudangTarget) {
-                    $gudangTarget = \App\Models\Gudang::where('nama_gudang', 'LIKE', '%ON BOARD%')->first();
-                    if ($gudangTarget) {
-                        \Log::info("Using ON BOARD as fallback gudang");
-                    }
-                }
-                
-                // Update stock_kontainers dan kontainers jika gudang ditemukan
-                if ($gudangTarget && $bl->nomor_kontainer) {
+                if ($bl->nomor_kontainer) {
+                    $targetGudangId = $request->ke_gudang_id;
+                    
                     // Update stock_kontainers
                     \App\Models\StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
-                        ->update(['gudangs_id' => $gudangTarget->id]);
+                        ->update(['gudangs_id' => $targetGudangId]);
                     
                     // Update kontainers
                     \App\Models\Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
-                        ->update(['gudangs_id' => $gudangTarget->id]);
+                        ->update(['gudangs_id' => $targetGudangId]);
                     
-                    \Log::info("Updated gudangs_id to {$gudangTarget->nama_gudang} for container: " . $bl->nomor_kontainer);
+                    \Log::info("Updated gudangs_id to ID: $targetGudangId for container: " . $bl->nomor_kontainer);
+
+                    // Update 'ke' field in BL for record keeping
+                    $gudang = \App\Models\Gudang::find($targetGudangId);
+                    if ($gudang) {
+                        $bl->ke = $gudang->nama_gudang;
+                        $bl->save();
+
+                        // Record history
+                        $typeKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
+                        HistoryKontainer::create([
+                            'nomor_kontainer' => $bl->nomor_kontainer,
+                            'tipe_kontainer' => $typeKontainer,
+                            'jenis_kegiatan' => 'Masuk',
+                            'tanggal_kegiatan' => now(),
+                            'gudang_id' => $gudang->id,
+                            'keterangan' => 'OB (Overbrengen) dari Kapal: ' . ($bl->nama_kapal ?? '-') . '. Voyage: ' . ($bl->no_voyage ?? '-'),
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                 }
             } catch (\Exception $e) {
-                \Log::warning('Failed to update gudangs_id: ' . $e->getMessage());
+                \Log::warning('Failed to update gudangs_id or history: ' . $e->getMessage());
             }
 
             // Update retur_barang di surat_jalans based on nomor_kontainer
