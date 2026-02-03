@@ -113,23 +113,7 @@ class PenerimaController extends Controller
 
     public function downloadTemplate()
     {
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template_penerima.csv"',
-        ];
-
-        // Use keys that match database columns so WithHeadingRow works seamlessly
-        $columns = ['nama_penerima', 'alamat', 'npwp', 'nitku', 'catatan', 'status'];
-        
-        $callback = function() use ($columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            // Add example row
-            fputcsv($file, ['Contoh Penerima', 'Jl. Contoh No. 1', '12.345.678.9-000.000', '1234567890123456', 'Catatan contoh', 'active']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PenerimaTemplateExport, 'template_penerima.xlsx');
     }
 
     public function importExcel(Request $request) 
