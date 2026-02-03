@@ -8,6 +8,7 @@
 <style>
     .custom-select-wrapper {
         position: relative;
+        width: 100%;
     }
     .custom-select-trigger {
         display: flex;
@@ -20,6 +21,8 @@
         background-color: white;
         cursor: pointer;
         min-height: 42px;
+        font-size: 0.875rem;
+        color: #111827;
     }
     .custom-select-trigger:hover {
         border-color: #9ca3af;
@@ -28,12 +31,21 @@
         border-color: #6366f1;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
-    .custom-select-trigger .placeholder {
+    .custom-select-trigger .trigger-text {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .custom-select-trigger .trigger-text.placeholder {
         color: #9ca3af;
     }
     .custom-select-trigger .arrow {
+        margin-left: 0.5rem;
         transition: transform 0.2s;
         color: #6b7280;
+        font-size: 0.75rem;
+        flex-shrink: 0;
     }
     .custom-select-trigger.active .arrow {
         transform: rotate(180deg);
@@ -47,38 +59,61 @@
         background: white;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        z-index: 50;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        z-index: 1000;
         display: none;
-        max-height: 300px;
+        max-height: 320px;
         overflow: hidden;
     }
     .custom-select-dropdown.active {
         display: block;
     }
     .custom-select-search {
-        padding: 0.5rem;
+        padding: 0.75rem;
         border-bottom: 1px solid #e5e7eb;
+        background-color: #f9fafb;
     }
     .custom-select-search input {
         width: 100%;
-        padding: 0.5rem;
+        padding: 0.5rem 0.75rem;
         border: 1px solid #d1d5db;
         border-radius: 0.375rem;
         outline: none;
+        font-size: 0.875rem;
+        background-color: white;
+    }
+    .custom-select-search input::placeholder {
+        color: #9ca3af;
     }
     .custom-select-search input:focus {
         border-color: #6366f1;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
     .custom-select-options {
-        max-height: 240px;
+        max-height: 250px;
         overflow-y: auto;
+        padding: 0.25rem 0;
+    }
+    .custom-select-options::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-select-options::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .custom-select-options::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    .custom-select-options::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
     .custom-select-option {
-        padding: 0.5rem 0.75rem;
+        padding: 0.625rem 0.75rem;
         cursor: pointer;
         transition: background-color 0.1s;
+        font-size: 0.875rem;
+        color: #111827;
+        user-select: none;
     }
     .custom-select-option:hover {
         background-color: #f3f4f6;
@@ -86,14 +121,16 @@
     .custom-select-option.selected {
         background-color: #eef2ff;
         color: #4f46e5;
+        font-weight: 500;
     }
     .custom-select-option.hidden {
         display: none;
     }
     .no-results {
-        padding: 0.75rem;
+        padding: 1rem 0.75rem;
         text-align: center;
         color: #6b7280;
+        font-size: 0.875rem;
     }
 </style>
 @endsection
@@ -215,12 +252,12 @@
                             </label>
                             <div class="custom-select-wrapper">
                                 <div class="custom-select-trigger" id="penerima-trigger">
-                                    <span class="placeholder">-- Pilih Penerima --</span>
+                                    <span class="trigger-text placeholder">-- Pilih Penerima --</span>
                                     <span class="arrow">▼</span>
                                 </div>
                                 <div class="custom-select-dropdown" id="penerima-dropdown">
                                     <div class="custom-select-search">
-                                        <input type="text" placeholder="Search..." id="penerima-search">
+                                        <input type="text" placeholder="Search..." id="penerima-search" autocomplete="off">
                                     </div>
                                     <div class="custom-select-options" id="penerima-options">
                                         <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">
@@ -383,11 +420,13 @@
         const options = optionsContainer.querySelectorAll('.custom-select-option');
 
         // Toggle dropdown
-        trigger.addEventListener('click', function() {
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
             trigger.classList.toggle('active');
             dropdown.classList.toggle('active');
             if (dropdown.classList.contains('active')) {
                 searchInput.focus();
+                searchInput.select();
             }
         });
 
@@ -396,7 +435,14 @@
             if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
                 trigger.classList.remove('active');
                 dropdown.classList.remove('active');
+                searchInput.value = '';
+                options.forEach(opt => opt.classList.remove('hidden'));
             }
+        });
+
+        // Prevent dropdown from closing when clicking inside
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
         });
 
         // Search functionality
@@ -432,7 +478,8 @@
 
         // Select option
         options.forEach(option => {
-            option.addEventListener('click', function() {
+            option.addEventListener('click', function(e) {
+                e.stopPropagation();
                 const value = this.dataset.value;
                 const text = this.dataset.text;
 
@@ -440,12 +487,12 @@
                 hiddenInput.value = value;
 
                 // Update trigger text
-                const triggerText = trigger.querySelector('span:first-child');
+                const triggerText = trigger.querySelector('.trigger-text');
+                triggerText.textContent = text;
+                
                 if (value === '') {
-                    triggerText.textContent = text;
                     triggerText.classList.add('placeholder');
                 } else {
-                    triggerText.textContent = text;
                     triggerText.classList.remove('placeholder');
                 }
 
@@ -460,13 +507,19 @@
                 // Clear search
                 searchInput.value = '';
                 options.forEach(opt => opt.classList.remove('hidden'));
+                
+                // Remove no results message if exists
+                const noResultsMsg = optionsContainer.querySelector('.no-results');
+                if (noResultsMsg) {
+                    noResultsMsg.remove();
+                }
             });
         });
 
         // Set initial selected value
         const selectedOption = optionsContainer.querySelector('.custom-select-option.selected');
         if (selectedOption) {
-            const triggerText = trigger.querySelector('span:first-child');
+            const triggerText = trigger.querySelector('.trigger-text');
             triggerText.textContent = selectedOption.dataset.text;
             triggerText.classList.remove('placeholder');
         }
