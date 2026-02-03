@@ -1076,7 +1076,7 @@
                             class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Lokasi Tujuan</option>
                         @foreach($gudangs as $gudang)
-                            <option value="{{ $gudang->id }}">
+                            <option value="{{ $gudang->id }}" {{ $gudang->nama_gudang == 'SS JKT' ? 'selected' : '' }}>
                                 {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
                             </option>
                         @endforeach
@@ -1351,7 +1351,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function closeSupirModal() {
     document.getElementById('supirModal').classList.add('hidden');
     document.getElementById('formMarkOB').reset();
-    document.getElementById('ke_gudang_id').value = '';
     
     // Reset custom dropdown
     document.getElementById('supir_id').value = '';
