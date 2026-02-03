@@ -22,8 +22,10 @@
             </div>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 class="text-sm font-medium text-gray-900 mb-2">Informasi Pembuatan</h3>
+            <h3 class="text-sm font-medium text-gray-900 mb-2">Informasi Lainnya</h3>
             <div class="space-y-1">
+                <p class="text-sm text-gray-600"><span class="font-medium">Tanggal OB:</span> {{ $pranota->tanggal_ob ? \Carbon\Carbon::parse($pranota->tanggal_ob)->format('d/m/Y') : '-' }}</p>
+                <p class="text-sm text-gray-600"><span class="font-medium">Nomor Accurate:</span> {{ $pranota->nomor_accurate ?? '-' }}</p>
                 <p class="text-sm text-gray-600"><span class="font-medium">Pembuat:</span> {{ $pranota->creator?->nama_lengkap ?? $pranota->creator?->name ?? '-' }}</p>
                 <p class="text-sm text-gray-600"><span class="font-medium">Tgl Dibuat:</span> {{ $pranota->created_at ? $pranota->created_at->format('d/m/Y H:i') : '-' }}</p>
             </div>

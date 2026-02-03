@@ -1086,6 +1086,25 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-1">Format: POB-MM-YY-000001 (auto-generate)</p>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="tanggal_ob" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tanggal OB <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="tanggal_ob" name="tanggal_ob" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               value="{{ date('Y-m-d') }}">
+                    </div>
+                    <div>
+                        <label for="nomor_accurate" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Accurate
+                        </label>
+                        <input type="text" id="nomor_accurate" name="nomor_accurate"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Masukkan nomor accurate...">
+                    </div>
+                </div>
                 
                 <div class="overflow-x-auto">
                     <table id="pranota-table" class="min-w-full table-auto border border-gray-300">
@@ -1253,6 +1272,7 @@ function openPranotaModal() {
 function closePranotaModal() {
     document.getElementById('pranotaModal').classList.add('hidden');
     document.getElementById('nomor_pranota').value = '';
+    document.getElementById('nomor_accurate').value = '';
 }
 
 // Generate nomor pranota otomatis
@@ -1807,6 +1827,14 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
         return;
     }
     
+    const tanggalOb = document.getElementById('tanggal_ob').value;
+    if (!tanggalOb) {
+        alert('Silakan pilih tanggal OB');
+        return;
+    }
+    
+    const nomorAccurate = document.getElementById('nomor_accurate').value.trim();
+    
     const items = selectedItems.map(item => ({ id: item.id, type: item.type, nomor_kontainer: item.nomor_kontainer, nama_barang: item.nama_barang, size: item.size, biaya: item.biaya, status: item.status, supir: item.supir }));
     
     // client-side validation for ship/voyage information
@@ -1826,7 +1854,14 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
-        body: JSON.stringify({ items: items, nomor_pranota: nomorPranota, nama_kapal: __PRANOTA_nama_kapal, no_voyage: __PRANOTA_no_voyage })
+        body: JSON.stringify({ 
+            items: items, 
+            nomor_pranota: nomorPranota, 
+            nama_kapal: __PRANOTA_nama_kapal, 
+            no_voyage: __PRANOTA_no_voyage,
+            tanggal_ob: tanggalOb,
+            nomor_accurate: nomorAccurate
+        })
     })
     .then(response => response.json())
     .then(data => {

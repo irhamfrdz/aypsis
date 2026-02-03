@@ -57,6 +57,10 @@
             <h2 class="font-bold" style="margin: 0 0 2px 0; font-size: 24px;">Pranota OB</h2>
             <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
             <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
+            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Tanggal OB: {{ $pranota->tanggal_ob ? \Carbon\Carbon::parse($pranota->tanggal_ob)->format('d/m/Y') : '-' }}</p>
+            @if($pranota->nomor_accurate)
+                <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Nomor Accurate: {{ $pranota->nomor_accurate }}</p>
+            @endif
         </div>
 
         <div class="mb-2">
