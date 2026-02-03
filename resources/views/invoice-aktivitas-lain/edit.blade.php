@@ -105,7 +105,7 @@
                             class="w-full {{ $errors->has('klasifikasi_biaya_umum_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">-- Pilih Jenis Biaya --</option>
-                        @foreach($klasifikasiBiayaUmum as $kb)
+                        @foreach($klasifikasiBiayas as $kb)
                             <option value="{{ $kb->id }}" {{ old('klasifikasi_biaya_umum_id', $invoice->klasifikasi_biaya_umum_id) == $kb->id ? 'selected' : '' }}>
                                 {{ $kb->nama }}
                             </option>
