@@ -160,9 +160,10 @@ class ReportPranotaObController extends Controller
                 'karyawans.nik',
                 'karyawans.nama_lengkap',
                 'pranota_obs.nomor_pranota',
+                'pranota_obs.id as pranota_id',
                 \DB::raw('SUM(pranota_ob_items.biaya) as total_biaya')
             )
-            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik', 'karyawans.nama_lengkap', 'pranota_obs.nomor_pranota')
+            ->groupBy('pranota_obs.no_voyage', 'pranota_ob_items.supir', 'pranota_obs.tanggal_ob', 'karyawans.nik', 'karyawans.nama_lengkap', 'pranota_obs.nomor_pranota', 'pranota_obs.id')
             ->orderBy('pranota_obs.tanggal_ob', 'desc')
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
@@ -170,6 +171,56 @@ class ReportPranotaObController extends Controller
 
         // Flatten items for simple listing
         $allItems = $items;
+        
+        // Build container details for each item
+        $containerDetails = [];
+        foreach ($allItems as $item) {
+            $key = $item->pranota_id . '_' . $item->supir;
+            
+            // Get detailed container info for this supir from this pranota
+            $details = \DB::table('pranota_ob_items')
+                ->where('pranota_ob_id', $item->pranota_id)
+                ->where('supir', $item->supir)
+                ->whereNotNull('biaya')
+                ->where('biaya', '>', 0)
+                ->select('size', 'status')
+                ->get();
+            
+            // Count containers by size and status
+            $counts = [];
+            foreach ($details as $detail) {
+                $size = strtolower($detail->size ?? '');
+                $status = strtolower($detail->status ?? 'full');
+                
+                // Normalize size (20ft, 20, 20 ft, etc -> 20ft)
+                if (preg_match('/20/', $size)) {
+                    $size = '20ft';
+                } elseif (preg_match('/40/', $size)) {
+                    $size = '40ft';
+                } else {
+                    $size = $detail->size ?? 'unknown';
+                }
+                
+                // Normalize status
+                if (!in_array($status, ['full', 'empty'])) {
+                    $status = 'full'; // default
+                }
+                
+                $sizeStatusKey = $size . '_' . $status;
+                if (!isset($counts[$sizeStatusKey])) {
+                    $counts[$sizeStatusKey] = 0;
+                }
+                $counts[$sizeStatusKey]++;
+            }
+            
+            // Build keterangan string like "20ft full 5x, 40ft empty 3x"
+            $keteranganParts = [];
+            foreach ($counts as $sizeStatus => $count) {
+                list($sz, $st) = explode('_', $sizeStatus);
+                $keteranganParts[] = $sz . ' ' . $st . ' ' . $count . 'x';
+            }
+            $containerDetails[$key] = implode(', ', $keteranganParts);
+        }
 
         // Create new Spreadsheet
         $spreadsheet = new Spreadsheet();
@@ -208,7 +259,7 @@ class ReportPranotaObController extends Controller
         $sheet->getColumnDimension('E')->setWidth(15);
         $sheet->getColumnDimension('F')->setWidth(30);
         $sheet->getColumnDimension('G')->setWidth(20);
-        $sheet->getColumnDimension('H')->setWidth(15);
+        $sheet->getColumnDimension('H')->setWidth(50);
 
         $row = 2;
         $no = 1;
@@ -225,6 +276,10 @@ class ReportPranotaObController extends Controller
             
             // Use nama_lengkap if available, otherwise fallback to supir (panggilan)
             $displayName = $item->nama_lengkap ?? $item->supir;
+            
+            // Get keterangan for this item
+            $keteranganKey = $item->pranota_id . '_' . $item->supir;
+            $keterangan = $containerDetails[$keteranganKey] ?? '-';
 
             $sheet->setCellValue('A' . $row, $no++);
             $sheet->setCellValue('B' . $row, Carbon::parse($item->tanggal_ob)->format('d/m/Y'));
@@ -233,7 +288,7 @@ class ReportPranotaObController extends Controller
             $sheet->setCellValue('E' . $row, $item->nik ?? '-');
             $sheet->setCellValue('F' . $row, $displayName);
             $sheet->setCellValue('G' . $row, 'Rp ' . number_format($item->total_biaya, 0, ',', '.'));
-            $sheet->setCellValue('H' . $row, 'Biaya OB');
+            $sheet->setCellValue('H' . $row, $keterangan);
             
             // Style data rows with alternating colors
             $bgColor = ($row % 2 == 0) ? 'F2F2F2' : 'FFFFFF';
