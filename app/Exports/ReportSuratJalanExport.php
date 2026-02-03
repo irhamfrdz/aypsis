@@ -35,7 +35,8 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
                 $item['no_plat'],
                 $item['supir'],
                 $item['kenek'],
-                $item['rute'],
+                $item['pengirim'],
+                $item['tujuan'],
                 (float)$item['uang_jalan'],
                 $item['nomor_bukti'],
             ];
@@ -51,7 +52,8 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
             'Plat Mobil',
             'Supir',
             'Kenek',
-            'Rute',
+            'Pengirim',
+            'Tujuan Pengambilan',
             'Uang Jalan',
             'Nomor Bukti',
         ];
