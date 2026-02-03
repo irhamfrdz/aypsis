@@ -10,49 +10,74 @@
 
 @push('styles')
 <style>
-    /* Select2 Mobile Optimization */
+    /* Custom Searchable Dropdown Styles */
+    #supir_options_container {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+    
+    #supir_options_container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    #supir_options_container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    
+    #supir_options_container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    
+    #supir_options_container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    #supir_selected {
+        user-select: none;
+    }
+    
+    #supir_arrow {
+        transition: transform 0.2s ease;
+    }
+    
+    .supir-option {
+        transition: all 0.15s ease;
+    }
+    
+    .supir-option:active {
+        background-color: #3b82f6 !important;
+        color: white;
+    }
+    
+    /* Mobile Optimization */
     @media (max-width: 768px) {
-        .select2-container--default .select2-selection--single {
-            height: 42px !important;
-            padding: 8px 12px !important;
+        #supir_search {
             font-size: 16px !important; /* Prevents zoom on iOS */
+            -webkit-appearance: none;
+            appearance: none;
         }
         
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 26px !important;
-            padding-left: 0 !important;
+        .supir-option {
+            min-height: 40px !important; /* Touch-friendly but compact */
+            display: flex;
+            align-items: center;
         }
         
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 40px !important;
-        }
-        
-        .select2-dropdown {
-            font-size: 16px !important;
-        }
-        
-        .select2-results__option {
-            padding: 12px 16px !important;
-            min-height: 48px !important; /* Touch-friendly */
-            display: flex !important;
-            align-items: center !important;
-        }
-        
-        .select2-search--dropdown .select2-search__field {
-            height: 44px !important;
-            font-size: 16px !important;
-            padding: 8px 12px !important;
+        #supir_options_container {
+            max-height: 180px !important;
         }
         
         /* Make modal more mobile-friendly */
-        #supirModal .relative {
+        #supirModal > div {
             width: 95% !important;
             max-width: 95% !important;
             margin: 10px auto !important;
         }
     }
     
-    /* General Select2 Styling for Supir Dropdown */
+    /* General Select2 Styling (for other selects) */
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
         background-color: #3b82f6 !important;
     }
@@ -981,13 +1006,13 @@
 
 <!-- Modal Pilih Supir -->
 <div id="supirModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-[95%] md:w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
+    <div class="relative top-10 mx-auto p-3 md:p-4 border w-[90%] md:w-80 shadow-lg rounded-md bg-white">
+        <div class="mt-1">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-3 border-b">
-                <h3 class="text-lg font-semibold text-gray-900">Pilih Supir</h3>
+            <div class="flex items-center justify-between pb-2 border-b">
+                <h3 class="text-sm font-semibold text-gray-900">Pilih Supir</h3>
                 <button type="button" onclick="closeSupirModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
@@ -998,30 +1023,57 @@
                 <input type="hidden" id="record_type" name="record_type">
                 <input type="hidden" id="record_id" name="record_id">
                 
-                <div class="mb-4">
-                    <label for="supir_id" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-3">
+                    <label for="supir_search" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Supir <span class="text-red-500">*</span>
                     </label>
-                    <select id="supir_id" name="supir_id" required
-                            class="select2-supir w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Pilih Supir</option>
-                        @foreach($supirs as $supir)
-                            <option value="{{ $supir->id }}">
-                                {{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}
-                                @if($supir->plat)
-                                    ({{ $supir->plat }})
-                                @endif
-                            </option>
-                        @endforeach
-                    </select>
+                    
+                    <!-- Hidden input to store selected supir ID -->
+                    <input type="hidden" id="supir_id" name="supir_id" required>
+                    
+                    <!-- Search Input -->
+                    <input type="text" 
+                           id="supir_search" 
+                           placeholder="Search..." 
+                           autocomplete="off"
+                           class="w-full px-2 py-1.5 mb-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    
+                    <!-- Dropdown Container -->
+                    <div class="relative">
+                        <!-- Selected Display (Clickable to toggle) -->
+                        <div id="supir_selected" 
+                             class="px-2 py-1.5 cursor-pointer hover:bg-gray-50 border border-gray-300 rounded-md text-xs text-gray-500 flex justify-between items-center">
+                            <span id="supir_selected_text">Select an option</span>
+                            <svg id="supir_arrow" class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        
+                        <!-- Options List (Hidden by default) -->
+                        <div id="supir_options_container" 
+                             class="hidden absolute z-10 w-full mt-1 border border-gray-300 rounded-md bg-white max-h-48 overflow-y-auto shadow-lg">
+                            <div id="supir_options" class="divide-y divide-gray-100">
+                                @foreach($supirs as $supir)
+                                    <div class="supir-option px-2 py-1.5 cursor-pointer hover:bg-blue-50 text-xs transition-colors" 
+                                         data-value="{{ $supir->id }}"
+                                         data-text="{{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}{{ $supir->plat ? ' ('.$supir->plat.')' : '' }}">
+                                        {{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}
+                                        @if($supir->plat)
+                                            <span class="text-gray-500">({{ $supir->plat }})</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-4">
-                    <label for="ke_gudang_id" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-3">
+                    <label for="ke_gudang_id" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Ke <span class="text-red-500">*</span>
                     </label>
                     <select id="ke_gudang_id" name="ke_gudang_id" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Lokasi Tujuan</option>
                         @foreach($gudangs as $gudang)
                             <option value="{{ $gudang->id }}">
@@ -1031,34 +1083,34 @@
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-3">
+                    <label for="catatan" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Catatan (Opsional)
                     </label>
-                    <textarea id="catatan" name="catatan" rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    <textarea id="catatan" name="catatan" rows="2"
+                              class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                 </div>
 
-                <div class="mb-4">
-                    <label for="retur_barang" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-3">
+                    <label for="retur_barang" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Retur Barang (Opsional)
                     </label>
                     <textarea id="retur_barang" name="retur_barang" rows="2"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               placeholder="Catatan retur barang untuk surat jalan bongkaran..."></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Akan disimpan di surat jalan bongkaran jika ada</p>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Akan disimpan di surat jalan bongkaran jika ada</p>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="flex justify-end gap-3 pt-3 border-t">
+                <div class="flex justify-end gap-2 pt-2 border-t">
                     <button type="button" onclick="closeSupirModal()"
-                            class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md transition duration-200">
+                            class="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-md transition duration-200">
                         Batal
                     </button>
                     <button type="submit" id="btnSubmitOB"
-                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition duration-200">
-                        <i class="fas fa-check mr-2"></i>
+                            class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition duration-200">
+                        <i class="fas fa-check mr-1"></i>
                         Tandai Sudah OB
                     </button>
                 </div>
@@ -1170,62 +1222,158 @@ function openSupirModal(type, id) {
     document.getElementById('catatan').value = '';
     document.getElementById('retur_barang').value = '';
     
-    // Show modal first to ensure dimensions are correct for Select2
+    // Reset supir selection
+    document.getElementById('supir_id').value = '';
+    document.getElementById('supir_selected_text').textContent = 'Select an option';
+    document.getElementById('supir_selected').classList.add('text-gray-500');
+    document.getElementById('supir_selected').classList.remove('text-gray-900');
+    document.getElementById('supir_search').value = '';
+    
+    // Show all options
+    const options = document.querySelectorAll('.supir-option');
+    options.forEach(opt => opt.style.display = 'block');
+    
+    // Close dropdown options
+    const optionsContainer = document.getElementById('supir_options_container');
+    if (optionsContainer) {
+        optionsContainer.classList.add('hidden');
+    }
+    
+    // Reset arrow
+    const arrow = document.getElementById('supir_arrow');
+    if (arrow) {
+        arrow.style.transform = 'rotate(0deg)';
+    }
+    
+    // Show modal
     document.getElementById('supirModal').classList.remove('hidden');
     
-    // Initialize or re-initialize Select2
-    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        // Destroy existing instances if any to prevent conflicts
-        if (jQuery('#supir_id').hasClass("select2-hidden-accessible")) {
-            jQuery('#supir_id').select2('destroy');
-        }
-        if (jQuery('#ke_gudang_id').hasClass("select2-hidden-accessible")) {
-            jQuery('#ke_gudang_id').select2('destroy');
-        }
+    // Focus on search input after modal is shown
+    setTimeout(() => {
+        document.getElementById('supir_search').focus();
+    }, 100);
+}
 
-        // Init Supir with search enabled
-        jQuery('#supir_id').select2({
-            placeholder: 'Cari supir...',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: jQuery('#supirModal'),
-            minimumResultsForSearch: 0, // Always show search box
-            language: {
-                noResults: function() { return "Supir tidak ditemukan"; },
-                searching: function() { return "Mencari..."; },
-                inputTooShort: function() { return "Ketik untuk mencari supir"; }
+// Custom Searchable Dropdown for Supir
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('supir_search');
+    const supirOptions = document.querySelectorAll('.supir-option');
+    const supirSelected = document.getElementById('supir_selected');
+    const supirSelectedText = document.getElementById('supir_selected_text');
+    const supirIdInput = document.getElementById('supir_id');
+    const supirOptionsContainer = document.getElementById('supir_options_container');
+    const supirArrow = document.getElementById('supir_arrow');
+    
+    // Toggle dropdown visibility
+    function toggleDropdown(show) {
+        if (show) {
+            supirOptionsContainer.classList.remove('hidden');
+            supirArrow.style.transform = 'rotate(180deg)';
+        } else {
+            supirOptionsContainer.classList.add('hidden');
+            supirArrow.style.transform = 'rotate(0deg)';
+        }
+    }
+    
+    // Click on selected to toggle
+    if (supirSelected) {
+        supirSelected.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = supirOptionsContainer.classList.contains('hidden');
+            toggleDropdown(isHidden);
+            if (isHidden) {
+                searchInput.focus();
             }
         });
-        
-        // Set value to empty and trigger change
-        jQuery('#supir_id').val('').trigger('change');
-
-        // Init Ke Gudang with search enabled
-        jQuery('#ke_gudang_id').select2({
-            placeholder: 'Pilih Lokasi Tujuan...',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: jQuery('#supirModal'),
-            minimumResultsForSearch: 0 // Always show search box
+    }
+    
+    // Focus on search input opens dropdown
+    if (searchInput) {
+        searchInput.addEventListener('focus', function() {
+            toggleDropdown(true);
         });
         
-        // Set value to empty and trigger change
-        jQuery('#ke_gudang_id').val('').trigger('change');
-    } else {
-        // Fallback for non-jQuery environment
-        document.getElementById('supir_id').value = '';
-        document.getElementById('ke_gudang_id').value = '';
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // Open dropdown when typing
+            toggleDropdown(true);
+            
+            supirOptions.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
     }
-}
+    
+    // Option selection
+    supirOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            const text = this.getAttribute('data-text');
+            
+            // Update hidden input
+            supirIdInput.value = value;
+            
+            // Update selected display
+            supirSelectedText.textContent = text;
+            supirSelected.classList.remove('text-gray-500');
+            supirSelected.classList.add('text-gray-900');
+            
+            // Clear search
+            searchInput.value = '';
+            
+            // Show all options again
+            supirOptions.forEach(opt => opt.style.display = 'block');
+            
+            // Close dropdown
+            toggleDropdown(false);
+        });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const isClickInside = supirSelected.contains(e.target) || 
+                            supirOptionsContainer.contains(e.target) || 
+                            searchInput.contains(e.target);
+        
+        if (!isClickInside) {
+            toggleDropdown(false);
+        }
+    });
+});
 
 function closeSupirModal() {
     document.getElementById('supirModal').classList.add('hidden');
     document.getElementById('formMarkOB').reset();
     document.getElementById('ke_gudang_id').value = '';
     
-    // Reset Select2 on close
-    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        jQuery('#supir_id').val('').trigger('change');
+    // Reset custom dropdown
+    document.getElementById('supir_id').value = '';
+    document.getElementById('supir_selected_text').textContent = 'Select an option';
+    document.getElementById('supir_selected').classList.add('text-gray-500');
+    document.getElementById('supir_selected').classList.remove('text-gray-900');
+    document.getElementById('supir_search').value = '';
+    
+    // Show all options
+    const options = document.querySelectorAll('.supir-option');
+    options.forEach(opt => opt.style.display = 'block');
+    
+    // Close dropdown options
+    const optionsContainer = document.getElementById('supir_options_container');
+    if (optionsContainer) {
+        optionsContainer.classList.add('hidden');
+    }
+    
+    // Reset arrow
+    const arrow = document.getElementById('supir_arrow');
+    if (arrow) {
+        arrow.style.transform = 'rotate(0deg)';
     }
 }
 
