@@ -24,7 +24,7 @@
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
-                        Import CSV
+                        Import Excel
                     </button>
                     <a href="{{ route('penerima.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:border-indigo-800 focus:ring focus:ring-indigo-300 disabled:opacity-25 transition">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,11 +56,11 @@
                                     <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Import Data Penerima</h3>
                                     <div class="mt-2">
                                         <p class="text-sm text-gray-500 mb-4">
-                                            Silahkan upload file CSV sesuai template untuk import data penerima.
+                                            Silahkan upload file Excel/CSV sesuai template untuk import data penerima.
                                             <a href="{{ route('penerima.download-template') }}" class="text-indigo-600 hover:text-indigo-900 font-medium hover:underline">Download Template</a>
                                         </p>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">File CSV/Excel</label>
+                                            <label class="block text-sm font-medium text-gray-700">File Excel/CSV</label>
                                             <input type="file" name="file" accept=".csv,.xlsx,.xls" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
                                         </div>
                                     </div>

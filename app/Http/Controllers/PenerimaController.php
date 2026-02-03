@@ -118,11 +118,14 @@ class PenerimaController extends Controller
             'Content-Disposition' => 'attachment; filename="template_penerima.csv"',
         ];
 
-        $columns = ['Nama Penerima', 'Alamat', 'NPWP', 'NITKU', 'Catatan', 'Status (active/inactive)'];
+        // Use keys that match database columns so WithHeadingRow works seamlessly
+        $columns = ['nama_penerima', 'alamat', 'npwp', 'nitku', 'catatan', 'status'];
         
         $callback = function() use ($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
+            // Add example row
+            fputcsv($file, ['Contoh Penerima', 'Jl. Contoh No. 1', '12.345.678.9-000.000', '1234567890123456', 'Catatan contoh', 'active']);
             fclose($file);
         };
 
@@ -132,42 +135,25 @@ class PenerimaController extends Controller
     public function importExcel(Request $request) 
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt,xlsx|max:2048'
+            'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048'
         ]);
         
         try {
             DB::beginTransaction();
             
-            $file = $request->file('file');
-            $data = array_map('str_getcsv', file($file->getRealPath()));
-            $header = array_shift($data); // Remove header row
-
-            // Validate header structure (basic check)
-            if (count($header) < 6) {
-                return back()->with('error', 'Format file CSV tidak sesuai template.');
-            }
-            
-            $importedCount = 0;
-            
-            foreach ($data as $row) {
-                // Skip empty rows
-                if (empty($row[0])) continue;
-                
-                Penerima::create([
-                    'nama_penerima' => $row[0],
-                    'alamat' => $row[1] ?? null,
-                    'npwp' => $row[2] ?? null,
-                    'nitku' => $row[3] ?? null,
-                    'catatan' => $row[4] ?? null,
-                    'status' => in_array(strtolower($row[5] ?? ''), ['active', 'inactive']) ? strtolower($row[5]) : 'active',
-                ]);
-                
-                $importedCount++;
-            }
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\PenerimaImport, $request->file('file'));
             
             DB::commit();
-            return back()->with('success', "Berhasil mengimport {$importedCount} data penerima.");
+            return back()->with('success', 'Berhasil mengimport data penerima.');
             
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            DB::rollBack();
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+            }
+            return back()->with('error', 'Validasi gagal: ' . implode('<br>', $errorMessages));
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
