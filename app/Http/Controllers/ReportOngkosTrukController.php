@@ -231,8 +231,8 @@ class ReportOngkosTrukController extends Controller
             $querySjb->whereIn('no_plat', $noPlat);
         }
 
-        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
-        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'kenekKaryawan'])->get();
 
         $data = collect();
 
@@ -259,6 +259,10 @@ class ReportOngkosTrukController extends Controller
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_plat' => $sj->no_plat,
+                'nama_lengkap_supir' => $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: ($sj->supir2 ?: '-')),
+                'nik_supir' => $sj->supir_nik,
+                'nama_lengkap_kenek' => $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : ($sj->kenek ?: '-'),
+                'nik_kenek' => $sj->kenek_nik,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
                 'keterangan' => ($sj->pengirim ?? '-') . ' ke ' . ($sj->tujuan_pengiriman ?? '-'),
                 'tujuan' => $sj->tujuan_pengambilan ?? '-',
@@ -292,6 +296,10 @@ class ReportOngkosTrukController extends Controller
                 'tanggal' => $sjb->tanggal_surat_jalan->format('d/m/Y'),
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'no_plat' => $sjb->no_plat,
+                'nama_lengkap_supir' => $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: ($sjb->supir2 ?: '-')),
+                'nik_supir' => $sjb->supir_nik,
+                'nama_lengkap_kenek' => $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : ($sjb->kenek ?: '-'),
+                'nik_kenek' => $sjb->kenek_nik,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
                 'keterangan' => ($sjb->pengirim ?? '-') . ' ke ' . ($sjb->tujuan_pengiriman ?? '-'),
                 'tujuan' => $sjb->tujuan_pengambilan ?? '-',

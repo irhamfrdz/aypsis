@@ -33,7 +33,10 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $item['tanggal'],
                 $item['no_surat_jalan'],
                 $item['no_plat'],
-                $item['supir'],
+                $item['nama_lengkap_supir'],
+                $item['nik_supir'] ? "'" . $item['nik_supir'] : '-',
+                $item['nama_lengkap_kenek'],
+                $item['nik_kenek'] ? "'" . $item['nik_kenek'] : '-',
                 $item['tujuan'],
                 (float)$item['ongkos_truck'],
                 (float)$item['uang_jalan'],
@@ -50,6 +53,9 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
             'No Surat Jalan',
             'Plat Mobil',
             'Supir',
+            'NIK Supir',
+            'Kenek',
+            'NIK Kenek',
             'Tujuan',
             'Ongkos Truk',
             'Uang Jalan',
@@ -60,8 +66,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
     public function columnFormats(): array
     {
         return [
-            'G' => '#,##0',
-            'H' => '#,##0',
+            'J' => '#,##0',
+            'K' => '#,##0',
         ];
     }
 
@@ -76,7 +82,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $sheet->setCellValue('A1', 'LAPORAN ONGKOS TRUK');
                 $sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
                 
-                $lastCol = 'I';
+                $lastCol = 'L';
                 $headerRow = 4; // Now headers are at row 4
                 $dataStartRow = 5; // Data starts at row 5
                 
@@ -112,9 +118,9 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $lastDataRow = $sheet->getHighestRow();
                 $totalRow = $lastDataRow + 1;
 
-                $sheet->setCellValue("F{$totalRow}", 'TOTAL');
-                $sheet->setCellValue("G{$totalRow}", "=SUM(G{$dataStartRow}:G{$lastDataRow})");
-                $sheet->setCellValue("H{$totalRow}", "=SUM(H{$dataStartRow}:H{$lastDataRow})");
+                $sheet->setCellValue("I{$totalRow}", 'TOTAL');
+                $sheet->setCellValue("J{$totalRow}", "=SUM(J{$dataStartRow}:J{$lastDataRow})");
+                $sheet->setCellValue("K{$totalRow}", "=SUM(K{$dataStartRow}:K{$lastDataRow})");
                 
                 // Style the entire table borders
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$totalRow}")->applyFromArray([
@@ -126,8 +132,8 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 ]);
 
                 // Style Total Row
-                $sheet->getStyle("F{$totalRow}:H{$totalRow}")->getFont()->setBold(true);
-                $sheet->getStyle("G{$dataStartRow}:H{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("I{$totalRow}:K{$totalRow}")->getFont()->setBold(true);
+                $sheet->getStyle("J{$dataStartRow}:K{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 
                 // Auto height for rows
                 $sheet->getRowDimension('1')->setRowHeight(25);
