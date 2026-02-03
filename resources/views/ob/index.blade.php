@@ -1188,6 +1188,17 @@
                     </table>
                 </div>
                 <p id="total-count" class="text-sm font-semibold text-gray-900 mt-4"></p>
+                <p id="total-biaya" class="text-sm font-semibold text-gray-900 mt-1"></p>
+
+                <div class="mt-4">
+                    <label for="adjustment" class="block text-sm font-medium text-gray-700 mb-2">
+                        Adjustment (Opsional)
+                    </label>
+                    <input type="number" id="adjustment" name="adjustment"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Masukkan nilai adjustment (bisa negatif)...">
+                    <p class="text-xs text-gray-500 mt-1">Nilai ini akan ditambahkan ke total biaya. Gunakan nilai negatif untuk pengurangan.</p>
+                </div>
             </div>
 
             <!-- Modal Footer -->
@@ -1440,23 +1451,26 @@ function openPranotaModal() {
     // Set total count
     const totalP = document.getElementById('total-count');
     totalP.textContent = `Total kontainer yang dipilih: ${selectedItems.length}`;
+
+    let totalBiaya = 0;
     
     // Add all items to table
-            selectedItems.forEach((item, index) => {
+    selectedItems.forEach((item, index) => {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50';
-                let biayaDisplay = '';
-                // Check if TL container first
-                if (item.sudah_tl === '1' || item.sudah_tl === true) {
-                    biayaDisplay = `<span class="text-blue-600">Tidak ada biaya (TL)</span>`;
-                } else if (item.biaya === null || item.biaya === undefined || item.biaya === '') {
-                    biayaDisplay = `<span class="text-red-600">Biaya belum diatur</span>`;
-                } else {
-                    const v = Number(item.biaya);
-                    biayaDisplay = `Rp ${v.toLocaleString('id-ID')}`;
-                }
+        let biayaDisplay = '';
+        // Check if TL container first
+        if (item.sudah_tl === '1' || item.sudah_tl === true) {
+            biayaDisplay = `<span class="text-blue-600">Tidak ada biaya (TL)</span>`;
+        } else if (item.biaya === null || item.biaya === undefined || item.biaya === '') {
+            biayaDisplay = `<span class="text-red-600">Biaya belum diatur</span>`;
+        } else {
+            const v = Number(item.biaya);
+            totalBiaya += v;
+            biayaDisplay = `Rp ${v.toLocaleString('id-ID')}`;
+        }
 
-            row.innerHTML = `
+        row.innerHTML = `
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-mono">${item.nomor_kontainer || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.nama_barang || '-'}</td>
@@ -1464,9 +1478,13 @@ function openPranotaModal() {
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.size ? item.size + ' Feet' : '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${biayaDisplay}</td>
         `;
-        
+
         tbody.appendChild(row);
     });
+
+    // Set total biaya
+    const totalBiayaP = document.getElementById('total-biaya');
+    totalBiayaP.textContent = `Total Biaya: Rp ${totalBiaya.toLocaleString('id-ID')}`;
     
     document.getElementById('pranotaModal').classList.remove('hidden');
 }
@@ -1475,6 +1493,7 @@ function closePranotaModal() {
     document.getElementById('pranotaModal').classList.add('hidden');
     document.getElementById('nomor_pranota').value = '';
     document.getElementById('nomor_accurate').value = '';
+    document.getElementById('adjustment').value = '';
 }
 
 // Generate nomor pranota otomatis
@@ -2017,6 +2036,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     }
     
     const nomorAccurate = document.getElementById('nomor_accurate').value.trim();
+    const adjustment = document.getElementById('adjustment').value;
     
     const items = selectedItems.map(item => ({ id: item.id, type: item.type, nomor_kontainer: item.nomor_kontainer, nama_barang: item.nama_barang, size: item.size, biaya: item.biaya, status: item.status, supir: item.supir }));
     
@@ -2043,7 +2063,8 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             nama_kapal: __PRANOTA_nama_kapal, 
             no_voyage: __PRANOTA_no_voyage,
             tanggal_ob: tanggalOb,
-            nomor_accurate: nomorAccurate
+            nomor_accurate: nomorAccurate,
+            adjustment: adjustment
         })
     })
     .then(response => response.json())
