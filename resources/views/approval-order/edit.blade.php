@@ -5,142 +5,6 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<style>
-    .custom-select-wrapper {
-        position: relative;
-        width: 100%;
-    }
-    .custom-select-trigger {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        background-color: white;
-        cursor: pointer;
-        min-height: 42px;
-        font-size: 0.875rem;
-        color: #111827;
-    }
-    .custom-select-trigger:hover {
-        border-color: #9ca3af;
-    }
-    .custom-select-trigger.active {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-    .custom-select-trigger .trigger-text {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .custom-select-trigger .trigger-text.placeholder {
-        color: #9ca3af;
-    }
-    .custom-select-trigger .arrow {
-        margin-left: 0.5rem;
-        transition: transform 0.2s;
-        color: #6b7280;
-        font-size: 0.75rem;
-        flex-shrink: 0;
-    }
-    .custom-select-trigger.active .arrow {
-        transform: rotate(180deg);
-    }
-    .custom-select-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        margin-top: 0.25rem;
-        background: white;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        z-index: 1000;
-        display: none;
-        overflow: hidden;
-    }
-    .custom-select-dropdown.active {
-        display: block;
-    }
-    .custom-select-search {
-        padding: 0.75rem;
-        border-bottom: 1px solid #e5e7eb;
-        background-color: white;
-    }
-    .custom-select-search input {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        outline: none;
-        font-size: 0.875rem;
-        background-color: white;
-    }
-    .custom-select-search input::placeholder {
-        color: #9ca3af;
-    }
-    .custom-select-search input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-    .custom-select-options {
-        max-height: 250px;
-        overflow-y: auto;
-    }
-    .custom-select-options::-webkit-scrollbar {
-        width: 12px;
-    }
-    .custom-select-options::-webkit-scrollbar-track {
-        background: #f9fafb;
-    }
-    .custom-select-options::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 6px;
-        border: 3px solid #f9fafb;
-    }
-    .custom-select-options::-webkit-scrollbar-thumb:hover {
-        background: #9ca3af;
-    }
-    .custom-select-option {
-        padding: 0.625rem 0.75rem;
-        cursor: pointer;
-        transition: background-color 0.1s;
-        font-size: 0.875rem;
-        color: #111827;
-        user-select: none;
-        border-bottom: 1px solid #f3f4f6;
-    }
-    .custom-select-option:last-child {
-        border-bottom: none;
-    }
-    .custom-select-option:hover {
-        background-color: #f9fafb;
-    }
-    .custom-select-option.selected {
-        background-color: #eef2ff;
-        color: #4f46e5;
-        font-weight: 500;
-    }
-    .custom-select-option.hidden {
-        display: none;
-    }
-    .custom-select-placeholder-option {
-        color: #6b7280;
-        font-style: italic;
-    }
-    .no-results {
-        padding: 1.5rem 0.75rem;
-        text-align: center;
-        color: #9ca3af;
-        font-size: 0.875rem;
-        font-style: italic;
-    }
-</style>
 @endsection
 
 @section('content')
@@ -255,32 +119,33 @@
                     <h3 class="text-base font-semibold text-gray-900 mb-4">Informasi Penerima</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="penerima_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Penerima
-                            </label>
-                            <div class="custom-select-wrapper">
-                                <div class="custom-select-trigger" id="penerima-trigger">
-                                    <span class="trigger-text placeholder">Select an option</span>
-                                    <span class="arrow">▼</span>
-                                </div>
-                                <div class="custom-select-dropdown" id="penerima-dropdown">
-                                    <div class="custom-select-search">
-                                        <input type="text" placeholder="Search..." id="penerima-search" autocomplete="off">
-                                    </div>
-                                    <div class="custom-select-options" id="penerima-options">
-                                        <div class="custom-select-option custom-select-placeholder-option" data-value="" data-text="Select an option">
-                                            Select an option
-                                        </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="penerima_id" class="text-sm font-medium text-gray-700">
+                                    Penerima
+                                </label>
+                                <a href="{{ route('order.penerima.create') }}" id="add_penerima_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-penerima">
+                                    <input type="text" id="search_penerima" placeholder="Search..." autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="penerima_id" id="penerima_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('penerima_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
                                         @foreach($penerimas as $penerima)
-                                            <div class="custom-select-option {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}" 
-                                                 data-value="{{ $penerima->id }}" 
-                                                 data-text="{{ $penerima->nama_penerima }}">
+                                            <option value="{{ $penerima->id }}" {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
                                                 {{ $penerima->nama_penerima }}
-                                            </div>
+                                            </option>
                                         @endforeach
+                                    </select>
+                                    <div id="dropdown_options_penerima" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
                                     </div>
                                 </div>
-                                <input type="hidden" name="penerima_id" id="penerima_id" value="{{ old('penerima_id', $order->penerima_id) }}">
                             </div>
                             @error('penerima_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -420,116 +285,147 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const trigger = document.getElementById('penerima-trigger');
-        const dropdown = document.getElementById('penerima-dropdown');
-        const searchInput = document.getElementById('penerima-search');
-        const optionsContainer = document.getElementById('penerima-options');
-        const hiddenInput = document.getElementById('penerima_id');
-        const options = optionsContainer.querySelectorAll('.custom-select-option');
+        // Function to create searchable dropdown
+        function createSearchableDropdown(config) {
+            const selectElement = document.getElementById(config.selectId);
+            const searchInput = document.getElementById(config.searchId);
+            const dropdownOptions = document.getElementById(config.dropdownId);
+            let originalOptions = Array.from(selectElement.options);
 
-        // Toggle dropdown
-        trigger.addEventListener('click', function(e) {
-            e.stopPropagation();
-            trigger.classList.toggle('active');
-            dropdown.classList.toggle('active');
-            if (dropdown.classList.contains('active')) {
-                searchInput.focus();
-                searchInput.select();
+            // Function to refresh original options
+            function refreshOriginalOptions() {
+                originalOptions = Array.from(selectElement.options);
             }
-        });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-                trigger.classList.remove('active');
-                dropdown.classList.remove('active');
-                searchInput.value = '';
-                options.forEach(opt => opt.classList.remove('hidden'));
+            // Initially populate dropdown options
+            populateDropdown(originalOptions);
+
+            // Set initial value for search input if something is selected
+            if (selectElement.value !== '') {
+                const selectedOption = Array.from(selectElement.options).find(opt => opt.value === selectElement.value);
+                if (selectedOption) {
+                    searchInput.value = selectedOption.text;
+                }
             }
-        });
 
-        // Prevent dropdown from closing when clicking inside
-        dropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+            // Show dropdown when search input is focused or clicked
+            searchInput.addEventListener('focus', function() {
+                dropdownOptions.classList.remove('hidden');
+            });
 
-        // Search functionality
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            let hasResults = false;
+            searchInput.addEventListener('click', function() {
+                dropdownOptions.classList.remove('hidden');
+            });
 
-            options.forEach(option => {
-                const text = option.dataset.text.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    option.classList.remove('hidden');
-                    hasResults = true;
-                } else {
-                    option.classList.add('hidden');
+            // Filter options based on search
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredOptions = originalOptions.filter(option => {
+                    if (option.value === '') return true;
+                    return option.text.toLowerCase().includes(searchTerm);
+                });
+                populateDropdown(filteredOptions);
+                dropdownOptions.classList.remove('hidden');
+            });
+
+            // Populate dropdown with options
+            function populateDropdown(options) {
+                dropdownOptions.innerHTML = '';
+                options.forEach(option => {
+                    const div = document.createElement('div');
+                    div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-sm';
+                    div.textContent = option.text;
+                    div.setAttribute('data-value', option.value);
+
+                    // Add selected class if it matches the current select value
+                    if (option.value === selectElement.value && option.value !== '') {
+                        div.classList.add('bg-blue-50', 'font-medium', 'text-blue-600');
+                    }
+
+                    div.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+
+                        // Set the select value
+                        selectElement.value = value;
+
+                        // Update search input
+                        if (value === '') {
+                            searchInput.value = '';
+                            searchInput.placeholder = 'Search...';
+                        } else {
+                            searchInput.value = text;
+                        }
+
+                        // Hide dropdown
+                        dropdownOptions.classList.add('hidden');
+
+                        // Trigger change event
+                        selectElement.dispatchEvent(new Event('change'));
+                    });
+
+                    dropdownOptions.appendChild(div);
+                });
+
+                if (options.length === 0) {
+                    const noResult = document.createElement('div');
+                    noResult.className = 'px-3 py-4 text-center text-gray-500 text-sm italic';
+                    noResult.textContent = 'Tidak ada hasil ditemukan';
+                    dropdownOptions.appendChild(noResult);
+                }
+            }
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.' + config.containerClass)) {
+                    dropdownOptions.classList.add('hidden');
                 }
             });
 
-            // Show/hide no results message
-            let noResultsMsg = optionsContainer.querySelector('.no-results');
-            if (!hasResults) {
-                if (!noResultsMsg) {
-                    noResultsMsg = document.createElement('div');
-                    noResultsMsg.className = 'no-results';
-                    noResultsMsg.textContent = 'Tidak ada hasil ditemukan';
-                    optionsContainer.appendChild(noResultsMsg);
-                }
-            } else {
-                if (noResultsMsg) {
-                    noResultsMsg.remove();
-                }
-            }
-        });
-
-        // Select option
-        options.forEach(option => {
-            option.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const value = this.dataset.value;
-                const text = this.dataset.text;
-
-                // Update hidden input
-                hiddenInput.value = value;
-
-                // Update trigger text
-                const triggerText = trigger.querySelector('.trigger-text');
-                triggerText.textContent = text;
-                
-                if (value === '') {
-                    triggerText.classList.add('placeholder');
-                } else {
-                    triggerText.classList.remove('placeholder');
-                }
-
-                // Update selected state
-                options.forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-
-                // Close dropdown
-                trigger.classList.remove('active');
-                dropdown.classList.remove('active');
-
-                // Clear search
-                searchInput.value = '';
-                options.forEach(opt => opt.classList.remove('hidden'));
-                
-                // Remove no results message if exists
-                const noResultsMsg = optionsContainer.querySelector('.no-results');
-                if (noResultsMsg) {
-                    noResultsMsg.remove();
+            // Handle keyboard navigation
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    dropdownOptions.classList.add('hidden');
                 }
             });
+        }
+
+        // Initialize Penerima dropdown
+        createSearchableDropdown({
+            selectId: 'penerima_id',
+            searchId: 'search_penerima',
+            dropdownId: 'dropdown_options_penerima',
+            containerClass: 'dropdown-container-penerima'
         });
 
-        // Set initial selected value
-        const selectedOption = optionsContainer.querySelector('.custom-select-option.selected');
-        if (selectedOption) {
-            const triggerText = trigger.querySelector('.trigger-text');
-            triggerText.textContent = selectedOption.dataset.text;
-            triggerText.classList.remove('placeholder');
+        // Handle Penerima "Tambah" link logic
+        const addPenerimaLink = document.getElementById('add_penerima_link');
+        const searchPenerimaInput = document.getElementById('search_penerima');
+        if (addPenerimaLink && searchPenerimaInput) {
+            addPenerimaLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const searchValue = searchPenerimaInput.value.trim();
+                let url = "{{ route('order.penerima.create') }}";
+
+                const params = new URLSearchParams();
+                params.append('popup', '1');
+
+                if (searchValue) {
+                    params.append('search', searchValue);
+                }
+
+                url += '?' + params.toString();
+
+                const popup = window.open(
+                    url,
+                    'addPenerima',
+                    'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+                );
+
+                if (popup) {
+                    popup.focus();
+                }
+            });
         }
     });
 </script>
