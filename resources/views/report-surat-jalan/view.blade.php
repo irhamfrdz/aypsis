@@ -23,10 +23,9 @@
                 <a href="{{ route('report.surat_jalan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
-                {{-- Placeholder untuk tombol export jika nanti diminta --}}
-                {{-- <a href="#" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                <a href="{{ route('report.surat_jalan.export', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-file-excel mr-2"></i> Export Excel
-                </a> --}}
+                </a>
             </div>
         </div>
     </div>

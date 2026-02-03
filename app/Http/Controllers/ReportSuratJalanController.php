@@ -8,7 +8,7 @@ use App\Models\SuratJalanBongkaran;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
-// use App\Exports\ReportSuratJalanExport; // Nanti dibuat
+use App\Exports\ReportSuratJalanExport;
 
 class ReportSuratJalanController extends Controller
 {
@@ -129,5 +129,114 @@ class ReportSuratJalanController extends Controller
         $data = $data->sortBy('tanggal');
 
         return view('report-surat-jalan.view', compact('data', 'startDate', 'endDate'));
+    }
+
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('surat-jalan-view')) {
+            abort(403, 'Unauthorized');
+        }
+
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+
+        // Query Surat Jalan (Muatan)
+        $querySj = SuratJalan::where(function($q) use ($startDate, $endDate) {
+            $q->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
+                  $tt->whereBetween('tanggal', [$startDate, $endDate]);
+              })
+              ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
+        });
+
+        // Query Surat Jalan Bongkaran
+        $querySjb = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
+            $q->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
+                  $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
+              })
+              ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
+        });
+
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
+
+        $data = collect();
+
+        foreach ($suratJalans as $sj) {
+            $nomorBukti = '-';
+            if ($sj->uangJalan && $sj->uangJalan->pranotaUangJalan) {
+                $buktis = collect();
+                foreach ($sj->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        foreach ($pranota->pembayaranPranotaUangJalans as $pembayaran) {
+                            if ($pembayaran->nomor_accurate) {
+                                $buktis->push($pembayaran->nomor_accurate);
+                            }
+                        }
+                    }
+                }
+                $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
+            }
+
+            $data->push([
+                'tanggal' => $sj->tanggal_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_plat' => $sj->no_plat,
+                'supir' => $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: ($sj->supir2 ?: '-')),
+                'kenek' => $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : ($sj->kenek ?: '-'),
+                'customer' => $sj->order ? $sj->order->nama_customer : '-',
+                'rute' => ($sj->pengirim ?? '-') . ' -> ' . ($sj->tujuan_pengiriman ?? '-'),
+                'jenis' => 'Muat',
+                'status' => $sj->status ?? 'Open',
+                'uang_jalan' => $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0,
+                'nomor_bukti' => $nomorBukti,
+                'original_data' => $sj
+            ]);
+        }
+
+        foreach ($suratJalanBongkarans as $sjb) {
+            $nomorBukti = '-';
+            if ($sjb->uangJalan && $sjb->uangJalan->pranotaUangJalan) {
+                $buktis = collect();
+                foreach ($sjb->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        foreach ($pranota->pembayaranPranotaUangJalans as $pembayaran) {
+                            if ($pembayaran->nomor_accurate) {
+                                $buktis->push($pembayaran->nomor_accurate);
+                            }
+                        }
+                    }
+                }
+                $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
+            }
+
+            $data->push([
+                'tanggal' => $sjb->tanggal_surat_jalan,
+                'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                'no_plat' => $sjb->no_plat,
+                'supir' => $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: ($sjb->supir2 ?: '-')),
+                'kenek' => $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : ($sjb->kenek ?: '-'),
+                'customer' => '-', // Bongkaran mungkin ambil dari field lain atau dikosongkan
+                'rute' => ($sjb->pengirim ?? '-') . ' -> ' . ($sjb->tujuan_pengiriman ?? '-'),
+                'jenis' => 'Bongkar',
+                'status' => $sjb->status ?? 'Open',
+                'uang_jalan' => $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0,
+                'nomor_bukti' => $nomorBukti,
+                'original_data' => $sjb
+            ]);
+        }
+
+        $data = $data->sortBy('tanggal');
+
+        $fileName = 'report-surat-jalan-' . $startDate->format('Y-m-d') . '-to-' . $endDate->format('Y-m-d') . '.xlsx';
+        return Excel::download(new ReportSuratJalanExport($data, $startDate, $endDate), $fileName);
     }
 }

@@ -4093,6 +4093,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     // Report Surat Jalan
     Route::get('/surat-jalan', [App\Http\Controllers\ReportSuratJalanController::class, 'index'])->name('surat_jalan.index');
     Route::get('/surat-jalan/view', [App\Http\Controllers\ReportSuratJalanController::class, 'view'])->name('surat_jalan.view');
+    Route::get('/surat-jalan/export', [App\Http\Controllers\ReportSuratJalanController::class, 'export'])->name('surat_jalan.export');
 
     // Report Pranota OB
     Route::get('/pranota-ob', [App\Http\Controllers\ReportPranotaObController::class, 'index'])->name('pranota-ob.index');
