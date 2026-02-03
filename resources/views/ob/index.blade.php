@@ -981,7 +981,7 @@
 
 <!-- Modal Pilih Supir -->
 <div id="supirModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="relative top-20 mx-auto p-5 border w-[95%] md:w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-3 border-b">
@@ -1167,17 +1167,55 @@ function openSupirModal(type, id) {
     document.getElementById('record_type').value = type;
     document.getElementById('record_id').value = id;
     
-    // Reset Select2 supir dropdown
-    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        jQuery('#supir_id').val('').trigger('change');
-    } else {
-        document.getElementById('supir_id').value = '';
-    }
-    
     document.getElementById('catatan').value = '';
     document.getElementById('retur_barang').value = '';
-    document.getElementById('ke_gudang_id').value = '';
+    
+    // Show modal first to ensure dimensions are correct for Select2
     document.getElementById('supirModal').classList.remove('hidden');
+    
+    // Initialize or re-initialize Select2
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        // Destroy existing instances if any to prevent conflicts
+        if (jQuery('#supir_id').hasClass("select2-hidden-accessible")) {
+            jQuery('#supir_id').select2('destroy');
+        }
+        if (jQuery('#ke_gudang_id').hasClass("select2-hidden-accessible")) {
+            jQuery('#ke_gudang_id').select2('destroy');
+        }
+
+        // Init Supir with search enabled
+        jQuery('#supir_id').select2({
+            placeholder: 'Cari supir...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: jQuery('#supirModal'),
+            minimumResultsForSearch: 0, // Always show search box
+            language: {
+                noResults: function() { return "Supir tidak ditemukan"; },
+                searching: function() { return "Mencari..."; },
+                inputTooShort: function() { return "Ketik untuk mencari supir"; }
+            }
+        });
+        
+        // Set value to empty and trigger change
+        jQuery('#supir_id').val('').trigger('change');
+
+        // Init Ke Gudang with search enabled
+        jQuery('#ke_gudang_id').select2({
+            placeholder: 'Pilih Lokasi Tujuan...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: jQuery('#supirModal'),
+            minimumResultsForSearch: 0 // Always show search box
+        });
+        
+        // Set value to empty and trigger change
+        jQuery('#ke_gudang_id').val('').trigger('change');
+    } else {
+        // Fallback for non-jQuery environment
+        document.getElementById('supir_id').value = '';
+        document.getElementById('ke_gudang_id').value = '';
+    }
 }
 
 function closeSupirModal() {
@@ -1350,33 +1388,6 @@ document.addEventListener('DOMContentLoaded', function() {
             placeholder: 'Pilih gudang asal...',
             allowClear: true,
             width: '100%'
-        });
-        
-        // Initialize Select2 for supir dropdown with mobile optimization
-        jQuery('.select2-supir').select2({
-            placeholder: 'Cari supir...',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: jQuery('#supirModal'),
-            language: {
-                noResults: function() {
-                    return "Supir tidak ditemukan";
-                },
-                searching: function() {
-                    return "Mencari...";
-                },
-                inputTooShort: function() {
-                    return "Ketik untuk mencari supir";
-                }
-            },
-            // Mobile-friendly configuration
-            minimumResultsForSearch: 0, // Always show search box
-            closeOnSelect: true,
-            templateResult: function(data) {
-                if (!data.id) return data.text;
-                // Format hasil dengan styling yang lebih baik
-                return jQuery('<span style="display: block; padding: 2px 0;">' + data.text + '</span>');
-            }
         });
     }
 
