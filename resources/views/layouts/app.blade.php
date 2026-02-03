@@ -1606,7 +1606,7 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.manifests.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.surat_jalan.*');
     // Check if user has view permissions for tagihan, pranota, or pembayaran modules
     $hasReportPermission = $user && (
         $isAdmin ||
@@ -1679,6 +1679,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
             </svg>
             Report Ongkos Truk
+        </a>
+
+        {{-- Report Surat Jalan --}}
+        <a href="{{ route('report.surat_jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.surat_jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Report Surat Jalan
         </a>
 
         {{-- Report Pranota OB --}}

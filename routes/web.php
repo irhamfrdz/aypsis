@@ -4090,6 +4090,10 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/ongkos-truk/print', [App\Http\Controllers\ReportOngkosTrukController::class, 'print'])->name('ongkos-truk.print');
     Route::get('/ongkos-truk/export', [App\Http\Controllers\ReportOngkosTrukController::class, 'export'])->name('ongkos-truk.export');
 
+    // Report Surat Jalan
+    Route::get('/surat-jalan', [App\Http\Controllers\ReportSuratJalanController::class, 'index'])->name('surat_jalan.index');
+    Route::get('/surat-jalan/view', [App\Http\Controllers\ReportSuratJalanController::class, 'view'])->name('surat_jalan.view');
+
     // Report Pranota OB
     Route::get('/pranota-ob', [App\Http\Controllers\ReportPranotaObController::class, 'index'])->name('pranota-ob.index');
     Route::get('/pranota-ob/view', [App\Http\Controllers\ReportPranotaObController::class, 'view'])->name('pranota-ob.view');
