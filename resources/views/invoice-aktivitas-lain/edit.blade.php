@@ -5,8 +5,8 @@
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">Edit Invoice Aktivitas Lain</h1>
-                <p class="text-gray-600 mt-1">Edit invoice {{ $invoice->nomor_invoice }}</p>
+                <h1 class="text-2xl font-bold text-gray-800">Buat Invoice Aktivitas Lain</h1>
+                <p class="text-gray-600 mt-1">Tambah invoice baru untuk aktivitas lain</p>
             </div>
             <a href="{{ route('invoice-aktivitas-lain.index') }}" 
                class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition inline-flex items-center">
@@ -28,9 +28,8 @@
         </div>
     @endif
 
-    <form action="{{ route('invoice-aktivitas-lain.update', $invoice->id) }}" method="POST" class="space-y-6">
+    <form action="{{ route('invoice-aktivitas-lain.store') }}" method="POST" class="space-y-6">
         @csrf
-        @method('PUT')
 
         <!-- Informasi Umum -->
         <div class="bg-white rounded-lg shadow p-6">
@@ -46,11 +45,18 @@
                         <input type="text" 
                                    name="nomor_invoice" 
                                    id="nomor_invoice" 
-                                   value="{{ old('nomor_invoice', $invoice->nomor_invoice) }}"
-                                   class="w-full {{ $errors->has('nomor_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm"
+                                   value="{{ old('nomor_invoice') }}"
+                                   class="w-full {{ $errors->has('nomor_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm bg-gray-50"
                                    style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                                   placeholder="Nomor Invoice"
+                                   placeholder="Loading..."
+                                   readonly
                                    required>
+                        <div id="invoice_loader" class="absolute right-3 top-1/2 -translate-y-1/2">
+                            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
                     </div>
                     @error('nomor_invoice')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -65,7 +71,7 @@
                     <input type="date" 
                            name="tanggal_invoice" 
                            id="tanggal_invoice" 
-                           value="{{ old('tanggal_invoice', $invoice->tanggal_invoice->format('Y-m-d')) }}"
+                           value="{{ old('tanggal_invoice', date('Y-m-d')) }}"
                            class="w-full {{ $errors->has('tanggal_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            required>
@@ -85,10 +91,10 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                             required>
                         <option value="">Pilih Jenis Aktivitas</option>
-                        <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
-                        <option value="Pembayaran Kapal" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
-                        <option value="Pembayaran Adjustment Uang Jalan" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Adjustment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjustment Uang Jalan</option>
-                        <option value="Pembayaran Lain-lain" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Lain-lain' ? 'selected' : '' }}>Pembayaran Lain-lain</option>
+                        <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas') == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
+                        <option value="Pembayaran Kapal" {{ old('jenis_aktivitas') == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
+                        <option value="Pembayaran Adjustment Uang Jalan" {{ old('jenis_aktivitas') == 'Pembayaran Adjustment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjustment Uang Jalan</option>
+                        <option value="Pembayaran Lain-lain" {{ old('jenis_aktivitas') == 'Pembayaran Lain-lain' ? 'selected' : '' }}>Pembayaran Lain-lain</option>
                     </select>
                     @error('jenis_aktivitas')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -96,18 +102,18 @@
                 </div>
 
                 <!-- Jenis Biaya (conditional for Pembayaran Lain-lain) -->
-                <div id="jenis_biaya_wrapper" class="{{ $invoice->jenis_aktivitas == 'Pembayaran Lain-lain' ? '' : 'hidden' }}">
+                <div id="jenis_biaya_wrapper" class="hidden">
                     <label for="jenis_biaya_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
-                        Jenis Biaya <span class="text-red-500">*</span>
+                        Jenis Biaya
                     </label>
                     <select name="klasifikasi_biaya_umum_id" 
                             id="jenis_biaya_dropdown" 
-                            class="w-full {{ $errors->has('klasifikasi_biaya_umum_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                            class="w-full {{ $errors->has('klasifikasi_biaya_umum_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
-                        <option value="">-- Pilih Jenis Biaya --</option>
-                        @foreach($klasifikasiBiayas as $kb)
-                            <option value="{{ $kb->id }}" {{ old('klasifikasi_biaya_umum_id', $invoice->klasifikasi_biaya_umum_id) == $kb->id ? 'selected' : '' }}>
-                                {{ $kb->nama }}
+                        <option value="">Pilih Jenis Biaya</option>
+                        @foreach($klasifikasiBiayas as $klasifikasi)
+                            <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_umum_id') == $klasifikasi->id ? 'selected' : '' }}>
+                                {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
                     </select>
@@ -117,17 +123,17 @@
                 </div>
 
                 <!-- Referensi (conditional for Pembayaran Lain-lain) -->
-                <div id="referensi_wrapper" class="{{ $invoice->jenis_aktivitas == 'Pembayaran Lain-lain' ? '' : 'hidden' }}">
+                <div id="referensi_wrapper" class="hidden">
                     <label for="referensi" class="block text-sm font-medium text-gray-700 mb-2">
                         Referensi
                     </label>
                     <input type="text" 
                            name="referensi" 
                            id="referensi" 
-                           value="{{ old('referensi', $invoice->referensi) }}" 
-                           class="w-full {{ $errors->has('referensi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                           class="w-full {{ $errors->has('referensi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           placeholder="Masukkan nomor referensi">
+                           value="{{ old('referensi') }}"
+                           placeholder="Masukkan referensi (opsional)">
                     @error('referensi')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -143,10 +149,10 @@
                             class="w-full {{ $errors->has('sub_jenis_kendaraan') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Sub Jenis Kendaraan</option>
-                        <option value="STNK" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'STNK' ? 'selected' : '' }}>STNK</option>
-                        <option value="KIR" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'KIR' ? 'selected' : '' }}>KIR</option>
-                        <option value="PLAT" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'PLAT' ? 'selected' : '' }}>PLAT</option>
-                        <option value="Lain-lain" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                        <option value="STNK" {{ old('sub_jenis_kendaraan') == 'STNK' ? 'selected' : '' }}>STNK</option>
+                        <option value="KIR" {{ old('sub_jenis_kendaraan') == 'KIR' ? 'selected' : '' }}>KIR</option>
+                        <option value="PLAT" {{ old('sub_jenis_kendaraan') == 'PLAT' ? 'selected' : '' }}>PLAT</option>
+                        <option value="Lain-lain" {{ old('sub_jenis_kendaraan') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
                     </select>
                     @error('sub_jenis_kendaraan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -164,7 +170,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Nomor Polisi</option>
                         @foreach($mobils as $mobil)
-                            <option value="{{ $mobil->nomor_polisi }}" {{ old('nomor_polisi', $invoice->nomor_polisi) == $mobil->nomor_polisi ? 'selected' : '' }}>
+                            <option value="{{ $mobil->nomor_polisi }}" {{ old('nomor_polisi') == $mobil->nomor_polisi ? 'selected' : '' }}>
                                 {{ $mobil->nomor_polisi }} - {{ $mobil->merek }} {{ $mobil->jenis }}
                             </option>
                         @endforeach
@@ -185,7 +191,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Nomor Voyage</option>
                         @foreach($voyages as $voyage)
-                            <option value="{{ $voyage->voyage }}" {{ old('nomor_voyage', $invoice->nomor_voyage) == $voyage->voyage ? 'selected' : '' }}>
+                            <option value="{{ $voyage->voyage }}" {{ old('nomor_voyage') == $voyage->voyage ? 'selected' : '' }}>
                                 {{ $voyage->voyage }} - {{ $voyage->nama_kapal }} ({{ $voyage->source }})
                             </option>
                         @endforeach
@@ -198,12 +204,12 @@
                 <!-- Invoice Vendor (conditional for Pembayaran Kapal) -->
                 <div id="invoice_vendor_wrapper" class="hidden">
                     <label for="invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Invoice Vendor
+                        Invoice Vendor
                     </label>
                     <input type="text" 
                            name="invoice_vendor" 
                            id="invoice_vendor" 
-                           value="{{ old('invoice_vendor', $invoice->invoice_vendor) }}"
+                           value="{{ old('invoice_vendor') }}"
                            class="w-full {{ $errors->has('invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan nomor invoice vendor">
@@ -217,17 +223,61 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Daftar BL
                     </label>
-                    <div id="bl_container" class="space-y-3">
-                        <!-- Dynamic BL inputs will be added here -->
+                    
+                    <!-- Hidden inputs for selected BL values -->
+                    <div id="bl_hidden_inputs"></div>
+                    
+                    <!-- Search input with dropdown -->
+                    <div class="relative">
+                        <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white cursor-text" 
+                             id="bl_container"
+                             onclick="document.getElementById('bl_search').focus()">
+                             
+                            <!-- Selected items (chips) -->
+                            <div id="bl_selected_chips" class="flex flex-wrap gap-1 mb-1"></div>
+                            
+                            <!-- Search input -->
+                            <input type="text" 
+                                   id="bl_search"
+                                   class="border-0 focus:ring-0 outline-none p-0 text-sm w-full"
+                                   placeholder="Cari kontainer atau seal..." 
+                                   autocomplete="off">
+                        </div>
+                        
+                        <!-- Dropdown list -->
+                        <div id="bl_dropdown" 
+                             class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
+                            @foreach($bls as $bl)
+                                <div class="bl-option px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100"
+                                     data-id="{{ $bl->id }}"
+                                     data-text="{{ $bl->nomor_bl }}"
+                                     data-kontainer="{{ $bl->nomor_kontainer ?? 'N/A' }}"
+                                     data-seal="{{ $bl->no_seal ?? 'N/A' }}"
+                                     data-voyage="{{ $bl->no_voyage ?? '' }}">
+                                    <div class="font-medium text-gray-900">{{ $bl->nomor_kontainer ?? 'N/A' }}</div>
+                                    <div class="text-xs text-gray-600">Seal: {{ $bl->no_seal ?? 'N/A' }}</div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <button type="button" 
-                            id="add_bl_btn" 
-                            class="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Tambah BL
-                    </button>
+                    
+                    <div class="mt-2 flex justify-between items-center">
+                        <span id="bl_selectedCount" class="text-sm text-blue-600">
+                            Terpilih: 0 dari {{ count($bls) }} BL
+                        </span>
+                        <div class="flex gap-2">
+                            <button type="button" 
+                                    id="bl_selectAllBtn"
+                                    class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition">
+                                Pilih Semua
+                            </button>
+                            <button type="button" 
+                                    id="bl_clearAllBtn"
+                                    class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition">
+                                Hapus Semua
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Klasifikasi Biaya (conditional for Pembayaran Kapal) -->
@@ -241,7 +291,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Klasifikasi Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
-                            <option value="{{ $klasifikasi->id }}" data-nama="{{ $klasifikasi->nama }}" {{ old('klasifikasi_biaya_id', $invoice->klasifikasi_biaya_id) == $klasifikasi->id ? 'selected' : '' }}>
+                            <option value="{{ $klasifikasi->id }}" data-nama="{{ $klasifikasi->nama }}" {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
                                 {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
@@ -264,7 +314,7 @@
                         @foreach($pricelistBiayaDokumen as $pricelist)
                             <option value="{{ $pricelist->id }}" 
                                     data-biaya="{{ $pricelist->biaya }}" 
-                                    {{ old('pricelist_biaya_dokumen_id', $invoice->pricelist_biaya_dokumen_id ?? '') == $pricelist->id ? 'selected' : '' }}>
+                                    {{ old('pricelist_biaya_dokumen_id') == $pricelist->id ? 'selected' : '' }}>
                                 {{ $pricelist->nama_vendor }} - Rp {{ number_format($pricelist->biaya, 0, ',', '.') }}
                             </option>
                         @endforeach
@@ -282,11 +332,24 @@
                     <input type="text" 
                            name="vendor_labuh_tambat" 
                            id="vendor_labuh_tambat" 
-                           value="{{ old('vendor_labuh_tambat', $invoice->vendor_labuh_tambat) }}"
+                           value="{{ old('vendor_labuh_tambat') }}"
                            class="w-full {{ $errors->has('vendor_labuh_tambat') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan nama vendor labuh tambat">
                     @error('vendor_labuh_tambat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+
+                    <label for="tanggal_invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2 mt-4">
+                        Tanggal Invoice Vendor
+                    </label>
+                    <input type="date" 
+                           name="tanggal_invoice_vendor" 
+                           id="tanggal_invoice_vendor" 
+                           value="{{ old('tanggal_invoice_vendor') }}"
+                           class="w-full {{ $errors->has('tanggal_invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    @error('tanggal_invoice_vendor')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -301,7 +364,6 @@
                             <input type="text" 
                                    id="nomor_rekening_labuh" 
                                    name="nomor_rekening_labuh"
-                                   value="{{ old('nomor_rekening_labuh', $invoice->nomor_rekening_labuh) }}"
                                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                    style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                    placeholder="Masukkan nomor rekening...">
@@ -317,7 +379,6 @@
                                 <input type="text" 
                                        id="sub_total_labuh" 
                                        name="sub_total_labuh"
-                                       value="{{ old('sub_total_labuh', number_format($invoice->subtotal, 0, ',', '.')) }}"
                                        class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                        style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                        placeholder="0">
@@ -332,7 +393,6 @@
                                 <input type="text" 
                                        id="pph_labuh" 
                                        name="pph_labuh"
-                                       value="{{ old('pph_labuh', number_format($invoice->pph, 0, ',', '.')) }}"
                                        class="w-full pl-10 bg-gray-100 cursor-not-allowed border-gray-300 rounded-md shadow-sm"
                                        style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                        placeholder="0"
@@ -348,7 +408,6 @@
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
                                 <input type="text" 
                                        id="total_labuh" 
-                                       value="{{ old('total_labuh', number_format($invoice->grand_total, 0, ',', '.')) }}"
                                        class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed border-gray-300 rounded-md shadow-sm"
                                        style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                        placeholder="0"
@@ -368,6 +427,7 @@
                         <!-- Dynamic barang inputs will be added here -->
                     </div>
                     <button type="button" 
+
                             id="add_barang_btn" 
                             class="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,7 +451,7 @@
                             <option value="{{ $sj->id }}" 
                                     data-uang-jalan="{{ $sj->uang_jalan }}" 
                                     data-source="{{ $sj->source }}"
-                                    {{ old('surat_jalan_id', $invoice->surat_jalan_id) == $sj->id ? 'selected' : '' }}>
+                                    {{ old('surat_jalan_id') == $sj->id ? 'selected' : '' }}>
                                 {{ $sj->no_surat_jalan }} - {{ $sj->tujuan_pengiriman }} (Rp {{ number_format($sj->uang_jalan, 0, ',', '.') }})
                                 @if(isset($sj->source))
                                     - [{{ $sj->source == 'regular' ? 'Regular' : 'Bongkar' }}]
@@ -414,9 +474,9 @@
                             class="w-full {{ $errors->has('jenis_penyesuaian') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Jenis Penyesuaian</option>
-                        <option value="pengembalian penuh" {{ old('jenis_penyesuaian', $invoice->jenis_penyesuaian) == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
-                        <option value="pengembalian sebagian" {{ old('jenis_penyesuaian', $invoice->jenis_penyesuaian) == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
-                        <option value="penambahan" {{ old('jenis_penyesuaian', $invoice->jenis_penyesuaian) == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
+                        <option value="pengembalian penuh" {{ old('jenis_penyesuaian') == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
+                        <option value="pengembalian sebagian" {{ old('jenis_penyesuaian') == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
+                        <option value="penambahan" {{ old('jenis_penyesuaian') == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
                     </select>
                     @error('jenis_penyesuaian')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -449,7 +509,7 @@
                     <input type="number" 
                            name="jumlah_retur" 
                            id="jumlah_retur" 
-                           value="{{ old('jumlah_retur', $invoice->jumlah_retur) }}"
+                           value="{{ old('jumlah_retur') }}"
                            min="1"
                            step="1"
                            class="w-full {{ $errors->has('jumlah_retur') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -460,19 +520,18 @@
                     @enderror
                 </div>
 
-                <!-- Penerima -->
-                <div>
+                <!-- Penerima (hidden for Biaya Listrik) -->
+                <div id="penerima_wrapper">
                     <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
                         Penerima <span class="text-red-500">*</span>
                     </label>
                     <select name="penerima" 
                             id="penerima" 
                             class="w-full {{ $errors->has('penerima') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                            required>
+                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Penerima</option>
                         @foreach($karyawans as $karyawan)
-                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima', $invoice->penerima) == $karyawan->nama_lengkap ? 'selected' : '' }}>
+                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima') == $karyawan->nama_lengkap ? 'selected' : '' }}>
                                 {{ $karyawan->nama_lengkap }}
                             </option>
                         @endforeach
@@ -482,27 +541,314 @@
                     @enderror
                 </div>
 
-                <!-- Total -->
-                <div>
+                <!-- Vendor (conditional for Biaya Listrik) -->
+                <div id="vendor_listrik_wrapper" class="hidden">
+                    <label for="vendor_listrik" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor Listrik <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="vendor_listrik" 
+                           id="vendor_listrik" 
+                           value="{{ old('vendor_listrik') }}"
+                           class="w-full {{ $errors->has('vendor_listrik') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan nama vendor (misal: PLN, dll)">
+                    @error('vendor_listrik')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Biaya Listrik Multiple Entries -->
+                <div id="biaya_listrik_wrapper" class="hidden md:col-span-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Biaya Listrik <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" 
+                                id="add_biaya_listrik_btn"
+                                class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Tambah Biaya Listrik
+                        </button>
+                    </div>
+                    <div id="biaya_listrik_container" class="space-y-4">
+                        <!-- Biaya listrik entries will be added here dynamically -->
+                    </div>
+                </div>
+
+                <!-- LWBP Baru (for Biaya Listrik) -->
+                <div id="lwbp_baru_wrapper" class="hidden">
+                    <label for="lwbp_baru" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP Baru
+                    </label>
+                    <input type="number" 
+                           name="lwbp_baru" 
+                           id="lwbp_baru" 
+                           value="{{ old('lwbp_baru') }}"
+                           class="w-full {{ $errors->has('lwbp_baru') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan LWBP baru"
+                           step="0.01">
+                    @error('lwbp_baru')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- LWBP Lama (for Biaya Listrik) -->
+                <div id="lwbp_lama_wrapper" class="hidden">
+                    <label for="lwbp_lama" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP Lama
+                    </label>
+                    <input type="number" 
+                           name="lwbp_lama" 
+                           id="lwbp_lama" 
+                           value="{{ old('lwbp_lama') }}"
+                           class="w-full {{ $errors->has('lwbp_lama') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan LWBP lama"
+                           step="0.01">
+                    @error('lwbp_lama')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- LWBP (for Biaya Listrik) -->
+                <div id="lwbp_wrapper" class="hidden">
+                    <label for="lwbp" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP
+                    </label>
+                    <input type="number" 
+                           name="lwbp" 
+                           id="lwbp" 
+                           value="{{ old('lwbp') }}"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('lwbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">LWBP = LWBP Baru - LWBP Lama - WBP</p>
+                    @error('lwbp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- WBP (for Biaya Listrik) -->
+                <div id="wbp_wrapper" class="hidden">
+                    <label for="wbp" class="block text-sm font-medium text-gray-700 mb-2">
+                        WBP
+                    </label>
+                    <input type="number" 
+                           name="wbp" 
+                           id="wbp" 
+                           value="{{ old('wbp') }}"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('wbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">WBP = (LWBP Baru - LWBP Lama) × 17%</p>
+                    @error('wbp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- LWBP Tarif (for Biaya Listrik) -->
+                <div id="lwbp_tarif_wrapper" class="hidden">
+                    <label for="lwbp_tarif" class="block text-sm font-medium text-gray-700 mb-2">
+                        LWBP Tarif
+                    </label>
+                    <input type="number" 
+                           name="lwbp_tarif" 
+                           id="lwbp_tarif" 
+                           value="{{ old('lwbp_tarif', '1982') }}"
+                           class="w-full {{ $errors->has('lwbp_tarif') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan LWBP Tarif"
+                           step="0.01">
+                    @error('lwbp_tarif')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- WBP Tarif (for Biaya Listrik) -->
+                <div id="wbp_tarif_wrapper" class="hidden">
+                    <label for="wbp_tarif" class="block text-sm font-medium text-gray-700 mb-2">
+                        WBP Tarif
+                    </label>
+                    <input type="number" 
+                           name="wbp_tarif" 
+                           id="wbp_tarif" 
+                           value="{{ old('wbp_tarif', '2975') }}"
+                           class="w-full {{ $errors->has('wbp_tarif') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan WBP Tarif"
+                           step="0.01">
+                    @error('wbp_tarif')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tarif 1 (for Biaya Listrik) -->
+                <div id="tarif_1_wrapper" class="hidden">
+                    <label for="tarif_1" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tarif 1
+                    </label>
+                    <input type="number" 
+                           name="tarif_1" 
+                           id="tarif_1" 
+                           value="{{ old('tarif_1') }}"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('tarif_1') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">Tarif 1 = LWBP × LWBP Tarif</p>
+                    @error('tarif_1')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tarif 2 (for Biaya Listrik) -->
+                <div id="tarif_2_wrapper" class="hidden">
+                    <label for="tarif_2" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tarif 2
+                    </label>
+                    <input type="number" 
+                           name="tarif_2" 
+                           id="tarif_2" 
+                           value="{{ old('tarif_2') }}"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('tarif_2') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">Tarif 2 = WBP × WBP Tarif</p>
+                    @error('tarif_2')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Biaya Beban (for Biaya Listrik) -->
+                <div id="biaya_beban_wrapper" class="hidden">
+                    <label for="biaya_beban" class="block text-sm font-medium text-gray-700 mb-2">
+                        Biaya Beban
+                    </label>
+                    <input type="number" 
+                           name="biaya_beban" 
+                           id="biaya_beban" 
+                           value="{{ old('biaya_beban') }}"
+                           class="w-full {{ $errors->has('biaya_beban') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan Biaya Beban"
+                           step="0.01">
+                    @error('biaya_beban')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- PPJU (for Biaya Listrik) -->
+                <div id="ppju_wrapper" class="hidden">
+                    <label for="ppju" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPJU
+                    </label>
+                    <input type="number" 
+                           name="ppju" 
+                           id="ppju" 
+                           value="{{ old('ppju') }}"
+                           class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('ppju') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Auto-calculated"
+                           step="0.01"
+                           readonly>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPJU = (Tarif 1 + Tarif 2 + Biaya Beban) × 3%</p>
+                    @error('ppju')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- DPP (for Biaya Listrik) -->
+                <div id="dpp_wrapper" class="hidden">
+                    <label for="dpp" class="block text-sm font-medium text-gray-700 mb-2">
+                        DPP
+                    </label>
+                    <input type="number" 
+                           name="dpp" 
+                           id="dpp" 
+                           value="{{ old('dpp') }}"
+                           class="w-full {{ $errors->has('dpp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                           placeholder="Masukkan DPP"
+                           step="0.01">
+                    @error('dpp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Total (for Biaya Listrik) -->
+                <div id="total_wrapper" class="hidden">
                     <label for="total" class="block text-sm font-medium text-gray-700 mb-2">
-                        Total <span class="text-red-500">*</span>
+                        Total
                     </label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
                         <input type="text" 
                                name="total" 
                                id="total" 
-                               value="{{ old('total', number_format($invoice->total, 0, ',', '.')) }}"
+                               value="{{ old('total') }}"
                                class="w-full pl-10 {{ $errors->has('total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                               placeholder="0"
-                               required>
+                               placeholder="0">
                     </div>
                     @error('total')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
+                <!-- PPH (for Biaya Listrik - 10% dari total) -->
+                <div id="pph_wrapper" class="hidden">
+                    <label for="pph" class="block text-sm font-medium text-gray-700 mb-2">
+                        PPH (10%)
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               name="pph" 
+                               id="pph" 
+                               value="{{ old('pph', '0') }}"
+                               class="w-full pl-10 bg-gray-100 cursor-not-allowed {{ $errors->has('pph') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-blue-600 font-medium">PPH = 10% × DPP</p>
+                    @error('pph')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Grand Total (for Biaya Listrik - Total - PPH) -->
+                <div id="grand_total_wrapper" class="hidden">
+                    <label for="grand_total" class="block text-sm font-medium text-gray-700 mb-2">
+                        Grand Total
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                        <input type="text" 
+                               name="grand_total" 
+                               id="grand_total" 
+                               value="{{ old('grand_total', '') }}"
+                               class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed {{ $errors->has('grand_total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
+                               placeholder="0"
+                               readonly>
+                    </div>
+                    <p class="mt-1 text-xs text-green-600 font-medium">Grand Total = DPP - PPH</p>
+                    @error('grand_total')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <!-- Detail Pembayaran Multiple (conditional for Pembayaran Kapal) -->
@@ -535,7 +881,7 @@
                           rows="4"
                           class="w-full {{ $errors->has('deskripsi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           style="padding: 8px 12px; font-size: 14px; line-height: 1.5; border: 1px solid #d1d5db; border-radius: 6px;"
-                          placeholder="Masukkan deskripsi invoice (opsional)">{{ old('deskripsi', $invoice->deskripsi) }}</textarea>
+                          placeholder="Masukkan deskripsi invoice (opsional)">{{ old('deskripsi') }}</textarea>
                 @error('deskripsi')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -551,7 +897,7 @@
                           rows="3"
                           class="w-full {{ $errors->has('catatan') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           style="padding: 8px 12px; font-size: 14px; line-height: 1.5; border: 1px solid #d1d5db; border-radius: 6px;"
-                          placeholder="Masukkan catatan tambahan (opsional)">{{ old('catatan', $invoice->catatan) }}</textarea>
+                          placeholder="Masukkan catatan tambahan (opsional)">{{ old('catatan') }}</textarea>
                 @error('catatan')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -569,7 +915,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Simpan Perubahan
+                Simpan Invoice
             </button>
         </div>
     </form>
@@ -605,6 +951,61 @@
 .select2-results__option--highlighted {
     background-color: #3b82f6 !important;
 }
+
+/* BL Multi-Select Styling */
+#bl_container {
+    transition: all 0.15s ease;
+}
+
+#bl_container:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.bl-selected-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 1px;
+    gap: 6px;
+}
+
+.bl-selected-chip .remove-chip {
+    margin-left: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.bl-selected-chip .remove-chip:hover {
+    opacity: 1;
+}
+
+.bl-option {
+    transition: background-color 0.15s ease;
+}
+
+.bl-option:hover {
+    background-color: #eff6ff !important;
+}
+
+.bl-option.selected {
+    background-color: #dbeafe;
+    opacity: 0.6;
+}
+
+#bl_search::placeholder {
+    color: #9ca3af;
+}
+
+#bl_dropdown {
+    border-top: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
 </style>
 
 <!-- Ensure jQuery + Select2 are available (dynamic loader with fallbacks) -->
@@ -613,19 +1014,12 @@
 const pricelistBuruhData = @json($pricelistBuruh);
 const pricelistBiayaDokumenData = @json($pricelistBiayaDokumen);
 const blsData = @json($bls);
-
-// Store existing invoice data for pre-population
-const existingInvoice = {
-    bl_details: @json($invoice->bl_details_array ?? []),
-    barang_detail: @json(json_decode($invoice->barang_detail, true) ?? []),
-    tipe_penyesuaian: @json(json_decode($invoice->tipe_penyesuaian, true) ?? []),
-    detail_pembayaran: @json(json_decode($invoice->detail_pembayaran, true) ?? [])
-};
+const akunCoasData = @json($akunCoas);
 
 // Debug: Check for duplicates
 console.log('Total pricelist buruh:', pricelistBuruhData.length);
 console.log('Pricelist buruh data:', pricelistBuruhData);
-console.log('Existing invoice data:', existingInvoice);
+console.log('Akun COAs data:', akunCoasData);
 
 (function() {
     function loadScript(src, onload, onerror) {
@@ -692,25 +1086,70 @@ console.log('Existing invoice data:', existingInvoice);
         $('#nama_barang_select').select2({ placeholder: 'Pilih Nama Barang', allowClear: true, width: '100%' });
         $('#surat_jalan_select').select2({ placeholder: 'Pilih Surat Jalan', allowClear: true, width: '100%' });
         $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
-        $('#penerima').select2({ placeholder: 'Pilih Penerima', allowClear: true, width: '100%' });
-
-        const subTotalLabuhInput = document.getElementById('sub_total_labuh');
-        const pphLabuhInput = document.getElementById('pph_labuh');
-        const totalLabuhInput = document.getElementById('total_labuh');
-        const totalWrapper = document.getElementById('total').closest('div');
-        const labuhTambatCalculationWrapper = document.getElementById('labuh_tambat_calculation_wrapper');
+        $('#penerima').select2({ placeholder: 'Pilih atau ketik nama penerima', allowClear: true, width: '100%', tags: true });
 
         // Format currency input
         const totalInput = document.getElementById('total');
+        const pphInput = document.getElementById('pph');
+        const grandTotalInput = document.getElementById('grand_total');
+        const pphWrapper = document.getElementById('pph_wrapper');
+        const grandTotalWrapper = document.getElementById('grand_total_wrapper');
+        const lwbpBaruWrapper = document.getElementById('lwbp_baru_wrapper');
+        const lwbpLamaWrapper = document.getElementById('lwbp_lama_wrapper');
+        const lwbpBaruInput = document.getElementById('lwbp_baru');
+        const lwbpLamaInput = document.getElementById('lwbp_lama');
+        const lwbpWrapper = document.getElementById('lwbp_wrapper');
+        const lwbpInput = document.getElementById('lwbp');
+        const wbpWrapper = document.getElementById('wbp_wrapper');
+        const wbpInput = document.getElementById('wbp');
+        const lwbpTarifWrapper = document.getElementById('lwbp_tarif_wrapper');
+        const lwbpTarifInput = document.getElementById('lwbp_tarif');
+        const wbpTarifWrapper = document.getElementById('wbp_tarif_wrapper');
+        const wbpTarifInput = document.getElementById('wbp_tarif');
+        const tarif1Wrapper = document.getElementById('tarif_1_wrapper');
+        const tarif1Input = document.getElementById('tarif_1');
+        const tarif2Wrapper = document.getElementById('tarif_2_wrapper');
+        const tarif2Input = document.getElementById('tarif_2');
+        const biayaBebanWrapper = document.getElementById('biaya_beban_wrapper');
+        const biayaBebanInput = document.getElementById('biaya_beban');
+        const ppjuWrapper = document.getElementById('ppju_wrapper');
+        const ppjuInput = document.getElementById('ppju');
+        const dppWrapper = document.getElementById('dpp_wrapper');
+        const dppInput = document.getElementById('dpp');
+        const vendorLabuhTambatWrapper = document.getElementById('vendor_labuh_tambat_wrapper');
+        const vendorLabuhTambatInput = document.getElementById('vendor_labuh_tambat');
+        const labuhTambatCalculationWrapper = document.getElementById('labuh_tambat_calculation_wrapper');
+        const subTotalLabuhInput = document.getElementById('sub_total_labuh');
+        const pphLabuhInput = document.getElementById('pph_labuh');
+        const totalLabuhInput = document.getElementById('total_labuh');
+        const totalWrapper = document.getElementById('total_wrapper');
+        const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
+
         if (totalInput) {
             totalInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/[^0-9]/g, '');
                 if (value) value = parseInt(value).toLocaleString('id-ID');
                 e.target.value = value;
+                
+                // Calculate PPh if Biaya Listrik is selected
+                const selectedJenisBiaya = $('#jenis_biaya_dropdown').find('option:selected');
+                const namaJenisBiaya = selectedJenisBiaya.text().toLowerCase();
+                if (namaJenisBiaya.includes('listrik')) {
+                    calculatePph();
+                }
             });
             totalInput.closest('form').addEventListener('submit', function(e) {
+                // Strip formatting from total
                 const plainValue = totalInput.value.replace(/\./g, '');
                 totalInput.value = plainValue;
+                
+                // Strip formatting from PPh and Grand Total
+                if (pphInput && pphInput.value) {
+                    pphInput.value = pphInput.value.replace(/\./g, '');
+                }
+                if (grandTotalInput && grandTotalInput.value) {
+                    grandTotalInput.value = grandTotalInput.value.replace(/\./g, '');
+                }
                 
                 // Strip formatting from Labuh Tambat fields
                 if (subTotalLabuhInput && subTotalLabuhInput.value) {
@@ -719,38 +1158,220 @@ console.log('Existing invoice data:', existingInvoice);
                 if (pphLabuhInput && pphLabuhInput.value) {
                     pphLabuhInput.value = pphLabuhInput.value.replace(/\./g, '');
                 }
+                if (totalLabuhInput && totalLabuhInput.value) {
+                    // Update: also strip total_labuh just in case it's used
+                    // totalLabuhInput doesn't have a name but better be safe
+                }
                 
-                // No need to collect tipe penyesuaian data - it's already in the form as tipe_penyesuaian_detail array
+                // Strip formatting from all detail_biaya inputs
+                const detailBiayaInputs = document.querySelectorAll('.detail-biaya');
+                detailBiayaInputs.forEach(input => {
+                    if (input.value) {
+                        input.value = input.value.replace(/\./g, '').replace(/,/g, '');
+                    }
+                });
             });
         }
 
-        if (subTotalLabuhInput) {
-            subTotalLabuhInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[^0-9]/g, '');
-                if (value) value = parseInt(value).toLocaleString('id-ID');
-                e.target.value = value;
-                calculateLabuhTambat();
-            });
+        // Calculate PPh (10% dari DPP untuk biaya listrik)
+        function calculatePph() {
+            const dpp = parseFloat(dppInput.value) || 0;
+            
+            // PPH = 10% dari DPP
+            const pph = Math.round(dpp * 0.10);
+            pphInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
+            
+            // Grand Total = DPP - PPH
+            const grandTotal = dpp - pph;
+            grandTotalInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
         }
 
+        // Calculate LWBP (LWBP Baru - LWBP Lama - WBP)
+        function calculateLwbp() {
+            // First calculate WBP
+            calculateWbp();
+            
+            const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+            const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+            const wbp = parseFloat(wbpInput.value) || 0;
+            
+            // LWBP = LWBP Baru - LWBP Lama - WBP
+            const lwbp = lwbpBaru - lwbpLama - wbp;
+            lwbpInput.value = lwbp;
+            
+            // Trigger Tarif 1 calculation when LWBP changes
+            calculateTarif1();
+        }
+
+        // Calculate WBP ((LWBP Baru - LWBP Lama) × 17%)
+        function calculateWbp() {
+            const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+            const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+            
+            // WBP = (LWBP Baru - LWBP Lama) × 17%
+            const wbp = Math.round((lwbpBaru - lwbpLama) * 0.17);
+            wbpInput.value = wbp;
+            
+            // Trigger Tarif 2 calculation when WBP changes
+            calculateTarif2();
+        }
+
+        // Setup WBP calculation event listeners
+        function setupWbpCalculation() {
+            if (lwbpBaruInput) {
+                lwbpBaruInput.addEventListener('input', calculateWbp);
+            }
+            if (lwbpLamaInput) {
+                lwbpLamaInput.addEventListener('input', calculateWbp);
+            }
+        }
+
+        // Setup LWBP calculation event listeners
+        function setupLwbpCalculation() {
+            if (lwbpBaruInput) {
+                lwbpBaruInput.addEventListener('input', calculateLwbp);
+            }
+            if (lwbpLamaInput) {
+                lwbpLamaInput.addEventListener('input', calculateLwbp);
+            }
+        }
+
+        // Calculate Tarif 1 (LWBP × LWBP Tarif)
+        function calculateTarif1() {
+            const lwbp = parseFloat(lwbpInput.value) || 0;
+            const lwbpTarif = parseFloat(lwbpTarifInput.value) || 0;
+            
+            // Tarif 1 = LWBP × LWBP Tarif
+            const tarif1 = lwbp * lwbpTarif;
+            tarif1Input.value = tarif1;
+            
+            // Trigger PPJU calculation when Tarif 1 changes
+            calculatePpju();
+        }
+
+        // Setup Tarif 1 calculation event listeners
+        function setupTarif1Calculation() {
+            if (lwbpInput) {
+                lwbpInput.addEventListener('change', calculateTarif1);
+            }
+            if (lwbpTarifInput) {
+                lwbpTarifInput.addEventListener('input', calculateTarif1);
+            }
+        }
+
+        // Calculate Tarif 2 (WBP × WBP Tarif)
+        function calculateTarif2() {
+            const wbp = parseFloat(wbpInput.value) || 0;
+            const wbpTarif = parseFloat(wbpTarifInput.value) || 0;
+            
+            // Tarif 2 = WBP × WBP Tarif
+            const tarif2 = wbp * wbpTarif;
+            tarif2Input.value = tarif2;
+            
+            // Trigger PPJU calculation when Tarif 2 changes
+            calculatePpju();
+        }
+
+        // Setup Tarif 2 calculation event listeners
+        function setupTarif2Calculation() {
+            if (wbpInput) {
+                wbpInput.addEventListener('change', calculateTarif2);
+            }
+            if (wbpTarifInput) {
+                wbpTarifInput.addEventListener('input', calculateTarif2);
+            }
+        }
+
+        // Calculate PPJU ((Tarif 1 + Tarif 2 + Biaya Beban) × 3%)
+        function calculatePpju() {
+            const tarif1 = parseFloat(tarif1Input.value) || 0;
+            const tarif2 = parseFloat(tarif2Input.value) || 0;
+            const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+            
+            // PPJU = (Tarif 1 + Tarif 2 + Biaya Beban) × 3%
+            const ppju = Math.round((tarif1 + tarif2 + biayaBeban) * 0.03);
+            ppjuInput.value = ppju;
+            
+            // Trigger DPP calculation when PPJU changes
+            calculateDpp();
+        }
+
+        // Calculate DPP (Tarif 1 + Tarif 2 + Biaya Beban + PPJU)
+        function calculateDpp() {
+            const tarif1 = parseFloat(tarif1Input.value) || 0;
+            const tarif2 = parseFloat(tarif2Input.value) || 0;
+            const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+            const ppju = parseFloat(ppjuInput.value) || 0;
+            
+            // DPP = Tarif 1 + Tarif 2 + Biaya Beban + PPJU
+            const dpp = tarif1 + tarif2 + biayaBeban + ppju;
+            dppInput.value = dpp;
+            
+            // Trigger PPH calculation when DPP changes
+            calculatePph();
+        }
+
+        // Calculate Labuh Tambat (Sub Total - PPH 2%)
         function calculateLabuhTambat() {
             if (!subTotalLabuhInput) return;
             
-            const subTotal = parseFloat(subTotalLabuhInput.value.replace(/\./g, '')) || 0;
-            const pph = Math.round(subTotal * 0.02);
-            const total = subTotal - pph;
+            let value = subTotalLabuhInput.value.replace(/[^0-9]/g, '');
+            let subTotal = parseInt(value) || 0;
             
-            pphLabuhInput.value = pph.toLocaleString('id-ID');
-            totalLabuhInput.value = total.toLocaleString('id-ID');
+            // Format input value
+            subTotalLabuhInput.value = subTotal ? subTotal.toLocaleString('id-ID') : '';
             
-            // Set main total input too
+            // Calculate PPH (2%)
+            let pph = Math.round(subTotal * 0.02);
+            pphLabuhInput.value = pph ? pph.toLocaleString('id-ID') : '0';
+            
+            // Calculate Total
+            let total = subTotal - pph;
+            totalLabuhInput.value = total ? total.toLocaleString('id-ID') : '0';
+            
+            // Sync with main total
             if (totalInput) {
-                totalInput.value = total.toLocaleString('id-ID');
+                totalInput.value = total ? total.toLocaleString('id-ID') : '';
+            }
+        }
+
+        // Setup Labuh Tambat calculation event listeners
+        if (subTotalLabuhInput) {
+            subTotalLabuhInput.addEventListener('input', calculateLabuhTambat);
+        }
+
+        // Setup PPJU calculation event listeners
+        function setupPpjuCalculation() {
+            if (tarif1Input) {
+                tarif1Input.addEventListener('change', calculatePpju);
+            }
+            if (tarif2Input) {
+                tarif2Input.addEventListener('change', calculatePpju);
+            }
+            if (biayaBebanInput) {
+                biayaBebanInput.addEventListener('input', calculatePpju);
+            }
+        }
+
+        // Setup DPP calculation event listeners
+        function setupDppCalculation() {
+            if (tarif1Input) {
+                tarif1Input.addEventListener('change', calculateDpp);
+            }
+            if (tarif2Input) {
+                tarif2Input.addEventListener('change', calculateDpp);
+            }
+            if (biayaBebanInput) {
+                biayaBebanInput.addEventListener('input', calculateDpp);
+            }
+            if (ppjuInput) {
+                ppjuInput.addEventListener('change', calculateDpp);
             }
         }
 
         // Toggle conditional fields
         const jenisAktivitasSelect = document.getElementById('jenis_aktivitas');
+        const jenisBiayaWrapper = document.getElementById('jenis_biaya_wrapper');
         const subJenisKendaraanWrapper = document.getElementById('sub_jenis_kendaraan_wrapper');
         const subJenisKendaraanSelect = document.getElementById('sub_jenis_kendaraan');
         const nomorPolisiWrapper = document.getElementById('nomor_polisi_wrapper');
@@ -770,25 +1391,245 @@ console.log('Existing invoice data:', existingInvoice);
         const jenisPenyesuaianWrapper = document.getElementById('jenis_penyesuaian_wrapper');
         const jenisPenyesuaianSelect = document.getElementById('jenis_penyesuaian_select');
         const tipePenyesuaianWrapper = document.getElementById('tipe_penyesuaian_wrapper');
-        const vendorLabuhTambatWrapper = document.getElementById('vendor_labuh_tambat_wrapper');
-        const vendorLabuhTambatInput = document.getElementById('vendor_labuh_tambat');
         const detailPembayaranWrapper = document.getElementById('detail_pembayaran_wrapper');
+        const biayaListrikWrapper = document.getElementById('biaya_listrik_wrapper');
+        const vendorListrikWrapper = document.getElementById('vendor_listrik_wrapper');
+        const vendorListrikInput = document.getElementById('vendor_listrik');
+
+        // Toggle PPh fields based on jenis biaya selection
+        if (jenisBiayaDropdown) {
+            $('#jenis_biaya_dropdown').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const namaJenisBiaya = selectedOption.text().toLowerCase();
+                
+                const referensiWrapper = document.getElementById('referensi_wrapper');
+                const referensiInput = document.getElementById('referensi');
+                const penerimaWrapper = document.getElementById('penerima_wrapper');
+                const penerimaInput = document.getElementById('penerima');
+                
+                // Show PPh and LWBP fields for Biaya Listrik
+                if (namaJenisBiaya.includes('listrik')) {
+                    // Show biaya listrik wrapper (new multiple entries system)
+                    if (biayaListrikWrapper) {
+                        biayaListrikWrapper.classList.remove('hidden');
+                        initializeBiayaListrikInputs();
+                    }
+                    
+                    // Show vendor listrik field
+                    if (vendorListrikWrapper) {
+                        vendorListrikWrapper.classList.remove('hidden');
+                        if (vendorListrikInput) vendorListrikInput.setAttribute('required', 'required');
+                    }
+                    
+                    // HIDE penerima field (each biaya listrik entry has its own)
+                    if (penerimaWrapper) {
+                        penerimaWrapper.classList.add('hidden');
+                        if (penerimaInput) {
+                            penerimaInput.value = '';
+                            penerimaInput.removeAttribute('required');
+                        }
+                    }
+                    
+                    // HIDE referensi field (each biaya listrik entry has its own)
+                    if (referensiWrapper) {
+                        referensiWrapper.classList.add('hidden');
+                        if (referensiInput) referensiInput.value = '';
+                    }
+                    
+                    // HIDE total field for biaya listrik (not needed, calculated from entries)
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
+                        if (totalInput) {
+                            totalInput.value = '';
+                            totalInput.removeAttribute('required');
+                        }
+                    }
+                    
+                    // HIDE old summary fields (PPH and Grand Total) - each entry has its own
+                    if (pphWrapper) {
+                        pphWrapper.classList.add('hidden');
+                        if (pphInput) pphInput.value = '';
+                    }
+                    if (grandTotalWrapper) {
+                        grandTotalWrapper.classList.add('hidden');
+                        if (grandTotalInput) grandTotalInput.value = '';
+                    }
+                    
+                    // HIDE all old single-entry fields (replaced by multiple entries)
+                    if (lwbpBaruWrapper) {
+                        lwbpBaruWrapper.classList.add('hidden');
+                        if (lwbpBaruInput) {
+                            lwbpBaruInput.value = '';
+                            lwbpBaruInput.removeAttribute('required');
+                        }
+                    }
+                    if (lwbpLamaWrapper) {
+                        lwbpLamaWrapper.classList.add('hidden');
+                        if (lwbpLamaInput) {
+                            lwbpLamaInput.value = '';
+                            lwbpLamaInput.removeAttribute('required');
+                        }
+                    }
+                    if (lwbpWrapper) {
+                        lwbpWrapper.classList.add('hidden');
+                        if (lwbpInput) lwbpInput.value = '';
+                    }
+                    if (wbpWrapper) {
+                        wbpWrapper.classList.add('hidden');
+                        if (wbpInput) wbpInput.value = '';
+                    }
+                    if (lwbpTarifWrapper) {
+                        lwbpTarifWrapper.classList.add('hidden');
+                        if (lwbpTarifInput) {
+                            lwbpTarifInput.value = '';
+                            lwbpTarifInput.removeAttribute('required');
+                        }
+                    }
+                    if (wbpTarifWrapper) {
+                        wbpTarifWrapper.classList.add('hidden');
+                        if (wbpTarifInput) {
+                            wbpTarifInput.value = '';
+                            wbpTarifInput.removeAttribute('required');
+                        }
+                    }
+                    if (tarif1Wrapper) {
+                        tarif1Wrapper.classList.add('hidden');
+                        if (tarif1Input) tarif1Input.value = '';
+                    }
+                    if (tarif2Wrapper) {
+                        tarif2Wrapper.classList.add('hidden');
+                        if (tarif2Input) tarif2Input.value = '';
+                    }
+                    if (biayaBebanWrapper) {
+                        biayaBebanWrapper.classList.add('hidden');
+                        if (biayaBebanInput) {
+                            biayaBebanInput.value = '';
+                            biayaBebanInput.removeAttribute('required');
+                        }
+                    }
+                    if (ppjuWrapper) {
+                        ppjuWrapper.classList.add('hidden');
+                        if (ppjuInput) ppjuInput.value = '';
+                    }
+                    if (dppWrapper) {
+                        dppWrapper.classList.add('hidden');
+                        if (dppInput) dppInput.value = '';
+                    }
+                } else {
+                    // Hide biaya listrik wrapper for other jenis biaya
+                    if (biayaListrikWrapper) {
+                        biayaListrikWrapper.classList.add('hidden');
+                        clearBiayaListrikInputs();
+                    }
+                    
+                    // Hide vendor listrik field for other jenis biaya
+                    if (vendorListrikWrapper) {
+                        vendorListrikWrapper.classList.add('hidden');
+                        if (vendorListrikInput) {
+                            vendorListrikInput.value = '';
+                            vendorListrikInput.removeAttribute('required');
+                        }
+                    }
+                    
+                    // Show penerima field for other jenis biaya
+                    if (penerimaWrapper) {
+                        penerimaWrapper.classList.remove('hidden');
+                        if (penerimaInput) penerimaInput.setAttribute('required', 'required');
+                    }
+                    
+                    // Show referensi field for other jenis biaya
+                    if (referensiWrapper) {
+                        referensiWrapper.classList.remove('hidden');
+                    }
+                    
+                    // Handle Labuh Tambah/Tambat for Pembayaran Lain-lain
+                    if (namaJenisBiaya.includes('labuh tambat') || namaJenisBiaya.includes('labuh tambah')) {
+                        if (vendorLabuhTambatWrapper) {
+                            vendorLabuhTambatWrapper.classList.remove('hidden');
+                            if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
+                        }
+                        if (labuhTambatCalculationWrapper) {
+                            labuhTambatCalculationWrapper.classList.remove('hidden');
+                        }
+                        if (totalWrapper) {
+                            totalWrapper.classList.add('hidden');
+                            if (totalInput) totalInput.removeAttribute('required');
+                        }
+                    } else {
+                        // Show total field for other jenis biaya
+                        if (totalWrapper) {
+                            totalWrapper.classList.remove('hidden');
+                            if (totalInput) totalInput.setAttribute('required', 'required');
+                        }
+                        if (vendorLabuhTambatWrapper) {
+                            vendorLabuhTambatWrapper.classList.add('hidden');
+                            if (vendorLabuhTambatInput) {
+                                vendorLabuhTambatInput.value = '';
+                                vendorLabuhTambatInput.removeAttribute('required');
+                            }
+                        }
+                        if (labuhTambatCalculationWrapper) {
+                            labuhTambatCalculationWrapper.classList.add('hidden');
+                        }
+                    }
+                    
+                    // Hide PPh and LWBP fields for other jenis biaya
+                    if (pphWrapper) pphWrapper.classList.add('hidden');
+                    if (grandTotalWrapper) grandTotalWrapper.classList.add('hidden');
+                    if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
+                    if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
+                    if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
+                    if (wbpWrapper) wbpWrapper.classList.add('hidden');
+                    if (lwbpTarifWrapper) lwbpTarifWrapper.classList.add('hidden');
+                    if (wbpTarifWrapper) wbpTarifWrapper.classList.add('hidden');
+                    if (tarif1Wrapper) tarif1Wrapper.classList.add('hidden');
+                    if (tarif2Wrapper) tarif2Wrapper.classList.add('hidden');
+                    if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
+                    if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
+                    if (dppWrapper) dppWrapper.classList.add('hidden');
+
+                    if (pphInput) pphInput.value = '0';
+                    if (grandTotalInput) grandTotalInput.value = '';
+                }
+            });
+        }
 
         function toggleConditionalFields() {
             const jenisVal = jenisAktivitasSelect.value;
             
             // Hide all conditional fields first
-            const jenisBiayaWrapper = document.getElementById('jenis_biaya_wrapper');
-            const jenisBiayaDropdown = document.getElementById('jenis_biaya_dropdown');
+            jenisBiayaWrapper.classList.add('hidden');
+            jenisBiayaDropdown.removeAttribute('required');
+            $('#jenis_biaya_dropdown').val('').trigger('change');
+            
+            // Hide LWBP fields
+            if (totalWrapper) totalWrapper.classList.add('hidden');
+            if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
+            if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
+            if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
+            if (wbpWrapper) wbpWrapper.classList.add('hidden');
+            if (lwbpTarifWrapper) lwbpTarifWrapper.classList.add('hidden');
+            if (wbpTarifWrapper) wbpTarifWrapper.classList.add('hidden');
+            if (tarif1Wrapper) tarif1Wrapper.classList.add('hidden');
+            if (tarif2Wrapper) tarif2Wrapper.classList.add('hidden');
+            if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
+            if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
+            if (dppWrapper) dppWrapper.classList.add('hidden');
+            if (totalInput) totalInput.value = '';
+            if (lwbpBaruInput) lwbpBaruInput.value = '';
+            if (lwbpLamaInput) lwbpLamaInput.value = '';
+            if (lwbpInput) lwbpInput.value = '';
+            if (wbpInput) wbpInput.value = '';
+            if (lwbpTarifInput) lwbpTarifInput.value = '';
+            if (wbpTarifInput) wbpTarifInput.value = '';
+            if (tarif1Input) tarif1Input.value = '';
+            if (tarif2Input) tarif2Input.value = '';
+            if (biayaBebanInput) biayaBebanInput.value = '';
+            if (ppjuInput) ppjuInput.value = '';
+            if (dppInput) dppInput.value = '';
+            
             const referensiWrapper = document.getElementById('referensi_wrapper');
             const referensiInput = document.getElementById('referensi');
-            
-            if (jenisBiayaWrapper) {
-                jenisBiayaWrapper.classList.add('hidden');
-                if (jenisBiayaDropdown) jenisBiayaDropdown.removeAttribute('required');
-                $('#jenis_biaya_dropdown').val('').trigger('change');
-            }
-            
             if (referensiWrapper) {
                 referensiWrapper.classList.add('hidden');
                 if (referensiInput) referensiInput.value = '';
@@ -806,8 +1647,10 @@ console.log('Existing invoice data:', existingInvoice);
             nomorVoyageSelect.removeAttribute('required');
             $('#nomor_voyage').val('').trigger('change');
             
-            invoiceVendorWrapper.classList.add('hidden');
-            if (invoiceVendorInput) invoiceVendorInput.value = '';
+            if (invoiceVendorWrapper) {
+                invoiceVendorWrapper.classList.add('hidden');
+                if (invoiceVendorInput) invoiceVendorInput.value = '';
+            }
             
             blWrapper.classList.add('hidden');
             clearBlInputs();
@@ -823,8 +1666,20 @@ console.log('Existing invoice data:', existingInvoice);
             if (vendorLabuhTambatWrapper) {
                 vendorLabuhTambatWrapper.classList.add('hidden');
                 if (vendorLabuhTambatInput) {
+                    vendorLabuhTambatInput.value = '';
                     vendorLabuhTambatInput.removeAttribute('required');
                 }
+                const tanggalInvoiceVendorInput = document.getElementById('tanggal_invoice_vendor');
+                if (tanggalInvoiceVendorInput) {
+                    tanggalInvoiceVendorInput.value = '';
+                }
+            }
+
+            if (labuhTambatCalculationWrapper) {
+                labuhTambatCalculationWrapper.classList.add('hidden');
+                if (subTotalLabuhInput) subTotalLabuhInput.value = '';
+                if (pphLabuhInput) pphLabuhInput.value = '0';
+                if (totalLabuhInput) totalLabuhInput.value = '0';
             }
             
             barangWrapper.classList.add('hidden');
@@ -857,7 +1712,9 @@ console.log('Existing invoice data:', existingInvoice);
             } else if (jenisVal === 'Pembayaran Kapal') {
                 nomorVoyageWrapper.classList.remove('hidden');
                 nomorVoyageSelect.setAttribute('required', 'required');
-                invoiceVendorWrapper.classList.remove('hidden');
+                if (invoiceVendorWrapper) {
+                    invoiceVendorWrapper.classList.remove('hidden');
+                }
                 blWrapper.classList.remove('hidden');
                 initializeBlInputs();
                 klasifikasiBiayaWrapper.classList.remove('hidden');
@@ -884,10 +1741,7 @@ console.log('Existing invoice data:', existingInvoice);
                     $('#jenis_penyesuaian_select').select2({ placeholder: 'Pilih Jenis Penyesuaian', allowClear: true, width: '100%' });
                 }, 100);
             } else if (jenisVal === 'Pembayaran Lain-lain') {
-                if (jenisBiayaWrapper) {
-                    jenisBiayaWrapper.classList.remove('hidden');
-                    if (jenisBiayaDropdown) jenisBiayaDropdown.setAttribute('required', 'required');
-                }
+                jenisBiayaWrapper.classList.remove('hidden');
                 
                 if (referensiWrapper) {
                     referensiWrapper.classList.remove('hidden');
@@ -896,76 +1750,6 @@ console.log('Existing invoice data:', existingInvoice);
                 setTimeout(() => {
                     $('#jenis_biaya_dropdown').select2({ placeholder: 'Pilih Jenis Biaya', allowClear: true, width: '100%' });
                 }, 100);
-
-                // Handle Labuh Tambah/Tambat for Pembayaran Lain-lain
-                const selectedJenisBiaya = $('#jenis_biaya_dropdown').find('option:selected');
-                const namaJenisBiaya = selectedJenisBiaya.text().toLowerCase();
-
-                if (namaJenisBiaya.includes('labuh tambat') || namaJenisBiaya.includes('labuh tambah')) {
-                    if (vendorLabuhTambatWrapper) {
-                        vendorLabuhTambatWrapper.classList.remove('hidden');
-                        if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
-                    }
-                    if (labuhTambatCalculationWrapper) {
-                        labuhTambatCalculationWrapper.classList.remove('hidden');
-                    }
-                    if (totalWrapper) {
-                        totalWrapper.classList.add('hidden');
-                        if (totalInput) totalInput.removeAttribute('required');
-                    }
-                } else {
-                    // Show total field for other jenis biaya
-                    if (totalWrapper) {
-                        totalWrapper.classList.remove('hidden');
-                        if (totalInput) totalInput.setAttribute('required', 'required');
-                    }
-                    if (vendorLabuhTambatWrapper) {
-                        vendorLabuhTambatWrapper.classList.add('hidden');
-                        if (vendorLabuhTambatInput) {
-                            vendorLabuhTambatInput.removeAttribute('required');
-                        }
-                    }
-                    if (labuhTambatCalculationWrapper) {
-                        labuhTambatCalculationWrapper.classList.add('hidden');
-                    }
-                }
-
-                // Add event listener for jenis biaya dropdown change
-                $('#jenis_biaya_dropdown').off('change').on('change', function() {
-                    const selectedBiaya = $(this).find('option:selected');
-                    const namaBiaya = selectedBiaya.text().toLowerCase();
-                    
-                    if (namaBiaya.includes('labuh tambat') || namaBiaya.includes('labuh tambah')) {
-                        if (vendorLabuhTambatWrapper) {
-                            vendorLabuhTambatWrapper.classList.remove('hidden');
-                            if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
-                        }
-                        if (labuhTambatCalculationWrapper) {
-                            labuhTambatCalculationWrapper.classList.remove('hidden');
-                        }
-                        if (totalWrapper) {
-                            totalWrapper.classList.add('hidden');
-                            if (totalInput) totalInput.removeAttribute('required');
-                        }
-                    } else {
-                        if (vendorLabuhTambatWrapper) {
-                            vendorLabuhTambatWrapper.classList.add('hidden');
-                            if (vendorLabuhTambatInput) {
-                                vendorLabuhTambatInput.value = '';
-                                vendorLabuhTambatInput.removeAttribute('required');
-                            }
-                        }
-                        if (labuhTambatCalculationWrapper) {
-                            labuhTambatCalculationWrapper.classList.add('hidden');
-                        }
-                        if (totalWrapper) {
-                            totalWrapper.classList.remove('hidden');
-                            if (totalInput) {
-                                totalInput.setAttribute('required', 'required');
-                            }
-                        }
-                    }
-                });
             }
         }
 
@@ -1134,10 +1918,16 @@ console.log('Existing invoice data:', existingInvoice);
                     setTimeout(() => {
                         $('#vendor_dokumen_select').select2({ placeholder: 'Pilih Vendor Dokumen', allowClear: true, width: '100%' });
                     }, 100);
-                } else if (namaKlasifikasi.includes('labuh tambat')) {
+                } else if (namaKlasifikasi.includes('labuh tambat') || namaKlasifikasi.includes('labuh tambah')) {
                     if (vendorLabuhTambatWrapper) {
                         vendorLabuhTambatWrapper.classList.remove('hidden');
                         vendorLabuhTambatInput.setAttribute('required', 'required');
+                    }
+                    if (labuhTambatCalculationWrapper) {
+                        labuhTambatCalculationWrapper.classList.remove('hidden');
+                    }
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
                     }
                 }
             });
@@ -1175,72 +1965,171 @@ console.log('Existing invoice data:', existingInvoice);
             if (container) container.innerHTML = '';
         }
         
-        function addBlInput(existingBlId = '') {
-            const container = document.getElementById('bl_container');
-            const index = container.children.length;
-            
-            const inputGroup = document.createElement('div');
-            inputGroup.className = 'flex items-end gap-3 p-3 bg-gray-50 rounded-md';
-            
-            // Build options from JavaScript data
-            let blOptions = '<option value="">Pilih BL</option>';
-            blsData.forEach(bl => {
-                const selected = existingBlId == bl.id ? 'selected' : '';
-                const nomorKontainer = bl.nomor_kontainer || 'N/A';
-                const pengirim = bl.pengirim || 'N/A';
-                blOptions += `<option value="${bl.id}" ${selected}>${bl.nomor_bl} - ${nomorKontainer} (${pengirim})</option>`;
+
+        // BL Searchable Multi-Select Management
+        let selectedBLs = [];
+        
+        const blSearch = document.getElementById('bl_search');
+        const blDropdown = document.getElementById('bl_dropdown');
+        const blSelectedChips = document.getElementById('bl_selected_chips');
+        const blHiddenInputs = document.getElementById('bl_hidden_inputs');
+        const blSelectAllBtn = document.getElementById('bl_selectAllBtn');
+        const blClearAllBtn = document.getElementById('bl_clearAllBtn');
+        const blOptions = document.querySelectorAll('.bl-option');
+        const blSelectedCount = document.getElementById('bl_selectedCount');
+        
+        // Show dropdown on focus
+        if (blSearch) {
+            blSearch.addEventListener('focus', function() {
+                blDropdown.classList.remove('hidden');
+                filterBLOptions();
             });
             
-            inputGroup.innerHTML = `
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
-                    <select name="bl_details[${index}][bl_id]" 
-                            class="bl-select w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
-                        ${blOptions}
-                    </select>
+            // Search/filter options
+            blSearch.addEventListener('input', function() {
+                filterBLOptions();
+            });
+        }
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#bl_container') && !e.target.closest('#bl_dropdown')) {
+                if (blDropdown) blDropdown.classList.add('hidden');
+            }
+        });
+        
+        function filterBLOptions() {
+            const searchTerm = blSearch.value.toLowerCase();
+            const selectedVoyage = $('#nomor_voyage').val();
+            
+            blOptions.forEach(option => {
+                const kontainer = option.getAttribute('data-kontainer').toLowerCase();
+                const seal = option.getAttribute('data-seal').toLowerCase();
+                const voyage = option.getAttribute('data-voyage');
+                
+                // Filter by search term
+                const matchesSearch = kontainer.includes(searchTerm) || seal.includes(searchTerm);
+                
+                // Filter by selected voyage (if any)
+                const matchesVoyage = !selectedVoyage || voyage === selectedVoyage;
+                
+                const shouldShow = matchesSearch && matchesVoyage;
+                option.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+        
+        // Handle option selection
+        blOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const kontainer = this.getAttribute('data-kontainer');
+                const seal = this.getAttribute('data-seal');
+                
+                if (!selectedBLs.find(bl => bl.id === id)) {
+                    selectedBLs.push({ id, kontainer, seal });
+                    addBLChip(id, kontainer, seal);
+                    updateBLSelectedCount();
+                    updateBLHiddenInputs();
+                    this.classList.add('selected');
+                    calculateTotalFromVendorDokumen();
+                }
+                
+                blSearch.value = '';
+                blDropdown.classList.add('hidden');
+            });
+        });
+        
+        function addBLChip(id, kontainer, seal) {
+            const chip = document.createElement('span');
+            chip.className = 'bl-selected-chip';
+            chip.setAttribute('data-id', id);
+            chip.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="font-medium">${kontainer}</span>
+                    <span class="text-xs opacity-75">Seal: ${seal}</span>
                 </div>
-                <div class="flex-shrink-0">
-                    <button type="button" 
-                            onclick="removeBlInput(this)" 
-                            class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                </div>
+                <span class="remove-chip" onclick="removeBLChip('${id}')">&times;</span>
             `;
-            
-            container.appendChild(inputGroup);
-            
-            // Initialize Select2 for new select
-            setTimeout(() => {
-                $(inputGroup).find('.bl-select').select2({
-                    placeholder: 'Pilih BL',
-                    allowClear: true,
-                    width: '100%'
+            blSelectedChips.appendChild(chip);
+        }
+        
+        // Remove chip function (global scope for onclick)
+        window.removeBLChip = function(id) {
+            selectedBLs = selectedBLs.filter(bl => bl.id !== id);
+            const chipEl = document.querySelector(`[data-id="${id}"].bl-selected-chip`);
+            if (chipEl) chipEl.remove();
+            const optionEl = document.querySelector(`[data-id="${id}"].bl-option`);
+            if (optionEl) optionEl.classList.remove('selected');
+            updateBLSelectedCount();
+            updateBLHiddenInputs();
+            calculateTotalFromVendorDokumen();
+        };
+        
+        // Select All button
+        if (blSelectAllBtn) {
+            blSelectAllBtn.addEventListener('click', function() {
+                const selectedVoyage = $('#nomor_voyage').val();
+                
+                blOptions.forEach(option => {
+                    const id = option.getAttribute('data-id');
+                    const kontainer = option.getAttribute('data-kontainer');
+                    const seal = option.getAttribute('data-seal');
+                    const voyage = option.getAttribute('data-voyage');
+                    
+                    // Only select BLs matching the selected voyage
+                    const matchesVoyage = !selectedVoyage || voyage === selectedVoyage;
+                    
+                    if (matchesVoyage && !selectedBLs.find(bl => bl.id === id)) {
+                        selectedBLs.push({ id, kontainer, seal });
+                        addBLChip(id, kontainer, seal);
+                        option.classList.add('selected');
+                    }
                 });
-            }, 100);
-            
-            // Recalculate vendor dokumen total if vendor is already selected
+                
+                updateBLSelectedCount();
+                updateBLHiddenInputs();
+                calculateTotalFromVendorDokumen();
+            });
+        }
+        
+        // Clear All button  
+        if (blClearAllBtn) {
+            blClearAllBtn.addEventListener('click', function() {
+                clearBlInputs();
+            });
+        }
+        
+        function updateBLHiddenInputs() {
+            blHiddenInputs.innerHTML = '';
+            selectedBLs.forEach(bl => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'bl_details[]';
+                input.value = bl.id;
+                blHiddenInputs.appendChild(input);
+            });
+        }
+        
+        function updateBLSelectedCount() {
+            if (blSelectedCount) {
+                blSelectedCount.textContent = `Terpilih: ${selectedBLs.length} dari ${blOptions.length} BL`;
+            }
+        }
+        
+        function clearBlInputs() {
+            selectedBLs = [];
+            if (blSelectedChips) blSelectedChips.innerHTML = '';
+            if (blHiddenInputs) blHiddenInputs.innerHTML = '';
+            blOptions.forEach(option => {
+                option.classList.remove('selected');
+            });
+            updateBLSelectedCount();
             calculateTotalFromVendorDokumen();
         }
         
-        window.removeBlInput = function(button) {
-            const container = document.getElementById('bl_container');
-            if (container.children.length > 1) {
-                button.closest('.flex.items-end.gap-3').remove();
-                // Recalculate vendor dokumen total after removing BL
-                calculateTotalFromVendorDokumen();
-            }
-        };
-        
-        // Add button for BL
-        const addBlBtn = document.getElementById('add_bl_btn');
-        if (addBlBtn) {
-            addBlBtn.addEventListener('click', function() {
-                addBlInput();
-            });
+        function initializeBlInputs() {
+            // Clear any existing selections
+            clearBlInputs();
         }
         
         // Barang management functions
@@ -1289,8 +2178,10 @@ console.log('Existing invoice data:', existingInvoice);
                     <input type="number" 
                            name="barang_detail[${index}][jumlah]" 
                            value="${existingJumlah || '1'}"
-                           min="0" 
-                           step="0.01"
+                           min="1" 
+                           class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                           placeholder="0" 
+                           required>
                            class="jumlah-input w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Contoh: 1.5"
@@ -1348,7 +2239,7 @@ console.log('Existing invoice data:', existingInvoice);
             barangSelects.forEach((select, index) => {
                 const selectedOption = $(select).find('option:selected');
                 const tarif = parseFloat(selectedOption.data('tarif')) || 0;
-                const jumlah = parseFloat(jumlahInputs[index].value) || 0;
+                const jumlah = parseInt(jumlahInputs[index].value) || 0;
                 total += tarif * jumlah;
             });
             
@@ -1374,6 +2265,16 @@ console.log('Existing invoice data:', existingInvoice);
             toggleConditionalFields();
         }
         
+        // Add event listener for voyage change to filter BL options
+        if (nomorVoyageSelect) {
+            $('#nomor_voyage').on('change', function() {
+                // Clear BL selections when voyage changes
+                clearBlInputs();
+                // Refilter BL options based on new voyage
+                if (blSearch) filterBLOptions();
+            });
+        }
+        
         if (jenisPenyesuaianSelect) {
             $('#jenis_penyesuaian_select').on('change', function() {
                 toggleTipePenyesuaian();
@@ -1385,6 +2286,456 @@ console.log('Existing invoice data:', existingInvoice);
         if (addTipeBtn) {
             addTipeBtn.addEventListener('click', function() {
                 addTipePenyesuaianInput();
+            });
+        }
+        
+        // Biaya Listrik Management Functions
+        function initializeBiayaListrikInputs() {
+            const container = document.getElementById('biaya_listrik_container');
+            container.innerHTML = '';
+            addBiayaListrikInput();
+        }
+        
+        function clearBiayaListrikInputs() {
+            const container = document.getElementById('biaya_listrik_container');
+            if (container) container.innerHTML = '';
+        }
+        
+        function addBiayaListrikInput(existingData = {}) {
+            const container = document.getElementById('biaya_listrik_container');
+            const index = container.children.length;
+            
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-blue-50 rounded-lg border-2 border-blue-200';
+            inputGroup.setAttribute('data-bl-index', index);
+            
+            const removeButton = container.children.length > 0 ? `
+                <button type="button" 
+                        onclick="removeBiayaListrikInput(this)"
+                        class="text-red-600 hover:text-red-800 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            ` : '';
+            
+            inputGroup.innerHTML = `
+                <div class="md:col-span-3 flex justify-between items-center border-b-2 border-blue-300 pb-2 mb-2">
+                    <span class="text-sm font-bold text-blue-700">Biaya Listrik #${index + 1}</span>
+                    ${removeButton}
+                </div>
+                
+                <!-- Referensi -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Referensi <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <input type="text" 
+                           name="biaya_listrik[${index}][referensi]" 
+                           class="bl-referensi w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Masukkan referensi (misal: Nomor Meteran, Lokasi, dll)"
+                           value="${existingData.referensi || ''}">
+                </div>
+                
+                <!-- Penerima -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Penerima <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="biaya_listrik[${index}][penerima]" 
+                           class="bl-penerima w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Nama penerima pembayaran"
+                           value="${existingData.penerima || ''}"
+                           required>
+                </div>
+                
+                <!-- Tanggal -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tanggal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" 
+                           name="biaya_listrik[${index}][tanggal]" 
+                           class="bl-tanggal w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           value="${existingData.tanggal || ''}"
+                           required>
+                </div>
+                
+                <!-- Akun COA -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Akun COA <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <select name="biaya_listrik[${index}][akun_coa_id]" 
+                            class="bl-akun-coa w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Akun COA</option>
+                        ${akunCoasData.map(akun => `<option value="${akun.id}">${akun.nomor_akun} - ${akun.nama_akun}</option>`).join('')}
+                    </select>
+                </div>
+                
+                <!-- Tipe Transaksi -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tipe Transaksi <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <select name="biaya_listrik[${index}][tipe_transaksi]" 
+                            class="bl-tipe-transaksi w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Tipe</option>
+                        <option value="debit">Debit</option>
+                        <option value="kredit">Kredit</option>
+                    </select>
+                </div>
+                
+                <!-- LWBP Baru -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP Baru <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp_baru]" 
+                           class="bl-lwbp-baru w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.lwbp_baru || ''}"
+                           required>
+                </div>
+                
+                <!-- LWBP Lama -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP Lama <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp_lama]" 
+                           class="bl-lwbp-lama w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.lwbp_lama || ''}"
+                           required>
+                </div>
+                
+                <!-- WBP (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        WBP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][wbp]" 
+                           class="bl-wbp w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.wbp || ''}">
+                </div>
+                
+                <!-- LWBP (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp]" 
+                           class="bl-lwbp w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.lwbp || ''}">
+                </div>
+                
+                <!-- LWBP Tarif -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        LWBP Tarif <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][lwbp_tarif]" 
+                           class="bl-lwbp-tarif w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="1982"
+                           step="0.01"
+                           value="${existingData.lwbp_tarif || '1982'}"
+                           required>
+                </div>
+                
+                <!-- WBP Tarif -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        WBP Tarif <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][wbp_tarif]" 
+                           class="bl-wbp-tarif w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="2975"
+                           step="0.01"
+                           value="${existingData.wbp_tarif || '2975'}"
+                           required>
+                </div>
+                
+                <!-- Tarif 1 (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tarif 1 <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][tarif_1]" 
+                           class="bl-tarif-1 w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.tarif_1 || ''}">
+                </div>
+                
+                <!-- Tarif 2 (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tarif 2 <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][tarif_2]" 
+                           class="bl-tarif-2 w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.tarif_2 || ''}">
+                </div>
+                
+                <!-- Biaya Beban -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Biaya Beban <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][biaya_beban]" 
+                           class="bl-biaya-beban w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="893200"
+                           step="0.01"
+                           value="${existingData.biaya_beban || '893200'}"
+                           required>
+                </div>
+                
+                <!-- PPJU (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        PPJU <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][ppju]" 
+                           class="bl-ppju w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.ppju || ''}">
+                </div>
+                
+                <!-- DPP (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        DPP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][dpp]" 
+                           class="bl-dpp w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.dpp || ''}">
+                </div>
+                
+                <!-- PPH 10% (Auto-calculated) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        PPH 10% <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][pph]" 
+                           class="bl-pph w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.pph || ''}">
+                </div>
+                
+                <!-- Grand Total (Auto-calculated) -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Grand Total <small class="text-gray-500">(DPP - PPH)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][grand_total]" 
+                           class="bl-grand-total w-full px-3 py-2 text-sm border-2 border-green-400 rounded-md bg-green-50 font-bold"
+                           placeholder="0"
+                           step="0.01"
+                           readonly
+                           value="${existingData.grand_total || ''}">
+                </div>
+            `;
+            
+            container.appendChild(inputGroup);
+            
+            // Setup auto-calculations for this entry
+            setupBiayaListrikCalculations(inputGroup);
+            
+            // Update total invoice
+            updateTotalFromBiayaListrik();
+        }
+        
+        window.removeBiayaListrikInput = function(button) {
+            const container = document.getElementById('biaya_listrik_container');
+            if (container.children.length > 1) {
+                button.closest('.grid').remove();
+                
+                // Reindex entries
+                const entries = container.querySelectorAll('.grid');
+                entries.forEach((entry, index) => {
+                    entry.setAttribute('data-bl-index', index);
+                    const label = entry.querySelector('span.text-blue-700');
+                    if (label) label.textContent = `Biaya Listrik #${index + 1}`;
+                    
+                    // Update input names
+                    entry.querySelectorAll('input').forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name && name.startsWith('biaya_listrik[')) {
+                            const fieldName = name.substring(name.indexOf('][') + 2, name.lastIndexOf(']'));
+                            input.setAttribute('name', `biaya_listrik[${index}][${fieldName}]`);
+                        }
+                    });
+                });
+                
+                // Update total
+                updateTotalFromBiayaListrik();
+            }
+        };
+        
+        function setupBiayaListrikCalculations(entry) {
+            const lwbpBaruInput = entry.querySelector('.bl-lwbp-baru');
+            const lwbpLamaInput = entry.querySelector('.bl-lwbp-lama');
+            const wbpInput = entry.querySelector('.bl-wbp');
+            const lwbpInput = entry.querySelector('.bl-lwbp');
+            const lwbpTarifInput = entry.querySelector('.bl-lwbp-tarif');
+            const wbpTarifInput = entry.querySelector('.bl-wbp-tarif');
+            const tarif1Input = entry.querySelector('.bl-tarif-1');
+            const tarif2Input = entry.querySelector('.bl-tarif-2');
+            const biayaBebanInput = entry.querySelector('.bl-biaya-beban');
+            const ppjuInput = entry.querySelector('.bl-ppju');
+            const dppInput = entry.querySelector('.bl-dpp');
+            const pphInput = entry.querySelector('.bl-pph');
+            const grandTotalInput = entry.querySelector('.bl-grand-total');
+            
+            function calculateWBP() {
+                const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+                const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+                const wbp = Math.round((lwbpBaru - lwbpLama) * 0.17);
+                wbpInput.value = wbp;
+                calculateLWBP();
+                calculateTarif2();
+            }
+            
+            function calculateLWBP() {
+                const lwbpBaru = parseFloat(lwbpBaruInput.value) || 0;
+                const lwbpLama = parseFloat(lwbpLamaInput.value) || 0;
+                const wbp = parseFloat(wbpInput.value) || 0;
+                const lwbp = lwbpBaru - lwbpLama - wbp;
+                lwbpInput.value = lwbp;
+                calculateTarif1();
+            }
+            
+            function calculateTarif1() {
+                const lwbp = parseFloat(lwbpInput.value) || 0;
+                const lwbpTarif = parseFloat(lwbpTarifInput.value) || 0;
+                const tarif1 = lwbp * lwbpTarif;
+                tarif1Input.value = tarif1;
+                calculatePPJU();
+            }
+            
+            function calculateTarif2() {
+                const wbp = parseFloat(wbpInput.value) || 0;
+                const wbpTarif = parseFloat(wbpTarifInput.value) || 0;
+                const tarif2 = wbp * wbpTarif;
+                tarif2Input.value = tarif2;
+                calculatePPJU();
+            }
+            
+            function calculatePPJU() {
+                const tarif1 = parseFloat(tarif1Input.value) || 0;
+                const tarif2 = parseFloat(tarif2Input.value) || 0;
+                const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+                const ppju = Math.round((tarif1 + tarif2 + biayaBeban) * 0.03);
+                ppjuInput.value = ppju;
+                calculateDPP();
+            }
+            
+            function calculateDPP() {
+                const tarif1 = parseFloat(tarif1Input.value) || 0;
+                const tarif2 = parseFloat(tarif2Input.value) || 0;
+                const biayaBeban = parseFloat(biayaBebanInput.value) || 0;
+                const ppju = parseFloat(ppjuInput.value) || 0;
+                const dpp = tarif1 + tarif2 + biayaBeban + ppju;
+                dppInput.value = dpp;
+                calculatePPH();
+            }
+            
+            function calculatePPH() {
+                const dpp = parseFloat(dppInput.value) || 0;
+                const pph = Math.round(dpp * 0.10);
+                pphInput.value = pph;
+                calculateGrandTotal();
+            }
+            
+            function calculateGrandTotal() {
+                const dpp = parseFloat(dppInput.value) || 0;
+                const pph = parseFloat(pphInput.value) || 0;
+                const grandTotal = dpp - pph;
+                grandTotalInput.value = grandTotal;
+                updateTotalFromBiayaListrik();
+            }
+            
+            // Add event listeners
+            lwbpBaruInput.addEventListener('input', calculateWBP);
+            lwbpLamaInput.addEventListener('input', calculateWBP);
+            lwbpTarifInput.addEventListener('input', calculateTarif1);
+            wbpTarifInput.addEventListener('input', calculateTarif2);
+            biayaBebanInput.addEventListener('input', calculatePPJU);
+        }
+        
+        function updateTotalFromBiayaListrik() {
+            const container = document.getElementById('biaya_listrik_container');
+            const entries = container.querySelectorAll('.grid');
+            let totalGrand = 0;
+            
+            entries.forEach(entry => {
+                const grandTotal = parseFloat(entry.querySelector('.bl-grand-total').value) || 0;
+                totalGrand += grandTotal;
+            });
+            
+            // Update main total input if exists
+            const totalInput = document.getElementById('total');
+            if (totalInput) {
+                totalInput.value = totalGrand > 0 ? Math.round(totalGrand).toLocaleString('id-ID') : '';
+            }
+            
+            // Also update pph and grand total main fields
+            const pphInput = document.getElementById('pph');
+            const grandTotalInputMain = document.getElementById('grand_total');
+            
+            let totalPPH = 0;
+            entries.forEach(entry => {
+                const pph = parseFloat(entry.querySelector('.bl-pph').value) || 0;
+                totalPPH += pph;
+            });
+            
+            if (pphInput) {
+                pphInput.value = totalPPH > 0 ? Math.round(totalPPH).toLocaleString('id-ID') : '0';
+            }
+            if (grandTotalInputMain) {
+                grandTotalInputMain.value = totalGrand > 0 ? Math.round(totalGrand).toLocaleString('id-ID') : '0';
+            }
+        }
+        
+        // Add button for biaya listrik
+        const addBiayaListrikBtn = document.getElementById('add_biaya_listrik_btn');
+        if (addBiayaListrikBtn) {
+            addBiayaListrikBtn.addEventListener('click', function() {
+                addBiayaListrikInput();
             });
         }
         
@@ -1547,6 +2898,64 @@ console.log('Existing invoice data:', existingInvoice);
             }
         });
 
+        // Labuh Tambat Calculation
+        function setupLabuhTambatCalculations() {
+            const subTotalLabuhInput = document.getElementById('sub_total_labuh');
+            const pphLabuhInput = document.getElementById('pph_labuh');
+            const totalLabuhInput = document.getElementById('total_labuh');
+            const totalInput = document.getElementById('total');
+
+            if (subTotalLabuhInput) {
+                // Initialize if value exists
+                if (subTotalLabuhInput.value) {
+                    calculateLabuhTambat();
+                }
+
+                subTotalLabuhInput.addEventListener('input', function(e) {
+                    // Format currency for display
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value) {
+                        const numValue = parseFloat(value);
+                        e.target.value = numValue.toLocaleString('id-ID');
+                    }
+                    calculateLabuhTambat();
+                });
+            }
+
+            function calculateLabuhTambat() {
+                const value = subTotalLabuhInput.value.replace(/\./g, '').replace(/,/g, '');
+                
+                if (value) {
+                    const numValue = parseFloat(value);
+                    
+                    // Calculate PPH 2%
+                    const pph = Math.round(numValue * 0.02);
+                    if (pphLabuhInput) {
+                        pphLabuhInput.value = pph.toLocaleString('id-ID');
+                    }
+                    
+                    // Calculate Total (Sub Total - PPH)
+                    const total = numValue - pph;
+                    
+                    if (totalLabuhInput) {
+                        totalLabuhInput.value = total.toLocaleString('id-ID');
+                    }
+                    
+                    // Connect to main Total input (critical for backend)
+                    if (totalInput) {
+                         totalInput.value = total.toLocaleString('id-ID');
+                    }
+                } else {
+                    if (pphLabuhInput) pphLabuhInput.value = '0';
+                    if (totalLabuhInput) totalLabuhInput.value = '0';
+                    if (totalInput) totalInput.value = '';
+                }
+            }
+        }
+
+        // Initialize Labuh Tambat
+        setupLabuhTambatCalculations();
+
         console.log('Select2 initialized for invoice-aktivitas-lain');
     }
 
@@ -1561,49 +2970,57 @@ console.log('Existing invoice data:', existingInvoice);
         const $ = jqInstance || window.jQuery;
         $(document).ready(function() {
             initializeSelect2AndForm($);
-            populateExistingData();
+            generateInvoiceNumber();
         });
     });
 
-    // Populate existing data for edit mode
-    function populateExistingData() {
-        // Populate BL details if exists
-        if (existingInvoice.bl_details && existingInvoice.bl_details.length > 0) {
-            const blContainer = document.getElementById('bl_container');
-            blContainer.innerHTML = '';
-            existingInvoice.bl_details.forEach(bl => {
-                addBlInput(bl.bl_id);
-            });
-        }
+    // Generate Invoice Number automatically
+    function generateInvoiceNumber() {
+        const invoiceInput = document.getElementById('nomor_invoice');
+        const loader = document.getElementById('invoice_loader');
         
-        // Populate barang details if exists
-        if (existingInvoice.barang_detail && existingInvoice.barang_detail.length > 0) {
-            const barangContainer = document.getElementById('barang_container');
-            barangContainer.innerHTML = '';
-            existingInvoice.barang_detail.forEach(barang => {
-                addBarangInput(barang.pricelist_buruh_id, barang.jumlah);
-            });
-        }
-        
-        // Populate tipe penyesuaian if exists
-        if (existingInvoice.tipe_penyesuaian && existingInvoice.tipe_penyesuaian.length > 0) {
-            const tipeContainer = document.getElementById('tipe_penyesuaian_container');
-            tipeContainer.innerHTML = '';
-            existingInvoice.tipe_penyesuaian.forEach(tipe => {
-                addTipePenyesuaianInput(tipe.tipe, tipe.nominal);
-            });
-        }
-        
-        // Populate detail pembayaran if exists
-        if (existingInvoice.detail_pembayaran && existingInvoice.detail_pembayaran.length > 0) {
-            const detailContainer = document.getElementById('detail_pembayaran_container');
-            detailContainer.innerHTML = '';
-            existingInvoice.detail_pembayaran.forEach(detail => {
-                addDetailPembayaranInput(detail);
-            });
-        }
-        
-        console.log('Existing data populated for edit mode');
+        // Fetch next invoice number from server
+        fetch('{{ route("invoice-aktivitas-lain.get-next-number") }}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.invoice_number) {
+                invoiceInput.value = data.invoice_number;
+                if (loader) loader.style.display = 'none';
+            } else {
+                throw new Error('Invalid response format');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching invoice number:', error);
+            // Fallback: generate client-side (without checking database)
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const runningNumber = '000001'; // Placeholder - should come from server
+            
+            invoiceInput.value = `IAL-${month}-${year}-${runningNumber}`;
+            invoiceInput.placeholder = 'Nomor otomatis (offline mode)';
+            if (loader) loader.style.display = 'none';
+            
+            // Show warning
+            const warning = document.createElement('p');
+            warning.className = 'mt-1 text-sm text-yellow-600';
+            warning.textContent = 'Menggunakan nomor offline - pastikan koneksi server tersedia';
+            invoiceInput.parentElement.appendChild(warning);
+        });
     }
 })();
 </script>

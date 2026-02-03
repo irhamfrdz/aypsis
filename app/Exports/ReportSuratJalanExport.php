@@ -62,7 +62,7 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
     public function columnFormats(): array
     {
         return [
-            'H' => '"Rp "#,##0_-', // Format Currency untuk Uang Jalan (Kolom H)
+            'I' => '"Rp "#,##0_-', // Format Currency untuk Uang Jalan (Kolom I)
         ];
     }
 
@@ -72,7 +72,7 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $lastCol = 'I'; // Kolom I: Nomor Bukti
+                $lastCol = 'J'; // Kolom J: Nomor Bukti
 
                 // Header Data Starts at Row 4 (Setelah judul report)
                 $dataStartRow = 4;
@@ -119,11 +119,11 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
 
                 // Total Row
                 $totalRow = $lastDataRow + 1;
-                $sheet->setCellValue("G{$totalRow}", 'TOTAL');
-                $sheet->setCellValue("H{$totalRow}", "=SUM(H{$dataStartRow}:H{$lastDataRow})");
+                $sheet->setCellValue("H{$totalRow}", 'TOTAL');
+                $sheet->setCellValue("I{$totalRow}", "=SUM(I{$dataStartRow}:I{$lastDataRow})");
                 
                 // Style Total Row
-                $sheet->getStyle("G{$totalRow}:H{$totalRow}")->applyFromArray([
+                $sheet->getStyle("H{$totalRow}:I{$totalRow}")->applyFromArray([
                     'font' => ['bold' => true],
                     'borders' => [
                         'allBorders' => [
@@ -131,12 +131,12 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
                         ],
                     ],
                 ]);
-                $sheet->getStyle("H{$totalRow}")->getNumberFormat()->setFormatCode('"Rp "#,##0_-');
+                $sheet->getStyle("I{$totalRow}")->getNumberFormat()->setFormatCode('"Rp "#,##0_-');
                 
                 // Alignments
                 $sheet->getStyle("A{$dataStartRow}:A{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No
                 $sheet->getStyle("B{$dataStartRow}:B{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tanggal
-                $sheet->getStyle("H{$dataStartRow}:H{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT); // Uang Jalan
+                $sheet->getStyle("I{$dataStartRow}:I{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT); // Uang Jalan
                 
             },
         ];
