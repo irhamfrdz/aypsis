@@ -119,14 +119,20 @@
                     <h3 class="text-base font-semibold text-gray-900 mb-4">Informasi Penerima</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="penerima_id" class="block text-sm font-medium text-gray-700 mb-2">
                                 Penerima
                             </label>
-                            <input type="text" name="penerima" id="penerima" 
-                                   value="{{ old('penerima', $order->penerima) }}"
-                                   placeholder="Nama penerima"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('penerima') border-red-300 @enderror">
-                            @error('penerima')
+                            <select name="penerima_id" id="penerima_id"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('penerima_id') border-red-300 @enderror">
+                                <option value="">-- Pilih Penerima --</option>
+                                @foreach($penerimas as $penerima)
+                                    <option value="{{ $penerima->id }}" 
+                                            {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
+                                        {{ $penerima->nama_penerima }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('penerima_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

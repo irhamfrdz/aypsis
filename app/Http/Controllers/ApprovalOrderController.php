@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Term;
+use App\Models\Penerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -127,8 +128,9 @@ class ApprovalOrderController extends Controller
     {
         $order = Order::with(['pengirim', 'jenisBarang', 'term'])->findOrFail($id);
         $terms = Term::orderBy('kode')->get();
+        $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
 
-        return view('approval-order.edit', compact('order', 'terms'));
+        return view('approval-order.edit', compact('order', 'terms', 'penerimas'));
     }
 
     /**
