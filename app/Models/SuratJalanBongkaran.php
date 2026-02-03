@@ -162,6 +162,22 @@ class SuratJalanBongkaran extends Model
         return $this->hasMany(\App\Models\UangJalanBongkaran::class, 'surat_jalan_bongkaran_id');
     }
 
+    /**
+     * Relationship to Karyawan as Supir
+     */
+    public function supirKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir', 'nama_panggilan');
+    }
+
+    /**
+     * Relationship to Karyawan as Kenek
+     */
+    public function kenekKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');
+    }
+
     // Scopes
     public function scopeActive($query)
     {
