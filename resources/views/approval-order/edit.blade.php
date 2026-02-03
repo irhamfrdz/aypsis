@@ -5,6 +5,39 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 26px;
+        color: #111827;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+    }
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+    }
+    .select2-results__option--highlighted {
+        background-color: #6366f1 !important;
+    }
+</style>
 @endsection
 
 @section('content')
@@ -265,4 +298,25 @@
 
     </div>
 </div>
+
+<!-- Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#penerima_id').select2({
+            placeholder: '-- Pilih Penerima --',
+            allowClear: true,
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "Tidak ada hasil ditemukan";
+                },
+                searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+    });
+</script>
 @endsection
