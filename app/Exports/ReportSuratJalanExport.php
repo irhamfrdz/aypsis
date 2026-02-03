@@ -32,11 +32,9 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
                 $index + 1,
                 $item['tanggal']->format('d/m/Y'),
                 $item['no_surat_jalan'],
-                $item['jenis'],
                 $item['no_plat'],
                 $item['supir'],
                 $item['kenek'],
-                $item['customer'],
                 $item['rute'],
                 (float)$item['uang_jalan'],
                 $item['nomor_bukti'],
@@ -50,11 +48,9 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
             'No',
             'Tanggal',
             'No Surat Jalan',
-            'Jenis',
             'Plat Mobil',
             'Supir',
             'Kenek',
-            'Customer',
             'Rute',
             'Uang Jalan',
             'Nomor Bukti',
@@ -64,7 +60,7 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
     public function columnFormats(): array
     {
         return [
-            'J' => '"Rp "#,##0_-', // Format Currency untuk Uang Jalan (Kolom J)
+            'H' => '"Rp "#,##0_-', // Format Currency untuk Uang Jalan (Kolom H)
         ];
     }
 
@@ -74,7 +70,7 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $lastCol = 'K'; // Kolom K: Nomor Bukti
+                $lastCol = 'I'; // Kolom I: Nomor Bukti
 
                 // Header Data Starts at Row 4 (Setelah judul report)
                 $dataStartRow = 4;
@@ -121,11 +117,11 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
 
                 // Total Row
                 $totalRow = $lastDataRow + 1;
-                $sheet->setCellValue("I{$totalRow}", 'TOTAL');
-                $sheet->setCellValue("J{$totalRow}", "=SUM(J{$dataStartRow}:J{$lastDataRow})");
+                $sheet->setCellValue("G{$totalRow}", 'TOTAL');
+                $sheet->setCellValue("H{$totalRow}", "=SUM(H{$dataStartRow}:H{$lastDataRow})");
                 
                 // Style Total Row
-                $sheet->getStyle("I{$totalRow}:J{$totalRow}")->applyFromArray([
+                $sheet->getStyle("G{$totalRow}:H{$totalRow}")->applyFromArray([
                     'font' => ['bold' => true],
                     'borders' => [
                         'allBorders' => [
@@ -133,12 +129,12 @@ class ReportSuratJalanExport implements FromCollection, WithHeadings, ShouldAuto
                         ],
                     ],
                 ]);
-                $sheet->getStyle("J{$totalRow}")->getNumberFormat()->setFormatCode('"Rp "#,##0_-');
+                $sheet->getStyle("H{$totalRow}")->getNumberFormat()->setFormatCode('"Rp "#,##0_-');
                 
                 // Alignments
                 $sheet->getStyle("A{$dataStartRow}:A{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No
                 $sheet->getStyle("B{$dataStartRow}:B{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tanggal
-                $sheet->getStyle("J{$dataStartRow}:J{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT); // Uang Jalan
+                $sheet->getStyle("H{$dataStartRow}:H{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT); // Uang Jalan
                 
             },
         ];
