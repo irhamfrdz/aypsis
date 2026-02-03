@@ -47,6 +47,7 @@
                         <th class="px-6 py-4 border-b">Keterangan</th>
                         <th class="px-6 py-4 border-b">Tujuan</th>
                         <th class="px-6 py-4 border-b text-right">Ongkos Truk</th>
+                        <th class="px-6 py-4 border-b text-right">Uang Jalan</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm divide-y divide-gray-100">
@@ -62,10 +63,13 @@
                             <td class="px-6 py-4 text-right font-semibold text-gray-800">
                                 Rp {{ number_format($item['ongkos_truck'], 0, ',', '.') }}
                             </td>
+                            <td class="px-6 py-4 text-right font-semibold text-gray-800">
+                                Rp {{ number_format($item['uang_jalan'], 0, ',', '.') }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-10 text-center text-gray-400 italic">
+                            <td colspan="9" class="px-6 py-10 text-center text-gray-400 italic">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-folder-open text-4xl mb-2"></i>
                                     <span>Tidak ada data untuk periode dan filter yang dipilih.</span>
@@ -80,6 +84,9 @@
                         <td colspan="7" class="px-6 py-4 text-right border-t">Grand Total</td>
                         <td class="px-6 py-4 text-right border-t text-sm">
                             Rp {{ number_format($data->sum('ongkos_truck'), 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 text-right border-t text-sm">
+                            Rp {{ number_format($data->sum('uang_jalan'), 0, ',', '.') }}
                         </td>
                     </tr>
                 </tfoot>
