@@ -57,12 +57,27 @@ class ReportSuratJalanController extends Controller
               ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
-        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan'])->get();
-        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
 
         $data = collect();
 
         foreach ($suratJalans as $sj) {
+            $nomorBukti = '-';
+            if ($sj->uangJalan && $sj->uangJalan->pranotaUangJalan) {
+                $buktis = collect();
+                foreach ($sj->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        foreach ($pranota->pembayaranPranotaUangJalans as $pembayaran) {
+                            if ($pembayaran->nomor_accurate) {
+                                $buktis->push($pembayaran->nomor_accurate);
+                            }
+                        }
+                    }
+                }
+                $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
+            }
+
             $data->push([
                 'tanggal' => $sj->tanggal_surat_jalan,
                 'no_surat_jalan' => $sj->no_surat_jalan,
@@ -72,12 +87,29 @@ class ReportSuratJalanController extends Controller
                 'customer' => $sj->order ? $sj->order->nama_customer : '-',
                 'rute' => ($sj->pengirim ?? '-') . ' -> ' . ($sj->tujuan_pengiriman ?? '-'),
                 'jenis' => 'Muat',
-                'status' => $sj->status ?? 'Open', // Asumsi ada kolom status, kalau tidak ada default Open/text lain
+                'status' => $sj->status ?? 'Open',
+                'uang_jalan' => $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0,
+                'nomor_bukti' => $nomorBukti,
                 'original_data' => $sj
             ]);
         }
 
         foreach ($suratJalanBongkarans as $sjb) {
+            $nomorBukti = '-';
+            if ($sjb->uangJalan && $sjb->uangJalan->pranotaUangJalan) {
+                $buktis = collect();
+                foreach ($sjb->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        foreach ($pranota->pembayaranPranotaUangJalans as $pembayaran) {
+                            if ($pembayaran->nomor_accurate) {
+                                $buktis->push($pembayaran->nomor_accurate);
+                            }
+                        }
+                    }
+                }
+                $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
+            }
+
             $data->push([
                 'tanggal' => $sjb->tanggal_surat_jalan,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
@@ -88,6 +120,8 @@ class ReportSuratJalanController extends Controller
                 'rute' => ($sjb->pengirim ?? '-') . ' -> ' . ($sjb->tujuan_pengiriman ?? '-'),
                 'jenis' => 'Bongkar',
                 'status' => $sjb->status ?? 'Open',
+                'uang_jalan' => $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0,
+                'nomor_bukti' => $nomorBukti,
                 'original_data' => $sjb
             ]);
         }

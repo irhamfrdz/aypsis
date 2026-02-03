@@ -45,6 +45,8 @@
                         <th class="px-6 py-3">Kenek</th>
                         <th class="px-6 py-3">Customer</th>
                         <th class="px-6 py-3">Rute</th>
+                        <th class="px-6 py-3">Uang Jalan</th>
+                        <th class="px-6 py-3">Nomor Bukti</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,10 +83,16 @@
                             <td class="px-6 py-4">
                                 {{ $item['rute'] }}
                             </td>
+                            <td class="px-6 py-4 text-right">
+                                Rp {{ number_format($item['uang_jalan'], 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {{ $item['nomor_bukti'] }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="11" class="px-6 py-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-inbox text-4xl mb-3 text-gray-300"></i>
                                     <p>Tidak ada data surat jalan pada periode ini.</p>
