@@ -18,18 +18,76 @@
                     <h1 class="text-3xl font-bold text-gray-900">Master Penerima</h1>
                     <p class="mt-1 text-sm text-gray-600">Kelola data penerima dalam sistem</p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    {{-- Buttons omitted for now until features implemented --}}
-                    <a href="{{ route('penerima.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
+                <div class="flex space-x-2">
+                    @if(auth()->user()->can('master-penerima-create'))
+                    <button type="button" onclick="openImportModal()" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:border-green-800 focus:ring focus:ring-green-300 disabled:opacity-25 transition">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        Import CSV
+                    </button>
+                    <a href="{{ route('penerima.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:border-indigo-800 focus:ring focus:ring-indigo-300 disabled:opacity-25 transition">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                         Tambah Penerima
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
 
+        {{-- Import Modal --}}
+        <div id="importModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeImportModal()"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form action="{{ route('penerima.import-excel') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                </div>
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Import Data Penerima</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-500 mb-4">
+                                            Silahkan upload file CSV sesuai template untuk import data penerima.
+                                            <a href="{{ route('penerima.download-template') }}" class="text-indigo-600 hover:text-indigo-900 font-medium hover:underline">Download Template</a>
+                                        </p>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">File CSV/Excel</label>
+                                            <input type="file" name="file" accept=".csv,.xlsx,.xls" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                Import
+                            </button>
+                            <button type="button" onclick="closeImportModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openImportModal() {
+                document.getElementById('importModal').classList.remove('hidden');
+            }
+            function closeImportModal() {
+                document.getElementById('importModal').classList.add('hidden');
+            }
+        </script>
         <!-- Notifikasi Sukses -->
         @if (session('success'))
             <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
@@ -85,7 +143,6 @@
                 <table class="min-w-full divide-y divide-gray-200 resizable-table" id="masterPenerimaTable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kode<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nama Penerima<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Alamat<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">NPWP / NITKU<div class="resize-handle"></div></th>
@@ -97,7 +154,6 @@
                     <tbody class="bg-white divide-y divide-gray-200 text-xs">
                         @forelse ($penerimas as $penerima)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ $penerima->kode }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">{{ $penerima->nama_penerima }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $penerima->alamat }}">{{ $penerima->alamat ?: '-' }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">

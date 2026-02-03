@@ -1505,6 +1505,14 @@ Route::middleware([
          ]);
 
     // 📦 Penerima (Receiver) Management with permissions
+    Route::get('master/penerima-download-template', [PenerimaController::class, 'downloadTemplate'])
+         ->name('penerima.download-template')
+         ->middleware('can:master-penerima-create');
+
+    Route::post('master/penerima-import', [PenerimaController::class, 'importExcel'])
+         ->name('penerima.import-excel')
+         ->middleware('can:master-penerima-create');
+
     Route::resource('master/penerima', PenerimaController::class)
          ->names('penerima')
          ->middleware([

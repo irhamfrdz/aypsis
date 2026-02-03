@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Penerima;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 // use Maatwebsite\Excel\Facades\Excel; // Commented out until Export class is created
 // use App\Exports\PenerimaExport; // Commented out until Export class is created
 
@@ -46,7 +47,6 @@ class PenerimaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => 'required|string|unique:penerimas,kode',
             'nama_penerima' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
@@ -86,7 +86,6 @@ class PenerimaController extends Controller
         $penerima = Penerima::findOrFail($id);
 
         $request->validate([
-            'kode' => 'required|string|unique:penerimas,kode,' . $id,
             'nama_penerima' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
@@ -108,7 +107,71 @@ class PenerimaController extends Controller
         $penerima = Penerima::findOrFail($id);
         $penerima->delete();
 
-        return redirect()->route('penerima.index')->with('success', 'Data penerima berhasil dihapus.');
+        return redirect()->route('penerima.index')
+            ->with('success', 'Data penerima berhasil dihapus.');
+    }
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template_penerima.csv"',
+        ];
+
+        $columns = ['Nama Penerima', 'Alamat', 'NPWP', 'NITKU', 'Catatan', 'Status (active/inactive)'];
+        
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function importExcel(Request $request) 
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx|max:2048'
+        ]);
+        
+        try {
+            DB::beginTransaction();
+            
+            $file = $request->file('file');
+            $data = array_map('str_getcsv', file($file->getRealPath()));
+            $header = array_shift($data); // Remove header row
+
+            // Validate header structure (basic check)
+            if (count($header) < 6) {
+                return back()->with('error', 'Format file CSV tidak sesuai template.');
+            }
+            
+            $importedCount = 0;
+            
+            foreach ($data as $row) {
+                // Skip empty rows
+                if (empty($row[0])) continue;
+                
+                Penerima::create([
+                    'nama_penerima' => $row[0],
+                    'alamat' => $row[1] ?? null,
+                    'npwp' => $row[2] ?? null,
+                    'nitku' => $row[3] ?? null,
+                    'catatan' => $row[4] ?? null,
+                    'status' => in_array(strtolower($row[5] ?? ''), ['active', 'inactive']) ? strtolower($row[5]) : 'active',
+                ]);
+                
+                $importedCount++;
+            }
+            
+            DB::commit();
+            return back()->with('success', "Berhasil mengimport {$importedCount} data penerima.");
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
     }
 
     public function generateCode()

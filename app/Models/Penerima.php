@@ -10,7 +10,6 @@ class Penerima extends Model
     use Auditable;
 
     protected $fillable = [
-        'kode',
         'nama_penerima',
         'alamat',
         'npwp',
