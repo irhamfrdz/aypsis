@@ -13,6 +13,7 @@ class PranotaOb extends Model
         'tanggal_ob',
         'nomor_accurate',
         'adjustment',
+        'keterangan',
         'items',
         'status',
         'created_by',

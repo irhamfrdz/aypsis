@@ -216,6 +216,9 @@
         <div class="flex justify-between" style="font-size: 10px; margin-top: 6px;">
             <div>
                 <p style="margin: 0;">Catatan: {{ $pranota->catatan ?? '-' }}</p>
+                @if(isset($pranota->keterangan) && !empty($pranota->keterangan))
+                <p style="margin: 4px 0 0 0;">Keterangan: {{ $pranota->keterangan }}</p>
+                @endif
             </div>
         </div>
 

@@ -1199,6 +1199,16 @@
                            placeholder="Masukkan nilai adjustment (bisa negatif)...">
                     <p class="text-xs text-gray-500 mt-1">Nilai ini akan ditambahkan ke total biaya. Gunakan nilai negatif untuk pengurangan.</p>
                 </div>
+
+                <div class="mt-4">
+                    <label for="keterangan_pranota" class="block text-sm font-medium text-gray-700 mb-2">
+                        Keterangan
+                    </label>
+                    <textarea id="keterangan_pranota" name="keterangan_pranota" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Masukkan keterangan untuk pranota OB..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Keterangan akan ditampilkan pada halaman print pranota.</p>
+                </div>
             </div>
 
             <!-- Modal Footer -->
@@ -1519,6 +1529,7 @@ function closePranotaModal() {
     document.getElementById('nomor_pranota').value = '';
     document.getElementById('nomor_accurate').value = '';
     document.getElementById('adjustment').value = '';
+    document.getElementById('keterangan_pranota').value = '';
 }
 
 // Generate nomor pranota otomatis
@@ -2062,6 +2073,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     
     const nomorAccurate = document.getElementById('nomor_accurate').value.trim();
     const adjustment = document.getElementById('adjustment').value;
+    const keterangan = document.getElementById('keterangan_pranota').value.trim();
     
     const items = selectedItems.map(item => ({ id: item.id, type: item.type, nomor_kontainer: item.nomor_kontainer, nama_barang: item.nama_barang, size: item.size, biaya: item.biaya, status: item.status, supir: item.supir }));
     
@@ -2089,7 +2101,8 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             no_voyage: __PRANOTA_no_voyage,
             tanggal_ob: tanggalOb,
             nomor_accurate: nomorAccurate,
-            adjustment: adjustment
+            adjustment: adjustment,
+            keterangan: keterangan
         })
     })
     .then(response => response.json())

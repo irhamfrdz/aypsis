@@ -1507,6 +1507,7 @@ class ObController extends Controller
                 'nomor_pranota' => 'required|string|unique:pranota_obs,nomor_pranota',
                 'tanggal_ob' => 'required|date',
                 'nomor_accurate' => 'nullable|string',
+                'keterangan' => 'nullable|string',
                 'items' => 'required|array',
                 'items.*.id' => 'required|integer',
                 'items.*.type' => 'required|in:naik_kapal,bl',
@@ -1650,6 +1651,7 @@ class ObController extends Controller
                 'tanggal_ob' => $request->tanggal_ob,
                 'nomor_accurate' => $request->nomor_accurate,
                 'adjustment' => $request->adjustment ?? 0,
+                'keterangan' => $request->keterangan,
                 'items' => $itemsToSave,
                 'created_by' => $user->id,
             ]);
