@@ -178,6 +178,41 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="notify_party_id" class="text-sm font-medium text-gray-700">
+                                    Notify Party
+                                </label>
+                                <a href="{{ route('order.penerima.create') }}" id="add_notify_party_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-notify-party">
+                                    <input type="text" id="search_notify_party" placeholder="Search..." autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="notify_party_id" id="notify_party_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('notify_party_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($penerimas as $penerima)
+                                            <option value="{{ $penerima->id }}" 
+                                                    {{ old('notify_party_id', $order->notify_party_id ?? '') == $penerima->id ? 'selected' : '' }}>
+                                                {{ $penerima->nama_penerima }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_notify_party" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            @error('notify_party_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -408,6 +443,14 @@
             alamatId: 'alamat_penerima'
         });
 
+        // Initialize Notify Party dropdown
+        createSearchableDropdown({
+            selectId: 'notify_party_id',
+            searchId: 'search_notify_party',
+            dropdownId: 'dropdown_options_notify_party',
+            containerClass: 'dropdown-container-notify-party'
+        });
+
         // Handle Penerima "Tambah" link logic
         const addPenerimaLink = document.getElementById('add_penerima_link');
         const searchPenerimaInput = document.getElementById('search_penerima');
@@ -429,6 +472,36 @@
                 const popup = window.open(
                     url,
                     'addPenerima',
+                    'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+                );
+
+                if (popup) {
+                    popup.focus();
+                }
+            });
+        }
+
+        // Handle Notify Party "Tambah" link logic
+        const addNotifyPartyLink = document.getElementById('add_notify_party_link');
+        const searchNotifyPartyInput = document.getElementById('search_notify_party');
+        if (addNotifyPartyLink && searchNotifyPartyInput) {
+            addNotifyPartyLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const searchValue = searchNotifyPartyInput.value.trim();
+                let url = "{{ route('order.penerima.create') }}";
+
+                const params = new URLSearchParams();
+                params.append('popup', '1');
+
+                if (searchValue) {
+                    params.append('search', searchValue);
+                }
+
+                url += '?' + params.toString();
+
+                const popup = window.open(
+                    url,
+                    'addNotifyParty',
                     'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
                 );
 

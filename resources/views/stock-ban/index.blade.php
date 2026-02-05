@@ -268,6 +268,10 @@
                                             @endif
                                         @endif
 
+                                        <a href="{{ route('stock-ban.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
                                         <a href="{{ route('stock-ban.edit', $ban->id) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
