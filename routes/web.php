@@ -1416,11 +1416,14 @@ Route::middleware([
     Route::put('stock-ban/{stock_ban}/masak', [\App\Http\Controllers\StockBanController::class, 'masak'])
          ->name('stock-ban.masak')
          ->middleware('can:stock-ban-update');
+    Route::put('stock-ban/{stock_ban}/return', [\App\Http\Controllers\StockBanController::class, 'returnToWarehouse'])
+         ->name('stock-ban.return')
+         ->middleware('can:stock-ban-update');
     Route::delete('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'destroy'])
          ->name('stock-ban.destroy')
          ->middleware('can:stock-ban-delete');
 
-    // �💰 Pricelist Uang Jalan Batam Management with permissions
+    // 💰 Pricelist Uang Jalan Batam Management with permissions
     // Download Template & Import (must be before resource routes)
     Route::get('pricelist-uang-jalan-batam/download-template', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'downloadTemplate'])
          ->name('pricelist-uang-jalan-batam.download-template')

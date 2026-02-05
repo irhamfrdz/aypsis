@@ -458,5 +458,42 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', $count . ' Ban berhasil dimasak menjadi Kanisir.');
     }
-}
 
+    /**
+     * Return ban from mobil to warehouse.
+     */
+    public function returnToWarehouse(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        // Validate that the ban is currently in use
+        if ($stockBan->status !== 'Terpakai') {
+            return redirect()->route('stock-ban.index')->with('error', 'Ban ini tidak sedang terpakai, tidak bisa dikembalikan ke gudang.');
+        }
+
+        $request->validate([
+            'lokasi' => 'required|string|max:255',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        // Get mobil info before clearing it
+        $mobilPolisi = $stockBan->mobil ? $stockBan->mobil->nomor_polisi : '-';
+        
+        // Build return note
+        $returnNote = "[Kembali ke Gudang] Dari mobil: " . $mobilPolisi . ", Tgl: " . date('d-m-Y');
+        if ($request->filled('keterangan')) {
+            $returnNote .= ", Ket: " . $request->keterangan;
+        }
+
+        // Update stock ban
+        $stockBan->update([
+            'status' => 'Stok',
+            'mobil_id' => null,
+            'lokasi' => $request->lokasi,
+            'tanggal_keluar' => null,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $returnNote) : $returnNote,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke gudang.');
+    }
+}
