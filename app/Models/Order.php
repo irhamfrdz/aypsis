@@ -18,6 +18,7 @@ class Order extends Model
         'tujuan_ambil_id',
         'penerima',
         'penerima_id',
+        'notify_party_id',
         'alamat_penerima',
         'kontak_penerima',
         'size_kontainer',
