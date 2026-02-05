@@ -252,12 +252,12 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
                         <div class="custom-select-container" id="lokasi-select-container">
-                            <input type="hidden" name="lokasi" id="lokasi" value="{{ old('lokasi', 'Gudang Utama') }}">
+                            <input type="hidden" name="lokasi" id="lokasi" value="{{ old('lokasi', 'Ruko 10') }}">
                             
                             <button type="button" id="lokasi-select-button" class="custom-select-button">
                                 <span id="lokasi-selected-text">
-                                    @if(old('lokasi', 'Gudang Utama'))
-                                        {{ old('lokasi', 'Gudang Utama') }}
+                                    @if(old('lokasi', 'Ruko 10'))
+                                        {{ old('lokasi', 'Ruko 10') }}
                                     @else
                                         -- Pilih Lokasi --
                                     @endif
@@ -271,14 +271,18 @@
                                 </div>
                                 <div class="custom-select-options" id="lokasi-options-list">
                                     <div class="custom-select-option" data-value="" data-text="-- Pilih Lokasi --">-- Pilih Lokasi --</div>
-                                    @foreach($gudangs as $gudang)
-                                        <div class="custom-select-option {{ old('lokasi', 'Gudang Utama') == $gudang->nama_gudang ? 'selected' : '' }}" 
-                                             data-value="{{ $gudang->nama_gudang }}" 
-                                             data-search="{{ strtolower($gudang->nama_gudang) }}"
-                                             data-text="{{ $gudang->nama_gudang }}">
-                                            {{ $gudang->nama_gudang }}
-                                        </div>
-                                    @endforeach
+                                    <div class="custom-select-option {{ old('lokasi', 'Ruko 10') == 'Ruko 10' ? 'selected' : '' }}" 
+                                         data-value="Ruko 10" 
+                                         data-search="ruko 10"
+                                         data-text="Ruko 10">
+                                        Ruko 10
+                                    </div>
+                                    <div class="custom-select-option {{ old('lokasi') == 'Garasi Pluit' ? 'selected' : '' }}" 
+                                         data-value="Garasi Pluit" 
+                                         data-search="garasi pluit"
+                                         data-text="Garasi Pluit">
+                                        Garasi Pluit
+                                    </div>
                                 </div>
                                 <div id="no-lokasi-results" class="hidden p-4 text-center text-sm text-gray-500">
                                     Lokasi tidak ditemukan
