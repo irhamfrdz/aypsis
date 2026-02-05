@@ -201,13 +201,13 @@
                     </tr>
                     @if(isset($pranota->adjustment) && $pranota->adjustment != 0)
                     <tr>
-                        <td class="px-2 py-1 text-xs font-medium">
-                            Adjustment
+                        <td class="px-2 py-1 text-xs font-medium">Adjustment</td>
+                        <td class="px-2 py-1 text-xs">
+                            Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}
                             @if(isset($pranota->keterangan) && !empty($pranota->keterangan))
-                                <span class="font-normal">({{ $pranota->keterangan }})</span>
+                                <span class="ml-1">({{ $pranota->keterangan }})</span>
                             @endif
                         </td>
-                        <td class="px-2 py-1 text-xs">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     <tr class="font-bold border-t border-gray-400">
                         <td class="px-2 py-1 text-xs font-medium">Total Bayar</td>
