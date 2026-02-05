@@ -16,6 +16,9 @@ class SuratJalan extends Model
 
     protected $fillable = [
         'order_id',
+        'penerima_id',
+        'notify_party_id',
+        'alamat_penerima',
         'tanggal_surat_jalan',
         'no_surat_jalan',
         'kegiatan',
