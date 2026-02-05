@@ -164,7 +164,7 @@
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Ukuran<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Kontainer<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Seal<div class="resize-handle"></div></th>
-                        <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Seal<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Penerima<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tujuan<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -261,29 +261,8 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                                 {{ $prospek->no_seal ?? '-' }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                @can('prospek-edit')
-                                    <div class="seal-edit-container" data-prospek-id="{{ $prospek->id }}">
-                                        <span class="seal-display cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border-2 border-transparent hover:border-blue-300 transition-all duration-200" 
-                                              title="Klik untuk edit seal">
-                                            {{ $prospek->no_seal ?? 'Klik untuk edit' }}
-                                        </span>
-                                        <input type="text" 
-                                               class="seal-input hidden w-full px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                               value="{{ $prospek->no_seal ?? '' }}"
-                                               placeholder="Masukkan nomor seal">
-                                        <div class="seal-buttons mt-1 gap-1" style="display: none;">
-                                            <button class="save-seal bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="cancel-seal bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @else
-                                    <span class="font-mono">{{ $prospek->no_seal ?? '-' }}</span>
-                                @endcan
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $prospek->tandaTerima->penerima ?? '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospek->tujuan_pengiriman ?? '-' }}

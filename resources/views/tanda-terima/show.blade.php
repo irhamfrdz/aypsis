@@ -156,6 +156,14 @@
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Pengirim</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->pengirim ?: '-' }}</dd>
                         </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Penerima</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->penerima ?: '-' }}</dd>
+                        </div>
+                        <div class="md:col-span-2">
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Alamat Penerima</dt>
+                            <dd class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ $tandaTerima->alamat_penerima ?: '-' }}</dd>
+                        </div>
                     </dl>
                 </div>
             </div>

@@ -889,7 +889,7 @@ class ObController extends Controller
                             // Data dari tanda terima
                             $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
                             $manifest->pengirim = $tandaTerima->nama_pengirim;
-                            $manifest->penerima = $tandaTerima->nama_penerima;
+                            $manifest->penerima = $tandaTerima->penerima;
                             $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
                             $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
                             
@@ -1004,7 +1004,13 @@ class ObController extends Controller
                     if ($naikKapal->prospek_id && $naikKapal->prospek) {
                         $manifest->prospek_id = $naikKapal->prospek_id;
                         $manifest->pengirim = $naikKapal->prospek->pt_pengirim;
-                        $manifest->penerima = $naikKapal->prospek->tujuan_pengiriman;
+                        // Cek apakah ada penerima di prospek (via relasi atau field), kalau tidak pakai tujuan
+                        $penerima = null;
+                        if ($naikKapal->prospek->tandaTerima) {
+                             $penerima = $naikKapal->prospek->tandaTerima->penerima;
+                             $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
+                        }
+                        $manifest->penerima = $penerima ?? $naikKapal->prospek->tujuan_pengiriman;
                     }
                     
                     // Generate nomor
@@ -1059,7 +1065,12 @@ class ObController extends Controller
                     // Ambil data lengkap dari prospek
                     $prospek = $naikKapal->prospek;
                     $bl->pengirim = $prospek->pt_pengirim;
-                    $bl->penerima = $prospek->tujuan_pengiriman;
+                    // Ambil penerima dari tanda terima jika ada, jika tidak gunakan tujuan pengiriman
+                    $penerima = null;
+                    if ($prospek->tandaTerima) {
+                        $penerima = $prospek->tandaTerima->penerima;
+                    }
+                    $bl->penerima = $penerima ?? $prospek->tujuan_pengiriman;
                     
                     // Jika no_seal belum ada, ambil dari prospek
                     if (empty($bl->no_seal) && !empty($prospek->no_seal)) {
@@ -1094,15 +1105,29 @@ class ObController extends Controller
                         }
                     }
                     
-                    // Jika ada tanda terima terkait, coba ambil data dari sana
-                    if (empty($bl->alamat_pengiriman) && $prospek->tanda_terima_id) {
-                        $tandaTerima = \App\Models\TandaTerima::find($prospek->tanda_terima_id);
-                        if ($tandaTerima) {
-                            if (!empty($tandaTerima->alamat_penerima)) {
-                                $bl->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                    // Cek data dari Tanda Terima Terlebih Dahulu (Prioritas)
+                    if ($prospek->tanda_terima_id) {
+                         $tandaTerima = \App\Models\TandaTerima::find($prospek->tanda_terima_id);
+                         if ($tandaTerima) {
+                             if (!empty($tandaTerima->alamat_penerima)) {
+                                 $bl->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                             }
+                             if (!empty($tandaTerima->contact_person)) {
+                                 $bl->contact_person = $tandaTerima->contact_person;
+                             }
+                         }
+                    }
+
+                    // Jika masih kosong, coba ambil dari Surat Jalan
+                    if (empty($bl->alamat_pengiriman) && $prospek->surat_jalan_id) {
+                        $suratJalan = \App\Models\SuratJalan::find($prospek->surat_jalan_id);
+                        if ($suratJalan) {
+                            if (!empty($suratJalan->alamat_tujuan)) {
+                                $bl->alamat_pengiriman = $suratJalan->alamat_tujuan;
                             }
-                            if (!empty($tandaTerima->contact_person)) {
-                                $bl->contact_person = $tandaTerima->contact_person;
+                            // Jika contact person kosong, ambil dari SJ
+                            if (empty($bl->contact_person) && !empty($suratJalan->contact_person)) {
+                                $bl->contact_person = $suratJalan->contact_person;
                             }
                         }
                     }
