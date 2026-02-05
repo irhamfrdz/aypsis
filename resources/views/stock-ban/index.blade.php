@@ -1158,7 +1158,7 @@
         }
 
         const form = document.getElementById('returnBanForm');
-        form.action = `/stock-ban/${banId}/return`;
+        form.action = `{{ url('stock-ban') }}/${banId}/return`;
         form.submit();
     }
 </script>
