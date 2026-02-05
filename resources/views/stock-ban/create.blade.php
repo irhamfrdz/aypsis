@@ -75,11 +75,25 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Nomor Seri (Opsional, Unik jika diisi) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Seri / Kode Ban</label>
-                        <input type="text" name="nomor_seri" value="{{ old('nomor_seri') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_seri') border-red-500 @enderror">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Nomor Seri / Kode Ban</label>
+                            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition">
+                                <input type="checkbox" id="no_serial_checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span>Tanpa Nomor Seri</span>
+                            </label>
+                        </div>
+                        <input type="text" 
+                               name="nomor_seri" 
+                               id="nomor_seri_input"
+                               value="{{ old('nomor_seri') }}" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_seri') border-red-500 @enderror"
+                               placeholder="Masukkan nomor seri ban">
                         @error('nomor_seri')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle"></i> Centang "Tanpa Nomor Seri" jika ban tidak memiliki nomor seri
+                        </p>
                     </div>
 
                     <!-- Nomor Bukti -->
@@ -1111,6 +1125,32 @@
             namaBarangSelect.addEventListener('change', checkItemType);
             checkItemType();
         }
+
+        // Handle "Tanpa Nomor Seri" checkbox
+        function initNoSerialCheckbox() {
+            const noSerialCheckbox = document.getElementById('no_serial_checkbox');
+            const nomorSeriInput = document.getElementById('nomor_seri_input');
+
+            if (!noSerialCheckbox || !nomorSeriInput) return;
+
+            noSerialCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Disable and clear nomor seri input
+                    nomorSeriInput.value = '';
+                    nomorSeriInput.disabled = true;
+                    nomorSeriInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                    nomorSeriInput.placeholder = 'Tanpa nomor seri';
+                } else {
+                    // Enable nomor seri input
+                    nomorSeriInput.disabled = false;
+                    nomorSeriInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                    nomorSeriInput.placeholder = 'Masukkan nomor seri ban';
+                }
+            });
+        }
+
+        // Call init functions
+        initNoSerialCheckbox();
     })();
 </script>
 @endpush
