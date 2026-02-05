@@ -87,7 +87,7 @@ class ReportOngkosTrukController extends Controller
             $uangJalan = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
 
             $data->push([
-                'tanggal' => $sj->tanggal_surat_jalan,
+                'tanggal' => ($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan,
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_plat' => $sj->no_plat,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
@@ -105,7 +105,7 @@ class ReportOngkosTrukController extends Controller
             $uangJalan = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
 
             $data->push([
-                'tanggal' => $sjb->tanggal_surat_jalan,
+                'tanggal' => ($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'no_plat' => $sjb->no_plat,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
@@ -165,7 +165,7 @@ class ReportOngkosTrukController extends Controller
             $ongkosTruk = $this->calculateOngkosTruk($sj);
 
             $data->push([
-                'tanggal' => $sj->tanggal_surat_jalan,
+                'tanggal' => ($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan,
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_plat' => $sj->no_plat,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
@@ -181,7 +181,7 @@ class ReportOngkosTrukController extends Controller
             $ongkosTruk = $this->calculateOngkosTruk($sjb);
 
             $data->push([
-                'tanggal' => $sjb->tanggal_surat_jalan,
+                'tanggal' => ($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'no_plat' => $sjb->no_plat,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
@@ -256,7 +256,7 @@ class ReportOngkosTrukController extends Controller
             }
 
             $data->push([
-                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'tanggal' => (($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan)->format('d/m/Y'),
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_plat' => $sj->no_plat,
                 'nama_lengkap_supir' => $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: ($sj->supir2 ?: '-')),
@@ -295,7 +295,7 @@ class ReportOngkosTrukController extends Controller
             }
 
             $data->push([
-                'tanggal' => $sjb->tanggal_surat_jalan->format('d/m/Y'),
+                'tanggal' => (($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan)->format('d/m/Y'),
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'no_plat' => $sjb->no_plat,
                 'nama_lengkap_supir' => $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: ($sjb->supir2 ?: '-')),
@@ -315,6 +315,14 @@ class ReportOngkosTrukController extends Controller
         }
 
         $data = $data->sortBy('tanggal');
+
+        // Format tanggal setelah di-sort
+        $data = $data->map(function($item) {
+            if ($item['tanggal'] instanceof \Carbon\Carbon) {
+                $item['tanggal'] = $item['tanggal']->format('d/m/Y');
+            }
+            return $item;
+        });
 
         $filename = 'report_ongkos_truk_' . date('Ymd_His') . '.xlsx';
         
