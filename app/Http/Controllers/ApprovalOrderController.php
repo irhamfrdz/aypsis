@@ -26,7 +26,10 @@ class ApprovalOrderController extends Controller
                 $q->where('nomor_order', 'like', "%{$search}%")
                   ->orWhere('tujuan_ambil', 'like', "%{$search}%")
                   ->orWhere('tujuan_kirim', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                  ->orWhereHas('suratJalans', function ($subQ) use ($search) {
+                      $subQ->where('no_surat_jalan', 'like', "%{$search}%")
+                           ->orWhere('no_kontainer', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -140,6 +143,7 @@ class ApprovalOrderController extends Controller
     {
         $request->validate([
             'term_id' => 'required|exists:terms,id',
+            'penerima_id' => 'nullable|exists:penerimas,id',
             'penerima' => 'nullable|string|max:255',
             'kontak_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
@@ -153,7 +157,20 @@ class ApprovalOrderController extends Controller
             $order->term_id = $request->term_id;
             
             // Update Informasi Penerima
-            $order->penerima = $request->penerima;
+            if ($request->filled('penerima_id')) {
+                $penerimaData = Penerima::find($request->penerima_id);
+                if ($penerimaData) {
+                    $order->penerima_id = $request->penerima_id;
+                    $order->penerima = $penerimaData->nama_penerima;
+                }
+            } else {
+                // Fallback if penerima name text is sent directly or to clear if needed
+                // But prioritizing the ID
+                if ($request->filled('penerima')) {
+                    $order->penerima = $request->penerima;
+                }
+            }
+
             $order->kontak_penerima = $request->kontak_penerima;
             $order->alamat_penerima = $request->alamat_penerima;
             

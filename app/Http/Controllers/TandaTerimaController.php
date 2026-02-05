@@ -444,7 +444,7 @@ class TandaTerimaController extends Controller
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
 
         // Get all master pengirim/penerima for dropdown
-        $masterPenerimaList = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $masterPenerimaList = \App\Models\Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
 
         // Get all gudangs for dropdown
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();

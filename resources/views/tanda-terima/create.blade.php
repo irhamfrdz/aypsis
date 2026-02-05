@@ -265,10 +265,10 @@
                                             class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror">
                                         <option value="">-- Pilih Penerima --</option>
                                         @foreach($masterPenerimaList as $penerima)
-                                            <option value="{{ $penerima->nama }}"
+                                            <option value="{{ $penerima->nama_penerima }}"
                                                     data-alamat="{{ $penerima->alamat }}"
-                                                    {{ old('penerima', $suratJalan->order->penerima ?? '') == $penerima->nama ? 'selected' : '' }}>
-                                                {{ $penerima->nama }}
+                                                    {{ old('penerima', $suratJalan->order->penerima ?? '') == $penerima->nama_penerima ? 'selected' : '' }}>
+                                                {{ $penerima->nama_penerima }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -999,22 +999,20 @@
     console.log('$ available:', typeof $ !== 'undefined');
     
     // Create a mapping of supir names to plat numbers
-    var supirPlatMap = {
-        @foreach($karyawans as $karyawan)
-            "{{ $karyawan->nama_lengkap }}": "{{ $karyawan->plat ?? 'N/A' }}",
-        @endforeach
-    };
+    var supirPlatMap = {};
+    @foreach($karyawans as $karyawan)
+        supirPlatMap["{{ $karyawan->nama_lengkap }}"] = "{{ $karyawan->plat ?? 'N/A' }}";
+    @endforeach
 
     console.log('Supir-Plat mapping loaded:', supirPlatMap);
 
     // Create a mapping of kontainer number to its details (size)
-    var kontainerDetailsMap = {
-        @foreach($stockKontainers as $stock)
-            "{{ $stock->nomor_seri_gabungan }}": {
-                size: "{{ $stock->ukuran }}"
-            },
-        @endforeach
-    };
+    var kontainerDetailsMap = {};
+    @foreach($stockKontainers as $stock)
+        kontainerDetailsMap["{{ $stock->nomor_seri_gabungan }}"] = {
+            size: "{{ $stock->ukuran }}"
+        };
+    @endforeach
 
     console.log('Kontainer details mapping loaded:', kontainerDetailsMap);
 
