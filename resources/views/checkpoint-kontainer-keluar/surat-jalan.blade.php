@@ -129,6 +129,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -150,6 +151,7 @@
                                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $kontainer->nomor_seri_gabungan }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ $kontainer->ukuran }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ $kontainer->tipe_kontainer }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ $kontainer->no_plat ?? '-' }}</td>
                                 <td class="px-4 py-4 text-sm text-gray-600">{{ $kontainer->keterangan ?? '-' }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <button onclick="openKirimModal('kontainer', {{ $kontainer->id }}, '{{ $kontainer->nomor_seri_gabungan }}', '{{ $kontainer->ukuran }}', '{{ $kontainer->tipe_kontainer }}')"
@@ -175,6 +177,7 @@
                                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $stock->nomor_seri_gabungan }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ $stock->ukuran ?? '-' }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ $stock->tipe_kontainer ?? '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ $stock->no_plat ?? '-' }}</td>
                                 <td class="px-4 py-4 text-sm text-gray-600">{{ $stock->keterangan ?? '-' }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <button onclick="openKirimModal('stock', {{ $stock->id }}, '{{ $stock->nomor_seri_gabungan }}', '{{ $stock->ukuran }}', '{{ $stock->tipe_kontainer }}')"
@@ -234,6 +237,10 @@
                                 <span class="text-gray-500">Tipe:</span>
                                 <span class="text-gray-900 font-medium ml-1">{{ $kontainer->tipe_kontainer }}</span>
                             </div>
+                            <div>
+                                <span class="text-gray-500">No. Plat:</span>
+                                <span class="text-gray-900 font-medium ml-1">{{ $kontainer->no_plat ?? '-' }}</span>
+                            </div>
                         </div>
                         @if($kontainer->keterangan)
                             <div class="mt-2 text-xs text-gray-600">
@@ -274,6 +281,10 @@
                             <div>
                                 <span class="text-gray-500">Tipe:</span>
                                 <span class="text-gray-900 font-medium ml-1">{{ $stock->tipe_kontainer ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">No. Plat:</span>
+                                <span class="text-gray-900 font-medium ml-1">{{ $stock->no_plat ?? '-' }}</span>
                             </div>
                         </div>
                         @if($stock->keterangan)
@@ -488,10 +499,13 @@
                             @foreach($suratJalans as $sj)
                                 <div class="px-3 py-2 hover:bg-green-50 cursor-pointer sj-option" 
                                      data-value="{{ $sj->no_surat_jalan }}"
-                                     data-text="{{ $sj->no_surat_jalan }} - {{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}{{ $sj->tujuan_pengiriman ? ' - ' . $sj->tujuan_pengiriman : '' }}">
+                                     data-text="{{ $sj->no_surat_jalan }} - {{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}{{ $sj->no_plat ? ' - ' . $sj->no_plat : '' }}{{ $sj->tujuan_pengiriman ? ' - ' . $sj->tujuan_pengiriman : '' }}">
                                     <div class="text-sm font-medium text-gray-900">{{ $sj->no_surat_jalan }}</div>
                                     <div class="text-xs text-gray-500">
                                         {{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}
+                                        @if($sj->no_plat)
+                                            • {{ $sj->no_plat }}
+                                        @endif
                                         @if($sj->tujuan_pengiriman)
                                             • {{ $sj->tujuan_pengiriman }}
                                         @endif

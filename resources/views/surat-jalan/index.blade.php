@@ -196,6 +196,7 @@ use Illuminate\Support\Str;
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Barang<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Tipe<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Kontainer<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">No. Plat<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Supir<div class="resize-handle"></div></th>      
                             
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Status<div class="resize-handle"></div></th>
@@ -333,6 +334,11 @@ use Illuminate\Support\Str;
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->no_plat ?? '-' }}">
+                                    {{ $suratJalan->no_plat ?? '-' }}
+                                </div>
+                            </td>
+                            <td class="px-2 py-2 text-xs text-gray-900">
                                 <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->supir ?? '-' }}">
                                     {{ $suratJalan->supir ?? '-' }}
                                 </div>
@@ -430,7 +436,7 @@ use Illuminate\Support\Str;
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="14" class="px-6 py-8 text-center text-sm text-gray-500">
+                            <td colspan="15" class="px-6 py-8 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
