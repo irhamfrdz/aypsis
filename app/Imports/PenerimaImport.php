@@ -23,6 +23,7 @@ class PenerimaImport implements ToModel, WithHeadingRow, WithValidation
             'nitku' => $row['nitku'] ?? null,
             'catatan' => $row['catatan'] ?? null,
             'status' => isset($row['status']) && in_array(strtolower($row['status']), ['active', 'inactive']) ? strtolower($row['status']) : 'active',
+            'iu_bp_kawasan' => isset($row['iu_bp_kawasan']) && in_array(strtolower($row['iu_bp_kawasan']), ['ada', 'tidak ada']) ? strtolower($row['iu_bp_kawasan']) : 'tidak ada',
         ]);
     }
 
@@ -35,6 +36,7 @@ class PenerimaImport implements ToModel, WithHeadingRow, WithValidation
             'nitku' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'nullable|string|in:active,inactive',
+            'iu_bp_kawasan' => 'nullable|string|in:ada,tidak ada',
         ];
     }
 }

@@ -19,7 +19,8 @@ class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
                 '12.345.678.9-000.000', 
                 '1234567890123456', 
                 'Catatan contoh', 
-                'active'
+                'active',
+                'tidak ada'
             ]
         ];
     }
@@ -32,7 +33,8 @@ class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
             'npwp', 
             'nitku', 
             'catatan', 
-            'status'
+            'status',
+            'iu_bp_kawasan'
         ];
     }
 
@@ -52,6 +54,7 @@ class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
             'D' => 20, // nitku
             'E' => 30, // catatan
             'F' => 15, // status
+            'G' => 15, // iu_bp_kawasan
         ];
     }
 }
