@@ -180,38 +180,49 @@
                         </div>
                         
                         <div class="md:col-span-2">
-                            <div class="flex items-center justify-between mb-2">
-                                <label for="notify_party_id" class="text-sm font-medium text-gray-700">
-                                    Notify Party
+                            <div class="flex items-center mb-4">
+                                <input type="checkbox" id="notify_party_checkbox" 
+                                       class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                       {{ old('notify_party_id', $order->notify_party_id ?? '') ? 'checked' : '' }}>
+                                <label for="notify_party_checkbox" class="ml-2 text-sm font-medium text-gray-700">
+                                    Gunakan Notify Party
                                 </label>
-                                <a href="{{ route('order.penerima.create') }}" id="add_notify_party_link"
-                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                   title="Tambah">
-                                    Tambah
-                                </a>
                             </div>
-                            <div class="relative">
-                                <div class="dropdown-container-notify-party">
-                                    <input type="text" id="search_notify_party" placeholder="Search..." autocomplete="off"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
-                                    <select name="notify_party_id" id="notify_party_id"
-                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('notify_party_id') border-red-500 @enderror">
-                                        <option value="">Select an option</option>
-                                        @foreach($penerimas as $penerima)
-                                            <option value="{{ $penerima->id }}" 
-                                                    {{ old('notify_party_id', $order->notify_party_id ?? '') == $penerima->id ? 'selected' : '' }}>
-                                                {{ $penerima->nama_penerima }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div id="dropdown_options_notify_party" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
-                                        <!-- Options will be populated by JavaScript -->
+                            
+                            <div id="notify_party_container" class="{{ old('notify_party_id', $order->notify_party_id ?? '') ? '' : 'hidden' }}">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label for="notify_party_id" class="text-sm font-medium text-gray-700">
+                                        Notify Party
+                                    </label>
+                                    <a href="{{ route('order.penerima.create') }}" id="add_notify_party_link"
+                                       class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                       title="Tambah">
+                                        Tambah
+                                    </a>
+                                </div>
+                                <div class="relative">
+                                    <div class="dropdown-container-notify-party">
+                                        <input type="text" id="search_notify_party" placeholder="Search..." autocomplete="off"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                        <select name="notify_party_id" id="notify_party_id"
+                                                class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('notify_party_id') border-red-500 @enderror">
+                                            <option value="">Select an option</option>
+                                            @foreach($penerimas as $penerima)
+                                                <option value="{{ $penerima->id }}" 
+                                                        {{ old('notify_party_id', $order->notify_party_id ?? '') == $penerima->id ? 'selected' : '' }}>
+                                                    {{ $penerima->nama_penerima }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_notify_party" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                            <!-- Options will be populated by JavaScript -->
+                                        </div>
                                     </div>
                                 </div>
+                                @error('notify_party_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
-                            @error('notify_party_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
                         </div>
                     </div>
                 </div>
@@ -507,6 +518,29 @@
 
                 if (popup) {
                     popup.focus();
+                }
+            });
+        }
+
+        // Handle Notify Party checkbox toggle
+        const notifyPartyCheckbox = document.getElementById('notify_party_checkbox');
+        const notifyPartyContainer = document.getElementById('notify_party_container');
+        const notifyPartySelect = document.getElementById('notify_party_id');
+        const searchNotifyParty = document.getElementById('search_notify_party');
+
+        if (notifyPartyCheckbox && notifyPartyContainer) {
+            notifyPartyCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    notifyPartyContainer.classList.remove('hidden');
+                } else {
+                    notifyPartyContainer.classList.add('hidden');
+                    // Reset notify party selection
+                    if (notifyPartySelect) {
+                        notifyPartySelect.value = '';
+                    }
+                    if (searchNotifyParty) {
+                        searchNotifyParty.value = '';
+                    }
                 }
             });
         }
