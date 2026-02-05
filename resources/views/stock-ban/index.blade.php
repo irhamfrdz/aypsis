@@ -847,9 +847,16 @@
         },
 
         select: function(id, value, text) {
-            document.getElementById(id).value = value;
+            const hiddenInput = document.getElementById(id);
+            if (hiddenInput) {
+                hiddenInput.value = value;
+            }
+            
             const textEl = document.getElementById('text-' + id);
-            if (textEl) textEl.textContent = text;
+            if (textEl) {
+                textEl.textContent = text;
+            }
+            
             this.close();
 
             // Custom trigger for kanisir vendor
