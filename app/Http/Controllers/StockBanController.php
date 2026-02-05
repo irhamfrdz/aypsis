@@ -233,6 +233,7 @@ class StockBanController extends Controller
             'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
 
             'harga_beli' => 'nullable|numeric|min:0',
+            'tempat_beli' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
@@ -287,6 +288,7 @@ class StockBanController extends Controller
             'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
 
             'harga_beli' => 'nullable|numeric|min:0',
+            'tempat_beli' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',

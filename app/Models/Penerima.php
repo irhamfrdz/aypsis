@@ -15,6 +15,7 @@ class Penerima extends Model
         'npwp',
         'nitku',
         'catatan',
-        'status'
+        'status',
+        'iu_bp_kawasan'
     ];
 }

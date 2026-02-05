@@ -165,6 +165,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Alamat<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">NPWP / NITKU<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Catatan<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">IU BP Kawasan<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -181,6 +182,11 @@
                                     </div>
                                 </td>
                                 <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $penerima->catatan }}">{{ $penerima->catatan ?: '-' }}</td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full {{ $penerima->iu_bp_kawasan === 'ada' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                        {{ ucfirst($penerima->iu_bp_kawasan) ?? '-' }}
+                                    </span>
+                                </td>
                                 <td class="px-3 py-2 whitespace-nowrap">
                                     <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full {{ $penerima->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                         {{ $penerima->status === 'active' ? 'Aktif' : 'Tidak Aktif' }}

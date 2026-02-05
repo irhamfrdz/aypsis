@@ -20,6 +20,7 @@ class StockBan extends Model
         'kondisi',
         'status',
         'harga_beli',
+        'tempat_beli',
         'tanggal_masuk',
         'tanggal_keluar',
         'lokasi',

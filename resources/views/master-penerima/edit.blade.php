@@ -79,6 +79,19 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        
+                        <div class="sm:col-span-3">
+                            <label for="iu_bp_kawasan" class="block text-sm font-medium text-gray-700">IU BP Kawasan</label>
+                            <div class="mt-1">
+                                <select name="iu_bp_kawasan" id="iu_bp_kawasan" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                    <option value="tidak ada" {{ old('iu_bp_kawasan', $penerima->iu_bp_kawasan) == 'tidak ada' ? 'selected' : '' }}>Tidak Ada</option>
+                                    <option value="ada" {{ old('iu_bp_kawasan', $penerima->iu_bp_kawasan) == 'ada' ? 'selected' : '' }}>Ada</option>
+                                 </select>
+                            </div>
+                            @error('iu_bp_kawasan')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <div class="sm:col-span-3">
                             <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>

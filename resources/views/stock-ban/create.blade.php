@@ -82,10 +82,13 @@
                         @enderror
                     </div>
 
-                    <!-- Nomor Bukti (Otomatis) -->
+                    <!-- Nomor Bukti -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Bukti</label>
-                        <input type="text" name="nomor_bukti" value="{{ old('nomor_bukti', $nextInvoice) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100" readonly>
+                        <input type="text" name="nomor_bukti" value="{{ old('nomor_bukti', $nextInvoice) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_bukti') border-red-500 @enderror">
+                        @error('nomor_bukti')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Nama Barang (Dropdown from nama_stock_bans) -->
@@ -187,6 +190,15 @@
                             <option value="no seri hilang" {{ old('status_ban_luar') == 'no seri hilang' ? 'selected' : '' }}>No Seri Hilang</option>
                         </select>
                         @error('status_ban_luar')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Tempat Beli (Conditional for Ban Luar) -->
+                    <div id="tempat-beli-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tempat Beli</label>
+                        <input type="text" name="tempat_beli" value="{{ old('tempat_beli') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tempat_beli') border-red-500 @enderror" placeholder="Nama Tempat Beli">
+                        @error('tempat_beli')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -979,6 +991,20 @@
                             statusBanLuarSelect.removeAttribute('required');
                             statusBanLuarSelect.value = '';
                         }
+                    }
+                }
+
+                // Logic for Tempat Beli
+                const tempatBeliContainer = document.getElementById('tempat-beli-container');
+                if (isBanLuar) {
+                    if (tempatBeliContainer) {
+                        tempatBeliContainer.classList.remove('hidden');
+                    }
+                } else {
+                    if (tempatBeliContainer) {
+                        tempatBeliContainer.classList.add('hidden');
+                        const input = tempatBeliContainer.querySelector('input');
+                        if (input) input.value = '';
                     }
                 }
 

@@ -53,6 +53,7 @@ class PenerimaController extends Controller
             'nitku' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
+            'iu_bp_kawasan' => 'nullable|in:ada,tidak ada',
         ]);
 
         $penerima = Penerima::create($request->all());
@@ -92,6 +93,7 @@ class PenerimaController extends Controller
             'nitku' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
+            'iu_bp_kawasan' => 'nullable|in:ada,tidak ada',
         ]);
 
         $penerima->update($request->all());
