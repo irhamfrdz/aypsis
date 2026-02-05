@@ -153,8 +153,24 @@
            </div>
         </div>
         
-        <div class="flex gap-2">
-            <a href="{{ route('stock-ban.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+        <div class="flex gap-2 items-center w-full md:w-auto">
+            <!-- Search Box -->
+            <div class="relative flex-1 md:flex-initial md:w-80">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" 
+                       id="search-input" 
+                       class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition"
+                       placeholder="Cari nomor seri, merk, ukuran, lokasi...">
+                <button type="button" 
+                        id="clear-search" 
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                    <i class="fas fa-times text-gray-400 hover:text-gray-600 cursor-pointer"></i>
+                </button>
+            </div>
+            
+            <a href="{{ route('stock-ban.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap">
                 <i class="fas fa-plus"></i> Tambah Stock
             </a>
         </div>
@@ -928,5 +944,96 @@
 
         form.submit();
     }
+
+    // Search functionality
+    (function() {
+        const searchInput = document.getElementById('search-input');
+        const clearButton = document.getElementById('clear-search');
+        
+        if (!searchInput || !clearButton) return;
+
+        let searchTimeout;
+
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const activeTab = document.querySelector('.tab-content.active');
+            
+            if (!activeTab) return;
+
+            const tableRows = activeTab.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+
+            tableRows.forEach(row => {
+                // Skip if row is "No data" message
+                if (row.querySelector('td[colspan]')) {
+                    row.style.display = 'none';
+                    return;
+                }
+
+                const nomorSeri = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                const merk = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+                const lokasi = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
+
+                const matches = nomorSeri.includes(searchTerm) || 
+                               merk.includes(searchTerm) || 
+                               lokasi.includes(searchTerm);
+
+                if (matches || searchTerm === '') {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show "no results" message if needed
+            const tbody = activeTab.querySelector('tbody');
+            let noResultsRow = tbody.querySelector('.no-results-row');
+            
+            if (visibleCount === 0 && searchTerm !== '') {
+                if (!noResultsRow) {
+                    noResultsRow = document.createElement('tr');
+                    noResultsRow.className = 'no-results-row';
+                    noResultsRow.innerHTML = `
+                        <td colspan="9" class="px-6 py-8 text-center">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
+                                <p class="text-gray-500 font-medium">Tidak ada hasil untuk "${searchInput.value}"</p>
+                                <p class="text-gray-400 text-sm mt-1">Coba gunakan kata kunci lain</p>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(noResultsRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+
+            // Toggle clear button visibility
+            clearButton.classList.toggle('hidden', searchTerm === '');
+        }
+
+        // Input event with debounce
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300);
+        });
+
+        // Clear search
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            searchInput.focus();
+            performSearch();
+        });
+
+        // Re-run search when tab changes
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Wait for tab content to be visible
+                setTimeout(performSearch, 50);
+            });
+        });
+    })();
 </script>
 @endpush
