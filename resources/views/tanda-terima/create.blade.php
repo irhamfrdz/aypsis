@@ -265,9 +265,31 @@
                                             class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror">
                                         <option value="">-- Pilih Penerima --</option>
                                         @foreach($masterPenerimaList as $penerima)
+                                            @php
+                                                // Prioritize notify_party if available, otherwise use penerima
+                                                $selectedPenerima = null;
+                                                if ($suratJalan->order && $suratJalan->order->notify_party_id) {
+                                                    // Use notify party if available
+                                                    $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
+                                                    if ($notifyParty) {
+                                                        $selectedPenerima = $notifyParty->nama_penerima;
+                                                    }
+                                                } elseif ($suratJalan->order && $suratJalan->order->penerima_id) {
+                                                    // Use regular penerima if no notify party
+                                                    $regularPenerima = \App\Models\Penerima::find($suratJalan->order->penerima_id);
+                                                    if ($regularPenerima) {
+                                                        $selectedPenerima = $regularPenerima->nama_penerima;
+                                                    }
+                                                } elseif ($suratJalan->order) {
+                                                    // Fallback to penerima string field
+                                                    $selectedPenerima = $suratJalan->order->penerima;
+                                                }
+                                                
+                                                $isSelected = old('penerima', $selectedPenerima) == $penerima->nama_penerima;
+                                            @endphp
                                             <option value="{{ $penerima->nama_penerima }}"
                                                     data-alamat="{{ $penerima->alamat }}"
-                                                    {{ old('penerima', $suratJalan->order->penerima ?? '') == $penerima->nama_penerima ? 'selected' : '' }}>
+                                                    {{ $isSelected ? 'selected' : '' }}>
                                                 {{ $penerima->nama_penerima }}
                                             </option>
                                         @endforeach
@@ -283,11 +305,28 @@
                                     <label for="alamat_penerima" class="block text-xs font-medium text-gray-500 mb-2">
                                         Alamat Penerima
                                     </label>
+                                    @php
+                                        // Prioritize notify_party address if available
+                                        $alamatPenerima = '';
+                                        if ($suratJalan->order && $suratJalan->order->notify_party_id) {
+                                            $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
+                                            if ($notifyParty) {
+                                                $alamatPenerima = $notifyParty->alamat;
+                                            }
+                                        } elseif ($suratJalan->order && $suratJalan->order->penerima_id) {
+                                            $regularPenerima = \App\Models\Penerima::find($suratJalan->order->penerima_id);
+                                            if ($regularPenerima) {
+                                                $alamatPenerima = $regularPenerima->alamat;
+                                            }
+                                        } elseif ($suratJalan->order) {
+                                            $alamatPenerima = $suratJalan->order->alamat_penerima;
+                                        }
+                                    @endphp
                                     <textarea name="alamat_penerima"
                                               id="alamat_penerima"
                                               rows="3"
                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_penerima') border-red-500 @enderror"
-                                              placeholder="Alamat lengkap penerima">{{ old('alamat_penerima', $suratJalan->order->alamat_penerima ?? '') }}</textarea>
+                                              placeholder="Alamat lengkap penerima">{{ old('alamat_penerima', $alamatPenerima) }}</textarea>
                                     @error('alamat_penerima')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
