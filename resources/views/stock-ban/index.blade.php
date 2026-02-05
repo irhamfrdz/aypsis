@@ -163,6 +163,90 @@
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <!-- Tab: Ban Luar -->
         <div id="tab-ban-luar" class="tab-content active p-4">
+            <!-- Rekap Statistik Ban Luar -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-blue-600"></i>
+                    Rekap Ban Luar
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <!-- Total Ban -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-blue-600 uppercase">Total Ban</span>
+                            <i class="fas fa-circle-notch text-blue-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-blue-900">{{ $stockBans->count() }}</div>
+                        <p class="text-xs text-blue-600 mt-1">Unit</p>
+                    </div>
+                    
+                    <!-- Ban Stok -->
+                    @php
+                        $banStok = $stockBans->where('status', 'Stok')->count();
+                    @endphp
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-green-600 uppercase">Stok</span>
+                            <i class="fas fa-box text-green-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-900">{{ $banStok }}</div>
+                        <p class="text-xs text-green-600 mt-1">Tersedia</p>
+                    </div>
+                    
+                    <!-- Ban Terpakai -->
+                    @php
+                        $banTerpakai = $stockBans->where('status', 'Terpakai')->count();
+                    @endphp
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-purple-600 uppercase">Terpakai</span>
+                            <i class="fas fa-check-circle text-purple-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-purple-900">{{ $banTerpakai }}</div>
+                        <p class="text-xs text-purple-600 mt-1">Terpasang</p>
+                    </div>
+                    
+                    <!-- Ban Asli -->
+                    @php
+                        $banAsli = $stockBans->where('kondisi', 'asli')->count();
+                    @endphp
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-emerald-600 uppercase">Asli</span>
+                            <i class="fas fa-star text-emerald-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-emerald-900">{{ $banAsli }}</div>
+                        <p class="text-xs text-emerald-600 mt-1">Original</p>
+                    </div>
+                    
+                    <!-- Ban Kanisir -->
+                    @php
+                        $banKanisir = $stockBans->where('kondisi', 'kanisir')->count();
+                    @endphp
+                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-yellow-600 uppercase">Kanisir</span>
+                            <i class="fas fa-recycle text-yellow-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-yellow-900">{{ $banKanisir }}</div>
+                        <p class="text-xs text-yellow-600 mt-1">Remelted</p>
+                    </div>
+                    
+                    <!-- Ban Afkir -->
+                    @php
+                        $banAfkir = $stockBans->where('kondisi', 'afkir')->count();
+                    @endphp
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-red-600 uppercase">Afkir</span>
+                            <i class="fas fa-times-circle text-red-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-red-900">{{ $banAfkir }}</div>
+                        <p class="text-xs text-red-600 mt-1">Rusak</p>
+                    </div>
+                </div>
+            </div>
+
             <form action="{{ route('stock-ban.bulk-masak') }}" method="POST" id="bulk-masak-form">
                 @csrf
                 <div class="mb-4 flex justify-end hidden" id="bulk-action-container">
