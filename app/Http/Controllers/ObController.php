@@ -861,6 +861,18 @@ class ObController extends Controller
                             $tandaTerima = $pivot->tandaTerima;
                             if (!$tandaTerima) continue;
                             
+                            // Cek duplikasi manifest
+                            $existingManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                                ->where('no_voyage', $naikKapal->no_voyage)
+                                ->where('nama_kapal', $naikKapal->nama_kapal)
+                                ->where('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima)
+                                ->first();
+                                
+                            if ($existingManifest) {
+                                \Log::info("Manifest already exists for TT: " . $tandaTerima->nomor_tanda_terima);
+                                continue;
+                            }
+                            
                             // Buat manifest untuk setiap tanda terima
                             $manifest = new \App\Models\Manifest();
                             
