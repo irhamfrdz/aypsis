@@ -137,7 +137,9 @@
                                             class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('penerima_id') border-red-500 @enderror">
                                         <option value="">Select an option</option>
                                         @foreach($penerimas as $penerima)
-                                            <option value="{{ $penerima->id }}" {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
+                                            <option value="{{ $penerima->id }}" 
+                                                    data-alamat="{{ $penerima->alamat }}"
+                                                    {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
                                                 {{ $penerima->nama_penerima }}
                                             </option>
                                         @endforeach
@@ -336,6 +338,7 @@
                     div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-sm';
                     div.textContent = option.text;
                     div.setAttribute('data-value', option.value);
+                    div.setAttribute('data-alamat', option.getAttribute('data-alamat') || '');
 
                     // Add selected class if it matches the current select value
                     if (option.value === selectElement.value && option.value !== '') {
@@ -345,6 +348,7 @@
                     div.addEventListener('click', function() {
                         const value = this.getAttribute('data-value');
                         const text = this.textContent;
+                        const alamat = this.getAttribute('data-alamat');
 
                         // Set the select value
                         selectElement.value = value;
@@ -355,6 +359,11 @@
                             searchInput.placeholder = 'Search...';
                         } else {
                             searchInput.value = text;
+                        }
+
+                        // Auto-fill alamat if exist
+                        if (config.alamatId && document.getElementById(config.alamatId) && alamat) {
+                            document.getElementById(config.alamatId).value = alamat;
                         }
 
                         // Hide dropdown
@@ -395,7 +404,8 @@
             selectId: 'penerima_id',
             searchId: 'search_penerima',
             dropdownId: 'dropdown_options_penerima',
-            containerClass: 'dropdown-container-penerima'
+            containerClass: 'dropdown-container-penerima',
+            alamatId: 'alamat_penerima'
         });
 
         // Handle Penerima "Tambah" link logic
