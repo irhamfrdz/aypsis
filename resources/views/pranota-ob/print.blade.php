@@ -201,7 +201,12 @@
                     </tr>
                     @if(isset($pranota->adjustment) && $pranota->adjustment != 0)
                     <tr>
-                        <td class="px-2 py-1 text-xs font-medium">Adjustment</td>
+                        <td class="px-2 py-1 text-xs font-medium">
+                            Adjustment
+                            @if(isset($pranota->keterangan) && !empty($pranota->keterangan))
+                                <span class="font-normal">({{ $pranota->keterangan }})</span>
+                            @endif
+                        </td>
                         <td class="px-2 py-1 text-xs">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     <tr class="font-bold border-t border-gray-400">
@@ -216,9 +221,7 @@
         <div class="flex justify-between" style="font-size: 10px; margin-top: 6px;">
             <div>
                 <p style="margin: 0;">Catatan: {{ $pranota->catatan ?? '-' }}</p>
-                @if(isset($pranota->keterangan) && !empty($pranota->keterangan))
-                <p style="margin: 4px 0 0 0;">Keterangan: {{ $pranota->keterangan }}</p>
-                @endif
+
             </div>
         </div>
 
