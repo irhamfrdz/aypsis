@@ -395,8 +395,7 @@
                                     <div class="flex justify-end gap-2">
                                         @if($ban->status == 'Stok')
                                             <button type="button" 
-                                                onclick="openUsageModal('{{ $ban->id }}', this.getAttribute('data-seri'))"
-                                                data-seri="{{ $ban->nomor_seri }}"
+                                                onclick="openUsageModal('{{ $ban->id }}', '{{ $ban->nomor_seri }}')"
                                                 class="text-green-600 hover:text-green-900" title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
                                             </button>
@@ -764,6 +763,240 @@
 
 @push('scripts')
 <script>
+    // Global data for price lookup
+    const pricelistData = @json($pricelistKanisirBans);
+
+    // Global Modal Functions - Must be outside DOMContentLoaded for onclick attributes
+    function openUsageModal(id, seri) {
+        document.getElementById('modal-ban-seri').textContent = seri;
+        document.getElementById('usageForm').action = "{{ url('stock-ban') }}/" + id + "/use";
+        
+        // Reset selections
+        document.getElementById('mobil').value = '';
+        document.getElementById('text-mobil').textContent = '-- Pilih Mobil --';
+        document.getElementById('penerima').value = '';
+        document.getElementById('text-penerima').textContent = '-- Pilih Penerima --';
+        
+        document.getElementById('usageModal').classList.remove('hidden');
+    }
+
+    function closeUsageModal() {
+        document.getElementById('usageModal').classList.add('hidden');
+        DropdownManager.close();
+    }
+
+    function openReturnModal(banId, nomorSeri, mobilPolisi) {
+        document.getElementById('return_ban_id').value = banId;
+        document.getElementById('return_nomor_seri').textContent = nomorSeri || '-';
+        document.getElementById('return_mobil').textContent = mobilPolisi || '-';
+        
+        // Reset form
+        document.getElementById('return_lokasi').value = '';
+        document.getElementById('return_keterangan').value = '';
+        
+        // Show modal
+        document.getElementById('returnBanModal').classList.remove('hidden');
+    }
+
+    function closeReturnModal() {
+        document.getElementById('returnBanModal').classList.add('hidden');
+    }
+
+    function submitReturnForm() {
+        const banId = document.getElementById('return_ban_id').value;
+        const lokasi = document.getElementById('return_lokasi').value;
+        
+        if (!lokasi) {
+            alert('Mohon pilih lokasi penyimpanan!');
+            return;
+        }
+
+        const form = document.getElementById('returnBanForm');
+        form.action = `{{ url('stock-ban') }}/${banId}/return`;
+        form.submit();
+    }
+
+    function openKanisirModal(e) {
+        e.preventDefault();
+        
+        // Reset vendor selection
+        document.getElementById('kanisir_vendor').value = '';
+        document.getElementById('text-kanisir_vendor').textContent = '-- Pilih Vendor --';
+        
+        const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
+        const container = document.getElementById('kanisir_selected_ban_container');
+        const totalSpan = document.getElementById('kanisir_total_terpilih');
+        
+        container.innerHTML = '';
+        totalSpan.textContent = selectedCheckboxes.length;
+
+        selectedCheckboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            // Clone data from row and checkbox attributes
+            const noSeriContent = row.cells[1].innerHTML;
+            const merkUkuranContent = row.cells[2].innerHTML;
+            const typeValue = cb.getAttribute('data-type') || '-';
+            const banId = cb.value;
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-orange-50/30 transition-colors";
+            tr.setAttribute('data-ban-id', banId);
+            tr.setAttribute('data-ukuran', cb.getAttribute('data-ukuran') || '');
+            tr.setAttribute('data-status-luar', cb.getAttribute('data-status-luar') || '');
+            
+            const td1 = document.createElement('td');
+            td1.className = "px-4 py-3 whitespace-nowrap text-xs font-semibold text-gray-900";
+            td1.innerHTML = noSeriContent;
+
+            const td2 = document.createElement('td');
+            td2.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
+            td2.innerHTML = merkUkuranContent;
+
+            const td3 = document.createElement('td');
+            td3.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
+            const typeSpan = document.createElement('span');
+            typeSpan.className = "px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium";
+            typeSpan.textContent = typeValue;
+            td3.appendChild(typeSpan);
+
+            const td4 = document.createElement('td');
+            td4.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-900 font-bold text-right kanisir-price-col";
+            td4.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>-`;
+
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            tr.appendChild(td3);
+            tr.appendChild(td4);
+            container.appendChild(tr);
+        });
+
+        // If vendor already selected (unlikely on open, but for safety)
+        const currentVendor = document.getElementById('kanisir_vendor').value;
+        if (currentVendor) updateKanisirPrices(currentVendor);
+
+        document.getElementById('kanisirModal').classList.remove('hidden');
+    }
+
+    function closeKanisirModal() {
+        document.getElementById('kanisirModal').classList.add('hidden');
+    }
+
+    function submitKanisirForm(e) {
+        e.preventDefault();
+        
+        const form = document.getElementById('bulk-masak-form');
+        
+        // Get values
+        const invoice = document.getElementById('kanisir_invoice').value;
+        const fakturVendor = document.getElementById('kanisir_faktur_vendor').value;
+        const tanggal = document.getElementById('kanisir_tanggal').value;
+        const vendor = document.getElementById('kanisir_vendor').value;
+        const harga = document.getElementById('kanisir_harga').value;
+        
+        if (!tanggal || !vendor || !harga) {
+            alert('Mohon lengkapi data Tanggal, Vendor, dan Harga.');
+            return;
+        }
+
+        // Helper to append hidden input
+        const appendHidden = (name, value) => {
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        };
+
+        // Append selected IDs
+        const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Pilih ban terlebih dahulu.');
+            return;
+        }
+
+        selectedCheckboxes.forEach(cb => {
+            appendHidden('ids[]', cb.value);
+        });
+
+        appendHidden('nomor_invoice', invoice);
+        appendHidden('nomor_faktur_vendor', fakturVendor);
+        appendHidden('tanggal_masuk_kanisir', tanggal);
+        appendHidden('vendor', vendor);
+        appendHidden('harga', harga);
+
+        form.submit();
+    }
+
+    function updateKanisirPrices(vendorName) {
+        if (!vendorName) return;
+        
+        const pricelist = pricelistData.find(p => p.vendor === vendorName);
+        if (!pricelist) return;
+
+        const rows = document.querySelectorAll('#kanisir_selected_ban_container tr');
+        let totalHarga = 0;
+
+        rows.forEach(row => {
+            const ukuran = row.getAttribute('data-ukuran');
+            const status = row.getAttribute('data-status-luar');
+            
+            // Map status to column suffix
+            const suffix = status === 'kawat' ? 'kawat' : (status === 'benang' ? 'benang' : null);
+            let harga = 0;
+            
+            if (suffix && ukuran) {
+                const colName = `harga_${ukuran}_${suffix}`;
+                harga = parseFloat(pricelist[colName]) || 0;
+            }
+
+            const priceCol = row.querySelector('.kanisir-price-col');
+            if (priceCol) {
+                priceCol.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>${new Intl.NumberFormat('id-ID').format(harga)}`;
+            }
+            totalHarga += harga;
+        });
+
+        // Update the main harga input in the modal based on total selected prices
+        document.getElementById('kanisir_harga').value = totalHarga;
+    }
+
+    function setCardFilter(filterType) {
+        currentCardFilter = filterType;
+        
+        // Visual updates
+        document.querySelectorAll('.card-filter').forEach(card => {
+            card.classList.remove('active-filter', 'ring-2');
+            
+            // Remove specific color rings
+            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400');
+        });
+
+        const activeCard = document.getElementById('card-' + filterType);
+        if(activeCard) {
+            activeCard.classList.add('active-filter', 'ring-2');
+            
+            // Add specific color ring based on type
+            const colorMap = {
+                'total': 'ring-blue-400',
+                'stok': 'ring-green-400',
+                'terpakai': 'ring-purple-400',
+                'asli': 'ring-emerald-400',
+                'kanisir': 'ring-yellow-400',
+                'afkir': 'ring-red-400',
+                'garasi-pluit': 'ring-indigo-400',
+                'ruko-10': 'ring-orange-400'
+            };
+            activeCard.classList.add(colorMap[filterType]);
+        }
+        
+        // Trigger search to apply filter
+        const searchInput = document.getElementById('search-input');
+        if(searchInput) {
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    }
+
+    // Initialize after DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         // Tab Logic
         const tabs = document.querySelectorAll('.tab-btn');
@@ -819,9 +1052,6 @@
         // Initialize state
         updateBulkButton();
     });
-    
-    // Global data for price lookup
-    const pricelistData = @json($pricelistKanisirBans);
 
     const DropdownManager = {
         activeDropdownId: null,
@@ -942,209 +1172,8 @@
         }
     });
 
-    function openUsageModal(id, seri) {
-        document.getElementById('modal-ban-seri').textContent = seri;
-        document.getElementById('usageForm').action = "{{ url('stock-ban') }}/" + id + "/use";
-        
-        // Reset selections
-        document.getElementById('mobil').value = '';
-        document.getElementById('text-mobil').textContent = '-- Pilih Mobil --';
-        document.getElementById('penerima').value = '';
-        document.getElementById('text-penerima').textContent = '-- Pilih Penerima --';
-        
-        document.getElementById('usageModal').classList.remove('hidden');
-    }
-
-    function closeUsageModal() {
-        document.getElementById('usageModal').classList.add('hidden');
-        DropdownManager.close();
-    }
-
-    // Kanisir Modal Logic
-    function openKanisirModal(e) {
-        e.preventDefault();
-        
-        // Reset vendor selection
-        document.getElementById('kanisir_vendor').value = '';
-        document.getElementById('text-kanisir_vendor').textContent = '-- Pilih Vendor --';
-        
-        const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
-        const container = document.getElementById('kanisir_selected_ban_container');
-        const totalSpan = document.getElementById('kanisir_total_terpilih');
-        
-        container.innerHTML = '';
-        totalSpan.textContent = selectedCheckboxes.length;
-
-        selectedCheckboxes.forEach(cb => {
-            const row = cb.closest('tr');
-            // Clone data from row and checkbox attributes
-            const noSeriContent = row.cells[1].innerHTML;
-            const merkUkuranContent = row.cells[2].innerHTML;
-            const typeValue = cb.getAttribute('data-type') || '-';
-            const banId = cb.value;
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-orange-50/30 transition-colors";
-            tr.setAttribute('data-ban-id', banId);
-            tr.setAttribute('data-ukuran', cb.getAttribute('data-ukuran') || '');
-            tr.setAttribute('data-status-luar', cb.getAttribute('data-status-luar') || '');
-            
-            const td1 = document.createElement('td');
-            td1.className = "px-4 py-3 whitespace-nowrap text-xs font-semibold text-gray-900";
-            td1.innerHTML = noSeriContent;
-
-            const td2 = document.createElement('td');
-            td2.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
-            td2.innerHTML = merkUkuranContent;
-
-            const td3 = document.createElement('td');
-            td3.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-600";
-            const typeSpan = document.createElement('span');
-            typeSpan.className = "px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium";
-            typeSpan.textContent = typeValue;
-            td3.appendChild(typeSpan);
-
-            const td4 = document.createElement('td');
-            td4.className = "px-4 py-3 whitespace-nowrap text-xs text-gray-900 font-bold text-right kanisir-price-col";
-            td4.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>-`;
-
-            tr.appendChild(td1);
-            tr.appendChild(td2);
-            tr.appendChild(td3);
-            tr.appendChild(td4);
-            container.appendChild(tr);
-        });
-
-        // If vendor already selected (unlikely on open, but for safety)
-        const currentVendor = document.getElementById('kanisir_vendor').value;
-        if (currentVendor) updateKanisirPrices(currentVendor);
-
-        document.getElementById('kanisirModal').classList.remove('hidden');
-    }
-
-    function updateKanisirPrices(vendorName) {
-        if (!vendorName) return;
-        
-        const pricelist = pricelistData.find(p => p.vendor === vendorName);
-        if (!pricelist) return;
-
-        const rows = document.querySelectorAll('#kanisir_selected_ban_container tr');
-        let totalHarga = 0;
-
-        rows.forEach(row => {
-            const ukuran = row.getAttribute('data-ukuran');
-            const status = row.getAttribute('data-status-luar');
-            
-            // Map status to column suffix
-            const suffix = status === 'kawat' ? 'kawat' : (status === 'benang' ? 'benang' : null);
-            let harga = 0;
-            
-            if (suffix && ukuran) {
-                const colName = `harga_${ukuran}_${suffix}`;
-                harga = parseFloat(pricelist[colName]) || 0;
-            }
-
-            const priceCol = row.querySelector('.kanisir-price-col');
-            if (priceCol) {
-                priceCol.innerHTML = `<span class="text-[10px] text-gray-400 font-normal mr-1">Rp</span>${new Intl.NumberFormat('id-ID').format(harga)}`;
-            }
-            totalHarga += harga;
-        });
-
-        // Update the main harga input in the modal based on total selected prices
-        document.getElementById('kanisir_harga').value = totalHarga;
-    }
-
-    function closeKanisirModal() {
-        document.getElementById('kanisirModal').classList.add('hidden');
-    }
-
-    function submitKanisirForm(e) {
-        e.preventDefault();
-        
-        const form = document.getElementById('bulk-masak-form');
-        
-        // Get values
-        const invoice = document.getElementById('kanisir_invoice').value;
-        const fakturVendor = document.getElementById('kanisir_faktur_vendor').value;
-        const tanggal = document.getElementById('kanisir_tanggal').value;
-        const vendor = document.getElementById('kanisir_vendor').value;
-        const harga = document.getElementById('kanisir_harga').value;
-        
-        if (!tanggal || !vendor || !harga) {
-            alert('Mohon lengkapi data Tanggal, Vendor, dan Harga.');
-            return;
-        }
-
-        // Helper to append hidden input
-        const appendHidden = (name, value) => {
-            let input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            input.value = value;
-            form.appendChild(input);
-        };
-
-        // Append selected IDs
-        const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
-        if (selectedCheckboxes.length === 0) {
-            alert('Pilih ban terlebih dahulu.');
-            return;
-        }
-
-        selectedCheckboxes.forEach(cb => {
-            appendHidden('ids[]', cb.value);
-        });
-
-        appendHidden('nomor_invoice', invoice);
-        appendHidden('nomor_faktur_vendor', fakturVendor);
-        appendHidden('tanggal_masuk_kanisir', tanggal);
-        appendHidden('vendor', vendor);
-        appendHidden('harga', harga);
-
-        form.submit();
-    }
-
-
     // Search functionality
     let currentCardFilter = 'total';
-
-    function setCardFilter(filterType) {
-        currentCardFilter = filterType;
-        
-        // Visual updates
-        // Visual updates
-        document.querySelectorAll('.card-filter').forEach(card => {
-            card.classList.remove('active-filter', 'ring-2');
-            
-            // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400');
-        });
-
-        const activeCard = document.getElementById('card-' + filterType);
-        if(activeCard) {
-            activeCard.classList.add('active-filter', 'ring-2');
-            
-            // Add specific color ring based on type
-            const colorMap = {
-                'total': 'ring-blue-400',
-                'stok': 'ring-green-400',
-                'terpakai': 'ring-purple-400',
-                'asli': 'ring-emerald-400',
-                'kanisir': 'ring-yellow-400',
-                'afkir': 'ring-red-400',
-                'garasi-pluit': 'ring-indigo-400',
-                'ruko-10': 'ring-orange-400'
-            };
-            activeCard.classList.add(colorMap[filterType]);
-        }
-        
-        // Trigger search to apply filter
-        const searchInput = document.getElementById('search-input');
-        if(searchInput) {
-            searchInput.dispatchEvent(new Event('input'));
-        }
-    }
 
     (function() {
         const searchInput = document.getElementById('search-input');
@@ -1276,36 +1305,5 @@
         window.performSearch = performSearch;
     })();
 
-    // Return Ban Modal Functions
-    function openReturnModal(banId, nomorSeri, mobilPolisi) {
-        document.getElementById('return_ban_id').value = banId;
-        document.getElementById('return_nomor_seri').textContent = nomorSeri || '-';
-        document.getElementById('return_mobil').textContent = mobilPolisi || '-';
-        
-        // Reset form
-        document.getElementById('return_lokasi').value = '';
-        document.getElementById('return_keterangan').value = '';
-        
-        // Show modal
-        document.getElementById('returnBanModal').classList.remove('hidden');
-    }
-
-    function closeReturnModal() {
-        document.getElementById('returnBanModal').classList.add('hidden');
-    }
-
-    function submitReturnForm() {
-        const banId = document.getElementById('return_ban_id').value;
-        const lokasi = document.getElementById('return_lokasi').value;
-        
-        if (!lokasi) {
-            alert('Mohon pilih lokasi penyimpanan!');
-            return;
-        }
-
-        const form = document.getElementById('returnBanForm');
-        form.action = `{{ url('stock-ban') }}/${banId}/return`;
-        form.submit();
-    }
 </script>
 @endpush
