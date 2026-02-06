@@ -205,6 +205,12 @@
             if (!empty($printData->tipe_kontainer)) {
                 $tipeKontainerText = strtoupper($printData->tipe_kontainer);
             }
+            
+            // Jika nomor kontainer mengandung kata 'CARGO' atau 'LOOSE', anggap tipenya CARGO
+            $noKontainer = strtoupper($printData->no_kontainer ?? '');
+            if (str_contains($noKontainer, 'CARGO') || str_contains($noKontainer, 'LOOSE')) {
+                $tipeKontainerText = 'CARGO';
+            }
         @endphp
         <div class="tipe-kontainer-abs">
             @if(in_array(trim(strtoupper($tipeKontainerText)), ['FCL', 'CARGO', 'LOOSE CARGO']))
