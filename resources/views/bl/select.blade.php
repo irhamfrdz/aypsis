@@ -40,9 +40,12 @@
                 </div>
             </div>
 
-            <div class="mt-6">
-                <button type="button" id="goToIndexFiltered" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+            <div class="mt-6 flex gap-2">
+                <button type="button" id="goToIndexFiltered" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200">
                     <i class="fas fa-list mr-2"></i>Ke Halaman Index BL
+                </button>
+                <button type="button" id="exportExcelBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i>Export Excel
                 </button>
             </div>
         </div>
@@ -114,6 +117,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Redirect to BL index with filter parameters
         const url = new URL('{{ route("bl.index") }}', window.location.origin);
+        url.searchParams.set('nama_kapal', namaKapal);
+        url.searchParams.set('no_voyage', voyage);
+        
+        window.location.href = url.toString();
+    });
+
+    // Export Excel with filter
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    exportExcelBtn.addEventListener('click', function() {
+        const namaKapal = kapalSelect.value;
+        const voyage = voyageSelect.value;
+
+        if (!namaKapal || !voyage) {
+            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            return;
+        }
+        
+        // Redirect to BL export with filter parameters
+        const url = new URL('{{ route("bl.export") }}', window.location.origin);
         url.searchParams.set('nama_kapal', namaKapal);
         url.searchParams.set('no_voyage', voyage);
         
