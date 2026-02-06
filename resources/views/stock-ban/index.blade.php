@@ -395,7 +395,7 @@
                                     <div class="flex justify-end gap-2">
                                         @if($ban->status == 'Stok')
                                             <button type="button" 
-                                                onclick="openUsageModal('{{ $ban->id }}', '{{ $ban->nomor_seri }}')"
+                                                onclick="openUsageModal({{ $ban->id }}, '{{ addslashes($ban->nomor_seri) }}')"
                                                 class="text-green-600 hover:text-green-900" title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
                                             </button>
@@ -411,7 +411,7 @@
                                             @endif
                                         @elseif($ban->status == 'Terpakai')
                                             <button type="button" 
-                                                onclick="openReturnModal('{{ $ban->id }}', '{{ $ban->nomor_seri }}', '{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}')"
+                                                onclick="openReturnModal({{ $ban->id }}, '{{ addslashes($ban->nomor_seri) }}', '{{ $ban->mobil ? addslashes($ban->mobil->nomor_polisi) : '-' }}')"
                                                 class="text-indigo-600 hover:text-indigo-900" title="Kembalikan ke Gudang">
                                                 <i class="fas fa-undo"></i>
                                             </button>
