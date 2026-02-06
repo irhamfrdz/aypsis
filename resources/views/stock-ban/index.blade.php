@@ -395,7 +395,8 @@
                                     <div class="flex justify-end gap-2">
                                         @if($ban->status == 'Stok')
                                             <button type="button" 
-                                                onclick="openUsageModal('{{ $ban->id }}', '{{ $ban->nomor_seri }}')"
+                                                onclick="openUsageModal('{{ $ban->id }}', this.getAttribute('data-seri'))"
+                                                data-seri="{{ $ban->nomor_seri }}"
                                                 class="text-green-600 hover:text-green-900" title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
                                             </button>
