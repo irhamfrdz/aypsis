@@ -4387,6 +4387,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('stock-ban.destroy')
                ->middleware('can:stock-ban-delete');
 
+          // Invoice Kanisir Ban
+          Route::resource('invoice-kanisir-ban', \App\Http\Controllers\InvoiceKanisirBanController::class);
+
            // ═══════════════════════════════════════════════════════════════════════
            // 👥 KARYAWAN TIDAK TETAP MANAGEMENT
            // ═══════════════════════════════════════════════════════════════════════

@@ -11,6 +11,8 @@ use App\Models\StockRingVelg;
 use App\Models\StockVelg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\InvoiceKanisirBan;
+use App\Models\InvoiceKanisirBanItem;
 
 class StockBanController extends Controller
 {
@@ -442,30 +444,53 @@ class StockBanController extends Controller
             ->where('status', 'Stok')
             ->where('kondisi', '!=', 'afkir')
             ->get();
-
-        $count = 0;
-
-        foreach ($bans as $ban) {
-            $ban->kondisi = 'kanisir';
-            $ban->status_masak = 'sudah';
-            $ban->jumlah_masak = ($ban->jumlah_masak ?? 0) + 1;
-            $ban->nomor_bukti = $request->nomor_invoice;
-            $ban->tanggal_masuk = $request->tanggal_masuk_kanisir; // Update date to kanisir date
-            $ban->harga_beli = $request->harga; // Update price/cost
-            
-            // Append vendor info to keterangan
-            $vendorNote = "[Masak Kanisir] Vendor: " . $request->vendor . ", Tgl: " . date('d-m-Y', strtotime($request->tanggal_masuk_kanisir));
-            if ($ban->keterangan) {
-                 $ban->keterangan .= "\n" . $vendorNote;
-            } else {
-                 $ban->keterangan = $vendorNote;
-            }
-
-            $ban->save();
-            $count++;
+        
+        if ($bans->isEmpty()) {
+             return redirect()->back()->with('error', 'Tidak ada ban yang valid untuk dimasak/kanisir.');
         }
 
-        return redirect()->route('stock-ban.index')->with('success', $count . ' Ban berhasil dimasak menjadi Kanisir.');
+        DB::transaction(function () use ($request, $bans) {
+             // Create Invoice Header
+            $invoice = InvoiceKanisirBan::create([
+                'nomor_invoice' => $request->nomor_invoice ?? 'INV-KANISIR-' . time(),
+                'tanggal_invoice' => $request->tanggal_masuk_kanisir,
+                'vendor' => $request->vendor,
+                'total_biaya' => $request->harga * $bans->count(),
+                'jumlah_ban' => $bans->count(),
+                'keterangan' => 'Masak Kanisir manual',
+                'status' => 'pending',
+            ]);
+
+            foreach ($bans as $ban) {
+                // Create Invoice Item
+                InvoiceKanisirBanItem::create([
+                    'invoice_kanisir_ban_id' => $invoice->id,
+                    'stock_ban_id' => $ban->id,
+                    'harga' => $request->harga,
+                ]);
+
+                // Update Stock Ban
+                $ban->kondisi = 'kanisir';
+                $ban->status_masak = 'sudah';
+                $ban->jumlah_masak = ($ban->jumlah_masak ?? 0) + 1;
+                $ban->nomor_bukti = $invoice->nomor_invoice;
+                $ban->tanggal_masuk = $request->tanggal_masuk_kanisir; // Update date to kanisir date
+                $ban->harga_beli = $request->harga; // Update price/cost
+                
+                // Append vendor info to keterangan
+                $vendorNote = "[Masak Kanisir] Vendor: " . $request->vendor . ", Tgl: " . date('d-m-Y', strtotime($request->tanggal_masuk_kanisir));
+                if ($ban->keterangan) {
+                     $ban->keterangan .= "\n" . $vendorNote;
+                } else {
+                     $ban->keterangan = $vendorNote;
+                }
+
+                $ban->save();
+            }
+        });
+
+        // Use count from bans collection since we processed all valid ones
+        return redirect()->route('stock-ban.index')->with('success', $bans->count() . ' Ban berhasil dimasak menjadi Kanisir. Invoice berhasil dibuat.');
     }
 
     /**
