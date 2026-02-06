@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Term;
-use App\Models\Penerima;
+use App\Models\MasterPengirimPenerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -131,7 +131,7 @@ class ApprovalOrderController extends Controller
     {
         $order = Order::with(['pengirim', 'jenisBarang', 'term'])->findOrFail($id);
         $terms = Term::orderBy('kode')->get();
-        $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
+        $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
 
         return view('approval-order.edit', compact('order', 'terms', 'penerimas'));
     }
@@ -143,7 +143,7 @@ class ApprovalOrderController extends Controller
     {
         $request->validate([
             'term_id' => 'required|exists:terms,id',
-            'penerima_id' => 'nullable|exists:penerimas,id',
+            'penerima_id' => 'nullable|exists:master_pengirim_penerima,id',
             'penerima' => 'nullable|string|max:255',
             'kontak_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
@@ -158,10 +158,10 @@ class ApprovalOrderController extends Controller
             
             // Update Informasi Penerima
             if ($request->filled('penerima_id')) {
-                $penerimaData = Penerima::find($request->penerima_id);
+                $penerimaData = MasterPengirimPenerima::find($request->penerima_id);
                 if ($penerimaData) {
                     $order->penerima_id = $request->penerima_id;
-                    $order->penerima = $penerimaData->nama_penerima;
+                    $order->penerima = $penerimaData->nama;
                 }
             } else {
                 // Fallback if penerima name text is sent directly or to clear if needed

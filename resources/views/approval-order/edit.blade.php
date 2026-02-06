@@ -160,7 +160,7 @@
                                             <option value="{{ $penerima->id }}" 
                                                     data-alamat="{{ $penerima->alamat }}"
                                                     {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
-                                                {{ $penerima->nama_penerima }}
+                                                {{ $penerima->nama }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -230,7 +230,7 @@
                                             @foreach($penerimas as $penerima)
                                                 <option value="{{ $penerima->id }}" 
                                                         {{ old('notify_party_id', $order->notify_party_id ?? '') == $penerima->id ? 'selected' : '' }}>
-                                                    {{ $penerima->nama_penerima }}
+                                                    {{ $penerima->nama }}
                                                 </option>
                                             @endforeach
                                         </select>
