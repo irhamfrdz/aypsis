@@ -931,7 +931,10 @@
         
         console.log('About to show modal, current classes:', usageModal.className);
         usageModal.classList.remove('hidden');
+        usageModal.style.display = 'block'; // Force display
+        usageModal.style.visibility = 'visible'; // Force visibility
         console.log('Modal shown, new classes:', usageModal.className);
+        console.log('Modal computed style display:', window.getComputedStyle(usageModal).display);
     }
 
     function closeUsageModal() {
