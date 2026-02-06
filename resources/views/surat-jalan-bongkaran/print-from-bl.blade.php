@@ -207,7 +207,7 @@
             }
         @endphp
         <div class="tipe-kontainer-abs">
-            @if(strtoupper($tipeKontainerText) === 'FCL')
+            @if(in_array(strtoupper($tipeKontainerText), ['FCL', 'CARGO']))
                 {{ $printData->kuantitas ?? '' }} {{ strtoupper($printData->satuan ?? '') }}
             @else
                 {{ $tipeKontainerText }}
@@ -215,19 +215,21 @@
         </div>
         
         <!-- Ukuran Kontainer: CONT 1x + ukuran (posisi top 10cm, left 6cm) - Data dari Manifest -->
-        @php
-            $sizeKontainer = $printData->size_kontainer ?? $printData->size ?? '';
-            // Format ukuran: jika hanya angka, tambahkan 'ft'
-            if (!empty($sizeKontainer)) {
-                if (!str_contains(strtolower($sizeKontainer), 'ft') && !str_contains(strtoupper($sizeKontainer), 'HC')) {
-                    $sizeKontainer = $sizeKontainer . 'ft';
+        @if(strtoupper($tipeKontainerText) !== 'CARGO')
+            @php
+                $sizeKontainer = $printData->size_kontainer ?? $printData->size ?? '';
+                // Format ukuran: jika hanya angka, tambahkan 'ft'
+                if (!empty($sizeKontainer)) {
+                    if (!str_contains(strtolower($sizeKontainer), 'ft') && !str_contains(strtoupper($sizeKontainer), 'HC')) {
+                        $sizeKontainer = $sizeKontainer . 'ft';
+                    }
                 }
-            }
-            $ukuranText = 'CONT 1x' . (!empty($sizeKontainer) ? ' ' . strtoupper($sizeKontainer) : '');
-        @endphp
-        <div class="ukuran-kontainer-abs">
-            {{ $ukuranText }}
-        </div>
+                $ukuranText = 'CONT 1x' . (!empty($sizeKontainer) ? ' ' . strtoupper($sizeKontainer) : '');
+            @endphp
+            <div class="ukuran-kontainer-abs">
+                {{ $ukuranText }}
+            </div>
+        @endif
         
         <!-- Nama Barang (posisi top 9cm, left 10.5cm) - Data dari Manifest (manifest.nama_barang) -->
         <div class="nama-barang-abs">
