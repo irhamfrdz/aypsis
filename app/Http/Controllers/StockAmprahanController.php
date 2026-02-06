@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StockAmprahan;
 use App\Models\MasterNamaBarangAmprahan;
+use App\Models\MasterGudangAmprahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +22,8 @@ class StockAmprahanController extends Controller
     public function create()
     {
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
-        return view('stock-amprahan.create', compact('masterItems'));
+        $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
+        return view('stock-amprahan.create', compact('masterItems', 'gudangItems'));
     }
 
     public function store(Request $request)
@@ -53,7 +55,8 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
-        return view('stock-amprahan.edit', compact('item', 'masterItems'));
+        $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
+        return view('stock-amprahan.edit', compact('item', 'masterItems', 'gudangItems'));
     }
 
     public function update(Request $request, $id)

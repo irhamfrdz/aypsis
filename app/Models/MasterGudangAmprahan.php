@@ -13,7 +13,6 @@ class MasterGudangAmprahan extends Model
 
     protected $fillable = [
         'nama_gudang',
-        'lokasi',
         'keterangan',
         'status',
     ];

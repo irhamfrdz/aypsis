@@ -25,8 +25,7 @@ class MasterGudangAmprahanController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
-                $q->where('nama_gudang', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('lokasi', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('nama_gudang', 'LIKE', '%' . $searchTerm . '%');
             });
         }
 
@@ -50,7 +49,6 @@ class MasterGudangAmprahanController extends Controller
     {
         $request->validate([
             'nama_gudang' => 'required|string|max:255|unique:master_gudang_amprahans,nama_gudang',
-            'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
@@ -88,7 +86,6 @@ class MasterGudangAmprahanController extends Controller
 
         $request->validate([
             'nama_gudang' => 'required|string|max:255|unique:master_gudang_amprahans,nama_gudang,' . $id,
-            'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);

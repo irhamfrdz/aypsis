@@ -43,23 +43,7 @@
                         @enderror
                     </div>
 
-                    <!-- Lokasi -->
-                    <div>
-                        <label for="lokasi" class="block text-sm font-bold text-gray-700 mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>Lokasi
-                        </label>
-                        <input type="text" 
-                               name="lokasi" 
-                               id="lokasi" 
-                               value="{{ old('lokasi', $gudangAmprahan->lokasi) }}" 
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror"
-                               placeholder="Contoh: Jl. Raya No. 123, Jakarta Barat">
-                        @error('lokasi')
-                            <p class="mt-2 text-xs text-red-500">
-                                <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                            </p>
-                        @enderror
-                    </div>
+
 
                     <!-- Keterangan -->
                     <div>

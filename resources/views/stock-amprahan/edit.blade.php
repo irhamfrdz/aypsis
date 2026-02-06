@@ -98,7 +98,24 @@
                         {{-- Lokasi --}}
                         <div>
                             <label for="lokasi" class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Penyimpanan</label>
-                            <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $item->lokasi) }}" placeholder="Contoh: Gudang A, Rak 2" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                            <div class="relative">
+                                <div class="dropdown-container-lokasi">
+                                    <input type="text" id="search_lokasi" placeholder="Search Location..." autocomplete="off"
+                                           class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                    <select name="lokasi" id="lokasi" 
+                                            class="hidden w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                        <option value="">Select a location</option>
+                                        @foreach($gudangItems as $gudang)
+                                            <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi', $item->lokasi) == $gudang->nama_gudang ? 'selected' : '' }}>
+                                                {{ $gudang->nama_gudang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_lokasi" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        {{-- Options will be populated by JavaScript --}}
+                                    </div>
+                                </div>
+                            </div>
                             @error('lokasi')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
@@ -233,6 +250,14 @@ document.addEventListener('DOMContentLoaded', function() {
         searchId: 'search_type_barang',
         dropdownId: 'dropdown_options_type_barang',
         containerClass: 'dropdown-container-type-barang'
+    });
+
+    // Initialize Lokasi dropdown
+    createSearchableDropdown({
+        selectId: 'lokasi',
+        searchId: 'search_lokasi',
+        dropdownId: 'dropdown_options_lokasi',
+        containerClass: 'dropdown-container-lokasi'
     });
 
     // Handle Type Barang "Tambah" link to pass search parameter
