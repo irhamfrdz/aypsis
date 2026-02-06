@@ -987,52 +987,74 @@ class ObController extends Controller
                     // FCL atau CARGO - buat 1 manifest saja
                     \Log::info("FCL/CARGO container, creating single manifest...");
                     
-                    $manifest = new \App\Models\Manifest();
-                    $manifest->nomor_kontainer = $naikKapal->nomor_kontainer;
-                    $manifest->no_seal = $naikKapal->no_seal;
-                    $manifest->tipe_kontainer = $naikKapal->tipe_kontainer;
-                    $manifest->size_kontainer = $naikKapal->size_kontainer;
-                    $manifest->nama_kapal = $naikKapal->nama_kapal;
-                    $manifest->no_voyage = $naikKapal->no_voyage;
-                    $manifest->nama_barang = $naikKapal->jenis_barang;
-                    $manifest->volume = $naikKapal->total_volume;
-                    $manifest->tonnage = $naikKapal->total_tonase;
-                    $manifest->pelabuhan_muat = $naikKapal->asal_kontainer;
-                    $manifest->pelabuhan_bongkar = $naikKapal->ke;
-                    $manifest->tanggal_berangkat = now();
-                    
-                    // Data pengirim/penerima dari prospek jika ada
-                    if ($naikKapal->prospek_id && $naikKapal->prospek) {
-                        $manifest->prospek_id = $naikKapal->prospek_id;
-                        $manifest->pengirim = $naikKapal->prospek->pt_pengirim;
-                        // Cek apakah ada penerima di prospek (via relasi atau field), kalau tidak pakai tujuan
-                        $penerima = null;
-                        if ($naikKapal->prospek->tandaTerima) {
-                             $penerima = $naikKapal->prospek->tandaTerima->penerima;
-                             $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
-                        }
-                        $manifest->penerima = $penerima ?? $naikKapal->prospek->tujuan_pengiriman;
-                    }
-                    
-                    // Generate nomor
-                    $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')
-                        ->orderBy('id', 'desc')
+                    // Cek duplikasi manifest terlebih dahulu
+                    $existingManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                        ->where('no_voyage', $naikKapal->no_voyage)
+                        ->where('nama_kapal', $naikKapal->nama_kapal)
                         ->first();
-                    
-                    if ($lastManifest && $lastManifest->nomor_bl) {
-                        preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
-                        $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
-                        $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                        $manifest->nomor_bl = 'MNF-' . $nextNumber;
+                        
+                    if ($existingManifest) {
+                        \Log::info("⚠️ Manifest already exists for FCL/CARGO container, skipping creation", [
+                            'manifest_id' => $existingManifest->id,
+                            'nomor_bl' => $existingManifest->nomor_bl
+                        ]);
                     } else {
-                        $manifest->nomor_bl = 'MNF-000001';
+                        \Log::info("No existing manifest found, creating new one...");
+                        
+                        $manifest = new \App\Models\Manifest();
+                        $manifest->nomor_kontainer = $naikKapal->nomor_kontainer;
+                        $manifest->no_seal = $naikKapal->no_seal;
+                        $manifest->tipe_kontainer = $naikKapal->tipe_kontainer;
+                        $manifest->size_kontainer = $naikKapal->size_kontainer;
+                        $manifest->nama_kapal = $naikKapal->nama_kapal;
+                        $manifest->no_voyage = $naikKapal->no_voyage;
+                        $manifest->nama_kapal = $naikKapal->nama_kapal;
+                        $manifest->no_voyage = $naikKapal->no_voyage;
+                        $manifest->nama_barang = $naikKapal->jenis_barang;
+                        $manifest->volume = $naikKapal->total_volume;
+                        $manifest->tonnage = $naikKapal->total_tonase;
+                        $manifest->pelabuhan_muat = $naikKapal->asal_kontainer;
+                        $manifest->pelabuhan_bongkar = $naikKapal->ke;
+                        $manifest->tanggal_berangkat = now();
+                        
+                        // Data pengirim/penerima dari prospek jika ada
+                        if ($naikKapal->prospek_id && $naikKapal->prospek) {
+                            $manifest->prospek_id = $naikKapal->prospek_id;
+                            $manifest->pengirim = $naikKapal->prospek->pt_pengirim;
+                            // Cek apakah ada penerima di prospek (via relasi atau field), kalau tidak pakai tujuan
+                            $penerima = null;
+                            if ($naikKapal->prospek->tandaTerima) {
+                                 $penerima = $naikKapal->prospek->tandaTerima->penerima;
+                                 $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
+                            }
+                            $manifest->penerima = $penerima ?? $naikKapal->prospek->tujuan_pengiriman;
+                        }
+                        
+                        // Generate nomor
+                        $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')
+                            ->orderBy('id', 'desc')
+                            ->first();
+                        
+                        if ($lastManifest && $lastManifest->nomor_bl) {
+                            preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                            $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                            $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                            $manifest->nomor_bl = 'MNF-' . $nextNumber;
+                        } else {
+                            $manifest->nomor_bl = 'MNF-000001';
+                        }
+                        
+                        $manifest->created_by = $user->id;
+                        $manifest->updated_by = $user->id;
+                        $manifest->save();
+                        
+                        \Log::info("✅ Created single manifest for FCL/CARGO", [
+                            'manifest_id' => $manifest->id,
+                            'nomor_bl' => $manifest->nomor_bl,
+                            'nomor_kontainer' => $manifest->nomor_kontainer,
+                            'tipe_kontainer' => $manifest->tipe_kontainer
+                        ]);
                     }
-                    
-                    $manifest->created_by = $user->id;
-                    $manifest->updated_by = $user->id;
-                    $manifest->save();
-                    
-                    \Log::info("✅ Created single manifest for FCL/CARGO");
                 }
             }
             // === END MANIFEST CREATION ===
