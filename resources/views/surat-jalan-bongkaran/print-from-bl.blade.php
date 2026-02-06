@@ -207,7 +207,11 @@
             }
         @endphp
         <div class="tipe-kontainer-abs">
-            {{ $tipeKontainerText }}
+            @if(strtoupper($tipeKontainerText) === 'FCL')
+                {{ $printData->kuantitas ?? '' }} {{ strtoupper($printData->satuan ?? '') }}
+            @else
+                {{ $tipeKontainerText }}
+            @endif
         </div>
         
         <!-- Ukuran Kontainer: CONT 1x + ukuran (posisi top 10cm, left 6cm) - Data dari Manifest -->
