@@ -395,8 +395,10 @@
                                     <div class="flex justify-end gap-2">
                                         @if($ban->status == 'Stok')
                                             <button type="button" 
-                                                onclick="openUsageModal({{ $ban->id }}, '{{ addslashes($ban->nomor_seri) }}')"
-                                                class="text-green-600 hover:text-green-900" title="Gunakan / Pasang">
+                                                class="btn-usage-modal text-green-600 hover:text-green-900" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
                                             </button>
                                             
@@ -411,8 +413,11 @@
                                             @endif
                                         @elseif($ban->status == 'Terpakai')
                                             <button type="button" 
-                                                onclick="openReturnModal({{ $ban->id }}, '{{ addslashes($ban->nomor_seri) }}', '{{ $ban->mobil ? addslashes($ban->mobil->nomor_polisi) : '-' }}')"
-                                                class="text-indigo-600 hover:text-indigo-900" title="Kembalikan ke Gudang">
+                                                class="btn-return-modal text-indigo-600 hover:text-indigo-900"
+                                                data-id="{{ $ban->id }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}"
+                                                title="Kembalikan ke Gudang">
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         @endif
@@ -1170,6 +1175,34 @@
 
         // Initialize state
         updateBulkButton();
+
+        // Event delegation for usage modal buttons
+        document.addEventListener('click', function(e) {
+            // Check if clicked element or its parent is btn-usage-modal
+            const usageBtn = e.target.closest('.btn-usage-modal');
+            if (usageBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = usageBtn.getAttribute('data-id');
+                const seri = usageBtn.getAttribute('data-seri');
+                console.log('Opening usage modal:', id, seri); // Debug log
+                openUsageModal(id, seri);
+                return;
+            }
+
+            // Check if clicked element or its parent is btn-return-modal
+            const returnBtn = e.target.closest('.btn-return-modal');
+            if (returnBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = returnBtn.getAttribute('data-id');
+                const seri = returnBtn.getAttribute('data-seri');
+                const mobil = returnBtn.getAttribute('data-mobil');
+                console.log('Opening return modal:', id, seri, mobil); // Debug log
+                openReturnModal(id, seri, mobil);
+                return;
+            }
+        });
     });
 
     // Search functionality
