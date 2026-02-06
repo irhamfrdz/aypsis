@@ -931,10 +931,14 @@
         
         console.log('About to show modal, current classes:', usageModal.className);
         usageModal.classList.remove('hidden');
-        usageModal.style.display = 'block'; // Force display
-        usageModal.style.visibility = 'visible'; // Force visibility
+        
+        // Force show with highest priority
+        usageModal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+        
         console.log('Modal shown, new classes:', usageModal.className);
         console.log('Modal computed style display:', window.getComputedStyle(usageModal).display);
+        console.log('Modal computed style z-index:', window.getComputedStyle(usageModal).zIndex);
+        console.log('Modal bounding rect:', usageModal.getBoundingClientRect());
     }
 
     function closeUsageModal() {
