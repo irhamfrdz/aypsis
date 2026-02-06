@@ -185,7 +185,7 @@
                     <i class="fas fa-chart-bar text-blue-600"></i>
                     Rekap Ban Luar
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <!-- Total Ban -->
                     <div id="card-total" onclick="setCardFilter('total')" class="cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter active-filter ring-2 ring-blue-400">
                         <div class="flex items-center justify-between mb-2">
@@ -259,6 +259,36 @@
                         </div>
                         <div class="text-2xl font-bold text-red-900">{{ $banAfkir }}</div>
                         <p class="text-xs text-red-600 mt-1">Rusak</p>
+                    </div>
+
+                    <!-- Garasi Pluit -->
+                    @php
+                        $garasiPluit = $stockBans->filter(function($ban) {
+                            return stripos($ban->lokasi, 'Garasi Pluit') !== false;
+                        })->count();
+                    @endphp
+                    <div id="card-garasi-pluit" onclick="setCardFilter('garasi-pluit')" class="cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-indigo-600 uppercase">Garasi Pluit</span>
+                            <i class="fas fa-warehouse text-indigo-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-indigo-900">{{ $garasiPluit }}</div>
+                        <p class="text-xs text-indigo-600 mt-1">Lokasi</p>
+                    </div>
+
+                    <!-- Ruko 10 -->
+                    @php
+                        $ruko10 = $stockBans->filter(function($ban) {
+                            return stripos($ban->lokasi, 'Ruko 10') !== false;
+                        })->count();
+                    @endphp
+                    <div id="card-ruko-10" onclick="setCardFilter('ruko-10')" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-orange-600 uppercase">Ruko 10</span>
+                            <i class="fas fa-building text-orange-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">{{ $ruko10 }}</div>
+                        <p class="text-xs text-orange-600 mt-1">Lokasi</p>
                     </div>
                 </div>
             </div>
@@ -1071,11 +1101,12 @@
         currentCardFilter = filterType;
         
         // Visual updates
+        // Visual updates
         document.querySelectorAll('.card-filter').forEach(card => {
             card.classList.remove('active-filter', 'ring-2');
             
             // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400');
+            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400');
         });
 
         const activeCard = document.getElementById('card-' + filterType);
@@ -1089,7 +1120,9 @@
                 'terpakai': 'ring-purple-400',
                 'asli': 'ring-emerald-400',
                 'kanisir': 'ring-yellow-400',
-                'afkir': 'ring-red-400'
+                'afkir': 'ring-red-400',
+                'garasi-pluit': 'ring-indigo-400',
+                'ruko-10': 'ring-orange-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -1162,6 +1195,10 @@
                         filterMatch = kondisi === 'kanisir';
                     } else if (currentCardFilter === 'afkir') {
                         filterMatch = kondisi === 'afkir';
+                    } else if (currentCardFilter === 'garasi-pluit') {
+                        filterMatch = lokasi.includes('garasi pluit');
+                    } else if (currentCardFilter === 'ruko-10') {
+                        filterMatch = lokasi.includes('ruko 10');
                     }
                 }
 
