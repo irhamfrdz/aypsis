@@ -947,7 +947,12 @@
     }
 
     function closeUsageModal() {
-        document.getElementById('usageModal').classList.add('hidden');
+        console.log('closeUsageModal called');
+        const modal = document.getElementById('usageModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style'); // Remove inline styles
+        }
         DropdownManager.close();
     }
 
@@ -1245,6 +1250,24 @@
                 console.log('Opening return modal:', id, seri, mobil); // Debug log
                 openReturnModal(id, seri, mobil);
                 return;
+            }
+
+            // Check if clicking on modal backdrop or close button
+            const usageModal = document.getElementById('usageModal');
+            if (usageModal && !usageModal.classList.contains('hidden')) {
+                // Check if clicked on backdrop (the semi-transparent overlay)
+                if (e.target.classList.contains('bg-gray-500') && e.target.classList.contains('bg-opacity-75')) {
+                    console.log('Clicked on backdrop');
+                    closeUsageModal();
+                    return;
+                }
+                
+                // Check if clicked on Batal button
+                if (e.target.textContent.trim() === 'Batal' && e.target.tagName === 'BUTTON') {
+                    console.log('Clicked Batal button');
+                    closeUsageModal();
+                    return;
+                }
             }
         });
     });
