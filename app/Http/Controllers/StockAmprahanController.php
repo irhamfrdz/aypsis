@@ -20,7 +20,7 @@ class StockAmprahanController extends Controller
 
     public function create()
     {
-        $masterItems = MasterNamaBarangAmprahan::where('status', 'aktif')->orderBy('nama_barang')->get();
+        $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
         return view('stock-amprahan.create', compact('masterItems'));
     }
 
@@ -52,7 +52,7 @@ class StockAmprahanController extends Controller
     public function edit($id)
     {
         $item = StockAmprahan::findOrFail($id);
-        $masterItems = MasterNamaBarangAmprahan::where('status', 'aktif')->orderBy('nama_barang')->get();
+        $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
         return view('stock-amprahan.edit', compact('item', 'masterItems'));
     }
 

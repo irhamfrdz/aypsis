@@ -207,7 +207,7 @@
             }
         @endphp
         <div class="tipe-kontainer-abs">
-            @if(in_array(strtoupper($tipeKontainerText), ['FCL', 'CARGO']))
+            @if(in_array(trim(strtoupper($tipeKontainerText)), ['FCL', 'CARGO', 'LOOSE CARGO']))
                 {{ $printData->kuantitas ?? '' }} {{ strtoupper($printData->satuan ?? '') }}
             @else
                 {{ $tipeKontainerText }}
@@ -215,7 +215,7 @@
         </div>
         
         <!-- Ukuran Kontainer: CONT 1x + ukuran (posisi top 10cm, left 6cm) - Data dari Manifest -->
-        @if(strtoupper($tipeKontainerText) !== 'CARGO')
+        @if(!in_array(trim(strtoupper($tipeKontainerText)), ['CARGO', 'LOOSE CARGO']))
             @php
                 $sizeKontainer = $printData->size_kontainer ?? $printData->size ?? '';
                 // Format ukuran: jika hanya angka, tambahkan 'ft'
