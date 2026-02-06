@@ -47,6 +47,16 @@ class StockBan extends Model
         return $this->belongsTo(Karyawan::class, 'penerima_id');
     }
 
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     protected $casts = [
         'harga_beli' => 'decimal:2',
         'tanggal_masuk' => 'date',

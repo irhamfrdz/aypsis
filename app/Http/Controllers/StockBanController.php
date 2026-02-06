@@ -259,6 +259,15 @@ class StockBanController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $stockBan = StockBan::with(['mobil', 'penerima', 'namaStockBan'])->findOrFail($id);
+        return view('stock-ban.show', compact('stockBan'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit($id)

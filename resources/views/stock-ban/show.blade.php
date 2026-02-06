@@ -15,32 +15,26 @@
     <div class="p-6">
         <!-- Main Information -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Kode Ban -->
+            <!-- Kode Ban / Nomor Seri -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Kode Ban</label>
-                <p class="text-base font-medium text-gray-900">{{ $stockBan->kode_ban }}</p>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Nomor Seri / Kode</label>
+                <p class="text-base font-medium text-gray-900">{{ $stockBan->nomor_seri ?? '-' }}</p>
+                @if($stockBan->namaStockBan)
+                    <p class="text-xs text-gray-500 mt-1">{{ $stockBan->namaStockBan->nama }}</p>
+                @endif
             </div>
 
             <!-- Ukuran Ban -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Ukuran Ban</label>
-                <p class="text-base font-medium text-gray-900">{{ $stockBan->ukuran_ban }}</p>
+                <p class="text-base font-medium text-gray-900">{{ $stockBan->ukuran ?? '-' }}</p>
             </div>
 
             <!-- Merek -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Merek</label>
-                <p class="text-base font-medium text-gray-900">{{ $stockBan->merek }}</p>
-            </div>
-
-            <!-- Jumlah -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Jumlah</label>
                 <p class="text-base font-medium text-gray-900">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold 
-                        {{ $stockBan->jumlah <= 5 ? 'bg-red-100 text-red-800' : ($stockBan->jumlah <= 10 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
-                        {{ $stockBan->jumlah }} pcs
-                    </span>
+                    {{ $stockBan->merk ?? ($stockBan->merkBan->nama ?? '-') }}
                 </p>
             </div>
 
@@ -49,10 +43,22 @@
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Kondisi</label>
                 <p class="text-base font-medium text-gray-900">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold 
-                        {{ $stockBan->kondisi == 'Baru' ? 'bg-blue-100 text-blue-800' : '' }}
-                        {{ $stockBan->kondisi == 'Bekas' ? 'bg-gray-100 text-gray-800' : '' }}
-                        {{ $stockBan->kondisi == 'Vulkanisir' ? 'bg-purple-100 text-purple-800' : '' }}">
-                        {{ $stockBan->kondisi }}
+                        {{ $stockBan->kondisi == 'asli' ? 'bg-green-100 text-green-800' : 
+                           ($stockBan->kondisi == 'kanisir' ? 'bg-yellow-100 text-yellow-800' : 
+                           ($stockBan->kondisi == 'afkir' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                        {{ ucfirst($stockBan->kondisi) }}
+                    </span>
+                </p>
+            </div>
+
+            <!-- Status -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                <p class="text-base font-medium text-gray-900">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold 
+                        {{ $stockBan->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
+                           ($stockBan->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800') }}">
+                        {{ $stockBan->status }}
                     </span>
                 </p>
             </div>
@@ -60,21 +66,24 @@
             <!-- Lokasi -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Lokasi</label>
-                <p class="text-base font-medium text-gray-900">{{ $stockBan->lokasi }}</p>
-            </div>
-
-            <!-- Harga Satuan -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Harga Satuan</label>
-                <p class="text-base font-medium text-gray-900">Rp {{ number_format($stockBan->harga_satuan, 0, ',', '.') }}</p>
-            </div>
-
-            <!-- Total Nilai -->
-            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-                <label class="block text-xs font-semibold text-indigo-700 uppercase tracking-wide mb-1">Total Nilai Stock</label>
-                <p class="text-lg font-bold text-indigo-900">
-                    Rp {{ number_format($stockBan->harga_satuan * $stockBan->jumlah, 0, ',', '.') }}
+                <p class="text-base font-medium text-gray-900">{{ $stockBan->lokasi ?? '-' }}</p>
+                @if($stockBan->mobil)
+                <p class="text-sm text-blue-600 mt-1 font-medium">
+                    <i class="fas fa-truck mr-1"></i> Terpasang di: {{ $stockBan->mobil->nomor_polisi }}
                 </p>
+                @endif
+            </div>
+
+            <!-- Harga Beli -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Harga Beli</label>
+                <p class="text-base font-medium text-gray-900">Rp {{ number_format($stockBan->harga_beli, 0, ',', '.') }}</p>
+            </div>
+
+            <!-- Supplier / Tempat Beli -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tempat Beli / Supplier</label>
+                <p class="text-base font-medium text-gray-900">{{ $stockBan->tempat_beli ?? '-' }}</p>
             </div>
 
             <!-- Tanggal Masuk -->
@@ -85,11 +94,25 @@
                 </p>
             </div>
 
-            <!-- Supplier -->
+            <!-- Tanggal Keluar/Pasang -->
+            @if($stockBan->tanggal_keluar)
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Supplier</label>
-                <p class="text-base font-medium text-gray-900">{{ $stockBan->supplier ?: '-' }}</p>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tanggal Pasang</label>
+                <p class="text-base font-medium text-gray-900">
+                    {{ \Carbon\Carbon::parse($stockBan->tanggal_keluar)->format('d M Y') }}
+                </p>
             </div>
+            @endif
+            
+            <!-- Masak Info -->
+            @if($stockBan->status_masak && $stockBan->jumlah_masak > 0)
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <label class="block text-xs font-semibold text-orange-700 uppercase tracking-wide mb-1">Status Kanisir</label>
+                <p class="text-base font-medium text-orange-900">
+                    Sudah dimasak {{ $stockBan->jumlah_masak }} kali
+                </p>
+            </div>
+            @endif
         </div>
 
         <!-- Keterangan -->
@@ -123,16 +146,16 @@
                         {{ $stockBan->updated_at ? $stockBan->updated_at->format('d M Y H:i') : '-' }}
                     </span>
                 </div>
-                @if($stockBan->created_by)
+                @if(optional($stockBan->createdBy)->name)
                 <div>
                     <span class="text-gray-600">Dibuat oleh:</span>
-                    <span class="font-medium text-gray-900 ml-2">{{ $stockBan->createdBy->name ?? '-' }}</span>
+                    <span class="font-medium text-gray-900 ml-2">{{ $stockBan->createdBy->name }}</span>
                 </div>
                 @endif
-                @if($stockBan->updated_by)
+                @if(optional($stockBan->updatedBy)->name)
                 <div>
                     <span class="text-gray-600">Diubah oleh:</span>
-                    <span class="font-medium text-gray-900 ml-2">{{ $stockBan->updatedBy->name ?? '-' }}</span>
+                    <span class="font-medium text-gray-900 ml-2">{{ $stockBan->updatedBy->name }}</span>
                 </div>
                 @endif
             </div>
