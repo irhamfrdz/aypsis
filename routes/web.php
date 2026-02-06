@@ -247,6 +247,8 @@ Route::middleware([
      Route::post('pengirim-import', [App\Http\Controllers\PengirimController::class, 'import'])->name('pengirim.import.process')->middleware('can:master-pengirim-create');
 
         // Master Nama Barang Amprahan
+        Route::get('nama-barang-amprahan/template', [MasterNamaBarangAmprahanController::class, 'downloadTemplate'])->name('nama-barang-amprahan.template');
+        Route::post('nama-barang-amprahan/import', [MasterNamaBarangAmprahanController::class, 'import'])->name('nama-barang-amprahan.import');
         Route::get('nama-barang-amprahan/export', [MasterNamaBarangAmprahanController::class, 'export'])->name('nama-barang-amprahan.export');
         Route::resource('nama-barang-amprahan', MasterNamaBarangAmprahanController::class);
 
@@ -4388,6 +4390,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->middleware('can:stock-ban-delete');
 
           // Invoice Kanisir Ban
+          Route::get('invoice-kanisir-ban/{invoice_kanisir_ban}/print', [\App\Http\Controllers\InvoiceKanisirBanController::class, 'print'])->name('invoice-kanisir-ban.print');
           Route::resource('invoice-kanisir-ban', \App\Http\Controllers\InvoiceKanisirBanController::class);
 
            // ═══════════════════════════════════════════════════════════════════════

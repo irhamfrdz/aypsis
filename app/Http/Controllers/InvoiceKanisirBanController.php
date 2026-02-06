@@ -20,6 +20,12 @@ class InvoiceKanisirBanController extends Controller
         return view('invoice-kanisir-ban.show', compact('invoice'));
     }
 
+    public function print($id)
+    {
+        $invoice = \App\Models\InvoiceKanisirBan::with('items.stockBan')->findOrFail($id);
+        return view('invoice-kanisir-ban.print', compact('invoice'));
+    }
+
     public function destroy($id)
     {
         $invoice = \App\Models\InvoiceKanisirBan::findOrFail($id);

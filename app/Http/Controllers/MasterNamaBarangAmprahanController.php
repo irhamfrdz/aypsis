@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MasterNamaBarangAmprahan;
 use Illuminate\Http\Request;
 use App\Exports\MasterNamaBarangAmprahanExport;
+use App\Imports\MasterNamaBarangAmprahanImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MasterNamaBarangAmprahanController extends Controller
@@ -37,6 +38,51 @@ class MasterNamaBarangAmprahanController extends Controller
         ];
 
         return Excel::download(new MasterNamaBarangAmprahanExport($filters), 'master_nama_barang_amprahan_' . date('YmdHis') . '.xlsx');
+    }
+
+    /**
+     * Import data from Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            Excel::import(new MasterNamaBarangAmprahanImport, $request->file('file'));
+            return redirect()->route('master.nama-barang-amprahan.index')
+                ->with('success', 'Data Barang Amprahan berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->route('master.nama-barang-amprahan.index')
+                ->with('error', 'Terjadi kesalahan saat import data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download import template.
+     */
+    public function downloadTemplate()
+    {
+        $headers = ['nama_barang', 'status'];
+        $data = [
+            ['Contoh Barang 1', 'active'],
+            ['Contoh Barang 2', 'inactive'],
+        ];
+
+        $filename = 'template_import_barang_amprahan.xlsx';
+
+        return Excel::download(new class($headers, $data) implements \Maatwebsite\Excel\Concerns\FromArray {
+            private $headers;
+            private $data;
+            public function __construct($headers, $data) {
+                $this->headers = $headers;
+                $this->data = $data;
+            }
+            public function array(): array {
+                return array_merge([$this->headers], $this->data);
+            }
+        }, $filename);
     }
 
     /**

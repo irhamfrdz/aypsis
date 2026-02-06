@@ -263,8 +263,8 @@
                 </div>
             </div>
 
-            <form action="{{ route('stock-ban.bulk-masak') }}" method="POST" id="bulk-masak-form">
-                @csrf
+
+
                 <div class="mb-4 flex justify-end hidden" id="bulk-action-container">
                      <button type="button" class="px-4 py-2 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 shadow-md transition flex items-center" onclick="openKanisirModal(event)">
                         <i class="fas fa-fire mr-2"></i> Masak Kanisir (Bulk)
@@ -409,7 +409,7 @@
                         </tbody>
                     </table>
                 </div>
-            </form>
+
         </div>
 
         <!-- Tab: Ban Dalam -->
@@ -438,6 +438,11 @@
         </div>
     </div>
 </div>
+
+<!-- Hidden Form for Bulk Action -->
+<form action="{{ route('stock-ban.bulk-masak') }}" method="POST" id="bulk-masak-form" class="hidden">
+    @csrf
+</form>
 
 <!-- Modal Masak Kanisir (Bulk) -->
 <div id="kanisirModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -1018,7 +1023,6 @@
         e.preventDefault();
         
         const form = document.getElementById('bulk-masak-form');
-        const modal = document.getElementById('kanisirModal');
         
         // Get values
         const invoice = document.getElementById('kanisir_invoice').value;
@@ -1040,6 +1044,17 @@
             form.appendChild(input);
         };
 
+        // Append selected IDs
+        const selectedCheckboxes = document.querySelectorAll('#tab-ban-luar .check-item:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Pilih ban terlebih dahulu.');
+            return;
+        }
+
+        selectedCheckboxes.forEach(cb => {
+            appendHidden('ids[]', cb.value);
+        });
+
         appendHidden('nomor_invoice', invoice);
         appendHidden('tanggal_masuk_kanisir', tanggal);
         appendHidden('vendor', vendor);
@@ -1047,6 +1062,7 @@
 
         form.submit();
     }
+
 
     // Search functionality
     let currentCardFilter = 'total';

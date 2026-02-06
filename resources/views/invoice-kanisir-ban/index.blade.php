@@ -76,6 +76,9 @@
                                             <a href="{{ route('invoice-kanisir-ban.show', $invoice->id) }}" class="text-blue-600 hover:text-blue-900" title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </a>
+                                            <a href="{{ route('invoice-kanisir-ban.print', $invoice->id) }}" class="text-green-600 hover:text-green-900" title="Print" target="_blank">
+                                                <i class="fas fa-print"></i>
+                                            </a>
                                             <form action="{{ route('invoice-kanisir-ban.destroy', $invoice->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus invoice ini? Data ban yang terkait mungkin perlu diperbarui manual.');">
                                                 @csrf
                                                 @method('DELETE')
