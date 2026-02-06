@@ -768,8 +768,11 @@
 
 @push('scripts')
 <script>
+    console.log('=== Stock Ban Script Loaded ===');
+    
     // Global data for price lookup
     const pricelistData = @json($pricelistKanisirBans);
+    console.log('pricelistData loaded:', pricelistData ? 'OK' : 'EMPTY');
 
     // DropdownManager - Must be defined BEFORE functions that use it
     const DropdownManager = {
@@ -1122,6 +1125,8 @@
 
     // Initialize after DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== DOMContentLoaded fired ===');
+        
         // Tab Logic
         const tabs = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
