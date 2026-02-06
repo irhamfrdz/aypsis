@@ -2384,6 +2384,27 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle master-gudang-amprahan permissions explicitly
+                    if ($module === 'master-gudang-amprahan' && in_array($action, ['view', 'create', 'edit', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-gudang-amprahan-view',
+                            'create' => 'master-gudang-amprahan-create',
+                            'edit' => 'master-gudang-amprahan-update',
+                            'delete' => 'master-gudang-amprahan-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                continue; // Skip to next action
+                            }
+                        }
+                    }
+
                     // DIRECT FIX: Handle master-term permissions explicitly
                     if ($module === 'master-term' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         // Map action to correct permission name

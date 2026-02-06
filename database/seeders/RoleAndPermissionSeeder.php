@@ -100,7 +100,8 @@ class RoleAndPermissionSeeder extends Seeder
                 'perbaikan-kontainer',
                 'approval',
                 'print',
-                'export'
+                'export',
+                'master-gudang-amprahan'
             ];
 
             foreach ($allowedPatterns as $pattern) {
@@ -135,7 +136,8 @@ class RoleAndPermissionSeeder extends Seeder
                 'permohonan.view',
                 'perbaikan-kontainer.view',
                 'print',
-                'export'
+                'export',
+                'master-gudang-amprahan.view'
             ];
 
             foreach ($allowedPatterns as $pattern) {

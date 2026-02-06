@@ -77,6 +77,7 @@ use App\Http\Controllers\MasterPricelistAirTawarController;
 use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
 use App\Http\Controllers\MasterNamaBarangAmprahanController;
+use App\Http\Controllers\MasterGudangAmprahanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -251,6 +252,10 @@ Route::middleware([
         Route::post('nama-barang-amprahan/import', [MasterNamaBarangAmprahanController::class, 'import'])->name('nama-barang-amprahan.import');
         Route::get('nama-barang-amprahan/export', [MasterNamaBarangAmprahanController::class, 'export'])->name('nama-barang-amprahan.export');
         Route::resource('nama-barang-amprahan', MasterNamaBarangAmprahanController::class);
+
+        // Master Gudang Amprahan
+        Route::resource('gudang-amprahan', MasterGudangAmprahanController::class);
+
 
         // ═══════════════════════════════════════════════════════════════════════
         // 👥 KARYAWAN (EMPLOYEE) MANAGEMENT

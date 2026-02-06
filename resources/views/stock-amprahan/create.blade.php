@@ -67,7 +67,7 @@
                                     <label for="master_nama_barang_amprahan_id" class="text-sm font-bold text-gray-700 group-focus-within:text-indigo-600 transition-colors">
                                         <i class="fas fa-tags mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Type Barang <span class="text-red-500">*</span>
                                     </label>
-                                    <a href="{{ route('master-nama-barang-amprahan.create') }}" id="add_type_barang_link"
+                                    <a href="{{ route('master.nama-barang-amprahan.create') }}" id="add_type_barang_link"
                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                        title="Tambah">
                                         Tambah
@@ -138,6 +138,20 @@
                                     </p>
                                 @enderror
                             </div>
+                        </div>
+
+                        {{-- Harga Total --}}
+                        <div class="group">
+                            <label for="harga_total" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                <i class="fas fa-calculator mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Harga Total
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                                <input type="text" id="harga_total" readonly class="block w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 cursor-not-allowed shadow-sm font-semibold" value="0">
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari Harga Satuan × Jumlah
+                            </p>
                         </div>
 
                         {{-- Lokasi --}}
@@ -277,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTypeBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTypeBarangInput.value.trim();
-            let url = "{{ route('master-nama-barang-amprahan.create') }}";
+            let url = "{{ route('master.nama-barang-amprahan.create') }}";
 
             // Add popup parameter and nama_barang if available
             const params = new URLSearchParams();
@@ -301,6 +315,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 popup.focus();
             }
         });
+    }
+
+    // Function to calculate and update total price
+    function updateHargaTotal() {
+        const hargaSatuan = parseFloat(document.getElementById('harga_satuan').value) || 0;
+        const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
+        const hargaTotal = hargaSatuan * jumlah;
+        
+        // Format number with thousand separators
+        const formattedTotal = hargaTotal.toLocaleString('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        });
+        
+        document.getElementById('harga_total').value = formattedTotal;
+    }
+
+    // Add event listeners to harga_satuan and jumlah
+    const hargaSatuanInput = document.getElementById('harga_satuan');
+    const jumlahInput = document.getElementById('jumlah');
+    
+    if (hargaSatuanInput && jumlahInput) {
+        hargaSatuanInput.addEventListener('input', updateHargaTotal);
+        jumlahInput.addEventListener('input', updateHargaTotal);
+        
+        // Calculate on page load if there are old values
+        updateHargaTotal();
     }
 });
 </script>
