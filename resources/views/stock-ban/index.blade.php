@@ -932,12 +932,17 @@
         console.log('About to show modal, current classes:', usageModal.className);
         usageModal.classList.remove('hidden');
         
+        // Move modal to body to avoid parent container issues
+        if (usageModal.parentElement !== document.body) {
+            document.body.appendChild(usageModal);
+        }
+        
         // Force show with highest priority
         usageModal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
         
         console.log('Modal shown, new classes:', usageModal.className);
+        console.log('Modal parent:', usageModal.parentElement.tagName);
         console.log('Modal computed style display:', window.getComputedStyle(usageModal).display);
-        console.log('Modal computed style z-index:', window.getComputedStyle(usageModal).zIndex);
         console.log('Modal bounding rect:', usageModal.getBoundingClientRect());
     }
 
