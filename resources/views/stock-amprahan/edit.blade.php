@@ -24,18 +24,38 @@
                     <div class="space-y-6">
                         {{-- Nama Barang --}}
                         <div>
-                            <label for="master_nama_barang_amprahan_id" class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>
-                            <select name="master_nama_barang_amprahan_id" id="master_nama_barang_amprahan_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200" required>
-                                <option value="">-- Pilih Barang --</option>
-                                @foreach($masterItems as $master)
-                                    <option value="{{ $master->id }}" {{ old('master_nama_barang_amprahan_id', $item->master_nama_barang_amprahan_id) == $master->id ? 'selected' : '' }}>
-                                        {{ $master->nama_barang }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('master_nama_barang_amprahan_id')
+                            <label for="nama_barang" class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>
+                            <input type="text" name="nama_barang" id="nama_barang" value="{{ old('nama_barang', $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '')) }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200" required>
+                            @error('nama_barang')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Type Barang --}}
+                            <div>
+                                <label for="master_nama_barang_amprahan_id" class="block text-sm font-semibold text-gray-700 mb-1">Type Barang <span class="text-red-500">*</span></label>
+                                <select name="master_nama_barang_amprahan_id" id="master_nama_barang_amprahan_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200" required>
+                                    <option value="">-- Pilih Type --</option>
+                                    @foreach($masterItems as $master)
+                                        <option value="{{ $master->id }}" {{ old('master_nama_barang_amprahan_id', $item->master_nama_barang_amprahan_id) == $master->id ? 'selected' : '' }}>
+                                            {{ $master->nama_barang }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('master_nama_barang_amprahan_id')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            {{-- Harga Satuan --}}
+                            <div>
+                                <label for="harga_satuan" class="block text-sm font-semibold text-gray-700 mb-1">Harga Satuan</label>
+                                <input type="number" name="harga_satuan" id="harga_satuan" value="{{ old('harga_satuan', $item->harga_satuan ?? 0) }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                @error('harga_satuan')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

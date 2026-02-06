@@ -49,27 +49,55 @@
                     <div class="space-y-6">
                         {{-- Nama Barang --}}
                         <div class="group">
-                            <label for="master_nama_barang_amprahan_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                            <label for="nama_barang" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
                                 <i class="fas fa-box-open mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nama Barang <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <select name="master_nama_barang_amprahan_id" id="master_nama_barang_amprahan_id" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm appearance-none" required>
-                                    <option value="">-- Pilih Barang --</option>
-                                    @foreach($masterItems as $master)
-                                        <option value="{{ $master->id }}" {{ old('master_nama_barang_amprahan_id') == $master->id ? 'selected' : '' }}>
-                                            {{ $master->nama_barang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
-                                    <i class="fas fa-chevron-down text-xs"></i>
-                                </div>
-                            </div>
-                            @error('master_nama_barang_amprahan_id')
+                            <input type="text" name="nama_barang" id="nama_barang" value="{{ old('nama_barang') }}" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm" required>
+                            @error('nama_barang')
                                 <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
                                     <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                 </p>
                             @enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Type Barang --}}
+                            <div class="group">
+                                <label for="master_nama_barang_amprahan_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                    <i class="fas fa-tags mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Type Barang <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <select name="master_nama_barang_amprahan_id" id="master_nama_barang_amprahan_id" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm appearance-none" required>
+                                        <option value="">-- Pilih Type --</option>
+                                        @foreach($masterItems as $master)
+                                            <option value="{{ $master->id }}" {{ old('master_nama_barang_amprahan_id') == $master->id ? 'selected' : '' }}>
+                                                {{ $master->nama_barang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                                @error('master_nama_barang_amprahan_id')
+                                    <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            {{-- Harga Satuan --}}
+                            <div class="group">
+                                <label for="harga_satuan" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                    <i class="fas fa-money-bill-wave mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Harga Satuan
+                                </label>
+                                <input type="number" name="harga_satuan" id="harga_satuan" value="{{ old('harga_satuan', 0) }}" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                @error('harga_satuan')
+                                    <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
