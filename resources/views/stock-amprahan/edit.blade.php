@@ -33,20 +33,37 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Type Barang --}}
-                            <div>
-                                <label for="master_nama_barang_amprahan_id" class="block text-sm font-semibold text-gray-700 mb-1">Type Barang <span class="text-red-500">*</span></label>
-                                <select name="master_nama_barang_amprahan_id" id="master_nama_barang_amprahan_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200" required>
-                                    <option value="">-- Pilih Type --</option>
-                                    @foreach($masterItems as $master)
-                                        <option value="{{ $master->id }}" {{ old('master_nama_barang_amprahan_id', $item->master_nama_barang_amprahan_id) == $master->id ? 'selected' : '' }}>
-                                            {{ $master->nama_barang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('master_nama_barang_amprahan_id')
-                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                                @enderror
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="master_nama_barang_amprahan_id" class="text-sm font-semibold text-gray-700">Type Barang <span class="text-red-500">*</span></label>
+                                <a href="{{ route('master-nama-barang-amprahan.create') }}" id="add_type_barang_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
                             </div>
+                            <div class="relative">
+                                <div class="dropdown-container-type-barang">
+                                    <input type="text" id="search_type_barang" placeholder="Search..." autocomplete="off"
+                                           class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                    <select name="master_nama_barang_amprahan_id" id="master_nama_barang_amprahan_id" required
+                                            class="hidden w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                        <option value="">Select an option</option>
+                                        @foreach($masterItems as $master)
+                                            <option value="{{ $master->id }}" {{ old('master_nama_barang_amprahan_id', $item->master_nama_barang_amprahan_id) == $master->id ? 'selected' : '' }}>
+                                                {{ $master->nama_barang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_type_barang" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        {{-- Options will be populated by JavaScript --}}
+                                    </div>
+                                </div>
+                            </div>
+                            @error('master_nama_barang_amprahan_id')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                             {{-- Harga Satuan --}}
                             <div>
@@ -120,4 +137,137 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to create searchable dropdown
+    function createSearchableDropdown(config) {
+        const selectElement = document.getElementById(config.selectId);
+        const searchInput = document.getElementById(config.searchId);
+        const dropdownOptions = document.getElementById(config.dropdownId);
+        let originalOptions = Array.from(selectElement.options);
+
+        // Get selected value and set it in search input
+        const selectedOption = Array.from(selectElement.options).find(opt => opt.selected);
+        if (selectedOption && selectedOption.value !== '') {
+            searchInput.value = selectedOption.text;
+        }
+
+        // Initially populate dropdown options
+        populateDropdown(originalOptions);
+
+        // Show dropdown when search input is focused or clicked
+        searchInput.addEventListener('focus', function() {
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('click', function() {
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredOptions = originalOptions.filter(option => {
+                if (option.value === '') return true;
+                return option.text.toLowerCase().includes(searchTerm);
+            });
+            populateDropdown(filteredOptions);
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        // Populate dropdown with options
+        function populateDropdown(options) {
+            dropdownOptions.innerHTML = '';
+            options.forEach(option => {
+                const div = document.createElement('div');
+                div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                div.textContent = option.text;
+                div.setAttribute('data-value', option.value);
+
+                div.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const text = this.textContent;
+
+                    // Set the select value
+                    selectElement.value = value;
+
+                    // Update search input
+                    if (value === '') {
+                        searchInput.value = '';
+                        searchInput.placeholder = 'Search...';
+                    } else {
+                        searchInput.value = text;
+                    }
+
+                    // Hide dropdown
+                    dropdownOptions.classList.add('hidden');
+
+                    // Trigger change event
+                    selectElement.dispatchEvent(new Event('change'));
+                });
+
+                dropdownOptions.appendChild(div);
+            });
+        }
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.' + config.containerClass)) {
+                dropdownOptions.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdownOptions.classList.add('hidden');
+            }
+        });
+    }
+
+    // Initialize Type Barang dropdown
+    createSearchableDropdown({
+        selectId: 'master_nama_barang_amprahan_id',
+        searchId: 'search_type_barang',
+        dropdownId: 'dropdown_options_type_barang',
+        containerClass: 'dropdown-container-type-barang'
+    });
+
+    // Handle Type Barang "Tambah" link to pass search parameter
+    const addTypeBarangLink = document.getElementById('add_type_barang_link');
+    const searchTypeBarangInput = document.getElementById('search_type_barang');
+    if (addTypeBarangLink && searchTypeBarangInput) {
+        addTypeBarangLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTypeBarangInput.value.trim();
+            let url = "{{ route('master-nama-barang-amprahan.create') }}";
+
+            // Add popup parameter and nama_barang if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addTypeBarang',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection
