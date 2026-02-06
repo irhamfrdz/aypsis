@@ -247,6 +247,7 @@ Route::middleware([
      Route::post('pengirim-import', [App\Http\Controllers\PengirimController::class, 'import'])->name('pengirim.import.process')->middleware('can:master-pengirim-create');
 
         // Master Nama Barang Amprahan
+        Route::get('nama-barang-amprahan/export', [MasterNamaBarangAmprahanController::class, 'export'])->name('nama-barang-amprahan.export');
         Route::resource('nama-barang-amprahan', MasterNamaBarangAmprahanController::class);
 
         // ═══════════════════════════════════════════════════════════════════════

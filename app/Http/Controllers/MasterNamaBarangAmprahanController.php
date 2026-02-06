@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\MasterNamaBarangAmprahan;
 use Illuminate\Http\Request;
+use App\Exports\MasterNamaBarangAmprahanExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterNamaBarangAmprahanController extends Controller
 {
@@ -23,6 +25,18 @@ class MasterNamaBarangAmprahanController extends Controller
         $barangAmprahans = $query->latest()->paginate(15);
 
         return view('master-nama-barang-amprahan.index', compact('barangAmprahans'));
+    }
+
+    /**
+     * Export data to Excel.
+     */
+    public function export(Request $request)
+    {
+        $filters = [
+            'search' => $request->search
+        ];
+
+        return Excel::download(new MasterNamaBarangAmprahanExport($filters), 'master_nama_barang_amprahan_' . date('YmdHis') . '.xlsx');
     }
 
     /**
