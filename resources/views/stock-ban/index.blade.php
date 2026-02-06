@@ -766,6 +766,125 @@
     // Global data for price lookup
     const pricelistData = @json($pricelistKanisirBans);
 
+    // DropdownManager - Must be defined BEFORE functions that use it
+    const DropdownManager = {
+        activeDropdownId: null,
+        activeMenu: null,
+
+        toggle: function(id, button) {
+            if (this.activeDropdownId === id) {
+                this.close();
+                return;
+            }
+            this.open(id, button);
+        },
+
+        open: function(id, button) {
+            this.close(); // Close existing
+
+            // Create/Get Menu
+            let menu = document.getElementById('dropdown-menu-overlay-' + id);
+            if (!menu) {
+                // Clone the content template
+                const template = document.getElementById('dropdown-content-' + id);
+                if (!template) return;
+
+                menu = document.createElement('div');
+                menu.id = 'dropdown-menu-overlay-' + id;
+                menu.className = 'dropdown-menu-custom';
+                menu.innerHTML = template.innerHTML;
+                document.body.appendChild(menu);
+
+                // Prevent click bubbling from menu
+                menu.addEventListener('click', (e) => e.stopPropagation());
+            }
+
+            // Position it
+            const rect = button.getBoundingClientRect();
+            menu.style.width = rect.width + 'px';
+            menu.style.left = rect.left + 'px';
+            menu.style.top = (rect.bottom + window.scrollY) + 'px';
+            menu.style.display = 'block';
+
+            // Reset search
+            const searchInput = menu.querySelector('input');
+            if(searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+                this.filter(searchInput); // Reset filter
+            }
+
+            this.activeDropdownId = id;
+            this.activeMenu = menu;
+
+            // Add scroll listener to update position
+            window.addEventListener('scroll', this.reposition, true);
+            window.addEventListener('resize', this.reposition);
+        },
+
+        close: function() {
+            if (this.activeMenu) {
+                this.activeMenu.style.display = 'none';
+                this.activeDropdownId = null;
+                this.activeMenu = null;
+                window.removeEventListener('scroll', this.reposition, true);
+                window.removeEventListener('resize', this.reposition);
+            }
+        },
+
+        reposition: function() {
+            if (!DropdownManager.activeDropdownId || !DropdownManager.activeMenu) return;
+            // Find the button (re-query in case context changed?) - we assume button ID convention
+            const button = document.getElementById('btn-' + DropdownManager.activeDropdownId);
+            if(button) {
+                const rect = button.getBoundingClientRect();
+                DropdownManager.activeMenu.style.left = rect.left + 'px';
+                DropdownManager.activeMenu.style.top = (rect.bottom + window.scrollY) + 'px';
+                DropdownManager.activeMenu.style.width = rect.width + 'px';
+            }
+        },
+
+        select: function(id, value, text) {
+            const hiddenInput = document.getElementById(id);
+            if (hiddenInput) {
+                hiddenInput.value = value;
+            }
+            
+            const textEl = document.getElementById('text-' + id);
+            if (textEl) {
+                textEl.textContent = text;
+            }
+            
+            this.close();
+
+            // Custom trigger for kanisir vendor
+            if (id === 'kanisir_vendor') {
+                updateKanisirPrices(value);
+            }
+        },
+
+        filter: function(input) {
+            const term = input.value.toLowerCase();
+            const items = input.closest('.dropdown-menu-custom').querySelectorAll('.dropdown-item');
+            items.forEach(item => {
+                const search = item.getAttribute('data-search') || '';
+                if (!term || search.includes(term) || item.textContent.toLowerCase().includes(term)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    };
+
+    // Close dropdown on click outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('button[onclick^="DropdownManager.toggle"]') && 
+            !e.target.closest('.dropdown-menu-custom')) {
+            DropdownManager.close();
+        }
+    });
+
     // Global Modal Functions - Must be outside DOMContentLoaded for onclick attributes
     function openUsageModal(id, seri) {
         document.getElementById('modal-ban-seri').textContent = seri;
@@ -1051,125 +1170,6 @@
 
         // Initialize state
         updateBulkButton();
-    });
-
-    const DropdownManager = {
-        activeDropdownId: null,
-        activeMenu: null,
-
-        toggle: function(id, button) {
-            if (this.activeDropdownId === id) {
-                this.close();
-                return;
-            }
-            this.open(id, button);
-        },
-
-        open: function(id, button) {
-            this.close(); // Close existing
-
-            // Create/Get Menu
-            let menu = document.getElementById('dropdown-menu-overlay-' + id);
-            if (!menu) {
-                // Clone the content template
-                const template = document.getElementById('dropdown-content-' + id);
-                if (!template) return;
-
-                menu = document.createElement('div');
-                menu.id = 'dropdown-menu-overlay-' + id;
-                menu.className = 'dropdown-menu-custom';
-                menu.innerHTML = template.innerHTML;
-                document.body.appendChild(menu);
-
-                // Prevent click bubbling from menu
-                menu.addEventListener('click', (e) => e.stopPropagation());
-            }
-
-            // Position it
-            const rect = button.getBoundingClientRect();
-            menu.style.width = rect.width + 'px';
-            menu.style.left = rect.left + 'px';
-            menu.style.top = (rect.bottom + window.scrollY) + 'px';
-            menu.style.display = 'block';
-
-            // Reset search
-            const searchInput = menu.querySelector('input');
-            if(searchInput) {
-                searchInput.value = '';
-                searchInput.focus();
-                this.filter(searchInput); // Reset filter
-            }
-
-            this.activeDropdownId = id;
-            this.activeMenu = menu;
-
-            // Add scroll listener to update position
-            window.addEventListener('scroll', this.reposition, true);
-            window.addEventListener('resize', this.reposition);
-        },
-
-        close: function() {
-            if (this.activeMenu) {
-                this.activeMenu.style.display = 'none';
-                this.activeDropdownId = null;
-                this.activeMenu = null;
-                window.removeEventListener('scroll', this.reposition, true);
-                window.removeEventListener('resize', this.reposition);
-            }
-        },
-
-        reposition: function() {
-            if (!DropdownManager.activeDropdownId || !DropdownManager.activeMenu) return;
-            // Find the button (re-query in case context changed?) - we assume button ID convention
-            const button = document.getElementById('btn-' + DropdownManager.activeDropdownId);
-            if(button) {
-                const rect = button.getBoundingClientRect();
-                DropdownManager.activeMenu.style.left = rect.left + 'px';
-                DropdownManager.activeMenu.style.top = (rect.bottom + window.scrollY) + 'px';
-                DropdownManager.activeMenu.style.width = rect.width + 'px';
-            }
-        },
-
-        select: function(id, value, text) {
-            const hiddenInput = document.getElementById(id);
-            if (hiddenInput) {
-                hiddenInput.value = value;
-            }
-            
-            const textEl = document.getElementById('text-' + id);
-            if (textEl) {
-                textEl.textContent = text;
-            }
-            
-            this.close();
-
-            // Custom trigger for kanisir vendor
-            if (id === 'kanisir_vendor') {
-                updateKanisirPrices(value);
-            }
-        },
-
-        filter: function(input) {
-            const term = input.value.toLowerCase();
-            const items = input.closest('.dropdown-menu-custom').querySelectorAll('.dropdown-item');
-            items.forEach(item => {
-                const search = item.getAttribute('data-search') || '';
-                if (!term || search.includes(term) || item.textContent.toLowerCase().includes(term)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-    };
-
-    // Close on click outside
-    document.addEventListener('click', function(e) {
-        // If click is not on a dropdown button and not inside a menu
-        if (!e.target.closest('button[onclick^="DropdownManager.toggle"]') && 
-            !e.target.closest('.dropdown-menu-custom')) {
-            DropdownManager.close();
-        }
     });
 
     // Search functionality
