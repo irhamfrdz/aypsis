@@ -264,7 +264,7 @@
                     <!-- Garasi Pluit -->
                     @php
                         $garasiPluit = $stockBans->filter(function($ban) {
-                            return stripos($ban->lokasi, 'Garasi Pluit') !== false;
+                            return stripos($ban->lokasi, 'Garasi Pluit') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
                     <div id="card-garasi-pluit" onclick="setCardFilter('garasi-pluit')" class="cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
@@ -279,7 +279,7 @@
                     <!-- Ruko 10 -->
                     @php
                         $ruko10 = $stockBans->filter(function($ban) {
-                            return stripos($ban->lokasi, 'Ruko 10') !== false;
+                            return stripos($ban->lokasi, 'Ruko 10') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
                     <div id="card-ruko-10" onclick="setCardFilter('ruko-10')" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
