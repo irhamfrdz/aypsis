@@ -21,6 +21,7 @@ use App\Models\HistoryKontainer;
 use Carbon\Carbon;
 use App\Exports\ObExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Manifest;
 
 class ObController extends Controller
 {
@@ -1222,6 +1223,8 @@ class ObController extends Controller
             }
 
             // Commit transaction - all changes saved successfully
+
+
             DB::commit();
 
             \Log::info("===== END markAsOB SUCCESS =====");
@@ -1340,6 +1343,8 @@ class ObController extends Controller
             }
 
             // Commit transaction
+
+
             DB::commit();
 
             return response()->json([
@@ -2014,6 +2019,8 @@ class ObController extends Controller
                 }
             }
 
+
+
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -2184,6 +2191,8 @@ class ObController extends Controller
                 }
             }
 
+
+
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -2299,6 +2308,54 @@ class ObController extends Controller
                 // don't break TL processing for Prospek update failure
             }
 
+            // Create Manifest if not exists (User Request)
+            $existingManifest = \App\Models\Manifest::where('nomor_kontainer', $bl->nomor_kontainer)
+                ->where('no_voyage', $bl->no_voyage)
+                ->where('nama_kapal', $bl->nama_kapal)
+                ->first();
+
+            if (!$existingManifest) {
+                $manifestData = [
+                    'nomor_bl' => $bl->nomor_bl,
+                    'nomor_kontainer' => $bl->nomor_kontainer,
+                    'no_seal' => $bl->no_seal,
+                    'tipe_kontainer' => $bl->tipe_kontainer,
+                    'size_kontainer' => $bl->size_kontainer,
+                    'nama_kapal' => $bl->nama_kapal,
+                    'no_voyage' => $bl->no_voyage,
+                    'pelabuhan_asal' => $bl->pelabuhan_asal,
+                    'pelabuhan_tujuan' => $bl->pelabuhan_tujuan,
+                    'nama_barang' => $bl->nama_barang,
+                    'asal_kontainer' => $bl->asal_kontainer,
+                    'ke' => $bl->ke,
+                    'tonnage' => $bl->tonnage,
+                    'volume' => $bl->volume,
+                    'kuantitas' => $bl->kuantitas ?? 1,
+                    'prospek_id' => $bl->prospek_id,
+                    'created_by' => $user->id,
+                    'updated_by' => $user->id,
+                    'pengirim' => $bl->pengirim,
+                    'penerima' => $bl->penerima,
+                    'alamat_pengiriman' => $bl->alamat_pengiriman,
+                    'contact_person' => $bl->contact_person,
+                    'term' => $bl->term,
+                    'nomor_tanda_terima' => null // BL doesn't have this usually
+                ];
+
+                // Get additional data from prospek if available
+                if ($bl->prospek_id) {
+                    $prospek = \App\Models\Prospek::find($bl->prospek_id);
+                    if ($prospek) {
+                        $manifestData['alamat_pengirim'] = $prospek->alamat_pengirim ?? null;
+                        $manifestData['alamat_penerima'] = $prospek->alamat_penerima ?? null;
+                        $manifestData['pelabuhan_muat'] = $prospek->port_muat ?? $bl->pelabuhan_asal ?? null;
+                        $manifestData['pelabuhan_bongkar'] = $prospek->port_bongkar ?? $bl->pelabuhan_tujuan ?? null;
+                    }
+                }
+
+                \App\Models\Manifest::create($manifestData);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -2392,6 +2449,51 @@ class ObController extends Controller
                 \Log::warning('Failed to update Prospek status for NaikKapal (processTL) ID ' . ($naikKapal->id ?? 'unknown') . ': ' . $e->getMessage());
                 // continue without breaking TL
             }
+
+            // Create Manifest if not exists (User Request)
+            $existingManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                ->where('no_voyage', $naikKapal->no_voyage)
+                ->where('nama_kapal', $naikKapal->nama_kapal)
+                ->first();
+
+            if (!$existingManifest) {
+                $manifestData = [
+                    'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                    'no_seal' => $naikKapal->no_seal,
+                    'tipe_kontainer' => $naikKapal->tipe_kontainer,
+                    'size_kontainer' => $naikKapal->size_kontainer,
+                    'nama_kapal' => $naikKapal->nama_kapal,
+                    'no_voyage' => $naikKapal->no_voyage,
+                    'pelabuhan_asal' => $naikKapal->pelabuhan_asal,
+                    'pelabuhan_tujuan' => $naikKapal->pelabuhan_tujuan,
+                    'nama_barang' => $naikKapal->jenis_barang,
+                    'asal_kontainer' => $naikKapal->asal_kontainer,
+                    'ke' => $naikKapal->ke,
+                    'tonnage' => $naikKapal->total_tonase,
+                    'volume' => $naikKapal->total_volume,
+                    'kuantitas' => $naikKapal->kuantitas ?? 1,
+                    'prospek_id' => $naikKapal->prospek_id,
+                    'created_by' => $user->id,
+                    'updated_by' => $user->id,
+                ];
+
+                // Get additional data from prospek if available
+                if ($naikKapal->prospek_id) {
+                    $prospek = \App\Models\Prospek::find($naikKapal->prospek_id);
+                    if ($prospek) {
+                        $manifestData['pengirim'] = $prospek->pt_pengirim ?? $prospek->pengirim ?? null;
+                        $manifestData['alamat_pengirim'] = $prospek->alamat_pengirim ?? null;
+                        $manifestData['penerima'] = $prospek->pt_penerima ?? $prospek->penerima ?? null;
+                        $manifestData['alamat_penerima'] = $prospek->alamat_penerima ?? null;
+                        $manifestData['pelabuhan_muat'] = $prospek->port_muat ?? $naikKapal->pelabuhan_asal ?? null;
+                        $manifestData['pelabuhan_bongkar'] = $prospek->port_bongkar ?? $naikKapal->pelabuhan_tujuan ?? null;
+                    }
+                }
+
+                \App\Models\Manifest::create($manifestData);
+            }
+
+
 
             DB::commit();
 
