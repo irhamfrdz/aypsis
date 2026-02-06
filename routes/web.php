@@ -3658,6 +3658,12 @@ Route::middleware(['auth'])->group(function() {
     Route::post('ob/save-asal-ke-bulk', [\App\Http\Controllers\ObController::class, 'saveAsalKeBulk'])
          ->name('ob.save-asal-ke-bulk')
          ->middleware('can:ob-view');
+    
+    // Fix CARGO Manifests Script
+    Route::get('ob/fix-cargo-manifests', function() {
+        require base_path('fix_cargo_manifests_route.php');
+    })->name('ob.fix-cargo-manifests')
+      ->middleware('auth');
 
     // Tagihan OB routes
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
