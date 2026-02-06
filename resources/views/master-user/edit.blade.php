@@ -1670,8 +1670,26 @@
                                 <td><input type="checkbox" name="permissions[belanja-amprahan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['create']) && $userMatrixPermissions['belanja-amprahan']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[belanja-amprahan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['update']) && $userMatrixPermissions['belanja-amprahan']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[belanja-amprahan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['delete']) && $userMatrixPermissions['belanja-amprahan']['delete']) checked @endif></td>
-                                <td></td>
-                                <td></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Stock Amprahan --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Stock Amprahan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][view]" value="1" class="permission-checkbox" @if(old('permissions.stock-amprahan.view') || (isset($userMatrixPermissions['stock-amprahan']['view']) && $userMatrixPermissions['stock-amprahan']['view']) || ($user && $user->can('stock-amprahan-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][create]" value="1" class="permission-checkbox" @if(old('permissions.stock-amprahan.create') || (isset($userMatrixPermissions['stock-amprahan']['create']) && $userMatrixPermissions['stock-amprahan']['create']) || ($user && $user->can('stock-amprahan-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][update]" value="1" class="permission-checkbox" @if(old('permissions.stock-amprahan.update') || (isset($userMatrixPermissions['stock-amprahan']['update']) && $userMatrixPermissions['stock-amprahan']['update']) || ($user && $user->can('stock-amprahan-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][delete]" value="1" class="permission-checkbox" @if(old('permissions.stock-amprahan.delete') || (isset($userMatrixPermissions['stock-amprahan']['delete']) && $userMatrixPermissions['stock-amprahan']['delete']) || ($user && $user->can('stock-amprahan-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             {{-- Pranota Uang Rit --}}

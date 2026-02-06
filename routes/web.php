@@ -4172,6 +4172,19 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                'destroy' => 'can:belanja-amprahan-delete'
           ]);
 
+    // 📦 Stock Amprahan
+    Route::resource('stock-amprahan', \App\Http\Controllers\StockAmprahanController::class)
+          ->names('stock-amprahan')
+          ->middleware([
+               'index' => 'can:stock-amprahan-view',
+               'show' => 'can:stock-amprahan-view',
+               'create' => 'can:stock-amprahan-create',
+               'store' => 'can:stock-amprahan-create',
+               'edit' => 'can:stock-amprahan-update',
+               'update' => 'can:stock-amprahan-update',
+               'destroy' => 'can:stock-amprahan-delete'
+          ]);
+
 
     // 📊 Prospek Management - Read Only
     Route::get('prospek', [ProspekController::class, 'index'])->name('prospek.index')

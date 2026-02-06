@@ -888,6 +888,23 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Stock Amprahan --}}
+                            <tr class="submodule-row" data-parent="aktivitas-lainnya">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Stock Amprahan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[stock-amprahan][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                            </tr>
+
                             {{-- Pembayaran --}}
                             <tr class="module-row" data-module="pembayaran">
                                 <td class="module-header">

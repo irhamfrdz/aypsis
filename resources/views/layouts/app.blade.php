@@ -832,6 +832,15 @@
             </a>
         </div>
         @endif
+        
+        {{-- Stock Amprahan --}}
+        @if($user && $user->can('stock-amprahan-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ Route::has('stock-amprahan.index') ? route('stock-amprahan.index') : '#' }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('stock-amprahan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Stock Amprahan</span>
+            </a>
+        </div>
+        @endif
     </div>
 </div>
 @endif

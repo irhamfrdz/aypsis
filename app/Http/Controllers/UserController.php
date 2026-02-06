@@ -1203,6 +1203,12 @@ class UserController extends Controller
                         $action = str_replace('pranota-uang-rit-', '', $permissionName);
                     }
 
+                    // Special handling for stock-amprahan-* permissions
+                    if (strpos($permissionName, 'stock-amprahan-') === 0) {
+                        $module = 'stock-amprahan';
+                        $action = str_replace('stock-amprahan-', '', $permissionName);
+                    }
+
                     // Special handling for pranota-ob-* permissions
                     if (strpos($permissionName, 'pranota-ob-') === 0) {
                         $module = 'pranota-ob';
@@ -2386,6 +2392,25 @@ class UserController extends Controller
                             'create' => 'master-term-create',
                             'update' => 'master-term-update',
                             'delete' => 'master-term-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle amprahan permissions explicitly
+                    if (($module === 'stock-amprahan' || $module === 'belanja-amprahan') && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => $module . '-view',
+                            'create' => $module . '-create',
+                            'update' => $module . '-update',
+                            'delete' => $module . '-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
