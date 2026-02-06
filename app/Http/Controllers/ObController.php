@@ -2259,6 +2259,8 @@ class ObController extends Controller
      */
     public function processTLBongkar(Request $request)
     {
+        $user = Auth::user();
+
         try {
             $request->validate([
                 'bl_id' => 'required|integer|exists:bls,id'
@@ -2379,6 +2381,8 @@ class ObController extends Controller
      */
     public function processTL(Request $request)
     {
+        $user = Auth::user();
+
         try {
             $request->validate([
                 'naik_kapal_id' => 'required|integer|exists:naik_kapal,id'
