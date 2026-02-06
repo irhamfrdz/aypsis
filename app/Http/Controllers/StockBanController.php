@@ -229,6 +229,7 @@ class StockBanController extends Controller
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri',
+            'nomor_faktur' => 'nullable|string|max:255',
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'nullable|string|max:255',
@@ -293,6 +294,7 @@ class StockBanController extends Controller
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri,' . $stockBan->id,
+            'nomor_faktur' => 'nullable|string|max:255',
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'nullable|string|max:255',
@@ -435,6 +437,7 @@ class StockBanController extends Controller
             'ids' => 'required|array',
             'ids.*' => 'exists:stock_bans,id',
             'nomor_invoice' => 'nullable|string|max:255',
+            'nomor_faktur_vendor' => 'nullable|string|max:255',
             'tanggal_masuk_kanisir' => 'required|date',
             'vendor' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
@@ -453,6 +456,7 @@ class StockBanController extends Controller
              // Create Invoice Header
             $invoice = InvoiceKanisirBan::create([
                 'nomor_invoice' => $request->nomor_invoice ?? 'INV-KANISIR-' . time(),
+                'nomor_faktur' => $request->nomor_faktur_vendor, // Save vendor invoice number
                 'tanggal_invoice' => $request->tanggal_masuk_kanisir,
                 'vendor' => $request->vendor,
                 'total_biaya' => $request->harga * $bans->count(),
@@ -474,6 +478,7 @@ class StockBanController extends Controller
                 $ban->status_masak = 'sudah';
                 $ban->jumlah_masak = ($ban->jumlah_masak ?? 0) + 1;
                 $ban->nomor_bukti = $invoice->nomor_invoice;
+                $ban->nomor_faktur = $request->nomor_faktur_vendor; // Update vendor invoice on the ban record as well
                 $ban->tanggal_masuk = $request->tanggal_masuk_kanisir; // Update date to kanisir date
                 $ban->harga_beli = $request->harga; // Update price/cost
                 

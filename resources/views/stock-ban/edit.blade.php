@@ -92,6 +92,15 @@
                         @enderror
                     </div>
 
+                    <!-- Nomor Faktur -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Faktur</label>
+                        <input type="text" name="nomor_faktur" value="{{ old('nomor_faktur', $stockBan->nomor_faktur) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_faktur') border-red-500 @enderror" placeholder="Contoh: FAKTUR-2026-001">
+                        @error('nomor_faktur')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Nama Barang (Dropdown from nama_stock_bans) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nama Barang <span class="text-red-500">*</span></label>

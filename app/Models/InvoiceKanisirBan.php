@@ -8,6 +8,7 @@ class InvoiceKanisirBan extends Model
 {
     protected $fillable = [
         'nomor_invoice',
+        'nomor_faktur',
         'tanggal_invoice',
         'vendor',
         'total_biaya',

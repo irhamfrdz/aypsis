@@ -309,6 +309,7 @@
                                     <input type="checkbox" id="check-all-ban-luar" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seri / Kode</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Faktur</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk & Ukuran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -338,6 +339,9 @@
                                     @if($ban->namaStockBan)
                                     <div class="text-xs text-gray-500">{{ $ban->namaStockBan->nama }}</div>
                                     @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $ban->nomor_faktur ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div class="font-medium text-gray-800">{{ $ban->merk ?? $ban->merkBan->nama ?? '-' }}</div>
@@ -433,7 +437,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="11" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data stock ban luar</td>
+                                <td colspan="12" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data stock ban luar</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -494,6 +498,11 @@
                             <div>
                                 <label for="kanisir_invoice" class="form-label-premium">Nomor Invoice</label>
                                 <input type="text" id="kanisir_invoice" class="form-input-premium bg-gray-100" value="{{ $nextInvoice }}" readonly>
+
+
+                            <div>
+                                <label for="kanisir_faktur_vendor" class="form-label-premium">Nomor Faktur Vendor</label>
+                                <input type="text" id="kanisir_faktur_vendor" class="form-input-premium" placeholder="Nomor faktur dari vendor...">
                             </div>
                             
                             <div>
@@ -1056,6 +1065,7 @@
         
         // Get values
         const invoice = document.getElementById('kanisir_invoice').value;
+        const fakturVendor = document.getElementById('kanisir_faktur_vendor').value;
         const tanggal = document.getElementById('kanisir_tanggal').value;
         const vendor = document.getElementById('kanisir_vendor').value;
         const harga = document.getElementById('kanisir_harga').value;
@@ -1086,6 +1096,7 @@
         });
 
         appendHidden('nomor_invoice', invoice);
+        appendHidden('nomor_faktur_vendor', fakturVendor);
         appendHidden('tanggal_masuk_kanisir', tanggal);
         appendHidden('vendor', vendor);
         appendHidden('harga', harga);
@@ -1220,7 +1231,7 @@
                     noResultsRow = document.createElement('tr');
                     noResultsRow.className = 'no-results-row';
                     noResultsRow.innerHTML = `
-                        <td colspan="11" class="px-6 py-8 text-center">
+                        <td colspan="12" class="px-6 py-8 text-center">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
                                 <p class="text-gray-500 font-medium">Tidak ada data ditemukan</p>
