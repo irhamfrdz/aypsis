@@ -1337,9 +1337,9 @@
                     } else if (currentCardFilter === 'afkir') {
                         filterMatch = kondisi === 'afkir';
                     } else if (currentCardFilter === 'garasi-pluit') {
-                        filterMatch = lokasi.includes('garasi pluit');
+                        filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     } else if (currentCardFilter === 'ruko-10') {
-                        filterMatch = lokasi.includes('ruko 10');
+                        filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     }
                 }
 
