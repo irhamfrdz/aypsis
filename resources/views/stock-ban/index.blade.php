@@ -895,16 +895,43 @@
 
     // Global Modal Functions - Must be outside DOMContentLoaded for onclick attributes
     function openUsageModal(id, seri) {
-        document.getElementById('modal-ban-seri').textContent = seri;
-        document.getElementById('usageForm').action = "{{ url('stock-ban') }}/" + id + "/use";
+        console.log('openUsageModal called with:', id, seri);
+        
+        const modalBanSeri = document.getElementById('modal-ban-seri');
+        const usageForm = document.getElementById('usageForm');
+        const mobilInput = document.getElementById('mobil');
+        const textMobil = document.getElementById('text-mobil');
+        const penerimaInput = document.getElementById('penerima');
+        const textPenerima = document.getElementById('text-penerima');
+        const usageModal = document.getElementById('usageModal');
+        
+        console.log('Elements found:', {
+            'modal-ban-seri': !!modalBanSeri,
+            'usageForm': !!usageForm,
+            'mobil': !!mobilInput,
+            'text-mobil': !!textMobil,
+            'penerima': !!penerimaInput,
+            'text-penerima': !!textPenerima,
+            'usageModal': !!usageModal
+        });
+        
+        if (!usageModal) {
+            console.error('usageModal element NOT FOUND!');
+            return;
+        }
+        
+        if (modalBanSeri) modalBanSeri.textContent = seri;
+        if (usageForm) usageForm.action = "{{ url('stock-ban') }}/" + id + "/use";
         
         // Reset selections
-        document.getElementById('mobil').value = '';
-        document.getElementById('text-mobil').textContent = '-- Pilih Mobil --';
-        document.getElementById('penerima').value = '';
-        document.getElementById('text-penerima').textContent = '-- Pilih Penerima --';
+        if (mobilInput) mobilInput.value = '';
+        if (textMobil) textMobil.textContent = '-- Pilih Mobil --';
+        if (penerimaInput) penerimaInput.value = '';
+        if (textPenerima) textPenerima.textContent = '-- Pilih Penerima --';
         
-        document.getElementById('usageModal').classList.remove('hidden');
+        console.log('About to show modal, current classes:', usageModal.className);
+        usageModal.classList.remove('hidden');
+        console.log('Modal shown, new classes:', usageModal.className);
     }
 
     function closeUsageModal() {
