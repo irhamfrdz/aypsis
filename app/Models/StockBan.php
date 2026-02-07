@@ -24,6 +24,7 @@ class StockBan extends Model
         'tempat_beli',
         'tanggal_masuk',
         'tanggal_keluar',
+        'tanggal_kembali',
         'lokasi',
         'keterangan',
         'mobil_id',
@@ -62,6 +63,7 @@ class StockBan extends Model
         'harga_beli' => 'decimal:2',
         'tanggal_masuk' => 'date',
         'tanggal_keluar' => 'date',
+        'tanggal_kembali' => 'date',
     ];
 
     public static function generateNextInvoice()

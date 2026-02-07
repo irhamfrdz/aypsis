@@ -453,6 +453,14 @@
                                                 title="Kembalikan ke Gudang">
                                                 <i class="fas fa-undo"></i>
                                             </button>
+                                        @elseif($ban->status == 'Sedang Dimasak')
+                                            <button type="button" 
+                                                class="btn-return-masak-modal text-teal-600 hover:text-teal-900"
+                                                data-id="{{ $ban->id }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Selesai Masak (Kembali ke Gudang)">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
                                         @endif
 
                                         <a href="{{ route('stock-ban.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
@@ -699,6 +707,68 @@
                 </button>
                 <button type="button" 
                         onclick="closeReturnModal()" 
+                        class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:ml-0 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+
+<!-- Modal Selesai Masak -->
+<div id="returnMasakModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeReturnMasakModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-check-circle text-teal-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Selesai Masak (Kembali ke Gudang)
+                        </h3>
+                        <div class="mt-4 space-y-4">
+                            <p class="text-sm text-gray-500">
+                                Ban dengan nomor seri <span id="return_masak_nomor_seri" class="font-bold text-gray-900"></span> akan dikembalikan ke stok.
+                            </p>
+                            
+                            <form id="returnMasakForm" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" id="return_masak_ban_id" name="ban_id">
+                                
+                                <div>
+                                    <label for="return_masak_lokasi" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Lokasi Penyimpanan <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="lokasi" id="return_masak_lokasi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
+                                        <option value="">-- Pilih Lokasi --</option>
+                                        <option value="Ruko 10">Ruko 10</option>
+                                        <option value="Garasi Pluit">Garasi Pluit</option>
+                                    </select>
+                                </div>
+
+                                <div class="mt-4">
+                                    <label for="return_masak_tanggal" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Tanggal Kembali <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" name="tanggal_kembali" id="return_masak_tanggal" value="{{ date('Y-m-d') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                <button type="button" 
+                        onclick="submitReturnMasakForm()" 
+                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-teal-600 text-base font-semibold text-white hover:bg-teal-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
+                    Simpan
+                </button>
+                <button type="button" 
+                        onclick="closeReturnMasakModal()" 
                         class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:ml-0 sm:w-auto sm:text-sm">
                     Batal
                 </button>
@@ -1291,6 +1361,18 @@
                 return;
             }
 
+            // Check if clicked element or its parent is btn-return-masak-modal
+            const returnMasakBtn = e.target.closest('.btn-return-masak-modal');
+            if (returnMasakBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = returnMasakBtn.getAttribute('data-id');
+                const seri = returnMasakBtn.getAttribute('data-seri');
+                console.log('Opening return masak modal:', id, seri); // Debug log
+                openReturnMasakModal(id, seri);
+                return;
+            }
+
             // Check if clicking on modal backdrop or close button
             const usageModal = document.getElementById('usageModal');
             if (usageModal && !usageModal.classList.contains('hidden')) {
@@ -1455,6 +1537,89 @@
         // Expose performSearch to external calls (if needed)
         window.performSearch = performSearch;
     })();
+
+    // Masak Return Functions
+    function openReturnMasakModal(id, seri) {
+        console.log('openReturnMasakModal called with:', id, seri);
+        
+        const returnMasakModal = document.getElementById('returnMasakModal');
+        const modalBanId = document.getElementById('return_masak_ban_id');
+        const modalNomorSeri = document.getElementById('return_masak_nomor_seri');
+        const modalLokasi = document.getElementById('return_masak_lokasi');
+        const modalTanggal = document.getElementById('return_masak_tanggal');
+        
+        console.log('Elements found:', {
+            'returnMasakModal': !!returnMasakModal,
+            'return_masak_ban_id': !!modalBanId,
+            'return_masak_nomor_seri': !!modalNomorSeri,
+            'return_masak_lokasi': !!modalLokasi,
+            'return_masak_tanggal': !!modalTanggal
+        });
+        
+        if (!returnMasakModal) {
+            console.error('returnMasakModal element NOT FOUND!');
+            return;
+        }
+        
+        if (modalBanId) modalBanId.value = id;
+        if (modalNomorSeri) modalNomorSeri.textContent = seri || '-';
+        if (modalLokasi) modalLokasi.value = '';
+        
+        // Set tanggal to today
+        if (modalTanggal) {
+            const today = new Date().toISOString().split('T')[0];
+            modalTanggal.value = today;
+        }
+        
+        console.log('About to show modal, current classes:', returnMasakModal.className);
+        returnMasakModal.classList.remove('hidden');
+        
+        // Move modal to body to avoid parent container issues
+        if (returnMasakModal.parentElement !== document.body) {
+            document.body.appendChild(returnMasakModal);
+        }
+        
+        // Force show with highest priority
+        returnMasakModal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+        
+        console.log('Modal shown, new classes:', returnMasakModal.className);
+        console.log('Modal parent:', returnMasakModal.parentElement.tagName);
+        console.log('Modal computed style display:', window.getComputedStyle(returnMasakModal).display);
+    }
+
+    function closeReturnMasakModal() {
+        console.log('closeReturnMasakModal called');
+        const modal = document.getElementById('returnMasakModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style'); // Remove inline styles
+        }
+    }
+
+    function submitReturnMasakForm() {
+        const banId = document.getElementById('return_masak_ban_id').value;
+        const lokasi = document.getElementById('return_masak_lokasi').value;
+        const tanggal = document.getElementById('return_masak_tanggal').value;
+        
+        if (!lokasi) {
+            alert('Mohon pilih lokasi penyimpanan!');
+            return;
+        }
+        
+        if (!tanggal) {
+            alert('Mohon isi tanggal kembali!');
+            return;
+        }
+
+        const form = document.getElementById('returnMasakForm');
+        form.action = `{{ url('stock-ban') }}/${banId}/return-masak`;
+        form.submit();
+    }
+
+    // Expose functions to global window object
+    window.openReturnMasakModal = openReturnMasakModal;
+    window.closeReturnMasakModal = closeReturnMasakModal;
+    window.submitReturnMasakForm = submitReturnMasakForm;
 
 </script>
 @endpush

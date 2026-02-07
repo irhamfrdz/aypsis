@@ -541,4 +541,32 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke gudang.');
     }
+
+    /**
+     * Mark ban as finished cooking (return from masak).
+     */
+    public function returnFromMasak(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        if ($stockBan->status !== 'Sedang Dimasak') {
+            return redirect()->route('stock-ban.index')->with('error', 'Ban ini tidak sedang dimasak.');
+        }
+
+        $request->validate([
+            'lokasi' => 'required|string|max:255',
+            'tanggal_kembali' => 'required|date',
+        ]);
+
+        $tanggalKembali = \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y');
+
+        $stockBan->update([
+            'status' => 'Stok',
+            'lokasi' => $request->lokasi,
+            'tanggal_kembali' => $request->tanggal_kembali,
+            'keterangan' => $stockBan->keterangan . "\n[Selesai Masak] Kembali ke stok di " . $request->lokasi . ", Tgl: " . $tanggalKembali,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban selesai dimasak dan kembali ke stok.');
+    }
 }

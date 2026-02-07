@@ -4368,6 +4368,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::put('stock-ban/{stock_ban}/masak', [\App\Http\Controllers\StockBanController::class, 'masak'])
                ->name('stock-ban.masak')
                ->middleware('can:stock-ban-update');
+          Route::put('stock-ban/{stock_ban}/return-masak', [\App\Http\Controllers\StockBanController::class, 'returnFromMasak'])
+               ->name('stock-ban.return-masak')
+               ->middleware('can:stock-ban-update');
           Route::post('stock-ban/bulk-masak', [\App\Http\Controllers\StockBanController::class, 'bulkMasak'])
                ->name('stock-ban.bulk-masak')
                ->middleware('can:stock-ban-update');
