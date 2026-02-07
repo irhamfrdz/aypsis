@@ -303,6 +303,19 @@
                         <div class="text-2xl font-bold text-orange-900">{{ $ruko10 }}</div>
                         <p class="text-xs text-orange-600 mt-1">Lokasi</p>
                     </div>
+
+                    <!-- Ban Asli Stok -->
+                    @php
+                        $banAsliStok = $stockBans->where('kondisi', 'asli')->where('status', 'Stok')->count();
+                    @endphp
+                    <div id="card-asli-stok" onclick="setCardFilter('asli-stok')" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-teal-600 uppercase">Asli Stok</span>
+                            <i class="fas fa-check-double text-teal-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-teal-900">{{ $banAsliStok }}</div>
+                        <p class="text-xs text-teal-600 mt-1">Siap Pakai</p>
+                    </div>
                 </div>
             </div>
 
@@ -1161,7 +1174,7 @@
             card.classList.remove('active-filter', 'ring-2');
             
             // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400');
+            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400');
         });
 
         const activeCard = document.getElementById('card-' + filterType);
@@ -1178,7 +1191,8 @@
                 'kanisir': 'ring-yellow-400',
                 'afkir': 'ring-red-400',
                 'garasi-pluit': 'ring-indigo-400',
-                'ruko-10': 'ring-orange-400'
+                'ruko-10': 'ring-orange-400',
+                'asli-stok': 'ring-teal-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -1366,6 +1380,8 @@
                         filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     } else if (currentCardFilter === 'ruko-10') {
                         filterMatch = lokasi.includes('ruko 10') && status === 'stok';
+                    } else if (currentCardFilter === 'asli-stok') {
+                        filterMatch = kondisi === 'asli' && status === 'stok';
                     }
                 }
 

@@ -605,10 +605,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 const uangRitKenekInput = uangRitKenekInputs[index];
                 
                 // Use NIK as key to group same person with different name variants
-                const personNik = checkbox.dataset.kenek_nik || 'unknown';
+                // If NIK is missing or '-', use name as key instead
+                let personNik = checkbox.dataset.kenek_nik || '';
                 const personName = checkbox.dataset.kenek_nama || 'Tanpa Nama';
                 
-                // Initialize person totals if not exists (using NIK as key)
+                // Use name as key if NIK is empty, '-', or 'unknown'
+                if (!personNik || personNik === '-' || personNik === 'unknown') {
+                    personNik = personName; // Use name as unique identifier
+                }
+                
+                // Initialize person totals if not exists (using NIK or name as key)
                 if (!personTotals[personNik]) {
                     personTotals[personNik] = {
                         count: 0,
@@ -702,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 personRow.innerHTML = `
                     <td class="px-2 py-2 text-xs font-medium" colspan="2">
-                        👤 ${totals.nama} <span class="text-gray-500">(NIK: ${totals.nik})</span>
+                        👤 ${totals.nama} <span class="text-gray-500">${totals.nik !== totals.nama && totals.nik !== '-' && totals.nik !== 'unknown' ? '(NIK: ' + totals.nik + ')' : '(NIK tidak ditemukan)'}</span>
                     </td>
                     <td class="px-2 py-2 text-xs text-center">
                         ${totals.count} surat jalan
@@ -783,7 +789,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Calculate grand totals for each person
         personGrandTotals.forEach(grandTotalDiv => {
-            const personNik = grandTotalDiv.dataset.person_nik;
+            const personNik = grandTotalDiv.dataset.personNik;
             
             // Find corresponding inputs using NIK
             const utangInput = document.querySelector(`.person-utang-input[data-person-nik="${personNik}"]`);
@@ -793,7 +799,14 @@ document.addEventListener('DOMContentLoaded', function () {
             // Get person's total Uang Kenek from checked checkboxes (matching by NIK)
             let personUangKenek = 0;
             suratJalanCheckboxes.forEach((checkbox, index) => {
-                const rowPersonNik = checkbox.dataset.kenek_nik || 'unknown';
+                let rowPersonNik = checkbox.dataset.kenek_nik || '';
+                const rowPersonName = checkbox.dataset.kenek_nama || 'Tanpa Nama';
+                
+                // Use name as key if NIK is empty, '-', or 'unknown'
+                if (!rowPersonNik || rowPersonNik === '-' || rowPersonNik === 'unknown') {
+                    rowPersonNik = rowPersonName;
+                }
+                
                 if (checkbox.checked && rowPersonNik === personNik) {
                     const uangRitKenekInput = uangRitKenekInputs[index];
                     if (uangRitKenekInput) {
@@ -1109,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Create hidden inputs for each Kenek's hutang, tabungan, and bpjs (using nama as key for backend compatibility)
         personUtangInputs.forEach(input => {
-            const kenekNama = input.dataset.person_nama; // Use nama for backend
+            const kenekNama = input.dataset.personNama; // Use nama for backend
             const hutangValue = input.value || 0;
             
             const hutangInput = document.createElement('input');
@@ -1120,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
         personTabunganInputs.forEach(input => {
-            const kenekNama = input.dataset.person_nama;
+            const kenekNama = input.dataset.personNama;
             const tabunganValue = input.value || 0;
             
             const tabunganInput = document.createElement('input');
@@ -1131,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
         personBpjsInputs.forEach(input => {
-            const kenekNama = input.dataset.person_nama;
+            const kenekNama = input.dataset.personNama;
             const bpjsValue = input.value || 0;
             
             const bpjsInput = document.createElement('input');
