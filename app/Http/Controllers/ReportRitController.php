@@ -165,15 +165,26 @@ class ReportRitController extends Controller
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sj->supirKaryawan) {
                 $supirName = $sj->supirKaryawan->nama_panggilan ?: $sj->supirKaryawan->nama_lengkap;
+                $supirNamaLengkap = $sj->supirKaryawan->nama_lengkap;
+                $nikSupir = $sj->supirKaryawan->nik;
             } else {
                 // Coba cari karyawan berdasarkan nama_lengkap jika relasi tidak ketemu
                 $karyawan = Karyawan::where('nama_lengkap', $sj->supir)
                     ->orWhere('nama_lengkap', $sj->supir2)
                     ->first();
-                $supirName = $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : ($sj->supir ?: $sj->supir2);
+                if ($karyawan) {
+                    $supirName = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                    $supirNamaLengkap = $karyawan->nama_lengkap;
+                    $nikSupir = $karyawan->nik;
+                } else {
+                    $supirName = $sj->supir ?: $sj->supir2;
+                    $supirNamaLengkap = $sj->supir ?: $sj->supir2;
+                    $nikSupir = null;
+                }
             }
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
+            $nikKenek = $sj->kenekKaryawan ? $sj->kenekKaryawan->nik : null;
             
             $allSuratJalans->push([
                 'type' => 'regular',
@@ -184,7 +195,10 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $supirName,
+                'nama_lengkap_supir' => $supirNamaLengkap,
+                'nik_supir' => $nikSupir,
                 'kenek' => $kenekName,
+                'nik_kenek' => $nikKenek,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
                 'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
@@ -201,15 +215,26 @@ class ReportRitController extends Controller
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sjb->supirKaryawan) {
                 $supirName = $sjb->supirKaryawan->nama_panggilan ?: $sjb->supirKaryawan->nama_lengkap;
+                $supirNamaLengkap = $sjb->supirKaryawan->nama_lengkap;
+                $nikSupir = $sjb->supirKaryawan->nik;
             } else {
                 // Coba cari karyawan berdasarkan nama_lengkap jika relasi tidak ketemu
                 $karyawan = Karyawan::where('nama_lengkap', $sjb->supir)
                     ->orWhere('nama_lengkap', $sjb->supir2)
                     ->first();
-                $supirName = $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : ($sjb->supir ?: $sjb->supir2);
+                if ($karyawan) {
+                    $supirName = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                    $supirNamaLengkap = $karyawan->nama_lengkap;
+                    $nikSupir = $karyawan->nik;
+                } else {
+                    $supirName = $sjb->supir ?: $sjb->supir2;
+                    $supirNamaLengkap = $sjb->supir ?: $sjb->supir2;
+                    $nikSupir = null;
+                }
             }
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
+            $nikKenek = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nik : null;
             
             $allSuratJalans->push([
                 'type' => 'bongkaran',
@@ -220,7 +245,10 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $supirName,
+                'nama_lengkap_supir' => $supirNamaLengkap,
+                'nik_supir' => $nikSupir,
                 'kenek' => $kenekName,
+                'nik_kenek' => $nikKenek,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
@@ -387,10 +415,29 @@ class ReportRitController extends Controller
         $allSuratJalans = collect();
         
         foreach ($suratJalansBiasa as $sj) {
-            // Get supir data from karyawan relation
-            $supirName = $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: $sj->supir2);
+            // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
+            if ($sj->supirKaryawan) {
+                $supirName = $sj->supirKaryawan->nama_panggilan ?: $sj->supirKaryawan->nama_lengkap;
+                $supirNamaLengkap = $sj->supirKaryawan->nama_lengkap;
+                $nikSupir = $sj->supirKaryawan->nik;
+            } else {
+                // Coba cari karyawan berdasarkan nama_lengkap jika relasi tidak ketemu
+                $karyawan = Karyawan::where('nama_lengkap', $sj->supir)
+                    ->orWhere('nama_lengkap', $sj->supir2)
+                    ->first();
+                if ($karyawan) {
+                    $supirName = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                    $supirNamaLengkap = $karyawan->nama_lengkap;
+                    $nikSupir = $karyawan->nik;
+                } else {
+                    $supirName = $sj->supir ?: $sj->supir2;
+                    $supirNamaLengkap = $sj->supir ?: $sj->supir2;
+                    $nikSupir = null;
+                }
+            }
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
+            $nikKenek = $sj->kenekKaryawan ? $sj->kenekKaryawan->nik : null;
             
             $allSuratJalans->push([
                 'type' => 'regular',
@@ -400,7 +447,10 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $supirName,
+                'nama_lengkap_supir' => $supirNamaLengkap,
+                'nik_supir' => $nikSupir,
                 'kenek' => $kenekName,
+                'nik_kenek' => $nikKenek,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
                 'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
@@ -413,10 +463,29 @@ class ReportRitController extends Controller
         }
         
         foreach ($suratJalansBongkaran as $sjb) {
-            // Get supir data from karyawan relation
-            $supirName = $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: $sjb->supir2);
+            // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
+            if ($sjb->supirKaryawan) {
+                $supirName = $sjb->supirKaryawan->nama_panggilan ?: $sjb->supirKaryawan->nama_lengkap;
+                $supirNamaLengkap = $sjb->supirKaryawan->nama_lengkap;
+                $nikSupir = $sjb->supirKaryawan->nik;
+            } else {
+                // Coba cari karyawan berdasarkan nama_lengkap jika relasi tidak ketemu
+                $karyawan = Karyawan::where('nama_lengkap', $sjb->supir)
+                    ->orWhere('nama_lengkap', $sjb->supir2)
+                    ->first();
+                if ($karyawan) {
+                    $supirName = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                    $supirNamaLengkap = $karyawan->nama_lengkap;
+                    $nikSupir = $karyawan->nik;
+                } else {
+                    $supirName = $sjb->supir ?: $sjb->supir2;
+                    $supirNamaLengkap = $sjb->supir ?: $sjb->supir2;
+                    $nikSupir = null;
+                }
+            }
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
+            $nikKenek = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nik : null;
             
             $allSuratJalans->push([
                 'type' => 'bongkaran',
@@ -426,7 +495,10 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $supirName,
+                'nama_lengkap_supir' => $supirNamaLengkap,
+                'nik_supir' => $nikSupir,
                 'kenek' => $kenekName,
+                'nik_kenek' => $nikKenek,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
@@ -582,15 +654,26 @@ class ReportRitController extends Controller
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sj->supirKaryawan) {
                 $supirName = $sj->supirKaryawan->nama_panggilan ?: $sj->supirKaryawan->nama_lengkap;
+                $supirNamaLengkap = $sj->supirKaryawan->nama_lengkap;
+                $nikSupir = $sj->supirKaryawan->nik;
             } else {
                 // Coba cari karyawan berdasarkan nama_lengkap jika relasi tidak ketemu
                 $karyawan = Karyawan::where('nama_lengkap', $sj->supir)
                     ->orWhere('nama_lengkap', $sj->supir2)
                     ->first();
-                $supirName = $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : ($sj->supir ?: $sj->supir2);
+                if ($karyawan) {
+                    $supirName = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                    $supirNamaLengkap = $karyawan->nama_lengkap;
+                    $nikSupir = $karyawan->nik;
+                } else {
+                    $supirName = $sj->supir ?: $sj->supir2;
+                    $supirNamaLengkap = $sj->supir ?: $sj->supir2;
+                    $nikSupir = null;
+                }
             }
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
+            $nikKenek = $sj->kenekKaryawan ? $sj->kenekKaryawan->nik : null;
             
             $allSuratJalans->push([
                 'type' => 'regular',
@@ -600,7 +683,10 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $supirName,
+                'nama_lengkap_supir' => $supirNamaLengkap,
+                'nik_supir' => $nikSupir,
                 'kenek' => $kenekName,
+                'nik_kenek' => $nikKenek,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
                 'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
@@ -616,15 +702,26 @@ class ReportRitController extends Controller
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sjb->supirKaryawan) {
                 $supirName = $sjb->supirKaryawan->nama_panggilan ?: $sjb->supirKaryawan->nama_lengkap;
+                $supirNamaLengkap = $sjb->supirKaryawan->nama_lengkap;
+                $nikSupir = $sjb->supirKaryawan->nik;
             } else {
                 // Coba cari karyawan berdasarkan nama_lengkap jika relasi tidak ketemu
                 $karyawan = Karyawan::where('nama_lengkap', $sjb->supir)
                     ->orWhere('nama_lengkap', $sjb->supir2)
                     ->first();
-                $supirName = $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : ($sjb->supir ?: $sjb->supir2);
+                if ($karyawan) {
+                    $supirName = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                    $supirNamaLengkap = $karyawan->nama_lengkap;
+                    $nikSupir = $karyawan->nik;
+                } else {
+                    $supirName = $sjb->supir ?: $sjb->supir2;
+                    $supirNamaLengkap = $sjb->supir ?: $sjb->supir2;
+                    $nikSupir = null;
+                }
             }
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
+            $nikKenek = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nik : null;
             
             $allSuratJalans->push([
                 'type' => 'bongkaran',
@@ -634,7 +731,10 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $supirName,
+                'nama_lengkap_supir' => $supirNamaLengkap,
+                'nik_supir' => $nikSupir,
                 'kenek' => $kenekName,
+                'nik_kenek' => $nikKenek,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
