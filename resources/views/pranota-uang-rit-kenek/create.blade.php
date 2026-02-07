@@ -783,9 +783,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
         const personGrandTotals = document.querySelectorAll('.person-grand-total');
         
-        // Re-query checkboxes to ensure we get current state
-        const currentCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
-        
         // Calculate grand totals for each person
         personGrandTotals.forEach(grandTotalDiv => {
             const personNik = grandTotalDiv.dataset.person_nik;
@@ -797,15 +794,12 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Get person's total Uang Kenek from checked checkboxes (matching by NIK)
             let personUangKenek = 0;
-            currentCheckboxes.forEach((checkbox) => {
-                if (checkbox.checked && checkbox.dataset.kenek_nik === personNik) {
-                    // Find the input in the same row as the checkbox
-                    const row = checkbox.closest('tr');
-                    if (row) {
-                        const uangRitKenekInput = row.querySelector('.uang-rit-kenek-input');
-                        if (uangRitKenekInput) {
-                            personUangKenek += parseFloat(uangRitKenekInput.value) || 0;
-                        }
+            suratJalanCheckboxes.forEach((checkbox, index) => {
+                const rowPersonNik = checkbox.dataset.kenek_nik || 'unknown';
+                if (checkbox.checked && rowPersonNik === personNik) {
+                    const uangRitKenekInput = uangRitKenekInputs[index];
+                    if (uangRitKenekInput) {
+                        personUangKenek += parseFloat(uangRitKenekInput.value) || 0;
                     }
                 }
             });
@@ -833,15 +827,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let totalBpjs = 0;
         let totalUangKenek = 0;
         
-        // Re-query checkboxes to ensure we get current state
-        const currentCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
-        
         // Calculate total Uang Kenek from checked checkboxes
-        currentCheckboxes.forEach((checkbox) => {
+        suratJalanCheckboxes.forEach((checkbox, index) => {
             if (checkbox.checked) {
-                // Find the input in the same row as the checkbox
-                const row = checkbox.closest('tr');
-                const uangRitKenekInput = row ? row.querySelector('.uang-rit-kenek-input') : null;
+                const uangRitKenekInput = uangRitKenekInputs[index];
                 if (uangRitKenekInput) {
                     totalUangKenek += parseFloat(uangRitKenekInput.value) || 0;
                 }
