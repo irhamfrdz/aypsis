@@ -361,7 +361,9 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalansBiasa = $querySuratJalan
+            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
+            ->get();
         $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
 
         // Gabungkan dan transform data agar konsisten
@@ -383,9 +385,9 @@ class ReportRitController extends Controller
                 'supir' => $supirName,
                 'kenek' => $kenekName,
                 'no_plat' => $sj->no_plat,
-                'pengirim' => $sj->pengirim,
-                'penerima' => $sj->tujuan_pengiriman,
-                'jenis_barang' => $sj->jenis_barang,
+                'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
+                'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
+                'jenis_barang' => $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
                 'order' => $sj->order,
@@ -551,7 +553,9 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalansBiasa = $querySuratJalan
+            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
+            ->get();
         $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
 
         // Gabungkan dan transform data agar konsisten
@@ -573,9 +577,9 @@ class ReportRitController extends Controller
                 'supir' => $supirName,
                 'kenek' => $kenekName,
                 'no_plat' => $sj->no_plat,
-                'pengirim' => $sj->pengirim,
-                'penerima' => $sj->tujuan_pengiriman,
-                'jenis_barang' => $sj->jenis_barang,
+                'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
+                'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
+                'jenis_barang' => $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
                 'order' => $sj->order,
