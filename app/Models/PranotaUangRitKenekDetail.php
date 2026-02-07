@@ -52,4 +52,21 @@ class PranotaUangRitKenekDetail extends Model
     {
         return $this->belongsTo(Karyawan::class, 'kenek_nama', 'nama_lengkap');
     }
+
+    /**
+     * Get karyawan data with fallback logic
+     * Try nama_lengkap first, then nama_panggilan
+     */
+    public function getKenekKaryawanDataAttribute()
+    {
+        // Try relation first (nama_lengkap match)
+        if ($this->kenekKaryawan) {
+            return $this->kenekKaryawan;
+        }
+
+        // Fallback: search by nama_panggilan if nama_lengkap doesn't match
+        return Karyawan::where('nama_panggilan', $this->kenek_nama)
+            ->orWhere('nama_lengkap', 'LIKE', '%' . $this->kenek_nama . '%')
+            ->first();
+    }
 }

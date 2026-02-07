@@ -584,7 +584,7 @@ class PranotaUangRitKenekController extends Controller
 
             // Hitung total Uang Kenek per kenek
             foreach ($selectedData as $suratJalanId => $data) {
-                $kenekNama = $data['kenek_nama'];
+                $kenekNama = $this->normalizeKenekName($data['kenek_nama']);
                 $uangKenek = floatval($data['uang_rit_kenek'] ?? 0); // Ensure it's a number
                 
                 Log::info("Processing Regular Kenek: {$kenekNama}, Uang Kenek: {$uangKenek}");
@@ -604,7 +604,7 @@ class PranotaUangRitKenekController extends Controller
 
             // Hitung total Uang Kenek per kenek untuk bongkaran
             foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
-                $kenekNama = $data['kenek_nama'];
+                $kenekNama = $this->normalizeKenekName($data['kenek_nama']);
                 $uangKenek = floatval($data['uang_rit_kenek'] ?? 0);
                 
                 Log::info("Processing Bongkaran Kenek: {$kenekNama}, Uang Kenek: {$uangKenek}");
@@ -628,7 +628,8 @@ class PranotaUangRitKenekController extends Controller
             $kenekDetails = $request->input('kenek_details', []);
             Log::info('Kenek Details from request:', $kenekDetails);
             
-            foreach ($kenekDetails as $kenekNama => $details) {
+            foreach ($kenekDetails as $kenekNamaRaw => $details) {
+                $kenekNama = $this->normalizeKenekName($kenekNamaRaw);
                 if (isset($kenekTotals[$kenekNama])) {
                     $kenekTotals[$kenekNama]['hutang'] = floatval($details['hutang'] ?? 0);
                     $kenekTotals[$kenekNama]['tabungan'] = floatval($details['tabungan'] ?? 0);
@@ -1116,6 +1117,22 @@ class PranotaUangRitKenekController extends Controller
         
         Log::info("Generated Pranota Number: {$nomorPranota}");
         return $nomorPranota;
+    }
+
+    /**
+     * Normalize kenek name to ensure consistency
+     * Search by nama_lengkap or nama_panggilan and return the consistent name
+     */
+    private function normalizeKenekName($kenekNama)
+    {
+        // Cari karyawan berdasarkan nama_lengkap atau nama_panggilan
+        $karyawan = \App\Models\Karyawan::where('nama_lengkap', $kenekNama)
+            ->orWhere('nama_panggilan', $kenekNama)
+            ->orWhere('nama_lengkap', 'LIKE', '%' . $kenekNama . '%')
+            ->first();
+        
+        // Return nama_lengkap jika ketemu, atau nama original jika tidak
+        return $karyawan ? $karyawan->nama_lengkap : $kenekNama;
     }
 
     /**

@@ -141,9 +141,13 @@
             @endphp
             @if($KenekDetails && $KenekDetails->count() > 0)
                 @foreach($KenekDetails as $detail)
+                @php
+                    // Get karyawan with fallback logic (nama_lengkap or nama_panggilan)
+                    $karyawan = $detail->kenekKaryawanData;
+                @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td class="text-center">{{ $detail->kenekKaryawan ? $detail->kenekKaryawan->nik : '-' }}</td>
+                    <td class="text-center">{{ $karyawan ? $karyawan->nik : '-' }}</td>
                     <td class="text-left">{{ strtoupper($detail->kenek_nama) }}</td>
                     @php
                         $rit = (int) round($detail->total_uang_kenek / 50000);
@@ -166,7 +170,11 @@
                 @endphp
                 @foreach($uniqueKenek as $index => $kenek)
                 @php
-                    $kenekKaryawan = \App\Models\Karyawan::where('nama_lengkap', trim($kenek))->first();
+                    // Try nama_lengkap first, then nama_panggilan
+                    $kenekKaryawan = \App\Models\Karyawan::where('nama_lengkap', trim($kenek))
+                        ->orWhere('nama_panggilan', trim($kenek))
+                        ->orWhere('nama_lengkap', 'LIKE', '%' . trim($kenek) . '%')
+                        ->first();
                 @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
