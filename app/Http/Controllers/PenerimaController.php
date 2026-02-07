@@ -48,6 +48,7 @@ class PenerimaController extends Controller
     {
         $request->validate([
             'nama_penerima' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
             'nitku' => 'nullable|string',
@@ -88,6 +89,7 @@ class PenerimaController extends Controller
 
         $request->validate([
             'nama_penerima' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
             'nitku' => 'nullable|string',

@@ -162,6 +162,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nama Penerima<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Contact Person<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Alamat<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">NPWP / NITKU<div class="resize-handle"></div></th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Catatan<div class="resize-handle"></div></th>
@@ -174,6 +175,7 @@
                         @forelse ($penerimas as $penerima)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">{{ $penerima->nama_penerima }}</td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ $penerima->contact_person ?: '-' }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $penerima->alamat }}">{{ $penerima->alamat ?: '-' }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                                     <div class="flex flex-col">
@@ -214,7 +216,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-6 text-center text-xs text-gray-500">
+                                <td colspan="8" class="px-3 py-6 text-center text-xs text-gray-500">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m8-5v2m0 0v2m0-2h2m-2 0h-2"></path>

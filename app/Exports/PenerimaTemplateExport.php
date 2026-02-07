@@ -14,7 +14,8 @@ class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
     {
         return [
             [
-                'Contoh Penerima', 
+                'Contoh Penerima',
+                'Contoh CP', 
                 'Jl. Contoh No. 1', 
                 '12.345.678.9-000.000', 
                 '1234567890123456', 
@@ -29,6 +30,7 @@ class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
     {
         return [
             'nama_penerima', 
+            'contact_person',
             'alamat', 
             'npwp', 
             'nitku', 
@@ -49,12 +51,13 @@ class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
     {
         return [
             'A' => 30, // nama_penerima
-            'B' => 50, // alamat
-            'C' => 20, // npwp
-            'D' => 20, // nitku
-            'E' => 30, // catatan
-            'F' => 15, // status
-            'G' => 15, // iu_bp_kawasan
+            'B' => 20, // contact_person
+            'C' => 50, // alamat
+            'D' => 20, // npwp
+            'E' => 20, // nitku
+            'F' => 30, // catatan
+            'G' => 15, // status
+            'H' => 15, // iu_bp_kawasan
         ];
     }
 }

@@ -21,6 +21,10 @@
                         <dd class="mt-1 text-sm text-gray-900">{{ $penerima->nama_penerima }}</dd>
                     </div>
                     <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Contact Person</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $penerima->contact_person ?: '-' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
                         <dt class="text-sm font-medium text-gray-500">NPWP</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $penerima->npwp ?: '-' }}</dd>
                     </div>

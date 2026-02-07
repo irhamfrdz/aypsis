@@ -41,6 +41,16 @@
                         </div>
 
                         <div class="sm:col-span-6">
+                            <label for="contact_person" class="block text-sm font-medium text-gray-700">Contact Person</label>
+                            <div class="mt-1">
+                                <input type="text" name="contact_person" id="contact_person" value="{{ old('contact_person', $penerima->contact_person) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            @error('contact_person')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="sm:col-span-6">
                             <label for="alamat" class="block text-sm font-medium text-gray-700">Alamat</label>
                             <div class="mt-1">
                                 <textarea name="alamat" id="alamat" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ old('alamat', $penerima->alamat) }}</textarea>
