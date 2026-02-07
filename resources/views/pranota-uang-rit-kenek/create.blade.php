@@ -602,7 +602,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (checkbox.checked) {
                 count++;
                 
-                const uangRitKenekInput = uangRitKenekInputs[index];
+                // Find the input in the same row as the checkbox
+                const row = checkbox.closest('tr');
+                const uangRitKenekInput = row ? row.querySelector('.uang-rit-kenek-input') : null;
                 
                 // Use NIK as key to group same person with different name variants
                 const personNik = checkbox.dataset.kenek_nik || 'unknown';
@@ -794,9 +796,13 @@ document.addEventListener('DOMContentLoaded', function () {
             let personUangKenek = 0;
             suratJalanCheckboxes.forEach((checkbox, index) => {
                 if (checkbox.checked && checkbox.dataset.kenek_nik === personNik) {
-                    const uangRitKenekInput = uangRitKenekInputs[index];
-                    if (uangRitKenekInput) {
-                        personUangKenek += parseFloat(uangRitKenekInput.value) || 0;
+                    // Find the input in the same row as the checkbox
+                    const row = checkbox.closest('tr');
+                    if (row) {
+                        const uangRitKenekInput = row.querySelector('.uang-rit-kenek-input');
+                        if (uangRitKenekInput) {
+                            personUangKenek += parseFloat(uangRitKenekInput.value) || 0;
+                        }
                     }
                 }
             });
@@ -827,7 +833,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Calculate total Uang Kenek from checked checkboxes
         suratJalanCheckboxes.forEach((checkbox, index) => {
             if (checkbox.checked) {
-                const uangRitKenekInput = uangRitKenekInputs[index];
+                // Find the input in the same row as the checkbox
+                const row = checkbox.closest('tr');
+                const uangRitKenekInput = row ? row.querySelector('.uang-rit-kenek-input') : null;
                 if (uangRitKenekInput) {
                     totalUangKenek += parseFloat(uangRitKenekInput.value) || 0;
                 }
