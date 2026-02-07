@@ -185,7 +185,54 @@ class StockKontainerController extends Controller
         $data['nomor_seri_gabungan'] = $nomorSeriGabungan;
         $data['status'] = $status;
 
+        $oldGudangId = $stockKontainer->gudangs_id;
+        
         $stockKontainer->update($data);
+
+        // Check if location (gudang) changed and log history
+        if ($oldGudangId != $stockKontainer->gudangs_id) {
+            $nomorKontainer = $stockKontainer->nomor_seri_gabungan;
+            $userId = \Illuminate\Support\Facades\Auth::id();
+            $now = now();
+            
+            $oldGudangName = '-';
+            if ($oldGudangId) {
+                $oldGudang = \App\Models\Gudang::find($oldGudangId);
+                if ($oldGudang) $oldGudangName = $oldGudang->nama_gudang;
+            }
+
+            $newGudangName = '-';
+            if ($stockKontainer->gudangs_id) {
+                 $newGudang = \App\Models\Gudang::find($stockKontainer->gudangs_id);
+                 if ($newGudang) $newGudangName = $newGudang->nama_gudang;
+            }
+
+            // Log 'Keluar' from old gudang
+            if ($oldGudangId) {
+                \App\Models\HistoryKontainer::create([
+                    'nomor_kontainer' => $nomorKontainer,
+                    'tipe_kontainer' => 'stock',
+                    'jenis_kegiatan' => 'Keluar',
+                    'tanggal_kegiatan' => $now,
+                    'gudang_id' => $oldGudangId,
+                    'keterangan' => 'Pemindahan lokasi (Edit) ke: ' . $newGudangName,
+                    'created_by' => $userId,
+                ]);
+            }
+
+            // Log 'Masuk' to new gudang
+            if ($stockKontainer->gudangs_id) {
+                \App\Models\HistoryKontainer::create([
+                    'nomor_kontainer' => $nomorKontainer,
+                    'tipe_kontainer' => 'stock',
+                    'jenis_kegiatan' => 'Masuk',
+                    'tanggal_kegiatan' => $now,
+                    'gudang_id' => $stockKontainer->gudangs_id,
+                    'keterangan' => 'Pemindahan lokasi (Edit) dari: ' . $oldGudangName,
+                    'created_by' => $userId,
+                ]);
+            }
+        }
 
         return redirect()->route('master.stock-kontainer.index')
             ->with('success', 'Stock kontainer berhasil diperbarui.');
