@@ -54,8 +54,8 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             $kegiatan = ucfirst(strtolower($get('kegiatan') ? $get('kegiatan') : 'tarik isi'));
 
 
-            // Supir - menggunakan nama lengkap
-            $supirNamaLengkap = $get('nama_lengkap_supir') ? $get('nama_lengkap_supir') : ($get('supir') ? $get('supir') : '-');
+            // Supir - menggunakan nama panggilan dari field 'supir'
+            $supir = $get('supir') ? $get('supir') : '-';
             // Format NIK as text by adding a single quote prefix for Excel
             $nikSupir = $get('nik_supir') ? "'" . $get('nik_supir') : '-';
 
@@ -83,7 +83,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $tanggal,
                 $noSuratJalan,
                 $kegiatan,
-                $supirNamaLengkap,
+                $supir,
                 $nikSupir,
                 $kenek,
                 $nikKenek,
