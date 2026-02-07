@@ -475,6 +475,7 @@ class StockBanController extends Controller
 
                 // Update Stock Ban
                 $ban->kondisi = 'kanisir';
+                $ban->status = 'Sedang Dimasak'; // Set status to Sedang Dimasak
                 $ban->status_masak = 'sudah';
                 $ban->jumlah_masak = ($ban->jumlah_masak ?? 0) + 1;
                 $ban->nomor_bukti = $invoice->nomor_invoice;

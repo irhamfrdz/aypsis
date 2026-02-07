@@ -222,6 +222,19 @@
                         <p class="text-xs text-purple-600 mt-1">Terpasang</p>
                     </div>
                     
+                    <!-- Ban Sedang Dimasak -->
+                    @php
+                        $banSedangDimasak = $stockBans->where('status', 'Sedang Dimasak')->count();
+                    @endphp
+                    <div id="card-sedang-dimasak" onclick="setCardFilter('sedang-dimasak')" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-orange-600 uppercase">Sedang Dimasak</span>
+                            <i class="fas fa-fire text-orange-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">{{ $banSedangDimasak }}</div>
+                        <p class="text-xs text-orange-600 mt-1">Proses</p>
+                    </div>
+                    
                     <!-- Ban Asli -->
                     @php
                         $banAsli = $stockBans->where('kondisi', 'asli')->count();
@@ -358,7 +371,8 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
-                                           ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800') }}">
+                                           ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
+                                           ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800')) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -542,7 +556,7 @@
                             </div>
 
                             <div>
-                                <label for="kanisir_harga" class="form-label-premium">Harga (Total/Satuan) <span class="text-red-500">*</span></label>
+                                <label for="kanisir_harga" class="form-label-premium">Harga Satuan <span class="text-red-500">*</span></label>
                                 <div class="mt-1 relative rounded-lg shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 sm:text-sm">Rp</span>
@@ -1128,7 +1142,11 @@
         });
 
         // Update the main harga input in the modal based on total selected prices
-        document.getElementById('kanisir_harga').value = totalHarga;
+        // Fix: Controller expects unit price, so we provide unit price (average)
+        const rowCount = rows.length;
+        const unitPrice = rowCount > 0 ? (totalHarga / rowCount) : 0;
+
+        document.getElementById('kanisir_harga').value = unitPrice;
     }
 
     function setCardFilter(filterType) {
@@ -1151,6 +1169,7 @@
                 'total': 'ring-blue-400',
                 'stok': 'ring-green-400',
                 'terpakai': 'ring-purple-400',
+                'sedang-dimasak': 'ring-orange-400',
                 'asli': 'ring-emerald-400',
                 'kanisir': 'ring-yellow-400',
                 'afkir': 'ring-red-400',
@@ -1330,6 +1349,8 @@
                         filterMatch = status === 'stok';
                     } else if (currentCardFilter === 'terpakai') {
                         filterMatch = status === 'terpakai';
+                    } else if (currentCardFilter === 'sedang-dimasak') {
+                        filterMatch = status === 'sedang dimasak';
                     } else if (currentCardFilter === 'asli') {
                         filterMatch = kondisi === 'asli';
                     } else if (currentCardFilter === 'kanisir') {
