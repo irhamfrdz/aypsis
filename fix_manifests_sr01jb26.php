@@ -61,82 +61,190 @@ try {
             echo "Nomor Kontainer Unik: {$nomorKontainer}\n";
         }
         
-        // Cek apakah sudah ada manifest
-        $existingManifest = Manifest::where('nomor_kontainer', $nomorKontainer)
-            ->where('no_voyage', $naikKapal->no_voyage)
-            ->where('nama_kapal', $naikKapal->nama_kapal)
-            ->first();
-        
-        if ($existingManifest) {
-            echo "✓ Manifest sudah ada\n";
-            echo "  ID: {$existingManifest->id}\n";
-            echo "  Nomor: {$existingManifest->nomor_bl}\n";
-            $skipped++;
-            continue;
-        }
-        
-        try {
-            echo "→ Membuat manifest baru...\n";
+        // Khusus untuk LCL: buat manifest berdasarkan tanda terima
+        if (strtoupper($naikKapal->tipe_kontainer) === 'LCL') {
+            echo "→ LCL detected, mencari tanda terima...\n";
             
-            // Buat manifest baru
-            $manifest = new Manifest();
-            $manifest->nomor_kontainer = $nomorKontainer;
-            $manifest->no_seal = $naikKapal->no_seal;
-            $manifest->tipe_kontainer = $naikKapal->tipe_kontainer;
-            $manifest->size_kontainer = $naikKapal->size_kontainer;
-            $manifest->nama_kapal = $naikKapal->nama_kapal;
-            $manifest->no_voyage = $naikKapal->no_voyage;
-            $manifest->nama_barang = $naikKapal->jenis_barang;
-            $manifest->volume = $naikKapal->total_volume;
-            $manifest->tonnage = $naikKapal->total_tonase;
-            $manifest->pelabuhan_muat = $naikKapal->asal_kontainer;
-            $manifest->pelabuhan_bongkar = $naikKapal->ke;
-            $manifest->tanggal_berangkat = $naikKapal->tanggal_ob ?? now();
+            // Cari semua tanda terima yang terhubung dengan kontainer ini
+            $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                ->with('tandaTerima.items')
+                ->get();
             
-            // Data pengirim/penerima dari prospek jika ada
-            if ($naikKapal->prospek_id && $naikKapal->prospek) {
-                $manifest->prospek_id = $naikKapal->prospek_id;
-                $manifest->pengirim = $naikKapal->prospek->pt_pengirim;
+            if ($tandaTerimaRecords->count() > 0) {
+                echo "  Ditemukan " . $tandaTerimaRecords->count() . " tanda terima\n";
                 
-                $penerima = null;
-                if ($naikKapal->prospek->tandaTerima) {
-                    $penerima = $naikKapal->prospek->tandaTerima->penerima;
-                    $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
+                foreach ($tandaTerimaRecords as $pivot) {
+                    $tandaTerima = $pivot->tandaTerima;
+                    if (!$tandaTerima) continue;
+                    
+                    echo "  ├─ TT: {$tandaTerima->nomor_tanda_terima}\n";
+                    
+                    // Cek duplikasi manifest
+                    $existingManifest = Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                        ->where('no_voyage', $naikKapal->no_voyage)
+                        ->where('nama_kapal', $naikKapal->nama_kapal)
+                        ->where('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima)
+                        ->first();
+                    
+                    if ($existingManifest) {
+                        echo "  │  ✓ Manifest sudah ada (ID: {$existingManifest->id})\n";
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    try {
+                        // Buat manifest untuk setiap tanda terima
+                        $manifest = new Manifest();
+                        
+                        // Data kontainer
+                        $manifest->nomor_kontainer = $naikKapal->nomor_kontainer;
+                        $manifest->no_seal = $pivot->nomor_seal ?? $naikKapal->no_seal;
+                        $manifest->tipe_kontainer = $naikKapal->tipe_kontainer;
+                        $manifest->size_kontainer = $naikKapal->size_kontainer;
+                        
+                        // Data kapal & voyage
+                        $manifest->nama_kapal = $naikKapal->nama_kapal;
+                        $manifest->no_voyage = $naikKapal->no_voyage;
+                        
+                        // Data dari tanda terima
+                        $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
+                        $manifest->pengirim = $tandaTerima->nama_pengirim;
+                        $manifest->penerima = $tandaTerima->penerima;
+                        $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
+                        $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
+                        
+                        // Nama barang dari items
+                        $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
+                        $manifest->nama_barang = $namaBarang ?: $naikKapal->jenis_barang;
+                        
+                        // Volume dan tonnage dari items
+                        $manifest->volume = $tandaTerima->items->sum('meter_kubik');
+                        $manifest->tonnage = $tandaTerima->items->sum('tonase');
+                        
+                        // Pelabuhan
+                        $manifest->pelabuhan_muat = $naikKapal->asal_kontainer;
+                        $manifest->pelabuhan_bongkar = $naikKapal->ke;
+                        
+                        // Tanggal
+                        $manifest->tanggal_berangkat = $naikKapal->tanggal_ob ?? now();
+                        $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
+                        
+                        // Generate nomor manifest
+                        $lastManifest = Manifest::whereNotNull('nomor_bl')
+                            ->orderBy('id', 'desc')
+                            ->first();
+                        
+                        if ($lastManifest && $lastManifest->nomor_bl) {
+                            preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                            $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                            $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                            $manifest->nomor_bl = 'MNF-' . $nextNumber;
+                        } else {
+                            $manifest->nomor_bl = 'MNF-000001';
+                        }
+                        
+                        // Referensi prospek
+                        if ($naikKapal->prospek_id) {
+                            $manifest->prospek_id = $naikKapal->prospek_id;
+                        }
+                        
+                        $manifest->created_by = 1;
+                        $manifest->updated_by = 1;
+                        
+                        $manifest->save();
+                        
+                        echo "  │  ✅ Manifest dibuat: {$manifest->nomor_bl}\n";
+                        $created++;
+                        
+                    } catch (\Exception $e) {
+                        echo "  │  ❌ Error: " . $e->getMessage() . "\n";
+                        $errors++;
+                    }
                 }
-                $manifest->penerima = $penerima ?? $naikKapal->prospek->tujuan_pengiriman;
-                
-                echo "  Prospek ID: {$naikKapal->prospek_id}\n";
-                echo "  Pengirim: " . ($manifest->pengirim ?? '-') . "\n";
-                echo "  Penerima: " . ($manifest->penerima ?? '-') . "\n";
+            } else {
+                echo "  ⚠️ Tidak ada tanda terima, skip\n";
+                $skipped++;
             }
+        } else {
+            // Untuk FCL dan CARGO: buat 1 manifest per kontainer
             
-            // Generate nomor manifest
-            $lastManifest = Manifest::whereNotNull('nomor_bl')
-                ->orderBy('id', 'desc')
+            // Cek apakah sudah ada manifest
+            $existingManifest = Manifest::where('nomor_kontainer', $nomorKontainer)
+                ->where('no_voyage', $naikKapal->no_voyage)
+                ->where('nama_kapal', $naikKapal->nama_kapal)
                 ->first();
             
-            if ($lastManifest && $lastManifest->nomor_bl) {
-                preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
-                $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
-                $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                $manifest->nomor_bl = 'MNF-' . $nextNumber;
-            } else {
-                $manifest->nomor_bl = 'MNF-000001';
+            if ($existingManifest) {
+                echo "✓ Manifest sudah ada\n";
+                echo "  ID: {$existingManifest->id}\n";
+                echo "  Nomor: {$existingManifest->nomor_bl}\n";
+                $skipped++;
+                continue;
             }
             
-            $manifest->created_by = 1;
-            $manifest->updated_by = 1;
-            
-            $manifest->save();
-            
-            echo "✅ Manifest berhasil dibuat!\n";
-            echo "  ID: {$manifest->id}\n";
-            echo "  Nomor: {$manifest->nomor_bl}\n";
-            $created++;
-            
-        } catch (\Exception $e) {
-            echo "❌ Error: " . $e->getMessage() . "\n";
-            $errors++;
+            try {
+                echo "→ Membuat manifest baru...\n";
+                
+                // Buat manifest baru
+                $manifest = new Manifest();
+                $manifest->nomor_kontainer = $nomorKontainer;
+                $manifest->no_seal = $naikKapal->no_seal;
+                $manifest->tipe_kontainer = $naikKapal->tipe_kontainer;
+                $manifest->size_kontainer = $naikKapal->size_kontainer;
+                $manifest->nama_kapal = $naikKapal->nama_kapal;
+                $manifest->no_voyage = $naikKapal->no_voyage;
+                $manifest->nama_barang = $naikKapal->jenis_barang;
+                $manifest->volume = $naikKapal->total_volume;
+                $manifest->tonnage = $naikKapal->total_tonase;
+                $manifest->pelabuhan_muat = $naikKapal->asal_kontainer;
+                $manifest->pelabuhan_bongkar = $naikKapal->ke;
+                $manifest->tanggal_berangkat = $naikKapal->tanggal_ob ?? now();
+                
+                // Data pengirim/penerima dari prospek jika ada
+                if ($naikKapal->prospek_id && $naikKapal->prospek) {
+                    $manifest->prospek_id = $naikKapal->prospek_id;
+                    $manifest->pengirim = $naikKapal->prospek->pt_pengirim;
+                    
+                    $penerima = null;
+                    if ($naikKapal->prospek->tandaTerima) {
+                        $penerima = $naikKapal->prospek->tandaTerima->penerima;
+                        $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
+                    }
+                    $manifest->penerima = $penerima ?? $naikKapal->prospek->tujuan_pengiriman;
+                    
+                    echo "  Prospek ID: {$naikKapal->prospek_id}\n";
+                    echo "  Pengirim: " . ($manifest->pengirim ?? '-') . "\n";
+                    echo "  Penerima: " . ($manifest->penerima ?? '-') . "\n";
+                }
+                
+                // Generate nomor manifest
+                $lastManifest = Manifest::whereNotNull('nomor_bl')
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                if ($lastManifest && $lastManifest->nomor_bl) {
+                    preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                    $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                    $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    $manifest->nomor_bl = 'MNF-' . $nextNumber;
+                } else {
+                    $manifest->nomor_bl = 'MNF-000001';
+                }
+                
+                $manifest->created_by = 1;
+                $manifest->updated_by = 1;
+                
+                $manifest->save();
+                
+                echo "✅ Manifest berhasil dibuat!\n";
+                echo "  ID: {$manifest->id}\n";
+                echo "  Nomor: {$manifest->nomor_bl}\n";
+                $created++;
+                
+            } catch (\Exception $e) {
+                echo "❌ Error: " . $e->getMessage() . "\n";
+                $errors++;
+            }
         }
         
         echo "\n";
