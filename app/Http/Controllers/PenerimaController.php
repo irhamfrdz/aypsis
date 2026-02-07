@@ -22,8 +22,8 @@ class PenerimaController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('kode', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
+                $q->where('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('contact_person', 'LIKE', '%' . $searchTerm . '%')
                   ->orWhere('catatan', 'LIKE', '%' . $searchTerm . '%');
             });
         }

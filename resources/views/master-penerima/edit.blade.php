@@ -20,15 +20,7 @@
                 
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                        <div class="sm:col-span-3">
-                            <label for="kode" class="block text-sm font-medium text-gray-700">Kode Penerima <span class="text-red-500">*</span></label>
-                            <div class="mt-1">
-                                <input type="text" name="kode" id="kode" value="{{ old('kode', $penerima->kode) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
-                            </div>
-                            @error('kode')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+
 
                         <div class="sm:col-span-6">
                             <label for="nama_penerima" class="block text-sm font-medium text-gray-700">Nama Penerima <span class="text-red-500">*</span></label>
