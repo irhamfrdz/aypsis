@@ -321,6 +321,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     <input type="checkbox" id="check-all-ban-luar" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seri / Kode</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Faktur</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk & Ukuran</th>
@@ -346,6 +347,9 @@
                                         data-harga="{{ number_format($ban->harga_beli, 0, ',', '.') }}"
                                         class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                     @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 row-number">
+                                    {{ $loop->iteration }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ $ban->nomor_seri ?? '-' }}
@@ -456,7 +460,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="12" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data stock ban luar</td>
+                                    <td colspan="13" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data stock ban luar</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -1310,6 +1314,7 @@
 
             const tableRows = activeTab.querySelectorAll('tbody tr');
             let visibleCount = 0;
+            let rowNumber = 1;
 
             tableRows.forEach(row => {
                 // Skip if row is "No data" message
@@ -1319,20 +1324,20 @@
                 }
 
                 // Get row data
-                const nomorSeri = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-                const merk = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''; // Merk & Ukuran
+                const nomorSeri = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''; // No Seri is col 3
+                const merk = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || ''; // Merk & Ukuran is col 5
                 
-                // Get raw status text
-                const statusSpan = row.querySelector('td:nth-child(5) span');
+                // Get raw status text (Status is col 7)
+                const statusSpan = row.querySelector('td:nth-child(7) span');
                 const status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
 
-                // Get raw kondisi text
-                const kondisiSpan = row.querySelector('td:nth-child(4) span');
+                // Get raw kondisi text (Kondisi is col 6)
+                const kondisiSpan = row.querySelector('td:nth-child(6) span');
                 const kondisi = kondisiSpan ? kondisiSpan.textContent.trim().toLowerCase() : '';
                 
-                const lokasi = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || '';
-                const mobil = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
-                const penerima = row.querySelector('td:nth-child(7)')?.textContent.toLowerCase() || '';
+                const mobil = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || ''; // Mobil is col 8
+                const penerima = row.querySelector('td:nth-child(9)')?.textContent.toLowerCase() || ''; // Penerima is col 9
+                const lokasi = row.querySelector('td:nth-child(10)')?.textContent.toLowerCase() || ''; // Lokasi is col 10
 
 
                 // Check Text Match
@@ -1366,6 +1371,13 @@
 
                 if ((textMatch || searchTerm === '') && filterMatch) {
                     row.style.display = '';
+                    
+                    // Update row number
+                    const numberCell = row.querySelector('.row-number');
+                    if(numberCell) {
+                        numberCell.textContent = rowNumber++;
+                    }
+
                     visibleCount++;
                 } else {
                     row.style.display = 'none';
@@ -1382,7 +1394,7 @@
                     noResultsRow = document.createElement('tr');
                     noResultsRow.className = 'no-results-row';
                     noResultsRow.innerHTML = `
-                        <td colspan="12" class="px-6 py-8 text-center">
+                        <td colspan="13" class="px-6 py-8 text-center">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
                                 <p class="text-gray-500 font-medium">Tidak ada data ditemukan</p>
