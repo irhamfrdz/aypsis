@@ -161,7 +161,7 @@ class ReportRitController extends Controller
         
         // Add surat jalan biasa
         foreach ($suratJalansBiasa as $sj) {
-            // Get supir data from karyawan relation, fallback to supir field
+            // Get supir data from karyawan relation
             $supirName = $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: $sj->supir2);
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
@@ -189,7 +189,7 @@ class ReportRitController extends Controller
         
         // Add surat jalan bongkaran
         foreach ($suratJalansBongkaran as $sjb) {
-            // Get supir data from karyawan relation, fallback to supir field
+            // Get supir data from karyawan relation
             $supirName = $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: $sjb->supir2);
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
