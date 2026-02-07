@@ -255,6 +255,11 @@ class StockBanController extends Controller
                 $data['merk'] = $merkBan->nama;
             }
         }
+
+        // Auto set status to 'Rusak' if kondisi is 'afkir'
+        if ($request->kondisi === 'afkir') {
+            $data['status'] = 'Rusak';
+        }
         
         StockBan::create($data);
 
