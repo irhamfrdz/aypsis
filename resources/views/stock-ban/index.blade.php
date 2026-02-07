@@ -250,7 +250,9 @@
                     
                     <!-- Ban Kanisir -->
                     @php
-                        $banKanisir = $stockBans->where('kondisi', 'kanisir')->count();
+                        $banKanisir = $stockBans->filter(function($ban) {
+                            return $ban->kondisi === 'kanisir' && stripos($ban->lokasi ?? '', 'Ruko 10') !== false && $ban->status === 'Stok';
+                        })->count();
                     @endphp
                     <div id="card-kanisir" onclick="setCardFilter('kanisir')" class="cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -1373,7 +1375,7 @@
                     } else if (currentCardFilter === 'asli') {
                         filterMatch = kondisi === 'asli';
                     } else if (currentCardFilter === 'kanisir') {
-                        filterMatch = kondisi === 'kanisir';
+                        filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
                     } else if (currentCardFilter === 'afkir') {
                         filterMatch = kondisi === 'afkir';
                     } else if (currentCardFilter === 'garasi-pluit') {
