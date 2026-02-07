@@ -602,9 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (checkbox.checked) {
                 count++;
                 
-                // Find the input in the same row as the checkbox
-                const row = checkbox.closest('tr');
-                const uangRitKenekInput = row ? row.querySelector('.uang-rit-kenek-input') : null;
+                const uangRitKenekInput = uangRitKenekInputs[index];
                 
                 // Use NIK as key to group same person with different name variants
                 const personNik = checkbox.dataset.kenek_nik || 'unknown';
