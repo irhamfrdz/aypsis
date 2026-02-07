@@ -143,7 +143,7 @@
                 @foreach($KenekDetails as $detail)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td class="text-center">{{ $detail->kenekKaryawan ? $detail->kenekKaryawan->nik : '-' }}</td>
                     <td class="text-left">{{ strtoupper($detail->kenek_nama) }}</td>
                     @php
                         $rit = (int) round($detail->total_uang_kenek / 50000);
@@ -165,9 +165,12 @@
                     $uniqueKenek = array_unique($kenekArray);
                 @endphp
                 @foreach($uniqueKenek as $index => $kenek)
+                @php
+                    $kenekKaryawan = \App\Models\Karyawan::where('nama_lengkap', trim($kenek))->first();
+                @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td class="text-center">{{ $kenekKaryawan ? $kenekKaryawan->nik : '-' }}</td>
                     <td class="text-left">{{ strtoupper(trim($kenek)) }}</td>
                     @php
                         $amount = $pranotaUangRitKenek->uang_rit_kenek / count($uniqueKenek);

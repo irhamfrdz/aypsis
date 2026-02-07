@@ -44,4 +44,12 @@ class PranotaUangRitKenekDetail extends Model
     {
         return $this->belongsTo(PranotaUangRitKenek::class, 'no_pranota', 'no_pranota');
     }
+
+    /**
+     * Get the karyawan (kenek) relation based on kenek_nama
+     */
+    public function kenekKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'kenek_nama', 'nama_lengkap');
+    }
 }

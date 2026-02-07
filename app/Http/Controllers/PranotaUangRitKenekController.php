@@ -1144,6 +1144,7 @@ class PranotaUangRitKenekController extends Controller
             
         // Get kenek details for this pranota
         $KenekDetails = PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
+            ->with('kenekKaryawan')
             ->orderBy('kenek_nama')
             ->get();
             
