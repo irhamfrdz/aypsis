@@ -188,44 +188,44 @@
                             <!-- Per Kenek Details (editable) -->
                             <tbody class="bg-yellow-50 border-t-2 border-yellow-300">
                                 @foreach($KenekDetails as $detail)
-                                <tr class="border-b border-yellow-200" data-Kenek="{{ $detail->Kenek_nama }}">
+                                <tr class="border-b border-yellow-200" data-kenek="{{ $detail->kenek_nama }}">
                                     <td colspan="4" class="px-2 py-2 text-xs">
-                                        <div class="font-semibold text-gray-800 mb-2">{{ $detail->Kenek_nama }}</div>
+                                        <div class="font-semibold text-gray-800 mb-2">{{ $detail->kenek_nama }}</div>
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label class="text-xs text-gray-600">Uang Kenek:</label>
-                                                <div class="text-xs font-semibold text-indigo-600">Rp {{ number_format($detail->total_uang_Kenek, 0, ',', '.') }}</div>
+                                                <div class="text-xs font-semibold text-indigo-600">Rp {{ number_format($detail->total_uang_kenek, 0, ',', '.') }}</div>
                                             </div>
                                             <div>
                                                 <label class="text-xs text-gray-600">Hutang:</label>
                                                 <input type="number" 
-                                                       name="Kenek_details[{{ $detail->id }}][hutang]"
+                                                       name="kenek_details[{{ $detail->nik ?? $detail->kenek_nama }}][hutang]"
                                                        class="person-utang-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
                                                        value="{{ $detail->hutang }}"
-                                                       data-Kenek="{{ $detail->Kenek_nama }}"
+                                                       data-kenek="{{ $detail->kenek_nama }}"
                                                        min="0">
                                             </div>
                                             <div>
                                                 <label class="text-xs text-gray-600">Tabungan:</label>
                                                 <input type="number" 
-                                                       name="Kenek_details[{{ $detail->id }}][tabungan]"
+                                                       name="kenek_details[{{ $detail->nik ?? $detail->kenek_nama }}][tabungan]"
                                                        class="person-tabungan-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
                                                        value="{{ $detail->tabungan }}"
-                                                       data-Kenek="{{ $detail->Kenek_nama }}"
+                                                       data-kenek="{{ $detail->kenek_nama }}"
                                                        min="0">
                                             </div>
                                             <div>
                                                 <label class="text-xs text-gray-600">BPJS:</label>
                                                 <input type="number" 
-                                                       name="Kenek_details[{{ $detail->id }}][bpjs]"
+                                                       name="kenek_details[{{ $detail->nik ?? $detail->kenek_nama }}][bpjs]"
                                                        class="person-bpjs-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
                                                        value="{{ $detail->bpjs }}"
-                                                       data-Kenek="{{ $detail->Kenek_nama }}"
+                                                       data-kenek="{{ $detail->kenek_nama }}"
                                                        min="0">
                                             </div>
                                         </div>
-                                        <input type="hidden" name="Kenek_details[{{ $detail->id }}][Kenek_nama]" value="{{ $detail->Kenek_nama }}">
-                                        <input type="hidden" name="Kenek_details[{{ $detail->id }}][total_uang_Kenek]" value="{{ $detail->total_uang_Kenek }}">
+                                        <input type="hidden" name="kenek_details[{{ $detail->nik ?? $detail->kenek_nama }}][kenek_nama]" value="{{ $detail->kenek_nama }}">
+                                        <input type="hidden" name="kenek_details[{{ $detail->nik ?? $detail->kenek_nama }}][total_uang_kenek]" value="{{ $detail->total_uang_kenek }}">
                                     </td>
                                 </tr>
                                 @endforeach

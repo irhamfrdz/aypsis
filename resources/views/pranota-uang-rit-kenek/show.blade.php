@@ -179,13 +179,13 @@
                                 @foreach($KenekDetails as $detail)
                                     <tr class="bg-yellow-50 text-gray-700 border-t border-yellow-200">
                                         <td class="px-2 py-2 text-xs font-medium" colspan="2">
-                                            👤 {{ $detail->Kenek_nama }}
+                                            👤 {{ $detail->kenek_nama }}
                                         </td>
                                         <td class="px-2 py-2 text-xs text-center">
-                                            {{ $groupedPranota->where('Kenek_nama', $detail->Kenek_nama)->count() }} surat jalan
+                                            {{ $groupedPranota->where('kenek_nama', $detail->kenek_nama)->count() }} surat jalan
                                         </td>
                                         <td class="px-2 py-2 text-right text-xs font-semibold text-indigo-600">
-                                            Rp {{ number_format($detail->total_uang_Kenek, 0, ',', '.') }}
+                                            Rp {{ number_format($detail->total_uang_kenek, 0, ',', '.') }}
                                         </td>
                                         <td class="px-2 py-2 text-right text-xs">
                                             <div class="flex gap-1 text-xs">
