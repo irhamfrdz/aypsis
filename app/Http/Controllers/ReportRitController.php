@@ -149,11 +149,11 @@ class ReportRitController extends Controller
 
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan
-            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima', 'supirKaryawan'])
+            ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
             ->get();
             
         $suratJalansBongkaran = $querySuratJalanBongkaran
-            ->with(['tandaTerima', 'supirKaryawan'])
+            ->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
             ->get();
 
         // Gabungkan dan transform data agar konsisten
@@ -163,6 +163,8 @@ class ReportRitController extends Controller
         foreach ($suratJalansBiasa as $sj) {
             // Get supir data from karyawan relation
             $supirName = $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: $sj->supir2);
+            // Get kenek data from karyawan relation
+            $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
             
             $allSuratJalans->push([
                 'type' => 'regular',
@@ -173,6 +175,7 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $supirName,
+                'kenek' => $kenekName,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirimRelation ? $sj->pengirimRelation->nama_pengirim : $sj->pengirim,
                 'penerima' => $sj->tujuanPengirimanRelation ? $sj->tujuanPengirimanRelation->nama_tujuan : $sj->tujuan_pengiriman,
@@ -188,6 +191,8 @@ class ReportRitController extends Controller
         foreach ($suratJalansBongkaran as $sjb) {
             // Get supir data from karyawan relation
             $supirName = $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: $sjb->supir2);
+            // Get kenek data from karyawan relation
+            $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
             
             $allSuratJalans->push([
                 'type' => 'bongkaran',
@@ -198,6 +203,7 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $supirName,
+                'kenek' => $kenekName,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
@@ -355,8 +361,8 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan'])->get();
-        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan'])->get();
+        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
@@ -364,6 +370,8 @@ class ReportRitController extends Controller
         foreach ($suratJalansBiasa as $sj) {
             // Get supir data from karyawan relation
             $supirName = $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: $sj->supir2);
+            // Get kenek data from karyawan relation
+            $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
             
             $allSuratJalans->push([
                 'type' => 'regular',
@@ -373,6 +381,7 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $supirName,
+                'kenek' => $kenekName,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirim,
                 'penerima' => $sj->tujuan_pengiriman,
@@ -387,6 +396,8 @@ class ReportRitController extends Controller
         foreach ($suratJalansBongkaran as $sjb) {
             // Get supir data from karyawan relation
             $supirName = $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: $sjb->supir2);
+            // Get kenek data from karyawan relation
+            $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
             
             $allSuratJalans->push([
                 'type' => 'bongkaran',
@@ -396,6 +407,7 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $supirName,
+                'kenek' => $kenekName,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
@@ -539,8 +551,8 @@ class ReportRitController extends Controller
         }
 
         // Get data dari kedua tabel
-        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan'])->get();
-        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan'])->get();
+        $suratJalansBiasa = $querySuratJalan->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalansBongkaran = $querySuratJalanBongkaran->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])->get();
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
@@ -548,6 +560,8 @@ class ReportRitController extends Controller
         foreach ($suratJalansBiasa as $sj) {
             // Get supir data from karyawan relation
             $supirName = $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: $sj->supir2);
+            // Get kenek data from karyawan relation
+            $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
             
             $allSuratJalans->push([
                 'type' => 'regular',
@@ -557,6 +571,7 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'kegiatan' => $sj->kegiatan,
                 'supir' => $supirName,
+                'kenek' => $kenekName,
                 'no_plat' => $sj->no_plat,
                 'pengirim' => $sj->pengirim,
                 'penerima' => $sj->tujuan_pengiriman,
@@ -571,6 +586,8 @@ class ReportRitController extends Controller
         foreach ($suratJalansBongkaran as $sjb) {
             // Get supir data from karyawan relation
             $supirName = $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: $sjb->supir2);
+            // Get kenek data from karyawan relation
+            $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
             
             $allSuratJalans->push([
                 'type' => 'bongkaran',
@@ -580,6 +597,7 @@ class ReportRitController extends Controller
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'kegiatan' => $sjb->kegiatan,
                 'supir' => $supirName,
+                'kenek' => $kenekName,
                 'no_plat' => $sjb->no_plat,
                 'pengirim' => $sjb->pengirim,
                 'penerima' => $sjb->tujuan_pengiriman,
