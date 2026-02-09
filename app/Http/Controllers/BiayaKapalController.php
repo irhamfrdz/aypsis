@@ -254,8 +254,8 @@ class BiayaKapalController extends Controller
             'air.*.vendor' => 'nullable|string|max:255',
             'air.*.types' => 'nullable|array',
             'air.*.types.*' => 'integer|exists:master_pricelist_air_tawar,id',
+            'air.*.type_is_lumpsum' => 'nullable|array',
             'air.*.kuantitas' => 'nullable|numeric|min:0',
-            'air.*.is_lumpsum' => 'nullable|boolean',
             'air.*.harga' => 'nullable|numeric|min:0',
             'air.*.jasa_air' => 'nullable|numeric|min:0',
             'air.*.biaya_agen' => 'nullable|numeric|min:0',
@@ -485,7 +485,6 @@ class BiayaKapalController extends Controller
                     $harga = floatval($section['harga'] ?? 0);
                     $jasaAir = floatval($section['jasa_air'] ?? 0);
                     $biayaAgen = floatval($section['biaya_agen'] ?? 0);
-                    $isLumpsum = isset($section['is_lumpsum']) && $section['is_lumpsum'] == '1';
                     
                     // Use already cleaned values
                     $subTotal = floatval($section['sub_total'] ?? $section['sub_total_value'] ?? 0);
@@ -501,6 +500,9 @@ class BiayaKapalController extends Controller
                             
                             $typeKeterangan = $typeData ? $typeData->keterangan : null;
                             $typeHarga = $typeData ? floatval($typeData->harga) : 0;
+                            
+                            // Determine if this specific type is lumpsum
+                            $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
                             
                             // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
                             $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
@@ -945,7 +947,6 @@ class BiayaKapalController extends Controller
                         $harga = floatval($section['harga'] ?? 0);
                         $jasaAir = floatval($section['jasa_air'] ?? 0);
                         $biayaAgen = floatval($section['biaya_agen'] ?? 0);
-                        $isLumpsum = isset($section['is_lumpsum']) && $section['is_lumpsum'] == '1';
 
                         if (!empty($section['types']) && is_array($section['types'])) {
                             foreach ($section['types'] as $typeIndex => $typeId) {
@@ -957,6 +958,9 @@ class BiayaKapalController extends Controller
                                 $typeKeterangan = $typeData ? $typeData->keterangan : null;
                                 $typeHarga = $typeData ? floatval($typeData->harga) : 0;
                                 
+                                // Determine if this specific type is lumpsum
+                                $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
+
                                 // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
                                 $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
                                 $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;

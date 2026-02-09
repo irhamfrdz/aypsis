@@ -2610,11 +2610,18 @@
                 <div class="types-wrapper-air-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                     <div class="types-list-air space-y-2 mb-2">
-                        <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
-                            <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
-                        </select>
+                        <div class="flex flex-col gap-1 border p-2 rounded bg-gray-50">
+                            <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required onchange="calculateAirSectionTotal(${sectionIndex})">
+                                <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                            </select>
+                            <div class="flex items-center gap-2">
+                                <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
+                                <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                                <label class="text-xs text-gray-600">Lumpsum (Tidak dikali Ton)</label>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="add-type-btn-air text-xs bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" disabled>
+                    <button type="button" class="add-type-btn-air text-xs bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" disabled onclick="addTypeToAirSection(${sectionIndex})">
                         <i class="fas fa-plus"></i> Tambah Type
                     </button>
                 </div>
@@ -2627,10 +2634,6 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas (Ton)</label>
                     <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00">
-                    <div class="mt-2 flex items-center">
-                        <input type="checkbox" id="is_lumpsum_${sectionIndex}" name="air[${sectionIndex}][is_lumpsum]" value="1" class="is-lumpsum-checkbox rounded border-gray-300 text-cyan-600 shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 focus:ring-opacity-50">
-                        <label for="is_lumpsum_${sectionIndex}" class="ml-2 block text-sm text-gray-900">Hitung Lumpsum (Tidak dikali Ton)</label>
-                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
@@ -2717,11 +2720,6 @@
             calculateAirSectionTotal(sectionIndex);
         });
 
-        // Setup lumpsum checkbox listener
-        const lumpsumCheckbox = section.querySelector('.is-lumpsum-checkbox');
-        lumpsumCheckbox.addEventListener('change', function() {
-            calculateAirSectionTotal(sectionIndex);
-        });
         
         // Set default lokasi if available
         const lokasiSelect = section.querySelector('.lokasi-select-air');
@@ -2849,17 +2847,17 @@
     function loadTypesForVendor(sectionIndex, vendorName) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
         const typesList = section.querySelector('.types-list-air');
-        const typeSelects = typesList.querySelectorAll('.type-select-air');
+        const typeContainers = typesList.querySelectorAll('.flex.flex-col.gap-1.border.p-2.rounded.bg-gray-50'); // Select the new container
         const addTypeBtn = section.querySelector('.add-type-btn-air');
         
         if (!vendorName) {
-            typeSelects.forEach(select => {
+            typeContainers.forEach(container => {
+                const select = container.querySelector('.type-select-air');
                 select.disabled = true;
                 select.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
             });
             addTypeBtn.disabled = true;
-            settings = { options: '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>' };
-            typesList.dataset.options = settings.options;
+            typesList.dataset.options = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
             return;
         }
         
@@ -2877,7 +2875,8 @@
                 options += `<option value="${type.id}" data-keterangan="${type.keterangan}" data-harga="${type.harga}">${type.keterangan} - Rp ${parseInt(type.harga).toLocaleString('id-ID')}</option>`;
             });
             
-            typeSelects.forEach(select => {
+            typeContainers.forEach(container => {
+                const select = container.querySelector('.type-select-air');
                 const currentValue = select.value;
                 select.disabled = false;
                 select.innerHTML = options;
@@ -2887,7 +2886,8 @@
             addTypeBtn.disabled = false;
         } else {
             options = '<option value="">Tidak ada type tersedia</option>';
-            typeSelects.forEach(select => {
+            typeContainers.forEach(container => {
+                const select = container.querySelector('.type-select-air');
                 select.disabled = true;
                 select.innerHTML = options;
             });
@@ -2901,17 +2901,26 @@
     function addTypeToAirSection(sectionIndex) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
         const typesList = section.querySelector('.types-list-air');
-        const options = typesList.dataset.options;
+        
+        // Ensure options exist
+        const options = typesList.dataset.options || '<option value="">-- Pilih Type --</option>';
         
         const div = document.createElement('div');
-        div.className = 'flex gap-2';
+        div.className = 'flex flex-col gap-1 border p-2 rounded bg-gray-50 relative';
         div.innerHTML = `
-            <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
-                ${options}
-            </select>
-            <button type="button" onclick="this.closest('div').remove(); calculateAirSectionTotal(${sectionIndex})" class="px-2 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200">
-                <i class="fas fa-trash"></i>
-            </button>
+            <div class="flex gap-2 w-full">
+                <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" onchange="calculateAirSectionTotal(${sectionIndex})">
+                    ${options}
+                </select>
+                <button type="button" class="text-red-500 hover:text-red-700" onclick="this.closest('.flex-col').remove(); calculateAirSectionTotal(${sectionIndex})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
+                <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                <label class="text-xs text-gray-600">Lumpsum (Tidak dikali Ton)</label>
+            </div>
         `;
         
         typesList.appendChild(div);
@@ -2957,10 +2966,9 @@
     
     function calculateAirSectionTotal(sectionIndex) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
-        // Select all type selects
-        const typeSelects = section.querySelectorAll('.type-select-air');
+        // Select all type wrapper containers (the flex-cols)
+        const typeContainers = section.querySelectorAll('.types-list-air > div');
         const kuantitasInput = section.querySelector('.kuantitas-input-air');
-        const lumpsumCheckbox = section.querySelector('.is-lumpsum-checkbox');
         
         // Updated selectors
         const subTotalDisplay = section.querySelector('.sub-total-display');
@@ -2976,26 +2984,28 @@
         const grandTotalDisplay = section.querySelector('.grand-total-display');
         const grandTotalValue = section.querySelector('.grand-total-value');
         
-        let totalHargaPerTon = 0;
-        
-        // Sum prices from all selected types
-        typeSelects.forEach(select => {
-            if (select.selectedIndex >= 0) {
+        let totalCost = 0;
+        const kuantitas = parseFloat(kuantitasInput.value) || 0;
+
+        // Iterate through each type container to calculate individual costs
+        typeContainers.forEach(container => {
+            const select = container.querySelector('.type-select-air');
+            const checkbox = container.querySelector('.lumpsum-checkbox');
+            
+            if (select && select.selectedIndex >= 0) {
                 const selectedOption = select.options[select.selectedIndex];
                 const harga = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
-                totalHargaPerTon += harga;
+                const isLumpsum = checkbox ? checkbox.checked : false;
+
+                if (isLumpsum) {
+                    totalCost += harga; // Fixed price
+                } else {
+                    totalCost += (harga * kuantitas); // Price * Qty
+                }
             }
         });
 
-        const kuantitas = parseFloat(kuantitasInput.value) || 0;
-        const isLumpsum = lumpsumCheckbox.checked;
-        
-        let waterCost = 0;
-        if (isLumpsum) {
-            waterCost = totalHargaPerTon; // Use total price directly
-        } else {
-            waterCost = Math.round(totalHargaPerTon * kuantitas);
-        }
+        let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
         let jasaAir = parseFloat(jasaAirInput.value) || 0;
         let biayaAgen = parseFloat(biayaAgenInput.value) || 0;
@@ -3009,7 +3019,8 @@
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         subTotalValue.value = subTotal;
-        hargaHidden.value = totalHargaPerTon;
+        // hargaHidden is less relevant now as it varies, but we can store the calculated waterCost for reference if needed
+        hargaHidden.value = waterCost; 
         
         if (pphDisplay) pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
         if (pphValue) pphValue.value = pph;
