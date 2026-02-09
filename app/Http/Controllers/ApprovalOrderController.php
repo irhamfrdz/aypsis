@@ -118,7 +118,7 @@ class ApprovalOrderController extends Controller
      */
     public function show($id)
     {
-        $order = Order::with(['pengirim', 'term', 'jenisBarang'])
+        $order = Order::with(['pengirim', 'term', 'jenisBarang', 'suratJalans'])
                      ->findOrFail($id);
 
         return view('approval-order.show', compact('order'));
