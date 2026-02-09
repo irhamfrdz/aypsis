@@ -210,6 +210,29 @@ class ReportOngkosTrukController extends Controller
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'kenekKaryawan'])->get();
         $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'kenekKaryawan'])->get();
 
+        // 2026-02-09: Filter to ensure only actual drivers (Divisi Supir / Pekerjaan Supir Truck) are included in the report
+        $filterSupirFunc = function($item) {
+            $supirKaryawan = $item->supirKaryawan;
+            if (!$supirKaryawan) {
+                // If it's manual text entry, we include it as we can't verify division
+                // Or you might strictly require a Karyawan record. 
+                // For now, let's assuming if no Karyawan record, it's legacy data -> include it.
+                // But user asked "dibuatkan dengan yang mempunyai divisi supir", implying strictness.
+                // However, blocking manual names might hide valid data. Let's filter ONLY if Karyawan exists but fails the check.
+                return true; 
+            }
+            
+            // Check Divisi or Pekerjaan
+            $divisi = strtolower($supirKaryawan->divisi ?? '');
+            $pekerjaan = strtolower($supirKaryawan->pekerjaan ?? '');
+            
+            return str_contains($divisi, 'supir') || str_contains($pekerjaan, 'supir');
+        };
+
+        // Apply filter
+        $suratJalans = $suratJalans->filter($filterSupirFunc);
+        $suratJalanBongkarans = $suratJalanBongkarans->filter($filterSupirFunc);
+
         $data = collect();
 
         foreach ($suratJalans as $sj) {
