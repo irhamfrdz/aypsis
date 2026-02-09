@@ -255,6 +255,7 @@ class BiayaKapalController extends Controller
             'air.*.types' => 'nullable|array',
             'air.*.types.*' => 'integer|exists:master_pricelist_air_tawar,id',
             'air.*.kuantitas' => 'nullable|numeric|min:0',
+            'air.*.is_lumpsum' => 'nullable|boolean',
             'air.*.harga' => 'nullable|numeric|min:0',
             'air.*.jasa_air' => 'nullable|numeric|min:0',
             'air.*.biaya_agen' => 'nullable|numeric|min:0',
@@ -484,6 +485,7 @@ class BiayaKapalController extends Controller
                     $harga = floatval($section['harga'] ?? 0);
                     $jasaAir = floatval($section['jasa_air'] ?? 0);
                     $biayaAgen = floatval($section['biaya_agen'] ?? 0);
+                    $isLumpsum = isset($section['is_lumpsum']) && $section['is_lumpsum'] == '1';
                     
                     // Use already cleaned values
                     $subTotal = floatval($section['sub_total'] ?? $section['sub_total_value'] ?? 0);
@@ -505,7 +507,12 @@ class BiayaKapalController extends Controller
                             $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;
                             
                             // Calculate values for this specific type record
-                            $waterCost = $typeHarga * $kuantitas;
+                            if ($isLumpsum) {
+                                $waterCost = $typeHarga; // Fixed price, ignore quantity multiplier
+                            } else {
+                                $waterCost = $typeHarga * $kuantitas;
+                            }
+                            
                             $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
                             
                             // PPH is on Services (Jasa Air + Biaya Agen), so only apply if they exist
@@ -521,6 +528,7 @@ class BiayaKapalController extends Controller
                                 'lokasi' => $section['lokasi'] ?? null,
                                 'type_id' => $typeId,
                                 'type_keterangan' => $typeKeterangan,
+                                'is_lumpsum' => $isLumpsum,
                                 'kuantitas' => $kuantitas,
                                 'harga' => $typeHarga,
                                 'jasa_air' => $currentJasaAir,
@@ -553,6 +561,13 @@ class BiayaKapalController extends Controller
                             $typeKeterangan = $typeData ? $typeData->keterangan : null;
                         }
                         
+                        // Recalculate if lumpsum
+                        if ($isLumpsum) {
+                            $subTotal = $harga + $jasaAir + $biayaAgen;
+                            $pph = round(($jasaAir + $biayaAgen) * 0.02);
+                            $grandTotal = $subTotal - $pph;
+                        }
+
                         // Create BiayaKapalAir record
                         BiayaKapalAir::create([
                             'biaya_kapal_id' => $biayaKapal->id,
@@ -562,6 +577,7 @@ class BiayaKapalController extends Controller
                             'lokasi' => $section['lokasi'] ?? null,
                             'type_id' => $section['type'] ?? null,
                             'type_keterangan' => $typeKeterangan,
+                            'is_lumpsum' => $isLumpsum,
                             'kuantitas' => $kuantitas,
                             'harga' => $harga,
                             'jasa_air' => $jasaAir,
@@ -929,6 +945,7 @@ class BiayaKapalController extends Controller
                         $harga = floatval($section['harga'] ?? 0);
                         $jasaAir = floatval($section['jasa_air'] ?? 0);
                         $biayaAgen = floatval($section['biaya_agen'] ?? 0);
+                        $isLumpsum = isset($section['is_lumpsum']) && $section['is_lumpsum'] == '1';
 
                         if (!empty($section['types']) && is_array($section['types'])) {
                             foreach ($section['types'] as $typeIndex => $typeId) {
@@ -945,7 +962,12 @@ class BiayaKapalController extends Controller
                                 $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;
                                 
                                 // Calculate values for this specific type record
-                                $waterCost = $typeHarga * $kuantitas;
+                                if ($isLumpsum) {
+                                    $waterCost = $typeHarga;
+                                } else {
+                                    $waterCost = $typeHarga * $kuantitas;
+                                }
+                                
                                 $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
                                 
                                 // PPH is on Services (Jasa Air + Biaya Agen), so only apply if they exist
@@ -961,6 +983,7 @@ class BiayaKapalController extends Controller
                                     'lokasi' => $section['lokasi'] ?? null,
                                     'type_id' => $typeId,
                                     'type_keterangan' => $typeKeterangan,
+                                    'is_lumpsum' => $isLumpsum,
                                     'kuantitas' => $kuantitas,
                                     'harga' => $typeHarga,
                                     'jasa_air' => $currentJasaAir,
@@ -981,6 +1004,13 @@ class BiayaKapalController extends Controller
                                 $typeKeterangan = $typeData ? $typeData->keterangan : null;
                             }
     
+                            // Recalculate if lumpsum
+                            if ($isLumpsum) {
+                                $subTotal = $harga + $jasaAir + $biayaAgen;
+                                $pph = round(($jasaAir + $biayaAgen) * 0.02);
+                                $grandTotal = $subTotal - $pph;
+                            }
+
                             BiayaKapalAir::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'kapal' => $section['kapal'] ?? null,
@@ -989,6 +1019,7 @@ class BiayaKapalController extends Controller
                                 'lokasi' => $section['lokasi'] ?? null,
                                 'type_id' => $section['type'] ?? null,
                                 'type_keterangan' => $typeKeterangan,
+                                'is_lumpsum' => $isLumpsum,
                                 'kuantitas' => $kuantitas,
                                 'harga' => $harga,
                                 'jasa_air' => $jasaAir,

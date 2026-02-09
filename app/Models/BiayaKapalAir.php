@@ -17,6 +17,7 @@ class BiayaKapalAir extends Model
         'lokasi',
         'type_id',
         'type_keterangan',
+        'is_lumpsum',
         'kuantitas',
         'harga',
         'jasa_air',
@@ -38,6 +39,7 @@ class BiayaKapalAir extends Model
         'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
+        'is_lumpsum' => 'boolean',
     ];
 
     /**

@@ -2626,7 +2626,11 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas (Ton)</label>
-                    <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00" required>
+                    <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00">
+                    <div class="mt-2 flex items-center">
+                        <input type="checkbox" id="is_lumpsum_${sectionIndex}" name="air[${sectionIndex}][is_lumpsum]" value="1" class="is-lumpsum-checkbox rounded border-gray-300 text-cyan-600 shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 focus:ring-opacity-50">
+                        <label for="is_lumpsum_${sectionIndex}" class="ml-2 block text-sm text-gray-900">Hitung Lumpsum (Tidak dikali Ton)</label>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
@@ -2713,6 +2717,12 @@
             calculateAirSectionTotal(sectionIndex);
         });
 
+        // Setup lumpsum checkbox listener
+        const lumpsumCheckbox = section.querySelector('.is-lumpsum-checkbox');
+        lumpsumCheckbox.addEventListener('change', function() {
+            calculateAirSectionTotal(sectionIndex);
+        });
+        
         // Set default lokasi if available
         const lokasiSelect = section.querySelector('.lokasi-select-air');
         if (lokasiSelect) {
@@ -2950,6 +2960,7 @@
         // Select all type selects
         const typeSelects = section.querySelectorAll('.type-select-air');
         const kuantitasInput = section.querySelector('.kuantitas-input-air');
+        const lumpsumCheckbox = section.querySelector('.is-lumpsum-checkbox');
         
         // Updated selectors
         const subTotalDisplay = section.querySelector('.sub-total-display');
@@ -2977,8 +2988,15 @@
         });
 
         const kuantitas = parseFloat(kuantitasInput.value) || 0;
+        const isLumpsum = lumpsumCheckbox.checked;
         
-        let waterCost = Math.round(totalHargaPerTon * kuantitas);
+        let waterCost = 0;
+        if (isLumpsum) {
+            waterCost = totalHargaPerTon; // Use total price directly
+        } else {
+            waterCost = Math.round(totalHargaPerTon * kuantitas);
+        }
+        
         let jasaAir = parseFloat(jasaAirInput.value) || 0;
         let biayaAgen = parseFloat(biayaAgenInput.value) || 0;
         
