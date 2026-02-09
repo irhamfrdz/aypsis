@@ -2607,11 +2607,16 @@
                         ${vendorOptions}
                     </select>
                 </div>
-                <div>
+                <div class="types-wrapper-air-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select name="air[${sectionIndex}][type]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
-                        <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
-                    </select>
+                    <div class="types-list-air space-y-2 mb-2">
+                        <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
+                            <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                        </select>
+                    </div>
+                    <button type="button" class="add-type-btn-air text-xs bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" disabled>
+                        <i class="fas fa-plus"></i> Tambah Type
+                    </button>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
@@ -2688,10 +2693,18 @@
             calculateAirSectionTotal(sectionIndex);
         });
         
-        // Setup type change listener for auto-calculation
-        const typeSelect = section.querySelector('.type-select-air');
-        typeSelect.addEventListener('change', function() {
-            calculateAirSectionTotal(sectionIndex);
+        // Setup add type button listener
+        const addTypeBtn = section.querySelector('.add-type-btn-air');
+        addTypeBtn.addEventListener('click', function() {
+            addTypeToAirSection(sectionIndex);
+        });
+
+        // Setup type change listener for auto-calculation (using delegation for dynamic inputs)
+        const typesList = section.querySelector('.types-list-air');
+        typesList.addEventListener('change', function(e) {
+            if (e.target.classList.contains('type-select-air')) {
+                calculateAirSectionTotal(sectionIndex);
+            }
         });
         
         // Setup kuantitas change listener
@@ -2825,11 +2838,18 @@
     
     function loadTypesForVendor(sectionIndex, vendorName) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
-        const typeSelect = section.querySelector('.type-select-air');
+        const typesList = section.querySelector('.types-list-air');
+        const typeSelects = typesList.querySelectorAll('.type-select-air');
+        const addTypeBtn = section.querySelector('.add-type-btn-air');
         
         if (!vendorName) {
-            typeSelect.disabled = true;
-            typeSelect.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            typeSelects.forEach(select => {
+                select.disabled = true;
+                select.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            });
+            addTypeBtn.disabled = true;
+            settings = { options: '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>' };
+            typesList.dataset.options = settings.options;
             return;
         }
         
@@ -2840,17 +2860,51 @@
         // Filter pricelist data by vendor name and lokasi (if selected)
         const vendorTypes = pricelistAirTawarData.filter(item => item.nama_agen === vendorName && (selectedLokasi === '' || item.lokasi === selectedLokasi));
         
+        let options = '<option value="">-- Pilih Type --</option>';
         if (vendorTypes.length > 0) {
-            typeSelect.disabled = false;
-            let options = '<option value="">-- Pilih Type --</option>';
             vendorTypes.forEach(type => {
-                options += `<option value="${type.id}" data-keterangan="${type.keterangan}" data-harga="${type.harga}">${type.keterangan} - Rp ${parseInt(type.harga).toLocaleString('id-ID')}/ton</option>`;
+                // REMOVE /ton as requested
+                options += `<option value="${type.id}" data-keterangan="${type.keterangan}" data-harga="${type.harga}">${type.keterangan} - Rp ${parseInt(type.harga).toLocaleString('id-ID')}</option>`;
             });
-            typeSelect.innerHTML = options;
+            
+            typeSelects.forEach(select => {
+                const currentValue = select.value;
+                select.disabled = false;
+                select.innerHTML = options;
+                if (currentValue) select.value = currentValue;
+            });
+            
+            addTypeBtn.disabled = false;
         } else {
-            typeSelect.disabled = true;
-            typeSelect.innerHTML = '<option value="">Tidak ada type tersedia</option>';
+            options = '<option value="">Tidak ada type tersedia</option>';
+            typeSelects.forEach(select => {
+                select.disabled = true;
+                select.innerHTML = options;
+            });
+            addTypeBtn.disabled = true;
         }
+        
+        // Store current options in dataset for new inputs
+        typesList.dataset.options = options;
+    }
+
+    function addTypeToAirSection(sectionIndex) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        const typesList = section.querySelector('.types-list-air');
+        const options = typesList.dataset.options;
+        
+        const div = document.createElement('div');
+        div.className = 'flex gap-2';
+        div.innerHTML = `
+            <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                ${options}
+            </select>
+            <button type="button" onclick="this.closest('div').remove(); calculateAirSectionTotal(${sectionIndex})" class="px-2 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        
+        typesList.appendChild(div);
     }
 
     // Update vendor list for a given lokasi in a section
@@ -2858,7 +2912,9 @@
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
         const vendorSelect = section.querySelector('.vendor-select-air');
-        const typeSelect = section.querySelector('.type-select-air');
+        const typesList = section.querySelector('.types-list-air');
+        const typeSelects = typesList.querySelectorAll('.type-select-air');
+        const addTypeBtn = section.querySelector('.add-type-btn-air');
 
         // Build vendor list filtered by lokasi; if lokasi is empty, include all vendors
         let vendors = [];
@@ -2879,15 +2935,20 @@
         }
 
         // Clear type options whenever vendor list changes
-        if (typeSelect) {
-            typeSelect.disabled = true;
-            typeSelect.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+        if (typeSelects.length > 0) {
+            typeSelects.forEach(select => {
+                select.disabled = true;
+                select.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            });
+            addTypeBtn.disabled = true;
+            typesList.dataset.options = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
         }
     }
     
     function calculateAirSectionTotal(sectionIndex) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
-        const typeSelect = section.querySelector('.type-select-air');
+        // Select all type selects
+        const typeSelects = section.querySelectorAll('.type-select-air');
         const kuantitasInput = section.querySelector('.kuantitas-input-air');
         
         // Updated selectors
@@ -2904,11 +2965,20 @@
         const grandTotalDisplay = section.querySelector('.grand-total-display');
         const grandTotalValue = section.querySelector('.grand-total-value');
         
-        const selectedOption = typeSelect.options[typeSelect.selectedIndex];
-        const hargaPerTon = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
+        let totalHargaPerTon = 0;
+        
+        // Sum prices from all selected types
+        typeSelects.forEach(select => {
+            if (select.selectedIndex >= 0) {
+                const selectedOption = select.options[select.selectedIndex];
+                const harga = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
+                totalHargaPerTon += harga;
+            }
+        });
+
         const kuantitas = parseFloat(kuantitasInput.value) || 0;
         
-        let waterCost = Math.round(hargaPerTon * kuantitas);
+        let waterCost = Math.round(totalHargaPerTon * kuantitas);
         let jasaAir = parseFloat(jasaAirInput.value) || 0;
         let biayaAgen = parseFloat(biayaAgenInput.value) || 0;
         
@@ -2921,7 +2991,7 @@
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         subTotalValue.value = subTotal;
-        hargaHidden.value = hargaPerTon;
+        hargaHidden.value = totalHargaPerTon;
         
         if (pphDisplay) pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
         if (pphValue) pphValue.value = pph;
