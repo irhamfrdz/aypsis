@@ -9,6 +9,7 @@ class StockAmprahan extends Model
     use \Illuminate\Database\Eloquent\Factories\HasFactory;
 
     protected $fillable = [
+        'nomor_bukti',
         'master_nama_barang_amprahan_id',
         'nama_barang',
         'type_barang',

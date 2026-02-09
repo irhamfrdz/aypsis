@@ -47,6 +47,19 @@
                     @csrf
                     
                     <div class="space-y-6">
+                        {{-- Nomor Bukti --}}
+                        <div class="group">
+                            <label for="nomor_bukti" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                <i class="fas fa-file-invoice mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nomor Bukti
+                            </label>
+                            <input type="text" name="nomor_bukti" id="nomor_bukti" value="{{ old('nomor_bukti') }}" placeholder="Contoh: BUKTI-001" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                            @error('nomor_bukti')
+                                <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
                         {{-- Nama Barang --}}
                         <div class="group">
                             <label for="nama_barang" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">

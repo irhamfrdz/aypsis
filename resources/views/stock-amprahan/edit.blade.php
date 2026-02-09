@@ -22,6 +22,15 @@
                     @method('PUT')
                     
                     <div class="space-y-6">
+                        {{-- Nomor Bukti --}}
+                        <div>
+                            <label for="nomor_bukti" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Bukti</label>
+                            <input type="text" name="nomor_bukti" id="nomor_bukti" value="{{ old('nomor_bukti', $item->nomor_bukti) }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                            @error('nomor_bukti')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- Nama Barang --}}
                         <div>
                             <label for="nama_barang" class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>

@@ -29,6 +29,7 @@ class StockAmprahanController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'nomor_bukti' => 'nullable|string|max:255',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
@@ -64,6 +65,7 @@ class StockAmprahanController extends Controller
         $item = StockAmprahan::findOrFail($id);
         
         $data = $request->validate([
+            'nomor_bukti' => 'nullable|string|max:255',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
