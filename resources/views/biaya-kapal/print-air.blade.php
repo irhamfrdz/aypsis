@@ -169,9 +169,8 @@
         $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
         $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($biayaKapal->airDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
         
-        // Calculate Totals
-        $totalQty = 0;
-        $totalWaterCost = 0;
+        // Calculate Totals and Group by Type
+        $waterByType = [];
         $totalJasaAir = 0;
         $countJasaAir = 0;
         $totalBiayaAgen = 0;
@@ -180,11 +179,17 @@
         $totalGrandTotal = 0;
         
         foreach($biayaKapal->airDetails as $detail) {
-            $totalQty += $detail->kuantitas;
+            // Group by Type Keterangan
+            $typeKey = $detail->type_keterangan ?? 'AIR TAWAR';
+            if (!isset($waterByType[$typeKey])) {
+                $waterByType[$typeKey] = [
+                    'qty' => 0, 
+                    'cost' => 0
+                ];
+            }
             
-            // Perhitungan Harga Murni Air (Qty * Harga Satuan)
-            $waterCost = $detail->kuantitas * ($detail->harga ?? 0);
-            $totalWaterCost += $waterCost;
+            $waterByType[$typeKey]['qty'] += $detail->kuantitas;
+            $waterByType[$typeKey]['cost'] += ($detail->kuantitas * ($detail->harga ?? 0));
             
             if ($detail->jasa_air > 0) {
                 $totalJasaAir += $detail->jasa_air;
@@ -248,7 +253,7 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td class="text-center">{{ $detail->tanggal_invoice_vendor ? \Carbon\Carbon::parse($detail->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
                 <td>{{ $detail->nomor_referensi ?? '-' }}</td>
-                <td>Biaya Air {{ $detail->kapal ?? '' }} {{ $detail->voyage ? '('.$detail->voyage.')' : '' }}</td>
+                <td>Biaya Air {{ $detail->kapal ?? '' }} {{ $detail->voyage ? '('.$detail->voyage.')' : '' }} {{ $detail->type_keterangan ? '- '.$detail->type_keterangan : '' }}</td>
                 <td class="text-right">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
             </tr>
             @empty
@@ -279,22 +284,24 @@
         <tbody>
             @php $no = 1; @endphp
             
-            <!-- Row 1: Air Tawar (Base Cost) -->
-            @if($totalWaterCost > 0 || $totalQty > 0)
-            <tr>
-                <td class="text-center">{{ $no++ }}</td>
-                <td>AIR TAWAR</td>
-                <td class="text-center">{{ number_format($totalQty, 2, ',', '.') }}</td>
-                <td class="text-right">
-                    @if($totalQty > 0)
-                        Rp {{ number_format($totalWaterCost / $totalQty, 2, ',', '.') }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td class="text-right">Rp {{ number_format($totalWaterCost, 0, ',', '.') }}</td>
-            </tr>
-            @endif
+            <!-- Row 1: Air Tawar (Grouped by Types) -->
+            @foreach($waterByType as $typeName => $data)
+                @if($data['cost'] > 0 || $data['qty'] > 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>AIR TAWAR ({{ strtoupper($typeName) }})</td>
+                    <td class="text-center">{{ number_format($data['qty'], 2, ',', '.') }}</td>
+                    <td class="text-right">
+                        @if($data['qty'] > 0)
+                            Rp {{ number_format($data['cost'] / $data['qty'], 2, ',', '.') }}
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td class="text-right">Rp {{ number_format($data['cost'], 0, ',', '.') }}</td>
+                </tr>
+                @endif
+            @endforeach
             
             <!-- Row 2: Jasa Air (Jika ada value) -->
             @if($totalJasaAir > 0)

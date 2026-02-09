@@ -925,32 +925,83 @@ class BiayaKapalController extends Controller
                         $pph = is_string($pphRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $pphRaw)))) : floatval($pphRaw);
                         $grandTotal = is_string($grandTotalRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $grandTotalRaw)))) : floatval($grandTotalRaw);
                         
-                        $typeKeterangan = null;
-                        if (!empty($section['type'])) {
-                            $typeData = DB::table('master_pricelist_air_tawar')->where('id', $section['type'])->first();
-                            $typeKeterangan = $typeData ? $typeData->keterangan : null;
-                        }
+                        $kuantitas = floatval($section['kuantitas'] ?? 0);
+                        $harga = floatval($section['harga'] ?? 0);
+                        $jasaAir = floatval($section['jasa_air'] ?? 0);
+                        $biayaAgen = floatval($section['biaya_agen'] ?? 0);
 
-                        BiayaKapalAir::create([
-                            'biaya_kapal_id' => $biayaKapal->id,
-                            'kapal' => $section['kapal'] ?? null,
-                            'voyage' => $section['voyage'] ?? null,
-                            'vendor' => $section['vendor'] ?? null,
-                            'lokasi' => $section['lokasi'] ?? null,
-                            'type_id' => $section['type'] ?? null,
-                            'type_keterangan' => $typeKeterangan,
-                            'kuantitas' => floatval($section['kuantitas'] ?? 0),
-                            'harga' => floatval($section['harga'] ?? 0),
-                            'jasa_air' => floatval($section['jasa_air'] ?? 0),
-                            'biaya_agen' => floatval($section['biaya_agen'] ?? 0),
-                            'sub_total' => $subTotal,
-                            'pph' => $pph,
-                            'grand_total' => $grandTotal,
-                            'penerima' => $section['penerima'] ?? null,
-                            'nomor_rekening' => $section['nomor_rekening'] ?? null,
-                            'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                            'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
-                        ]);
+                        if (!empty($section['types']) && is_array($section['types'])) {
+                            foreach ($section['types'] as $typeIndex => $typeId) {
+                                // Get type detail from master
+                                $typeData = DB::table('master_pricelist_air_tawar')
+                                    ->where('id', $typeId)
+                                    ->first();
+                                
+                                $typeKeterangan = $typeData ? $typeData->keterangan : null;
+                                $typeHarga = $typeData ? floatval($typeData->harga) : 0;
+                                
+                                // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
+                                $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
+                                $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;
+                                
+                                // Calculate values for this specific type record
+                                $waterCost = $typeHarga * $kuantitas;
+                                $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
+                                
+                                // PPH is on Services (Jasa Air + Biaya Agen), so only apply if they exist
+                                $currentPph = round(($currentJasaAir + $currentBiayaAgen) * 0.02);
+                                $currentGrandTotal = $currentSubTotal - $currentPph;
+    
+                                // Create BiayaKapalAir record
+                                BiayaKapalAir::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'kapal' => $section['kapal'] ?? null,
+                                    'voyage' => $section['voyage'] ?? null,
+                                    'vendor' => $section['vendor'] ?? null,
+                                    'lokasi' => $section['lokasi'] ?? null,
+                                    'type_id' => $typeId,
+                                    'type_keterangan' => $typeKeterangan,
+                                    'kuantitas' => $kuantitas,
+                                    'harga' => $typeHarga,
+                                    'jasa_air' => $currentJasaAir,
+                                    'biaya_agen' => $currentBiayaAgen,
+                                    'sub_total' => $currentSubTotal,
+                                    'pph' => $currentPph,
+                                    'grand_total' => $currentGrandTotal,
+                                    'penerima' => $section['penerima'] ?? null,
+                                    'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                    'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                ]);
+                            }
+                        } else if (!empty($section['type'])) {
+                            $typeKeterangan = null;
+                            if (!empty($section['type'])) {
+                                $typeData = DB::table('master_pricelist_air_tawar')->where('id', $section['type'])->first();
+                                $typeKeterangan = $typeData ? $typeData->keterangan : null;
+                            }
+    
+                            BiayaKapalAir::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $section['kapal'] ?? null,
+                                'voyage' => $section['voyage'] ?? null,
+                                'vendor' => $section['vendor'] ?? null,
+                                'lokasi' => $section['lokasi'] ?? null,
+                                'type_id' => $section['type'] ?? null,
+                                'type_keterangan' => $typeKeterangan,
+                                'kuantitas' => $kuantitas,
+                                'harga' => $harga,
+                                'jasa_air' => $jasaAir,
+                                'biaya_agen' => $biayaAgen,
+                                'sub_total' => $subTotal,
+                                'pph' => $pph,
+                                'grand_total' => $grandTotal,
+                                'penerima' => $section['penerima'] ?? null,
+                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                            ]);
+                        }
                     }
                 }
             }
