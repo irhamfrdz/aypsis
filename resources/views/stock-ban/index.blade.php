@@ -397,9 +397,16 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($ban->mobil)
-                                        <span class="text-blue-600 font-medium">
-                                            <i class="fas fa-truck mr-1"></i> {{ $ban->mobil->nomor_polisi }}
-                                        </span>
+                                        <div class="flex flex-col">
+                                            <span class="text-blue-600 font-medium">
+                                                <i class="fas fa-truck mr-1"></i> {{ $ban->mobil->nomor_polisi }}
+                                            </span>
+                                            @if($ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false)
+                                                <span class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-map-marker-alt mr-1"></i> {{ $ban->mobil->lokasi ?? '-' }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     @else
                                         -
                                     @endif
@@ -808,10 +815,20 @@
                             <div class="dropdown-list">
                                 <div class="dropdown-item" onclick="DropdownManager.select('mobil', '', '-- Pilih Mobil --')">-- Pilih Mobil --</div>
                                 @foreach($mobils as $mobil)
+                                    @php
+                                        $displayPlat = $mobil->nomor_polisi;
+                                        if (empty($displayPlat) && stripos($mobil->jenis, 'buntut') !== false) {
+                                            $displayPlat = $mobil->no_kir ?? '-';
+                                        }
+                                        $displayText = ($displayPlat ?? '-') . ' (' . $mobil->merek . ' - ' . $mobil->jenis . ')';
+                                        if (stripos($mobil->jenis, 'buntut') !== false) {
+                                            $displayText .= ' - ' . ($mobil->lokasi ?? '-');
+                                        }
+                                    @endphp
                                     <div class="dropdown-item" 
-                                         onclick="DropdownManager.select('mobil', '{{ $mobil->id }}', '{{ $mobil->nomor_polisi }}')"
-                                         data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}">
-                                        {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
+                                         onclick="DropdownManager.select('mobil', '{{ $mobil->id }}', '{{ $displayText }}')"
+                                         data-search="{{ strtolower($displayText) }}">
+                                        {{ $displayText }}
                                     </div>
                                 @endforeach
                             </div>
