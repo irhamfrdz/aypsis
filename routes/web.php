@@ -260,6 +260,9 @@ Route::middleware([
         // Master Gudang Amprahan
         Route::resource('gudang-amprahan', MasterGudangAmprahanController::class);
 
+        // Master Alat Berat
+        Route::resource('alat-berat', \App\Http\Controllers\AlatBeratController::class);
+
 
         // ═══════════════════════════════════════════════════════════════════════
         // 👥 KARYAWAN (EMPLOYEE) MANAGEMENT

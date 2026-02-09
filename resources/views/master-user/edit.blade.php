@@ -1264,6 +1264,40 @@
                                 <td><input type="checkbox" name="permissions[biaya-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['export']) && $userMatrixPermissions['biaya-kapal']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Master Kendaraan --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Kendaraan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-mobil][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['view']) && $userMatrixPermissions['master-mobil']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['create']) && $userMatrixPermissions['master-mobil']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['update']) && $userMatrixPermissions['master-mobil']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['delete']) && $userMatrixPermissions['master-mobil']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Alat Berat --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Alat Berat</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['view']) && $userMatrixPermissions['master-alat-berat']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['create']) && $userMatrixPermissions['master-alat-berat']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['update']) && $userMatrixPermissions['master-alat-berat']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['delete']) && $userMatrixPermissions['master-alat-berat']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Sewa Kontainer --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
