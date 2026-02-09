@@ -253,11 +253,21 @@
                                 <div class="custom-select-options" id="mobil-options-list">
                                     <div class="custom-select-option" data-value="" data-text="-- Tidak Dipasang --">-- Tidak Dipasang --</div>
                                     @foreach($mobils as $mobil)
+                                        @php
+                                            $displayPlat = $mobil->nomor_polisi;
+                                            if (empty($displayPlat) && stripos($mobil->jenis, 'buntut') !== false) {
+                                                $displayPlat = $mobil->no_kir ?? '-';
+                                            }
+                                            $displayText = ($displayPlat ?? '-') . ' (' . $mobil->merek . ' - ' . $mobil->jenis . ')';
+                                            if (stripos($mobil->jenis, 'buntut') !== false) {
+                                                $displayText .= ' - ' . ($mobil->lokasi ?? '-');
+                                            }
+                                        @endphp
                                         <div class="custom-select-option" 
                                              data-value="{{ $mobil->id }}" 
-                                             data-search="{{ strtolower($mobil->nomor_polisi . ' ' . $mobil->merek . ' ' . $mobil->jenis) }}"
-                                             data-text="{{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})">
-                                            {{ $mobil->nomor_polisi }} ({{ $mobil->merek }} - {{ $mobil->jenis }})
+                                             data-search="{{ strtolower($displayText) }}"
+                                             data-text="{{ $displayText }}">
+                                            {{ $displayText }}
                                         </div>
                                     @endforeach
                                 </div>
