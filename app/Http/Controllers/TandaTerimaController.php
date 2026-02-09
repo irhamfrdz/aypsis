@@ -1155,9 +1155,7 @@ class TandaTerimaController extends Controller
                 $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
                     return !empty(trim($value));
                 });
-                if (!empty($nomorKontainers)) {
-                    $updateData['no_kontainer'] = implode(',', $nomorKontainers);
-                }
+                $updateData['no_kontainer'] = !empty($nomorKontainers) ? implode(',', $nomorKontainers) : null;
             }
 
             // Handle multiple seal numbers
@@ -1165,9 +1163,7 @@ class TandaTerimaController extends Controller
                 $noSeals = array_filter($request->no_seal, function($value) {
                     return !empty(trim($value));
                 });
-                if (!empty($noSeals)) {
-                    $updateData['no_seal'] = implode(',', $noSeals);
-                }
+                $updateData['no_seal'] = !empty($noSeals) ? implode(',', $noSeals) : null;
             }
 
             // Handle multiple jumlah per kontainer
@@ -1324,11 +1320,11 @@ class TandaTerimaController extends Controller
                     $suratJalanUpdateData = [];
                     
                     // ALWAYS update nomor kontainer dan seal ke surat jalan (force sync)
-                    if (isset($updateData['no_kontainer'])) {
+                    if (array_key_exists('no_kontainer', $updateData)) {
                         $suratJalanUpdateData['no_kontainer'] = $updateData['no_kontainer'];
                     }
                     
-                    if (isset($updateData['no_seal'])) {
+                    if (array_key_exists('no_seal', $updateData)) {
                         $suratJalanUpdateData['no_seal'] = $updateData['no_seal'];
                     }
                     
@@ -1816,11 +1812,8 @@ class TandaTerimaController extends Controller
                 $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
                     return !empty(trim($value));
                 });
-                if (!empty($nomorKontainers)) {
-                    $noKontainerToSet = implode(',', $nomorKontainers);
-                }
-            }
-            if (empty($noKontainerToSet) && !empty($tandaTerima->no_kontainer)) {
+                $noKontainerToSet = !empty($nomorKontainers) ? implode(',', $nomorKontainers) : null;
+            } elseif (!empty($tandaTerima->no_kontainer)) {
                 $noKontainerToSet = $tandaTerima->no_kontainer;
             }
 
@@ -1828,11 +1821,8 @@ class TandaTerimaController extends Controller
                 $noSeals = array_filter($request->no_seal, function($value) {
                     return !empty(trim($value));
                 });
-                if (!empty($noSeals)) {
-                    $noSealToSet = implode(',', $noSeals);
-                }
-            }
-            if (empty($noSealToSet) && !empty($tandaTerima->no_seal)) {
+                $noSealToSet = !empty($noSeals) ? implode(',', $noSeals) : null;
+            } elseif (!empty($tandaTerima->no_seal)) {
                 $noSealToSet = $tandaTerima->no_seal;
             }
 
@@ -1855,11 +1845,11 @@ class TandaTerimaController extends Controller
                     $updateFields['kuantitas'] = $kuantitas;
                 }
 
-                // Update nomor_kontainer and no_seal if available
-                if (!empty($noKontainerToSet)) {
+                // Update nomor_kontainer and no_seal (allow null/empty)
+                if (array_key_exists('nomor_kontainer', $updateFields) || $noKontainerToSet !== $prospek->nomor_kontainer) {
                     $updateFields['nomor_kontainer'] = $noKontainerToSet;
                 }
-                if (!empty($noSealToSet)) {
+                if (array_key_exists('no_seal', $updateFields) || $noSealToSet !== $prospek->no_seal) {
                     $updateFields['no_seal'] = $noSealToSet;
                 }
 
