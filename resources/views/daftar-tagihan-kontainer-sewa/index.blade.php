@@ -1317,6 +1317,15 @@ input[required]:focus {
 
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             <div class="flex items-center justify-center space-x-1">
+                                <form action="{{ route('daftar-tagihan-kontainer-sewa.create-next-periode', $tagihan->id) }}" method="POST" class="inline" onsubmit="return confirm('Buat periode selanjutnya untuk kontainer ini?')">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 rounded text-[7px] font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors" title="Create Next Periode">
+                                        <svg class="w-2 h-2 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                                        </svg>
+                                        Next
+                                    </button>
+                                </form>
                                 <a href="{{ route('daftar-tagihan-kontainer-sewa.show', $tagihan->id) }}" class="inline-flex items-center px-2 py-1 rounded text-[7px] font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
                                     <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>

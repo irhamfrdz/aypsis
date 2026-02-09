@@ -148,6 +148,10 @@ Route::middleware([
 
 
           // Tagihan Kontainer Sewa routes removed - controller/views refactored by request
+          // 2026-02-09: Restoring specific route for Create Next Periode functionality
+          Route::post('daftar-tagihan-kontainer-sewa/{id}/create-next-periode', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'createNextPeriode'])
+               ->name('daftar-tagihan-kontainer-sewa.create-next-periode');
+          
           // The old routes and resource controller were deleted to allow a full rewrite.
           // If you want them restored later, use your backup or reintroduce new routes/controllers.
 

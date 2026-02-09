@@ -2725,4 +2725,119 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         return response()->json(['success' => true, 'data' => $formattedItems]);
     }
+    /**
+     * Create the next period for a specific tagihan.
+     */
+    public function createNextPeriode($id)
+    {
+        try {
+            // Find current tagihan
+            $currentTagihan = DaftarTagihanKontainerSewa::findOrFail($id);
+            
+            // Check if next period already exists for this container
+            $nextPeriodeNum = $currentTagihan->periode + 1;
+            $existing = DaftarTagihanKontainerSewa::where('nomor_kontainer', $currentTagihan->nomor_kontainer)
+                ->where('periode', $nextPeriodeNum)
+                ->first();
+                
+            if ($existing) {
+                return redirect()->back()->with('error', "Tagihan periode {$nextPeriodeNum} untuk kontainer {$currentTagihan->nomor_kontainer} sudah ada.");
+            }
+            
+            // Determine dates
+            $currentStart = Carbon::parse($currentTagihan->tanggal_awal);
+            $currentEnd = Carbon::parse($currentTagihan->tanggal_akhir);
+            // Duration inclusive of start and end date
+            $durationDays = $currentStart->diffInDays($currentEnd) + 1;
+            
+            // Start date is the day after the current end date
+            $newStartDate = $currentEnd->copy()->addDay();
+            
+            // Determine end date
+            // Logic: if roughly monthly (28-32 days), use monthly logic. Else use exact days.
+            if ($durationDays >= 28 && $durationDays <= 32) {
+                // Monthly logic: e.g. 1 Jan to 31 Jan -> next is 1 Feb to 28 Feb
+                $newEndDate = $newStartDate->copy()->addMonth()->subDay();
+            } else {
+                // Fixed duration logic
+                $newEndDate = $newStartDate->copy()->addDays($durationDays - 1);
+            }
+            
+            // Inherit tariff type
+            $tarifType = $currentTagihan->tarif; // "Harian" or "Bulanan"
+            
+            // Determine nominal rate from Master Pricelist for the NEW period
+            $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $currentTagihan->size)
+                ->where('vendor', $currentTagihan->vendor)
+                ->where('tanggal_harga_awal', '<=', $newStartDate->format('Y-m-d'))
+                ->where(function($q) use ($newStartDate) {
+                    $q->whereNull('tanggal_harga_akhir')
+                      ->orWhere('tanggal_harga_akhir', '>=', $newStartDate->format('Y-m-d'));
+                })
+                ->orderBy('tanggal_harga_awal', 'desc')
+                ->first();
+                
+            if ($masterPricelist) {
+                $tarifNominal = $masterPricelist->harga;
+                $isBulanan = (strtolower($masterPricelist->tarif) === 'bulanan');
+                // Update tarif type if changed in master
+                $tarifType = $isBulanan ? 'Bulanan' : 'Harian';
+            } else {
+                // Fallback to defaults if no master price found
+                if ($currentTagihan->vendor === 'DPE') {
+                    $tarifNominal = ($currentTagihan->size == '20') ? 25000 : 35000;
+                } else { // ZONA
+                    $tarifNominal = ($currentTagihan->size == '20') ? 20000 : 30000;
+                }
+                $isBulanan = false; // Default defaults are daily
+                // Keep original tarif type if not strictly monthly
+                if (strtolower($tarifType) === 'bulanan') $isBulanan = true;
+            }
+            
+            // Calculate DPP
+            if (isset($isBulanan) && $isBulanan) {
+                $dpp = $tarifNominal;
+            } else {
+                $days = $newStartDate->diffInDays($newEndDate) + 1;
+                $dpp = $tarifNominal * $days;
+            }
+            
+            // Calculate taxes (Using 12% PPN rule)
+            $dppNilaiLain = round($dpp * 11/12, 2);
+            $ppn = round($dppNilaiLain * 0.12, 2); // 12% PPN from DPP Nilai Lain
+            $pph = round($dpp * 0.02, 2); // 2% PPH from DPP
+            $grandTotal = round($dpp + $ppn - $pph, 2);
+            
+            // Create new record
+            DaftarTagihanKontainerSewa::create([
+                'vendor' => $currentTagihan->vendor,
+                'nomor_kontainer' => $currentTagihan->nomor_kontainer,
+                'size' => $currentTagihan->size,
+                'periode' => $nextPeriodeNum,
+                'tanggal_awal' => $newStartDate->format('Y-m-d'),
+                'tanggal_akhir' => $newEndDate->format('Y-m-d'),
+                'masa' => $newStartDate->format('d-M-Y') . ' - ' . $newEndDate->format('d-M-Y'),
+                'tarif' => $tarifType,
+                'group' => $currentTagihan->group,
+                'status' => 'ongoing',
+                'status_pranota' => null,
+                'pranota_id' => null,
+                'invoice_id' => null,
+                'nomor_bank' => null,
+                'invoice_vendor' => null,
+                'tanggal_vendor' => null,
+                'adjustment' => 0,
+                'dpp' => $dpp,
+                'dpp_nilai_lain' => $dppNilaiLain,
+                'ppn' => $ppn,
+                'pph' => $pph,
+                'grand_total' => $grandTotal,
+            ]);
+            
+            return redirect()->back()->with('success', "Periode selanjutnya ({$nextPeriodeNum}) berhasil dibuat.");
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membuat periode selanjutnya: ' . $e->getMessage());
+        }
+    }
 }
