@@ -583,11 +583,11 @@ Route::middleware([
 
         // Resource route with individual middleware per action
         Route::resource('mobil', MobilController::class)
-             ->middleware('can:master-mobil-view')
-             ->only(['index', 'show']);
-        Route::resource('mobil', MobilController::class)
              ->middleware('can:master-mobil-create')
              ->only(['create', 'store']);
+        Route::resource('mobil', MobilController::class)
+             ->middleware('can:master-mobil-view')
+             ->only(['index', 'show']);
         Route::resource('mobil', MobilController::class)
              ->middleware('can:master-mobil-update')
              ->only(['edit', 'update']);
