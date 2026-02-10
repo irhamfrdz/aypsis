@@ -31,29 +31,20 @@
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <!-- Rute -->
+                    <!-- Nama Vendor -->
                     <div class="col-span-2 md:col-span-1">
-                        <label for="rute" class="block text-sm font-medium text-gray-700 mb-1">Rute <span class="text-red-500">*</span></label>
-                        <input type="text" name="rute" id="rute" value="{{ old('rute') }}" required
+                        <label for="nama_vendor" class="block text-sm font-medium text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_vendor" id="nama_vendor" value="{{ old('nama_vendor') }}" required
                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-                               placeholder="Contoh: Jakarta - Surabaya">
-                        <p class="text-xs text-gray-500 mt-1">Origin - Destination</p>
+                               placeholder="Contoh: PT. Maju Jaya">
                     </div>
 
-                    <!-- Tujuan -->
+                    <!-- Size -->
                     <div class="col-span-2 md:col-span-1">
-                        <label for="tujuan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Spesifik</label>
-                        <input type="text" name="tujuan" id="tujuan" value="{{ old('tujuan') }}"
+                        <label for="size" class="block text-sm font-medium text-gray-700 mb-1">Size <span class="text-red-500">*</span></label>
+                        <input type="text" name="size" id="size" value="{{ old('size') }}" required
                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-                               placeholder="Contoh: Gudang A, Pelabuhan B">
-                    </div>
-
-                    <!-- Jenis Kendaraan -->
-                    <div class="col-span-2 md:col-span-1">
-                        <label for="jenis_kendaraan" class="block text-sm font-medium text-gray-700 mb-1">Jenis Kendaraan</label>
-                        <input type="text" name="jenis_kendaraan" id="jenis_kendaraan" value="{{ old('jenis_kendaraan') }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-                               placeholder="Contoh: Fuso, Tronton, Trailer 20'">
+                               placeholder="Contoh: 20ft">
                     </div>
 
                     <!-- Biaya -->
@@ -67,21 +58,6 @@
                         </div>
                     </div>
 
-                    <!-- Satuan -->
-                    <div class="col-span-2 md:col-span-1">
-                        <label for="satuan" class="block text-sm font-medium text-gray-700 mb-1">Satuan <span class="text-red-500">*</span></label>
-                        <select name="satuan" id="satuan" required
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                            <option value="trip" {{ old('satuan') == 'trip' ? 'selected' : '' }}>Trip</option>
-                            <option value="rit" {{ old('satuan') == 'rit' ? 'selected' : '' }}>Rit</option>
-                            <option value="kg" {{ old('satuan') == 'kg' ? 'selected' : '' }}>Kg</option>
-                            <option value="ton" {{ old('satuan') == 'ton' ? 'selected' : '' }}>Ton</option>
-                            <option value="unit" {{ old('satuan') == 'unit' ? 'selected' : '' }}>Unit</option>
-                            <option value="hari" {{ old('satuan') == 'hari' ? 'selected' : '' }}>Hari</option>
-                            <option value="bulan" {{ old('satuan') == 'bulan' ? 'selected' : '' }}>Bulan</option>
-                        </select>
-                    </div>
-
                     <!-- Status -->
                     <div class="col-span-2 md:col-span-1">
                         <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
@@ -90,28 +66,6 @@
                             <option value="aktif" {{ old('status', 'aktif') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="non-aktif" {{ old('status') == 'non-aktif' ? 'selected' : '' }}>Non-Aktif</option>
                         </select>
-                    </div>
-
-                    <!-- Tanggal Berlaku -->
-                    <div class="col-span-2 md:col-span-1">
-                        <label for="tanggal_berlaku" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berlaku</label>
-                        <input type="date" name="tanggal_berlaku" id="tanggal_berlaku" value="{{ old('tanggal_berlaku', date('Y-m-d')) }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                    </div>
-
-                    <!-- Tanggal Berakhir -->
-                    <div class="col-span-2 md:col-span-1">
-                        <label for="tanggal_berakhir" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berakhir</label>
-                        <input type="date" name="tanggal_berakhir" id="tanggal_berakhir" value="{{ old('tanggal_berakhir') }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                        <p class="text-xs text-gray-500 mt-1">Kosongkan jika berlaku selamanya</p>
-                    </div>
-
-                    <!-- Keterangan -->
-                    <div class="col-span-2">
-                        <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                        <textarea name="keterangan" id="keterangan" rows="3"
-                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ old('keterangan') }}</textarea>
                     </div>
                 </div>
 

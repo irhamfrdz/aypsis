@@ -19,14 +19,14 @@ class MasterPricelistBiayaTruckingController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan rute
-        if ($request->filled('rute')) {
-            $query->where('rute', 'like', '%' . $request->rute . '%');
+        // Filter berdasarkan nama_vendor
+        if ($request->filled('nama_vendor')) {
+            $query->where('nama_vendor', 'like', '%' . $request->nama_vendor . '%');
         }
 
-        // Filter berdasarkan jenis kendaraan
-        if ($request->filled('jenis_kendaraan')) {
-            $query->where('jenis_kendaraan', 'like', '%' . $request->jenis_kendaraan . '%');
+        // Filter berdasarkan size
+        if ($request->filled('size')) {
+            $query->where('size', 'like', '%' . $request->size . '%');
         }
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
@@ -48,14 +48,9 @@ class MasterPricelistBiayaTruckingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'rute' => 'required|string|max:255',
-            'tujuan' => 'nullable|string|max:255',
-            'jenis_kendaraan' => 'nullable|string|max:255',
+            'nama_vendor' => 'required|string|max:255',
+            'size' => 'required|string|max:50',
             'biaya' => 'required|numeric|min:0',
-            'satuan' => 'required|string|max:50',
-            'tanggal_berlaku' => 'nullable|date',
-            'tanggal_berakhir' => 'nullable|date|after_or_equal:tanggal_berlaku',
-            'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,non-aktif',
         ]);
 
@@ -87,14 +82,9 @@ class MasterPricelistBiayaTruckingController extends Controller
     public function update(Request $request, MasterPricelistBiayaTrucking $pricelistBiayaTrucking)
     {
         $validated = $request->validate([
-            'rute' => 'required|string|max:255',
-            'tujuan' => 'nullable|string|max:255',
-            'jenis_kendaraan' => 'nullable|string|max:255',
+            'nama_vendor' => 'required|string|max:255',
+            'size' => 'required|string|max:50',
             'biaya' => 'required|numeric|min:0',
-            'satuan' => 'required|string|max:50',
-            'tanggal_berlaku' => 'nullable|date',
-            'tanggal_berakhir' => 'nullable|date|after_or_equal:tanggal_berlaku',
-            'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,non-aktif',
         ]);
 

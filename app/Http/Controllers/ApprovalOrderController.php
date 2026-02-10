@@ -29,6 +29,9 @@ class ApprovalOrderController extends Controller
                   ->orWhereHas('suratJalans', function ($subQ) use ($search) {
                       $subQ->where('no_surat_jalan', 'like', "%{$search}%")
                            ->orWhere('no_kontainer', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('pengirim', function ($subQ) use ($search) {
+                      $subQ->where('nama_pengirim', 'like', "%{$search}%");
                   });
             });
         }

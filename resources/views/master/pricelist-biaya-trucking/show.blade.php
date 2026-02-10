@@ -31,22 +31,17 @@
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Rute</h4>
-                        <p class="text-gray-900 font-medium">{{ $pricelistBiayaTrucking->rute }}</p>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Nama Vendor</h4>
+                        <p class="text-gray-900 font-medium">{{ $pricelistBiayaTrucking->nama_vendor }}</p>
                     </div>
                     <div>
-                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Tujuan Spesifik</h4>
-                        <p class="text-gray-900">{{ $pricelistBiayaTrucking->tujuan ?? '-' }}</p>
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Jenis Kendaraan</h4>
-                        <p class="text-gray-900">{{ $pricelistBiayaTrucking->jenis_kendaraan ?? '-' }}</p>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Size</h4>
+                        <p class="text-gray-900">{{ $pricelistBiayaTrucking->size }}</p>
                     </div>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Biaya</h4>
                         <p class="text-gray-900 font-medium text-lg">
-                            Rp {{ number_format($pricelistBiayaTrucking->biaya, 0, ',', '.') }} 
-                            <span class="text-sm font-normal text-gray-500">/ {{ $pricelistBiayaTrucking->satuan }}</span>
+                            Rp {{ number_format($pricelistBiayaTrucking->biaya, 0, ',', '.') }}
                         </p>
                     </div>
                     <div>
@@ -56,18 +51,6 @@
                         @else
                             <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 border border-red-200">Non-Aktif</span>
                         @endif
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Masa Berlaku</h4>
-                        <p class="text-gray-900">
-                            {{ $pricelistBiayaTrucking->tanggal_berlaku ? $pricelistBiayaTrucking->tanggal_berlaku->format('d M Y') : '-' }}
-                            s/d
-                            {{ $pricelistBiayaTrucking->tanggal_berakhir ? $pricelistBiayaTrucking->tanggal_berakhir->format('d M Y') : 'Seterusnya' }}
-                        </p>
-                    </div>
-                    <div class="col-span-2">
-                        <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">Keterangan</h4>
-                        <p class="text-gray-900 whitespace-pre-line">{{ $pricelistBiayaTrucking->keterangan ?? '-' }}</p>
                     </div>
                 </div>
             </div>

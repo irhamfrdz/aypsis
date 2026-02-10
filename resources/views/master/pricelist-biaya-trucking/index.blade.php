@@ -32,16 +32,16 @@
     <div class="bg-white rounded-lg shadow p-4 mb-6">
         <form action="{{ route('master.pricelist-biaya-trucking.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label for="rute" class="block text-sm font-medium text-gray-700 mb-1">Cari Rute</label>
-                <input type="text" name="rute" id="rute" value="{{ request('rute') }}" 
+                <label for="nama_vendor" class="block text-sm font-medium text-gray-700 mb-1">Cari Nama Vendor</label>
+                <input type="text" name="nama_vendor" id="nama_vendor" value="{{ request('nama_vendor') }}" 
                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" 
-                       placeholder="Contoh: Jakarta - Bandung">
+                       placeholder="Contoh: PT. Maju Jaya">
             </div>
             <div>
-                <label for="jenis_kendaraan" class="block text-sm font-medium text-gray-700 mb-1">Jenis Kendaraan</label>
-                <input type="text" name="jenis_kendaraan" id="jenis_kendaraan" value="{{ request('jenis_kendaraan') }}" 
+                <label for="size" class="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                <input type="text" name="size" id="size" value="{{ request('size') }}" 
                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" 
-                       placeholder="Contoh: Fuso, Tronton">
+                       placeholder="Contoh: 20ft">
             </div>
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -65,10 +65,9 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rute & Tujuan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Vendor</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berlaku</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -79,22 +78,14 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ ($pricelists->currentPage() - 1) * $pricelists->perPage() + $index + 1 }}
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-gray-900">{{ $pricelist->rute }}</div>
-                            <div class="text-sm text-gray-500">{{ $pricelist->tujuan ?? '-' }}</div>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div class="font-medium">{{ $pricelist->nama_vendor }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $pricelist->jenis_kendaraan ?? '-' }}
+                            {{ $pricelist->size }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
                             Rp {{ number_format($pricelist->biaya, 0, ',', '.') }}
-                            <span class="text-xs text-gray-500 font-normal">/ {{ $pricelist->satuan }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div>{{ $pricelist->tanggal_berlaku ? $pricelist->tanggal_berlaku->format('d M Y') : '-' }}</div>
-                            <div class="text-xs text-gray-500">
-                                s/d {{ $pricelist->tanggal_berakhir ? $pricelist->tanggal_berakhir->format('d M Y') : 'Seterusnya' }}
-                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($pricelist->status === 'aktif')
@@ -132,7 +123,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

@@ -13,21 +13,14 @@ class MasterPricelistBiayaTrucking extends Model
     protected $table = 'master_pricelist_biaya_trucking';
 
     protected $fillable = [
-        'rute',
-        'tujuan',
-        'jenis_kendaraan',
+        'nama_vendor',
+        'size',
         'biaya',
-        'satuan',
-        'tanggal_berlaku',
-        'tanggal_berakhir',
-        'keterangan',
         'status'
     ];
 
     protected $casts = [
         'biaya' => 'decimal:2',
-        'tanggal_berlaku' => 'date',
-        'tanggal_berakhir' => 'date',
     ];
 
     /**
@@ -47,10 +40,10 @@ class MasterPricelistBiayaTrucking extends Model
     }
 
     /**
-     * Scope untuk filter berdasarkan rute
+     * Scope untuk filter berdasarkan nama_vendor
      */
-    public function scopeRute($query, $rute)
+    public function scopeNamaVendor($query, $nama_vendor)
     {
-        return $query->where('rute', 'like', '%' . $rute . '%');
+        return $query->where('nama_vendor', 'like', '%' . $nama_vendor . '%');
     }
 }
