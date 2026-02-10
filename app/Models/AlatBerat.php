@@ -19,6 +19,7 @@ class AlatBerat extends Model
         'merk',
         'tipe',
         'nomor_seri',
+        'tahun_pembuatan',
         'lokasi',
         'keterangan',
         'status',

@@ -44,6 +44,7 @@ class AlatBeratImport implements ToCollection, WithHeadingRow, WithValidation
                 'merk'       => $row['merk'] ?? null,
                 'tipe'       => $row['tipe'] ?? null,
                 'nomor_seri' => $row['nomor_seri'] ?? null,
+                'tahun_pembuatan' => $row['tahun_pembuatan'] ?? null,
                 'lokasi'     => $row['lokasi'] ?? null,
                 'status'     => strtolower($row['status'] ?? 'active'),
                 'keterangan' => $row['keterangan'] ?? null,
