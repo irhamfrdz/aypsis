@@ -12,6 +12,7 @@ use App\Models\BiayaKapalAir;
 use App\Models\BiayaKapalTkbm;
 use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalOperasionalItem;
+use App\Models\BiayaKapalTrucking;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -119,10 +120,13 @@ class BiayaKapalController extends Controller
         // Get active pricelist air tawar for biaya air
         $pricelistAirTawar = \App\Models\MasterPricelistAirTawar::orderBy('nama_agen')->get();
 
-        // Get active pricelist TKBM for biaya TKBM barang selection
-        $pricelistTkbm = \App\Models\PricelistTkbm::where('status', 'active')->orderBy('nama_barang')->get();
+        // Get active pricelist biaya trucking for vendor selection
+        $pricelistBiayaTrucking = DB::table('master_pricelist_biaya_trucking')
+            ->where('status', 'aktif')
+            ->orderBy('nama_vendor')
+            ->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm'));
+        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm', 'pricelistBiayaTrucking'));
     }
 
     /**
@@ -284,6 +288,13 @@ class BiayaKapalController extends Controller
             'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'operasional_sections.*.dp' => 'nullable|numeric|min:0',
             'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+
+            // TRUCKING SECTIONS: New structure
+            'trucking_sections' => 'nullable|array',
+            'trucking_sections.*.kapal' => 'nullable|string|max:255',
+            'trucking_sections.*.voyage' => 'nullable|string|max:255',
+            'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'trucking_sections.*.no_bl' => 'nullable|array',
         ]);
 
         try {
@@ -324,13 +335,31 @@ class BiayaKapalController extends Controller
             // Create BiayaKapal record
             $biayaKapal = BiayaKapal::create($validated);
 
+            // BIAYA TRUCKING SECTIONS: Store trucking details
+            if ($request->has('trucking_sections') && !empty($request->trucking_sections)) {
+                foreach ($request->trucking_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['nama_vendor'])) {
+                        continue;
+                    }
+
+                    BiayaKapalTrucking::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'nama_vendor' => $section['nama_vendor'] ?? null,
+                        'no_bl' => $section['no_bl'] ?? [],
+                    ]);
+                }
+            }
+
             // Store barang details - Handle both old and new structure
             $barangDetails = [];
             
             // NEW STRUCTURE: kapal sections (for multi-kapal biaya buruh)
             if ($request->has('kapal_sections') && !empty($request->kapal_sections)) {
                 // Debug log: Log all kapal sections received
-                \Log::info('Kapal sections received in store method', [
+                Log::info('Kapal sections received in store method', [
                     'biaya_kapal_id' => $biayaKapal->id,
                     'sections_count' => count($request->kapal_sections),
                     'sections_data' => $request->kapal_sections,
@@ -338,7 +367,7 @@ class BiayaKapalController extends Controller
                 
                 foreach ($request->kapal_sections as $sectionIndex => $section) {
                     // Debug: Log raw section data
-                    \Log::info("Raw section data for index $sectionIndex", ['section' => $section]);
+                    Log::info("Raw section data for index $sectionIndex", ['section' => $section]);
                     
                     $kapalName = $section['kapal'] ?? null;
                     $voyageName = $section['voyage'] ?? null;
@@ -346,7 +375,7 @@ class BiayaKapalController extends Controller
                     $sectionDp = $section['dp'] ?? 0;
                     $sectionSisa = $section['sisa_pembayaran'] ?? 0;
                     
-                    \Log::info("Processing kapal section $sectionIndex", [
+                    Log::info("Processing kapal section $sectionIndex", [
                         'kapal' => $kapalName,
                         'voyage' => $voyageName,
                         'total_nominal' => $sectionTotalNominal,
@@ -417,7 +446,7 @@ class BiayaKapalController extends Controller
                     // IMPORTANT: If section has kapal/voyage but no valid barang data saved,
                     // create a placeholder record so the kapal appears in print
                     if (!$sectionHasData && !empty($kapalName) && !empty($voyageName)) {
-                        \Log::warning("Section $sectionIndex has no barang data, creating placeholder", [
+                        Log::warning("Section $sectionIndex has no barang data, creating placeholder", [
                             'kapal' => $kapalName,
                             'voyage' => $voyageName,
                         ]);

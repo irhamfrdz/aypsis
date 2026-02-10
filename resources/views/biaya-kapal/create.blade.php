@@ -420,7 +420,7 @@
                 <div id="operasional_wrapper" class="md:col-span-2 hidden">
                     <div class="flex items-center justify-between mb-4">
                         <label class="block text-sm font-medium text-gray-700">
-                            Detail Operasional <span class="text-red-500">*</span>
+                            Detail Kapal & Operasional <span class="text-red-500">*</span>
                         </label>
                         <button type="button" id="add_operasional_section_btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition flex items-center gap-2">
                             <i class="fas fa-plus"></i>
@@ -430,6 +430,25 @@
                     <div id="operasional_sections_container"></div>
                     
                     <button type="button" id="add_operasional_section_bottom_btn" class="mt-2 w-full py-2 border-2 border-dashed border-indigo-300 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition flex items-center justify-center gap-2 font-medium">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Tambah Kapal Lainnya</span>
+                    </button>
+                </div>
+
+                <!-- Trucking (for Biaya Trucking) - GROUPED SYSTEM -->
+                <div id="trucking_wrapper" class="md:col-span-2 hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Kapal & Trucking <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" id="add_trucking_section_btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Kapal</span>
+                        </button>
+                    </div>
+                    <div id="trucking_sections_container"></div>
+                    
+                    <button type="button" id="add_trucking_section_bottom_btn" class="mt-2 w-full py-2 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 hover:border-blue-400 transition flex items-center justify-center gap-2 font-medium">
                         <i class="fas fa-plus-circle"></i>
                         <span>Tambah Kapal Lainnya</span>
                     </button>
@@ -919,6 +938,12 @@
     const grandTotalAirWrapper = document.getElementById('grand_total_air_wrapper');
     const grandTotalAirInput = document.getElementById('grand_total_air');
     
+    // Trucking specific fields
+    const truckingWrapper = document.getElementById('trucking_wrapper');
+    const truckingSectionsContainer = document.getElementById('trucking_sections_container');
+    const addTruckingSectionBtn = document.getElementById('add_trucking_section_btn');
+    const addTruckingSectionBottomBtn = document.getElementById('add_trucking_section_bottom_btn');
+    
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
     const penerimaWrapper = document.getElementById('penerima_wrapper');
@@ -1321,6 +1346,10 @@
         }
         // Show PPH fields if "Biaya Trucking" is selected
         else if (selectedText.toLowerCase().includes('trucking')) {
+            // Show Trucking wrapper
+            if (truckingWrapper) truckingWrapper.classList.remove('hidden');
+            initializeTruckingSections();
+
             // Show PPH Dokumen and Grand Total fields for Biaya Trucking
             pphDokumenWrapper.classList.remove('hidden');
             grandTotalDokumenWrapper.classList.remove('hidden');
@@ -1338,10 +1367,23 @@
             dpWrapper.classList.add('hidden');
             sisaPembayaranWrapper.classList.add('hidden');
             
-            // Show standard fields
-            kapalWrapper.classList.remove('hidden');
-            voyageWrapper.classList.remove('hidden');
-            blWrapper.classList.remove('hidden');
+            // Hide standard fields (already in trucking sections)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+            
+            // Hide TKBM wrapper
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            
+            // Hide Operasional wrapper
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
             
             // Reset values
             ppnInput.value = '0';
@@ -1749,6 +1791,7 @@
     const kapalSectionsContainer = document.getElementById('kapal_sections_container');
     const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
     const allKapalsData = @json($kapals);
+    const pricelistBiayaTruckingData = @json($pricelistBiayaTrucking);
     
     function initializeKapalSections() {
         kapalSectionsContainer.innerHTML = '';
@@ -4092,6 +4135,252 @@
         operasionalSectionCounter = 0;
         if (nominalInput) nominalInput.value = '';
     }
+
+    // ============= TRUCKING SECTIONS MANAGEMENT =============
+    let truckingSectionCounter = 0;
+    
+    function initializeTruckingSections() {
+        if (!truckingSectionsContainer) return;
+        truckingSectionsContainer.innerHTML = '';
+        truckingSectionCounter = 0;
+        addTruckingSection();
+    }
+
+    function clearAllTruckingSections() {
+        if (!truckingSectionsContainer) return;
+        truckingSectionsContainer.innerHTML = '';
+        truckingSectionCounter = 0;
+    }
+
+    if (addTruckingSectionBtn) {
+        addTruckingSectionBtn.addEventListener('click', function() {
+            addTruckingSection();
+        });
+    }
+
+    if (addTruckingSectionBottomBtn) {
+        addTruckingSectionBottomBtn.addEventListener('click', function() {
+            addTruckingSection();
+        });
+    }
+
+    function addTruckingSection() {
+        if (!truckingSectionsContainer) return;
+        truckingSectionCounter++;
+        const sectionIndex = truckingSectionCounter;
+        
+        const section = document.createElement('div');
+        section.className = 'trucking-section mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50';
+        section.setAttribute('data-trucking-section-index', sectionIndex);
+        
+        let kapalOptionsHtml = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptionsHtml += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+        });
+        
+        let vendorOptionsHtml = '<option value="">-- Pilih Vendor Trucking --</option>';
+        // Group by vendor name since there might be multiple sizes per vendor
+        const uniqueVendors = [...new Set(pricelistBiayaTruckingData.map(item => item.nama_vendor))];
+        uniqueVendors.forEach(vendor => {
+            vendorOptionsHtml += `<option value="${vendor}">${vendor}</option>`;
+        });
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-md font-semibold text-blue-800">
+                    <i class="fas fa-truck mr-2"></i>Kapal ${sectionIndex} (Trucking)
+                </h4>
+                ${sectionIndex > 1 ? `<button type="button" onclick="removeTruckingSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                    <select name="trucking_sections[${sectionIndex}][kapal]" class="trucking-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        ${kapalOptionsHtml}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage <span class="text-red-500">*</span></label>
+                    <select name="trucking_sections[${sectionIndex}][voyage]" class="trucking-voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" disabled required>
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Trucking <span class="text-red-500">*</span></label>
+                    <select name="trucking_sections[${sectionIndex}][nama_vendor]" class="trucking-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        ${vendorOptionsHtml}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kontainer <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <div class="trucking-bl-container min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer focus-within:ring-2 focus-within:ring-blue-500" 
+                         onclick="this.nextElementSibling.classList.toggle('hidden')">
+                        <div class="trucking-selected-bl-chips flex flex-wrap gap-1 mb-1"></div>
+                        <span class="text-gray-400 text-sm italic placeholder-text">-- Klik untuk memilih kontainer --</span>
+                    </div>
+                    
+                    <div class="trucking-bl-dropdown absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto hidden">
+                        <p class="px-3 py-2 text-sm text-gray-500 italic">Pilih voyage terlebih dahulu</p>
+                    </div>
+                    <div class="trucking-hidden-bl-inputs"></div>
+                </div>
+                <div class="mt-2 text-xs text-blue-600 font-medium trucking-bl-count">Terpilih: 0 kontainer</div>
+            </div>
+        `;
+        
+        truckingSectionsContainer.appendChild(section);
+
+        // Events
+        const kapalSelect = section.querySelector('.trucking-kapal-select');
+        const voyageSelect = section.querySelector('.trucking-voyage-select');
+        const blDropdown = section.querySelector('.trucking-bl-dropdown');
+        
+        kapalSelect.addEventListener('change', function() {
+            loadVoyagesForTruckingSection(sectionIndex, this.value);
+        });
+        
+        voyageSelect.addEventListener('change', function() {
+            loadBlsForTruckingSection(sectionIndex, this.value);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!section.contains(e.target)) {
+                blDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    window.removeTruckingSection = function(index) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${index}"]`);
+        if (section) section.remove();
+    }
+
+    function loadVoyagesForTruckingSection(sectionIndex, kapalNama) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        const voyageSelect = section.querySelector('.trucking-voyage-select');
+        const blDropdown = section.querySelector('.trucking-bl-dropdown');
+        
+        if (!kapalNama) {
+            voyageSelect.disabled = true;
+            voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Pilih voyage terlebih dahulu</p>';
+            return;
+        }
+        
+        voyageSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">Memuat...</option>';
+        
+        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.voyages) {
+                    let html = '<option value="">-- Pilih Voyage --</option>';
+                    data.voyages.forEach(voyage => {
+                        html += `<option value="${voyage}">${voyage}</option>`;
+                    });
+                    voyageSelect.innerHTML = html;
+                    voyageSelect.disabled = false;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage</option>';
+                }
+            });
+    }
+
+    function loadBlsForTruckingSection(sectionIndex, voyage) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        const blDropdown = section.querySelector('.trucking-bl-dropdown');
+        const hiddenInputsContainer = section.querySelector('.trucking-hidden-bl-inputs');
+        const chipsContainer = section.querySelector('.trucking-selected-bl-chips');
+        const countDisplay = section.querySelector('.trucking-bl-count');
+        const placeholder = section.querySelector('.placeholder-text');
+
+        // Clear previous
+        hiddenInputsContainer.innerHTML = '';
+        chipsContainer.innerHTML = '';
+        countDisplay.textContent = 'Terpilih: 0 kontainer';
+        placeholder.classList.remove('hidden');
+
+        if (!voyage) {
+            blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Pilih voyage terlebih dahulu</p>';
+            return;
+        }
+
+        blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat kontainer...</p>';
+
+        fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ voyages: [voyage] })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.bls && Object.keys(data.bls).length > 0) {
+                let html = '';
+                Object.keys(data.bls).forEach(id => {
+                    const blData = data.bls[id];
+                    html += `
+                        <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
+                             data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}">
+                            <div class="font-medium text-gray-900">${blData.kontainer}</div>
+                            <div class="text-xs text-gray-500">Seal: ${blData.seal}</div>
+                        </div>
+                    `;
+                });
+                blDropdown.innerHTML = html;
+
+                // Bind clicks
+                blDropdown.querySelectorAll('.trucking-bl-option').forEach(opt => {
+                    opt.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.getAttribute('data-id');
+                        const kontainer = this.getAttribute('data-kontainer');
+                        const seal = this.getAttribute('data-seal');
+
+                        if (this.classList.contains('selected')) {
+                            // Remove
+                            this.classList.remove('selected');
+                            section.querySelector(`.trucking-chip[data-id="${id}"]`).remove();
+                            section.querySelector(`input[value="${id}"]`).remove();
+                        } else {
+                            // Add
+                            this.classList.add('selected');
+                            placeholder.classList.add('hidden');
+                            
+                            const chip = document.createElement('span');
+                            chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
+                            chip.setAttribute('data-id', id);
+                            chip.innerHTML = `${kontainer} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+                            chip.querySelector('i').onclick = (e) => {
+                                e.stopPropagation();
+                                opt.click();
+                            };
+                            chipsContainer.appendChild(chip);
+
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = `trucking_sections[${sectionIndex}][no_bl][]`;
+                            input.value = id;
+                            hiddenInputsContainer.appendChild(input);
+                        }
+
+                        const count = chipsContainer.children.length;
+                        countDisplay.textContent = `Terpilih: ${count} kontainer`;
+                        if (count === 0) placeholder.classList.remove('hidden');
+                    });
+                });
+            } else {
+                blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada kontainer</p>';
+            }
+        });
+    }
 </script>
 @endpush
 @endsection
@@ -4210,9 +4499,24 @@
         color: #9ca3af;
     }
     
-    #kapal_dropdown, #voyage_dropdown {
+    #kapal_dropdown, #voyage_dropdown, .trucking-bl-dropdown {
         border-top: none;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .trucking-chip {
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .trucking-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    
+    .trucking-bl-option.selected {
+        background-color: #dbeafe !important;
+        border-left: 3px solid #3b82f6;
     }
 </style>
 

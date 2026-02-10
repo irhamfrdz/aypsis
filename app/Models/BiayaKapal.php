@@ -150,4 +150,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalOperasional::class, 'biaya_kapal_id');
     }
+
+    public function truckingDetails()
+    {
+        return $this->hasMany(BiayaKapalTrucking::class, 'biaya_kapal_id');
+    }
 }
