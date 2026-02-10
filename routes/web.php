@@ -4496,5 +4496,30 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('master-dokumen-perijinan-kapal.destroy')
                 ->middleware('can:master-dokumen-perijinan-kapal-delete');
 
+           // ═══════════════════════════════════════════════════════════════════════
+           // 🚛 MASTER PRICELIST BIAYA TRUCKING
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::get('master-pricelist-biaya-trucking', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'index'])
+                ->name('master.pricelist-biaya-trucking.index')
+                ->middleware('can:master-pricelist-biaya-trucking-view');
+           Route::get('master-pricelist-biaya-trucking/create', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'create'])
+                ->name('master.pricelist-biaya-trucking.create')
+                ->middleware('can:master-pricelist-biaya-trucking-create');
+           Route::post('master-pricelist-biaya-trucking', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'store'])
+                ->name('master.pricelist-biaya-trucking.store')
+                ->middleware('can:master-pricelist-biaya-trucking-create');
+           Route::get('master-pricelist-biaya-trucking/{pricelistBiayaTrucking}', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'show'])
+                ->name('master.pricelist-biaya-trucking.show')
+                ->middleware('can:master-pricelist-biaya-trucking-view');
+           Route::get('master-pricelist-biaya-trucking/{pricelistBiayaTrucking}/edit', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'edit'])
+                ->name('master.pricelist-biaya-trucking.edit')
+                ->middleware('can:master-pricelist-biaya-trucking-update');
+           Route::put('master-pricelist-biaya-trucking/{pricelistBiayaTrucking}', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'update'])
+                ->name('master.pricelist-biaya-trucking.update')
+                ->middleware('can:master-pricelist-biaya-trucking-update');
+           Route::delete('master-pricelist-biaya-trucking/{pricelistBiayaTrucking}', [\App\Http\Controllers\MasterPricelistBiayaTruckingController::class, 'destroy'])
+                ->name('master.pricelist-biaya-trucking.destroy')
+                ->middleware('can:master-pricelist-biaya-trucking-delete');
+
 });
 

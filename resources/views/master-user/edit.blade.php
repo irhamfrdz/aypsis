@@ -769,6 +769,51 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Tarif --}}
+                            <tr class="module-row" data-module="master-tarif">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Master Tarif</div>
+                                            <div class="text-xs text-gray-500">Pengaturan tarif dan harga</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-tarif-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-tarif-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-tarif-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-tarif-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Pricelist Biaya Trucking --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Biaya Trucking</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-trucking][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-trucking']['view']) && $userMatrixPermissions['master-pricelist-biaya-trucking']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-trucking][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-trucking']['create']) && $userMatrixPermissions['master-pricelist-biaya-trucking']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-trucking][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-trucking']['update']) && $userMatrixPermissions['master-pricelist-biaya-trucking']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-trucking][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-biaya-trucking']['delete']) && $userMatrixPermissions['master-pricelist-biaya-trucking']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
@@ -2798,6 +2843,9 @@
                 // Initialize check all approval permissions
                 initializeCheckAllApproval();
 
+                // Initialize check all master tarif permissions
+                initializeCheckAllMasterTarif();
+
                 // Initialize check all operational permissions
                 initializeCheckAllOperational();
 
@@ -3282,6 +3330,56 @@
                     if (headerCheckbox && approvalCheckboxes.length > 0) {
                         const allChecked = Array.from(approvalCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(approvalCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllMasterTarif() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.master-tarif-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in master-tarif sub-modules
+                        const masterTarifCheckboxes = document.querySelectorAll(`[data-parent="master-tarif"] input[name*="[${permission}]"]`);
+                        masterTarifCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`Semua izin ${permission} Master Tarif telah dicentang`, 'success');
+                        } else {
+                            showToast(`Semua izin ${permission} Master Tarif telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="master-tarif"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateMasterTarifHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateMasterTarifHeaderCheckboxes();
+            }
+
+            function updateMasterTarifHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'mark-paid', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.master-tarif-header-checkbox[data-permission="${permission}"]`);
+                    const masterTarifCheckboxes = document.querySelectorAll(`[data-parent="master-tarif"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && masterTarifCheckboxes.length > 0) {
+                        const allChecked = Array.from(masterTarifCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(masterTarifCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;
