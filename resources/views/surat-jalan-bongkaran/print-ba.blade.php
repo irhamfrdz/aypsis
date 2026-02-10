@@ -261,6 +261,8 @@
         $voyageCheck = strtolower($baData->no_voyage ?? '');
         if (str_contains($voyageCheck, 'bj')) {
             $pelabuhanText = 'Batam - Jakarta';
+        } elseif (str_contains($voyageCheck, 'pj')) {
+            $pelabuhanText = 'Panjang - Jakarta';
         } else {
             $asal = $mapPelabuhan($baData->pelabuhan_asal ?? '');
             $tujuan = $mapPelabuhan($baData->pelabuhan_tujuan ?? '');
