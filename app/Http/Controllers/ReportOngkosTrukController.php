@@ -336,9 +336,7 @@ class ReportOngkosTrukController extends Controller
 
     private function resolveDriverData($item)
     {
-        $karyawan1 = $item->supirKaryawan;
-        $karyawan2 = $item->supir2Karyawan;
-
+        // Helper function to check if a karyawan is a supir
         $isSupir = function($karyawan) {
             if (!$karyawan) return false;
             $divisi = strtolower($karyawan->divisi ?? '');
@@ -346,32 +344,45 @@ class ReportOngkosTrukController extends Controller
             return str_contains($divisi, 'supir') || str_contains($pekerjaan, 'supir');
         };
 
-        if ($isSupir($karyawan1)) {
+        // Collect all possible karyawan matches for supir and supir2
+        $candidates = collect();
+
+        // Search for supir field matches
+        if ($item->supir) {
+            $supirMatches = \App\Models\Karyawan::where(function($q) use ($item) {
+                $q->where('nama_panggilan', $item->supir)
+                  ->orWhere('nama_lengkap', $item->supir);
+            })->get();
+            $candidates = $candidates->merge($supirMatches);
+        }
+
+        // Search for supir2 field matches
+        if ($item->supir2) {
+            $supir2Matches = \App\Models\Karyawan::where(function($q) use ($item) {
+                $q->where('nama_panggilan', $item->supir2)
+                  ->orWhere('nama_lengkap', $item->supir2);
+            })->get();
+            $candidates = $candidates->merge($supir2Matches);
+        }
+
+        // First priority: Find a karyawan with divisi/pekerjaan supir
+        $supirCandidate = $candidates->first(function($karyawan) use ($isSupir) {
+            return $isSupir($karyawan);
+        });
+
+        if ($supirCandidate) {
             return [
-                'nama' => $karyawan1->nama_lengkap,
-                'nik' => $karyawan1->nik
+                'nama' => $supirCandidate->nama_lengkap,
+                'nik' => $supirCandidate->nik
             ];
         }
 
-        if ($isSupir($karyawan2)) {
+        // Second priority: Use the first candidate found
+        if ($candidates->isNotEmpty()) {
+            $firstCandidate = $candidates->first();
             return [
-                'nama' => $karyawan2->nama_lengkap,
-                'nik' => $karyawan2->nik
-            ];
-        }
-
-        // Fallback to first available employee if neither is explicitly "supir" division
-        if ($karyawan1) {
-            return [
-                'nama' => $karyawan1->nama_lengkap,
-                'nik' => $karyawan1->nik
-            ];
-        }
-
-        if ($karyawan2) {
-            return [
-                'nama' => $karyawan2->nama_lengkap,
-                'nik' => $karyawan2->nik
+                'nama' => $firstCandidate->nama_lengkap,
+                'nik' => $firstCandidate->nik
             ];
         }
 
