@@ -77,6 +77,10 @@
                         <dd class="mt-1 text-sm text-gray-900">{{ $alatBerat->tipe ?? '-' }}</dd>
                     </div>
                     <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Kapasitas</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $alatBerat->kapasitas ?? '-' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
                         <dt class="text-sm font-medium text-gray-500">Nomor Seri</dt>
                         <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $alatBerat->nomor_seri ?? '-' }}</dd>
                     </div>

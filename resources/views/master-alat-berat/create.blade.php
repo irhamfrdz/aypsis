@@ -52,6 +52,12 @@
                 <input type="text" name="tipe" id="tipe" value="{{ old('tipe') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: PC200-8">
             </div>
 
+            <!-- Kapasitas -->
+            <div>
+                <label for="kapasitas" class="block text-sm font-medium text-gray-700">Kapasitas</label>
+                <input type="text" name="kapasitas" id="kapasitas" value="{{ old('kapasitas') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: 20 Ton, 50 Ton">
+            </div>
+
             <!-- Nomor Seri -->
             <div>
                 <label for="nomor_seri" class="block text-sm font-medium text-gray-700">Nomor Seri / Rangka</label>

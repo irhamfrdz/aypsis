@@ -18,6 +18,7 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
             'jenis',
             'merk',
             'tipe',
+            'kapasitas',
             'nomor_seri',
             'tahun_pembuatan',
             'lokasi',
@@ -35,6 +36,7 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 'Excavator', // jenis
                 'Komatsu', // merk
                 'PC200-8', // tipe
+                '20 Ton', // kapasitas
                 'SN12345678', // nomor_seri
                 '2021', // tahun_pembuatan
                 'Gudang Utama', // lokasi

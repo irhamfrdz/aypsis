@@ -20,7 +20,8 @@ class AlatBeratController extends Controller
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('kode_alat', 'like', "%{$search}%")
                   ->orWhere('merk', 'like', "%{$search}%")
-                  ->orWhere('tipe', 'like', "%{$search}%");
+                  ->orWhere('tipe', 'like', "%{$search}%")
+                  ->orWhere('kapasitas', 'like', "%{$search}%");
             });
         }
 
@@ -54,6 +55,7 @@ class AlatBeratController extends Controller
             'jenis' => 'nullable|string|max:255',
             'merk' => 'nullable|string|max:255',
             'tipe' => 'nullable|string|max:255',
+            'kapasitas' => 'nullable|string|max:255',
             'nomor_seri' => 'nullable|string|max:255|unique:alat_berats,nomor_seri',
             'tahun_pembuatan' => 'nullable|integer',
             'lokasi' => 'nullable|string|max:255',
@@ -100,6 +102,7 @@ class AlatBeratController extends Controller
             'jenis' => 'nullable|string|max:255',
             'merk' => 'nullable|string|max:255',
             'tipe' => 'nullable|string|max:255',
+            'kapasitas' => 'nullable|string|max:255',
             'nomor_seri' => 'nullable|string|max:255|unique:alat_berats,nomor_seri,' . $alatBerat->id,
             'tahun_pembuatan' => 'nullable|integer',
             'lokasi' => 'nullable|string|max:255',
