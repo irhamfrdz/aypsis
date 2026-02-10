@@ -840,6 +840,9 @@
                                 @foreach($alatBerats as $alatBerat)
                                     @php
                                         $displayText = $alatBerat->nama . ' (' . ($alatBerat->jenis ?? 'Alat Berat') . ' - ' . ($alatBerat->merk ?? '-') . ')';
+                                        if ($alatBerat->lokasi) {
+                                            $displayText .= ' - ' . $alatBerat->lokasi;
+                                        }
                                     @endphp
                                     <div class="dropdown-item" 
                                          onclick="DropdownManager.select('mobil', 'alat_berat_{{ $alatBerat->id }}', '{{ $displayText }}')"
