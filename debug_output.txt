@@ -1,7 +1,0 @@
-﻿Data for container: EMCU6063235
-Total records: 5
-ID: 438, Periode: 1, Tgl Awal: 2025-01-23, Tgl Akhir: 2025-02-22, Masa: 23 Jan 2025 - 22 Feb 2025
-ID: 463, Periode: 2, Tgl Awal: 2025-02-23, Tgl Akhir: 2025-03-22, Masa: 23 Feb 2025 - 22 Mar 2025
-ID: 488, Periode: 3, Tgl Awal: 2025-03-23, Tgl Akhir: 2025-04-22, Masa: 23 Mar 2025 - 22 Apr 2025
-ID: 510, Periode: 4, Tgl Awal: 2025-04-23, Tgl Akhir: 2025-05-22, Masa: 23 Apr 2025 - 22 May 2025
-ID: 526, Periode: 5, Tgl Awal: 2025-05-23, Tgl Akhir: 2025-06-14, Masa: 23 May 2025 - 14 Jun 2025
