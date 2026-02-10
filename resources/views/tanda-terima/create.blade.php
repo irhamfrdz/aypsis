@@ -578,6 +578,36 @@
                                         <i class="fas fa-search mr-1"></i>Ketik untuk mencari kenek pengganti
                                     </p>
                                 </div>
+                                
+                                <!-- Checkbox Lembur & Nginap -->
+                                <div class="col-span-1 md:col-span-2 flex space-x-6 mt-2 items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                                    <div class="flex items-center">
+                                        <input type="checkbox"
+                                               name="lembur"
+                                               id="lembur"
+                                               value="1"
+                                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ old('lembur', $suratJalan->lembur) ? 'checked' : '' }}>
+                                        <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                            Lembur
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox"
+                                               name="nginap"
+                                               id="nginap"
+                                               value="1"
+                                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ old('nginap', $suratJalan->nginap) ? 'checked' : '' }}>
+                                        <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                            Nginap
+                                        </label>
+                                    </div>
+                                    <div class="ml-auto text-xs text-gray-500 flex items-center">
+                                        <i class="fas fa-info-circle mr-1 text-yellow-600"></i>
+                                        Centang jika ada biaya tambahan
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

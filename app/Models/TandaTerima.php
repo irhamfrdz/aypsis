@@ -49,6 +49,8 @@ class TandaTerima extends Model
         'dimensi_details',
         'nama_barang',
         'catatan',
+        'lembur',
+        'nginap',
         'term',
         'created_by',
         'updated_by',
@@ -75,6 +77,8 @@ class TandaTerima extends Model
         'kontainer_details' => 'array',
         'tipe_kontainer_details' => 'array',
         'nama_barang' => 'array',
+        'lembur' => 'boolean',
+        'nginap' => 'boolean',
     ];
 
     /**

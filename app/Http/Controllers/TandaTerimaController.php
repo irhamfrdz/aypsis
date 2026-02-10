@@ -487,6 +487,8 @@ class TandaTerimaController extends Controller
             'karton' => 'nullable|string|max:50',
             'plastik' => 'nullable|string|max:50',
             'terpal' => 'nullable|string|max:50',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
             // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'nomor_ro' => 'nullable|string|max:255',
@@ -573,6 +575,8 @@ class TandaTerimaController extends Controller
             $tandaTerima->penerima = $request->penerima;
             $tandaTerima->alamat_penerima = $request->alamat_penerima;
             $tandaTerima->catatan = $request->catatan;
+            $tandaTerima->lembur = $request->boolean('lembur');
+            $tandaTerima->nginap = $request->boolean('nginap');
             
             // Handle dimensi details (multiple dimensi entries)
             $dimensiDetails = [];
@@ -796,6 +800,10 @@ class TandaTerimaController extends Controller
             if ($request->filled('krani')) {
                 $suratJalanUpdate['krani'] = $request->krani;
             }
+
+            // Limbah & Nginap
+            $suratJalanUpdate['lembur'] = $request->boolean('lembur');
+            $suratJalanUpdate['nginap'] = $request->boolean('nginap');
             
             // Data kontainer - size and jumlah only, tipe_kontainer stays separate
             if ($request->filled('size')) {

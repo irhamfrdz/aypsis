@@ -2540,6 +2540,74 @@
         addAirSection();
     });
     
+    window.updatePriceFromSelect = function(select) {
+        const container = select.closest('.flex.flex-col');
+        const priceInput = container.querySelector('.price-input-air');
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (selectedOption && selectedOption.value) {
+            const harga = selectedOption.getAttribute('data-harga');
+            priceInput.value = harga || 0;
+        } else {
+            priceInput.value = 0;
+        }
+    };
+    
+    window.toggleTypeInput = function(btn, sectionIndex) {
+        const container = btn.closest('.flex.flex-col');
+        const select = container.querySelector('.type-select-air');
+        const manualInput = container.querySelector('.type-manual-input-air');
+        const hiddenManual = container.querySelector('.hidden-type-manual');
+        const priceInput = container.querySelector('.price-input-air');
+        
+        if (manualInput.classList.contains('hidden')) {
+            // Switch to Manual
+            select.classList.add('hidden');
+            select.disabled = true;
+            select.required = false;
+            
+            manualInput.classList.remove('hidden');
+            manualInput.required = true;
+            
+            hiddenManual.disabled = false;
+            
+            btn.classList.add('bg-blue-200', 'text-blue-700');
+            btn.classList.remove('bg-gray-200', 'text-gray-600');
+            btn.innerHTML = '<i class="fas fa-list"></i>';
+            btn.title = "Switch to List Selection";
+            
+            priceInput.readOnly = false;
+            priceInput.classList.remove('bg-gray-100');
+            priceInput.classList.add('bg-white');
+            priceInput.value = '';
+            priceInput.focus();
+        } else {
+            // Switch to Select
+            manualInput.classList.add('hidden');
+            manualInput.required = false;
+            
+            select.classList.remove('hidden');
+            select.disabled = false;
+            select.required = true;
+            
+            hiddenManual.disabled = true;
+            
+            btn.classList.remove('bg-blue-200', 'text-blue-700');
+            btn.classList.add('bg-gray-200', 'text-gray-600');
+            btn.innerHTML = '<i class="fas fa-keyboard"></i>';
+            btn.title = "Switch to Manual Input";
+            
+            priceInput.readOnly = true;
+            priceInput.classList.add('bg-gray-100');
+            priceInput.classList.remove('bg-white');
+            
+            // Restore price
+            updatePriceFromSelect(select);
+        }
+        
+        calculateAirSectionTotal(sectionIndex);
+    };
+
     function addAirSection() {
         airSectionCounter++;
         const sectionIndex = airSectionCounter;
@@ -2610,16 +2678,35 @@
                 <div class="types-wrapper-air-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                     <div class="types-list-air space-y-2 mb-2">
-                        <div class="flex flex-col gap-1 border p-2 rounded bg-gray-50">
-                            <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required onchange="calculateAirSectionTotal(${sectionIndex})">
-                                <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
-                            </select>
-                            <div class="flex items-center gap-2">
-                                <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
-                                <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
-                                <label class="text-xs text-gray-600">Lumpsum (Tidak dikali Ton)</label>
+                          <div class="flex flex-col gap-1 border p-2 rounded bg-gray-50 relative">
+                                <div class="flex gap-2 w-full">
+                                    <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required onchange="updatePriceFromSelect(this); calculateAirSectionTotal(${sectionIndex})">
+                                        <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                                    </select>
+                                    
+                                    <input type="hidden" name="air[${sectionIndex}][types][]" class="hidden-type-manual" value="MANUAL" disabled>
+                                    
+                                    <input type="text" name="air[${sectionIndex}][manual_names][]" class="type-manual-input-air hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Type Manual">
+                                    
+                                    <button type="button" class="type-toggle-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTypeInput(this, ${sectionIndex})">
+                                        <i class="fas fa-keyboard"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="flex-grow">
+                                        <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
+                                        <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 bg-gray-100" placeholder="0" readonly oninput="calculateAirSectionTotal(${sectionIndex})">
+                                    </div>
+                                    <div class="flex items-end pb-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
+                                            <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500 h-5 w-5" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                                            <label class="text-xs text-gray-600">Lumpsum (Fix)</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
                     </div>
                     <button type="button" class="add-type-btn-air text-xs bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" disabled onclick="addTypeToAirSection(${sectionIndex})">
                         <i class="fas fa-plus"></i> Tambah Type
@@ -2877,10 +2964,16 @@
             
             typeContainers.forEach(container => {
                 const select = container.querySelector('.type-select-air');
+                const priceInput = container.querySelector('.price-input-air');
                 const currentValue = select.value;
                 select.disabled = false;
                 select.innerHTML = options;
                 if (currentValue) select.value = currentValue;
+                
+                // Update price if not manual
+                if (!container.querySelector('.type-manual-input-air').required) {
+                    updatePriceFromSelect(select);
+                }
             });
             
             addTypeBtn.disabled = false;
@@ -2909,17 +3002,35 @@
         div.className = 'flex flex-col gap-1 border p-2 rounded bg-gray-50 relative';
         div.innerHTML = `
             <div class="flex gap-2 w-full">
-                <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" onchange="calculateAirSectionTotal(${sectionIndex})">
+                <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" onchange="updatePriceFromSelect(this); calculateAirSectionTotal(${sectionIndex})">
                     ${options}
                 </select>
-                <button type="button" class="text-red-500 hover:text-red-700" onclick="this.closest('.flex-col').remove(); calculateAirSectionTotal(${sectionIndex})">
+                
+                <input type="hidden" name="air[${sectionIndex}][types][]" class="hidden-type-manual" value="MANUAL" disabled>
+                
+                <input type="text" name="air[${sectionIndex}][manual_names][]" class="type-manual-input-air hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Type Manual">
+                                    
+                <button type="button" class="type-toggle-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTypeInput(this, ${sectionIndex})">
+                    <i class="fas fa-keyboard"></i>
+                </button>
+                    
+                <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="this.closest('.flex-col').remove(); calculateAirSectionTotal(${sectionIndex})">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
-            <div class="flex items-center gap-2">
-                <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
-                <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
-                <label class="text-xs text-gray-600">Lumpsum (Tidak dikali Ton)</label>
+            
+            <div class="flex items-center gap-2 mt-1">
+                <div class="flex-grow">
+                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
+                    <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 bg-gray-100" placeholder="0" readonly oninput="calculateAirSectionTotal(${sectionIndex})">
+                </div>
+                <div class="flex items-end pb-1">
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
+                        <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500 h-5 w-5" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                        <label class="text-xs text-gray-600">Lumpsum (Fix)</label>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -2992,9 +3103,11 @@
             const select = container.querySelector('.type-select-air');
             const checkbox = container.querySelector('.lumpsum-checkbox');
             
-            if (select && select.selectedIndex >= 0) {
-                const selectedOption = select.options[select.selectedIndex];
-                const harga = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
+            if (select) {
+                // Determine price from input field now
+                const priceInput = container.querySelector('.price-input-air');
+                const harga = parseFloat(priceInput.value) || 0;
+                
                 const isLumpsum = checkbox ? checkbox.checked : false;
 
                 if (isLumpsum) {
