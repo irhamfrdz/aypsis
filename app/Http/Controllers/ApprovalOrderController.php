@@ -136,7 +136,7 @@ class ApprovalOrderController extends Controller
         $terms = Term::orderBy('kode')->get();
         $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
 
-        return view('approval-order.edit', compact('order', 'terms', 'penerimas'));
+        return view('approval-order.edit', compact('order', 'terms', 'penerimas') + ['return_url' => request('return_url')]);
     }
 
     /**
@@ -191,7 +191,7 @@ class ApprovalOrderController extends Controller
             
             $order->save();
 
-            return redirect()->route('approval-order.index')
+            return redirect($request->input('return_url', route('approval-order.index')))
                            ->with('success', 'Data Order berhasil diupdate');
 
         } catch (\Exception $e) {
