@@ -38,6 +38,7 @@ class StockBanController extends Controller
         $stockVelgs = StockVelg::with('namaStockBan')->latest()->get();
 
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $alatBerats = \App\Models\AlatBerat::orderBy('nama')->get();
         // Assuming receivers are employees/karyawans
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = \App\Models\StockBan::generateNextInvoice();
@@ -45,7 +46,7 @@ class StockBanController extends Controller
             ->orderBy('vendor')
             ->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'karyawans', 'nextInvoice', 'pricelistKanisirBans'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans'));
     }
 
     /**

@@ -837,6 +837,16 @@
                                         {{ $displayText }}
                                     </div>
                                 @endforeach
+                                @foreach($alatBerats as $alatBerat)
+                                    @php
+                                        $displayText = $alatBerat->nama . ' (' . ($alatBerat->jenis ?? 'Alat Berat') . ' - ' . ($alatBerat->merk ?? '-') . ')';
+                                    @endphp
+                                    <div class="dropdown-item" 
+                                         onclick="DropdownManager.select('mobil', 'alat_berat_{{ $alatBerat->id }}', '{{ $displayText }}')"
+                                         data-search="{{ strtolower($displayText) }}">
+                                        {{ $displayText }}
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
