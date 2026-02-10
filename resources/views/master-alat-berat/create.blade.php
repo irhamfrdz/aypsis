@@ -58,11 +58,7 @@
                 <input type="text" name="nomor_seri" id="nomor_seri" value="{{ old('nomor_seri') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
-            <!-- Tahun Pembuatan -->
-            <div>
-                <label for="tahun_pembuatan" class="block text-sm font-medium text-gray-700">Tahun Pembuatan</label>
-                <input type="number" name="tahun_pembuatan" id="tahun_pembuatan" value="{{ old('tahun_pembuatan') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" min="1900" max="{{ date('Y')+1 }}">
-            </div>
+
 
             <!-- Lokasi -->
             <div>

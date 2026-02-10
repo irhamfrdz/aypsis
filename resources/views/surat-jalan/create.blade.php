@@ -448,7 +448,13 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Supir</label>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="checkbox-supir-customer" class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" onchange="toggleSupirCustomer(this)">
+                            <label for="checkbox-supir-customer" class="text-xs text-gray-500 cursor-pointer">Supir Customer</label>
+                        </div>
+                    </div>
                         <select name="supir"
                                 id="supir-select"
                                 onchange="updateNoPlat(); handleSupirCustomerSelection();"
@@ -1085,12 +1091,34 @@ function checkSizeWarning() {
     }
 }
 
+function toggleSupirCustomer(checkbox) {
+    const supirSelect = document.getElementById('supir-select');
+    if (!supirSelect) return;
+    
+    if (checkbox.checked) {
+        supirSelect.value = '__CUSTOMER__';
+    } else {
+        // If unchecking, and current value is customer, reset to empty
+        if (supirSelect.value === '__CUSTOMER__') {
+            supirSelect.value = '';
+        }
+    }
+    
+    // Trigger change event to fallback to handleSupirCustomerSelection
+    const event = new Event('change');
+    supirSelect.dispatchEvent(event);
+    
+    // Explicitly call handler just to be sure
+    handleSupirCustomerSelection();
+}
+
 function handleSupirCustomerSelection() {
     const supirSelect = document.getElementById('supir-select');
     const isSupplierCustomerInput = document.getElementById('is_supir_customer');
     const supirCustomerDiv = document.getElementById('supir-customer-input');
     const namaSupirCustomerInput = document.getElementById('nama-supir-customer');
     const uangJalanInput = document.getElementById('uang-jalan-input');
+    const checkboxSupirCustomer = document.getElementById('checkbox-supir-customer');
 
     if (!supirSelect || !isSupplierCustomerInput || !supirCustomerDiv) return;
 
@@ -1108,10 +1136,16 @@ function handleSupirCustomerSelection() {
         if (uangJalanInput) {
             uangJalanInput.value = '0';
             uangJalanInput.setAttribute('readonly', 'readonly');
-            uangJalanInput.disabled = true;
+            // uangJalanInput.disabled = true; // Don't disable completely as it might not submit? usually readonly is enough for text inputs
+            // Actually it was disabled before, keeping consistent behavior but checking submit issues
+            uangJalanInput.readOnly = true;
+            uangJalanInput.classList.add('bg-gray-100');
         }
-        // Clear supir-select value so we use nama_supir_customer instead when submitting
-        // But keep the select value so UI remains consistent
+        
+        // Update checkbox state if it exists and not already checked
+        if (checkboxSupirCustomer && !checkboxSupirCustomer.checked) {
+            checkboxSupirCustomer.checked = true;
+        }
     } else {
         // Unset customer
         isSupplierCustomerInput.value = '0';
@@ -1123,9 +1157,16 @@ function handleSupirCustomerSelection() {
         // Re-enable uang_jalan
         if (uangJalanInput) {
             uangJalanInput.removeAttribute('readonly');
-            uangJalanInput.disabled = false;
+            uangJalanInput.readOnly = false;
+            // uangJalanInput.disabled = false;
+            uangJalanInput.classList.remove('bg-gray-100');
             // Optionally recalc uang jalan
             updateUangJalan();
+        }
+        
+        // Update checkbox state if it exists and checked
+        if (checkboxSupirCustomer && checkboxSupirCustomer.checked) {
+            checkboxSupirCustomer.checked = false;
         }
     }
 }
