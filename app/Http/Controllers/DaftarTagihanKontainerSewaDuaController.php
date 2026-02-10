@@ -533,4 +533,41 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             ], 500);
         }
     }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id',
+            'status' => 'required|string|in:ongoing,selesai'
+        ]);
+
+        try {
+            $status = $request->status;
+            $updateData = [];
+            
+            if ($status === 'selesai') {
+                $updateData['tanggal_akhir'] = now();
+            } else {
+                $updateData['tanggal_akhir'] = null;
+            }
+            
+            $updated = DaftarTagihanKontainerSewaDua::whereIn('id', $request->ids)
+                ->update($updateData);
+            
+            $statusLabel = $status === 'selesai' ? 'Selesai' : 'Ongoing';
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil mengubah status {$updated} tagihan kontainer menjadi {$statusLabel}.",
+                'updated_count' => $updated
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Bulk update status error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status tagihan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
