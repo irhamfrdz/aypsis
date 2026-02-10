@@ -269,6 +269,7 @@ Route::middleware([
         Route::resource('gudang-amprahan', MasterGudangAmprahanController::class);
 
         // Master Alat Berat
+        Route::get('alat-berat/template', [\App\Http\Controllers\AlatBeratController::class, 'downloadTemplate'])->name('alat-berat.template');
         Route::post('alat-berat/import', [\App\Http\Controllers\AlatBeratController::class, 'import'])->name('alat-berat.import');
         Route::resource('alat-berat', \App\Http\Controllers\AlatBeratController::class);
 

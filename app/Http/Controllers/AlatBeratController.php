@@ -6,6 +6,7 @@ use App\Models\AlatBerat;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\AlatBeratImport;
+use App\Exports\AlatBeratTemplateExport;
 
 class AlatBeratController extends Controller
 {
@@ -133,5 +134,10 @@ class AlatBeratController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new AlatBeratTemplateExport, 'template_alat_berat.xlsx');
     }
 }
