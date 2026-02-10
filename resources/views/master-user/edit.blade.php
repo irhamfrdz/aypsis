@@ -752,6 +752,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Alat Berat --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Alat Berat</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['view']) && $userMatrixPermissions['master-alat-berat']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['create']) && $userMatrixPermissions['master-alat-berat']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['update']) && $userMatrixPermissions['master-alat-berat']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-alat-berat][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-alat-berat']['delete']) && $userMatrixPermissions['master-alat-berat']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
