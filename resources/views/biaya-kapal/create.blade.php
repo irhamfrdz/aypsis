@@ -1309,6 +1309,10 @@
             if (nominalInput.value) {
                 calculatePphDokumen();
             }
+
+            // Hide Trucking wrapper for Biaya Dokumen
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         }
         // Show PPH fields if "Biaya Listrik" is selected
         else if (selectedText.toLowerCase().includes('listrik')) {
@@ -1343,47 +1347,57 @@
             if (nominalInput.value) {
                 calculatePphDokumen();
             }
+
+            // Hide Trucking wrapper for Biaya Listrik
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         }
-        // Show PPH fields if "Biaya Trucking" is selected
+        // Show Trucking fields if "Biaya Trucking" is selected
         else if (selectedText.toLowerCase().includes('trucking')) {
-            // Show Trucking wrapper
+            // Show Trucking multi kapal wrapper
             if (truckingWrapper) truckingWrapper.classList.remove('hidden');
             initializeTruckingSections();
-
-            // Show PPH Dokumen and Grand Total fields for Biaya Trucking
-            pphDokumenWrapper.classList.remove('hidden');
-            grandTotalDokumenWrapper.classList.remove('hidden');
             
-            // Hide other type-specific fields
-            vendorWrapper.classList.add('hidden');
-            if (vendorSelect) vendorSelect.value = '';
-            barangWrapper.classList.add('hidden');
-            clearAllKapalSections();
-            airWrapper.classList.add('hidden');
-            clearAllAirSections();
-            ppnWrapper.classList.add('hidden');
-            pphWrapper.classList.add('hidden');
-            totalBiayaWrapper.classList.add('hidden');
-            dpWrapper.classList.add('hidden');
-            sisaPembayaranWrapper.classList.add('hidden');
+            // Show global summary fields for Biaya Trucking
+            if(nominalWrapper) nominalWrapper.classList.remove('hidden');
+            if(pphDokumenWrapper) pphDokumenWrapper.classList.remove('hidden');
+            if(grandTotalDokumenWrapper) grandTotalDokumenWrapper.classList.remove('hidden');
             
-            // Hide standard fields (already in trucking sections)
+            // Remove required attributes for hidden fields
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) {
+                // If multiple sections, global penerima might be redundant but let's keep it for now
+                penerimaInput.removeAttribute('required');
+                if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            }
+            
+            // Hide standard kapal/voyage/bl fields (already in trucking sections)
             kapalWrapper.classList.add('hidden');
             voyageWrapper.classList.add('hidden');
             blWrapper.classList.add('hidden');
             clearKapalSelections();
             clearVoyageSelections();
             clearBlSelections();
+
+            // Hide other standard fields
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
             
-            // Hide TKBM wrapper
-            if (document.getElementById('tkbm_wrapper')) {
-                document.getElementById('tkbm_wrapper').classList.add('hidden');
-                clearAllTkbmSections();
-            }
-            
-            // Hide Operasional wrapper
-            operasionalWrapper.classList.add('hidden');
-            clearAllOperasionalSections();
+            // Hide other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
             
             // Reset values
             ppnInput.value = '0';
@@ -1391,11 +1405,6 @@
             totalBiayaInput.value = '';
             dpInput.value = '0';
             sisaPembayaranInput.value = '0';
-            
-            // Calculate PPH if nominal already filled
-            if (nominalInput.value) {
-                calculatePphDokumen();
-            }
         }
         // Show fields for "Biaya Air"
         else if (selectedText.toLowerCase().includes('air')) {
@@ -1524,6 +1533,10 @@
             // Hide Operasional wrapper for Biaya Buruh
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+            
+            // Hide Trucking wrapper for Biaya Buruh
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {
@@ -1577,6 +1590,10 @@
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
+
+            // Hide Trucking wrapper for Biaya TKBM
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         }
         // Show operasional wrapper if "Operasional" is selected
         else if (selectedText.toLowerCase().includes('operasional')) {
@@ -1634,6 +1651,10 @@
             dpWrapper.classList.remove('hidden');
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
+
+            // Hide Trucking wrapper for Biaya Operasional
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         } else if (selectedText.toLowerCase().includes('penumpukan')) {
             // Show PPN/PPH fields for Biaya Penumpukan
             barangWrapper.classList.add('hidden');
@@ -1688,6 +1709,10 @@
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
             
+            // Hide Trucking wrapper
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+
             // Calculate initial total
             calculateTotalBiaya();
         } else {
@@ -1754,6 +1779,10 @@
             
             // Show BL wrapper for other types
             blWrapper.classList.remove('hidden');
+
+            // Hide Trucking wrapper
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         }
     });
     
@@ -4228,7 +4257,39 @@
                     </div>
                     <div class="trucking-hidden-bl-inputs"></div>
                 </div>
-                <div class="mt-2 text-xs text-blue-600 font-medium trucking-bl-count">Terpilih: 0 kontainer</div>
+                <div class="flex items-center justify-between mt-2">
+                    <div class="text-xs text-blue-600 font-medium trucking-bl-count">Terpilih: 0 kontainer</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="trucking_sections[${sectionIndex}][subtotal]" 
+                               class="trucking-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPh 2%</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="trucking_sections[${sectionIndex}][pph]" 
+                               class="trucking-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="trucking_sections[${sectionIndex}][total_biaya]" 
+                               class="trucking-total-input w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg bg-blue-50 text-blue-800 font-bold focus:ring-0" 
+                               value="0" readonly>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -4238,6 +4299,7 @@
         const kapalSelect = section.querySelector('.trucking-kapal-select');
         const voyageSelect = section.querySelector('.trucking-voyage-select');
         const blDropdown = section.querySelector('.trucking-bl-dropdown');
+        const vendorSelect = section.querySelector('.trucking-vendor-select');
         
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForTruckingSection(sectionIndex, this.value);
@@ -4245,6 +4307,10 @@
         
         voyageSelect.addEventListener('change', function() {
             loadBlsForTruckingSection(sectionIndex, this.value);
+        });
+
+        vendorSelect.addEventListener('change', function() {
+            calculateTruckingTotals(sectionIndex);
         });
 
         // Close dropdown when clicking outside
@@ -4328,13 +4394,16 @@
                     const blData = data.bls[id];
                     html += `
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
-                             data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}">
-                            <div class="font-medium text-gray-900">${blData.kontainer}</div>
+                             data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}">
+                            <div class="font-medium text-gray-900">${blData.kontainer} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${blData.size}'</span></div>
                             <div class="text-xs text-gray-500">Seal: ${blData.seal}</div>
                         </div>
                     `;
                 });
                 blDropdown.innerHTML = html;
+
+                // Clear previous totals when new bls loaded
+                calculateTruckingTotals(sectionIndex);
 
                 // Bind clicks
                 blDropdown.querySelectorAll('.trucking-bl-option').forEach(opt => {
@@ -4374,12 +4443,97 @@
                         const count = chipsContainer.children.length;
                         countDisplay.textContent = `Terpilih: ${count} kontainer`;
                         if (count === 0) placeholder.classList.remove('hidden');
+
+                        // RECALCULATE
+                        calculateTruckingTotals(sectionIndex);
                     });
                 });
             } else {
                 blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Tidak ada kontainer</p>';
+                calculateTruckingTotals(sectionIndex);
             }
         });
+    }
+
+    function calculateTruckingTotals(sectionIndex) {
+        const section = document.querySelector(`.trucking-section[data-index="${sectionIndex}"]`);
+        if (!section) return;
+
+        const vendor = section.querySelector('.trucking-vendor-select').value;
+        const selectedOptions = section.querySelectorAll('.trucking-bl-option.selected');
+        const subtotalInput = section.querySelector('.trucking-subtotal-input');
+        const pphInput = section.querySelector('.trucking-pph-input');
+        const totalInput = section.querySelector('.trucking-total-input');
+
+        let subtotal = 0;
+
+        if (vendor && selectedOptions.length > 0) {
+            selectedOptions.forEach(opt => {
+                const size = opt.getAttribute('data-size');
+                // Find price in pricelist
+                const priceItem = pricelistBiayaTruckingData.find(item => 
+                    item.nama_vendor === vendor && String(item.size) === String(size)
+                );
+                
+                if (priceItem) {
+                    subtotal += parseFloat(priceItem.biaya) || 0;
+                }
+            });
+        }
+
+        const pph = subtotal * 0.02;
+        const total = subtotal - pph; // PPh 23 usually subtracts from nominal? Or adds?
+        // Let's check other sections. Usually PPh is a deduction for Jasa Trucking.
+        // User asked for "total biaya". If subtotal is 1M, PPh is 20k, total paid is 980k?
+        // Or is it subtotal + PPh? Usually vendor charges 1M + PPN - PPh.
+        // Let's stick to subtotal - pph as "Total Biaya" (Paid amount).
+        
+        const formatRupiah = (val) => {
+            return new Intl.NumberFormat('id-ID').format(Math.round(val));
+        };
+
+        subtotalInput.value = formatRupiah(subtotal);
+        pphInput.value = formatRupiah(pph);
+        totalInput.value = formatRupiah(total);
+
+        // Update global summary
+        calculateTotalFromAllTruckingSections();
+    }
+
+    window.removeTruckingSection = function(index) {
+        const section = document.querySelector(`.trucking-section[data-index="${index}"]`);
+        if (section) {
+            section.remove();
+            calculateTotalFromAllTruckingSections();
+        }
+    };
+
+    function calculateTotalFromAllTruckingSections() {
+        let totalSubtotal = 0;
+        let totalPph = 0;
+        let totalGrandTotal = 0;
+
+        document.querySelectorAll('.trucking-section').forEach(section => {
+            const sub = parseFloat(section.querySelector('.trucking-subtotal-input').value.replace(/\./g, '')) || 0;
+            const pph = parseFloat(section.querySelector('.trucking-pph-input').value.replace(/\./g, '')) || 0;
+            const total = parseFloat(section.querySelector('.trucking-total-input').value.replace(/\./g, '')) || 0;
+
+            totalSubtotal += sub;
+            totalPph += pph;
+            totalGrandTotal += total;
+        });
+
+        if (nominalInput) {
+            nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';
+        }
+
+        // We can also update pphDokumenInput and grandTotalDokumenInput if we want to show global summary
+        if (pphDokumenInput) {
+            pphDokumenInput.value = totalPph > 0 ? Math.round(totalPph).toLocaleString('id-ID') : '0';
+        }
+        if (grandTotalDokumenInput) {
+            grandTotalDokumenInput.value = totalGrandTotal > 0 ? Math.round(totalGrandTotal).toLocaleString('id-ID') : '0';
+        }
     }
 </script>
 @endpush

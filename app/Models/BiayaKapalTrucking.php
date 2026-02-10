@@ -14,6 +14,9 @@ class BiayaKapalTrucking extends Model
         'voyage',
         'nama_vendor',
         'no_bl',
+        'subtotal',
+        'pph',
+        'total_biaya',
     ];
 
     protected $casts = [

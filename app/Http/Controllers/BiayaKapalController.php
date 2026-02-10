@@ -213,6 +213,16 @@ class BiayaKapalController extends Controller
             unset($section);
         }
         
+        // Trucking Sections
+        if (isset($data['trucking_sections']) && is_array($data['trucking_sections'])) {
+            foreach ($data['trucking_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+        
         $request->replace($data);
         
         $validated = $request->validate([
@@ -298,6 +308,9 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.voyage' => 'nullable|string|max:255',
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
             'trucking_sections.*.no_bl' => 'nullable|array',
+            'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'trucking_sections.*.pph' => 'nullable|numeric|min:0',
+            'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -352,6 +365,9 @@ class BiayaKapalController extends Controller
                         'voyage' => $section['voyage'] ?? null,
                         'nama_vendor' => $section['nama_vendor'] ?? null,
                         'no_bl' => $section['no_bl'] ?? [],
+                        'subtotal' => $section['subtotal'] ?? 0,
+                        'pph' => $section['pph'] ?? 0,
+                        'total_biaya' => $section['total_biaya'] ?? 0,
                     ]);
                 }
             }
@@ -1291,7 +1307,7 @@ class BiayaKapalController extends Controller
 
             // Get BL data with kontainer and seal from bls table for the selected voyages
             $bls = DB::table('bls')
-                ->select('id', 'nomor_kontainer', 'no_seal')
+                ->select('id', 'nomor_kontainer', 'no_seal', 'size_kontainer')
                 ->whereIn('no_voyage', $voyages)
                 ->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
@@ -1299,7 +1315,8 @@ class BiayaKapalController extends Controller
                 ->mapWithKeys(function($bl) {
                     return [$bl->id => [
                         'kontainer' => $bl->nomor_kontainer ?? 'N/A',
-                        'seal' => $bl->no_seal ?? 'N/A'
+                        'seal' => $bl->no_seal ?? 'N/A',
+                        'size' => $bl->size_kontainer ?? '20'
                     ]];
                 });
 
