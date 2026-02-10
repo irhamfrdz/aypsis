@@ -386,6 +386,123 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         return view('daftar-tagihan-kontainer-sewa-2.import');
     }
 
+    public function export(Request $request)
+    {
+        $query = DaftarTagihanKontainerSewaDua::query();
+
+        // Exclude GROUP_SUMMARY records
+        $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+              ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
+
+        // Apply same filters as index
+        if ($request->filled('q')) {
+            $searchTerm = trim($request->input('q'));
+            $sanitizedSearch = preg_replace('/[^A-Za-z0-9]/', '', $searchTerm);
+
+            $query->where(function ($q) use ($searchTerm, $sanitizedSearch) {
+                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
+                    ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                    ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
+                    ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+
+                if (!empty($sanitizedSearch)) {
+                    $q->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') LIKE ?", ['%' . $sanitizedSearch . '%']);
+                }
+            });
+        }
+
+        if ($request->filled('vendor')) {
+            $query->where('vendor', $request->input('vendor'));
+        }
+        if ($request->filled('size')) {
+            $query->where('size', $request->input('size'));
+        }
+        if ($request->filled('periode')) {
+            $query->where('periode', $request->input('periode'));
+        }
+
+        // Handle status filter
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'ongoing') {
+                $query->whereNull('tanggal_akhir');
+            } elseif ($status === 'selesai') {
+                $query->whereNotNull('tanggal_akhir');
+            }
+        }
+
+        // Ordering
+        $query->orderBy('nomor_kontainer')
+              ->orderBy('periode');
+
+        $tagihans = $query->get();
+
+        // Generate CSV
+        $filename = 'daftar_tagihan_kontainer_sewa_' . date('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($tagihans) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for Excel UTF-8 support
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Header row
+            fputcsv($file, [
+                'Vendor',
+                'No. Kontainer',
+                'Size',
+                'Periode',
+                'Tanggal Awal',
+                'Tanggal Akhir',
+                'Masa',
+                'Tarif',
+                'DPP',
+                'DPP Nilai Lain',
+                'Adjustment',
+                'Invoice Vendor',
+                'Tanggal Invoice Vendor',
+                'PPN',
+                'PPH',
+                'Grand Total',
+                'Group',
+                'Status'
+            ]);
+
+            // Data rows
+            foreach ($tagihans as $tagihan) {
+                fputcsv($file, [
+                    $tagihan->vendor,
+                    $tagihan->nomor_kontainer,
+                    $tagihan->size,
+                    $tagihan->periode,
+                    $tagihan->tanggal_awal ? date('d-m-Y', strtotime($tagihan->tanggal_awal)) : '',
+                    $tagihan->tanggal_akhir ? date('d-m-Y', strtotime($tagihan->tanggal_akhir)) : '',
+                    $tagihan->masa,
+                    $tagihan->tarif,
+                    $tagihan->dpp,
+                    $tagihan->dpp_nilai_lain,
+                    $tagihan->adjustment,
+                    $tagihan->invoice_vendor,
+                    $tagihan->tanggal_invoice_vendor ? date('d-m-Y', strtotime($tagihan->tanggal_invoice_vendor)) : '',
+                    $tagihan->ppn,
+                    $tagihan->pph,
+                    $tagihan->grand_total,
+                    $tagihan->group,
+                    $tagihan->tanggal_akhir ? 'Selesai' : 'Ongoing'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function exportTemplate()
     {
         // Placeholder

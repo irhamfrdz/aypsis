@@ -157,6 +157,7 @@ Route::middleware([
           Route::post('daftar-tagihan-kontainer-sewa-2/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'storeGroup'])->name('daftar-tagihan-kontainer-sewa-2.store-group');
           Route::get('daftar-tagihan-kontainer-sewa-2/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'import'])->name('daftar-tagihan-kontainer-sewa-2.import');
           Route::get('daftar-tagihan-kontainer-sewa-2/export-template', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'exportTemplate'])->name('daftar-tagihan-kontainer-sewa-2.export-template');
+          Route::get('daftar-tagihan-kontainer-sewa-2/export', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'export'])->name('daftar-tagihan-kontainer-sewa-2.export');
           
           Route::resource('daftar-tagihan-kontainer-sewa-2', \App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class);
           
