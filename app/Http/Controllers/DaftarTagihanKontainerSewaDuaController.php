@@ -503,9 +503,34 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+
     public function exportTemplate()
     {
         // Placeholder
         return response()->download(public_path('templates/template_tagihan_kontainer_sewa.xlsx'));
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id'
+        ]);
+
+        try {
+            $deleted = DaftarTagihanKontainerSewaDua::whereIn('id', $request->ids)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghapus {$deleted} tagihan kontainer.",
+                'deleted_count' => $deleted
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Bulk delete error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus tagihan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

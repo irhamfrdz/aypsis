@@ -158,6 +158,7 @@ Route::middleware([
           Route::get('daftar-tagihan-kontainer-sewa-2/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'import'])->name('daftar-tagihan-kontainer-sewa-2.import');
           Route::get('daftar-tagihan-kontainer-sewa-2/export-template', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'exportTemplate'])->name('daftar-tagihan-kontainer-sewa-2.export-template');
           Route::get('daftar-tagihan-kontainer-sewa-2/export', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'export'])->name('daftar-tagihan-kontainer-sewa-2.export');
+          Route::post('daftar-tagihan-kontainer-sewa-2/bulk-delete', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'bulkDelete'])->name('daftar-tagihan-kontainer-sewa-2.bulk-delete');
           
           Route::resource('daftar-tagihan-kontainer-sewa-2', \App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class);
           
