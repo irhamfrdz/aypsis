@@ -148,6 +148,11 @@ class SuratJalan extends Model
         return $this->belongsTo(Karyawan::class, 'supir', 'nama_panggilan');
     }
 
+    public function supir2Karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir2', 'nama_panggilan');
+    }
+
     public function kenekKaryawan()
     {
         return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');

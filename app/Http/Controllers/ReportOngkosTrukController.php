@@ -208,8 +208,8 @@ class ReportOngkosTrukController extends Controller
         }
 
 
-        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'kenekKaryawan'])->get();
-        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'kenekKaryawan'])->get();
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'supir2Karyawan', 'kenekKaryawan'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'supir2Karyawan', 'kenekKaryawan'])->get();
 
 
         $data = collect();
@@ -233,12 +233,14 @@ class ReportOngkosTrukController extends Controller
                 $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
             }
 
+            $driverData = $this->resolveDriverData($sj);
+
             $data->push([
                 'tanggal' => (($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan)->format('d/m/Y'),
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_plat' => $sj->no_plat,
-                'nama_lengkap_supir' => $sj->supirKaryawan ? $sj->supirKaryawan->nama_lengkap : ($sj->supir ?: ($sj->supir2 ?: '-')),
-                'nik_supir' => $sj->supir_nik,
+                'nama_lengkap_supir' => $driverData['nama'],
+                'nik_supir' => $driverData['nik'],
                 'nama_lengkap_kenek' => $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : ($sj->kenek ?: '-'),
                 'nik_kenek' => $sj->kenek_nik,
                 'rit_supir' => ($sj->supir || $sj->supir2 || $sj->supirKaryawan) ? 1 : 0,
@@ -272,12 +274,14 @@ class ReportOngkosTrukController extends Controller
                 $nomorBukti = $buktis->unique()->implode(', ') ?: '-';
             }
 
+            $driverData = $this->resolveDriverData($sjb);
+
             $data->push([
                 'tanggal' => (($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan)->format('d/m/Y'),
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'no_plat' => $sjb->no_plat,
-                'nama_lengkap_supir' => $sjb->supirKaryawan ? $sjb->supirKaryawan->nama_lengkap : ($sjb->supir ?: ($sjb->supir2 ?: '-')),
-                'nik_supir' => $sjb->supir_nik,
+                'nama_lengkap_supir' => $driverData['nama'],
+                'nik_supir' => $driverData['nik'],
                 'nama_lengkap_kenek' => $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : ($sjb->kenek ?: '-'),
                 'nik_kenek' => $sjb->kenek_nik,
                 'rit_supir' => ($sjb->supir || $sjb->supir2 || $sjb->supirKaryawan) ? 1 : 0,
@@ -328,5 +332,53 @@ class ReportOngkosTrukController extends Controller
         }
 
         return $ongkosTruk;
+    }
+
+    private function resolveDriverData($item)
+    {
+        $karyawan1 = $item->supirKaryawan;
+        $karyawan2 = $item->supir2Karyawan;
+
+        $isSupir = function($karyawan) {
+            if (!$karyawan) return false;
+            $divisi = strtolower($karyawan->divisi ?? '');
+            $pekerjaan = strtolower($karyawan->pekerjaan ?? '');
+            return str_contains($divisi, 'supir') || str_contains($pekerjaan, 'supir');
+        };
+
+        if ($isSupir($karyawan1)) {
+            return [
+                'nama' => $karyawan1->nama_lengkap,
+                'nik' => $karyawan1->nik
+            ];
+        }
+
+        if ($isSupir($karyawan2)) {
+            return [
+                'nama' => $karyawan2->nama_lengkap,
+                'nik' => $karyawan2->nik
+            ];
+        }
+
+        // Fallback to first available employee if neither is explicitly "supir" division
+        if ($karyawan1) {
+            return [
+                'nama' => $karyawan1->nama_lengkap,
+                'nik' => $karyawan1->nik
+            ];
+        }
+
+        if ($karyawan2) {
+            return [
+                'nama' => $karyawan2->nama_lengkap,
+                'nik' => $karyawan2->nik
+            ];
+        }
+
+        // Fallback to manual text
+        return [
+            'nama' => $item->supir ?: ($item->supir2 ?: '-'),
+            'nik' => $item->supir_nik ?? '-'
+        ];
     }
 }
