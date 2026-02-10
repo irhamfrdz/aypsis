@@ -233,6 +233,20 @@
                             @endif
                         </div>
                         <div>
+                            <label for="no_plat" class="block text-xs font-medium text-gray-500 mb-2">No. Plat</label>
+                            <input type="text" name="no_plat" id="no_plat"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm font-mono @error('no_plat') border-red-500 @enderror {{ isset($sudahMasukBl) && $sudahMasukBl ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                   placeholder="Nomor plat kendaraan"
+                                   value="{{ old('no_plat', $tandaTerima->suratJalan->no_plat) }}"
+                                   {{ isset($sudahMasukBl) && $sudahMasukBl ? 'readonly' : '' }}>
+                            @error('no_plat')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                            @if(isset($sudahMasukBl) && $sudahMasukBl)
+                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
+                            @endif
+                        </div>
+                        <div>
                             <label for="kenek" class="block text-xs font-medium text-gray-500 mb-2">Nama Kenek</label>
                             <select name="kenek" id="kenek"
                                     class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm select2-kenek @error('kenek') border-red-500 @enderror">
@@ -285,6 +299,91 @@
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <!-- Checkbox Lembur & Nginap -->
+                        <div class="col-span-1 md:col-span-2 flex space-x-6 mt-2 items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <div class="flex items-center">
+                                <input type="checkbox"
+                                       name="lembur"
+                                       id="lembur"
+                                       value="1"
+                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ old('lembur', $tandaTerima->suratJalan->lembur ?? 0) ? 'checked' : '' }}
+                                       {{ isset($sudahMasukBl) && $sudahMasukBl ? 'disabled' : '' }}>
+                                <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                    Lembur
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox"
+                                       name="nginap"
+                                       id="nginap"
+                                       value="1"
+                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ old('nginap', $tandaTerima->suratJalan->nginap ?? 0) ? 'checked' : '' }}
+                                       {{ isset($sudahMasukBl) && $sudahMasukBl ? 'disabled' : '' }}>
+                                <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                    Nginap
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox"
+                                       name="tidak_lembur_nginap"
+                                       id="tidak_lembur_nginap"
+                                       value="1"
+                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ old('tidak_lembur_nginap', $tandaTerima->suratJalan->tidak_lembur_nginap ?? 0) ? 'checked' : '' }}
+                                       {{ isset($sudahMasukBl) && $sudahMasukBl ? 'disabled' : '' }}>
+                                <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                    Tidak Lembur & Nginap
+                                </label>
+                            </div>
+                            <div class="ml-auto text-xs text-gray-500 flex items-center">
+                                <i class="fas fa-info-circle mr-1 text-yellow-600"></i>
+                                Pilih minimal satu
+                            </div>
+                        </div>
+                        @if($errors->has('lembur') || $errors->has('nginap') || $errors->has('tidak_lembur_nginap'))
+                            <p class="mt-1 text-xs text-red-600">
+                                Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).
+                            </p>
+                        @endif
+                        
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const lembur = document.getElementById('lembur');
+                                const nginap = document.getElementById('nginap');
+                                const tidakLemburNginap = document.getElementById('tidak_lembur_nginap');
+                                
+                                if (!lembur || !nginap || !tidakLemburNginap) return;
+
+                                function updateCheckboxes(event) {
+                                    // Identify which checkbox triggered the change
+                                    const target = event ? event.target : null;
+
+                                    if (target === tidakLemburNginap && tidakLemburNginap.checked) {
+                                        // If 'Tidak Lembur & Nginap' is checked, uncheck others
+                                        lembur.checked = false;
+                                        nginap.checked = false;
+                                    } else if ((target === lembur || target === nginap) && (lembur.checked || nginap.checked)) {
+                                        // If 'Lembur' or 'Nginap' is checked, uncheck 'Tidak Lembur & Nginap'
+                                        tidakLemburNginap.checked = false;
+                                    }
+                                }
+                                
+                                lembur.addEventListener('change', updateCheckboxes);
+                                nginap.addEventListener('change', updateCheckboxes);
+                                tidakLemburNginap.addEventListener('change', updateCheckboxes);
+                                
+                                // Initial run logic check
+                                if (tidakLemburNginap.checked) {
+                                    lembur.checked = false;
+                                    nginap.checked = false;
+                                } else if (lembur.checked || nginap.checked) {
+                                    tidakLemburNginap.checked = false;
+                                }
+                            });
+                        </script>
                     </div>
                 </div>
                 @endif
@@ -366,6 +465,151 @@
                             <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
                                 <i class="fas fa-info-circle mr-1"></i>Alamat akan terisi otomatis saat memilih penerima, namun dapat diubah sesuai kebutuhan
                             </p>
+                        </div>
+
+                        <!-- Gambar Checkpoint -->
+                        @if($tandaTerima->suratJalan->gambar_checkpoint)
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-2">
+                                Gambar Checkpoint Saat Ini
+                            </label>
+                            @php
+                                $gambarCheckpoint = $tandaTerima->suratJalan->gambar_checkpoint;
+                                $imagePaths = [];
+                                
+                                try {
+                                    if (empty($gambarCheckpoint)) {
+                                        $imagePaths = [];
+                                    } elseif (is_array($gambarCheckpoint)) {
+                                        $imagePaths = array_filter($gambarCheckpoint);
+                                    } elseif (is_string($gambarCheckpoint)) {
+                                        $decoded = json_decode($gambarCheckpoint, true);
+                                        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                            $imagePaths = array_filter($decoded);
+                                        } else {
+                                            $imagePaths = [$gambarCheckpoint];
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    \Log::error('Error parsing gambar_checkpoint: ' . $e->getMessage());
+                                    $imagePaths = [];
+                                }
+                            @endphp
+                            
+                            @if(count($imagePaths) > 0)
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                @foreach($imagePaths as $index => $imagePath)
+                                @if(!empty($imagePath) && is_string($imagePath))
+                                <div class="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <a href="{{ asset('storage/' . $imagePath) }}" 
+                                       target="_blank" 
+                                       class="group relative block overflow-hidden rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all flex-shrink-0">
+                                        @php
+                                            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+                                            $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                        @endphp
+                                        @if($isImage)
+                                            <img src="{{ asset('storage/' . $imagePath) }}" 
+                                                 alt="Gambar Checkpoint {{ $index + 1 }}" 
+                                                 class="w-24 h-24 object-cover group-hover:scale-105 transition-transform">
+                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                                                <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                                                </svg>
+                                            </div>
+                                        @else
+                                            <div class="w-24 h-24 flex items-center justify-center bg-gray-100">
+                                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
+                                        @endif
+                                    </a>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-medium text-gray-700 mb-1">Foto {{ $index + 1 }}</p>
+                                        <div class="flex flex-col gap-1">
+                                            <a href="{{ asset('storage/' . $imagePath) }}" 
+                                               target="_blank" 
+                                               class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded transition">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                                Lihat
+                                            </a>
+                                            <a href="{{ asset('storage/' . $imagePath) }}" 
+                                               download 
+                                               class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                </svg>
+                                                Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                                @endforeach
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-camera mr-1"></i>
+                                {{ count($imagePaths) }} foto diupload saat checkpoint di lapangan
+                            </p>
+                            @else
+                            <div class="bg-gray-100 p-4 rounded-lg text-center">
+                                <p class="text-sm text-gray-500">Tidak ada gambar checkpoint</p>
+                            </div>
+                            @endif
+                        </div>
+                        @endif
+
+                        <!-- Upload Gambar Checkpoint Baru -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-2">
+                                <i class="fas fa-upload mr-1 text-blue-600"></i>
+                                Upload Gambar Checkpoint Baru
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors upload-dropzone">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="gambar_checkpoint" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Upload gambar</span>
+                                            <input id="gambar_checkpoint" 
+                                                   name="gambar_checkpoint[]" 
+                                                   type="file" 
+                                                   class="sr-only" 
+                                                   multiple
+                                                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                                   onchange="previewImages(this)">
+                                        </label>
+                                        <p class="pl-1">atau drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">
+                                        PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                                    </p>
+                                </div>
+                            </div>
+                            @error('gambar_checkpoint.*')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <strong>Catatan:</strong> Gambar yang diupload akan menambah gambar checkpoint yang sudah ada pada surat jalan ini.
+                            </p>
+                            
+                            <!-- Preview Area for New Images -->
+                            <div id="image-preview-container" class="mt-4 hidden">
+                                <label class="block text-xs font-medium text-gray-500 mb-2">
+                                    <i class="fas fa-eye mr-1 text-green-600"></i>
+                                    Preview Gambar yang Akan Diupload
+                                </label>
+                                <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    <!-- Preview images will be inserted here by JavaScript -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -879,6 +1123,196 @@
                 this.closest('.dimensi-row').remove();
             });
         });
+    });
+
+    // Preview uploaded images
+    function previewImages(input) {
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewGrid = document.getElementById('image-preview-grid');
+        
+        if (input.files && input.files.length > 0) {
+            // Show preview container
+            previewContainer.classList.remove('hidden');
+            
+            // Clear previous previews
+            previewGrid.innerHTML = '';
+            
+            // Limit to 5 files maximum
+            const filesToProcess = Math.min(input.files.length, 5);
+            let validFileCount = 0;
+            
+            for (let i = 0; i < filesToProcess; i++) {
+                const file = input.files[i];
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    console.warn(`File ${file.name} is not an image`);
+                    continue;
+                }
+                
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`File ${file.name} terlalu besar. Maksimal 10MB per file.`);
+                    continue;
+                }
+                
+                validFileCount++;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 hover:shadow-md transition-shadow image-preview-item';
+                    previewDiv.dataset.fileIndex = i;
+                    
+                    previewDiv.innerHTML = `
+                        <div class="relative">
+                            <img src="${e.target.result}" 
+                                 alt="Preview ${validFileCount}" 
+                                 class="w-full h-20 object-cover rounded hover:opacity-90 transition-opacity">
+                            <button type="button" 
+                                    onclick="removePreview(this, ${i})"
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm remove-preview-btn"
+                                    title="Hapus gambar">
+                                ×
+                            </button>
+                            <div class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded">
+                                ${validFileCount}
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1 truncate" title="${file.name}">${file.name}</p>
+                        <p class="text-xs text-gray-400">${formatFileSize(file.size)}</p>
+                    `;
+                    
+                    previewGrid.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Show warning if more than 5 files selected
+            if (input.files.length > 5) {
+                alert('Maksimal 5 gambar yang dapat diupload. Hanya 5 gambar pertama yang akan diproses.');
+            }
+            
+            // Show summary
+            if (validFileCount > 0) {
+                const summaryText = document.createElement('p');
+                summaryText.className = 'text-xs text-green-600 mt-2 font-medium';
+                summaryText.innerHTML = `<i class="fas fa-check-circle mr-1"></i>${validFileCount} gambar siap diupload`;
+                previewContainer.appendChild(summaryText);
+            }
+        } else {
+            // Hide preview container if no files
+            previewContainer.classList.add('hidden');
+        }
+    }
+    
+    // Remove preview image
+    function removePreview(button, index) {
+        const input = document.getElementById('gambar_checkpoint');
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewGrid = document.getElementById('image-preview-grid');
+        
+        // Remove the preview div
+        button.closest('.relative').parentNode.remove();
+        
+        // Hide preview container if no more images
+        if (previewGrid.children.length === 0) {
+            previewContainer.classList.add('hidden');
+            input.value = ''; // Clear file input
+        }
+    }
+    
+    // Format file size for display
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Drag and drop functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.querySelector('.upload-dropzone');
+        const fileInput = document.getElementById('gambar_checkpoint');
+        
+        if (dropZone && fileInput) {
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Highlight drop zone when dragging over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // Handle dropped files
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight(e) {
+                dropZone.classList.add('border-blue-400');
+                dropZone.classList.add('bg-blue-50');
+            }
+            
+            function unhighlight(e) {
+                dropZone.classList.remove('border-blue-400');
+                dropZone.classList.remove('bg-blue-50');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                // Validate files before setting to input
+                const validFiles = [];
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                
+                for (let i = 0; i < Math.min(files.length, 5); i++) {
+                    const file = files[i];
+                    
+                    if (!allowedTypes.includes(file.type)) {
+                        alert(`File ${file.name} bukan format gambar yang diizinkan. Gunakan: JPG, PNG, GIF, atau WEBP.`);
+                        continue;
+                    }
+                    
+                    if (file.size > maxSize) {
+                        alert(`File ${file.name} terlalu besar (${formatFileSize(file.size)}). Maksimal 10MB per file.`);
+                        continue;
+                    }
+                    
+                    validFiles.push(file);
+                }
+                
+                if (validFiles.length > 0) {
+                    // Create a new FileList-like object with valid files
+                    const dataTransfer = new DataTransfer();
+                    validFiles.forEach(file => dataTransfer.items.add(file));
+                    
+                    // Set files to input
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Trigger preview
+                    previewImages(fileInput);
+                    
+                    if (validFiles.length < files.length) {
+                        alert(`${validFiles.length} dari ${files.length} file berhasil dipilih. File lainnya tidak memenuhi kriteria.`);
+                    }
+                } else {
+                    alert('Tidak ada file yang valid untuk diupload.');
+                }
+            }
+        }
     });
 </script>
 @endpush
