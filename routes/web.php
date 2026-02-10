@@ -152,6 +152,14 @@ Route::middleware([
           Route::post('daftar-tagihan-kontainer-sewa/{id}/create-next-periode', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'createNextPeriode'])
                ->name('daftar-tagihan-kontainer-sewa.create-next-periode');
           
+          Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
+          Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');
+          Route::post('daftar-tagihan-kontainer-sewa-2/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'storeGroup'])->name('daftar-tagihan-kontainer-sewa-2.store-group');
+          Route::get('daftar-tagihan-kontainer-sewa-2/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'import'])->name('daftar-tagihan-kontainer-sewa-2.import');
+          Route::get('daftar-tagihan-kontainer-sewa-2/export-template', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'exportTemplate'])->name('daftar-tagihan-kontainer-sewa-2.export-template');
+          
+          Route::resource('daftar-tagihan-kontainer-sewa-2', \App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class);
+          
           // The old routes and resource controller were deleted to allow a full rewrite.
           // If you want them restored later, use your backup or reintroduce new routes/controllers.
 
