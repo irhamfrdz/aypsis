@@ -120,6 +120,9 @@ class BiayaKapalController extends Controller
         // Get active pricelist air tawar for biaya air
         $pricelistAirTawar = \App\Models\MasterPricelistAirTawar::orderBy('nama_agen')->get();
 
+        // Get active pricelist TKBM for biaya TKBM barang selection
+        $pricelistTkbm = \App\Models\PricelistTkbm::where('status', 'active')->orderBy('nama_barang')->get();
+
         // Get active pricelist biaya trucking for vendor selection
         $pricelistBiayaTrucking = DB::table('master_pricelist_biaya_trucking')
             ->where('status', 'aktif')
