@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AlatBerat;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\AlatBeratImport;
 
 class AlatBeratController extends Controller
 {
@@ -110,5 +112,26 @@ class AlatBeratController extends Controller
     {
         $alatBerat->delete();
         return redirect()->route('master.alat-berat.index')->with('success', 'Data Alat Berat berhasil dihapus');
+    }
+
+    public function import(Request $request) 
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        try {
+            Excel::import(new AlatBeratImport, $request->file('file'));
+            return redirect()->route('master.alat-berat.index')->with('success', 'Data Alat Berat berhasil diimport');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+             $failures = $e->failures();
+             $messages = [];
+             foreach ($failures as $failure) {
+                 $messages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+             }
+             return redirect()->route('master.alat-berat.index')->withErrors($messages);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }
