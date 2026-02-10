@@ -570,4 +570,181 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             ], 500);
         }
     }
+
+    public function ungroupContainers(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id'
+        ]);
+
+        try {
+            $updated = DaftarTagihanKontainerSewaDua::whereIn('id', $request->ids)
+                ->update(['group' => null]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil mengeluarkan {$updated} kontainer dari grup.",
+                'updated_count' => $updated
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Ungroup containers error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengeluarkan kontainer dari grup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getGroups(Request $request)
+    {
+        try {
+            $groups = DaftarTagihanKontainerSewaDua::whereNotNull('group')
+                ->where('group', '!=', '')
+                ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+                ->distinct()
+                ->pluck('group')
+                ->sort()
+                ->values();
+            
+            return response()->json([
+                'success' => true,
+                'groups' => $groups
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get groups error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data grup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteGroups(Request $request)
+    {
+        $request->validate([
+            'groups' => 'required|array',
+            'groups.*' => 'required|string'
+        ]);
+
+        try {
+            DB::beginTransaction();
+            
+            // Remove group from containers
+            $updated = DaftarTagihanKontainerSewaDua::whereIn('group', $request->groups)
+                ->update(['group' => null]);
+            
+            // Delete group summary records
+            $deleted = DaftarTagihanKontainerSewaDua::whereIn('group', $request->groups)
+                ->where('nomor_kontainer', 'LIKE', 'GROUP_SUMMARY_%')
+                ->delete();
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghapus " . count($request->groups) . " grup dan membebaskan {$updated} kontainer.",
+                'updated_count' => $updated,
+                'deleted_count' => $deleted
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Delete groups error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus grup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generateInvoiceNumber(Request $request)
+    {
+        try {
+            // Generate invoice number based on current date and count
+            $prefix = 'INV-KS-' . date('Ym') . '-';
+            $count = DaftarTagihanKontainerSewaDua::whereNotNull('invoice_vendor')
+                ->where('invoice_vendor', 'LIKE', $prefix . '%')
+                ->count();
+            
+            $nextNumber = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = $prefix . $nextNumber;
+            
+            return response()->json([
+                'success' => true,
+                'invoice_number' => $invoiceNumber
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Generate invoice number error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor invoice: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function importCsv(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $path = $file->getRealPath();
+            $data = array_map('str_getcsv', file($path));
+            
+            // Remove header row
+            $header = array_shift($data);
+            
+            DB::beginTransaction();
+            
+            $imported = 0;
+            $errors = [];
+            
+            foreach ($data as $index => $row) {
+                try {
+                    // Map CSV columns to database fields
+                    // Adjust this mapping based on your CSV structure
+                    DaftarTagihanKontainerSewaDua::create([
+                        'vendor' => $row[0] ?? null,
+                        'nomor_kontainer' => $row[1] ?? null,
+                        'size' => $row[2] ?? null,
+                        'periode' => $row[3] ?? null,
+                        'tanggal_awal' => $row[4] ?? null,
+                        'tanggal_akhir' => $row[5] ?? null,
+                        'masa' => $row[6] ?? null,
+                        'tarif' => $row[7] ?? null,
+                        'dpp' => $row[8] ?? 0,
+                        'dpp_nilai_lain' => $row[9] ?? 0,
+                        'adjustment' => $row[10] ?? 0,
+                        'invoice_vendor' => $row[11] ?? null,
+                        'tanggal_invoice_vendor' => $row[12] ?? null,
+                        'ppn' => $row[13] ?? 0,
+                        'pph' => $row[14] ?? 0,
+                        'grand_total' => $row[15] ?? 0,
+                        'group' => $row[16] ?? null,
+                    ]);
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+                }
+            }
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil import {$imported} data.",
+                'imported_count' => $imported,
+                'errors' => $errors
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Import CSV error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal import CSV: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

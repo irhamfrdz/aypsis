@@ -155,11 +155,16 @@ Route::middleware([
           Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
           Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');
           Route::post('daftar-tagihan-kontainer-sewa-2/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'storeGroup'])->name('daftar-tagihan-kontainer-sewa-2.store-group');
+          Route::get('daftar-tagihan-kontainer-sewa-2/groups', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getGroups'])->name('daftar-tagihan-kontainer-sewa-2.groups');
+          Route::post('daftar-tagihan-kontainer-sewa-2/ungroup-containers', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'ungroupContainers'])->name('daftar-tagihan-kontainer-sewa-2.ungroup-containers');
+          Route::post('daftar-tagihan-kontainer-sewa-2/delete-groups', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'deleteGroups'])->name('daftar-tagihan-kontainer-sewa-2.delete-groups');
           Route::get('daftar-tagihan-kontainer-sewa-2/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'import'])->name('daftar-tagihan-kontainer-sewa-2.import');
+          Route::post('daftar-tagihan-kontainer-sewa-2/import-csv', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'importCsv'])->name('daftar-tagihan-kontainer-sewa-2.import-csv');
           Route::get('daftar-tagihan-kontainer-sewa-2/export-template', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'exportTemplate'])->name('daftar-tagihan-kontainer-sewa-2.export-template');
           Route::get('daftar-tagihan-kontainer-sewa-2/export', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'export'])->name('daftar-tagihan-kontainer-sewa-2.export');
           Route::post('daftar-tagihan-kontainer-sewa-2/bulk-delete', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'bulkDelete'])->name('daftar-tagihan-kontainer-sewa-2.bulk-delete');
           Route::post('daftar-tagihan-kontainer-sewa-2/bulk-update-status', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'bulkUpdateStatus'])->name('daftar-tagihan-kontainer-sewa-2.bulk-update-status');
+          Route::get('daftar-tagihan-kontainer-sewa-2/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'generateInvoiceNumber'])->name('daftar-tagihan-kontainer-sewa-2.generate-invoice-number');
           
           Route::resource('daftar-tagihan-kontainer-sewa-2', \App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class);
           
