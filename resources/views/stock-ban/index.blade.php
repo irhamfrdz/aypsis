@@ -145,11 +145,7 @@
         <div>
            <div class="flex space-x-1 border-b border-gray-200" id="tabs-container">
                <button class="tab-btn active" data-target="tab-ban-luar">Ban Luar</button>
-               <button class="tab-btn" data-target="tab-ban-dalam">Ban Dalam</button>
-               <button class="tab-btn" data-target="tab-ban-perut">Ban Perut</button>
-               <button class="tab-btn" data-target="tab-lock-kontainer">Lock Kontainer</button>
-               <button class="tab-btn" data-target="tab-ring-velg">Ring Velg</button>
-               <button class="tab-btn" data-target="tab-velg">Velg</button>
+               <button class="tab-btn" data-target="tab-barang-lainnya">Barang Lainnya</button>
            </div>
         </div>
         
@@ -505,29 +501,32 @@
 
         </div>
 
-        <!-- Tab: Ban Dalam -->
-        <div id="tab-ban-dalam" class="tab-content p-4">
-            @include('stock-ban.partials.table-bulk', ['items' => $stockBanDalams, 'type' => 'Ban Dalam'])
-        </div>
+        <!-- Tab: Barang Lainnya (Gabungan Ban Dalam, Ban Perut, Lock Kontainer, Ring Velg, Velg) -->
+        <div id="tab-barang-lainnya" class="tab-content p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Ban Dalam</h3>
+            <div class="mb-6">
+                @include('stock-ban.partials.table-bulk', ['items' => $stockBanDalams, 'type' => 'Ban Dalam'])
+            </div>
 
-        <!-- Tab: Ban Perut -->
-        <div id="tab-ban-perut" class="tab-content p-4">
-            @include('stock-ban.partials.table-bulk', ['items' => $stockBanPeruts, 'type' => 'Ban Perut'])
-        </div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Ban Perut</h3>
+            <div class="mb-6">
+                @include('stock-ban.partials.table-bulk', ['items' => $stockBanPeruts, 'type' => 'Ban Perut'])
+            </div>
 
-        <!-- Tab: Lock Kontainer -->
-        <div id="tab-lock-kontainer" class="tab-content p-4">
-            @include('stock-ban.partials.table-bulk', ['items' => $stockLockKontainers, 'type' => 'Lock Kontainer'])
-        </div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Lock Kontainer</h3>
+            <div class="mb-6">
+                @include('stock-ban.partials.table-bulk', ['items' => $stockLockKontainers, 'type' => 'Lock Kontainer'])
+            </div>
 
-        <!-- Tab: Ring Velg -->
-        <div id="tab-ring-velg" class="tab-content p-4">
-            @include('stock-ban.partials.table-ring-velg', ['items' => $stockRingVelgs, 'type' => 'Ring Velg'])
-        </div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Ring Velg</h3>
+            <div class="mb-6">
+                @include('stock-ban.partials.table-ring-velg', ['items' => $stockRingVelgs, 'type' => 'Ring Velg'])
+            </div>
 
-        <!-- Tab: Velg -->
-        <div id="tab-velg" class="tab-content p-4">
-            @include('stock-ban.partials.table-ring-velg', ['items' => $stockVelgs, 'type' => 'Velg'])
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Velg</h3>
+            <div class="mb-6">
+                @include('stock-ban.partials.table-ring-velg', ['items' => $stockVelgs, 'type' => 'Velg'])
+            </div>
         </div>
     </div>
 </div>
