@@ -51,6 +51,7 @@ class TandaTerima extends Model
         'catatan',
         'lembur',
         'nginap',
+        'tidak_lembur_nginap',
         'term',
         'created_by',
         'updated_by',
@@ -79,6 +80,7 @@ class TandaTerima extends Model
         'nama_barang' => 'array',
         'lembur' => 'boolean',
         'nginap' => 'boolean',
+        'tidak_lembur_nginap' => 'boolean',
     ];
 
     /**

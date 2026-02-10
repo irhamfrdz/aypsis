@@ -603,11 +603,61 @@
                                             Nginap
                                         </label>
                                     </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox"
+                                               name="tidak_lembur_nginap"
+                                               id="tidak_lembur_nginap"
+                                               value="1"
+                                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ old('tidak_lembur_nginap', $suratJalan->tidak_lembur_nginap) ? 'checked' : '' }}>
+                                        <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                            Tidak Lembur & Nginap
+                                        </label>
+                                    </div>
                                     <div class="ml-auto text-xs text-gray-500 flex items-center">
                                         <i class="fas fa-info-circle mr-1 text-yellow-600"></i>
-                                        Centang jika ada biaya tambahan
+                                        Pilih minimal satu
                                     </div>
                                 </div>
+                                @if($errors->has('lembur') || $errors->has('nginap') || $errors->has('tidak_lembur_nginap'))
+                                    <p class="mt-1 text-xs text-red-600">
+                                        Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).
+                                    </p>
+                                @endif
+                                
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const lembur = document.getElementById('lembur');
+                                        const nginap = document.getElementById('nginap');
+                                        const tidakLemburNginap = document.getElementById('tidak_lembur_nginap');
+                                        
+                                        function updateCheckboxes(event) {
+                                            // Identify which checkbox triggered the change
+                                            const target = event ? event.target : null;
+
+                                            if (target === tidakLemburNginap && tidakLemburNginap.checked) {
+                                                // If 'Tidak Lembur & Nginap' is checked, uncheck others
+                                                lembur.checked = false;
+                                                nginap.checked = false;
+                                            } else if ((target === lembur || target === nginap) && (lembur.checked || nginap.checked)) {
+                                                // If 'Lembur' or 'Nginap' is checked, uncheck 'Tidak Lembur & Nginap'
+                                                tidakLemburNginap.checked = false;
+                                            }
+                                        }
+                                        
+                                        lembur.addEventListener('change', updateCheckboxes);
+                                        nginap.addEventListener('change', updateCheckboxes);
+                                        tidakLemburNginap.addEventListener('change', updateCheckboxes);
+                                        
+                                        // Initial run logic check
+                                        if (tidakLemburNginap.checked) {
+                                            lembur.checked = false;
+                                            nginap.checked = false;
+                                        } else if (lembur.checked || nginap.checked) {
+                                            tidakLemburNginap.checked = false;
+                                        }
+                                    });
+                                </script>
                             </div>
                         </div>
 

@@ -73,7 +73,8 @@ class SuratJalan extends Model
         'tanggal_checkpoint',
         'is_supir_customer',
         'lembur',
-        'nginap'
+        'nginap',
+        'tidak_lembur_nginap'
     ];
 
     protected $casts = [
@@ -94,6 +95,7 @@ class SuratJalan extends Model
         'is_supir_customer' => 'boolean',
         'lembur' => 'boolean',
         'nginap' => 'boolean',
+        'tidak_lembur_nginap' => 'boolean',
     ];
 
     protected $dates = [

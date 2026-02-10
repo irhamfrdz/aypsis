@@ -488,7 +488,9 @@ class TandaTerimaController extends Controller
             'plastik' => 'nullable|string|max:50',
             'terpal' => 'nullable|string|max:50',
             'lembur' => 'nullable|boolean',
+            'lembur' => 'nullable|boolean',
             'nginap' => 'nullable|boolean',
+            'tidak_lembur_nginap' => 'nullable|boolean',
             // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'nomor_ro' => 'nullable|string|max:255',
@@ -526,6 +528,15 @@ class TandaTerimaController extends Controller
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
             'gudang_id' => ($isCargo ? 'nullable' : 'required') . '|exists:gudangs,id',
         ]);
+        
+        // Ensure at least one checkbox is selected
+        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+            return redirect()->back()->withInput()->withErrors([
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
+                'nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
+                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+            ]);
+        }
 
 
         DB::beginTransaction();
@@ -577,6 +588,7 @@ class TandaTerimaController extends Controller
             $tandaTerima->catatan = $request->catatan;
             $tandaTerima->lembur = $request->boolean('lembur');
             $tandaTerima->nginap = $request->boolean('nginap');
+            $tandaTerima->tidak_lembur_nginap = $request->boolean('tidak_lembur_nginap');
             
             // Handle dimensi details (multiple dimensi entries)
             $dimensiDetails = [];
@@ -804,6 +816,7 @@ class TandaTerimaController extends Controller
             // Limbah & Nginap
             $suratJalanUpdate['lembur'] = $request->boolean('lembur');
             $suratJalanUpdate['nginap'] = $request->boolean('nginap');
+            $suratJalanUpdate['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
             
             // Data kontainer - size and jumlah only, tipe_kontainer stays separate
             if ($request->filled('size')) {
