@@ -13,14 +13,9 @@ return new class extends Migration
     {
         Schema::create('master_pricelist_biaya_trucking', function (Blueprint $table) {
             $table->id();
-            $table->string('rute'); // Contoh: Jakarta - Bandung
-            $table->string('tujuan')->nullable(); // Tujuan spesifik
-            $table->string('jenis_kendaraan')->nullable(); // Truck Fuso, Tronton, dll
-            $table->decimal('biaya', 15, 2); // Biaya trucking
-            $table->string('satuan')->default('trip'); // trip, rit, km, dll
-            $table->date('tanggal_berlaku')->nullable(); // Tanggal mulai berlaku
-            $table->date('tanggal_berakhir')->nullable(); // Tanggal berakhir
-            $table->text('keterangan')->nullable();
+            $table->string('nama_vendor');
+            $table->string('size'); 
+            $table->decimal('biaya', 15, 2);
             $table->enum('status', ['aktif', 'non-aktif'])->default('aktif');
             $table->timestamps();
         });
