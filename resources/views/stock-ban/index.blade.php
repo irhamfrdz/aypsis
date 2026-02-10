@@ -501,31 +501,158 @@
 
         </div>
 
-        <!-- Tab: Barang Lainnya (Gabungan Ban Dalam, Ban Perut, Lock Kontainer, Ring Velg, Velg) -->
+        <!-- Tab: Barang Lainnya (Gabungan semua dalam satu tabel) -->
         <div id="tab-barang-lainnya" class="tab-content p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Ban Dalam</h3>
-            <div class="mb-6">
-                @include('stock-ban.partials.table-bulk', ['items' => $stockBanDalams, 'type' => 'Ban Dalam'])
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Ban Perut</h3>
-            <div class="mb-6">
-                @include('stock-ban.partials.table-bulk', ['items' => $stockBanPeruts, 'type' => 'Ban Perut'])
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Lock Kontainer</h3>
-            <div class="mb-6">
-                @include('stock-ban.partials.table-bulk', ['items' => $stockLockKontainers, 'type' => 'Lock Kontainer'])
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Ring Velg</h3>
-            <div class="mb-6">
-                @include('stock-ban.partials.table-ring-velg', ['items' => $stockRingVelgs, 'type' => 'Ring Velg'])
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-6">Velg</h3>
-            <div class="mb-6">
-                @include('stock-ban.partials.table-ring-velg', ['items' => $stockVelgs, 'type' => 'Velg'])
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type / Satuan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty Available</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk (Latest)</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @php
+                            $allItems = collect();
+                            
+                            // Add Ban Dalam
+                            foreach($stockBanDalams as $item) {
+                                $allItems->push((object)[
+                                    'jenis' => 'Ban Dalam',
+                                    'id' => $item->id,
+                                    'nama' => $item->namaStockBan->nama ?? 'Unknown',
+                                    'ukuran' => $item->ukuran ?? '-',
+                                    'type' => $item->type ?? 'pcs',
+                                    'qty' => $item->qty,
+                                    'lokasi' => $item->lokasi ?? '-',
+                                    'tanggal_masuk' => $item->tanggal_masuk,
+                                    'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
+                                ]);
+                            }
+                            
+                            // Add Ban Perut
+                            foreach($stockBanPeruts as $item) {
+                                $allItems->push((object)[
+                                    'jenis' => 'Ban Perut',
+                                    'id' => $item->id,
+                                    'nama' => $item->namaStockBan->nama ?? 'Unknown',
+                                    'ukuran' => $item->ukuran ?? '-',
+                                    'type' => $item->type ?? 'pcs',
+                                    'qty' => $item->qty,
+                                    'lokasi' => $item->lokasi ?? '-',
+                                    'tanggal_masuk' => $item->tanggal_masuk,
+                                    'url_use' => url('stock-ban/ban-perut/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-perut/'.$item->id),
+                                ]);
+                            }
+                            
+                            // Add Lock Kontainer
+                            foreach($stockLockKontainers as $item) {
+                                $allItems->push((object)[
+                                    'jenis' => 'Lock Kontainer',
+                                    'id' => $item->id,
+                                    'nama' => $item->namaStockBan->nama ?? 'Unknown',
+                                    'ukuran' => $item->ukuran ?? '-',
+                                    'type' => $item->type ?? 'pcs',
+                                    'qty' => $item->qty,
+                                    'lokasi' => $item->lokasi ?? '-',
+                                    'tanggal_masuk' => $item->tanggal_masuk,
+                                    'url_use' => url('stock-ban/lock-kontainer/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/lock-kontainer/'.$item->id),
+                                ]);
+                            }
+                            
+                            // Add Ring Velg
+                            foreach($stockRingVelgs as $item) {
+                                $allItems->push((object)[
+                                    'jenis' => 'Ring Velg',
+                                    'id' => $item->id,
+                                    'nama' => $item->namaStockBan->nama ?? 'Unknown',
+                                    'ukuran' => $item->ukuran ?? '-',
+                                    'type' => $item->type ?? 'pcs',
+                                    'qty' => $item->qty,
+                                    'lokasi' => $item->lokasi ?? '-',
+                                    'tanggal_masuk' => $item->tanggal_masuk,
+                                    'url_use' => url('stock-ban/ring-velg/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ring-velg/'.$item->id),
+                                ]);
+                            }
+                            
+                            // Add Velg
+                            foreach($stockVelgs as $item) {
+                                $allItems->push((object)[
+                                    'jenis' => 'Velg',
+                                    'id' => $item->id,
+                                    'nama' => $item->namaStockBan->nama ?? 'Unknown',
+                                    'ukuran' => $item->ukuran ?? '-',
+                                    'type' => $item->type ?? 'pcs',
+                                    'qty' => $item->qty,
+                                    'lokasi' => $item->lokasi ?? '-',
+                                    'tanggal_masuk' => $item->tanggal_masuk,
+                                    'url_use' => url('stock-ban/velg/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/velg/'.$item->id),
+                                ]);
+                            }
+                        @endphp
+                        
+                        @forelse($allItems as $item)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                    {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
+                                    {{ $item->jenis == 'Ban Perut' ? 'bg-purple-100 text-purple-800' : '' }}
+                                    {{ $item->jenis == 'Lock Kontainer' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $item->jenis == 'Ring Velg' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $item->jenis == 'Velg' ? 'bg-indigo-100 text-indigo-800' : '' }}">
+                                    {{ $item->jenis }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $item->nama }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $item->ukuran }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $item->type }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold">
+                                {{ $item->qty }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $item->lokasi }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ date('d-m-Y', strtotime($item->tanggal_masuk)) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end gap-2">
+                                    @if($item->qty > 0 && $item->jenis == 'Ban Dalam')
+                                        <a href="{{ $item->url_use }}" class="text-green-600 hover:text-green-900" title="Gunakan">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </a>
+                                    @endif
+                                    
+                                    <a href="{{ $item->url_detail }}" class="text-blue-600 hover:text-blue-900" title="Detail / History">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data barang lainnya</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
