@@ -164,6 +164,12 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @endcan
+                                @can('tanda-terima-bongkaran-edit')
+                                <a href="{{ route('tanda-terima-bongkaran.edit', $tandaTerima->id) }}"
+                                   class="inline-flex items-center px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded transition duration-200 ml-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @endcan
                             </td>
                         </tr>
                         @empty
