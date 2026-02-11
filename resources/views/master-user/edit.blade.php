@@ -769,6 +769,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Sertifikat Kapal --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Sertifikat Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['view']) && $userMatrixPermissions['master-sertifikat-kapal']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['create']) && $userMatrixPermissions['master-sertifikat-kapal']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['update']) && $userMatrixPermissions['master-sertifikat-kapal']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['delete']) && $userMatrixPermissions['master-sertifikat-kapal']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Tarif --}}
                             <tr class="module-row" data-module="master-tarif">
                                 <td class="module-header">
