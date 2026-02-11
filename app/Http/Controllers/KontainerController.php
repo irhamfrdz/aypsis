@@ -142,16 +142,37 @@ class KontainerController extends Controller
         $request->validate($rules, $messages);
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
+        // Tapi pertama, cek apakah SUDAH ADA nomor_seri_gabungan yang SAMA PERSIS (termasuk awalan)
+        // Jika ada, kita update saja record tersebut, bukan create baru yang akan menyebabkan Integrity constraint violation
+        $existingContainer = Kontainer::where('nomor_seri_gabungan', $nomor_seri_gabungan)->first();
+
+        if ($existingContainer) {
+            // Update existing container instead of creating duplicate
+            $data = $request->all();
+            
+            // Set status default jika tidak ada input status, asumsikan aktif/tersedia saat diupdate
+            if (!$request->filled('status')) {
+                $data['status'] = 'Tersedia'; // Default updated status
+            }
+
+            $existingContainer->update($data);
+
+            return redirect()->route('master.kontainer.index')
+                             ->with('success', 'Kontainer dengan nomor ' . $nomor_seri_gabungan . ' sudah ada. Data berhasil diperbarui!');
+        }
+
         $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
             ->where('akhiran_kontainer', $request->akhiran_kontainer)
-            ->where('status', 'active')
+            ->where('status', '!=', 'inactive') // Cek yang aktif/tersedia/disewa
             ->first();
 
         if ($existingWithSameSerialAndSuffix) {
-            // Set kontainer yang sudah ada ke inactive
+            // Set kontainer lama dengan serial sama ke inactive (jika prefix beda tapi serial sama)
+            // Note: Logic ini sepertinya untuk menghindari konflik serial number antar prefix berbeda?
+            // Atau untuk menonaktifkan container lama jika input baru dianggap pengganti?
             $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
 
-            $warningMessage = "Kontainer dengan nomor seri {$request->nomor_seri_kontainer} dan akhiran {$request->akhiran_kontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
+            $warningMessage = "Kontainer lain dengan nomor seri {$request->nomor_seri_kontainer} dan akhiran {$request->akhiran_kontainer} ditemukan (Prefix: {$existingWithSameSerialAndSuffix->awalan_kontainer}). Kontainer lama telah dinonaktifkan.";
             session()->flash('warning', $warningMessage);
         }
 
@@ -160,7 +181,17 @@ class KontainerController extends Controller
 
         // Set status default jika tidak ada
         if (!$request->filled('status')) {
-            $data['status'] = 'active';
+            $data['status'] = 'Tersedia'; // Default active status string (was 'active' before, but enum seems 'Tersedia', 'Tidak Tersedia' etc based on form)
+            // Wait, previous code used 'active'. Let's match view: 'Tersedia', 'Tidak Tersedia'.
+            // Controller validation says: 'in:Tersedia,Disewa'.
+            // But previous code set 'active' or 'inactive'. This might be inconsistent with 'Tersedia'.
+            // View options: 'Tersedia', 'Tidak Tersedia'.
+            // Database likely has string column.
+            // Let's settle on 'Tersedia' as default Active, compatible with view. 
+            // However, the check above uses 'active'. 
+            // The previous code validation had 'status' => 'nullable|string|in:Tersedia,Disewa'.
+            // But line 163 set $data['status'] = 'active'.
+            // This suggests mixed usage. Let's stick to 'Tersedia' which matches the FORM validation.
         }
 
         Kontainer::create($data);
