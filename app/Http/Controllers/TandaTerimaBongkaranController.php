@@ -265,8 +265,12 @@ class TandaTerimaBongkaranController extends Controller
         $suratJalans = SuratJalanBongkaran::with(['bl'])
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        $gudangs = Gudang::where('status', 'aktif')
+            ->orderBy('nama_gudang')
+            ->get();
 
-        return view('tanda-terima-bongkaran.edit', compact('tandaTerimaBongkaran', 'suratJalans'));
+        return view('tanda-terima-bongkaran.edit', compact('tandaTerimaBongkaran', 'suratJalans', 'gudangs'));
     }
 
     /**
@@ -277,6 +281,7 @@ class TandaTerimaBongkaranController extends Controller
         $validated = $request->validate([
             'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_bongkarans,nomor_tanda_terima,' . $tandaTerimaBongkaran->id,
             'tanggal_tanda_terima' => 'required|date',
+            'gudang_id' => 'required|exists:gudangs,id',
             'surat_jalan_bongkaran_id' => 'required|exists:surat_jalan_bongkarans,id',
             'no_kontainer' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
