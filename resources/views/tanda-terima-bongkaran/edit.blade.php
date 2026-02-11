@@ -243,7 +243,8 @@
                         Batal
                     </a>
                     <button type="submit" 
-                            class="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition duration-200">
+                            style="background-color: #047857; color: white;"
+                            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200 flex items-center">
                         <i class="fas fa-save mr-2"></i>
                         Simpan Perubahan
                     </button>
