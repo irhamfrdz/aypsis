@@ -10,6 +10,7 @@ class StockAmprahan extends Model
 
     protected $fillable = [
         'nomor_bukti',
+        'tanggal_beli',
         'master_nama_barang_amprahan_id',
         'nama_barang',
         'type_barang',
@@ -25,6 +26,7 @@ class StockAmprahan extends Model
     protected $casts = [
         'jumlah' => 'decimal:2',
         'harga_satuan' => 'decimal:2',
+        'tanggal_beli' => 'date',
     ];
 
     public function masterNamaBarangAmprahan()
