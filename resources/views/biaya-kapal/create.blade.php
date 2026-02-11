@@ -1359,9 +1359,10 @@
             initializeTruckingSections();
             
             // Show global summary fields for Biaya Trucking
-            if(nominalWrapper) nominalWrapper.classList.remove('hidden');
-            if(pphDokumenWrapper) pphDokumenWrapper.classList.remove('hidden');
-            if(grandTotalDokumenWrapper) grandTotalDokumenWrapper.classList.remove('hidden');
+            // HIDDEN AS PER REQUEST - VALUES DERIVED FROM SECTIONS
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(pphDokumenWrapper) pphDokumenWrapper.classList.add('hidden');
+            if(grandTotalDokumenWrapper) grandTotalDokumenWrapper.classList.add('hidden');
             
             // Remove required attributes for hidden fields
             if(nominalInput) nominalInput.removeAttribute('required');
@@ -4323,7 +4324,10 @@
 
     window.removeTruckingSection = function(index) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${index}"]`);
-        if (section) section.remove();
+        if (section) {
+            section.remove();
+            calculateTotalFromAllTruckingSections();
+        }
     }
 
     function loadVoyagesForTruckingSection(sectionIndex, kapalNama) {
@@ -4456,7 +4460,7 @@
     }
 
     function calculateTruckingTotals(sectionIndex) {
-        const section = document.querySelector(`.trucking-section[data-index="${sectionIndex}"]`);
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         if (!section) return;
 
         const vendor = section.querySelector('.trucking-vendor-select').value;
@@ -4500,40 +4504,25 @@
         calculateTotalFromAllTruckingSections();
     }
 
-    window.removeTruckingSection = function(index) {
-        const section = document.querySelector(`.trucking-section[data-index="${index}"]`);
-        if (section) {
-            section.remove();
-            calculateTotalFromAllTruckingSections();
-        }
-    };
+
 
     function calculateTotalFromAllTruckingSections() {
         let totalSubtotal = 0;
-        let totalPph = 0;
-        let totalGrandTotal = 0;
+
 
         document.querySelectorAll('.trucking-section').forEach(section => {
             const sub = parseFloat(section.querySelector('.trucking-subtotal-input').value.replace(/\./g, '')) || 0;
-            const pph = parseFloat(section.querySelector('.trucking-pph-input').value.replace(/\./g, '')) || 0;
-            const total = parseFloat(section.querySelector('.trucking-total-input').value.replace(/\./g, '')) || 0;
+
 
             totalSubtotal += sub;
-            totalPph += pph;
-            totalGrandTotal += total;
+
         });
 
         if (nominalInput) {
             nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';
         }
 
-        // We can also update pphDokumenInput and grandTotalDokumenInput if we want to show global summary
-        if (pphDokumenInput) {
-            pphDokumenInput.value = totalPph > 0 ? Math.round(totalPph).toLocaleString('id-ID') : '0';
-        }
-        if (grandTotalDokumenInput) {
-            grandTotalDokumenInput.value = totalGrandTotal > 0 ? Math.round(totalGrandTotal).toLocaleString('id-ID') : '0';
-        }
+
     }
 </script>
 @endpush

@@ -820,7 +820,20 @@ class BiayaKapalController extends Controller
         // Check if it's Biaya Trucking and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'trucking') !== false) {
-            return view('biaya-kapal.print-trucking', compact('biayaKapal'));
+            $biayaKapal->load(['truckingDetails']);
+            // Collect all BL IDs
+            $blIds = [];
+            foreach ($biayaKapal->truckingDetails as $detail) {
+                if (!empty($detail->no_bl) && is_array($detail->no_bl)) {
+                    $blIds = array_merge($blIds, $detail->no_bl);
+                }
+            }
+            $blDetails = DB::table('bls')
+                ->whereIn('id', $blIds)
+                ->get()
+                ->keyBy('id');
+                
+            return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails'));
         }
         
         // Check if it's Biaya Air and use specific print template
@@ -858,8 +871,21 @@ class BiayaKapalController extends Controller
      */
     public function printTrucking(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya']);
-        return view('biaya-kapal.print-trucking', compact('biayaKapal'));
+        $biayaKapal->load(['klasifikasiBiaya', 'truckingDetails']);
+        
+        // Collect all BL IDs
+        $blIds = [];
+        foreach ($biayaKapal->truckingDetails as $detail) {
+            if (!empty($detail->no_bl) && is_array($detail->no_bl)) {
+                $blIds = array_merge($blIds, $detail->no_bl);
+            }
+        }
+        $blDetails = DB::table('bls')
+            ->whereIn('id', $blIds)
+            ->get()
+            ->keyBy('id');
+
+        return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails'));
     }
 
     /**

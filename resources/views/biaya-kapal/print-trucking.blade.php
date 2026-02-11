@@ -8,9 +8,9 @@
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '9px',
-            'headerH1' => '14px',
-            'tableFont' => '8px',
+            'fontSize' => '10px',
+            'headerH1' => '16px',
+            'tableFont' => '9px',
         ],
         'Folio' => [
             'size' => '215.9mm 330.2mm',
@@ -19,7 +19,7 @@
             'containerWidth' => '215.9mm',
             'fontSize' => '11px',
             'headerH1' => '18px',
-            'tableFont' => '9px',
+            'tableFont' => '10px',
         ],
         'A4' => [
             'size' => 'A4',
@@ -28,7 +28,7 @@
             'containerWidth' => '210mm',
             'fontSize' => '11px',
             'headerH1' => '18px',
-            'tableFont' => '9px',
+            'tableFont' => '10px',
         ],
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
@@ -54,7 +54,7 @@
             height: {{ $currentPaper['height'] }};
             font-family: 'Arial', sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
-            line-height: 1.4;
+            line-height: 1.3;
             color: #000;
             background: white;
             margin: 0;
@@ -72,9 +72,9 @@
 
         .header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             border-bottom: 2px double #000;
-            padding-bottom: 6px;
+            padding-bottom: 8px;
         }
 
         .header h1 {
@@ -94,10 +94,9 @@
         .document-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 6px 8px;
-            border: 1px solid #333;
-            border-radius: 2px;
+            margin-bottom: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid #ddd;
         }
 
         .document-info .left,
@@ -108,7 +107,7 @@
         .document-info .label {
             font-weight: bold;
             display: inline-block;
-            width: 100px;
+            width: 80px;
             margin-bottom: 1px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
@@ -118,154 +117,115 @@
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
-        .section-title {
-            font-size: {{ $currentPaper['fontSize'] }};
-            font-weight: bold;
-            margin: 8px 0 5px;
-            padding: 4px 8px;
-            border-bottom: 1px solid #333;
-        }
-
-        .info-table {
+        .detail-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
-        }
-
-        .info-table td {
-            padding: 3px 6px;
-            font-size: {{ $currentPaper['fontSize'] }};
-            vertical-align: top;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .info-table td:first-child {
-            width: 35%;
-            font-weight: bold;
-            color: #000;
-        }
-
-        .info-table td:nth-child(2) {
-            width: 5%;
-            text-align: center;
-        }
-
-        .container-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 8px;
-        }
-
-        .container-table thead {
-            background-color: #000;
-            color: white;
-        }
-
-        .container-table th,
-        .container-table td {
-            border: 1px solid #333;
-            padding: 4px;
-            text-align: left;
+            margin-bottom: 12px;
             font-size: {{ $currentPaper['tableFont'] }};
         }
 
-        .container-table th {
+        .detail-table th,
+        .detail-table td {
+            border: 1px solid #333;
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .detail-table th {
+            background-color: #f2f2f2;
             font-weight: bold;
             text-align: center;
         }
 
-        .container-table tbody tr:nth-child(even) {
-            background-color: transparent;
-        }
-
-        .container-table tbody tr:hover {
-            background-color: transparent;
-        }
+        .detail-table td.center { text-align: center; }
+        .detail-table td.right { text-align: right; }
 
         .summary-box {
-            margin-top: 8px;
+            margin-top: 10px;
             padding: 0;
             background-color: transparent;
             border: none;
-        }
-
-        .summary-row {
+            width: 100%;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 3px;
+            justify-content: flex-end;
+        }
+
+        .summary-table {
+            width: 50%;
+            border-collapse: collapse;
+        }
+        
+        .summary-table td {
+            padding: 3px 0;
             font-size: {{ $currentPaper['fontSize'] }};
-            padding: 2px 0;
         }
 
-        .summary-row.total {
-            border-top: 2px solid #333;
-            padding-top: 4px;
-            margin-top: 4px;
-            font-weight: bold;
-            font-size: calc({{ $currentPaper['fontSize'] }} + 2px);
-        }
-
-        .summary-row .label {
-            font-weight: 600;
-        }
-
-        .summary-row .value {
+        .summary-table .label {
             font-weight: bold;
             text-align: right;
-            margin-left: 20px;
+            padding-right: 15px;
+        }
+
+        .summary-table .value {
+            font-weight: bold;
+            text-align: right;
+            width: 120px;
+        }
+
+        .summary-table .total-row .label,
+        .summary-table .total-row .value {
+            border-top: 2px solid #000;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-size: calc({{ $currentPaper['fontSize'] }} + 1px);
         }
 
         .footer {
-            margin-top: 12px;
+            margin-top: 20px;
             clear: both;
         }
 
         .signatures {
             display: flex;
             justify-content: space-between;
-            margin-top: 12px;
+            margin-top: 30px;
+            margin-bottom: 20px;
         }
 
         .signature-box {
             text-align: center;
+            width: 30%;
         }
 
         .signature-box .title {
             font-weight: bold;
-            margin-bottom: 30px;
+            margin-bottom: 50px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .signature-box .name {
             font-weight: bold;
             border-top: 1px solid #000;
-            padding-top: 2px;
+            padding-top: 5px;
             display: inline-block;
             min-width: 120px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .notes {
-            margin-top: 8px;
-            padding: 6px;
-            border: 1px solid #333;
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px dashed #999;
             font-size: {{ $currentPaper['tableFont'] }};
-        }
-
-        .notes strong {
-            display: block;
-            margin-bottom: 3px;
+            background-color: #fdfdfd;
         }
 
         @media print {
-            .no-print {
-                display: none;
-            }
+            .no-print { display: none; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+            /* Ensure page breaks don't cut rows */
+            tr { page-break-inside: avoid; }
         }
 
         .print-controls {
@@ -274,48 +234,38 @@
             right: 20px;
             z-index: 1000;
             background: white;
-            padding: 15px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .print-controls button,
-        .print-controls select {
-            margin: 5px 0;
-            padding: 8px 15px;
-            font-size: 12px;
-            cursor: pointer;
+        
+        .container-chip {
+            display: inline-block;
+            background: #eee;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin: 1px;
+            font-size: {{ $currentPaper['tableFont'] }};
             border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .print-controls button {
-            background-color: #0066cc;
-            color: white;
-            border: none;
-        }
-
-        .print-controls button:hover {
-            background-color: #0052a3;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
     <div class="print-controls no-print">
-        <select id="paperSizeSelect" onchange="changePaperSize()">
+        <select id="paperSizeSelect" onchange="changePaperSize()" style="padding: 5px; margin-bottom: 5px; width: 100%;">
             <option value="Half Folio" {{ $paperSize == 'Half Folio' ? 'selected' : '' }}>Setengah Folio</option>
             <option value="Folio" {{ $paperSize == 'Folio' ? 'selected' : '' }}>Folio</option>
             <option value="A4" {{ $paperSize == 'A4' ? 'selected' : '' }}>A4</option>
         </select>
-        <button onclick="window.print()">🖨️ Cetak</button>
-        <button onclick="window.close()">❌ Tutup</button>
+        <button onclick="window.print()" style="width: 100%; padding: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">🖨️ Cetak</button>
     </div>
 
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PERMOHONAN TRANSFER</h1>
+            <h1>PERMOHONAN BIAYA TRUCKING</h1>
         </div>
 
         <!-- Document Info -->
@@ -329,78 +279,130 @@
                     <span class="label">Tanggal</span>
                     <span class="value">: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d F Y') }}</span>
                 </div>
-                @if($biayaKapal->nomor_referensi)
+            </div>
+            <div class="right" style="text-align: right;">
+                 @if($biayaKapal->nomor_referensi)
                 <div>
-                    <span class="label">No. Referensi</span>
+                    <span class="label">No. Ref</span>
                     <span class="value">: {{ $biayaKapal->nomor_referensi }}</span>
                 </div>
                 @endif
             </div>
-            <div class="right">
-                <div>
-                    <span class="label">Jenis Biaya</span>
-                    <span class="value">: {{ $biayaKapal->jenis_biaya_label }}</span>
-                </div>
-                @if($biayaKapal->penerima)
-                <div>
-                    <span class="label">Penerima</span>
-                    <span class="value">: {{ $biayaKapal->penerima }}</span>
-                </div>
+        </div>
+
+        <!-- Detail Table -->
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 25%;">Kapal / Voyage</th>
+                    <th style="width: 15%;">Vendor</th>
+                    <th style="width: 35%;">Detail Kontainer</th>
+                    <th style="width: 20%;">Biaya</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php 
+                    $grandTotalSubtotal = 0; 
+                    $grandTotalPph = 0;
+                    $grandTotalFinal = 0;
+                @endphp
+                
+                @if($biayaKapal->truckingDetails->count() > 0)
+                    @foreach($biayaKapal->truckingDetails as $index => $detail)
+                    <tr>
+                        <td class="center">{{ $index + 1 }}</td>
+                        <td>
+                            <strong>{{ $detail->kapal }}</strong><br>
+                            <span style="color: #555;">Voy: {{ $detail->voyage }}</span>
+                        </td>
+                        <td>{{ $detail->nama_vendor }}</td>
+                        <td>
+                            @if(!empty($detail->no_bl) && is_array($detail->no_bl) && count($detail->no_bl) > 0)
+                                @foreach($detail->no_bl as $blId)
+                                    @php 
+                                        $blInfo = $blDetails[$blId] ?? null; 
+                                    @endphp
+                                    @if($blInfo)
+                                        <span class="container-chip">
+                                            {{ $blInfo->nomor_kontainer }} 
+                                            ({{ $blInfo->size_kontainer }}')
+                                        </span>
+                                    @endif
+                                @endforeach
+                                <div style="margin-top: 3px; font-style: italic; font-size: 0.9em; color: #666;">
+                                    Total: {{ count($detail->no_bl) }} Kontainer
+                                </div>
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="right">
+                            <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</div>
+                            
+                            @if($detail->pph > 0)
+                            <div style="margin-top: 4px; border-top: 1px dotted #ccc; padding-top: 2px; font-size: 0.9em; color: #666;">
+                                Subtotal: {{ number_format($detail->subtotal, 0, ',', '.') }}<br>
+                                PPh: {{ number_format($detail->pph, 0, ',', '.') }}
+                            </div>
+                            @endif
+                        </td>
+                    </tr>
+                    @php 
+                        $grandTotalSubtotal += $detail->subtotal;
+                        $grandTotalPph += $detail->pph;
+                        $grandTotalFinal += $detail->total_biaya;
+                    @endphp
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="5" class="center">Tidak ada detail trucking.</td>
+                    </tr>
                 @endif
-            </div>
-        </div>
+            </tbody>
+        </table>
 
-        <!-- Summary Box -->
+        <!-- Summary -->
         <div class="summary-box">
-            <div class="summary-row">
-                <span class="label">Subtotal (Nominal):</span>
-                <span class="value">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</span>
-            </div>
-            @if($biayaKapal->pph_dokumen)
-            <div class="summary-row">
-                <span class="label">PPh 2%:</span>
-                <span class="value">(Rp {{ number_format($biayaKapal->pph_dokumen, 0, ',', '.') }})</span>
-            </div>
-            @endif
-            <div class="summary-row total">
-                <span class="label">TOTAL BIAYA:</span>
-                <span class="value">Rp {{ number_format($biayaKapal->grand_total_dokumen ?? $biayaKapal->nominal, 0, ',', '.') }}</span>
-            </div>
+            <table class="summary-table">
+                <tr>
+                    <td class="label">Subtotal:</td>
+                    <td class="value">Rp {{ number_format($grandTotalSubtotal, 0, ',', '.') }}</td>
+                </tr>
+                @if($grandTotalPph > 0)
+                <tr>
+                    <td class="label">Total PPh (2%):</td>
+                    <td class="value" style="color: #d00;">(Rp {{ number_format($grandTotalPph, 0, ',', '.') }})</td>
+                </tr>
+                @endif
+                <tr class="total-row">
+                    <td class="label">TOTAL BIAYA:</td>
+                    <td class="value">Rp {{ number_format($grandTotalFinal, 0, ',', '.') }}</td>
+                </tr>
+            </table>
         </div>
 
-        <!-- Footer with Signatures -->
+        <!-- Footer -->
         <div class="footer">
             <div class="signatures">
-                <div class="signature-box" style="width: 30%;">
+                <div class="signature-box">
                     <div class="title">Dibuat Oleh,</div>
                     <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
                 </div>
-                <div class="signature-box" style="width: 30%;">
+                <div class="signature-box">
                     <div class="title">Mengetahui,</div>
                     <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
                 </div>
-                <div class="signature-box" style="width: 30%;">
+                <div class="signature-box">
                     <div class="title">Menyetujui,</div>
                     <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
                 </div>
             </div>
 
-            @php
-                $keterangan = $biayaKapal->keterangan ?? '';
-                if (stripos($keterangan, 'Detail Biaya Air:') !== false) {
-                    $keterangan = explode('Detail Biaya Air:', $keterangan)[0];
-                }
-                if (stripos($keterangan, 'Detail Barang Buruh:') !== false) {
-                    $keterangan = explode('Detail Barang Buruh:', $keterangan)[0];
-                }
-                if (stripos($keterangan, 'Detail Biaya TKBM:') !== false) {
-                    $keterangan = explode('Detail Biaya TKBM:', $keterangan)[0];
-                }
-            @endphp
-            @if(trim($keterangan))
+            @if($biayaKapal->keterangan)
             <div class="notes">
-                <strong>Catatan:</strong>
-                {!! nl2br(e(trim($keterangan))) !!}
+                <strong>Catatan:</strong><br>
+                {!! nl2br(e($biayaKapal->keterangan)) !!}
             </div>
             @endif
         </div>
@@ -412,14 +414,6 @@
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('paper_size', paperSize);
             window.location.href = currentUrl.toString();
-        }
-
-        // Auto print on load if requested
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('auto_print') === '1') {
-            setTimeout(() => {
-                window.print();
-            }, 500);
         }
     </script>
 </body>
