@@ -4469,29 +4469,57 @@
         const pphInput = section.querySelector('.trucking-pph-input');
         const totalInput = section.querySelector('.trucking-total-input');
 
+        console.log(`[Trucking Calculation Section ${sectionIndex}]`);
+        console.log('- Vendor:', vendor);
+        console.log('- Selected BL Count:', selectedOptions.length);
+
         let subtotal = 0;
 
         if (vendor && selectedOptions.length > 0) {
+            // Get all price items for this vendor once to optimize
+            const vendorPrices = pricelistBiayaTruckingData.filter(item => item.nama_vendor === vendor);
+            console.log('- Found Vendor Prices:', vendorPrices.length);
+
             selectedOptions.forEach(opt => {
-                const size = opt.getAttribute('data-size');
+                const rawSize = opt.getAttribute('data-size');
+                // Normalize size: remove non-digits to compare "20" with "20'"
+                const size = String(rawSize).replace(/\D/g, '');
+                
+                console.log(`  - Container Size: ${rawSize} (Normalized: ${size})`);
+
                 // Find price in pricelist
-                const priceItem = pricelistBiayaTruckingData.find(item => 
-                    item.nama_vendor === vendor && String(item.size) === String(size)
-                );
+                const priceItem = vendorPrices.find(item => {
+                    const itemSize = String(item.size).replace(/\D/g, '');
+                    return itemSize === size;
+                });
                 
                 if (priceItem) {
-                    subtotal += parseFloat(priceItem.biaya) || 0;
+                    console.log(`    -> Match found! Cost: ${priceItem.biaya}`);
+                    // Handle potential string format "1.500.000" or number
+                    let cost = 0;
+                    if (typeof priceItem.biaya === 'number') {
+                        cost = priceItem.biaya;
+                    } else if (typeof priceItem.biaya === 'string') {
+                        // Remove dots if present (Indonesian format check) 
+                        // But usually DB returns "1500000.00", so parseFloat is safe.
+                        // However, if it was formatted in PHP, it might have dots.
+                        // Safe bet: if it has dots and no commas, it might be thousands separator?
+                        // Standard DB decimal string uses dot for decimal point.
+                        cost = parseFloat(priceItem.biaya);
+                    }
+                    subtotal += cost;
+                } else {
+                    console.warn(`    -> No price found for vendor "${vendor}" and size "${size}"`);
                 }
             });
         }
 
-        const pph = subtotal * 0.02;
-        const total = subtotal - pph; // PPh 23 usually subtracts from nominal? Or adds?
-        // Let's check other sections. Usually PPh is a deduction for Jasa Trucking.
-        // User asked for "total biaya". If subtotal is 1M, PPh is 20k, total paid is 980k?
-        // Or is it subtotal + PPh? Usually vendor charges 1M + PPN - PPh.
-        // Let's stick to subtotal - pph as "Total Biaya" (Paid amount).
+        const pph = Math.round(subtotal * 0.02);
+        const total = subtotal - pph; 
         
+        console.log('- Subtotal:', subtotal);
+        console.log('- PPh:', pph);
+
         const formatRupiah = (val) => {
             return new Intl.NumberFormat('id-ID').format(Math.round(val));
         };
