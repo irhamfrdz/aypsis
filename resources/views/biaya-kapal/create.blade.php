@@ -4393,7 +4393,20 @@
         .then(response => response.json())
         .then(data => {
             if (data.success && data.bls && Object.keys(data.bls).length > 0) {
-                let html = '';
+                // Create search input and options container
+                let html = `
+                    <div class="sticky top-0 bg-white border-b border-gray-200 p-2 z-10">
+                        <div class="relative">
+                            <input type="text" 
+                                   class="trucking-kontainer-search w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   placeholder="Cari nomor kontainer atau seal..."
+                                   autocomplete="off">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="trucking-bl-options-list">
+                `;
+                
                 Object.keys(data.bls).forEach(id => {
                     const blData = data.bls[id];
                     html += `
@@ -4404,12 +4417,56 @@
                         </div>
                     `;
                 });
+                html += '</div>';
                 blDropdown.innerHTML = html;
+
+                // Setup search functionality
+                const searchInput = blDropdown.querySelector('.trucking-kontainer-search');
+                const optionsList = blDropdown.querySelector('.trucking-bl-options-list');
+                const allOptions = optionsList.querySelectorAll('.trucking-bl-option');
+                
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    let visibleCount = 0;
+                    
+                    allOptions.forEach(option => {
+                        const kontainer = option.getAttribute('data-kontainer').toLowerCase();
+                        const seal = option.getAttribute('data-seal').toLowerCase();
+                        const size = option.getAttribute('data-size');
+                        
+                        if (kontainer.includes(searchTerm) || seal.includes(searchTerm) || size.includes(searchTerm)) {
+                            option.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    });
+                    
+                    // Show "no results" message if nothing found
+                    let noResultsMsg = optionsList.querySelector('.no-results-message');
+                    if (visibleCount === 0) {
+                        if (!noResultsMsg) {
+                            noResultsMsg = document.createElement('p');
+                            noResultsMsg.className = 'no-results-message px-3 py-4 text-sm text-gray-500 italic text-center';
+                            noResultsMsg.textContent = 'Tidak ada kontainer yang cocok dengan pencarian';
+                            optionsList.appendChild(noResultsMsg);
+                        }
+                    } else {
+                        if (noResultsMsg) {
+                            noResultsMsg.remove();
+                        }
+                    }
+                });
+                
+                // Prevent dropdown from closing when clicking search input
+                searchInput.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
 
                 // Clear previous totals when new bls loaded
                 calculateTruckingTotals(sectionIndex);
 
-                // Bind clicks
+                // Bind clicks to BL options
                 blDropdown.querySelectorAll('.trucking-bl-option').forEach(opt => {
                     opt.addEventListener('click', function(e) {
                         e.stopPropagation();
