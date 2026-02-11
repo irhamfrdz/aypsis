@@ -73,7 +73,10 @@ class SuratJalanBongkaran extends Model
         'bl_id',
         'manifest_id',
         'jenis_pengiriman',
-        'tanggal_ambil_barang'
+        'tanggal_ambil_barang',
+        'lembur',
+        'nginap',
+        'tidak_lembur_nginap'
     ];
 
     protected $casts = [
@@ -87,6 +90,9 @@ class SuratJalanBongkaran extends Model
         'jumlah_terbayar' => 'decimal:2',
         'jumlah_retur' => 'integer',
         'jumlah_kontainer' => 'integer',
+        'lembur' => 'boolean',
+        'nginap' => 'boolean',
+        'tidak_lembur_nginap' => 'boolean',
     ];
 
     protected $dates = [

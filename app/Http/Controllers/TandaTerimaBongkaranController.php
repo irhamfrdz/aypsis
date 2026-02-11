@@ -85,6 +85,17 @@ class TandaTerimaBongkaranController extends Controller
                 $query->where('kegiatan', $request->kegiatan);
             }
 
+            // Filter Lembur/Nginap
+            if ($request->boolean('f_lembur')) {
+                $query->where('lembur', true);
+            }
+            if ($request->boolean('f_nginap')) {
+                $query->where('nginap', true);
+            }
+            if ($request->boolean('f_tidak_lembur_nginap')) {
+                $query->where('tidak_lembur_nginap', true);
+            }
+
             $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
             
             // Get gudangs and karyawans for modal dropdown (needed for both views)
@@ -139,6 +150,17 @@ class TandaTerimaBongkaranController extends Controller
                 }
             }
 
+            // Filter Lembur/Nginap
+            if ($request->boolean('f_lembur')) {
+                $query->where('lembur', true);
+            }
+            if ($request->boolean('f_nginap')) {
+                $query->where('nginap', true);
+            }
+            if ($request->boolean('f_tidak_lembur_nginap')) {
+                $query->where('tidak_lembur_nginap', true);
+            }
+
             $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
 
             // Get gudangs for modal dropdown
@@ -190,8 +212,20 @@ class TandaTerimaBongkaranController extends Controller
             'gudang_id' => 'required|exists:gudangs,id',
             'supir' => 'nullable|string|max:255',
             'kenek' => 'nullable|string|max:255',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'tidak_lembur_nginap' => 'nullable|boolean',
         ]);
+
+        // Ensure at least one checkbox is selected
+        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+            return redirect()->back()->withInput()->withErrors([
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
+                'nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
+                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+            ]);
+        }
 
         try {
             DB::beginTransaction();
@@ -203,6 +237,11 @@ class TandaTerimaBongkaranController extends Controller
             $validated['no_seal'] = $suratJalan->no_seal;
             $validated['kegiatan'] = $suratJalan->kegiatan ?? 'bongkar'; // default to 'bongkar' if null
             $validated['status'] = 'completed';
+            
+            // Ensure boolean values
+            $validated['lembur'] = $request->boolean('lembur');
+            $validated['nginap'] = $request->boolean('nginap');
+            $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
 
             $tandaTerima = TandaTerimaBongkaran::create($validated);
 
@@ -219,6 +258,12 @@ class TandaTerimaBongkaranController extends Controller
             if (!empty($validated['kenek'])) {
                 $updateData['kenek'] = $validated['kenek'];
             }
+            
+            // Update lembur/nginap fields on surat jalan as well
+            $updateData['lembur'] = $validated['lembur'];
+            $updateData['nginap'] = $validated['nginap'];
+            $updateData['tidak_lembur_nginap'] = $validated['tidak_lembur_nginap'];
+            
             $suratJalan->update($updateData);
 
             // Update gudangs_id pada table kontainers berdasarkan no_kontainer
@@ -287,11 +332,28 @@ class TandaTerimaBongkaranController extends Controller
             'no_seal' => 'nullable|string|max:255',
             'kegiatan' => 'required|string|in:muat,bongkar,stuffing,stripping',
             'status' => 'required|string|in:pending,approved,completed',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'tidak_lembur_nginap' => 'nullable|boolean',
         ]);
+
+        // Ensure at least one checkbox is selected
+        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+            return redirect()->back()->withInput()->withErrors([
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
+                'nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
+                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+            ]);
+        }
 
         try {
             DB::beginTransaction();
+
+            // Ensure boolean values
+            $validated['lembur'] = $request->boolean('lembur');
+            $validated['nginap'] = $request->boolean('nginap');
+            $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
 
             $tandaTerimaBongkaran->update($validated);
 
@@ -299,7 +361,12 @@ class TandaTerimaBongkaranController extends Controller
             if ($tandaTerimaBongkaran->surat_jalan_bongkaran_id) {
                 $suratJalan = SuratJalanBongkaran::find($tandaTerimaBongkaran->surat_jalan_bongkaran_id);
                 if ($suratJalan) {
-                    $suratJalan->update(['status' => 'sudah_checkpoint']);
+                    $sjUpdate = ['status' => 'sudah_checkpoint'];
+                    $sjUpdate['lembur'] = $validated['lembur'];
+                    $sjUpdate['nginap'] = $validated['nginap'];
+                    $sjUpdate['tidak_lembur_nginap'] = $validated['tidak_lembur_nginap'];
+                    
+                    $suratJalan->update($sjUpdate);
                 }
             }
 

@@ -156,6 +156,43 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <!-- Checkbox Lembur & Nginap -->
+                        <div class="col-span-1 md:col-span-2 flex flex-col md:flex-row md:space-x-6 mt-4 items-start md:items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <div class="flex items-center mb-2 md:mb-0">
+                                <input type="checkbox"
+                                       name="lembur"
+                                       id="lembur"
+                                       value="1"
+                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ old('lembur') ? 'checked' : '' }}>
+                                <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                    Lembur
+                                </label>
+                            </div>
+                            <div class="flex items-center mb-2 md:mb-0">
+                                <input type="checkbox"
+                                       name="nginap"
+                                       id="nginap"
+                                       value="1"
+                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ old('nginap') ? 'checked' : '' }}>
+                                <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                    Nginap
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox"
+                                       name="tidak_lembur_nginap"
+                                       id="tidak_lembur_nginap"
+                                       value="1"
+                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ old('tidak_lembur_nginap') ? 'checked' : '' }}>
+                                <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                    Tidak Lembur & Nginap
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Keterangan -->
@@ -205,6 +242,32 @@
             const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
             
             nomorTTInput.value = `TTB/${year}${month}${day}/${random}`;
+        }
+
+        // Checkbox Logic
+        const cbLembur = document.getElementById('lembur');
+        const cbNginap = document.getElementById('nginap');
+        const cbTidak = document.getElementById('tidak_lembur_nginap');
+
+        if(cbLembur && cbNginap && cbTidak) {
+            cbTidak.addEventListener('change', function() {
+                if(this.checked) {
+                    cbLembur.checked = false;
+                    cbNginap.checked = false;
+                }
+            });
+
+            cbLembur.addEventListener('change', function() {
+                if(this.checked) {
+                    cbTidak.checked = false;
+                }
+            });
+
+            cbNginap.addEventListener('change', function() {
+                if(this.checked) {
+                    cbTidak.checked = false;
+                }
+            });
         }
     });
 </script>

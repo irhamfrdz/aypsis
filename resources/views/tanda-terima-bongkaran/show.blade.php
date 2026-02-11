@@ -90,6 +90,29 @@
                                 {{ ucfirst($tandaTerimaBongkaran->status) }}
                             </span>
                         </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Status Operasional</p>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                @if($tandaTerimaBongkaran->lembur)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        Lembur
+                                    </span>
+                                @endif
+                                @if($tandaTerimaBongkaran->nginap)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        Nginap
+                                    </span>
+                                @endif
+                                @if($tandaTerimaBongkaran->tidak_lembur_nginap)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Tidak Lembur & Nginap
+                                    </span>
+                                @endif
+                                @if(!$tandaTerimaBongkaran->lembur && !$tandaTerimaBongkaran->nginap && !$tandaTerimaBongkaran->tidak_lembur_nginap)
+                                    <span class="text-gray-500">-</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
 

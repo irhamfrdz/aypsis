@@ -20,11 +20,17 @@ class TandaTerimaBongkaran extends Model
         'no_seal',
         'kegiatan',
         'status',
-        'keterangan'
+        'keterangan',
+        'lembur',
+        'nginap',
+        'tidak_lembur_nginap'
     ];
 
     protected $casts = [
-        'tanggal_tanda_terima' => 'date'
+        'tanggal_tanda_terima' => 'date',
+        'lembur' => 'boolean',
+        'nginap' => 'boolean',
+        'tidak_lembur_nginap' => 'boolean',
     ];
 
     /**

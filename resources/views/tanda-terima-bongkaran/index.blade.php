@@ -92,6 +92,22 @@
                     </select>
                 </div>
 
+                <!-- Filter Checkboxes -->
+                <div class="md:col-span-12 flex flex-wrap gap-4 pt-2 border-t mt-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="f_lembur" value="1" {{ request('f_lembur') ? 'checked' : '' }} class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50">
+                        <span class="ml-2 text-sm text-gray-700">Lembur</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="f_nginap" value="1" {{ request('f_nginap') ? 'checked' : '' }} class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50">
+                        <span class="ml-2 text-sm text-gray-700">Nginap</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="f_tidak_lembur_nginap" value="1" {{ request('f_tidak_lembur_nginap') ? 'checked' : '' }} class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50">
+                        <span class="ml-2 text-sm text-gray-700">Tidak Lembur & Nginap</span>
+                    </label>
+                </div>
+
                 <!-- Buttons -->
                 <div class="md:col-span-3 flex items-end gap-2">
                     <button type="submit" 
@@ -462,6 +478,40 @@
                               rows="3"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"></textarea>
                 </div>
+
+                <!-- Checkbox Lembur & Nginap -->
+                <div class="col-span-1 md:col-span-2 flex flex-col md:flex-row md:space-x-6 mt-2 items-start md:items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                    <div class="flex items-center mb-2 md:mb-0">
+                        <input type="checkbox"
+                               name="lembur"
+                               id="lembur"
+                               value="1"
+                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                            Lembur
+                        </label>
+                    </div>
+                    <div class="flex items-center mb-2 md:mb-0">
+                        <input type="checkbox"
+                               name="nginap"
+                               id="nginap"
+                               value="1"
+                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                            Nginap
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox"
+                               name="tidak_lembur_nginap"
+                               id="tidak_lembur_nginap"
+                               value="1"
+                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                            Tidak Lembur & Nginap
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3 pt-3 border-t">
@@ -689,5 +739,54 @@
             kenekDropdown?.classList.add('hidden');
         }
     });
+
+    // Checkbox Logic for Modal
+    const cbLembur = document.getElementById('lembur');
+    const cbNginap = document.getElementById('nginap');
+    const cbTidak = document.getElementById('tidak_lembur_nginap');
+
+    if(cbLembur && cbNginap && cbTidak) {
+        cbTidak.addEventListener('change', function() {
+            if(this.checked) {
+                cbLembur.checked = false;
+                cbNginap.checked = false;
+            }
+        });
+
+        cbLembur.addEventListener('change', function() {
+            if(this.checked) {
+                cbTidak.checked = false;
+            }
+        });
+
+        cbNginap.addEventListener('change', function() {
+            if(this.checked) {
+                cbTidak.checked = false;
+            }
+        });
+    }
+
+    // Reset checkboxes when modal closes
+    const originalCloseTerimaBarangModal2 = window.closeTerimaBarangModal;
+    window.closeTerimaBarangModal = function() {
+        if(cbLembur) cbLembur.checked = false;
+        if(cbNginap) cbNginap.checked = false;
+        if(cbTidak) cbTidak.checked = false;
+        
+        // This calls the previous override which calls the original... chain
+        if(typeof originalCloseTerimaBarangModal2 === 'function') {
+            originalCloseTerimaBarangModal2();
+        } 
+        // Note: The previous tool call already wrapped closeTerimaBarangModal. 
+        // We should be careful not to create infinite recursion or break the chain.
+        // The safest way here since we are appending script is to just rely on form reset?
+        // Actually the form reset in original function handles text inputs. 
+        // Checkboxes are also inputs so form.reset() SHOULD handle them.
+        // Let's verify: document.getElementById('terimaBarangForm').reset(); is called.
+        // Yes, form reset clears checkboxes to default (unchecked).
+        // So we might not strictly need this manual reset if form reset works.
+        // However, 'default' might be checked if we had 'checked' attribute in HTML. We don't.
+        // So form.reset() is likely enough. I will skip the complex override to avoid bugs.
+    };
 </script>
 @endpush
