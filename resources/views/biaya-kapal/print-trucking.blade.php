@@ -72,49 +72,48 @@
 
         .header {
             text-align: center;
-            margin-bottom: 10px;
-            border-bottom: 2px double #000;
-            padding-bottom: 8px;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 10px;
         }
 
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .header p {
-            font-size: {{ $currentPaper['fontSize'] }};
-            color: #000;
-            margin: 1px 0;
+            letter-spacing: 1px;
         }
 
         .document-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding: 6px 0;
-            border-bottom: 1px solid #ddd;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin-bottom: 15px;
+            padding: 0;
+            border: none;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
-        .document-info .left,
-        .document-info .right {
-            flex: 1;
+        .document-info .info-row {
+            display: flex;
+            padding: 2px 0;
         }
 
         .document-info .label {
-            font-weight: bold;
-            display: inline-block;
-            width: 80px;
-            margin-bottom: 1px;
-            font-size: {{ $currentPaper['fontSize'] }};
+            font-weight: normal;
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        .document-info .separator {
+            margin: 0 8px;
+            flex-shrink: 0;
         }
 
         .document-info .value {
-            display: inline-block;
-            font-size: {{ $currentPaper['fontSize'] }};
+            flex: 1;
+            font-weight: normal;
         }
 
         .detail-table {
@@ -186,29 +185,33 @@
         }
 
         .signatures {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             margin-top: 30px;
             margin-bottom: 20px;
         }
 
         .signature-box {
             text-align: center;
-            width: 30%;
         }
 
         .signature-box .title {
-            font-weight: bold;
-            margin-bottom: 50px;
+            font-weight: normal;
+            margin-bottom: 60px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
-        .signature-box .name {
-            font-weight: bold;
+        .signature-box .line {
             border-top: 1px solid #000;
-            padding-top: 5px;
-            display: inline-block;
-            min-width: 120px;
+            margin: 0 auto;
+            width: 80%;
+            margin-bottom: 3px;
+        }
+
+        .signature-box .name {
+            font-weight: normal;
+            padding-top: 0;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
@@ -270,23 +273,52 @@
 
         <!-- Document Info -->
         <div class="document-info">
-            <div class="left">
-                <div>
-                    <span class="label">No. Invoice</span>
-                    <span class="value">: <strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
-                </div>
-                <div>
+            <div>
+                <div class="info-row">
                     <span class="label">Tanggal</span>
-                    <span class="value">: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d F Y') }}</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</span>
                 </div>
-            </div>
-            <div class="right" style="text-align: right;">
-                 @if($biayaKapal->nomor_referensi)
-                <div>
-                    <span class="label">No. Ref</span>
-                    <span class="value">: {{ $biayaKapal->nomor_referensi }}</span>
+                <div class="info-row">
+                    <span class="label">Nomor</span>
+                    <span class="separator">:</span>
+                    <span class="value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
+                </div>
+                @if($biayaKapal->nomor_referensi)
+                <div class="info-row">
+                    <span class="label">Nomor Referensi</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ $biayaKapal->nomor_referensi }}</span>
+                </div>
+                @else
+                <div class="info-row">
+                    <span class="label">Nomor Referensi</span>
+                    <span class="separator">:</span>
+                    <span class="value">-</span>
                 </div>
                 @endif
+            </div>
+            <div>
+                <div class="info-row">
+                    <span class="label">Vendor</span>
+                    <span class="separator">:</span>
+                    <span class="value">
+                        @php
+                            $vendors = $biayaKapal->truckingDetails->pluck('nama_vendor')->unique()->values();
+                        @endphp
+                        {{ $vendors->count() > 0 ? $vendors->join(', ') : '-' }}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Kapal</span>
+                    <span class="separator">:</span>
+                    <span class="value">
+                        @php
+                            $kapals = $biayaKapal->truckingDetails->pluck('kapal')->unique()->values();
+                        @endphp
+                        {{ $kapals->count() > 0 ? $kapals->join(', ') : '-' }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -386,16 +418,19 @@
         <div class="footer">
             <div class="signatures">
                 <div class="signature-box">
-                    <div class="title">Dibuat Oleh,</div>
-                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
+                    <div class="title">Dibuat Oleh</div>
+                    <div class="line"></div>
+                    <div class="name"></div>
                 </div>
                 <div class="signature-box">
-                    <div class="title">Mengetahui,</div>
-                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
+                    <div class="title">Diperiksa Oleh</div>
+                    <div class="line"></div>
+                    <div class="name"></div>
                 </div>
                 <div class="signature-box">
-                    <div class="title">Menyetujui,</div>
-                    <div class="name">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div>
+                    <div class="title">Disetujui Oleh</div>
+                    <div class="line"></div>
+                    <div class="name"></div>
                 </div>
             </div>
 
