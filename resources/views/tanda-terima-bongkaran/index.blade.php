@@ -158,18 +158,14 @@
                                 @endif
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
-                                @can('tanda-terima-bongkaran-view')
                                 <a href="{{ route('tanda-terima-bongkaran.show', $tandaTerima->id) }}"
                                    class="inline-flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition duration-200">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @endcan
-                                @can('tanda-terima-bongkaran-edit')
                                 <a href="{{ route('tanda-terima-bongkaran.edit', $tandaTerima->id) }}"
                                    class="inline-flex items-center px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded transition duration-200 ml-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                @endcan
                             </td>
                         </tr>
                         @empty
@@ -245,20 +241,16 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
                                 @if($suratJalan->tandaTerima)
-                                    @can('tanda-terima-bongkaran-view')
                                     <a href="{{ route('tanda-terima-bongkaran.show', $suratJalan->tandaTerima->id) }}"
                                        class="inline-flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition duration-200"
                                        title="Lihat Tanda Terima">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @endcan
-                                    @can('tanda-terima-bongkaran-edit')
                                     <a href="{{ route('tanda-terima-bongkaran.edit', $suratJalan->tandaTerima->id) }}"
                                        class="inline-flex items-center px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded transition duration-200 ml-1"
                                        title="Edit Tanda Terima">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    @endcan
                                 @else
                                     @can('tanda-terima-bongkaran-create')
                                     <button type="button" 
