@@ -327,9 +327,8 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 25%;">Kapal / Voyage</th>
-                    <th style="width: 15%;">Vendor</th>
-                    <th style="width: 35%;">Detail Kontainer</th>
+                    <th style="width: 45%;">Kapal / Voyage</th>
+                    <th style="width: 30%;">Vendor</th>
                     <th style="width: 20%;">Biaya</th>
                 </tr>
             </thead>
@@ -349,26 +348,7 @@
                             <span style="color: #555;">Voy: {{ $detail->voyage }}</span>
                         </td>
                         <td>{{ $detail->nama_vendor }}</td>
-                        <td>
-                            @if(!empty($detail->no_bl) && is_array($detail->no_bl) && count($detail->no_bl) > 0)
-                                @foreach($detail->no_bl as $blId)
-                                    @php 
-                                        $blInfo = $blDetails[$blId] ?? null; 
-                                    @endphp
-                                    @if($blInfo)
-                                        <span class="container-chip">
-                                            {{ $blInfo->nomor_kontainer }} 
-                                            ({{ $blInfo->size_kontainer }}')
-                                        </span>
-                                    @endif
-                                @endforeach
-                                <div style="margin-top: 3px; font-style: italic; font-size: 0.9em; color: #666;">
-                                    Total: {{ count($detail->no_bl) }} Kontainer
-                                </div>
-                            @else
-                                -
-                            @endif
-                        </td>
+
                         <td class="right">
                             <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</div>
                             
@@ -388,7 +368,7 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="5" class="center">Tidak ada detail trucking.</td>
+                        <td colspan="4" class="center">Tidak ada detail trucking.</td>
                     </tr>
                 @endif
             </tbody>
