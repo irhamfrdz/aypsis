@@ -4521,5 +4521,30 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('master.pricelist-biaya-trucking.destroy')
                 ->middleware('can:master-pricelist-biaya-trucking-delete');
 
+           // ═══════════════════════════════════════════════════════════════════════
+           // 📄 MASTER SERTIFIKAT KAPAL
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::get('master-sertifikat-kapal', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'index'])
+                ->name('master-sertifikat-kapal.index')
+                ->middleware('can:master-sertifikat-kapal-view');
+           Route::get('master-sertifikat-kapal/create', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'create'])
+                ->name('master-sertifikat-kapal.create')
+                ->middleware('can:master-sertifikat-kapal-create');
+           Route::post('master-sertifikat-kapal', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'store'])
+                ->name('master-sertifikat-kapal.store')
+                ->middleware('can:master-sertifikat-kapal-create');
+           Route::get('master-sertifikat-kapal/{sertifikat_kapal}', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'show'])
+                ->name('master-sertifikat-kapal.show')
+                ->middleware('can:master-sertifikat-kapal-view');
+           Route::get('master-sertifikat-kapal/{sertifikat_kapal}/edit', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'edit'])
+                ->name('master-sertifikat-kapal.edit')
+                ->middleware('can:master-sertifikat-kapal-update');
+           Route::put('master-sertifikat-kapal/{sertifikat_kapal}', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'update'])
+                ->name('master-sertifikat-kapal.update')
+                ->middleware('can:master-sertifikat-kapal-update');
+           Route::delete('master-sertifikat-kapal/{sertifikat_kapal}', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'destroy'])
+                ->name('master-sertifikat-kapal.destroy')
+                ->middleware('can:master-sertifikat-kapal-delete');
+
 });
 
