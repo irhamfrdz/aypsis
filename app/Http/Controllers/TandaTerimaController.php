@@ -1112,6 +1112,9 @@ class TandaTerimaController extends Controller
             'tonase' => 'nullable',
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'tidak_lembur_nginap' => 'nullable|boolean',
         ]);
 
         DB::beginTransaction();
@@ -1391,6 +1394,11 @@ class TandaTerimaController extends Controller
                             }
                         }
                     }
+                    
+                    // Update checkbox lembur, nginap, tidak_lembur_nginap
+                    $suratJalanUpdateData['lembur'] = $request->boolean('lembur');
+                    $suratJalanUpdateData['nginap'] = $request->boolean('nginap');
+                    $suratJalanUpdateData['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
                     
                     // Update status menjadi sudah_checkpoint karena sudah ada tanda terima
                     $suratJalanUpdateData['status'] = 'sudah_checkpoint';
