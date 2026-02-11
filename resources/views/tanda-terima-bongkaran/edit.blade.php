@@ -180,42 +180,42 @@
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
-                        </div>
 
-                        <!-- Checkbox Lembur & Nginap -->
-                        <div class="col-span-1 md:col-span-2 flex flex-col md:flex-row md:space-x-6 mt-4 items-start md:items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                            <div class="flex items-center mb-2 md:mb-0">
-                                <input type="checkbox"
-                                       name="lembur"
-                                       id="lembur"
-                                       value="1"
-                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                       {{ old('lembur', $tandaTerimaBongkaran->lembur) ? 'checked' : '' }}>
-                                <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
-                                    Lembur
-                                </label>
-                            </div>
-                            <div class="flex items-center mb-2 md:mb-0">
-                                <input type="checkbox"
-                                       name="nginap"
-                                       id="nginap"
-                                       value="1"
-                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                       {{ old('nginap', $tandaTerimaBongkaran->nginap) ? 'checked' : '' }}>
-                                <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
-                                    Nginap
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox"
-                                       name="tidak_lembur_nginap"
-                                       id="tidak_lembur_nginap"
-                                       value="1"
-                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                       {{ old('tidak_lembur_nginap', $tandaTerimaBongkaran->tidak_lembur_nginap) ? 'checked' : '' }}>
-                                <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
-                                    Tidak Lembur & Nginap
-                                </label>
+                            <!-- Checkbox Lembur & Nginap -->
+                            <div class="col-span-1 md:col-span-2 flex flex-col md:flex-row md:space-x-6 mt-4 items-start md:items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                                <div class="flex items-center mb-2 md:mb-0">
+                                    <input type="checkbox"
+                                           name="lembur"
+                                           id="lembur"
+                                           value="1"
+                                           class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                           {{ old('lembur', $tandaTerimaBongkaran->lembur) ? 'checked' : '' }}>
+                                    <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                        Lembur
+                                    </label>
+                                </div>
+                                <div class="flex items-center mb-2 md:mb-0">
+                                    <input type="checkbox"
+                                           name="nginap"
+                                           id="nginap"
+                                           value="1"
+                                           class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                           {{ old('nginap', $tandaTerimaBongkaran->nginap) ? 'checked' : '' }}>
+                                    <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                        Nginap
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox"
+                                           name="tidak_lembur_nginap"
+                                           id="tidak_lembur_nginap"
+                                           value="1"
+                                           class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                           {{ old('tidak_lembur_nginap', $tandaTerimaBongkaran->tidak_lembur_nginap) ? 'checked' : '' }}>
+                                    <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
+                                        Tidak Lembur & Nginap
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
