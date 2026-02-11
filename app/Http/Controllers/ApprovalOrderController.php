@@ -8,6 +8,7 @@ use App\Models\MasterPengirimPenerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 use Carbon\Carbon;
 
 class ApprovalOrderController extends Controller
@@ -259,6 +260,62 @@ class ApprovalOrderController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                            ->with('error', 'Gagal menolak Order: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update data penerima pada tanda terima berdasarkan data order
+     */
+    public function updateTandaTerima(Request $request)
+    {
+        try {
+            $dryRun = $request->input('dry_run', false);
+            
+            // Prepare command arguments
+            $arguments = [];
+            if ($dryRun) {
+                $arguments['--dry-run'] = true;
+            }
+            
+            // Run artisan command and capture output
+            \Artisan::call('tanda-terima:update-penerima', $arguments);
+            $output = \Artisan::output();
+            
+            // Parse output to get statistics
+            $totalOrders = 0;
+            $totalTandaTerima = 0;
+            $totalWithChanges = 0;
+            $totalUpdated = 0;
+            
+            // Extract numbers from output
+            if (preg_match('/Total Order diproses: (\d+)/', $output, $matches)) {
+                $totalOrders = (int) $matches[1];
+            }
+            if (preg_match('/Total Tanda Terima ditemukan: (\d+)/', $output, $matches)) {
+                $totalTandaTerima = (int) $matches[1];
+            }
+            if (preg_match('/Total Tanda Terima (?:yang akan diupdate|dengan perubahan): (\d+)/', $output, $matches)) {
+                $totalWithChanges = (int) $matches[1];
+            }
+            if (preg_match('/Total Tanda Terima berhasil diupdate: (\d+)/', $output, $matches)) {
+                $totalUpdated = (int) $matches[1];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => $dryRun ? 'Preview berhasil' : 'Update berhasil',
+                'total_orders' => $totalOrders,
+                'total_tanda_terima' => $totalTandaTerima,
+                'total_with_changes' => $totalWithChanges,
+                'total_updated' => $totalUpdated,
+                'output' => $output
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

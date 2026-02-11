@@ -1971,6 +1971,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/reject', [\App\Http\Controllers\ApprovalOrderController::class, 'reject'])
              ->name('reject')
              ->middleware('can:approval-order-reject');
+        
+        Route::post('/update-tanda-terima', [\App\Http\Controllers\ApprovalOrderController::class, 'updateTandaTerima'])
+             ->name('update-tanda-terima')
+             ->middleware('can:approval-order-update');
     });
 
     // ═══════════════════════════════════════════════════════════════════════
