@@ -2646,6 +2646,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima.export.post')
          ->middleware('can:tanda-terima-export');
 
+    // Route untuk update manifest dari tanda terima
+    Route::post('tanda-terima/update-manifest', [\App\Http\Controllers\TandaTerimaController::class, 'updateManifest'])
+         ->name('tanda-terima.update-manifest')
+         ->middleware('can:tanda-terima-update');
+
     // ═══════════════════════════════════════════════════════════════════════
     // 🚚 PERGERAKAN KONTAINER (CONTAINER MOVEMENT)
     // ═══════════════════════════════════════════════════════════════════════

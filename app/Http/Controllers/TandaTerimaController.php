@@ -1991,5 +1991,65 @@ class TandaTerimaController extends Controller
         
         return $imagePaths;
     }
+
+    /**
+     * Update manifest penerima dan alamat dari tanda terima
+     */
+    public function updateManifest(Request $request)
+    {
+        try {
+            $dryRun = $request->input('dry_run', false);
+            
+            // Prepare command arguments
+            $arguments = ['--all' => true];
+            if ($dryRun) {
+                $arguments['--dry-run'] = true;
+            }
+            
+            // Run artisan command and capture output
+            \Artisan::call('manifest:update-penerima', $arguments);
+            $output = \Artisan::output();
+            
+            // Parse output to get statistics
+            $totalManifests = 0;
+            $totalManifestWithTT = 0;
+            $totalWithChanges = 0;
+            $totalUpdated = 0;
+            
+            if (preg_match('/Ditemukan (\d+) manifest dengan prospek_id/', $output, $matches)) {
+                $totalManifests = (int) $matches[1];
+                $totalManifestWithTT = $totalManifests; // All found manifests have prospek_id
+            }
+            
+            if (preg_match('/Total Manifest dengan perubahan: (\d+)/', $output, $matches)) {
+                $totalWithChanges = (int) $matches[1];
+            }
+            
+            if (preg_match('/Total Manifest yang akan diupdate: (\d+)/', $output, $matches)) {
+                $totalWithChanges = (int) $matches[1]; // dry run
+            }
+            
+            if (preg_match('/Total Manifest berhasil diupdate: (\d+)/', $output, $matches)) {
+                $totalUpdated = (int) $matches[1];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => $dryRun ? 'Preview berhasil' : 'Update berhasil',
+                'total_manifests' => $totalManifests,
+                'total_manifest_with_tt' => $totalManifestWithTT,
+                'total_with_changes' => $totalWithChanges,
+                'total_updated' => $dryRun ? 0 : $totalUpdated,
+                'output' => $output
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error updating manifest: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

@@ -30,6 +30,25 @@
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Tanda Terima
                     </a>
+                    
+                    @can('tanda-terima-update')
+                    <button type="button" onclick="updateManifest(true)" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        Preview Update Manifest
+                    </button>
+                    <button type="button" onclick="updateManifest(false)" 
+                            class="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Update Manifest
+                    </button>
+                    @endcan
+                    
                     @can('tanda-terima-export')
                     <!-- Download filtered Excel (works for both tanda terima and missing surat jalan based on mode param) -->
                     <form id="downloadFilteredExcelForm" action="{{ route('tanda-terima.export.post') }}" method="POST" style="display: inline;">
@@ -1244,5 +1263,137 @@ document.addEventListener('DOMContentLoaded', function() {
         initResizableTable('tandaTerimaTable');
     }
 });
+
+function updateManifest(isDryRun) {
+    const actionText = isDryRun ? 'Preview Update' : 'Update Data';
+    const confirmText = isDryRun ? 
+        'Anda akan melihat preview data Manifest yang akan diupdate dari Tanda Terima tanpa mengubah data apapun. Lanjutkan?' : 
+        'Anda akan mengupdate data penerima dan alamat pada Manifest berdasarkan data Tanda Terima. Lanjutkan?';
+    
+    if (!confirm(confirmText)) {
+        return;
+    }
+    
+    // Show loading
+    const loadingHtml = `
+        <div id="loading-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-6 shadow-xl flex items-center gap-4">
+                <svg class="animate-spin h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-lg font-medium">${actionText}...</span>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', loadingHtml);
+    
+    // Call API
+    fetch('{{ route("tanda-terima.update-manifest") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            dry_run: isDryRun
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove loading
+        document.getElementById('loading-overlay').remove();
+        
+        if (data.success) {
+            // Show result modal
+            showManifestResultModal(data, isDryRun);
+        } else {
+            alert('Error: ' + (data.message || 'Terjadi kesalahan'));
+        }
+    })
+    .catch(error => {
+        document.getElementById('loading-overlay').remove();
+        alert('Error: ' + error.message);
+        console.error('Error:', error);
+    });
+}
+
+function showManifestResultModal(data, isDryRun) {
+    const modalTitle = isDryRun ? 'Preview Update Manifest' : 'Hasil Update Manifest';
+    const modalIcon = isDryRun ? 
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>' :
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+    
+    const warningNote = isDryRun && data.total_with_changes > 0 ? 
+        `<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-sm text-yellow-800"><strong>Catatan:</strong> Ini adalah preview. Data belum diupdate. Gunakan tombol "Update Manifest" untuk melakukan update sebenarnya.</p>
+        </div>` : '';
+    
+    const successNote = !isDryRun && data.total_updated > 0 ? 
+        `<div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p class="text-sm text-green-800"><strong>Berhasil!</strong> Data Manifest telah diupdate dari Tanda Terima.</p>
+        </div>` : '';
+    
+    const noChangeNote = data.total_with_changes === 0 ? 
+        `<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="text-sm text-blue-800"><strong>Info:</strong> Semua data penerima dan alamat pada Manifest sudah sama dengan data di Tanda Terima.</p>
+        </div>` : '';
+    
+    const modalHtml = `
+        <div id="manifest-result-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            ${modalIcon}
+                        </svg>
+                        <h3 class="text-2xl font-bold text-gray-900">${modalTitle}</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-600 font-medium">Total Manifest Diproses</p>
+                            <p class="text-3xl font-bold text-blue-900">${data.total_manifests}</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <p class="text-sm text-purple-600 font-medium">Dengan Tanda Terima</p>
+                            <p class="text-3xl font-bold text-purple-900">${data.total_manifest_with_tt}</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-sm text-yellow-600 font-medium">${isDryRun ? 'Akan Diupdate' : 'Dengan Perubahan'}</p>
+                            <p class="text-3xl font-bold text-yellow-900">${data.total_with_changes}</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-600 font-medium">${isDryRun ? 'Preview' : 'Berhasil Diupdate'}</p>
+                            <p class="text-3xl font-bold text-green-900">${isDryRun ? data.total_with_changes : data.total_updated}</p>
+                        </div>
+                    </div>
+                    
+                    ${warningNote}
+                    ${successNote}
+                    ${noChangeNote}
+                </div>
+                <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                    <button onclick="closeManifestResultModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                        Tutup
+                    </button>
+                    ${isDryRun && data.total_with_changes > 0 ? 
+                        '<button onclick="closeManifestResultModal(); updateManifest(false);" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Update Sekarang</button>' : 
+                        ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeManifestResultModal() {
+    const modal = document.getElementById('manifest-result-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
 </script>
 @endpush
