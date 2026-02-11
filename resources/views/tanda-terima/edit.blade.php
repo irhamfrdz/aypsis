@@ -61,16 +61,7 @@
                     <p class="text-gray-600 text-sm">No. Surat Jalan: <span class="font-semibold">{{ $tandaTerima->suratJalan->no_surat_jalan }}</span></p>
                 @endif
             </div>
-            @if($sudahMasukBl)
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2">
-                <div class="flex items-center text-yellow-800">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <span class="text-sm font-medium">Sudah Masuk BL - Edit Terbatas</span>
-                </div>
-            </div>
-            @endif
+
         </div>
     </div>
 
@@ -146,6 +137,7 @@
                                         disabled>
                                     <option value="{{ $tandaTerima->no_kontainer }}" selected>{{ $tandaTerima->no_kontainer }}</option>
                                 </select>
+                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
                             @else
                                 <select name="nomor_kontainer[]" id="nomor_kontainer"
                                         class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
@@ -166,9 +158,7 @@
                             @error('nomor_kontainer.0')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
-                            @if($sudahMasukBl)
-                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
-                            @endif
+
                         </div>
                         <div>
                             <label for="no_seal" class="block text-xs font-medium text-gray-500 mb-2">No. Seal</label>
@@ -177,12 +167,13 @@
                                    placeholder="Nomor seal"
                                    value="{{ old('no_seal.0', $tandaTerima->no_seal) }}"
                                    {{ $sudahMasukBl ? 'readonly' : '' }}>
-                            @error('no_seal.0')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
                             @if($sudahMasukBl)
                                 <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
                             @endif
+                            @error('no_seal.0')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+
                         </div>
                     </div>
                 </div>
@@ -205,15 +196,6 @@
                         </div>
                         <div>
                             <label for="supir_pengganti" class="block text-xs font-medium text-gray-500 mb-2">Supir Pengganti</label>
-                            @if($sudahMasukBl)
-                                <!-- Hidden input to preserve value when sudah masuk BL -->
-                                <input type="hidden" name="supir_pengganti" value="{{ old('supir_pengganti', $tandaTerima->supir_pengganti) }}">
-                                <select id="supir_pengganti"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm bg-gray-100 cursor-not-allowed"
-                                        disabled>
-                                    <option value="{{ $tandaTerima->supir_pengganti }}" selected>{{ $tandaTerima->supir_pengganti ?: '-- Tidak ada --' }}</option>
-                                </select>
-                            @else
                                 <select name="supir_pengganti" id="supir_pengganti"
                                         class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm select2-supir-pengganti @error('supir_pengganti') border-red-500 @enderror">
                                     <option value="">-- Pilih Supir Pengganti --</option>
@@ -224,27 +206,21 @@
                                         </option>
                                     @endforeach
                                 </select>
-                            @endif
                             @error('supir_pengganti')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
-                            @if($sudahMasukBl)
-                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
-                            @endif
+
                         </div>
                         <div>
                             <label for="no_plat" class="block text-xs font-medium text-gray-500 mb-2">No. Plat</label>
                             <input type="text" name="no_plat" id="no_plat"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm font-mono @error('no_plat') border-red-500 @enderror {{ isset($sudahMasukBl) && $sudahMasukBl ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm font-mono @error('no_plat') border-red-500 @enderror"
                                    placeholder="Nomor plat kendaraan"
-                                   value="{{ old('no_plat', $tandaTerima->suratJalan->no_plat) }}"
-                                   {{ isset($sudahMasukBl) && $sudahMasukBl ? 'readonly' : '' }}>
+                                   value="{{ old('no_plat', $tandaTerima->suratJalan->no_plat) }}">
                             @error('no_plat')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
-                            @if(isset($sudahMasukBl) && $sudahMasukBl)
-                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
-                            @endif
+
                         </div>
                         <div>
                             <label for="kenek" class="block text-xs font-medium text-gray-500 mb-2">Nama Kenek</label>
@@ -308,8 +284,7 @@
                                        id="lembur"
                                        value="1"
                                        class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                       {{ old('lembur', $tandaTerima->suratJalan->lembur ?? 0) ? 'checked' : '' }}
-                                       {{ isset($sudahMasukBl) && $sudahMasukBl ? 'disabled' : '' }}>
+                                       {{ old('lembur', $tandaTerima->suratJalan->lembur ?? 0) ? 'checked' : '' }}>
                                 <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
                                     Lembur
                                 </label>
@@ -320,8 +295,7 @@
                                        id="nginap"
                                        value="1"
                                        class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                       {{ old('nginap', $tandaTerima->suratJalan->nginap ?? 0) ? 'checked' : '' }}
-                                       {{ isset($sudahMasukBl) && $sudahMasukBl ? 'disabled' : '' }}>
+                                       {{ old('nginap', $tandaTerima->suratJalan->nginap ?? 0) ? 'checked' : '' }}>
                                 <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
                                     Nginap
                                 </label>
@@ -332,8 +306,7 @@
                                        id="tidak_lembur_nginap"
                                        value="1"
                                        class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                       {{ old('tidak_lembur_nginap', $tandaTerima->suratJalan->tidak_lembur_nginap ?? 0) ? 'checked' : '' }}
-                                       {{ isset($sudahMasukBl) && $sudahMasukBl ? 'disabled' : '' }}>
+                                       {{ old('tidak_lembur_nginap', $tandaTerima->suratJalan->tidak_lembur_nginap ?? 0) ? 'checked' : '' }}>
                                 <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
                                     Tidak Lembur & Nginap
                                 </label>

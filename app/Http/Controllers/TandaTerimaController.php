@@ -1027,7 +1027,10 @@ class TandaTerimaController extends Controller
         // Check if tanda terima sudah masuk BL
         $sudahMasukBl = $tandaTerima->sudahMasukBl();
 
-        // Jika sudah masuk BL, cek apakah ada perubahan pada field yang dilindungi
+        // Check if tanda terima sudah masuk BL
+        $sudahMasukBl = $tandaTerima->sudahMasukBl();
+
+        // Jika sudah masuk BL, cek apakah ada perubahan pada field yang dilindungi (Hanya Nomor Kontainer dan Seal)
         if ($sudahMasukBl) {
             $protectedFields = [];
             
@@ -1047,17 +1050,13 @@ class TandaTerimaController extends Controller
                 }
             }
             
-            // Check supir pengganti
-            if ($request->has('supir_pengganti') && $request->supir_pengganti !== $tandaTerima->supir_pengganti) {
-                $protectedFields[] = 'Supir Pengganti';
-            }
-            
             if (!empty($protectedFields)) {
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Tanda terima sudah masuk BL. Field berikut tidak dapat diubah: ' . implode(', ', $protectedFields));
             }
         }
+
 
         $request->validate([
             'estimasi_nama_kapal' => 'nullable|string|max:255',
