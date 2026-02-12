@@ -46,8 +46,9 @@ class ReportLemburController extends Controller
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
             })
-            ->whereDate('tanggal_surat_jalan', '>=', $startDate)
-            ->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            ->whereNotNull('tanggal_tanda_terima')
+            ->whereDate('tanggal_tanda_terima', '>=', $startDate)
+            ->whereDate('tanggal_tanda_terima', '<=', $endDate);
 
         if ($search) {
             $suratJalanQuery->where(function($q) use ($search) {
@@ -61,12 +62,15 @@ class ReportLemburController extends Controller
 
         // Query Surat Jalan Bongkaran
         $bongkaranQuery = SuratJalanBongkaran::query()
+            ->with('tandaTerima')
             ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
             })
-            ->whereDate('tanggal_surat_jalan', '>=', $startDate)
-            ->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            ->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+                $q->whereDate('tanggal_tanda_terima', '>=', $startDate)
+                  ->whereDate('tanggal_tanda_terima', '<=', $endDate);
+            });
 
         if ($search) {
             $bongkaranQuery->where(function($q) use ($search) {
@@ -81,16 +85,18 @@ class ReportLemburController extends Controller
         // Standardize properties
         $suratJalans->each(function($item) {
             $item->type_surat = 'Muat';
+            $item->report_date = $item->tanggal_tanda_terima;
         });
 
         $bongkarans->each(function($item) {
             $item->type_surat = 'Bongkaran';
             // Alias for view consistency
             $item->no_surat_jalan = $item->nomor_surat_jalan;
+            $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal_tanda_terima : null;
         });
 
         // Merge collections
-        $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('tanggal_surat_jalan')->values();
+        $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('report_date')->values();
 
         return view('report-lembur.view', [
             'suratJalans' => $allSuratJalans,
