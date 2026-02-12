@@ -361,7 +361,7 @@ class TandaTerimaBongkaranController extends Controller
             if ($tandaTerimaBongkaran->surat_jalan_bongkaran_id) {
                 $suratJalan = SuratJalanBongkaran::find($tandaTerimaBongkaran->surat_jalan_bongkaran_id);
                 if ($suratJalan) {
-                    $sjUpdate = ['status' => 'sudah_checkpoint'];
+                    $sjUpdate = ['status' => 'sudah masuk checkpoint'];
                     $sjUpdate['lembur'] = $validated['lembur'];
                     $sjUpdate['nginap'] = $validated['nginap'];
                     $sjUpdate['tidak_lembur_nginap'] = $validated['tidak_lembur_nginap'];

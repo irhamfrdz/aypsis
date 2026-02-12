@@ -43,4 +43,9 @@ class StockAmprahan extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function usages()
+    {
+        return $this->hasMany(StockAmprahanUsage::class, 'stock_amprahan_id');
+    }
 }
