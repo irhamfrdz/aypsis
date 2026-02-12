@@ -36,9 +36,9 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($suratJalans as $index => $sj)
+                    @forelse($suratJalans as $sj)
                     <tr>
-                        <td class="px-4 py-3">{{ $index + 1 }}</td>
+                        <td class="px-4 py-3">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3">{{ $sj->tanggal_surat_jalan ? \Carbon\Carbon::parse($sj->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
                         <td class="px-4 py-3">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $sj->type_surat == 'Muat' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800' }}">

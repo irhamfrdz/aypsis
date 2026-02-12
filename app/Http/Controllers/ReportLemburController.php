@@ -90,7 +90,7 @@ class ReportLemburController extends Controller
         });
 
         // Merge collections
-        $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('tanggal_surat_jalan');
+        $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('tanggal_surat_jalan')->values();
 
         return view('report-lembur.view', [
             'suratJalans' => $allSuratJalans,
