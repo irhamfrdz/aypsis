@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
 use App\Models\PranotaLembur;
+use App\Models\MasterPricelistLembur;
+use App\Models\NomorTerakhir;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -105,10 +107,23 @@ class ReportLemburController extends Controller
         // Merge collections
         $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('report_date')->values();
 
+        // Prepare data for Modal Pranota
+        $pricelistLemburs = MasterPricelistLembur::where('status', 'aktif')->get();
+        
+        $nomorTerakhir = NomorTerakhir::where('modul', 'PML')->first();
+        $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
+        $tahun = now()->format('y');
+        $bulan = now()->format('m');
+        $nomorCetakan = 1; // Default
+        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
         return view('report-lembur.view', [
             'suratJalans' => $allSuratJalans,
             'startDate' => $startDate,
-            'endDate' => $endDate
+            'endDate' => $endDate,
+            'pricelistLemburs' => $pricelistLemburs,
+            'nomorPranotaDisplay' => $nomorPranotaDisplay,
+            'nextNumber' => $nextNumber
         ]);
     }
 }
