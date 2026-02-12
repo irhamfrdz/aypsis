@@ -326,9 +326,9 @@ class PranotaSuratJalanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota uang jalan.');
         }
 
-        // Only allow updating if status is unpaid
-        if ($pranotaUangJalan->status_pembayaran !== 'unpaid') {
-            return back()->with('error', 'Pranota yang sudah diproses tidak dapat diubah.');
+        // Check if status allows update
+        if (!in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'approved', 'paid'])) {
+            return back()->with('error', 'Pranota dengan status ' . $pranotaUangJalan->status_pembayaran . ' tidak dapat diperbarui totalnya.');
         }
 
         try {
