@@ -33,6 +33,7 @@ class BiayaKapalController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_kapal', 'like', "%{$search}%")
+                  ->orWhere('nomor_invoice', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%")
                   ->orWhere('nominal', 'like', "%{$search}%");
             });
