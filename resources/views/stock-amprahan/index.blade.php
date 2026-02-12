@@ -180,28 +180,42 @@
                                     
                                     <div class="space-y-4">
                                         <div>
-                                            <label for="penerima_id" class="block text-sm font-medium text-gray-700">Penerima</label>
-                                            <select name="penerima_id" id="penerima_id" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                                <option value="">Pilih Penerima</option>
-                                                @foreach($karyawans as $karyawan)
-                                                    <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
-                                                @endforeach
-                                            </select>
+                                            <label for="penerima_id" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
+                                            <div class="relative">
+                                                <select name="penerima_id" id="penerima_id" required class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white appearance-none">
+                                                    <option value="">Pilih Penerima</option>
+                                                    @foreach($karyawans as $karyawan)
+                                                        <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div>
-                                            <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700">Jumlah Ambil</label>
-                                            <input type="number" name="jumlah" id="jumlah_ambil" required min="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="0">
-                                            <p class="text-xs text-red-500 mt-1 hidden" id="stockError">Jumlah melebihi stock!</p>
+                                            <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Ambil</label>
+                                            <input type="number" name="jumlah" id="jumlah_ambil" required min="1" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan jumlah barang...">
+                                            <p class="text-xs text-red-500 mt-1 hidden" id="stockError">
+                                                <span class="flex items-center">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Jumlah melebihi stock yang tersedia!
+                                                </span>
+                                            </p>
                                         </div>
                                         
                                         <div>
-                                            <label for="tanggal_ambil" class="block text-sm font-medium text-gray-700">Tanggal Pengambilan</label>
-                                            <input type="date" name="tanggal" id="tanggal_ambil" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="{{ date('Y-m-d') }}">
+                                            <label for="tanggal_ambil" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengambilan</label>
+                                            <input type="date" name="tanggal" id="tanggal_ambil" required class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" value="{{ date('Y-m-d') }}">
                                         </div>
 
                                         <div>
-                                            <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan / Keperluan</label>
-                                            <textarea name="keterangan" id="keterangan" rows="3" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: Untuk operasional kantor..."></textarea>
+                                            <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Keperluan</label>
+                                            <textarea name="keterangan" id="keterangan" rows="3" required class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out resize-none" placeholder="Contoh: Untuk operasional kantor, kebutuhan project X..."></textarea>
                                         </div>
                                     </div>
                                 </div>
