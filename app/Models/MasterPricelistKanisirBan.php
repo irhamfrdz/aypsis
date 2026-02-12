@@ -14,6 +14,7 @@ class MasterPricelistKanisirBan extends Model
         'harga_1000_kawat',
         'harga_1000_benang',
         'harga_900_kawat',
+        'harga_900_benang',
         'status',
         'created_by',
         'updated_by',

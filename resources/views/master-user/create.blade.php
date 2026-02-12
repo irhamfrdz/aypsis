@@ -487,6 +487,21 @@
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
+                                        <span>Data Pricelist Lembur</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lembur][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lembur][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lembur][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lembur][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
                                         <span>Data Pricelist Uang Jalan Batam</span>
                                     </div>
                                 </td>

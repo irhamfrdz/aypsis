@@ -92,6 +92,23 @@
                         @enderror
                     </div>
 
+                    <!-- Harga 900 Benang -->
+                    <div>
+                        <label for="harga_900_benang" class="block text-sm font-medium text-gray-700 mb-2">
+                            Harga Size 900 Benang <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                            <input type="number" name="harga_900_benang" id="harga_900_benang" value="{{ old('harga_900_benang', $pricelist->harga_900_benang) }}"
+                                   min="0"
+                                   class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('harga_900_benang') border-red-500 @enderror"
+                                   placeholder="0" required>
+                        </div>
+                        @error('harga_900_benang')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Status -->
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700 mb-2">

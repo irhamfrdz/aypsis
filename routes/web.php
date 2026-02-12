@@ -4543,8 +4543,30 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('master.pricelist-biaya-trucking.destroy')
                 ->middleware('can:master-pricelist-biaya-trucking-delete');
 
-           // ═══════════════════════════════════════════════════════════════════════
-           // 📄 MASTER SERTIFIKAT KAPAL
+            // ═══════════════════════════════════════════════════════════════════════
+            // 🚛 MASTER PRICELIST LEMBUR
+            // ═══════════════════════════════════════════════════════════════════════
+            Route::get('master-pricelist-lembur', [\App\Http\Controllers\MasterPricelistLemburController::class, 'index'])
+                 ->name('master.pricelist-lembur.index')
+                 ->middleware('can:master-pricelist-lembur-view');
+            Route::get('master-pricelist-lembur/create', [\App\Http\Controllers\MasterPricelistLemburController::class, 'create'])
+                 ->name('master.pricelist-lembur.create')
+                 ->middleware('can:master-pricelist-lembur-create');
+            Route::post('master-pricelist-lembur', [\App\Http\Controllers\MasterPricelistLemburController::class, 'store'])
+                 ->name('master.pricelist-lembur.store')
+                 ->middleware('can:master-pricelist-lembur-create');
+            Route::get('master-pricelist-lembur/{pricelistLembur}/edit', [\App\Http\Controllers\MasterPricelistLemburController::class, 'edit'])
+                 ->name('master.pricelist-lembur.edit')
+                 ->middleware('can:master-pricelist-lembur-update');
+            Route::put('master-pricelist-lembur/{pricelistLembur}', [\App\Http\Controllers\MasterPricelistLemburController::class, 'update'])
+                 ->name('master.pricelist-lembur.update')
+                 ->middleware('can:master-pricelist-lembur-update');
+            Route::delete('master-pricelist-lembur/{pricelistLembur}', [\App\Http\Controllers\MasterPricelistLemburController::class, 'destroy'])
+                 ->name('master.pricelist-lembur.destroy')
+                 ->middleware('can:master-pricelist-lembur-delete');
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // 🚢 MASTER SERTIFIKAT KAPAL
            // ═══════════════════════════════════════════════════════════════════════
            Route::get('master-sertifikat-kapal', [\App\Http\Controllers\MasterSertifikatKapalController::class, 'index'])
                 ->name('master-sertifikat-kapal.index')

@@ -26,6 +26,7 @@ class MasterPricelistKanisirBanController extends Controller
             'harga_1000_kawat' => 'required|numeric|min:0',
             'harga_1000_benang' => 'required|numeric|min:0',
             'harga_900_kawat' => 'required|numeric|min:0',
+            'harga_900_benang' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -51,6 +52,7 @@ class MasterPricelistKanisirBanController extends Controller
             'harga_1000_kawat' => 'required|numeric|min:0',
             'harga_1000_benang' => 'required|numeric|min:0',
             'harga_900_kawat' => 'required|numeric|min:0',
+            'harga_900_benang' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
