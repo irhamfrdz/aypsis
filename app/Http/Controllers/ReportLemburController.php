@@ -42,13 +42,15 @@ class ReportLemburController extends Controller
 
         // Query Surat Jalan (Muat)
         $suratJalanQuery = SuratJalan::query()
+            ->with('tandaTerima')
             ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
             })
-            ->whereNotNull('tanggal_tanda_terima')
-            ->whereDate('tanggal_tanda_terima', '>=', $startDate)
-            ->whereDate('tanggal_tanda_terima', '<=', $endDate);
+            ->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+                $q->whereDate('tanggal', '>=', $startDate)
+                  ->whereDate('tanggal', '<=', $endDate);
+            });
 
         if ($search) {
             $suratJalanQuery->where(function($q) use ($search) {
@@ -85,7 +87,7 @@ class ReportLemburController extends Controller
         // Standardize properties
         $suratJalans->each(function($item) {
             $item->type_surat = 'Muat';
-            $item->report_date = $item->tanggal_tanda_terima;
+            $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal : null;
         });
 
         $bongkarans->each(function($item) {
