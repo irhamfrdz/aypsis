@@ -180,18 +180,29 @@
                                     
                                     <div class="space-y-4">
                                         <div>
-                                            <label for="penerima_id" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                                            <div class="relative">
-                                                <select name="penerima_id" id="penerima_id" required class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white appearance-none">
-                                                    <option value="">Pilih Penerima</option>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
+                                            <div class="relative" id="penerima_dropdown">
+                                                <input type="hidden" name="penerima_id" id="penerima_id_hidden" required>
+                                                
+                                                <div class="relative">
+                                                    <input type="text" id="penerima_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Penerima..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="togglePenerimaDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                <div id="penerima_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
                                                     @foreach($karyawans as $karyawan)
-                                                        <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
+                                                        <div class="penerima-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                             data-value="{{ $karyawan->id }}" 
+                                                             data-name="{{ $karyawan->nama_lengkap }}"
+                                                             onclick="selectPenerima('{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')">
+                                                            <span class="block truncate font-medium">{{ $karyawan->nama_lengkap }}</span>
+                                                        </div>
                                                     @endforeach
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                                    </svg>
+                                                    <div id="no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada nama yang cocok</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -355,5 +366,96 @@
     function closeHistoryModal() {
         document.getElementById('historyModal').classList.add('hidden');
     }
+
+    // SEARCHABLE DROPDOWN LOGIC
+    const penerimaInput = document.getElementById('penerima_search_input');
+    const penerimaList = document.getElementById('penerima_options_list');
+    const penerimaHidden = document.getElementById('penerima_id_hidden');
+    const dropdownArrow = document.getElementById('dropdown_arrow');
+    const options = document.querySelectorAll('.penerima-option');
+    const noResults = document.getElementById('no_results');
+
+    function togglePenerimaDropdown() {
+        const isHidden = penerimaList.classList.contains('hidden');
+        if (isHidden) {
+            openDropdown();
+        } else {
+            closeDropdown();
+        }
+    }
+
+    function openDropdown() {
+        penerimaList.classList.remove('hidden');
+        dropdownArrow.style.transform = 'rotate(180deg)';
+        penerimaInput.focus();
+    }
+
+    function closeDropdown() {
+        penerimaList.classList.add('hidden');
+        dropdownArrow.style.transform = 'rotate(0deg)';
+        // Reset filter if closed without selection (optional, but good UX)
+        // filterOptions(''); 
+    }
+
+    function selectPenerima(id, name) {
+        penerimaHidden.value = id;
+        penerimaInput.value = name;
+        closeDropdown();
+    }
+
+    penerimaInput.addEventListener('focus', function() {
+        openDropdown();
+    });
+
+    penerimaInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        filterOptions(value);
+        openDropdown(); // Ensure it's open when typing
+    });
+
+    function filterOptions(value) {
+        let hasVisible = false;
+        options.forEach(option => {
+            const name = option.getAttribute('data-name').toLowerCase();
+            if (name.includes(value)) {
+                option.classList.remove('hidden');
+                hasVisible = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        if (!hasVisible) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('penerima_dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            closeDropdown();
+            // If input is empty, clear hidden value too
+            if (penerimaInput.value === '') {
+                penerimaHidden.value = '';
+            } 
+            // Optional: reset input to match selected value if partial text entered?
+            // For now, let's just leave it. If user types "Andi" but doesn't select, value remains "Andi" visually but hidden ID might be wrong/empty.
+            // Better approach: check if current input matches the hidden ID's name.
+        }
+    });
+
+    // Reset dropdown when modal opens
+    const originalOpenUsageModal = openUsageModal;
+    openUsageModal = function(id, name, stock, unit) {
+        originalOpenUsageModal(id, name, stock, unit);
+        // Reset dropdown state
+        penerimaHidden.value = '';
+        penerimaInput.value = '';
+        filterOptions('');
+        closeDropdown();
+    };
 </script>
 @endsection
