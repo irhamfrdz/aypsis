@@ -847,7 +847,7 @@ class ObController extends Controller
                 \Log::info("✅ Creating manifest records for MUAT operation...");
                 
                 // Cek apakah kontainer LCL
-                if (strtoupper($naikKapal->tipe_kontainer) === 'LCL') {
+                if (strtoupper(trim($naikKapal->tipe_kontainer)) === 'LCL') {
                     \Log::info("LCL container detected, finding tanda terima...");
                     
                     // Cari semua tanda terima yang terhubung dengan kontainer ini
@@ -1023,11 +1023,13 @@ class ObController extends Controller
                             $manifest->pengirim = $naikKapal->prospek->pt_pengirim;
                             // Cek apakah ada penerima di prospek (via relasi atau field), kalau tidak pakai tujuan
                             $penerima = null;
-                            if ($naikKapal->prospek->tandaTerima) {
-                                 $penerima = $naikKapal->prospek->tandaTerima->penerima;
-                                 $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
-                            }
-                            $manifest->penerima = $penerima ?? $naikKapal->prospek->tujuan_pengiriman;
+                            // Cek apakah ada penerima di prospek (via relasi atau field), kalau tidak pakai tujuan
+                            // REVISI: Jangan ambil dari Tanda Terima untuk FCL/CARGO karena itu data LCL
+                            // if ($naikKapal->prospek->tandaTerima) {
+                            //      $penerima = $naikKapal->prospek->tandaTerima->penerima;
+                            //      $manifest->alamat_penerima = $naikKapal->prospek->tandaTerima->alamat_penerima;
+                            // }
+                            $manifest->penerima = $naikKapal->prospek->tujuan_pengiriman;
                         }
                         
                         // Generate nomor
