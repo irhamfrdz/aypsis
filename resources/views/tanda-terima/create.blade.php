@@ -6,12 +6,21 @@
 @php
     // Parse container data from surat jalan
     $nomorKontainerArray = [];
-    
     if (!empty($suratJalan->no_kontainer)) {
         $nomorKontainerArray = array_map('trim', explode(',', $suratJalan->no_kontainer));
     }
     
-    $jumlahKontainer = $suratJalan->jumlah_kontainer ?: 1;
+    $sizeArray = [];
+    if (!empty($suratJalan->size)) {
+        $sizeArray = array_map('trim', explode(',', $suratJalan->size));
+    }
+    
+    $noSealArray = [];
+    if (!empty($suratJalan->no_seal)) {
+        $noSealArray = array_map('trim', explode(',', $suratJalan->no_seal));
+    }
+    
+    $jumlahKontainer = old('jumlah_kontainer', ($suratJalan->jumlah_kontainer ?: (count($nomorKontainerArray) ?: 1)));
 @endphp
 
 <div class="container mx-auto px-4 py-8">
@@ -121,105 +130,94 @@
 
                         @if(strtolower($suratJalan->tipe_kontainer ?? '') != 'cargo')
                         <!-- Data Kontainer Section -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-4">
-                                Data Kontainer
-                            </label>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="nomor_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
-                                        No. Kontainer
-                                    </label>
-                                    <select name="nomor_kontainer[]"
-                                            id="nomor_kontainer"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
-                                        <option value="">-- Pilih atau Ketik Nomor Kontainer --</option>
-                                        @foreach($stockKontainers as $stock)
-                                            <option value="{{ $stock->nomor_seri_gabungan }}"
-                                                    {{ old('nomor_kontainer.0', $suratJalan->no_kontainer) == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
-                                                {{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})
-                                            </option>
-                                        @endforeach
-                                        @if(old('nomor_kontainer.0', $suratJalan->no_kontainer))
-                                            <option value="{{ old('nomor_kontainer.0', $suratJalan->no_kontainer) }}" selected>
-                                                {{ old('nomor_kontainer.0', $suratJalan->no_kontainer) }}
-                                            </option>
-                                        @endif
-                                    </select>
-                                    @error('nomor_kontainer.0')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <!-- Input Gudang -->
-                                    <div class="mt-3">
-                                        <label for="gudang" class="block text-xs font-medium text-gray-500 mb-2">
-                                            Gudang <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="gudang_id"
-                                                id="gudang"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-gudang @error('gudang_id') border-red-500 @enderror">
-
-                                            <option value="">-- Pilih Gudang --</option>
-                                            @foreach($gudangs as $gudang)
-                                                <option value="{{ $gudang->id }}"
-                                                        {{ old('gudang_id') == $gudang->id ? 'selected' : '' }}>
-                                                    {{ $gudang->nama_gudang }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('gudang_id')
-                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                        @enderror
-                                        <p class="mt-1 text-xs text-gray-500">
-                                            <i class="fas fa-info-circle mr-1"></i>Pilih gudang untuk kontainer ini
-                                        </p>
-                                    </div>
-                                    @error('nomor_kontainer.0')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari atau input nomor kontainer baru
-                                    </p>
-                                </div>
-                                <div>
-                                    <label for="size" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Size Kontainer
-                                    </label>
-                                    <select name="size[]"
-                                            id="size"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                        <option value="">Pilih Size</option>
-                                        <option value="20" {{ old('size.0', $suratJalan->size) == '20' ? 'selected' : '' }}>20</option>
-                                        <option value="40" {{ old('size.0', $suratJalan->size) == '40' ? 'selected' : '' }}>40</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label for="jumlah_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Jumlah Kontainer
-                                    </label>
+                        <div id="section-kontainer">
+                            <div class="flex items-center justify-between mb-4">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Data Kontainer
+                                </label>
+                                <div class="flex items-center space-x-2">
+                                    <label for="jumlah_kontainer" class="text-xs font-medium text-gray-500">Jumlah:</label>
                                     <input type="number"
                                            name="jumlah_kontainer"
                                            id="jumlah_kontainer"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                           value="{{ old('jumlah_kontainer', $suratJalan->jumlah_kontainer) }}"
-                                           placeholder="Jumlah kontainer"
-                                           min="0">
+                                           class="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center focus:ring-blue-500 focus:border-blue-500"
+                                           value="{{ $jumlahKontainer }}"
+                                           min="1"
+                                           onchange="updateKontainerRows(this.value)">
                                 </div>
-                                <div>
-                                    <label for="no_seal" class="block text-xs font-medium text-gray-500 mb-2">
-                                        No. Seal
-                                    </label>
-                                    <input type="text"
-                                           name="no_seal[]"
-                                           id="no_seal"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror"
-                                           placeholder="Nomor seal"
-                                           value="{{ old('no_seal.0', $suratJalan->no_seal) }}">
-                                    @error('no_seal.0')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                            </div>
+
+                            <div id="kontainer-rows-wrapper" class="space-y-4">
+                                @for($i = 0; $i < $jumlahKontainer; $i++)
+                                <div class="kontainer-row bg-gray-50 p-4 rounded-lg border border-gray-200 relative pt-6" data-index="{{ $i }}">
+                                    <div class="absolute top-0 left-0 px-3 py-1 bg-blue-600 text-white text-[10px] uppercase font-bold rounded-br-lg rounded-tl-lg shadow-sm">
+                                        Container #{{ $i + 1 }}
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-400 uppercase mb-1">No. Kontainer</label>
+                                            <select name="nomor_kontainer[]"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono select2-kontainer">
+                                                <option value="">-- Pilih atau Ketik No. Kontainer --</option>
+                                                @foreach($stockKontainers as $stock)
+                                                    <option value="{{ $stock->nomor_seri_gabungan }}"
+                                                            {{ old("nomor_kontainer.$i", $nomorKontainerArray[$i] ?? '') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
+                                                        {{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft)
+                                                    </option>
+                                                @endforeach
+                                                @if(old("nomor_kontainer.$i", $nomorKontainerArray[$i] ?? ''))
+                                                    @php $currentNo = old("nomor_kontainer.$i", $nomorKontainerArray[$i] ?? ''); @endphp
+                                                    @if(!$stockKontainers->contains('nomor_seri_gabungan', $currentNo))
+                                                        <option value="{{ $currentNo }}" selected>{{ $currentNo }}</option>
+                                                    @endif
+                                                @endif
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-400 uppercase mb-1">Size</label>
+                                            <select name="size[]"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm kontainer-size">
+                                                <option value="">Pilih Size</option>
+                                                <option value="20" {{ old("size.$i", ($sizeArray[$i] ?? $suratJalan->size)) == '20' ? 'selected' : '' }}>20</option>
+                                                <option value="40" {{ old("size.$i", ($sizeArray[$i] ?? $suratJalan->size)) == '40' ? 'selected' : '' }}>40</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-400 uppercase mb-1">No. Seal</label>
+                                            <input type="text"
+                                                   name="no_seal[]"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono"
+                                                   placeholder="Nomor seal"
+                                                   value="{{ old("no_seal.$i", $noSealArray[$i] ?? '') }}">
+                                        </div>
+                                    </div>
                                 </div>
+                                @endfor
+                            </div>
+
+                            <!-- Input Gudang Grouped -->
+                            <div class="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <label for="gudang" class="block text-xs font-medium text-gray-500 mb-2">
+                                    Gudang Tujuan <span class="text-red-500">*</span>
+                                </label>
+                                <select name="gudang_id"
+                                        id="gudang"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-gudang @error('gudang_id') border-red-500 @enderror">
+                                    <option value="">-- Pilih Gudang --</option>
+                                    @foreach($gudangs as $gudang)
+                                        <option value="{{ $gudang->id }}"
+                                                {{ old('gudang_id') == $gudang->id ? 'selected' : '' }}>
+                                            {{ $gudang->nama_gudang }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('gudang_id')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-[10px] text-gray-500 italic">
+                                    <i class="fas fa-info-circle mr-1"></i>Pilih gudang untuk menyimpan kontainer-kontainer ini dalam sistem
+                                </p>
+                            </div>
                         </div>
                         @endif
 
@@ -1230,32 +1228,100 @@
                 console.log('✓ Alamat penerima cleared');
             });
 
-            // Initialize Select2 for nomor kontainer with tags (allow free input)
-            $('.select2-kontainer').select2({
-                placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
-                allowClear: true,
-                width: '100%',
-                tags: true,
-                createTag: function (params) {
-                    var term = $.trim(params.term);
-                    if (term === '') {
-                        return null;
-                    }
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true
-                    }
-                },
-                language: {
-                    noResults: function() {
-                        return "Ketik nomor kontainer baru atau pilih dari daftar";
+            // Initialize Select2 for gudang dropdown
+            $('.select2-gudang').each(function() {
+                $(this).select2({
+                    placeholder: '-- Pilih Gudang --',
+                    allowClear: true,
+                    width: '100%'
+                });
+            });
+
+            // Re-usable Select2 initialization for kontainer
+            function initKontainerSelect2(element) {
+                $(element).select2({
+                    placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
+                    allowClear: true,
+                    width: '100%',
+                    tags: true,
+                    createTag: function (params) {
+                        var term = $.trim(params.term);
+                        if (term === '') {
+                            return null;
+                        }
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        }
                     },
-                    searching: function() {
-                        return "Mencari...";
+                    language: {
+                        noResults: function() {
+                            return "Ketik nomor kontainer baru atau pilih dari daftar";
+                        },
+                        searching: function() {
+                            return "Mencari...";
+                        }
+                    }
+                });
+            }
+
+            // Initialize existing kontainer selects
+            $('.select2-kontainer').each(function() {
+                initKontainerSelect2(this);
+            });
+
+            // Function to update kontainer rows based on count
+            window.updateKontainerRows = function(count) {
+                count = parseInt(count) || 1;
+                console.log('Updating kontainer rows to:', count);
+                
+                var $wrapper = $('#kontainer-rows-wrapper');
+                var currentCount = $wrapper.find('.kontainer-row').length;
+                
+                if (count > currentCount) {
+                    // Add rows
+                    for (var i = currentCount; i < count; i++) {
+                        var newRow = `
+                            <div class="kontainer-row bg-gray-50 p-4 rounded-lg border border-gray-200 relative pt-6" data-index="${i}">
+                                <div class="absolute top-0 left-0 px-3 py-1 bg-blue-600 text-white text-[10px] uppercase font-bold rounded-br-lg rounded-tl-lg shadow-sm">
+                                    Container ${i + 1}
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-400 uppercase mb-1">No. Kontainer</label>
+                                        <select name="nomor_kontainer[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono select2-kontainer">
+                                            <option value="">-- Pilih atau Ketik No. Kontainer --</option>
+                                            @foreach($stockKontainers as $stock)
+                                                <option value="{{ $stock->nomor_seri_gabungan }}">{{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft)</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-400 uppercase mb-1">Size</label>
+                                        <select name="size[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm kontainer-size">
+                                            <option value="">Pilih Size</option>
+                                            <option value="20" {{ $suratJalan->size == "20" ? "selected" : "" }}>20</option>
+                                            <option value="40" {{ $suratJalan->size == "40" ? "selected" : "" }}>40</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-400 uppercase mb-1">No. Seal</label>
+                                        <input type="text" name="no_seal[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono" placeholder="Nomor seal">
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        $wrapper.append(newRow);
+                        initKontainerSelect2($wrapper.find('.kontainer-row').last().find('.select2-kontainer'));
+                    }
+                } else if (count < currentCount) {
+                    // Remove rows
+                    for (var i = currentCount; i > count; i--) {
+                        $wrapper.find('.kontainer-row').last().remove();
                     }
                 }
-            });
+            };
 
             // Initialize Select2 for supir pengganti dropdown
             $('.select2-supir-pengganti').select2({
@@ -1321,8 +1387,10 @@
             autoFillPlatFromSupir();
 
             // Auto-fill nomor kontainer when selected from dropdown
-            $('#nomor_kontainer').on('select2:select', function(e) {
+            $(document).on('select2:select', '.select2-kontainer', function(e) {
                 var selectedValue = e.params.data.id;
+                var $row = $(this).closest('.kontainer-row');
+                var $sizeSelect = $row.find('.kontainer-size');
                 console.log('Nomor kontainer selected:', selectedValue);
                 
                 // Extract just the container number (before the opening parenthesis if exists)
@@ -1336,7 +1404,7 @@
                     
                     // Set size dropdown (without triggering filter)
                     if (details.size) {
-                        $('#size').val(details.size);
+                        $sizeSelect.val(details.size);
                         console.log('✓ Size auto-filled:', details.size);
                     }
                     
@@ -1346,68 +1414,7 @@
                 }
             });
 
-            // Filter nomor kontainer berdasarkan size yang dipilih
-            $('#size').on('change', function() {
-                var selectedSize = $(this).val();
-                console.log('=== Size Changed ===');
-                console.log('Selected size:', selectedSize);
-                
-                // Clear current selection first
-                $('#nomor_kontainer').val(null);
-                
-                // Destroy existing Select2 instance
-                $('#nomor_kontainer').select2('destroy');
-                
-                // Remove all options except the placeholder
-                var $select = $('#nomor_kontainer');
-                var placeholderOption = $select.find('option[value=""]').clone();
-                $select.empty().append(placeholderOption);
-                
-                // Re-add filtered options
-                @foreach($stockKontainers as $stock)
-                    var optionText = '{{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})';
-                    var optionValue = '{{ $stock->nomor_seri_gabungan }}';
-                    var stockSize = '{{ $stock->ukuran }}';
-                    
-                    // Only add option if no size selected OR size matches
-                    if (!selectedSize || stockSize === selectedSize) {
-                        var newOption = new Option(optionText, optionValue, false, false);
-                        $select.append(newOption);
-                        console.log('✓ Added option:', optionText);
-                    } else {
-                        console.log('✗ Skipped option:', optionText);
-                    }
-                @endforeach
-                
-                // Re-initialize Select2 with filtered data
-                $('#nomor_kontainer').select2({
-                    placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
-                    allowClear: true,
-                    width: '100%',
-                    tags: true,
-                    createTag: function (params) {
-                        var term = $.trim(params.term);
-                        if (term === '') {
-                            return null;
-                        }
-                        return {
-                            id: term,
-                            text: term,
-                            newTag: true
-                        }
-                    },
-                    language: {
-                        noResults: function() {
-                            return "Ketik nomor kontainer baru atau pilih dari daftar";
-                        },
-                        searching: function() {
-                            return "Mencari...";
-                        }
-                    }
-                });
-                
-                console.log('✓ Kontainer options filtered by size:', selectedSize);
-            });
+
 
             // Auto-fill plat nomor when supir pengganti selected and update original supir field
             $('#supir_pengganti').on('select2:select', function(e) {
