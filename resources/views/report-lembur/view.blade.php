@@ -33,6 +33,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pranota</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -52,10 +53,17 @@
                             @if($sj->lembur) <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold mr-1">Lembur</span> @endif
                             @if($sj->nginap) <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">Nginap</span> @endif
                         </td>
+                        <td class="px-4 py-3">
+                            @if($sj->sudah_pranota)
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">Sudah Pranota</span>
+                            @else
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">Belum Pranota</span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">Tidak ada data</td>
+                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">Tidak ada data</td>
                     </tr>
                     @endforelse
                 </tbody>

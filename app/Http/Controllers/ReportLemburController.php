@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
+use App\Models\PranotaLembur;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -42,7 +43,7 @@ class ReportLemburController extends Controller
 
         // Query Surat Jalan (Muat)
         $suratJalanQuery = SuratJalan::query()
-            ->with('tandaTerima')
+            ->with(['tandaTerima', 'pranotaLemburs'])
             ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
@@ -64,7 +65,7 @@ class ReportLemburController extends Controller
 
         // Query Surat Jalan Bongkaran
         $bongkaranQuery = SuratJalanBongkaran::query()
-            ->with('tandaTerima')
+            ->with(['tandaTerima', 'pranotaLemburs'])
             ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
@@ -88,6 +89,8 @@ class ReportLemburController extends Controller
         $suratJalans->each(function($item) {
             $item->type_surat = 'Muat';
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal : null;
+            // Check if has pranota lembur
+            $item->sudah_pranota = $item->hasPranotaLembur();
         });
 
         $bongkarans->each(function($item) {
@@ -95,6 +98,8 @@ class ReportLemburController extends Controller
             // Alias for view consistency
             $item->no_surat_jalan = $item->nomor_surat_jalan;
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal_tanda_terima : null;
+            // Check if has pranota lembur
+            $item->sudah_pranota = $item->hasPranotaLembur();
         });
 
         // Merge collections

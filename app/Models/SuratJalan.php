@@ -528,4 +528,22 @@ class SuratJalan extends Model
             ->orderBy('pembayaran_pranota_uang_jalans.tanggal_pembayaran', 'desc')
             ->first();
     }
+
+    /**
+     * Relationship dengan PranotaLembur
+     */
+    public function pranotaLemburs()
+    {
+        return $this->belongsToMany(PranotaLembur::class, 'pranota_lembur_surat_jalan', 'surat_jalan_id', 'pranota_lembur_id')
+            ->withPivot('supir', 'no_plat', 'is_lembur', 'is_nginap', 'biaya_lembur', 'biaya_nginap', 'total_biaya')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if this surat jalan has pranota lembur
+     */
+    public function hasPranotaLembur()
+    {
+        return $this->pranotaLemburs()->exists();
+    }
 }

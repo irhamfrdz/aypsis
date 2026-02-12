@@ -73,10 +73,7 @@ class SuratJalanBongkaran extends Model
         'bl_id',
         'manifest_id',
         'jenis_pengiriman',
-        'tanggal_ambil_barang',
-        'lembur',
-        'nginap',
-        'tidak_lembur_nginap'
+        'tanggal_ambil_barang'
     ];
 
     protected $casts = [
@@ -90,9 +87,6 @@ class SuratJalanBongkaran extends Model
         'jumlah_terbayar' => 'decimal:2',
         'jumlah_retur' => 'integer',
         'jumlah_kontainer' => 'integer',
-        'lembur' => 'boolean',
-        'nginap' => 'boolean',
-        'tidak_lembur_nginap' => 'boolean',
     ];
 
     protected $dates = [
@@ -174,11 +168,6 @@ class SuratJalanBongkaran extends Model
     public function supirKaryawan()
     {
         return $this->belongsTo(Karyawan::class, 'supir', 'nama_panggilan');
-    }
-
-    public function supir2Karyawan()
-    {
-        return $this->belongsTo(Karyawan::class, 'supir2', 'nama_panggilan');
     }
 
     /**
@@ -351,5 +340,23 @@ class SuratJalanBongkaran extends Model
     public function setInputDateAttribute($value)
     {
         $this->attributes['input_date'] = $value ? Carbon::parse($value) : null;
+    }
+
+    /**
+     * Relationship dengan PranotaLembur
+     */
+    public function pranotaLemburs()
+    {
+        return $this->belongsToMany(PranotaLembur::class, 'pranota_lembur_surat_jalan', 'surat_jalan_bongkaran_id', 'pranota_lembur_id')
+            ->withPivot('supir', 'no_plat', 'is_lembur', 'is_nginap', 'biaya_lembur', 'biaya_nginap', 'total_biaya')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if this surat jalan bongkaran has pranota lembur
+     */
+    public function hasPranotaLembur()
+    {
+        return $this->pranotaLemburs()->exists();
     }
 }

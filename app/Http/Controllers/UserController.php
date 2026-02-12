@@ -590,7 +590,8 @@ class UserController extends Controller
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
                 'uang-jalan' => 'uang-jalan',
                 'pranota-uang-jalan' => 'pranota-uang-jalan',
-                'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran'
+                'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran',
+                'pranota-lembur' => 'pranota-lembur'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -3587,6 +3588,28 @@ class UserController extends Controller
                             'approve' => 'pranota-uang-jalan-bongkaran-approve',
                             'print' => 'pranota-uang-jalan-bongkaran-print',
                             'export' => 'pranota-uang-jalan-bongkaran-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pranota-lembur permissions explicitly
+                    if ($module === 'pranota-lembur' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'pranota-lembur-view',
+                            'create' => 'pranota-lembur-create',
+                            'update' => 'pranota-lembur-update',
+                            'delete' => 'pranota-lembur-delete',
+                            'approve' => 'pranota-lembur-approve',
+                            'print' => 'pranota-lembur-print',
+                            'export' => 'pranota-lembur-export'
                         ];
 
                         if (isset($actionMap[$action])) {

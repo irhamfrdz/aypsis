@@ -839,6 +839,23 @@
                                 <td>-</td>
                             </tr>
 
+                            {{-- Pranota Lembur --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Lembur</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-lembur][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
                                 <td class="module-header">

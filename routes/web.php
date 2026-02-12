@@ -2225,6 +2225,60 @@ Route::middleware(['auth'])->group(function () {
                ->name('pranota-ob.input-dp')
                ->middleware('can:pranota-ob-view');
 
+     // ═══════════════════════════════════════════════════════════════════════
+     // 🌙 PRANOTA LEMBUR MANAGEMENT
+     // ═══════════════════════════════════════════════════════════════════════
+     
+     // Pranota Lembur - select date range
+     Route::get('pranota-lembur', [\App\Http\Controllers\PranotaLemburController::class, 'index'])
+          ->name('pranota-lembur.index')
+          ->middleware('can:pranota-lembur-view');
+     
+     // Pranota Lembur - list all
+     Route::get('pranota-lembur/list', [\App\Http\Controllers\PranotaLemburController::class, 'list'])
+          ->name('pranota-lembur.list')
+          ->middleware('can:pranota-lembur-view');
+     
+     // Pranota Lembur - create form (must come before resource)
+     Route::get('pranota-lembur/create', [\App\Http\Controllers\PranotaLemburController::class, 'create'])
+          ->name('pranota-lembur.create')
+          ->middleware('can:pranota-lembur-create');
+     
+     // Pranota Lembur - store
+     Route::post('pranota-lembur', [\App\Http\Controllers\PranotaLemburController::class, 'store'])
+          ->name('pranota-lembur.store')
+          ->middleware('can:pranota-lembur-create');
+     
+     // Pranota Lembur - show
+     Route::get('pranota-lembur/{pranotaLembur}', [\App\Http\Controllers\PranotaLemburController::class, 'show'])
+          ->name('pranota-lembur.show')
+          ->middleware('can:pranota-lembur-view');
+     
+     // Pranota Lembur - print
+     Route::get('pranota-lembur/{pranotaLembur}/print', [\App\Http\Controllers\PranotaLemburController::class, 'print'])
+          ->name('pranota-lembur.print')
+          ->middleware('can:pranota-lembur-print');
+     
+     // Pranota Lembur - submit
+     Route::post('pranota-lembur/{pranotaLembur}/submit', [\App\Http\Controllers\PranotaLemburController::class, 'submit'])
+          ->name('pranota-lembur.submit')
+          ->middleware('can:pranota-lembur-update');
+     
+     // Pranota Lembur - approve
+     Route::post('pranota-lembur/{pranotaLembur}/approve', [\App\Http\Controllers\PranotaLemburController::class, 'approve'])
+          ->name('pranota-lembur.approve')
+          ->middleware('can:pranota-lembur-approve');
+     
+     // Pranota Lembur - cancel
+     Route::post('pranota-lembur/{pranotaLembur}/cancel', [\App\Http\Controllers\PranotaLemburController::class, 'cancel'])
+          ->name('pranota-lembur.cancel')
+          ->middleware('can:pranota-lembur-delete');
+     
+     // Pranota Lembur - delete
+     Route::delete('pranota-lembur/{pranotaLembur}', [\App\Http\Controllers\PranotaLemburController::class, 'destroy'])
+          ->name('pranota-lembur.destroy')
+          ->middleware('can:pranota-lembur-delete');
+
      // Pranota Uang Rit Management
           Route::resource('pranota-rit', \App\Http\Controllers\PranotaUangRitController::class)
                ->middleware([
