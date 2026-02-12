@@ -38,33 +38,64 @@ class ReportLemburController extends Controller
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
+        $search = $request->input('search');
 
-        // Query untuk Surat Jalan biasa - filter yang lembur atau nginap
-        $querySuratJalan = SuratJalan::where(function($q) {
+        // Query Surat Jalan (Muat)
+        $suratJalanQuery = SuratJalan::query()
+            ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
             })
             ->whereDate('tanggal_surat_jalan', '>=', $startDate)
             ->whereDate('tanggal_surat_jalan', '<=', $endDate);
 
-        // Query untuk Surat Jalan Bongkaran? (Need to check if bongkaran has lembur/nginap)
-        // Check Model SuratJalanBongkaran first.
-        
-        // Filter tambahan jika ada
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $querySuratJalan->where(function($q) use ($search) {
+        if ($search) {
+            $suratJalanQuery->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%");
             });
         }
 
-        $suratJalans = $querySuratJalan->orderBy('tanggal_surat_jalan', 'desc')->get();
+        $suratJalans = $suratJalanQuery->get();
 
-        // Separate or combine logic as needed. For now just passing suratJalans.
-        // I might need to check if SuratJalanBongkaran has these fields too.
+        // Query Surat Jalan Bongkaran
+        $bongkaranQuery = SuratJalanBongkaran::query()
+            ->where(function($q) {
+                $q->where('lembur', true)
+                  ->orWhere('nginap', true);
+            })
+            ->whereDate('tanggal_surat_jalan', '>=', $startDate)
+            ->whereDate('tanggal_surat_jalan', '<=', $endDate);
 
-        return view('report-lembur.view', compact('suratJalans', 'startDate', 'endDate'));
+        if ($search) {
+            $bongkaranQuery->where(function($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
+            });
+        }
+
+        $bongkarans = $bongkaranQuery->get();
+
+        // Standardize properties
+        $suratJalans->each(function($item) {
+            $item->type_surat = 'Muat';
+        });
+
+        $bongkarans->each(function($item) {
+            $item->type_surat = 'Bongkaran';
+            // Alias for view consistency
+            $item->no_surat_jalan = $item->nomor_surat_jalan;
+        });
+
+        // Merge collections
+        $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('tanggal_surat_jalan');
+
+        return view('report-lembur.view', [
+            'suratJalans' => $allSuratJalans,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
     }
 }
