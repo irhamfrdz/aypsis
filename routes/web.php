@@ -3750,6 +3750,12 @@ Route::middleware(['auth'])->group(function() {
     Route::post('ob/save-asal-ke-bulk', [\App\Http\Controllers\ObController::class, 'saveAsalKeBulk'])
          ->name('ob.save-asal-ke-bulk')
          ->middleware('can:ob-view');
+    Route::post('ob/preview-update-size', [\App\Http\Controllers\ObController::class, 'previewUpdateSize'])
+         ->name('ob.preview-update-size')
+         ->middleware('can:ob-view');
+    Route::post('ob/confirm-update-size', [\App\Http\Controllers\ObController::class, 'confirmUpdateSize'])
+         ->name('ob.confirm-update-size')
+         ->middleware('can:ob-view');
     
     // Fix CARGO Manifests Script
     Route::get('ob/fix-cargo-manifests', function() {

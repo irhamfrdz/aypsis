@@ -124,6 +124,9 @@
                 <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'search']))) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-file-excel md:mr-2"></i><span class="hidden md:inline">Export Excel</span>
                 </a>
+                <button onclick="openUpdateSizeModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Update Size</span>
+                </button>
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">Pilih Kapal Lain</span>
                 </a>
@@ -1115,6 +1118,86 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Update Size -->
+<div id="updateSizeModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Preview Update Size Kontainer</h3>
+                <button type="button" onclick="closeUpdateSizeModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-4">
+                <div id="updateSizeLoading" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-3"></i>
+                    <p class="text-gray-600">Memuat data kontainer...</p>
+                </div>
+
+                <div id="updateSizeContent" class="hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-blue-900 font-medium mb-1">Informasi Update Size</p>
+                                <p class="text-xs text-blue-800">Sistem akan mengupdate size kontainer berdasarkan data dari tabel <strong>kontainers</strong> dan <strong>stock_kontainers</strong>.</p>
+                                <p class="text-xs text-blue-800 mt-1">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="updateSizeStats" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- Stats will be populated by JavaScript -->
+                    </div>
+
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="min-w-full table-auto border border-gray-300">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">No</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">No. Kontainer</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">Tipe</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">Size Sekarang</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">Size Baru</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">Sumber</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="updateSizePreviewTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="noUpdateData" class="hidden text-center py-8">
+                        <i class="fas fa-check-circle text-green-600 text-4xl mb-3"></i>
+                        <p class="text-gray-600">Semua data size kontainer sudah sesuai!</p>
+                        <p class="text-sm text-gray-500 mt-1">Tidak ada yang perlu diupdate.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div id="updateSizeFooter" class="hidden flex justify-end gap-3 pt-3 border-t mt-4">
+                <button type="button" onclick="closeUpdateSizeModal()"
+                        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md transition duration-200">
+                    Batal
+                </button>
+                <button type="button" id="btnConfirmUpdateSize"
+                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md transition duration-200">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Update Size Kontainer
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -2277,6 +2360,178 @@ document.getElementById('btnSaveAsalKe').addEventListener('click', function() {
         btnSave.disabled = false;
         btnSave.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Asal & Ke';
     });
+});
+
+// Update Size Modal Functions
+function openUpdateSizeModal() {
+    const modal = document.getElementById('updateSizeModal');
+    const loading = document.getElementById('updateSizeLoading');
+    const content = document.getElementById('updateSizeContent');
+    const footer = document.getElementById('updateSizeFooter');
+    
+    // Show modal and loading
+    modal.classList.remove('hidden');
+    loading.classList.remove('hidden');
+    content.classList.add('hidden');
+    footer.classList.add('hidden');
+    
+    // Fetch preview data
+    fetch('/ob/preview-update-size', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            nama_kapal: '{{ $namaKapal }}',
+            no_voyage: '{{ $noVoyage }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+        
+        if (data.success) {
+            const updates = data.updates || [];
+            
+            // Show stats
+            const statsDiv = document.getElementById('updateSizeStats');
+            statsDiv.innerHTML = `
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-purple-100 rounded-full p-3">
+                            <i class="fas fa-boxes text-xl text-purple-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-xs font-medium text-gray-500">Total Kontainer</p>
+                            <p class="text-xl font-bold text-gray-900">${data.total_kontainer || 0}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-yellow-100 rounded-full p-3">
+                            <i class="fas fa-sync-alt text-xl text-yellow-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-xs font-medium text-gray-500">Perlu Update</p>
+                            <p class="text-xl font-bold text-gray-900">${updates.length || 0}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+                            <i class="fas fa-check-circle text-xl text-green-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-xs font-medium text-gray-500">Sudah Sesuai</p>
+                            <p class="text-xl font-bold text-gray-900">${(data.total_kontainer || 0) - updates.length}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (updates.length > 0) {
+                // Populate table
+                const tbody = document.getElementById('updateSizePreviewTable');
+                tbody.innerHTML = '';
+                
+                updates.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    const statusBadge = item.size_sekarang === null || item.size_sekarang === '' || item.size_sekarang === 'NULL'
+                        ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Kosong</span>'
+                        : '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Berbeda</span>';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-mono">${item.nomor_kontainer || '-'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.record_type === 'bl' ? 'BL (Bongkar)' : 'Naik Kapal (Muat)'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.size_sekarang || '<i>Kosong</i>'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-green-600">${item.size_baru || '-'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-600">${item.sumber || '-'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm">${statusBadge}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+                document.getElementById('noUpdateData').classList.add('hidden');
+                footer.classList.remove('hidden');
+            } else {
+                document.getElementById('noUpdateData').classList.remove('hidden');
+                footer.classList.add('hidden');
+            }
+        } else {
+            alert(data.message || 'Gagal memuat data preview');
+            closeUpdateSizeModal();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memuat data preview');
+        closeUpdateSizeModal();
+    });
+}
+
+function closeUpdateSizeModal() {
+    document.getElementById('updateSizeModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('updateSizeModal');
+    if (event.target === modal) {
+        closeUpdateSizeModal();
+    }
+});
+
+// Handle confirm update size
+document.addEventListener('DOMContentLoaded', function() {
+    const btnConfirm = document.getElementById('btnConfirmUpdateSize');
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', function() {
+            if (!confirm('Apakah Anda yakin ingin mengupdate size kontainer?\n\nProses ini akan mengupdate size kontainer berdasarkan data dari tabel kontainers dan stock_kontainers.')) {
+                return;
+            }
+            
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengupdate...';
+            
+            fetch('/ob/confirm-update-size', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    nama_kapal: '{{ $namaKapal }}',
+                    no_voyage: '{{ $noVoyage }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Berhasil mengupdate ${data.updated_count} kontainer!\n\nDetail:\n- BL: ${data.updated_bl || 0}\n- Naik Kapal: ${data.updated_naik_kapal || 0}`);
+                    closeUpdateSizeModal();
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Gagal mengupdate size kontainer');
+                    btnConfirm.disabled = false;
+                    btnConfirm.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Update Size Kontainer';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengupdate size kontainer');
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Update Size Kontainer';
+            });
+        });
+    }
 });
 </script>
 

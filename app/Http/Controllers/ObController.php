@@ -2540,6 +2540,298 @@ class ObController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Preview kontainer yang akan diupdate sizenya
+     */
+    public function previewUpdateSize(Request $request)
+    {
+        try {
+            $namaKapal = $request->nama_kapal;
+            $noVoyage = $request->no_voyage;
+
+            if (!$namaKapal || !$noVoyage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nama kapal dan nomor voyage harus diisi'
+                ], 400);
+            }
+
+            // Normalize ship name
+            $normalizedKapal = $this->normalizeShipName($namaKapal);
+
+            $updates = [];
+
+            // Check BL records
+            $bls = Bl::where(function($query) use ($namaKapal, $normalizedKapal) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->orWhereRaw('UPPER(REPLACE(nama_kapal, ".", "")) = ?', [$normalizedKapal]);
+            })
+            ->where('no_voyage', $noVoyage)
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->get();
+
+            foreach ($bls as $bl) {
+                $nomorKontainer = $this->normalizeContainerNumber($bl->nomor_kontainer);
+                
+                // Skip CARGO containers
+                if ($bl->tipe_kontainer === 'CARGO' || stripos($nomorKontainer, 'CARGO') !== false) {
+                    continue;
+                }
+
+                // Try to find size from kontainers table first
+                $kontainer = DB::table('kontainers')
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->first();
+
+                $sumber = null;
+                $sizeBaru = null;
+
+                if ($kontainer && $kontainer->size) {
+                    $sizeBaru = $kontainer->size;
+                    $sumber = 'kontainers';
+                } else {
+                    // Try stock_kontainers table
+                    $stockKontainer = DB::table('stock_kontainers')
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->first();
+
+                    if ($stockKontainer && $stockKontainer->size) {
+                        $sizeBaru = $stockKontainer->size;
+                        $sumber = 'stock_kontainers';
+                    }
+                }
+
+                // Add to updates if size is different or empty
+                if ($sizeBaru && ($bl->size_kontainer != $sizeBaru || empty($bl->size_kontainer))) {
+                    $updates[] = [
+                        'record_type' => 'bl',
+                        'record_id' => $bl->id,
+                        'nomor_kontainer' => $bl->nomor_kontainer,
+                        'size_sekarang' => $bl->size_kontainer,
+                        'size_baru' => $sizeBaru,
+                        'sumber' => $sumber
+                    ];
+                }
+            }
+
+            // Check NaikKapal records
+            $naikKapals = NaikKapal::where(function($query) use ($namaKapal, $normalizedKapal) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->orWhereRaw('UPPER(REPLACE(nama_kapal, ".", "")) = ?', [$normalizedKapal]);
+            })
+            ->where('no_voyage', $noVoyage)
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->get();
+
+            foreach ($naikKapals as $naikKapal) {
+                $nomorKontainer = $this->normalizeContainerNumber($naikKapal->nomor_kontainer);
+                
+                // Skip CARGO containers
+                if ($naikKapal->tipe_kontainer === 'CARGO' || stripos($nomorKontainer, 'CARGO') !== false) {
+                    continue;
+                }
+
+                // Try to find size from kontainers table first
+                $kontainer = DB::table('kontainers')
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->first();
+
+                $sumber = null;
+                $sizeBaru = null;
+
+                if ($kontainer && $kontainer->size) {
+                    $sizeBaru = $kontainer->size;
+                    $sumber = 'kontainers';
+                } else {
+                    // Try stock_kontainers table
+                    $stockKontainer = DB::table('stock_kontainers')
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->first();
+
+                    if ($stockKontainer && $stockKontainer->size) {
+                        $sizeBaru = $stockKontainer->size;
+                        $sumber = 'stock_kontainers';
+                    }
+                }
+
+                // Add to updates if size is different or empty
+                if ($sizeBaru && ($naikKapal->size_kontainer != $sizeBaru || empty($naikKapal->size_kontainer))) {
+                    $updates[] = [
+                        'record_type' => 'naik_kapal',
+                        'record_id' => $naikKapal->id,
+                        'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                        'size_sekarang' => $naikKapal->size_kontainer,
+                        'size_baru' => $sizeBaru,
+                        'sumber' => $sumber
+                    ];
+                }
+            }
+
+            $totalKontainer = $bls->count() + $naikKapals->count();
+
+            return response()->json([
+                'success' => true,
+                'updates' => $updates,
+                'total_kontainer' => $totalKontainer
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in previewUpdateSize: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat preview: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Normalize container number for comparison
+     */
+    private function normalizeContainerNumber($number)
+    {
+        return strtoupper(str_replace([' ', '-', '.'], '', $number));
+    }
+
+    /**
+     * Confirm dan execute update size kontainer
+     */
+    public function confirmUpdateSize(Request $request)
+    {
+        try {
+            $namaKapal = $request->nama_kapal;
+            $noVoyage = $request->no_voyage;
+
+            if (!$namaKapal || !$noVoyage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nama kapal dan nomor voyage harus diisi'
+                ], 400);
+            }
+
+            // Normalize ship name
+            $normalizedKapal = $this->normalizeShipName($namaKapal);
+
+            DB::beginTransaction();
+
+            $updatedBl = 0;
+            $updatedNaikKapal = 0;
+
+            // Update BL records
+            $bls = Bl::where(function($query) use ($namaKapal, $normalizedKapal) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->orWhereRaw('UPPER(REPLACE(nama_kapal, ".", "")) = ?', [$normalizedKapal]);
+            })
+            ->where('no_voyage', $noVoyage)
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->get();
+
+            foreach ($bls as $bl) {
+                $nomorKontainer = $this->normalizeContainerNumber($bl->nomor_kontainer);
+                
+                // Skip CARGO containers
+                if ($bl->tipe_kontainer === 'CARGO' || stripos($nomorKontainer, 'CARGO') !== false) {
+                    continue;
+                }
+
+                // Try to find size from kontainers table first
+                $kontainer = DB::table('kontainers')
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->first();
+
+                $sizeBaru = null;
+
+                if ($kontainer && $kontainer->size) {
+                    $sizeBaru = $kontainer->size;
+                } else {
+                    // Try stock_kontainers table
+                    $stockKontainer = DB::table('stock_kontainers')
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->first();
+
+                    if ($stockKontainer && $stockKontainer->size) {
+                        $sizeBaru = $stockKontainer->size;
+                    }
+                }
+
+                // Update if size is different or empty
+                if ($sizeBaru && ($bl->size_kontainer != $sizeBaru || empty($bl->size_kontainer))) {
+                    $bl->size_kontainer = $sizeBaru;
+                    $bl->save();
+                    $updatedBl++;
+                }
+            }
+
+            // Update NaikKapal records
+            $naikKapals = NaikKapal::where(function($query) use ($namaKapal, $normalizedKapal) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->orWhereRaw('UPPER(REPLACE(nama_kapal, ".", "")) = ?', [$normalizedKapal]);
+            })
+            ->where('no_voyage', $noVoyage)
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->get();
+
+            foreach ($naikKapals as $naikKapal) {
+                $nomorKontainer = $this->normalizeContainerNumber($naikKapal->nomor_kontainer);
+                
+                // Skip CARGO containers
+                if ($naikKapal->tipe_kontainer === 'CARGO' || stripos($nomorKontainer, 'CARGO') !== false) {
+                    continue;
+                }
+
+                // Try to find size from kontainers table first
+                $kontainer = DB::table('kontainers')
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->first();
+
+                $sizeBaru = null;
+
+                if ($kontainer && $kontainer->size) {
+                    $sizeBaru = $kontainer->size;
+                } else {
+                    // Try stock_kontainers table
+                    $stockKontainer = DB::table('stock_kontainers')
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->first();
+
+                    if ($stockKontainer && $stockKontainer->size) {
+                        $sizeBaru = $stockKontainer->size;
+                    }
+                }
+
+                // Update if size is different or empty
+                if ($sizeBaru && ($naikKapal->size_kontainer != $sizeBaru || empty($naikKapal->size_kontainer))) {
+                    $naikKapal->size_kontainer = $sizeBaru;
+                    $naikKapal->save();
+                    $updatedNaikKapal++;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengupdate size kontainer',
+                'updated_count' => $updatedBl + $updatedNaikKapal,
+                'updated_bl' => $updatedBl,
+                'updated_naik_kapal' => $updatedNaikKapal
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error in confirmUpdateSize: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate size: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
 
