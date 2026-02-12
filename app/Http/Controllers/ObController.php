@@ -2582,23 +2582,23 @@ class ObController extends Controller
 
                 // Try to find size from kontainers table first
                 $kontainer = DB::table('kontainers')
-                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                     ->first();
 
                 $sumber = null;
                 $sizeBaru = null;
 
-                if ($kontainer && $kontainer->size) {
-                    $sizeBaru = $kontainer->size;
+                if ($kontainer && $kontainer->ukuran) {
+                    $sizeBaru = $kontainer->ukuran;
                     $sumber = 'kontainers';
                 } else {
                     // Try stock_kontainers table
                     $stockKontainer = DB::table('stock_kontainers')
-                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                         ->first();
 
-                    if ($stockKontainer && $stockKontainer->size) {
-                        $sizeBaru = $stockKontainer->size;
+                    if ($stockKontainer && $stockKontainer->ukuran) {
+                        $sizeBaru = $stockKontainer->ukuran;
                         $sumber = 'stock_kontainers';
                     }
                 }
@@ -2636,23 +2636,23 @@ class ObController extends Controller
 
                 // Try to find size from kontainers table first
                 $kontainer = DB::table('kontainers')
-                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                     ->first();
 
                 $sumber = null;
                 $sizeBaru = null;
 
-                if ($kontainer && $kontainer->size) {
-                    $sizeBaru = $kontainer->size;
+                if ($kontainer && $kontainer->ukuran) {
+                    $sizeBaru = $kontainer->ukuran;
                     $sumber = 'kontainers';
                 } else {
                     // Try stock_kontainers table
                     $stockKontainer = DB::table('stock_kontainers')
-                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                         ->first();
 
-                    if ($stockKontainer && $stockKontainer->size) {
-                        $sizeBaru = $stockKontainer->size;
+                    if ($stockKontainer && $stockKontainer->ukuran) {
+                        $sizeBaru = $stockKontainer->ukuran;
                         $sumber = 'stock_kontainers';
                     }
                 }
@@ -2740,21 +2740,21 @@ class ObController extends Controller
 
                 // Try to find size from kontainers table first
                 $kontainer = DB::table('kontainers')
-                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                     ->first();
 
                 $sizeBaru = null;
 
-                if ($kontainer && $kontainer->size) {
-                    $sizeBaru = $kontainer->size;
+                if ($kontainer && $kontainer->ukuran) {
+                    $sizeBaru = $kontainer->ukuran;
                 } else {
                     // Try stock_kontainers table
                     $stockKontainer = DB::table('stock_kontainers')
-                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                         ->first();
 
-                    if ($stockKontainer && $stockKontainer->size) {
-                        $sizeBaru = $stockKontainer->size;
+                    if ($stockKontainer && $stockKontainer->ukuran) {
+                        $sizeBaru = $stockKontainer->ukuran;
                     }
                 }
 
@@ -2786,21 +2786,21 @@ class ObController extends Controller
 
                 // Try to find size from kontainers table first
                 $kontainer = DB::table('kontainers')
-                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                    ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                     ->first();
 
                 $sizeBaru = null;
 
-                if ($kontainer && $kontainer->size) {
-                    $sizeBaru = $kontainer->size;
+                if ($kontainer && $kontainer->ukuran) {
+                    $sizeBaru = $kontainer->ukuran;
                 } else {
                     // Try stock_kontainers table
                     $stockKontainer = DB::table('stock_kontainers')
-                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
+                        ->whereRaw('UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, " ", ""), "-", ""), ".", "")) = ?', [$nomorKontainer])
                         ->first();
 
-                    if ($stockKontainer && $stockKontainer->size) {
-                        $sizeBaru = $stockKontainer->size;
+                    if ($stockKontainer && $stockKontainer->ukuran) {
+                        $sizeBaru = $stockKontainer->ukuran;
                     }
                 }
 
