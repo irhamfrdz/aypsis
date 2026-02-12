@@ -39,42 +39,64 @@ class PranotaLemburController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // Validasi required tanggal
-        if (!$request->has('start_date') || !$request->has('end_date')) {
+        $selectedItems = $request->input('selected_items', []);
+        $hasSelection = count($selectedItems) > 0;
+
+        // Validasi required tanggal jika tidak ada selection
+        if (!$hasSelection && (!$request->has('start_date') || !$request->has('end_date'))) {
             return redirect()->route('pranota-lembur.index')
-                ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
+                ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi atau pilih item dari Report Lembur');
         }
 
-        $startDate = Carbon::parse($request->start_date)->startOfDay();
-        $endDate = Carbon::parse($request->end_date)->endOfDay();
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : now()->subMonth()->startOfDay();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfDay();
 
         // Get surat jalan yang belum punya pranota lembur
-        $suratJalans = SuratJalan::query()
+        $suratJalanQuery = SuratJalan::query()
             ->with('tandaTerima')
             ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
             })
-            ->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
-                $q->whereDate('tanggal', '>=', $startDate)
-                  ->whereDate('tanggal', '<=', $endDate);
-            })
-            ->whereDoesntHave('pranotaLemburs')
-            ->get();
+            ->whereDoesntHave('pranotaLemburs');
 
         // Get surat jalan bongkaran yang belum punya pranota lembur
-        $bongkarans = SuratJalanBongkaran::query()
+        $bongkaranQuery = SuratJalanBongkaran::query()
             ->with('tandaTerima')
             ->where(function($q) {
                 $q->where('lembur', true)
                   ->orWhere('nginap', true);
             })
-            ->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+            ->whereDoesntHave('pranotaLemburs');
+
+        if ($hasSelection) {
+            $muatIds = [];
+            $bongkaranIds = [];
+            foreach ($selectedItems as $item) {
+                $parts = explode('|', $item);
+                if (count($parts) == 2) {
+                    if ($parts[0] == 'Muat') {
+                        $muatIds[] = $parts[1];
+                    } elseif ($parts[0] == 'Bongkaran') {
+                        $bongkaranIds[] = $parts[1];
+                    }
+                }
+            }
+            $suratJalanQuery->whereIn('id', $muatIds);
+            $bongkaranQuery->whereIn('id', $bongkaranIds);
+        } else {
+            $suratJalanQuery->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+                $q->whereDate('tanggal', '>=', $startDate)
+                  ->whereDate('tanggal', '<=', $endDate);
+            });
+            $bongkaranQuery->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
                 $q->whereDate('tanggal_tanda_terima', '>=', $startDate)
                   ->whereDate('tanggal_tanda_terima', '<=', $endDate);
-            })
-            ->whereDoesntHave('pranotaLemburs')
-            ->get();
+            });
+        }
+
+        $suratJalans = $suratJalanQuery->get();
+        $bongkarans = $bongkaranQuery->get();
 
         // Standardize properties
         $suratJalans->each(function($item) {
@@ -109,6 +131,7 @@ class PranotaLemburController extends Controller
             'nomorCetakan' => $nomorCetakan,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'preChecked' => $hasSelection,
         ]);
     }
 

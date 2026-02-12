@@ -73,7 +73,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" @if(isset($preChecked) && $preChecked) checked @endif>
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal TT</th>
@@ -92,7 +92,7 @@
                             @foreach($suratJalans as $index => $sj)
                             <tr class="hover:bg-gray-50 surat-jalan-row">
                                 <td class="px-4 py-3">
-                                    <input type="checkbox" name="selected[]" value="{{ $sj->id }}_{{ $sj->type_surat }}" class="item-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <input type="checkbox" name="selected[]" value="{{ $sj->id }}_{{ $sj->type_surat }}" class="item-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" @if(isset($preChecked) && $preChecked) checked @endif>
                                 </td>
                                 <td class="px-4 py-3 text-sm">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3 text-sm">{{ $sj->report_date ? \Carbon\Carbon::parse($sj->report_date)->format('d/M/Y') : '-' }}</td>
@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize calculations
     document.querySelectorAll('.surat-jalan-row').forEach(row => calculateRowTotal(row));
+    updateTotals();
 });
 </script>
 @endpush

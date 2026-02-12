@@ -5,27 +5,37 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center">
-                <i class="fas fa-bed mr-3 text-blue-600 text-2xl"></i>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Report Lembur/Nginap</h1>
-                    <p class="text-gray-600">Laporan driver lembur/nginap berdasarkan periode</p>
+    <form action="{{ route('pranota-lembur.create') }}" method="GET" id="bulkForm">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-bed mr-3 text-blue-600 text-2xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Report Lembur/Nginap</h1>
+                        <p class="text-gray-600">Laporan driver lembur/nginap berdasarkan periode</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="submit" id="btnProcess" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 flex items-center shadow-sm">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Masukan ke Pranota
+                    </button>
+                    <a href="{{ route('report.lembur.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center shadow-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Pilih Periode Lain
+                    </a>
                 </div>
             </div>
-            <a href="{{ route('report.lembur.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Pilih Periode Lain
-            </a>
         </div>
-    </div>
 
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full table-auto text-xs">
-                <thead class="bg-gray-50">
-                    <tr>
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto text-xs">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left w-10">
+                                <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tanggal Tanda Terima</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
@@ -39,6 +49,11 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($suratJalans as $sj)
                     <tr>
+                        <td class="px-4 py-3">
+                            @if(!$sj->sudah_pranota)
+                                <input type="checkbox" name="selected_items[]" value="{{ $sj->type_surat }}|{{ $sj->id }}" class="row-checkbox rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            @endif
+                        </td>
                         <td class="px-4 py-3">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3">{{ $sj->report_date ? \Carbon\Carbon::parse($sj->report_date)->format('d/M/Y') : '-' }}</td>
                         <td class="px-4 py-3">
@@ -63,7 +78,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">Tidak ada data</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">Tidak ada data</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -72,5 +87,46 @@
             {{-- Pagination Placehoder if needed later --}}
         </div>
     </div>
+    </form>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('checkAll');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        const btnProcess = document.getElementById('btnProcess');
+
+        // Function to update button visibility
+        function updateButtonState() {
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            if (checkedCount > 0) {
+                btnProcess.classList.remove('hidden');
+            } else {
+                btnProcess.classList.add('hidden');
+            }
+            
+            // Update checkAll state
+            const allChecked = rowCheckboxes.length > 0 && Array.from(rowCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
+            
+            checkAll.checked = allChecked;
+            checkAll.indeterminate = someChecked && !allChecked;
+        }
+
+        // Check All handler
+        checkAll.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateButtonState();
+        });
+
+        // Individual checkbox handler
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateButtonState);
+        });
+    });
+</script>
+@endpush
 @endsection
