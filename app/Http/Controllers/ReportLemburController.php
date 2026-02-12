@@ -42,6 +42,7 @@ class ReportLemburController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
         $search = $request->input('search');
+        $statusPranota = $request->input('status_pranota');
 
         // Query Surat Jalan (Muat)
         $suratJalanQuery = SuratJalan::query()
@@ -61,6 +62,12 @@ class ReportLemburController extends Controller
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%");
             });
+        }
+
+        if ($statusPranota === 'sudah') {
+            $suratJalanQuery->whereHas('pranotaLemburs');
+        } elseif ($statusPranota === 'belum') {
+            $suratJalanQuery->whereDoesntHave('pranotaLemburs');
         }
 
         $suratJalans = $suratJalanQuery->get();
@@ -83,6 +90,12 @@ class ReportLemburController extends Controller
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%");
             });
+        }
+
+        if ($statusPranota === 'sudah') {
+            $bongkaranQuery->whereHas('pranotaLemburs');
+        } elseif ($statusPranota === 'belum') {
+            $bongkaranQuery->whereDoesntHave('pranotaLemburs');
         }
 
         $bongkarans = $bongkaranQuery->get();
@@ -123,7 +136,8 @@ class ReportLemburController extends Controller
             'endDate' => $endDate,
             'pricelistLemburs' => $pricelistLemburs,
             'nomorPranotaDisplay' => $nomorPranotaDisplay,
-            'nextNumber' => $nextNumber
+            'nextNumber' => $nextNumber,
+            'statusPranota' => $statusPranota
         ]);
     }
 }

@@ -7,24 +7,60 @@
 <div class="container mx-auto px-4 py-6">
     <form action="{{ route('pranota-lembur.create') }}" method="GET" id="bulkForm">
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex items-center">
                     <i class="fas fa-bed mr-3 text-blue-600 text-2xl"></i>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Report Lembur/Nginap</h1>
-                        <p class="text-gray-600">Laporan driver lembur/nginap berdasarkan periode</p>
+                        <p class="text-xs text-gray-500 font-medium">Laporan driver lembur/nginap berdasarkan periode</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button type="button" id="btnProcess" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 flex items-center shadow-sm">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="btnProcess" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center shadow-md shadow-blue-100">
                         <i class="fas fa-plus-circle mr-2"></i>
                         Masukan ke Pranota
                     </button>
-                    <a href="{{ route('report.lembur.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center shadow-sm">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Pilih Periode Lain
+                    <a href="{{ route('report.lembur.index') }}" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-50 transition-all duration-200 inline-flex items-center shadow-sm">
+                        <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+                        Ganti Periode
                     </a>
                 </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-100">
+                <form action="{{ route('report.lembur.view') }}" method="GET" class="flex flex-wrap items-center gap-3">
+                    <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                    <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                    
+                    <div class="relative flex-1 min-w-[280px]">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400 text-xs"></i>
+                        </span>
+                        <input type="text" name="search" value="{{ request('search') }}" 
+                            placeholder="Cari No SJ / Supir / Plat..." 
+                            class="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+
+                    <div class="min-w-[180px]">
+                        <select name="status_pranota" onchange="this.form.submit()" 
+                            class="block w-full px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-gray-600 cursor-pointer">
+                            <option value="">Semua Status Pranota</option>
+                            <option value="belum" {{ request('status_pranota') == 'belum' ? 'selected' : '' }}>Belum Masuk Pranota</option>
+                            <option value="sudah" {{ request('status_pranota') == 'sudah' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="bg-gray-800 text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-gray-900 transition-all shadow-md shadow-gray-200">
+                        Terapkan Filter
+                    </button>
+                    
+                    @if(request('search') || request('status_pranota'))
+                        <a href="{{ route('report.lembur.view', ['start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" 
+                           class="text-xs text-red-500 font-bold hover:text-red-700 underline px-2">
+                           Reset
+                        </a>
+                    @endif
+                </form>
             </div>
         </div>
 
