@@ -4165,6 +4165,10 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/rit/print', [App\Http\Controllers\ReportRitController::class, 'print'])->name('rit.print');
     Route::get('/rit/export', [App\Http\Controllers\ReportRitController::class, 'export'])->name('rit.export');
 
+    // Report Lembur/Nginap
+    Route::get('/lembur', [\App\Http\Controllers\ReportLemburController::class, 'index'])->name('lembur.index');
+    Route::get('/lembur/view', [\App\Http\Controllers\ReportLemburController::class, 'view'])->name('lembur.view');
+
     // Report Ongkos Truk
     Route::get('/ongkos-truk', [App\Http\Controllers\ReportOngkosTrukController::class, 'index'])->name('ongkos-truk.index');
     Route::get('/ongkos-truk/view', [App\Http\Controllers\ReportOngkosTrukController::class, 'view'])->name('ongkos-truk.view');
