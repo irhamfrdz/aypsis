@@ -41,6 +41,12 @@
                 <input type="text" name="nama" id="nama" value="{{ old('nama', $alatBerat->nama) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: Excavator PC200" required>
             </div>
 
+            <!-- Warna -->
+            <div>
+                <label for="warna" class="block text-sm font-medium text-gray-700">Warna</label>
+                <input type="text" name="warna" id="warna" value="{{ old('warna', $alatBerat->warna) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: Kuning, Merah">
+            </div>
+
             <!-- Jenis -->
             <div>
                 <label for="jenis" class="block text-sm font-medium text-gray-700">Jenis</label>

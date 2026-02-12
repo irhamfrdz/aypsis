@@ -59,6 +59,7 @@ class AlatBeratController extends Controller
             'nomor_seri' => 'nullable|string|max:255|unique:alat_berats,nomor_seri',
             'tahun_pembuatan' => 'nullable|integer',
             'lokasi' => 'nullable|string|max:255',
+            'warna' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive,maintenance',
             'keterangan' => 'nullable|string',
         ]);
@@ -106,6 +107,7 @@ class AlatBeratController extends Controller
             'nomor_seri' => 'nullable|string|max:255|unique:alat_berats,nomor_seri,' . $alatBerat->id,
             'tahun_pembuatan' => 'nullable|integer',
             'lokasi' => 'nullable|string|max:255',
+            'warna' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive,maintenance',
             'keterangan' => 'nullable|string',
         ]);
