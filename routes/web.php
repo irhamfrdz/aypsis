@@ -2181,6 +2181,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-jalan.export')
          ->middleware('can:pranota-uang-jalan-export');
 
+    Route::post('pranota-uang-jalan/{pranotaUangJalan}/update-total', [\App\Http\Controllers\PranotaSuratJalanController::class, 'updateTotal'])
+         ->name('pranota-uang-jalan.update-total')
+         ->middleware('can:pranota-uang-jalan-update');
+
     Route::resource('pranota-uang-jalan', \App\Http\Controllers\PranotaSuratJalanController::class)
          ->middleware([
              'index' => 'can:pranota-uang-jalan-view',

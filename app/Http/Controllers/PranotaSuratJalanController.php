@@ -315,6 +315,54 @@ class PranotaSuratJalanController extends Controller
     }
 
     /**
+     * Update total amount of pranota uang jalan based on its current uang jalans.
+     */
+    public function updateTotal(PranotaUangJalan $pranotaUangJalan)
+    {
+        $user = Auth::user();
+
+        // Check permission (same as update)
+        if (!$this->hasPranotaUangJalanPermission($user, 'pranota-uang-jalan-update')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah pranota uang jalan.');
+        }
+
+        // Only allow updating if status is unpaid
+        if ($pranotaUangJalan->status_pembayaran !== 'unpaid') {
+            return back()->with('error', 'Pranota yang sudah diproses tidak dapat diubah.');
+        }
+
+        try {
+            // Load relationships
+            $pranotaUangJalan->load('uangJalans');
+
+            // Recalculate total amount from uang jalans
+            $totalAmount = 0;
+            foreach ($pranotaUangJalan->uangJalans as $uangJalan) {
+                 $totalAmount += $uangJalan->jumlah_total ?? 0;
+            }
+            
+            // Update pranota
+            $pranotaUangJalan->update([
+                'jumlah_uang_jalan' => $pranotaUangJalan->uangJalans->count(),
+                'total_amount' => $totalAmount,
+                'updated_by' => $user->id,
+            ]);
+
+            Log::info('Pranota uang jalan total updated', [
+                'pranota_id' => $pranotaUangJalan->id,
+                'new_total' => $totalAmount,
+                'updated_by' => $user->name,
+            ]);
+
+            return back()->with('success', 'Total pranota berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            Log::error('Error updating pranota uang jalan total: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui total pranota: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Remove the specified pranota uang jalan from storage.
      */
     public function destroy(PranotaUangJalan $pranotaUangJalan)
