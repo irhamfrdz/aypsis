@@ -81,7 +81,10 @@
 
                 <div>
                     <label for="nama_panggilan" class="{{ $labelClasses }}">Nama Panggilan<span class="text-red-500 ml-1">*</span></label>
-                    <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }}" required placeholder="Masukkan nama panggilan" value="{{ old('nama_panggilan', $karyawan->nama_panggilan) }}">
+                    <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }} @error('nama_panggilan') border-red-500 @enderror" required placeholder="Masukkan nama panggilan" value="{{ old('nama_panggilan', $karyawan->nama_panggilan) }}">
+                    @error('nama_panggilan')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>

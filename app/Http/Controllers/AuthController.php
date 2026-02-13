@@ -121,7 +121,7 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'nik' => 'required|string|regex:/^[0-9]+$/|unique:karyawans',
-            'nama_panggilan' => 'required|string|max:255',
+            'nama_panggilan' => 'required|string|max:255|unique:karyawans',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:karyawans',
