@@ -4798,14 +4798,19 @@
                 </div>
             </div>
             
-            <div class="mb-3">
-                <div class="flex items-center justify-between mb-2">
-                    <label class="block text-xs font-medium text-gray-700">Pilih Tanda Terima <span class="text-red-500">*</span></label>
-                    <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm rounded-lg transition flex items-center gap-2">
+            <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-rose-300">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="block text-sm font-semibold text-gray-800">Pilih Tanda Terima <span class="text-red-500">*</span></label>
+                    <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="px-4 py-2.5 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2">
                         <i class="fas fa-plus"></i> Tambah Tanda Terima
                     </button>
                 </div>
-                <div class="stuffing-tt-container" data-stuffing-section="${sectionIndex}"></div>
+                <div class="stuffing-tt-container" data-stuffing-section="${sectionIndex}">
+                    <div class="text-center py-6 text-gray-400 text-sm">
+                        <i class="fas fa-file-alt text-3xl mb-2"></i>
+                        <p>Belum ada tanda terima dipilih. Klik tombol di atas untuk menambahkan.</p>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -4883,21 +4888,31 @@
     window.addTandaTerimaToSection = function(sectionIndex) {
         const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.stuffing-tt-container');
-        const ttIndex = container.children.length;
+        
+        // Remove placeholder message if it exists
+        const placeholder = container.querySelector('.text-center.py-6');
+        if (placeholder) {
+            placeholder.remove();
+        }
+        
+        const ttIndex = container.querySelectorAll('.tt-search-wrapper').length;
         
         const wrapper = document.createElement('div');
-        wrapper.className = 'tt-search-wrapper mb-3 border p-3 rounded bg-white relative';
+        wrapper.className = 'tt-search-wrapper mb-3 border-2 border-gray-200 p-4 rounded-lg bg-gradient-to-r from-gray-50 to-white shadow-sm hover:border-rose-300 transition-all';
         wrapper.innerHTML = `
             <div class="flex items-center gap-2 mb-2">
                 <div class="relative flex-1">
-                    <input type="text" class="tt-search-input w-full px-3 py-2 border rounded text-sm" placeholder="Cari No. Surat Jalan / No. Kontainer / Pengirim...">
-                    <div class="tt-results-dropdown hidden absolute z-10 w-full mt-1 bg-white border rounded shadow-lg max-h-60 overflow-y-auto"></div>
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" class="tt-search-input w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all" placeholder="Cari No. Surat Jalan / No. Kontainer / Pengirim...">
+                    <div class="tt-results-dropdown hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto"></div>
                 </div>
-                <button type="button" onclick="removeTtFromSection(this)" class="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                <button type="button" onclick="removeTtFromSection(this)" class="px-3 py-2.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-400" title="Hapus Tanda Terima">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
-            <div class="tt-selected-details hidden text-xs text-gray-600 bg-gray-50 p-2 rounded">
+            <div class="tt-selected-details hidden text-xs text-gray-700 bg-green-50 border border-green-200 p-3 rounded-lg mt-2">
                 <!-- Selected TT details show here -->
             </div>
             <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" class="selected-tt-id">
@@ -4922,30 +4937,67 @@
             }
             
             timeout = setTimeout(() => {
+                // Show loading indicator
+                resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Mencari...</div>';
+                resultsDropdown.classList.remove('hidden');
+                
                 fetch(`{{ url('biaya-kapal/search-tanda-terima') }}?search=${encodeURIComponent(query)}`)
                     .then(response => response.json())
                     .then(data => {
                         resultsDropdown.innerHTML = '';
                         if (data.length > 0) {
-                            data.forEach(tt => {
+                            data.forEach((tt, index) => {
                                 const item = document.createElement('div');
-                                item.className = 'p-2 hover:bg-rose-50 cursor-pointer border-b text-sm';
+                                item.className = 'p-3 hover:bg-gradient-to-r hover:from-rose-50 hover:to-pink-50 cursor-pointer border-b last:border-b-0 transition-all duration-150';
+                                
+                                let typeIcon = '<i class="fas fa-file text-gray-400"></i>';
+                                let typeBadge = '';
+                                if (tt.type === 'tanda_terima_tanpa_surat_jalan') {
+                                    typeIcon = '<i class="fas fa-file-alt text-blue-500"></i>';
+                                    typeBadge = '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Tanpa SJ</span>';
+                                } else if (tt.type === 'tanda_terima_lcl') {
+                                    typeIcon = '<i class="fas fa-boxes text-green-500"></i>';
+                                    typeBadge = '<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">LCL</span>';
+                                }
+                                
                                 item.innerHTML = `
-                                    <div class="font-bold">${tt.display_text || tt.no_surat_jalan}</div>
-                                    <div class="text-xs text-gray-500">${tt.no_kontainer || '-'} | ${tt.pengirim} -> ${tt.penerima}</div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="text-lg mt-0.5">${typeIcon}</div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <div class="font-semibold text-sm text-gray-800 truncate">${tt.display_text || tt.no_surat_jalan}</div>
+                                                ${typeBadge}
+                                            </div>
+                                            <div class="text-xs text-gray-600 flex items-center gap-2">
+                                                <span><i class="fas fa-box text-orange-400 mr-1"></i>${tt.no_kontainer || '-'}</span>
+                                                <span class="text-gray-300">|</span>
+                                                <span class="truncate"><i class="fas fa-user text-blue-400 mr-1"></i>${tt.pengirim}</span>
+                                                <span class="text-gray-300">→</span>
+                                                <span class="truncate"><i class="fas fa-user-check text-green-400 mr-1"></i>${tt.penerima}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 `;
                                 item.addEventListener('click', () => {
                                     searchInput.value = tt.display_text || tt.no_surat_jalan;
                                     selectedIdInput.value = tt.id;
                                     selectedTypeInput.value = tt.type || 'tanda_terima';
                                     resultsDropdown.classList.add('hidden');
+                                    searchInput.disabled = true;
+                                    searchInput.classList.add('bg-gray-100', 'cursor-not-allowed');
                                     showTtDetails(tt.id, detailsDiv, tt.type);
                                 });
                                 resultsDropdown.appendChild(item);
                             });
                             resultsDropdown.classList.remove('hidden');
                         } else {
-                            resultsDropdown.innerHTML = '<div class="p-2 text-sm text-gray-500">Tidak ditemukan</div>';
+                            resultsDropdown.innerHTML = `
+                                <div class="p-6 text-center text-gray-400">
+                                    <i class="fas fa-search text-3xl mb-2"></i>
+                                    <p class="text-sm">Tidak ada tanda terima ditemukan</p>
+                                    <p class="text-xs mt-1">Coba dengan kata kunci lain</p>
+                                </div>
+                            `;
                             resultsDropdown.classList.remove('hidden');
                         }
                     });
@@ -4967,20 +5019,61 @@
                 if (res.success) {
                     const tt = res.data;
                     let typeLabel = '';
+                    let typeBadgeClass = 'bg-gray-100 text-gray-800';
+                    
                     if (res.type === 'tanda_terima_tanpa_surat_jalan') {
-                        typeLabel = '<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Tanpa Surat Jalan</span>';
+                        typeLabel = '<i class="fas fa-file-alt mr-1"></i>Tanpa Surat Jalan';
+                        typeBadgeClass = 'bg-blue-100 text-blue-800';
                     } else if (res.type === 'tanda_terima_lcl') {
-                        typeLabel = '<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">LCL</span>';
+                        typeLabel = '<i class="fas fa-boxes mr-1"></i>LCL';
+                        typeBadgeClass = 'bg-green-100 text-green-800';
+                    } else {
+                        typeLabel = '<i class="fas fa-file-invoice mr-1"></i>Dengan Surat Jalan';
                     }
                     
                     container.innerHTML = `
-                        <div class="grid grid-cols-2 gap-2">
-                            ${typeLabel ? `<div class="col-span-2">${typeLabel}</div>` : ''}
-                            <div><strong>Pengirim:</strong> ${tt.pengirim}</div>
-                            <div><strong>Penerima:</strong> ${tt.penerima}</div>
-                            <div><strong>No. Kontainer:</strong> ${tt.no_kontainer || '-'}</div>
-                            <div><strong>Tipe:</strong> ${tt.tipe_kontainer || '-'} ${tt.size ? '(' + tt.size + ')' : ''}</div>
-                            <div class="col-span-2"><strong>Tujuan:</strong> ${tt.tujuan_pengiriman || '-'}</div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 pb-2 border-b border-green-300">
+                                <span class="inline-flex items-center ${typeBadgeClass} text-xs font-medium px-3 py-1 rounded-full">${typeLabel}</span>
+                                <span class="text-xs text-gray-500"><i class="fas fa-check-circle text-green-600 mr-1"></i>Terpilih</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-user text-blue-500 mt-0.5"></i>
+                                    <div>
+                                        <div class="text-gray-500 text-[10px]">Pengirim</div>
+                                        <div class="font-semibold">${tt.pengirim}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-user-check text-green-500 mt-0.5"></i>
+                                    <div>
+                                        <div class="text-gray-500 text-[10px]">Penerima</div>
+                                        <div class="font-semibold">${tt.penerima}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-box text-orange-500 mt-0.5"></i>
+                                    <div>
+                                        <div class="text-gray-500 text-[10px]">No. Kontainer</div>
+                                        <div class="font-semibold">${tt.no_kontainer || '-'}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-shapes text-purple-500 mt-0.5"></i>
+                                    <div>
+                                        <div class="text-gray-500 text-[10px]">Tipe</div>
+                                        <div class="font-semibold">${tt.tipe_kontainer || '-'} ${tt.size ? '(' + tt.size + ')' : ''}</div>
+                                    </div>
+                                </div>
+                                ${tt.tujuan_pengiriman ? `<div class="col-span-2 flex items-start gap-2">
+                                    <i class="fas fa-map-marker-alt text-red-500 mt-0.5"></i>
+                                    <div>
+                                        <div class="text-gray-500 text-[10px]">Tujuan Pengiriman</div>
+                                        <div class="font-semibold">${tt.tujuan_pengiriman}</div>
+                                    </div>
+                                </div>` : ''}
+                            </div>
                         </div>
                     `;
                     container.classList.remove('hidden');
@@ -4989,7 +5082,21 @@
     }
     
     window.removeTtFromSection = function(btn) {
-        btn.closest('.tt-search-wrapper').remove();
+        const wrapper = btn.closest('.tt-search-wrapper');
+        const container = wrapper.closest('.stuffing-tt-container');
+        
+        wrapper.remove();
+        
+        // If no more tanda terima items, show placeholder message
+        const remainingItems = container.querySelectorAll('.tt-search-wrapper');
+        if (remainingItems.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-6 text-gray-400 text-sm">
+                    <i class="fas fa-file-alt text-3xl mb-2"></i>
+                    <p>Belum ada tanda terima dipilih. Klik tombol di atas untuk menambahkan.</p>
+                </div>
+            `;
+        }
     }
 </script>
 @endpush
