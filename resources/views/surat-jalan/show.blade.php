@@ -201,6 +201,25 @@
                             <p class="text-sm text-gray-900">{{ $suratJalan->kenek ?? 'N/A' }}</p>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-600">Krani</label>
+                            <p class="text-sm text-gray-900">{{ $suratJalan->krani ?? 'N/A' }}</p>
+                            @if(count($suratJalan->adjustment_kranis ?? []) > 0)
+                                <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                                    <div class="font-semibold mb-1 flex items-center">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Krani (Adjustment):
+                                    </div>
+                                    <ul class="list-disc list-inside">
+                                        @foreach($suratJalan->adjustment_kranis as $kraniNominal)
+                                            <li>{{ $kraniNominal }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-600">No. Plat</label>
                             <p class="text-sm text-gray-900 font-mono">{{ $suratJalan->no_plat ?? 'N/A' }}</p>
                         </div>

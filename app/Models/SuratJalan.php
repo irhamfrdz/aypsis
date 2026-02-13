@@ -158,6 +158,59 @@ class SuratJalan extends Model
         return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');
     }
 
+    public function kraniKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'krani', 'nama_lengkap');
+    }
+
+    /**
+     * Get Krani info from adjustment data
+     */
+    public function getAdjustmentKranisAttribute()
+    {
+        $kranis = collect();
+
+        // 1. Check PembayaranAktivitasLain (related by no_surat_jalan)
+        $pembayarans = \App\Models\PembayaranAktivitasLain::where('no_surat_jalan', $this->no_surat_jalan)
+            ->where(function($query) {
+                $query->where('jenis_aktivitas', 'like', '%Adjusment%')
+                      ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
+            })
+            ->get();
+
+        foreach ($pembayarans as $p) {
+            $details = $p->tipe_penyesuaian_detail;
+            if (is_array($details)) {
+                foreach ($details as $detail) {
+                    if (($detail['tipe'] ?? '') === 'krani') {
+                        if ($p->penerima) $kranis->push($p->penerima);
+                    }
+                }
+            }
+        }
+
+        // 2. Check InvoiceAktivitasLain (related by surat_jalan_id)
+        $invoices = \App\Models\InvoiceAktivitasLain::where('surat_jalan_id', $this->id)
+            ->where(function($query) {
+                $query->where('jenis_aktivitas', 'like', '%Adjusment%')
+                      ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
+            })
+            ->get();
+
+        foreach ($invoices as $i) {
+            $details = json_decode($i->tipe_penyesuaian, true);
+            if (is_array($details)) {
+                foreach ($details as $detail) {
+                    if (($detail['tipe'] ?? '') === 'krani') {
+                        if ($i->penerima) $kranis->push($i->penerima);
+                    }
+                }
+            }
+        }
+
+        return $kranis->unique()->values()->all();
+    }
+
     /**
      * Kontainer relationship
      * Maps SuratJalan.no_kontainer -> Kontainer.nomor_seri_gabungan
