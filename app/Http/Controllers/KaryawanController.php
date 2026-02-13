@@ -138,6 +138,7 @@ class KaryawanController extends Controller
                 $q->where('nik', 'LIKE', "%{$search}%")
                   ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
                   ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                  ->orWhere('ktp', 'LIKE', "%{$search}%")
                   ->orWhere('divisi', 'LIKE', "%{$search}%")
                   ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
                   ->orWhere('no_hp', 'LIKE', "%{$search}%")

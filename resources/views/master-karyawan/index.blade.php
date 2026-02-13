@@ -64,7 +64,7 @@
                                 </div>
                                 <input type="text" name="search" value="{{ request('search') }}"
                                        class="block w-full pl-8 pr-8 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="Cari Nama/NIK...">
+                                       placeholder="Cari Nama/NIK/KTP...">
                                 @if(request('search'))
                                     <a href="{{ route('master.karyawan.index', request()->except(['search', 'page'])) }}" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-300 hover:text-red-500"><i class="fas fa-times-circle text-[10px]"></i></a>
                                 @endif
