@@ -189,15 +189,14 @@ class KaryawanController extends Controller
         // Apply sorting
         $query->orderBy($sortField, $sortDirection);
 
-        // Handle per_page parameter for pagination (support show_all)
-        if ($request->filled('show_all')) {
-            $perPage = $totalCount > 0 ? $totalCount : 15;
-        } else {
-            $perPage = (int) $request->get('per_page', 15); // Default 15 per halaman
-            $allowedPerPage = [10, 15, 25, 50, 100, 200];
-            if (!in_array($perPage, $allowedPerPage)) {
-                $perPage = 15;
-            }
+        // Handle per_page parameter for pagination
+        $perPage = (int) $request->get('per_page', 15); // Default 15 per halaman
+        $allowedPerPage = [10, 15, 25, 50, 100, 200];
+        
+        // If show_all is requested, we still want pagination but maybe a larger default?
+        // Let's keep it consistent with the user's selection or 15.
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 15;
         }
 
         // Menggunakan paginate dengan per_page yang dinamis
