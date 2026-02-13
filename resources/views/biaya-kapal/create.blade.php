@@ -5198,11 +5198,6 @@
 @endsection
 
 @push('styles')
-</script>
-@endpush
-@endsection
-
-@push('styles')
 <style>
     /* Select2 Styling */
     .select2-container {
