@@ -5235,6 +5235,38 @@
         background-color: #dbeafe !important;
         border-left: 3px solid #3b82f6;
     }
+
+    /* Stuffing Section Styling */
+    .stuffing-section .bg-rose-500 {
+        background-color: #f43f5e !important;
+        border: 2px solid #e11d48 !important;
+        box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.3) !important;
+        position: relative !important;
+        z-index: 10 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .stuffing-section .bg-rose-500:hover {
+        background-color: #e11d48 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 8px -1px rgba(244, 63, 94, 0.4) !important;
+    }
+
+    .stuffing-section button[onclick*="addTandaTerimaToSection"] {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 160px !important;
+        margin-left: auto !important;
+        font-weight: 600 !important;
+        animation: pulse 2s infinite !important;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
 </style>
 
 @endpush
