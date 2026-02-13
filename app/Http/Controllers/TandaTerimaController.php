@@ -1651,7 +1651,6 @@ class TandaTerimaController extends Controller
 
                 $prospek = Prospek::create($prospekData);
                 $successCount++;
-                if (!$firstProspekId) $firstProspekId = $prospek->id;
             }
 
             $message = "Berhasil memasukkan {$successCount} kontainer dari surat jalan {$tandaTerima->no_surat_jalan} ke prospek!";
