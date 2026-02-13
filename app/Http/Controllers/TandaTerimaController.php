@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Artisan;
 use App\Exports\TandaTerimaFilteredExport;
 
 class TandaTerimaController extends Controller
@@ -1605,43 +1606,59 @@ class TandaTerimaController extends Controller
     public function addToProspek(TandaTerima $tandaTerima)
     {
         try {
-            // Tentukan ukuran kontainer yang valid (hanya 20 atau 40)
-            $ukuran = null;
-            if ($tandaTerima->size) {
-                // Jika size adalah '20' atau '40', gunakan langsung
-                if (in_array($tandaTerima->size, ['20', '40'])) {
-                    $ukuran = $tandaTerima->size;
-                }
+            $nomorKontainers = array_filter(explode(',', $tandaTerima->no_kontainer), 'trim');
+            $noSeals = array_filter(explode(',', $tandaTerima->no_seal), 'trim');
+            $sizes = array_filter(explode(',', $tandaTerima->size), 'trim');
+
+            if (empty($nomorKontainers)) {
+                return back()->with('error', 'Tidak ada nomor kontainer yang valid.');
             }
 
-            // Buat data prospek dari tanda terima
-            $prospekData = [
-                'tanggal' => $tandaTerima->tanggal_surat_jalan,
-                'nama_supir' => $tandaTerima->supir ?: 'Tidak ada supir',
-                'barang' => $tandaTerima->jenis_barang ?: 'CARGO',
-                'pt_pengirim' => $tandaTerima->pengirim ?: 'Tidak ada pengirim',
-                'ukuran' => $ukuran, // Hanya '20', '40', atau null
-                'tipe' => 'CARGO', // Set tipe sebagai CARGO untuk kontainer cargo
-                'nomor_kontainer' => $tandaTerima->no_kontainer,
-                'no_seal' => $tandaTerima->no_seal ?: 'Tidak ada seal',
-                'no_surat_jalan' => $tandaTerima->no_surat_jalan,
-                'surat_jalan_id' => $tandaTerima->surat_jalan_id,
-                'tanda_terima_id' => $tandaTerima->id,
-                'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
-                'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
-                'keterangan' => "Data dari tanda terima: {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}",
-                'status' => 'aktif',
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ];
+            $successCount = 0;
 
-            $createdProspek = Prospek::create($prospekData);
+            foreach ($nomorKontainers as $index => $noKontainer) {
+                $noKontainer = trim($noKontainer);
+                
+                // Tentukan seal untuk kontainer ini
+                $currentSeal = isset($noSeals[$index]) ? trim($noSeals[$index]) : (isset($noSeals[0]) ? trim($noSeals[0]) : 'Tidak ada seal');
+                
+                // Tentukan ukuran untuk kontainer ini
+                $currentSizeRaw = isset($sizes[$index]) ? trim($sizes[$index]) : (isset($sizes[0]) ? trim($sizes[0]) : null);
+                $ukuran = null;
+                if ($currentSizeRaw && in_array($currentSizeRaw, ['20', '40'])) {
+                    $ukuran = $currentSizeRaw;
+                }
 
-            return back()->with('success', "Kontainer CARGO dari surat jalan {$tandaTerima->no_surat_jalan} berhasil dimasukkan ke prospek (ID: {$createdProspek->id})!");
+                $prospekData = [
+                    'tanggal' => $tandaTerima->tanggal_surat_jalan,
+                    'nama_supir' => $tandaTerima->supir ?: 'Tidak ada supir',
+                    'barang' => $tandaTerima->jenis_barang ?: 'CARGO',
+                    'pt_pengirim' => $tandaTerima->pengirim ?: 'Tidak ada pengirim',
+                    'ukuran' => $ukuran,
+                    'tipe' => 'CARGO',
+                    'nomor_kontainer' => $noKontainer,
+                    'no_seal' => $currentSeal,
+                    'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                    'surat_jalan_id' => $tandaTerima->surat_jalan_id,
+                    'tanda_terima_id' => $tandaTerima->id,
+                    'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
+                    'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
+                    'keterangan' => "Data dari tanda terima: {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}" . (count($nomorKontainers) > 1 ? " (Kontainer " . ($index + 1) . ")" : ""),
+                    'status' => 'aktif',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ];
+
+                $prospek = Prospek::create($prospekData);
+                $successCount++;
+                if (!$firstProspekId) $firstProspekId = $prospek->id;
+            }
+
+            $message = "Berhasil memasukkan {$successCount} kontainer dari surat jalan {$tandaTerima->no_surat_jalan} ke prospek!";
+            return back()->with('success', $message);
 
         } catch (\Exception $e) {
             Log::error('Error adding cargo to prospek: ' . $e->getMessage());
-            Log::error('TandaTerima data: ' . json_encode($tandaTerima->toArray()));
             return back()->with('error', 'Gagal memasukkan kontainer ke prospek: ' . $e->getMessage());
         }
     }
@@ -1666,37 +1683,47 @@ class TandaTerimaController extends Controller
 
             foreach ($tandaTerimas as $tandaTerima) {
                 try {
-                    // Tentukan ukuran kontainer yang valid (hanya 20 atau 40)
-                    $ukuran = null;
-                    if ($tandaTerima->size) {
-                        if (in_array($tandaTerima->size, ['20', '40'])) {
-                            $ukuran = $tandaTerima->size;
+                    $nomorKontainers = array_filter(explode(',', $tandaTerima->no_kontainer), 'trim');
+                    $noSeals = array_filter(explode(',', $tandaTerima->no_seal), 'trim');
+                    $sizes = array_filter(explode(',', $tandaTerima->size), 'trim');
+
+                    foreach ($nomorKontainers as $index => $noKontainer) {
+                        $noKontainer = trim($noKontainer);
+                        
+                        // Tentukan seal untuk kontainer ini
+                        $currentSeal = isset($noSeals[$index]) ? trim($noSeals[$index]) : (isset($noSeals[0]) ? trim($noSeals[0]) : 'Tidak ada seal');
+                        
+                        // Tentukan ukuran untuk kontainer ini
+                        $currentSizeRaw = isset($sizes[$index]) ? trim($sizes[$index]) : (isset($sizes[0]) ? trim($sizes[0]) : null);
+                        $ukuran = null;
+                        if ($currentSizeRaw && in_array($currentSizeRaw, ['20', '40'])) {
+                            $ukuran = $currentSizeRaw;
                         }
+
+                        // Buat data prospek
+                        $prospekData = [
+                            'tanggal' => $tandaTerima->tanggal_surat_jalan,
+                            'nama_supir' => $tandaTerima->supir ?: 'Tidak ada supir',
+                            'barang' => $tandaTerima->jenis_barang ?: 'CARGO',
+                            'pt_pengirim' => $tandaTerima->pengirim ?: 'Tidak ada pengirim',
+                            'ukuran' => $ukuran,
+                            'tipe' => 'CARGO',
+                            'nomor_kontainer' => $noKontainer,
+                            'no_seal' => $currentSeal,
+                            'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                            'surat_jalan_id' => $tandaTerima->surat_jalan_id,
+                            'tanda_terima_id' => $tandaTerima->id,
+                            'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
+                            'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
+                            'keterangan' => "Data dari tanda terima (Bulk): {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}" . (count($nomorKontainers) > 1 ? " (Kontainer " . ($index + 1) . ")" : ""),
+                            'status' => 'aktif',
+                            'created_by' => Auth::id(),
+                            'updated_by' => Auth::id(),
+                        ];
+
+                        Prospek::create($prospekData);
+                        $successCount++;
                     }
-
-                    // Buat data prospek
-                    $prospekData = [
-                        'tanggal' => $tandaTerima->tanggal_surat_jalan,
-                        'nama_supir' => $tandaTerima->supir ?: 'Tidak ada supir',
-                        'barang' => $tandaTerima->jenis_barang ?: 'CARGO',
-                        'pt_pengirim' => $tandaTerima->pengirim ?: 'Tidak ada pengirim',
-                        'ukuran' => $ukuran,
-                        'tipe' => 'CARGO',
-                        'nomor_kontainer' => $tandaTerima->no_kontainer,
-                        'no_seal' => $tandaTerima->no_seal ?: 'Tidak ada seal',
-                        'no_surat_jalan' => $tandaTerima->no_surat_jalan,
-                        'surat_jalan_id' => $tandaTerima->surat_jalan_id,
-                        'tanda_terima_id' => $tandaTerima->id,
-                        'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
-                        'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
-                        'keterangan' => "Data dari tanda terima (Bulk): {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}",
-                        'status' => 'aktif',
-                        'created_by' => Auth::id(),
-                        'updated_by' => Auth::id(),
-                    ];
-
-                    Prospek::create($prospekData);
-                    $successCount++;
                 } catch (\Exception $e) {
                     Log::error("Error adding cargo to prospek (Bulk ID {$tandaTerima->id}): " . $e->getMessage());
                     $failCount++;
@@ -1705,11 +1732,7 @@ class TandaTerimaController extends Controller
 
             DB::commit();
             
-            $message = "Berhasil memasukkan {$successCount} data ke prospek.";
-            if ($failCount > 0) {
-                $message .= " Gagal {$failCount} data.";
-            }
-
+            $message = "Berhasil memasukkan {$successCount} kontainer ke prospek.";
             return back()->with('success', $message);
 
         } catch (\Exception $e) {
@@ -2015,8 +2038,8 @@ class TandaTerimaController extends Controller
             }
             
             // Run artisan command and capture output
-            \Artisan::call('manifest:update-penerima', $arguments);
-            $output = \Artisan::output();
+            Artisan::call('manifest:update-penerima', $arguments);
+            $output = Artisan::output();
             
             // Parse output to get statistics
             $totalManifests = 0;
