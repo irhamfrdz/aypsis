@@ -94,13 +94,17 @@ class KaryawanController extends Controller
         $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
         $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
 
-        // Filter: show_all overrides other filters
+        // Filter Status Logic
         if ($request->filled('show_all')) {
-            // show_all -> tampilkan semua karyawan (tidak menambah where)
+            // Tampilkan semua (tidak ada filter status)
         } elseif ($request->filled('show_berhenti')) {
+            // Tampilkan hanya yang berhenti
             $query->whereNotNull('tanggal_berhenti');
+        } elseif ($request->filled('search')) {
+            // Jika mencari tanpa tombol status diklik, cari di semua data (Aktif & Berhenti)
+            // Ini untuk mencegah bingung kenapa data tidak muncul karena filter default 'Aktif'
         } else {
-            // Default: hanya tampilkan karyawan aktif (belum berhenti)
+            // Default: hanya tampilkan karyawan aktif
             $query->whereNull('tanggal_berhenti');
         }
 
