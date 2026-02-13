@@ -4799,11 +4799,13 @@
             </div>
             
             <div class="mb-3">
-                <label class="block text-xs font-medium text-gray-700 mb-2">Pilih Tanda Terima <span class="text-red-500">*</span></label>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-xs font-medium text-gray-700">Pilih Tanda Terima <span class="text-red-500">*</span></label>
+                    <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Tambah Tanda Terima
+                    </button>
+                </div>
                 <div class="stuffing-tt-container" data-stuffing-section="${sectionIndex}"></div>
-                <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs rounded-lg transition">
-                    <i class="fas fa-search mr-1"></i> Cari Tanda Terima
-                </button>
             </div>
         `;
         
@@ -4836,9 +4838,6 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
-        
-        // Initial TT search button
-        addTandaTerimaToSection(sectionIndex);
     }
     
     window.removeStuffingSection = function(sectionIndex) {
