@@ -155,4 +155,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalTrucking::class, 'biaya_kapal_id');
     }
+
+    public function stuffingDetails()
+    {
+        return $this->hasMany(BiayaKapalStuffing::class, 'biaya_kapal_id');
+    }
 }

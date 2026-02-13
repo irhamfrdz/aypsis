@@ -1358,6 +1358,10 @@ Route::middleware([
          ->name('biaya-kapal.get-bls-by-voyages');
     Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])
          ->name('biaya-kapal.get-container-counts');
+    Route::get('biaya-kapal/search-tanda-terima', [\App\Http\Controllers\BiayaKapalController::class, 'searchTandaTerima'])
+         ->name('biaya-kapal.search-tanda-terima');
+    Route::get('biaya-kapal/get-tanda-terima-details/{id}', [\App\Http\Controllers\BiayaKapalController::class, 'getTandaTerimaDetails'])
+         ->name('biaya-kapal.get-tanda-terima-details');
     Route::get('biaya-kapal/{biayaKapal}/print', [\App\Http\Controllers\BiayaKapalController::class, 'print'])
          ->name('biaya-kapal.print')
          ->middleware('can:biaya-kapal-view');

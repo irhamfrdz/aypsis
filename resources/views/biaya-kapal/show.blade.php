@@ -130,6 +130,59 @@
         </div>
     </div>
 
+    @if($biayaKapal->stuffingDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Stuffing</h3>
+        <div class="space-y-6">
+            @foreach($biayaKapal->stuffingDetails as $stuffing)
+                <div class="bg-rose-50 border-2 border-rose-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $stuffing->kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $stuffing->voyage }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Tanda Terima</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">No. Surat Jalan</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">No. Kontainer</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Pengirim</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Penerima</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($stuffing->getTandaTerimas() as $tt)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900 whitespace-nowrap">{{ $tt->no_surat_jalan }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 whitespace-nowrap">{{ $tt->no_kontainer ?: '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 whitespace-nowrap text-xs">{{ $tt->pengirim }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 whitespace-nowrap text-xs">{{ $tt->penerima }}</td>
+                                        </tr>
+                                    @endforeach
+                                    @if(empty($stuffing->tanda_terima_ids))
+                                        <tr>
+                                            <td colspan="4" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada Tanda Terima terpilih</td>
+                                        </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     @can('biaya-kapal-delete')
     <div class="mt-8 pt-6 border-t border-gray-200">
         <form action="{{ route('biaya-kapal.destroy', $biayaKapal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline">

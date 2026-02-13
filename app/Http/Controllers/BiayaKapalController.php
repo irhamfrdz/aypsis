@@ -13,6 +13,8 @@ use App\Models\BiayaKapalTkbm;
 use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalOperasionalItem;
 use App\Models\BiayaKapalTrucking;
+use App\Models\BiayaKapalStuffing;
+use App\Models\TandaTerima;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -312,6 +314,13 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
             'trucking_sections.*.pph' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // Stuffing sections validation
+            'stuffing_sections' => 'nullable|array',
+            'stuffing_sections.*.kapal' => 'nullable|string|max:255',
+            'stuffing_sections.*.voyage' => 'nullable|string|max:255',
+            'stuffing_sections.*.tanda_terima' => 'nullable|array',
+            'stuffing_sections.*.tanda_terima.*.id' => 'nullable|numeric',
         ]);
 
         try {
@@ -369,6 +378,32 @@ class BiayaKapalController extends Controller
                         'subtotal' => $section['subtotal'] ?? 0,
                         'pph' => $section['pph'] ?? 0,
                         'total_biaya' => $section['total_biaya'] ?? 0,
+                    ]);
+                }
+            }
+
+            // BIAYA STUFFING SECTIONS: Store stuffing details
+            if ($request->has('stuffing_sections') && !empty($request->stuffing_sections)) {
+                foreach ($request->stuffing_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    $ttIds = [];
+                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
+                        foreach ($section['tanda_terima'] as $tt) {
+                            if (!empty($tt['id'])) {
+                                $ttIds[] = $tt['id'];
+                            }
+                        }
+                    }
+
+                    BiayaKapalStuffing::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'tanda_terima_ids' => $ttIds,
                     ]);
                 }
             }
@@ -781,6 +816,52 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $totalOperasional]);
             }
 
+            // STUFFING HANDLING
+            if ($request->has('stuffing_sections') && !empty($request->stuffing_sections)) {
+                foreach ($request->stuffing_sections as $section) {
+                    if (empty($section['kapal']) && empty($section['voyage'])) continue;
+                    
+                    $ttIds = [];
+                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
+                        foreach ($section['tanda_terima'] as $tt) {
+                            if (!empty($tt['id'])) {
+                                $ttIds[] = $tt['id'];
+                            }
+                        }
+                    }
+
+                    BiayaKapalStuffing::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'tanda_terima_ids' => $ttIds,
+                    ]);
+                }
+            }
+
+            // STUFFING HANDLING
+            if ($request->has('stuffing_sections') && !empty($request->stuffing_sections)) {
+                foreach ($request->stuffing_sections as $section) {
+                    if (empty($section['kapal']) && empty($section['voyage'])) continue;
+                    
+                    $ttIds = [];
+                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
+                        foreach ($section['tanda_terima'] as $tt) {
+                            if (!empty($tt['id'])) {
+                                $ttIds[] = $tt['id'];
+                            }
+                        }
+                    }
+
+                    BiayaKapalStuffing::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'tanda_terima_ids' => $ttIds,
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return redirect()
@@ -1005,6 +1086,13 @@ class BiayaKapalController extends Controller
             'tkbm_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'tkbm_sections.*.pph' => 'nullable|numeric|min:0',
             'tkbm_sections.*.grand_total' => 'nullable|numeric|min:0',
+
+            // Stuffing sections validation
+            'stuffing_sections' => 'nullable|array',
+            'stuffing_sections.*.kapal' => 'nullable|string|max:255',
+            'stuffing_sections.*.voyage' => 'nullable|string|max:255',
+            'stuffing_sections.*.tanda_terima' => 'nullable|array',
+            'stuffing_sections.*.tanda_terima.*.id' => 'nullable|numeric',
         ]);
 
         try {
@@ -1200,6 +1288,32 @@ class BiayaKapalController extends Controller
                     }
                 }
                 $biayaKapal->update(['nominal' => BiayaKapalOperasional::where('biaya_kapal_id', $biayaKapal->id)->sum('nominal')]);
+            }
+
+            // STUFFING UPDATE
+            if ($request->has('stuffing_sections')) {
+                BiayaKapalStuffing::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (!empty($request->stuffing_sections)) {
+                    foreach ($request->stuffing_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) continue;
+                        
+                        $ttIds = [];
+                        if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
+                            foreach ($section['tanda_terima'] as $tt) {
+                                if (!empty($tt['id'])) {
+                                    $ttIds[] = $tt['id'];
+                                }
+                            }
+                        }
+
+                        BiayaKapalStuffing::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'tanda_terima_ids' => $ttIds,
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
@@ -1430,5 +1544,46 @@ class BiayaKapalController extends Controller
                 'message' => 'Gagal menghitung kontainer: ' . $e->getMessage()
             ], 500);
         }
+    }
+    /**
+     * Search tanda terima for Biaya Stuffing search dropdown
+     */
+    public function searchTandaTerima(Request $request)
+    {
+        $search = $request->get('search');
+        $query = \App\Models\TandaTerima::query();
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
+            });
+        }
+        
+        $tandaTerimas = $query->select('id', 'no_surat_jalan', 'no_kontainer', 'pengirim', 'penerima', 'tanggal_surat_jalan')
+            ->orderBy('tanggal_surat_jalan', 'desc')
+            ->limit(30)
+            ->get();
+            
+        return response()->json($tandaTerimas);
+    }
+
+    /**
+     * Get details for selected tanda terima
+     */
+    public function getTandaTerimaDetails($id)
+    {
+        $tt = \App\Models\TandaTerima::find($id);
+        if (!$tt) {
+            return response()->json(['success' => false, 'message' => 'Tanda Terima tidak ditemukan'], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $tt
+        ]);
     }
 }
