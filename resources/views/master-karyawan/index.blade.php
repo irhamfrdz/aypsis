@@ -868,26 +868,14 @@ document.addEventListener('keydown', function(e) {
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('input[name="search"]');
-    let searchTimeout;
 
-    // Auto-submit form setelah user berhenti mengetik selama 500ms
     if (searchInput) {
         const searchForm = searchInput.closest('form');
-
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(function() {
-                if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
-                    if (searchForm) searchForm.submit();
-                }
-            }, 500);
-        });
 
         // Submit langsung saat Enter ditekan
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                clearTimeout(searchTimeout);
                 if (searchForm) searchForm.submit();
             }
         });

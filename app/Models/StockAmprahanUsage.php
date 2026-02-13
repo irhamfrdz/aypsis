@@ -15,6 +15,7 @@ class StockAmprahanUsage extends Model
     protected $fillable = [
         'stock_amprahan_id',
         'penerima_id',
+        'mobil_id',
         'jumlah',
         'tanggal_pengambilan',
         'keterangan',
@@ -33,6 +34,11 @@ class StockAmprahanUsage extends Model
     public function penerima()
     {
         return $this->belongsTo(Karyawan::class, 'penerima_id');
+    }
+
+    public function mobil()
+    {
+        return $this->belongsTo(Mobil::class, 'mobil_id');
     }
 
     public function createdBy()

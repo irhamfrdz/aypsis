@@ -7,6 +7,7 @@ use App\Models\MasterNamaBarangAmprahan;
 use App\Models\MasterGudangAmprahan;
 use App\Models\StockAmprahanUsage;
 use App\Models\Karyawan;
+use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,8 +20,9 @@ class StockAmprahanController extends Controller
             ->paginate(20);
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils'));
     }
 
     public function create()
@@ -104,6 +106,7 @@ class StockAmprahanController extends Controller
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',
             'penerima_id' => 'required|exists:karyawans,id',
+            'mobil_id' => 'nullable|exists:mobils,id',
         ]);
 
         $penerima = Karyawan::findOrFail($request->penerima_id);
@@ -117,6 +120,7 @@ class StockAmprahanController extends Controller
         StockAmprahanUsage::create([
             'stock_amprahan_id' => $item->id,
             'penerima_id' => $request->penerima_id,
+            'mobil_id' => $request->mobil_id,
             'jumlah' => $request->jumlah,
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
@@ -134,15 +138,17 @@ class StockAmprahanController extends Controller
     }
     public function history($id)
     {
-        $usages = StockAmprahanUsage::with(['penerima', 'createdBy'])
+        $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'createdBy'])
             ->where('stock_amprahan_id', $id)
             ->latest('tanggal_pengambilan')
             ->get()
             ->map(function ($usage) {
+                $mobilInfo = $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-';
                 return [
                     'tanggal' => date('d-m-Y', strtotime($usage->tanggal_pengambilan)),
                     'jumlah' => $usage->jumlah,
                     'penerima' => $usage->penerima->nama_lengkap ?? '-',
+                    'mobil' => $mobilInfo,
                     'keterangan' => $usage->keterangan,
                     'created_by' => $usage->createdBy->name ?? '-',
                 ];

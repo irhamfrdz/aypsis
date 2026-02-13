@@ -206,6 +206,34 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobil (Opsional)</label>
+                                            <div class="relative" id="mobil_dropdown">
+                                                <input type="hidden" name="mobil_id" id="mobil_id_hidden">
+                                                
+                                                <div class="relative">
+                                                    <input type="text" id="mobil_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Mobil..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleMobilDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="mobil_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                <div id="mobil_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
+                                                    @foreach($mobils as $mobil)
+                                                        <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                             data-value="{{ $mobil->id }}" 
+                                                             data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
+                                                             onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}')">
+                                                            <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                    <div id="mobil_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada mobil yang cocok</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div>
                                             <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Ambil</label>
                                             <input type="number" name="jumlah" id="jumlah_ambil" required min="1" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan jumlah barang...">
@@ -271,13 +299,14 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
                                             </tr>
                                         </thead>
                                         <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
                                             <tr>
-                                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
+                                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -332,7 +361,7 @@
     function openHistoryModal(id, name) {
         document.getElementById('historyModal').classList.remove('hidden');
         document.getElementById('historyItemName').textContent = name;
-        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
+        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
 
         fetch(`/stock-amprahan/${id}/history`)
             .then(response => response.json())
@@ -341,7 +370,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
                     return;
                 }
 
@@ -351,6 +380,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.tanggal}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.jumlah}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.penerima}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.keterangan || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.created_by}</td>
                     `;
@@ -359,7 +389,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
+                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
             });
     }
 
@@ -456,6 +486,96 @@
         penerimaInput.value = '';
         filterOptions('');
         closeDropdown();
+
+        // Reset mobil dropdown state
+        mobilHidden.value = '';
+        mobilInput.value = '';
+        filterMobilOptions('');
+        closeMobilDropdown();
     };
+
+    // SEARCHABLE DROPDOWN MOBIL LOGIC
+    const mobilInput = document.getElementById('mobil_search_input');
+    const mobilList = document.getElementById('mobil_options_list');
+    const mobilHidden = document.getElementById('mobil_id_hidden');
+    const mobilDropdownArrow = document.getElementById('mobil_dropdown_arrow');
+    const mobilOptions = document.querySelectorAll('.mobil-option');
+    const mobilNoResults = document.getElementById('mobil_no_results');
+
+    function toggleMobilDropdown() {
+        const isHidden = mobilList.classList.contains('hidden');
+        if (isHidden) {
+            openMobilDropdown();
+        } else {
+            closeMobilDropdown();
+        }
+    }
+
+    function openMobilDropdown() {
+        mobilList.classList.remove('hidden');
+        mobilDropdownArrow.style.transform = 'rotate(180deg)';
+        mobilInput.focus();
+    }
+
+    function closeMobilDropdown() {
+        mobilList.classList.add('hidden');
+        mobilDropdownArrow.style.transform = 'rotate(0deg)';
+    }
+
+    function selectMobil(id, name) {
+        mobilHidden.value = id;
+        mobilInput.value = name;
+        closeMobilDropdown();
+    }
+
+    mobilInput.addEventListener('focus', function() {
+        openMobilDropdown();
+    });
+
+    mobilInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        filterMobilOptions(value);
+        openMobilDropdown();
+    });
+
+    function filterMobilOptions(value) {
+        let hasVisible = false;
+        mobilOptions.forEach(option => {
+            const name = option.getAttribute('data-name').toLowerCase();
+            if (name.includes(value)) {
+                option.classList.remove('hidden');
+                hasVisible = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        if (!hasVisible) {
+            mobilNoResults.classList.remove('hidden');
+        } else {
+            mobilNoResults.classList.add('hidden');
+        }
+    }
+
+    // Update the existing click outside listener to handle both dropdowns
+    document.addEventListener('click', function(e) {
+        // Penerima Dropdown
+        const dropdown = document.getElementById('penerima_dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            closeDropdown();
+            if (penerimaInput.value === '') {
+                penerimaHidden.value = '';
+            }
+        }
+
+        // Mobil Dropdown
+        const mobilDropdown = document.getElementById('mobil_dropdown');
+        if (mobilDropdown && !mobilDropdown.contains(e.target)) {
+            closeMobilDropdown();
+            if (mobilInput.value === '') {
+                mobilHidden.value = '';
+            }
+        }
+    });
 </script>
 @endsection
