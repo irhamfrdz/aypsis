@@ -4902,6 +4902,7 @@
                 <!-- Selected TT details show here -->
             </div>
             <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" class="selected-tt-id">
+            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][type]" class="selected-tt-type">
         `;
         
         container.appendChild(wrapper);
@@ -4909,6 +4910,7 @@
         const searchInput = wrapper.querySelector('.tt-search-input');
         const resultsDropdown = wrapper.querySelector('.tt-results-dropdown');
         const selectedIdInput = wrapper.querySelector('.selected-tt-id');
+        const selectedTypeInput = wrapper.querySelector('.selected-tt-type');
         const detailsDiv = wrapper.querySelector('.tt-selected-details');
         
         let timeout = null;
@@ -4930,14 +4932,15 @@
                                 const item = document.createElement('div');
                                 item.className = 'p-2 hover:bg-rose-50 cursor-pointer border-b text-sm';
                                 item.innerHTML = `
-                                    <div class="font-bold">${tt.no_surat_jalan}</div>
-                                    <div class="text-xs text-gray-500">${tt.no_kontainer || 'No Container'} | ${tt.pengirim} -> ${tt.penerima}</div>
+                                    <div class="font-bold">${tt.display_text || tt.no_surat_jalan}</div>
+                                    <div class="text-xs text-gray-500">${tt.no_kontainer || '-'} | ${tt.pengirim} -> ${tt.penerima}</div>
                                 `;
                                 item.addEventListener('click', () => {
-                                    searchInput.value = tt.no_surat_jalan;
+                                    searchInput.value = tt.display_text || tt.no_surat_jalan;
                                     selectedIdInput.value = tt.id;
+                                    selectedTypeInput.value = tt.type || 'tanda_terima';
                                     resultsDropdown.classList.add('hidden');
-                                    showTtDetails(tt.id, detailsDiv);
+                                    showTtDetails(tt.id, detailsDiv, tt.type);
                                 });
                                 resultsDropdown.appendChild(item);
                             });
@@ -4958,18 +4961,26 @@
         });
     }
     
-    function showTtDetails(id, container) {
-        fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${id}`)
+    function showTtDetails(id, container, type = 'tanda_terima') {
+        fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${id}?type=${type}`)
             .then(response => response.json())
             .then(res => {
                 if (res.success) {
                     const tt = res.data;
+                    let typeLabel = '';
+                    if (res.type === 'tanda_terima_tanpa_surat_jalan') {
+                        typeLabel = '<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Tanpa Surat Jalan</span>';
+                    } else if (res.type === 'tanda_terima_lcl') {
+                        typeLabel = '<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">LCL</span>';
+                    }
+                    
                     container.innerHTML = `
                         <div class="grid grid-cols-2 gap-2">
+                            ${typeLabel ? `<div class="col-span-2">${typeLabel}</div>` : ''}
                             <div><strong>Pengirim:</strong> ${tt.pengirim}</div>
                             <div><strong>Penerima:</strong> ${tt.penerima}</div>
                             <div><strong>No. Kontainer:</strong> ${tt.no_kontainer || '-'}</div>
-                            <div><strong>Tipe:</strong> ${tt.tipe_kontainer || '-'} (${tt.size || '-'})</div>
+                            <div><strong>Tipe:</strong> ${tt.tipe_kontainer || '-'} ${tt.size ? '(' + tt.size + ')' : ''}</div>
                             <div class="col-span-2"><strong>Tujuan:</strong> ${tt.tujuan_pengiriman || '-'}</div>
                         </div>
                     `;

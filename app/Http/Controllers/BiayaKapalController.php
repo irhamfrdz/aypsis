@@ -15,6 +15,8 @@ use App\Models\BiayaKapalOperasionalItem;
 use App\Models\BiayaKapalTrucking;
 use App\Models\BiayaKapalStuffing;
 use App\Models\TandaTerima;
+use App\Models\TandaTerimaTanpaSuratJalan;
+use App\Models\TandaTerimaLcl;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -1551,10 +1553,12 @@ class BiayaKapalController extends Controller
     public function searchTandaTerima(Request $request)
     {
         $search = $request->get('search');
-        $query = \App\Models\TandaTerima::query();
+        $results = collect();
         
+        // Search TandaTerima (with surat jalan)
+        $query1 = TandaTerima::query();
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query1->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
@@ -1562,28 +1566,149 @@ class BiayaKapalController extends Controller
                   ->orWhere('no_plat', 'like', "%{$search}%");
             });
         }
-        
-        $tandaTerimas = $query->select('id', 'no_surat_jalan', 'no_kontainer', 'pengirim', 'penerima', 'tanggal_surat_jalan')
+        $tts = $query1->select('id', 'no_surat_jalan', 'no_kontainer', 'pengirim', 'penerima', 'tanggal_surat_jalan')
             ->orderBy('tanggal_surat_jalan', 'desc')
-            ->limit(30)
-            ->get();
+            ->limit(15)
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'type' => 'tanda_terima',
+                    'no_surat_jalan' => $item->no_surat_jalan,
+                    'no_kontainer' => $item->no_kontainer,
+                    'pengirim' => $item->pengirim,
+                    'penerima' => $item->penerima,
+                    'tanggal' => $item->tanggal_surat_jalan,
+                    'display_text' => $item->no_surat_jalan . ' - ' . $item->no_kontainer . ' - ' . $item->pengirim
+                ];
+            });
+        $results = $results->merge($tts);
+        
+        // Search TandaTerimaTanpaSuratJalan
+        $query2 = TandaTerimaTanpaSuratJalan::query();
+        if ($search) {
+            $query2->where(function($q) use ($search) {
+                $q->where('no_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('nomor_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
+            });
+        }
+        $ttTanpaSJ = $query2->select('id', 'no_tanda_terima', 'nomor_tanda_terima', 'no_kontainer', 'pengirim', 'penerima', 'tanggal_tanda_terima')
+            ->orderBy('tanggal_tanda_terima', 'desc')
+            ->limit(15)
+            ->get()
+            ->map(function($item) {
+                $noTT = $item->no_tanda_terima ?: $item->nomor_tanda_terima;
+                return [
+                    'id' => $item->id,
+                    'type' => 'tanda_terima_tanpa_surat_jalan',
+                    'no_surat_jalan' => $noTT . ' (Tanpa SJ)',
+                    'no_kontainer' => $item->no_kontainer,
+                    'pengirim' => $item->pengirim,
+                    'penerima' => $item->penerima,
+                    'tanggal' => $item->tanggal_tanda_terima,
+                    'display_text' => $noTT . ' - ' . $item->no_kontainer . ' - ' . $item->pengirim . ' (Tanpa SJ)'
+                ];
+            });
+        $results = $results->merge($ttTanpaSJ);
+        
+        // Search TandaTerimaLcl
+        $query3 = TandaTerimaLcl::query();
+        if ($search) {
+            $query3->where(function($q) use ($search) {
+                $q->where('nomor_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('nama_pengirim', 'like', "%{$search}%")
+                  ->orWhere('nama_penerima', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
+            });
+        }
+        $ttLcl = $query3->select('id', 'nomor_tanda_terima', 'nama_pengirim', 'nama_penerima', 'tanggal_tanda_terima')
+            ->orderBy('tanggal_tanda_terima', 'desc')
+            ->limit(15)
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'type' => 'tanda_terima_lcl',
+                    'no_surat_jalan' => $item->nomor_tanda_terima . ' (LCL)',
+                    'no_kontainer' => '-',
+                    'pengirim' => $item->nama_pengirim,
+                    'penerima' => $item->nama_penerima,
+                    'tanggal' => $item->tanggal_tanda_terima,
+                    'display_text' => $item->nomor_tanda_terima . ' - ' . $item->nama_pengirim . ' (LCL)'
+                ];
+            });
+        $results = $results->merge($ttLcl);
+        
+        // Sort by date descending and limit to 30 total results
+        $results = $results->sortByDesc('tanggal')->take(30)->values();
             
-        return response()->json($tandaTerimas);
+        return response()->json($results);
     }
 
     /**
      * Get details for selected tanda terima
      */
-    public function getTandaTerimaDetails($id)
+    public function getTandaTerimaDetails(Request $request, $id)
     {
-        $tt = \App\Models\TandaTerima::find($id);
-        if (!$tt) {
-            return response()->json(['success' => false, 'message' => 'Tanda Terima tidak ditemukan'], 404);
-        }
+        $type = $request->get('type', 'tanda_terima'); // default to regular tanda_terima
         
-        return response()->json([
-            'success' => true,
-            'data' => $tt
-        ]);
+        switch ($type) {
+            case 'tanda_terima_tanpa_surat_jalan':
+                $tt = TandaTerimaTanpaSuratJalan::find($id);
+                if (!$tt) {
+                    return response()->json(['success' => false, 'message' => 'Tanda Terima tidak ditemukan'], 404);
+                }
+                return response()->json([
+                    'success' => true,
+                    'type' => 'tanda_terima_tanpa_surat_jalan',
+                    'data' => [
+                        'id' => $tt->id,
+                        'no_surat_jalan' => $tt->no_tanda_terima ?: $tt->nomor_tanda_terima,
+                        'no_kontainer' => $tt->no_kontainer,
+                        'pengirim' => $tt->pengirim,
+                        'penerima' => $tt->penerima,
+                        'tanggal_surat_jalan' => $tt->tanggal_tanda_terima,
+                        'no_plat' => $tt->no_plat,
+                        'supir' => $tt->supir,
+                    ]
+                ]);
+                
+            case 'tanda_terima_lcl':
+                $tt = TandaTerimaLcl::find($id);
+                if (!$tt) {
+                    return response()->json(['success' => false, 'message' => 'Tanda Terima LCL tidak ditemukan'], 404);
+                }
+                return response()->json([
+                    'success' => true,
+                    'type' => 'tanda_terima_lcl',
+                    'data' => [
+                        'id' => $tt->id,
+                        'no_surat_jalan' => $tt->nomor_tanda_terima,
+                        'no_kontainer' => '-',
+                        'pengirim' => $tt->nama_pengirim,
+                        'penerima' => $tt->nama_penerima,
+                        'tanggal_surat_jalan' => $tt->tanggal_tanda_terima,
+                        'no_plat' => $tt->no_plat,
+                        'supir' => $tt->supir,
+                    ]
+                ]);
+                
+            case 'tanda_terima':
+            default:
+                $tt = TandaTerima::find($id);
+                if (!$tt) {
+                    return response()->json(['success' => false, 'message' => 'Tanda Terima tidak ditemukan'], 404);
+                }
+                return response()->json([
+                    'success' => true,
+                    'type' => 'tanda_terima',
+                    'data' => $tt
+                ]);
+        }
     }
 }
