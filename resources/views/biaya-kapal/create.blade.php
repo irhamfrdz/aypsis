@@ -4812,6 +4812,36 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="stuffing_sections[${sectionIndex}][subtotal]" 
+                               class="stuffing-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPh 2%</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="stuffing_sections[${sectionIndex}][pph]" 
+                               class="stuffing-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="stuffing_sections[${sectionIndex}][total_biaya]" 
+                               class="stuffing-total-input w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg bg-blue-50 text-blue-800 font-bold focus:ring-0" 
+                               value="0" readonly>
+                    </div>
+                </div>
+            </div>
         `;
         
         stuffingSectionsContainer.appendChild(section);
@@ -4920,6 +4950,9 @@
         `;
         
         container.appendChild(wrapper);
+        
+        // Calculate totals after adding tanda terima
+        calculateStuffingTotals(sectionIndex);
         
         const searchInput = wrapper.querySelector('.tt-search-input');
         const resultsDropdown = wrapper.querySelector('.tt-results-dropdown');
@@ -5097,7 +5130,74 @@
                 </div>
             `;
         }
+        
+        // Recalculate totals after removing tanda terima
+        const sectionIndex = container.getAttribute('data-stuffing-section');
+        calculateStuffingTotals(sectionIndex);
     }
+
+    function calculateStuffingTotals(sectionIndex) {
+        const section = document.querySelector(`.stuffing-section[data-stuffing-section-index="${sectionIndex}"]`);
+        if (!section) return;
+
+        const ttContainer = section.querySelector('.stuffing-tt-container');
+        const subtotalInput = section.querySelector('.stuffing-subtotal-input');
+        const pphInput = section.querySelector('.stuffing-pph-input');
+        const totalInput = section.querySelector('.stuffing-total-input');
+
+        console.log(`[Stuffing Calculation Section ${sectionIndex}]`);
+
+        let subtotal = 0;
+        const ttItems = ttContainer.querySelectorAll('.tt-search-wrapper');
+
+        ttItems.forEach((item, index) => {
+            // For now, we'll use a fixed price per tanda terima
+            // In the future, this could be based on pricelist or other factors
+            const pricePerTt = 500000; // Example: 500,000 per tanda terima
+            subtotal += pricePerTt;
+            console.log(`  - Tanda Terima ${index + 1}: ${pricePerTt}`);
+        });
+
+        const pph = Math.round(subtotal * 0.02);
+        const total = subtotal - pph;
+        
+        console.log('- Subtotal:', subtotal);
+        console.log('- PPh:', pph);
+        console.log('- Total:', total);
+
+        const formatRupiah = (val) => {
+            return new Intl.NumberFormat('id-ID').format(Math.round(val));
+        };
+
+        subtotalInput.value = formatRupiah(subtotal);
+        pphInput.value = formatRupiah(pph);
+        totalInput.value = formatRupiah(total);
+
+        // Update global summary
+        calculateTotalFromAllStuffingSections();
+    }
+
+    function calculateTotalFromAllStuffingSections() {
+        let totalSubtotal = 0;
+
+        document.querySelectorAll('.stuffing-section').forEach(section => {
+            const sub = parseFloat(section.querySelector('.stuffing-subtotal-input').value.replace(/\./g, '')) || 0;
+            totalSubtotal += sub;
+        });
+
+        // Add to nominal input if stuffing is the selected jenis biaya
+        const jenisBiaya = jenisBiayaSelect ? jenisBiayaSelect.value : '';
+        if (jenisBiaya === 'Stuffing') {
+            if (nominalInput) {
+                nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';
+            }
+        }
+    }
+</script>
+@endpush
+@endsection
+
+@push('styles')
 </script>
 @endpush
 @endsection

@@ -323,6 +323,9 @@ class BiayaKapalController extends Controller
             'stuffing_sections.*.voyage' => 'nullable|string|max:255',
             'stuffing_sections.*.tanda_terima' => 'nullable|array',
             'stuffing_sections.*.tanda_terima.*.id' => 'nullable|numeric',
+            'stuffing_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'stuffing_sections.*.pph' => 'nullable|numeric|min:0',
+            'stuffing_sections.*.total_biaya' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -406,6 +409,9 @@ class BiayaKapalController extends Controller
                         'kapal' => $section['kapal'] ?? null,
                         'voyage' => $section['voyage'] ?? null,
                         'tanda_terima_ids' => $ttIds,
+                        'subtotal' => $section['subtotal'] ?? 0,
+                        'pph' => $section['pph'] ?? 0,
+                        'total_biaya' => $section['total_biaya'] ?? 0,
                     ]);
                 }
             }
@@ -1095,6 +1101,9 @@ class BiayaKapalController extends Controller
             'stuffing_sections.*.voyage' => 'nullable|string|max:255',
             'stuffing_sections.*.tanda_terima' => 'nullable|array',
             'stuffing_sections.*.tanda_terima.*.id' => 'nullable|numeric',
+            'stuffing_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'stuffing_sections.*.pph' => 'nullable|numeric|min:0',
+            'stuffing_sections.*.total_biaya' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -1313,6 +1322,9 @@ class BiayaKapalController extends Controller
                             'kapal' => $section['kapal'] ?? null,
                             'voyage' => $section['voyage'] ?? null,
                             'tanda_terima_ids' => $ttIds,
+                            'subtotal' => $section['subtotal'] ?? 0,
+                            'pph' => $section['pph'] ?? 0,
+                            'total_biaya' => $section['total_biaya'] ?? 0,
                         ]);
                     }
                 }

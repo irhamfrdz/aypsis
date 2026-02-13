@@ -13,6 +13,9 @@ class BiayaKapalStuffing extends Model
         'kapal',
         'voyage',
         'tanda_terima_ids',
+        'subtotal',
+        'pph',
+        'total_biaya',
     ];
 
     protected $casts = [
