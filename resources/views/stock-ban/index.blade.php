@@ -1001,6 +1001,9 @@
                                 @foreach($alatBerats as $alatBerat)
                                     @php
                                         $displayText = $alatBerat->nama . ' (' . ($alatBerat->jenis ?? 'Alat Berat') . ' - ' . ($alatBerat->merk ?? '-') . ')';
+                                        if ($alatBerat->warna) {
+                                            $displayText .= ' - ' . $alatBerat->warna;
+                                        }
                                         if ($alatBerat->lokasi) {
                                             $displayText .= ' - ' . $alatBerat->lokasi;
                                         }
