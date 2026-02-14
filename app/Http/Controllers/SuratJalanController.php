@@ -578,6 +578,7 @@ class SuratJalanController extends Controller
             'size' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:1',
             'uang_jalan' => 'nullable|numeric|min:0',
+            'rit' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:draft,active,belum masuk checkpoint,sudah_checkpoint,approved,fully_approved,rejected,completed,cancelled',

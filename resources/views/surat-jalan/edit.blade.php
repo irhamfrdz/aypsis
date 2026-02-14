@@ -544,6 +544,19 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rit</label>
+                    <select name="rit"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('rit') border-red-500 @enderror">
+                        <option value="">Pilih Status Rit</option>
+                        <option value="menggunakan_rit" {{ old('rit', $suratJalan->rit ?? 'menggunakan_rit') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="tidak_menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'tidak_menggunakan_rit' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
+                    </select>
+                    @error('rit')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
                     <div class="flex">
                         <input type="number"

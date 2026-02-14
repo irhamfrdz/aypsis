@@ -91,7 +91,7 @@ class SuratJalan extends Model
         'karton' => 'integer',
         'plastik' => 'integer',
         'terpal' => 'integer',
-        'rit' => 'integer',
+        'rit' => 'string',
         'is_supir_customer' => 'boolean',
         'lembur' => 'boolean',
         'nginap' => 'boolean',
