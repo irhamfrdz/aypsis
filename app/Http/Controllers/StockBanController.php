@@ -400,11 +400,33 @@ class StockBanController extends Controller
     {
         $stockBan = StockBan::findOrFail($id);
 
+        // Informative check: only Stok can be used
+        if ($stockBan->status !== 'Stok') {
+            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikonfigurasi ulang untuk pemakaian.')->withInput();
+        }
+
+        $mobilId = $request->mobil_id;
+        
+        // Check if it's an Alat Berat selection
+        if ($mobilId && str_starts_with($mobilId, 'alat_berat_')) {
+             // For now, inform the user that Alat Berat is not yet fully integrated if the column is missing
+             // Or we can just let it pass if we decide where to store it. 
+             // Since 'alat_berat_id' is missing from $fillable and migrations, let's warn them.
+             return redirect()->back()->withErrors(['mobil_id' => 'Pemakaian untuk Alat Berat belum didukung sepenuhnya di sistem ini. Silakan pilih Mobil.'])->withInput();
+        }
+
         $request->validate([
             'mobil_id' => 'required|exists:mobils,id',
             'penerima_id' => 'required|exists:karyawans,id',
             'tanggal_keluar' => 'required|date',
             'keterangan' => 'nullable|string',
+        ], [
+            'mobil_id.required' => 'Wajib memilih Mobil.',
+            'mobil_id.exists' => 'Mobil yang Anda pilih tidak terdaftar.',
+            'penerima_id.required' => 'Wajib memilih Penerima (Supir/Kenek).',
+            'penerima_id.exists' => 'Penerima yang Anda pilih tidak valid.',
+            'tanggal_keluar.required' => 'Tanggal pasang harus diisi.',
+            'tanggal_keluar.date' => 'Format tanggal tidak valid.',
         ]);
 
         $stockBan->update([
@@ -415,7 +437,7 @@ class StockBanController extends Controller
             'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Pemakaian: " . $request->keterangan . "]") : $stockBan->keterangan,
         ]);
 
-        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil digunakan dan status diperbarui.');
+        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dipasang pada mobil.');
     }
 
     /**

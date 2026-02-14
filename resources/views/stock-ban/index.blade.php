@@ -136,8 +136,26 @@
     @endif
     
     @if(session('error'))
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-        <span class="block sm:inline">{{ session('error') }}</span>
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded shadow-sm mb-4" role="alert">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span class="font-bold">Terjadi Kesalahan: </span>
+            <span class="ml-1">{{ session('error') }}</span>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="bg-orange-100 border-l-4 border-orange-500 text-orange-700 px-4 py-3 rounded shadow-sm mb-4" role="alert">
+        <div class="flex items-center mb-1">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span class="font-bold">Mohon periksa kembali inputan Anda:</span>
+        </div>
+        <ul class="list-disc list-inside text-sm ml-4">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
     </div>
     @endif
 
@@ -926,10 +944,27 @@
             <form id="usageForm" method="POST" action="">
                 @csrf
                 @method('POST')
+                <input type="hidden" name="ban_id" id="usage_ban_id" value="{{ old('ban_id') }}">
+                <input type="hidden" name="ban_seri" id="usage_ban_seri" value="{{ old('ban_seri') }}">
+
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
-                        Gunakan Ban: <span id="modal-ban-seri"></span>
+                        Gunakan Ban: <span id="modal-ban-seri">{{ old('ban_seri') }}</span>
                     </h3>
+                    
+                    @if($errors->any())
+                        <div class="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-xs rounded shadow-sm">
+                            <p class="font-bold flex items-center mb-1">
+                                <i class="fas fa-exclamation-circle mr-1 text-sm"></i>
+                                Gagal menyimpan pemakaian:
+                            </p>
+                            <ul class="list-disc list-inside ml-2">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     
                     <div class="mb-4">
                         <label class="form-label-premium">Mobil</label>
@@ -1188,7 +1223,13 @@
         if (modalBanSeri) modalBanSeri.textContent = seri;
         if (usageForm) usageForm.action = "{{ url('stock-ban') }}/" + id + "/use";
         
-        // Reset selections
+        // Update hidden fields for persistence
+        const banIdInput = document.getElementById('usage_ban_id');
+        const banSeriInput = document.getElementById('usage_ban_seri');
+        if (banIdInput) banIdInput.value = id;
+        if (banSeriInput) banSeriInput.value = seri;
+        
+        // Reset or Restore selections
         if (mobilInput) mobilInput.value = '';
         if (textMobil) textMobil.textContent = '-- Pilih Mobil --';
         if (penerimaInput) penerimaInput.value = '';
@@ -1495,6 +1536,36 @@
 
         // Initialize state
         updateBulkButton();
+
+        // Check if we need to re-open the usage modal (validation error)
+        @if($errors->any() && old('ban_id'))
+            const oldId = "{{ old('ban_id') }}";
+            const oldSeri = "{{ old('ban_seri') }}";
+            if (oldId && oldSeri) {
+                console.log('Detected validation errors, re-opening usage modal for ban:', oldId);
+                setTimeout(() => {
+                    openUsageModal(oldId, oldSeri);
+                    
+                    // Try to restore Mobil and Penerima if selected
+                    @if(old('mobil_id'))
+                        const oldMobilId = "{{ old('mobil_id') }}";
+                        // This bit is tricky because the labels are in the dropdown lists
+                        // and we use a custom DropdownManager. We can manually set the label.
+                        // For simplicity, we just set the ID and let the user re-select or we search the lists.
+                        document.getElementById('mobil').value = oldMobilId;
+                        // Ideally we'd find the text label too... 
+                        // Let's at least show that SOMETHING was selected if we can't find the name
+                        document.getElementById('text-mobil').textContent = 'Pilihan Sebelumnya (Mohon Pilih Lagi)';
+                    @endif
+                    
+                    @if(old('penerima_id'))
+                         const oldPenerimaId = "{{ old('penerima_id') }}";
+                         document.getElementById('penerima').value = oldPenerimaId;
+                         document.getElementById('text-penerima').textContent = 'Pilihan Sebelumnya (Mohon Pilih Lagi)';
+                    @endif
+                }, 500);
+            }
+        @endif
 
         // Event delegation for usage modal buttons
         document.addEventListener('click', function(e) {
