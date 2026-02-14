@@ -83,6 +83,7 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seri</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warna</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
@@ -104,6 +105,7 @@
                         <td class="py-2 px-3 text-sm">{{ $item->nomor_seri ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $item->tahun_pembuatan ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $item->lokasi ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $item->warna ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">
                             @if($item->status == 'active')
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
@@ -140,7 +142,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="11" class="py-8 px-3 text-center text-gray-500">
+                        <td colspan="12" class="py-8 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>

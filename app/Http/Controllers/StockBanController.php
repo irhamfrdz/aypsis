@@ -405,39 +405,51 @@ class StockBanController extends Controller
             return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikonfigurasi ulang untuk pemakaian.')->withInput();
         }
 
-        $mobilId = $request->mobil_id;
+        $selectionId = $request->mobil_id;
+        $isAlatBerat = false;
         
-        // Check if it's an Alat Berat selection
-        if ($mobilId && str_starts_with($mobilId, 'alat_berat_')) {
-             // For now, inform the user that Alat Berat is not yet fully integrated if the column is missing
-             // Or we can just let it pass if we decide where to store it. 
-             // Since 'alat_berat_id' is missing from $fillable and migrations, let's warn them.
-             return redirect()->back()->withErrors(['mobil_id' => 'Pemakaian untuk Alat Berat belum didukung sepenuhnya di sistem ini. Silakan pilih Mobil.'])->withInput();
+        // Handle Alat Berat prefix
+        if ($selectionId && str_starts_with($selectionId, 'alat_berat_')) {
+             $isAlatBerat = true;
+             $selectionId = str_replace('alat_berat_', '', $selectionId);
         }
 
+        // Add to request for easier validation
+        $request->merge(['processed_unit_id' => $selectionId]);
+
         $request->validate([
-            'mobil_id' => 'required|exists:mobils,id',
+            'mobil_id' => 'required',
+            'processed_unit_id' => $isAlatBerat ? 'exists:alat_berats,id' : 'exists:mobils,id',
             'penerima_id' => 'required|exists:karyawans,id',
             'tanggal_keluar' => 'required|date',
             'keterangan' => 'nullable|string',
         ], [
-            'mobil_id.required' => 'Wajib memilih Mobil.',
-            'mobil_id.exists' => 'Mobil yang Anda pilih tidak terdaftar.',
+            'mobil_id.required' => 'Wajib memilih Mobil atau Alat Berat.',
+            'processed_unit_id.exists' => $isAlatBerat ? 'Alat Berat tidak valid.' : 'Mobil tidak valid.',
             'penerima_id.required' => 'Wajib memilih Penerima (Supir/Kenek).',
-            'penerima_id.exists' => 'Penerima yang Anda pilih tidak valid.',
+            'penerima_id.exists' => 'Penerima tidak valid.',
             'tanggal_keluar.required' => 'Tanggal pasang harus diisi.',
-            'tanggal_keluar.date' => 'Format tanggal tidak valid.',
         ]);
 
-        $stockBan->update([
+        $updateData = [
             'status' => 'Terpakai',
-            'mobil_id' => $request->mobil_id,
             'penerima_id' => $request->penerima_id,
             'tanggal_keluar' => $request->tanggal_keluar,
             'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Pemakaian: " . $request->keterangan . "]") : $stockBan->keterangan,
-        ]);
+        ];
 
-        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dipasang pada mobil.');
+        if ($isAlatBerat) {
+            $updateData['alat_berat_id'] = $selectionId;
+            $updateData['mobil_id'] = null;
+        } else {
+            $updateData['mobil_id'] = $selectionId;
+            $updateData['alat_berat_id'] = null;
+        }
+
+        $stockBan->update($updateData);
+
+        $unitName = $isAlatBerat ? 'alat berat' : 'mobil';
+        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dipasang pada ' . $unitName . '.');
     }
 
     /**

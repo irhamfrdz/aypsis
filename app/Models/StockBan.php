@@ -28,6 +28,7 @@ class StockBan extends Model
         'lokasi',
         'keterangan',
         'mobil_id',
+        'alat_berat_id',
         'penerima_id',
         'status_ban_luar',
         'status_masak',
