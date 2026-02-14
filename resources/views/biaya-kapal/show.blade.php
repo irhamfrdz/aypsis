@@ -188,12 +188,8 @@
                                 </tbody>
                                 <tfoot class="bg-gray-50 font-bold">
                                     <tr>
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Subtotal Section</td>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Biaya (Items)</td>
                                         <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('subtotal'), 0, ',', '.') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPH (2%)</td>
-                                        <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($first->pph, 0, ',', '.') }}</td>
                                     </tr>
                                     @if($first->adjustment != 0)
                                     <tr>
@@ -201,6 +197,14 @@
                                         <td class="px-4 py-2 text-sm text-right @if($first->adjustment > 0) text-green-600 @else text-red-600 @endif">{{ $first->adjustment > 0 ? '+' : '' }} Rp {{ number_format($first->adjustment, 0, ',', '.') }}</td>
                                     </tr>
                                     @endif
+                                    <tr class="bg-blue-50">
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Total Biaya Per Kapal</td>
+                                        <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('subtotal') + $first->adjustment, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPH (2%)</td>
+                                        <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($first->pph, 0, ',', '.') }}</td>
+                                    </tr>
                                     <tr class="bg-amber-100">
                                         <td colspan="3" class="px-4 py-2 text-base text-right font-black">Grand Total Section</td>
                                         <td class="px-4 py-2 text-base text-right font-black text-amber-800">Rp {{ number_format($first->grand_total, 0, ',', '.') }}</td>

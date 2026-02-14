@@ -301,13 +301,14 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 14%;">Tgl Invoice Vendor</th>
-                        <th style="width: 12%;">No. Voyage</th>
-                        <th style="width: 12%;">No. Ref</th>
-                        <th style="width: 14%;">Biaya</th>
+                        <th style="width: 11%;">Tgl Invoice</th>
+                        <th style="width: 10%;">No. Voyage</th>
+                        <th style="width: 10%;">No. Ref</th>
+                        <th style="width: 12%;">Biaya (Items)</th>
+                        <th style="width: 10%;">Adjustment</th>
+                        <th style="width: 12%;">Total Biaya</th>
                         <th style="width: 10%;">PPH (2%)</th>
-                        <th style="width: 14%;">Adjustment</th>
-                        <th style="width: 19%;">Grand Total</th>
+                        <th style="width: 20%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -337,16 +338,18 @@
                                 $groupRef = $firstItem->no_referensi ?? '-';
                                 $groupPph = $firstItem->pph ?? 0;
                                 $groupAdjustment = $firstItem->adjustment ?? 0;
+                                $groupTotalBiaya = $groupSubtotal + $groupAdjustment;
                                 $groupGrandTotal = $firstItem->grand_total ?? 0;
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
-                                <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
+                                <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/y') : '-' }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
                                 <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupAdjustment, 0, ',', '.') }}</td>
+                                <td class="text-right">Rp {{ number_format($groupTotalBiaya, 0, ',', '.') }}</td>
+                                <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
@@ -362,13 +365,14 @@
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                             <td class="text-right">-</td>
                             <td class="text-right">-</td>
+                            <td class="text-right">-</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                         </tr>
                         @endfor
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="9" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
@@ -438,12 +442,20 @@
                         <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="text-right"><strong>PPH (2%)</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($totalPph, 0, ',', '.') }}</strong></td>
+                        <td colspan="4" class="text-right"><strong>BIAYA (ITEMS)</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                     <tr>
                         <td colspan="4" class="text-right"><strong>ADJUSTMENT</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</strong></td>
+                    </tr>
+                    <tr class="bg-blue-50">
+                        <td colspan="4" class="text-right"><strong>TOTAL BIAYA</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($overallTotal + $totalAdjustment, 0, ',', '.') }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>PPH (2%)</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalPph, 0, ',', '.') }}</strong></td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>

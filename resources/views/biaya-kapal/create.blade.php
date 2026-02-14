@@ -2574,11 +2574,12 @@
             
             // Calculate PPH and Grand Total
             const adjustment = parseFloat(section.querySelector('.tkbm-adjustment-input').value) || 0;
-            const pph = Math.round(sectionTotal * 0.02);
-            const grandTotalSection = sectionTotal - pph + adjustment;
+            const adjustedTotal = sectionTotal + adjustment;
+            const pph = Math.round(adjustedTotal * 0.02);
+            const grandTotalSection = adjustedTotal - pph;
             
-            if (sectionTotalInput) sectionTotalInput.value = 'Rp ' + Math.round(sectionTotal).toLocaleString('id-ID');
-            if (sectionTotalHidden) sectionTotalHidden.value = Math.round(sectionTotal);
+            if (sectionTotalInput) sectionTotalInput.value = 'Rp ' + Math.round(adjustedTotal).toLocaleString('id-ID');
+            if (sectionTotalHidden) sectionTotalHidden.value = Math.round(adjustedTotal);
             
             if (sectionPphInput) sectionPphInput.value = 'Rp ' + Math.round(pph).toLocaleString('id-ID');
             if (sectionPphHidden) sectionPphHidden.value = Math.round(pph);
