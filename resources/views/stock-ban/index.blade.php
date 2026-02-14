@@ -411,21 +411,27 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($ban->mobil)
-                                            @php
-                                                $displayPlat = $ban->mobil->nomor_polisi;
-                                                // Fallback to no_kir for Buntut if plate is empty
-                                                if (empty($displayPlat) && $ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false) {
-                                                    $displayPlat = $ban->mobil->no_kir ?? '-';
-                                                }
-                                            @endphp
-                                            <span class="text-blue-600 font-medium">
-                                                <i class="fas fa-truck mr-1"></i> {{ $displayPlat }}
-                                            </span>
-                                            @if($ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false)
-                                                <span class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-map-marker-alt mr-1"></i> {{ $ban->mobil->lokasi ?? '-' }}
-                                                </span>
-                                            @endif
+                                        @php
+                                            $displayPlat = $ban->mobil->nomor_polisi;
+                                            // Fallback to no_kir for Buntut if plate is empty
+                                            if (empty($displayPlat) && $ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false) {
+                                                $displayPlat = $ban->mobil->no_kir ?? '-';
+                                            }
+                                        @endphp
+                                        <span class="text-blue-600 font-medium">
+                                            <i class="fas fa-truck mr-1"></i> {{ $displayPlat }}
+                                        </span>
+                                        @if($ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false)
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                <i class="fas fa-map-marker-alt mr-1"></i> {{ $ban->mobil->lokasi ?? '-' }}
+                                            </div>
+                                        @endif
+                                    @elseif($ban->alatBerat)
+                                        <span class="text-orange-600 font-medium">
+                                            <i class="fas fa-tractor mr-1"></i> {{ $ban->alatBerat->nama }}
+                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {{ $ban->alatBerat->jenis }} {{ $ban->alatBerat->warna ? '- '.$ban->alatBerat->warna : '' }}
                                         </div>
                                     @else
                                         -

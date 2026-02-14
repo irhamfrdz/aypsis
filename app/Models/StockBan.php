@@ -50,6 +50,11 @@ class StockBan extends Model
         return $this->belongsTo(Karyawan::class, 'penerima_id');
     }
 
+    public function alatBerat()
+    {
+        return $this->belongsTo(AlatBerat::class, 'alat_berat_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
