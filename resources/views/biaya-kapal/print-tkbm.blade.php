@@ -372,7 +372,7 @@
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="9" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="8" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
