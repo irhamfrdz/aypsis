@@ -300,13 +300,14 @@
             <table class="table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 8%;">No</th>
-                        <th style="width: 16%;">Tgl Invoice Vendor</th>
-                        <th style="width: 14%;">No. Voyage</th>
-                        <th style="width: 15%;">No. Ref</th>
-                        <th style="width: 15%;">Biaya</th>
-                        <th style="width: 12%;">PPH (2%)</th>
-                        <th style="width: 20%;">Grand Total</th>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 14%;">Tgl Invoice Vendor</th>
+                        <th style="width: 12%;">No. Voyage</th>
+                        <th style="width: 12%;">No. Ref</th>
+                        <th style="width: 14%;">Biaya</th>
+                        <th style="width: 10%;">PPH (2%)</th>
+                        <th style="width: 14%;">Adjustment</th>
+                        <th style="width: 19%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -335,6 +336,7 @@
                                 $firstItem = $details->first();
                                 $groupRef = $firstItem->no_referensi ?? '-';
                                 $groupPph = $firstItem->pph ?? 0;
+                                $groupAdjustment = $firstItem->adjustment ?? 0;
                                 $groupGrandTotal = $firstItem->grand_total ?? 0;
                             @endphp
                             <tr>
@@ -344,6 +346,7 @@
                                 <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
+                                <td class="text-right">Rp {{ number_format($groupAdjustment, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
@@ -358,13 +361,14 @@
                             <td class="text-center">-</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                             <td class="text-right">-</td>
+                            <td class="text-right">-</td>
                             <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
                         </tr>
                         @endfor
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="7" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
@@ -389,14 +393,20 @@
                 })->values();
                 $overallTotal = $combinedBarang->sum('subtotal');
                 
-                // Calculate total PPH from unique groups
-                $totalPph = $biayaKapal->tkbmDetails->groupBy(function($item) {
+                // Calculate total PPH and adjustment from unique groups
+                $groups = $biayaKapal->tkbmDetails->groupBy(function($item) {
                      return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
-                })->sum(function($group) {
+                });
+                
+                $totalPph = $groups->sum(function($group) {
                      return $group->first()->pph ?? 0;
                 });
                 
-                $finalTotal = $overallTotal - $totalPph;
+                $totalAdjustment = $groups->sum(function($group) {
+                     return $group->first()->adjustment ?? 0;
+                });
+                
+                $finalTotal = $overallTotal - $totalPph + $totalAdjustment;
             @endphp
 
             <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
@@ -430,6 +440,10 @@
                     <tr>
                         <td colspan="4" class="text-right"><strong>PPH (2%)</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($totalPph, 0, ',', '.') }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>ADJUSTMENT</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</strong></td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>

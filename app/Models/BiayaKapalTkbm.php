@@ -21,6 +21,7 @@ class BiayaKapalTkbm extends Model
         'total_nominal',
         'pph',
         'grand_total',
+        'adjustment',
         'dp',
         'sisa_pembayaran',
     ];
@@ -32,6 +33,7 @@ class BiayaKapalTkbm extends Model
         'total_nominal' => 'decimal:2',
         'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'adjustment' => 'decimal:2',
         'dp' => 'decimal:2',
         'sisa_pembayaran' => 'decimal:2',
     ];

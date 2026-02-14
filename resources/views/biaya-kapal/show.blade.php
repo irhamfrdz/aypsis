@@ -130,6 +130,91 @@
         </div>
     </div>
 
+    @if($biayaKapal->tkbmDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail TKBM</h3>
+        <div class="space-y-6">
+            @php
+                $groupedTkbm = $biayaKapal->tkbmDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                });
+            @endphp
+            @foreach($groupedTkbm as $groupKey => $details)
+                @php
+                    list($kapal, $voyage, $noRef, $tglVendor) = explode('|', $groupKey);
+                    $first = $details->first();
+                @endphp
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">No. Ref</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $noRef }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Tgl Vendor</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $tglVendor != '-' ? \Carbon\Carbon::parse($tglVendor)->format('d/m/Y') : '-' }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Barang</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Barang</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($details as $item)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $item->pricelistTkbm->nama_barang ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->jumlah, 2, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->tarif, 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-gray-50 font-bold">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Subtotal Section</td>
+                                        <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('subtotal'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPH (2%)</td>
+                                        <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($first->pph, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @if($first->adjustment != 0)
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Adjustment</td>
+                                        <td class="px-4 py-2 text-sm text-right @if($first->adjustment > 0) text-green-600 @else text-red-600 @endif">{{ $first->adjustment > 0 ? '+' : '' }} Rp {{ number_format($first->adjustment, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
+                                    <tr class="bg-amber-100">
+                                        <td colspan="3" class="px-4 py-2 text-base text-right font-black">Grand Total Section</td>
+                                        <td class="px-4 py-2 text-base text-right font-black text-amber-800">Rp {{ number_format($first->grand_total, 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     @if($biayaKapal->stuffingDetails->count() > 0)
     <div class="mt-8">
         <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Stuffing</h3>

@@ -196,6 +196,7 @@ class BiayaKapalController extends Controller
             foreach ($data['tkbm_sections'] as &$section) {
                 if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 if (isset($section['grand_total'])) $section['grand_total'] = str_replace(',', '.', str_replace('.', '', $section['grand_total']));
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
@@ -296,6 +297,10 @@ class BiayaKapalController extends Controller
             'tkbm_sections.*.barang' => 'nullable|array',
             'tkbm_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_tkbms,id',
             'tkbm_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.pph' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.adjustment' => 'nullable|numeric',
+            'tkbm_sections.*.grand_total' => 'nullable|numeric|min:0',
             'tkbm_sections.*.tanggal_invoice_vendor' => 'nullable|date',
 
             // Operasional sections structure
@@ -765,6 +770,7 @@ class BiayaKapalController extends Controller
                             $subtotal = $barang->tarif * $jumlah;
                             $sectionTotalNominal = $section['total_nominal'] ?? 0;
                             $sectionPph = $section['pph'] ?? 0;
+                            $sectionAdjustment = $section['adjustment'] ?? 0;
                             $sectionGrandTotal = $section['grand_total'] ?? 0;
                             
                             // Save to biaya_kapal_tkbm table
@@ -779,6 +785,7 @@ class BiayaKapalController extends Controller
                                 'subtotal' => $subtotal,
                                 'total_nominal' => $sectionTotalNominal,
                                 'pph' => $sectionPph,
+                                'adjustment' => $sectionAdjustment,
                                 'grand_total' => $sectionGrandTotal,
                                 'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                             ]);
@@ -1049,6 +1056,17 @@ class BiayaKapalController extends Controller
             }
             unset($section); // CRITICAL: Unset reference to prevent variable reference bug
         }
+
+        // TKBM Sections Cleaning
+        if (isset($data['tkbm_sections']) && is_array($data['tkbm_sections'])) {
+            foreach ($data['tkbm_sections'] as &$section) {
+                if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+                if (isset($section['grand_total'])) $section['grand_total'] = str_replace(',', '.', str_replace('.', '', $section['grand_total']));
+            }
+            unset($section);
+        }
         
         $request->replace($data);
 
@@ -1093,6 +1111,7 @@ class BiayaKapalController extends Controller
             'tkbm_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
             'tkbm_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'tkbm_sections.*.pph' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.adjustment' => 'nullable|numeric',
             'tkbm_sections.*.grand_total' => 'nullable|numeric|min:0',
 
             // Stuffing sections validation
@@ -1262,6 +1281,7 @@ class BiayaKapalController extends Controller
                                     'subtotal' => $barang->tarif * $jumlah,
                                     'total_nominal' => is_string($section['total_nominal'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['total_nominal'])))) : floatval($section['total_nominal'] ?? 0),
                                     'pph' => is_string($section['pph'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['pph'])))) : floatval($section['pph'] ?? 0),
+                                    'adjustment' => is_string($section['adjustment'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['adjustment'])))) : floatval($section['adjustment'] ?? 0),
                                     'grand_total' => is_string($section['grand_total'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string)$section['grand_total'])))) : floatval($section['grand_total'] ?? 0),
                                 ]);
                             }

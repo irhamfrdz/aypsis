@@ -2355,7 +2355,7 @@
                 ${sectionIndex > 1 ? `<button type="button" onclick="removeTkbmSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
                     <select name="tkbm_sections[${sectionIndex}][kapal]" class="tkbm-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500" required>
@@ -2381,6 +2381,10 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Invoice Vendor</label>
                     <input type="date" name="tkbm_sections[${sectionIndex}][tanggal_invoice_vendor]" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
+                    <input type="number" name="tkbm_sections[${sectionIndex}][adjustment]" class="tkbm-adjustment-input w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateTotalFromAllTkbmSections()">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Total Biaya Per Kapal</label>
@@ -2569,8 +2573,9 @@
             const sectionGrandTotalHidden = section.querySelector('.tkbm-section-grand-total-hidden');
             
             // Calculate PPH and Grand Total
+            const adjustment = parseFloat(section.querySelector('.tkbm-adjustment-input').value) || 0;
             const pph = Math.round(sectionTotal * 0.02);
-            const grandTotalSection = sectionTotal - pph;
+            const grandTotalSection = sectionTotal - pph + adjustment;
             
             if (sectionTotalInput) sectionTotalInput.value = 'Rp ' + Math.round(sectionTotal).toLocaleString('id-ID');
             if (sectionTotalHidden) sectionTotalHidden.value = Math.round(sectionTotal);

@@ -816,11 +816,13 @@
             foreach($grouped as $key => $items) {
                  $parts = explode('|||', $key); 
                  if(count($parts) >= 2) {
+                     $firstItem = $items->first();
                      $editTkbmSections[] = [
                          'kapal' => $parts[0],
                          'voyage' => $parts[1],
                          'no_referensi' => $parts[2] ?? '',
                          'tanggal_invoice_vendor' => $parts[3] ?? '',
+                         'adjustment' => $firstItem->adjustment ?? 0,
                          'barang' => $items->map(function($i){ return ['barang_id' => $i->pricelist_tkbm_id, 'jumlah' => $i->jumlah]; })
                      ];
                  }
@@ -970,6 +972,9 @@
                 
                 sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]').value = data.no_referensi;
                 sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
+                if(data.adjustment) {
+                    sec.querySelector('.tkbm-adjustment-input').value = data.adjustment;
+                }
                 
                 sec.querySelector('.tkbm-barang-container').innerHTML = '';
                 data.barang.forEach(b => {
@@ -2505,10 +2510,14 @@
                     <input type="text" class="tkbm-section-pph w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700" value="Rp 0" readonly>
                     <input type="hidden" name="tkbm_sections[${sectionIndex}][pph]" class="tkbm-section-pph-hidden" value="0">
                 </div>
+                <div class="md:col-span-1">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
+                    <input type="number" name="tkbm_sections[${sectionIndex}][adjustment]" class="tkbm-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500" value="0" step="0.01">
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Grand Total</label>
-                    <input type="text" class="tkbm-section-grand-total w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold text-emerald-700" value="Rp 0" readonly>
-                    <input type="hidden" name="tkbm_sections[${sectionIndex}][grand_total]" class="tkbm-section-grand-total-hidden" value="0">
+                    <input type="text" class="tkbm-grand-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="tkbm_sections[${sectionIndex}][grand_total]" class="tkbm-grand-total-value" value="0">
                 </div>
             </div>
             
@@ -2527,6 +2536,12 @@
         const kapalSelect = section.querySelector('.tkbm-kapal-select');
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForTkbmSection(sectionIndex, this.value);
+        });
+
+        // Setup adjustment listener
+        const adjustmentInput = section.querySelector('.tkbm-adjustment-input');
+        adjustmentInput.addEventListener('input', function() {
+            calculateTotalFromAllTkbmSections();
         });
 
         // Setup manual voyage toggle
@@ -2678,12 +2693,14 @@
             const sectionTotalHidden = section.querySelector('.tkbm-section-total-hidden');
             const sectionPphInput = section.querySelector('.tkbm-section-pph');
             const sectionPphHidden = section.querySelector('.tkbm-section-pph-hidden');
-            const sectionGrandTotalInput = section.querySelector('.tkbm-section-grand-total');
-            const sectionGrandTotalHidden = section.querySelector('.tkbm-section-grand-total-hidden');
+            const adjustmentInput = section.querySelector('.tkbm-adjustment-input');
+            const sectionGrandTotalInput = section.querySelector('.tkbm-grand-total-display');
+            const sectionGrandTotalHidden = section.querySelector('.tkbm-grand-total-value');
             
             // Calculate PPH and Grand Total
             const pph = Math.round(sectionTotal * 0.02);
-            const grandTotalSection = sectionTotal - pph;
+            const adjustment = parseFloat(adjustmentInput.value) || 0;
+            const grandTotalSection = sectionTotal - pph + adjustment;
             
             if (sectionTotalInput) sectionTotalInput.value = 'Rp ' + Math.round(sectionTotal).toLocaleString('id-ID');
             if (sectionTotalHidden) sectionTotalHidden.value = Math.round(sectionTotal);
