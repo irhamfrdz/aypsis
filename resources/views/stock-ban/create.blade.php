@@ -939,7 +939,7 @@
         function initBanBatchLogic() {
             const namaBarangSelect = document.querySelector('select[name="nama_stock_ban_id"]');
             const nomorSeriContainer = document.querySelector('input[name="nomor_seri"]').closest('div');
-            const merkContainer = document.querySelector('input[name="merk_id"]').closest('div').closest('div'); // Needs to go up to the main container, not just the custom-select-container
+            const merkContainer = document.getElementById('merk-select-container').parentElement;
             const typeSelect = document.querySelector('select[name="kondisi"]');
             
             // Adjust label for "kondisi" to "Type" properly (it is labelled Type in HTML)
@@ -954,7 +954,7 @@
 
 
         const hargaBeliContainer = document.querySelector('input[name="harga_beli"]').closest('div');
-        const mobilContainer = document.getElementById('mobil-select-container').closest('div');
+        const mobilContainer = document.getElementById('mobil-select-container').parentElement;
         
         // Create Stock Qty field
         let qtyWrapper = document.getElementById('qty-container');
@@ -1048,8 +1048,14 @@
                 if (isBulk) {
                     // Hide serialized fields
                     nomorSeriContainer.classList.add('hidden');
-                    merkContainer.classList.add('hidden');
                     mobilContainer.classList.add('hidden');
+                    
+                    // Specific logic for Ban Dalam: User requested no brand label
+                    if (isBanDalam) {
+                        merkContainer.classList.add('hidden');
+                    } else {
+                        merkContainer.classList.remove('hidden');
+                    }
                     
                     // Show Qty
                     qtyWrapper.classList.remove('hidden');
