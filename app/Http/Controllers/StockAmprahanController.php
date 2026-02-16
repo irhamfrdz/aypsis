@@ -158,11 +158,8 @@ class StockAmprahanController extends Controller
         ]);
 
         if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Pengambilan barang berhasil dicatat. Sisa stock: ' . $item->jumlah . ' ' . $item->satuan,
-                'redirect' => route('stock-amprahan.index')
-            ]);
+            return redirect()->route('stock-amprahan.index')
+                ->with('success', 'Pengambilan barang berhasil dicatat. Sisa stock: ' . $item->jumlah . ' ' . $item->satuan);
         }
 
         return redirect()->route('stock-amprahan.index')
