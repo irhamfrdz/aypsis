@@ -228,14 +228,29 @@
                                                 </div>
 
                                                 <div id="mobil_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
-                                                    @foreach($mobils as $mobil)
-                                                        <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
-                                                             data-value="{{ $mobil->id }}" 
-                                                             data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
-                                                             onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}')">
-                                                            <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
-                                                        </div>
-                                                    @endforeach
+                                                    @if($mobils->count() > 0)
+                                                        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Mobil</div>
+                                                        @foreach($mobils as $mobil)
+                                                            <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="mobil-{{ $mobil->id }}" 
+                                                                 data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
+                                                                 onclick="selectMobil('mobil-{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}')">
+                                                                <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                    
+                                                    @if($alatBerats->count() > 0)
+                                                        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50 {{ $mobils->count() > 0 ? 'mt-1' : '' }}">Alat Berat</div>
+                                                        @foreach($alatBerats as $alat)
+                                                            <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="alat-{{ $alat->id }}" 
+                                                                 data-name="{{ $alat->kode_alat }} {{ $alat->nama }}"
+                                                                 onclick="selectMobil('alat-{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}')">
+                                                                <span class="block truncate font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
                                                     <div id="mobil_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada mobil yang cocok</div>
                                                 </div>
                                             </div>

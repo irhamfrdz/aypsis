@@ -8,6 +8,7 @@ use App\Models\MasterGudangAmprahan;
 use App\Models\StockAmprahanUsage;
 use App\Models\Karyawan;
 use App\Models\Mobil;
+use App\Models\AlatBerat;
 use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,9 +23,10 @@ class StockAmprahanController extends Controller
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'kapals'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'alatBerats', 'kapals'));
     }
 
     public function create()
