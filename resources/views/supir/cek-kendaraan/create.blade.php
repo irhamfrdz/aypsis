@@ -43,7 +43,9 @@
                                 <select name="mobil_id" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all" required>
                                     <option value="">-- Pilih Kendaraan --</option>
                                     @foreach($mobils as $mobil)
-                                        <option value="{{ $mobil->id }}">{{ $mobil->nomor_polisi }} ({{ $mobil->merek }})</option>
+                                        <option value="{{ $mobil->id }}" {{ $defaultMobilId == $mobil->id ? 'selected' : '' }}>
+                                            {{ $mobil->nomor_polisi }} ({{ $mobil->merek }})
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>

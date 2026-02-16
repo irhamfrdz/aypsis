@@ -34,10 +34,25 @@ class SupirCekKendaraanController extends Controller
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
-        // Get all active mobils. In a real scenario, you might want to filter mobils assigned to the supir.
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+        
+        // Find default mobil for this supir
+        $defaultMobilId = null;
+        if ($user->karyawan) {
+            // Priority 1: Check mobils table for karyawan_id link
+            $assignedMobil = Mobil::where('karyawan_id', $user->karyawan_id)->first();
+            if ($assignedMobil) {
+                $defaultMobilId = $assignedMobil->id;
+            } else if ($user->karyawan->plat) {
+                // Priority 2: Check plat column in karyawans table matching nomor_polisi
+                $matchedMobil = Mobil::where('nomor_polisi', $user->karyawan->plat)->first();
+                if ($matchedMobil) {
+                    $defaultMobilId = $matchedMobil->id;
+                }
+            }
+        }
 
-        return view('supir.cek-kendaraan.create', compact('mobils'));
+        return view('supir.cek-kendaraan.create', compact('mobils', 'defaultMobilId'));
     }
 
     public function store(Request $request)
