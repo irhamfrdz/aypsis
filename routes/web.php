@@ -3342,6 +3342,16 @@ Route::get('/test-gate-in-ajax', function () {
         // API for kontainer search
         Route::get('/api/kontainer/search', [\App\Http\Controllers\Api\KontainerSearchController::class, 'search'])
             ->name('api.kontainer.search');
+
+        // Cek Kendaraan
+        Route::get('/cek-kendaraan', [\App\Http\Controllers\SupirCekKendaraanController::class, 'index'])
+            ->name('cek-kendaraan.index');
+        Route::get('/cek-kendaraan/create', [\App\Http\Controllers\SupirCekKendaraanController::class, 'create'])
+            ->name('cek-kendaraan.create');
+        Route::post('/cek-kendaraan', [\App\Http\Controllers\SupirCekKendaraanController::class, 'store'])
+            ->name('cek-kendaraan.store');
+        Route::get('/cek-kendaraan/{cekKendaraan}', [\App\Http\Controllers\SupirCekKendaraanController::class, 'show'])
+            ->name('cek-kendaraan.show');
     });
 
          // --- Rute Penyelesaian Tugas ---
