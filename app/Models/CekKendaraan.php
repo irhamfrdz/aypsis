@@ -39,6 +39,7 @@ class CekKendaraan extends Model
         'lampu_rem_kanan',
         'lampu_rem_kiri',
         'lampu_alarm_mundur',
+        'kamvas_rem_depan_kanan',
         'odometer',
         'masa_berlaku_stnk',
         'masa_berlaku_kir',
