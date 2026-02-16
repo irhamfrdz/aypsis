@@ -15,18 +15,31 @@ use Illuminate\Support\Facades\Auth;
 
 class StockAmprahanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy'])
-            ->latest()
-            ->paginate(20);
+        $search = $request->get('search');
+        
+        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy'])
+            ->latest();
+            
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_barang', 'like', '%' . $search . '%')
+                  ->orWhere('nomor_bukti', 'like', '%' . $search . '%')
+                  ->orWhereHas('masterNamaBarangAmprahan', function($q) use ($search) {
+                      $q->where('nama_barang', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $items = $query->paginate(20);
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'alatBerats', 'kapals'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'alatBerats', 'kapals', 'search'));
     }
 
     public function create()

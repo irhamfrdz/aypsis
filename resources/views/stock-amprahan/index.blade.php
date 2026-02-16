@@ -41,6 +41,26 @@
     </div>
     @endif
 
+    {{-- Search Section --}}
+    <div class="mb-6">
+        <form method="GET" action="{{ route('stock-amprahan.index') }}" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari berdasarkan nama barang atau no. bukti..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <div class="flex space-x-2">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Cari
+                </button>
+                @if(isset($search) && $search)
+                <a href="{{ route('stock-amprahan.index') }}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                    Reset
+                </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     {{-- Stats Cards (Optional) --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
