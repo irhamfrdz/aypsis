@@ -105,13 +105,29 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
 
-        $validator = \Validator::make($request->all(), [
+        // Parse mobil_id
+        $requestData = $request->all();
+        $alatBeratId = null;
+        $mobilId = null;
+        if (isset($requestData['mobil_id'])) {
+            if (str_starts_with($requestData['mobil_id'], 'alat-')) {
+                $alatBeratId = substr($requestData['mobil_id'], 5);
+                $requestData['alat_berat_id'] = $alatBeratId;
+                $requestData['mobil_id'] = null;
+            } elseif (str_starts_with($requestData['mobil_id'], 'mobil-')) {
+                $mobilId = substr($requestData['mobil_id'], 6);
+                $requestData['mobil_id'] = $mobilId;
+            }
+        }
+
+        $validator = \Validator::make($requestData, [
             'jumlah' => 'required|numeric|min:0.01|max:' . $item->jumlah,
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',
             'penerima_id' => 'required|exists:karyawans,id',
             'mobil_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
+            'alat_berat_id' => 'nullable|exists:alat_berats,id',
         ]);
 
         if ($validator->fails()) {
@@ -132,8 +148,9 @@ class StockAmprahanController extends Controller
         StockAmprahanUsage::create([
             'stock_amprahan_id' => $item->id,
             'penerima_id' => $request->penerima_id,
-            'mobil_id' => $request->mobil_id,
-            'kapal_id' => $request->kapal_id,
+            'mobil_id' => $requestData['mobil_id'],
+            'kapal_id' => $requestData['kapal_id'],
+            'alat_berat_id' => $requestData['alat_berat_id'],
             'jumlah' => $request->jumlah,
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
@@ -163,12 +180,14 @@ class StockAmprahanController extends Controller
             $formattedUsages = $usages->map(function ($usage) {
                 $mobilInfo = $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-';
                 $kapalInfo = $usage->kapal ? $usage->kapal->nama_kapal : '-';
+                $alatBeratInfo = $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama) : '-';
                 return [
                     'tanggal' => date('d-m-Y', strtotime($usage->tanggal_pengambilan)),
                     'jumlah' => $usage->jumlah,
                     'penerima' => $usage->penerima->nama_lengkap ?? '-',
                     'mobil' => $mobilInfo,
                     'kapal' => $kapalInfo,
+                    'alat_berat' => $alatBeratInfo,
                     'keterangan' => $usage->keterangan,
                     'created_by' => $usage->createdBy->name ?? '-',
                 ];
@@ -181,7 +200,7 @@ class StockAmprahanController extends Controller
 
     public function allHistory()
     {
-        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'kapal', 'createdBy'])
+        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'kapal', 'alatBerat', 'createdBy'])
             ->latest('tanggal_pengambilan')
             ->paginate(20);
 

@@ -357,13 +357,14 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat Berat</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
                                             </tr>
                                         </thead>
                                         <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
                                             <tr>
-                                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
+                                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -431,7 +432,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
                     return;
                 }
 
@@ -443,6 +444,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.penerima}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kapal || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.alat_berat || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.keterangan || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.created_by}</td>
                     `;
