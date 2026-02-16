@@ -23,24 +23,30 @@ use Illuminate\Support\Str;
                     <p class="mt-1 text-sm text-gray-600">Kelola term pembayaran untuk order</p>
                 </div>
                 
-                <div class="flex gap-2">
-                    @can('approval-order-update')
-                    <button type="button" onclick="updateTandaTerima(true)" 
-                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                        Preview Update
-                    </button>
-                    <button type="button" onclick="updateTandaTerima(false)" 
-                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Update Tanda Terima
-                    </button>
-                    @endcan
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex gap-2">
+                        @can('approval-order-update')
+                        <button type="button" onclick="updateTandaTerima(true)" 
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition">
+                            <i class="fas fa-eye mr-2"></i>
+                            Preview Update
+                        </button>
+                        <button type="button" onclick="updateTandaTerima(false)" 
+                                class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-sm transition">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Update Tanda Terima
+                        </button>
+                        @endcan
+                    </div>
+                    <div class="text-[10px] text-gray-500 font-medium bg-gray-50 border border-gray-200 px-3 py-1 rounded-full flex items-center gap-2">
+                        <span class="flex h-2 w-2 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                        <span>Auto-update: <span class="font-bold text-blue-600">30 Menit (Server)</span></span>
+                        <span class="text-gray-300">|</span>
+                        <span>Terakhir: <span id="last-update-time" class="font-bold">{{ $lastUpdateStr }}</span></span>
+                    </div>
                 </div>
 
             </div>
@@ -375,6 +381,8 @@ function closeResultModal() {
         modal.remove();
     }
 }
+// Auto update sekarang dihandle oleh Server (Task Scheduling) setiap 30 menit.
+// Halaman ini hanya menampilkan waktu update terakhir.
 </script>
 @endpush
 @endsection

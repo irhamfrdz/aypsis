@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\SuratJalan;
 use App\Models\TandaTerima;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class UpdateTandaTerimaPenerima extends Command
 {
@@ -162,6 +163,9 @@ class UpdateTandaTerimaPenerima extends Command
                 $this->info("Total Tanda Terima ditemukan: {$totalTandaTerima}");
                 $this->info("Total Tanda Terima dengan perubahan: {$totalWithChanges}");
                 $this->info("Total Tanda Terima berhasil diupdate: {$totalUpdated}");
+                
+                // Record last run time
+                Cache::put('last_tanda_terima_update', now(), now()->addDays(7));
             } else {
                 DB::rollBack();
                 $this->newLine();

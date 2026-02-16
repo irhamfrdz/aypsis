@@ -21,6 +21,15 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Tanda Terima</h1>
                 <p class="text-gray-600 mt-1">Kelola tanda terima kontainer dari surat jalan yang sudah di-approve</p>
+                <div class="mt-3 text-[10px] text-gray-500 font-medium bg-gray-50 border border-gray-200 px-3 py-1 rounded-full flex items-center gap-2 inline-flex">
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                    </span>
+                    <span>Auto-update: <span class="font-bold text-purple-600">30 Menit (Server)</span></span>
+                    <span class="text-gray-300">|</span>
+                    <span>Terakhir: <span id="last-update-time" class="font-bold text-purple-700">{{ $lastUpdateStr }}</span></span>
+                </div>
                 <!-- bulkActionsContainer moved to table area; header doesn't need duplicate id -->
             </div>
             <div>
@@ -1305,6 +1314,16 @@ function updateManifest(isDryRun) {
         document.getElementById('loading-overlay').remove();
         
         if (data.success) {
+            // Update last run time if not dry run
+            if (!isDryRun) {
+                const now = new Date();
+                const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                               now.getMinutes().toString().padStart(2, '0');
+                const lastUpdateTimeEl = document.getElementById('last-update-time');
+                if (lastUpdateTimeEl) {
+                    lastUpdateTimeEl.textContent = timeStr;
+                }
+            }
             // Show result modal
             showManifestResultModal(data, isDryRun);
         } else {

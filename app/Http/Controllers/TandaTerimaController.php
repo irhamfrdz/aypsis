@@ -142,6 +142,10 @@ class TandaTerimaController extends Controller
         $mode = $request->input('mode', '');
         $perPage = $request->input('rows_per_page', 25);
 
+        // Get last update time from cache
+        $lastUpdate = \Illuminate\Support\Facades\Cache::get('last_manifest_update');
+        $lastUpdateStr = $lastUpdate ? $lastUpdate->format('H:i') : '--:--';
+
         // Get all kontainers for dropdown - combine from stock_kontainers and kontainers
         $stockKontainersFromStock = \App\Models\StockKontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
             ->whereNotNull('nomor_seri_gabungan')
@@ -230,7 +234,7 @@ class TandaTerimaController extends Controller
 
             $suratJalans = $suratQuery->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
         }
         
         // If mode is 'with_tanda_terima' then we should list Surat Jalan that have Tanda Terima
@@ -277,7 +281,7 @@ class TandaTerimaController extends Controller
                 ->paginate($perPage)
                 ->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers'));
+            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
         }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.uangJalan']);
@@ -373,10 +377,10 @@ class TandaTerimaController extends Controller
             // Return the view with missing surat jalan results and a fallback flag
             $mode = 'missing';
             $fallback_missing = true;
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList', 'allKontainers'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
         }
 
-        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers'));
+        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
     }
 
     /**

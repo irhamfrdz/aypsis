@@ -7,6 +7,7 @@ use App\Models\Manifest;
 use App\Models\Prospek;
 use App\Models\TandaTerima;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class UpdateManifestPenerima extends Command
 {
@@ -131,6 +132,9 @@ class UpdateManifestPenerima extends Command
                 $this->info("Total Manifest dengan Tanda Terima: {$totalManifest}");
                 $this->info("Total Manifest dengan perubahan: {$totalWithChanges}");
                 $this->info("Total Manifest berhasil diupdate: {$totalUpdated}");
+                
+                // Record last run time
+                Cache::put('last_manifest_update', now(), now()->addDays(7));
             } else {
                 DB::rollBack();
                 $this->newLine();

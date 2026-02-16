@@ -58,7 +58,10 @@ class ApprovalOrderController extends Controller
         $perPage = $request->get('per_page', 50);
         $orders = $query->paginate($perPage)->withQueryString();
 
-        return view('approval-order.index', compact('orders'));
+        $lastUpdate = \Illuminate\Support\Facades\Cache::get('last_tanda_terima_update');
+        $lastUpdateStr = $lastUpdate ? $lastUpdate->format('H:i') : '--:--';
+
+        return view('approval-order.index', compact('orders', 'lastUpdateStr'));
     }
 
     /**
