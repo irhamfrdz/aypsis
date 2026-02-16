@@ -248,6 +248,19 @@
                         <div class="text-2xl font-bold text-orange-900">{{ $banSedangDimasak }}</div>
                         <p class="text-xs text-orange-600 mt-1">Proses</p>
                     </div>
+
+                    <!-- Ban Dikirim Ke Kapal -->
+                    @php
+                        $banDikirim = $stockBans->where('status', 'Dikirim Ke Kapal')->count();
+                    @endphp
+                    <div id="card-dikirim" onclick="setCardFilter('dikirim')" class="cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-cyan-600 uppercase">Dikirim Kapal</span>
+                            <i class="fas fa-ship text-cyan-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-cyan-900">{{ $banDikirim }}</div>
+                        <p class="text-xs text-cyan-600 mt-1">Transit</p>
+                    </div>
                     
                     <!-- Ban Asli -->
                     @php
@@ -356,7 +369,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk & Ukuran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit / Tujuan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
@@ -434,6 +447,15 @@
                                         <div class="text-xs text-gray-500 mt-1">
                                             {{ $ban->alatBerat->jenis }} {{ $ban->alatBerat->warna ? '- '.$ban->alatBerat->warna : '' }}
                                         </div>
+                                    @elseif($ban->status == 'Dikirim Ke Kapal' && $ban->kapal)
+                                        <span class="text-cyan-600 font-medium">
+                                            <i class="fas fa-ship mr-1"></i> {{ $ban->kapal->nama_kapal }}
+                                        </span>
+                                        @if($ban->tanggal_kirim)
+                                            <div class="text-[10px] text-gray-500 mt-1">
+                                                Tgl: {{ $ban->tanggal_kirim->format('d-m-Y') }}
+                                            </div>
+                                        @endif
                                     @else
                                         -
                                     @endif
@@ -1436,9 +1458,9 @@
         modalNomorSeri.textContent = seri || '-';
         
         // Reset dropdowns
-        document.getElementById('kirim_penerima_id').value = '';
+        document.getElementById('kirim_penerima').value = '';
         document.getElementById('text-kirim_penerima').textContent = '-- Pilih Penerima --';
-        document.getElementById('kirim_kapal_id').value = '';
+        document.getElementById('kirim_kapal').value = '';
         document.getElementById('text-kirim_kapal').textContent = '-- Pilih Kapal --';
         document.getElementById('kirim_tanggal').value = new Date().toISOString().split('T')[0];
         document.getElementById('kirim_keterangan').value = '';
@@ -1463,8 +1485,8 @@
 
     function submitKirimBanForm() {
         const banId = document.getElementById('kirim_ban_id').value;
-        const penerimaId = document.getElementById('kirim_penerima_id').value;
-        const kapalId = document.getElementById('kirim_kapal_id').value;
+        const penerimaId = document.getElementById('kirim_penerima').value;
+        const kapalId = document.getElementById('kirim_kapal').value;
         const tanggal = document.getElementById('kirim_tanggal').value;
         
         if (!penerimaId) { alert('Mohon pilih penerima!'); return; }
@@ -1525,7 +1547,7 @@
             card.classList.remove('active-filter', 'ring-2');
             
             // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400');
+            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400');
         });
 
         const activeCard = document.getElementById('card-' + filterType);
@@ -1543,7 +1565,8 @@
                 'afkir': 'ring-red-400',
                 'garasi-pluit': 'ring-indigo-400',
                 'ruko-10': 'ring-orange-400',
-                'asli-stok': 'ring-teal-400'
+                'asli-stok': 'ring-teal-400',
+                'dikirim': 'ring-cyan-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -1775,6 +1798,8 @@
                         filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     } else if (currentCardFilter === 'asli-stok') {
                         filterMatch = kondisi === 'asli' && status === 'stok';
+                    } else if (currentCardFilter === 'dikirim') {
+                        filterMatch = status === 'dikirim ke kapal';
                     }
                 }
 
@@ -1967,7 +1992,7 @@
                             <div class="mt-4 space-y-4">
                                 <div>
                                     <label class="form-label-premium">Penerima <span class="text-red-500">*</span></label>
-                                    <input type="hidden" name="penerima_id" id="kirim_penerima_id" required>
+                                    <input type="hidden" name="penerima_id" id="kirim_penerima" required>
                                     <button type="button" id="btn-kirim_penerima" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('kirim_penerima', this)">
                                         <span class="block truncate" id="text-kirim_penerima">-- Pilih Penerima --</span>
                                         <i class="fas fa-chevron-down text-gray-400"></i>
@@ -1988,7 +2013,7 @@
 
                                 <div>
                                     <label class="form-label-premium">Kapal <span class="text-red-500">*</span></label>
-                                    <input type="hidden" name="kapal_id" id="kirim_kapal_id" required>
+                                    <input type="hidden" name="kapal_id" id="kirim_kapal" required>
                                     <button type="button" id="btn-kirim_kapal" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('kirim_kapal', this)">
                                         <span class="block truncate" id="text-kirim_kapal">-- Pilih Kapal --</span>
                                         <i class="fas fa-chevron-down text-gray-400"></i>
