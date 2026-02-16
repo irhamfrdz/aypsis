@@ -45,7 +45,8 @@
                                     @foreach($mobils as $mobil)
                                         <option value="{{ $mobil->id }}" 
                                                 {{ $defaultMobilId == $mobil->id ? 'selected' : '' }}
-                                                data-stnk="{{ $mobil->pajak_stnk ? $mobil->pajak_stnk->format('Y-m-d') : '' }}">
+                                                data-stnk="{{ $mobil->pajak_stnk ? $mobil->pajak_stnk->format('Y-m-d') : '' }}"
+                                                data-kir="{{ $mobil->pajak_kir ? $mobil->pajak_kir->format('Y-m-d') : '' }}">
                                             {{ $mobil->nomor_polisi }} ({{ $mobil->merek }})
                                         </option>
                                     @endforeach
@@ -63,14 +64,19 @@
                                 </div>
                             </div>
                             
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Odometer (KM)</label>
+                                <input type="number" name="odometer" placeholder="KM" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Odometer (KM)</label>
-                                    <input type="number" name="odometer" placeholder="KM" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
-                                </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Berlaku STNK</label>
                                     <input type="date" name="masa_berlaku_stnk" id="masa_berlaku_stnk" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Berlaku KIR</label>
+                                    <input type="date" name="masa_berlaku_kir" id="masa_berlaku_kir" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
                                 </div>
                             </div>
 
@@ -164,9 +170,15 @@
     <script>
         document.querySelector('select[name="mobil_id"]').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
+            
             const stnkDate = selectedOption.getAttribute('data-stnk');
             if (stnkDate) {
                 document.getElementById('masa_berlaku_stnk').value = stnkDate;
+            }
+
+            const kirDate = selectedOption.getAttribute('data-kir');
+            if (kirDate) {
+                document.getElementById('masa_berlaku_kir').value = kirDate;
             }
         });
 
@@ -175,9 +187,15 @@
             const select = document.querySelector('select[name="mobil_id"]');
             if (select.value) {
                 const selectedOption = select.options[select.selectedIndex];
+                
                 const stnkDate = selectedOption.getAttribute('data-stnk');
                 if (stnkDate) {
                     document.getElementById('masa_berlaku_stnk').value = stnkDate;
+                }
+
+                const kirDate = selectedOption.getAttribute('data-kir');
+                if (kirDate) {
+                    document.getElementById('masa_berlaku_kir').value = kirDate;
                 }
             }
         });

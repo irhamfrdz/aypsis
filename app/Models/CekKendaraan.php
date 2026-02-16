@@ -34,6 +34,7 @@ class CekKendaraan extends Model
         'kebersihan_eksterior',
         'odometer',
         'masa_berlaku_stnk',
+        'masa_berlaku_kir',
         'catatan',
         'foto_sebelum',
         'foto_sesudah',
@@ -44,6 +45,7 @@ class CekKendaraan extends Model
         'jam' => 'string', // time is usually cast differently but string is okay for display
         'odometer' => 'integer',
         'masa_berlaku_stnk' => 'date',
+        'masa_berlaku_kir' => 'date',
     ];
 
     public function karyawan()

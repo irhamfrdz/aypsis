@@ -48,6 +48,12 @@
                                 {{ $cekKendaraan->masa_berlaku_stnk ? $cekKendaraan->masa_berlaku_stnk->format('d/m/Y') : '-' }}
                             </span>
                         </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-500">Berlaku KIR</span>
+                            <span class="font-semibold {{ $cekKendaraan->masa_berlaku_kir && $cekKendaraan->masa_berlaku_kir->isPast() ? 'text-red-600' : 'text-gray-800' }}">
+                                {{ $cekKendaraan->masa_berlaku_kir ? $cekKendaraan->masa_berlaku_kir->format('d/m/Y') : '-' }}
+                            </span>
+                        </div>
 
                         <div class="py-2">
                             <span class="text-gray-500 block mb-1">Pemeriksa</span>
