@@ -303,6 +303,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rit</th>
@@ -320,6 +321,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
@@ -338,6 +340,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkpoint</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
@@ -373,6 +376,9 @@
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $suratJalan->no_kontainer ?: '-' }}</code>
                             </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $suratJalan->order->penerima ?? '-' }}
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->supir ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->no_plat ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->rit ?: '-' }}</td>
@@ -405,7 +411,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="px-3 py-8 text-center">
+                            <td colspan="14" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-truck-loading text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan tanpa tanda terima</p>
@@ -437,6 +443,9 @@
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $item->no_kontainer ?: '-' }}</code>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $item->penerima ?? '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
@@ -476,7 +485,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="px-3 py-8 text-center">
+                            <td colspan="14" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada surat jalan dengan tanda terima</p>
@@ -520,6 +529,11 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                     {{ Str::limit($tandaTerima->pengirim ?: '-', 20) }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                                    {{ Str::limit($tandaTerima->penerima ?: '-', 20) }}
                                 </span>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
@@ -654,7 +668,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="px-3 py-8 text-center">
+                            <td colspan="14" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada data tanda terima</p>

@@ -203,7 +203,8 @@ class TandaTerimaController extends Controller
                       ->orWhere('supir', 'like', "%{$search}%")
                       ->orWhere('no_plat', 'like', "%{$search}%")
                       ->orWhereHas('order', function($orderQuery) use ($search) {
-                          $orderQuery->whereHas('pengirim', function($pengirimQuery) use ($search) {
+                          $orderQuery->where('penerima', 'like', "%{$search}%")
+                            ->orWhereHas('pengirim', function($pengirimQuery) use ($search) {
                               $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
                           });
                       });
@@ -252,6 +253,7 @@ class TandaTerimaController extends Controller
                     'sj.no_plat',
                     'sj.kegiatan',
                     'tt.id as tanda_terima_id',
+                    'tt.penerima',
                     'tt.created_at',
                     'uj.nomor_uang_jalan',
                     'uj.tanggal_uang_jalan'
@@ -261,14 +263,15 @@ class TandaTerimaController extends Controller
                       ->orWhere('sj.kegiatan', '')
                       ->orWhere('sj.kegiatan', 'NOT LIKE', '%bongkar%');
                 })
-                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
+                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
 
             // Apply search filter
             if (!empty($search)) {
                 $query->where(function($q) use ($search) {
                     $q->where('sj.no_surat_jalan', 'like', "%{$search}%")
                       ->orWhere('sj.supir', 'like', "%{$search}%")
-                      ->orWhere('sj.no_kontainer', 'like', "%{$search}%");
+                      ->orWhere('sj.no_kontainer', 'like', "%{$search}%")
+                      ->orWhere('tt.penerima', 'like', "%{$search}%");
                 });
             }
 
@@ -298,14 +301,17 @@ class TandaTerimaController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%")
                   ->orWhere('estimasi_nama_kapal', 'like', "%{$search}%")
                   ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
                   ->orWhere('jenis_barang', 'like', "%{$search}%")
                   ->orWhereHas('suratJalan.order', function($orderQuery) use ($search) {
-                      $orderQuery->where('tujuan_ambil', 'like', "%{$search}%");
+                      $orderQuery->where('tujuan_ambil', 'like', "%{$search}%")
+                                 ->orWhere('penerima', 'like', "%{$search}%");
                   })
                   ->orWhereHas('suratJalan', function($suratJalanQuery) use ($search) {
                       $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
+                          ->orWhere('penerima_id', 'like', "%{$search}%")
                           ->orWhere('pengirim', 'like', "%{$search}%")
                           ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
                   });
