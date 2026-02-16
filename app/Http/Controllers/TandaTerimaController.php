@@ -2050,7 +2050,22 @@ class TandaTerimaController extends Controller
             Artisan::call('manifest:update-penerima', $arguments);
             $output = Artisan::output();
             
-            // Parse output to get statistics
+            // Parse stats for Prospek
+            $totalProspek = 0;
+            $totalProspekWithChanges = 0;
+            $totalProspekUpdated = 0;
+
+            if (preg_match('/Total Prospek diproses: (\d+)/', $output, $matches)) {
+                $totalProspek = (int) $matches[1];
+            }
+            if (preg_match('/Total Prospek changes preview: (\d+)/', $output, $matches)) {
+                $totalProspekWithChanges = (int) $matches[1];
+            }
+            if (preg_match('/Total Prospek updated: (\d+)/', $output, $matches)) {
+                $totalProspekUpdated = (int) $matches[1];
+            }
+
+            // Parse stats for Manifest
             $totalManifests = 0;
             $totalManifestWithTT = 0;
             $totalWithChanges = 0;
@@ -2065,8 +2080,10 @@ class TandaTerimaController extends Controller
                 $totalWithChanges = (int) $matches[1];
             }
             
-            if (preg_match('/Total Manifest yang akan diupdate: (\d+)/', $output, $matches)) {
+            if (preg_match('/Total Manifest yang akan diupdate: (\d+)/', $output, $matches)) { // dry run wording
                 $totalWithChanges = (int) $matches[1]; // dry run
+            } elseif (preg_match('/Total Manifest changes preview: (\d+)/', $output, $matches)) { // new dry run wording
+                $totalWithChanges = (int) $matches[1];
             }
             
             if (preg_match('/Total Manifest berhasil diupdate: (\d+)/', $output, $matches)) {
@@ -2076,10 +2093,15 @@ class TandaTerimaController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $dryRun ? 'Preview berhasil' : 'Update berhasil',
+                // Manifest stats
                 'total_manifests' => $totalManifests,
                 'total_manifest_with_tt' => $totalManifestWithTT,
                 'total_with_changes' => $totalWithChanges,
                 'total_updated' => $dryRun ? 0 : $totalUpdated,
+                // Prospek stats
+                'total_prospek' => $totalProspek,
+                'total_prospek_with_changes' => $totalProspekWithChanges,
+                'total_prospek_updated' => $dryRun ? 0 : $totalProspekUpdated,
                 'output' => $output
             ]);
             

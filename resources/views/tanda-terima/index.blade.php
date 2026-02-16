@@ -1352,29 +1352,33 @@ function updateManifest(isDryRun) {
 }
 
 function showManifestResultModal(data, isDryRun) {
-    const modalTitle = isDryRun ? 'Preview Update Manifest' : 'Hasil Update Manifest';
+    const modalTitle = isDryRun ? 'Preview Update Manifest & Prospek' : 'Hasil Update Manifest & Prospek';
     const modalIcon = isDryRun ? 
         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>' :
         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
     
-    const warningNote = isDryRun && data.total_with_changes > 0 ? 
+    // Check if there are any changes (Manifest or Prospek)
+    const hasAnyChanges = (data.total_with_changes > 0) || (data.total_prospek_with_changes > 0);
+    const hasAnyUpdates = (data.total_updated > 0) || (data.total_prospek_updated > 0);
+
+    const warningNote = isDryRun && hasAnyChanges ? 
         `<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p class="text-sm text-yellow-800"><strong>Catatan:</strong> Ini adalah preview. Data belum diupdate. Gunakan tombol "Update Manifest" untuk melakukan update sebenarnya.</p>
+            <p class="text-sm text-yellow-800"><strong>Catatan:</strong> Ini adalah preview. Data belum diupdate. Gunakan tombol "Update Sekarang" untuk melakukan update sebenarnya.</p>
         </div>` : '';
     
-    const successNote = !isDryRun && data.total_updated > 0 ? 
+    const successNote = !isDryRun && hasAnyUpdates ? 
         `<div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p class="text-sm text-green-800"><strong>Berhasil!</strong> Data Manifest telah diupdate dari Tanda Terima.</p>
+            <p class="text-sm text-green-800"><strong>Berhasil!</strong> Data Manifest dan Prospek telah diupdate dari Tanda Terima.</p>
         </div>` : '';
     
-    const noChangeNote = data.total_with_changes === 0 ? 
+    const noChangeNote = !hasAnyChanges && !hasAnyUpdates ? 
         `<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p class="text-sm text-blue-800"><strong>Info:</strong> Semua data penerima dan alamat pada Manifest sudah sama dengan data di Tanda Terima.</p>
+            <p class="text-sm text-blue-800"><strong>Info:</strong> Semua data pada Manifest dan Prospek sudah sinkron dengan data di Tanda Terima.</p>
         </div>` : '';
     
     const modalHtml = `
         <div id="manifest-result-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex items-center gap-3">
                         <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1384,35 +1388,66 @@ function showManifestResultModal(data, isDryRun) {
                     </div>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <p class="text-sm text-blue-600 font-medium">Total Manifest Diproses</p>
-                            <p class="text-3xl font-bold text-blue-900">${data.total_manifests}</p>
+                    <!-- Prospek Section -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Statistik Prospek</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-xs text-blue-600 font-medium uppercase tracking-wider">Total Diproses</p>
+                                <p class="text-2xl font-bold text-blue-900">${data.total_prospek || 0}</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <p class="text-xs text-yellow-600 font-medium uppercase tracking-wider">${isDryRun ? 'Akan Diupdate' : 'Dengan Perubahan'}</p>
+                                <p class="text-2xl font-bold text-yellow-900">${data.total_prospek_with_changes || 0}</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <p class="text-xs text-green-600 font-medium uppercase tracking-wider">${isDryRun ? 'Preview Update' : 'Berhasil Diupdate'}</p>
+                                <p class="text-2xl font-bold text-green-900">${isDryRun ? (data.total_prospek_with_changes || 0) : (data.total_prospek_updated || 0)}</p>
+                            </div>
                         </div>
-                        <div class="bg-purple-50 p-4 rounded-lg">
-                            <p class="text-sm text-purple-600 font-medium">Dengan Tanda Terima</p>
-                            <p class="text-3xl font-bold text-purple-900">${data.total_manifest_with_tt}</p>
-                        </div>
-                        <div class="bg-yellow-50 p-4 rounded-lg">
-                            <p class="text-sm text-yellow-600 font-medium">${isDryRun ? 'Akan Diupdate' : 'Dengan Perubahan'}</p>
-                            <p class="text-3xl font-bold text-yellow-900">${data.total_with_changes}</p>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-lg">
-                            <p class="text-sm text-green-600 font-medium">${isDryRun ? 'Preview' : 'Berhasil Diupdate'}</p>
-                            <p class="text-3xl font-bold text-green-900">${isDryRun ? data.total_with_changes : data.total_updated}</p>
+                    </div>
+
+                    <!-- Manifest Section -->
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Statistik Manifest</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-xs text-blue-600 font-medium uppercase tracking-wider">Total Manifest</p>
+                                <p class="text-2xl font-bold text-blue-900">${data.total_manifests}</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <p class="text-xs text-purple-600 font-medium uppercase tracking-wider">Dengan Tanda Terima</p>
+                                <p class="text-2xl font-bold text-purple-900">${data.total_manifest_with_tt}</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <p class="text-xs text-yellow-600 font-medium uppercase tracking-wider">${isDryRun ? 'Akan Diupdate' : 'Dengan Perubahan'}</p>
+                                <p class="text-2xl font-bold text-yellow-900">${data.total_with_changes}</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <p class="text-xs text-green-600 font-medium uppercase tracking-wider">${isDryRun ? 'Preview Update' : 'Berhasil Diupdate'}</p>
+                                <p class="text-2xl font-bold text-green-900">${isDryRun ? data.total_with_changes : data.total_updated}</p>
+                            </div>
                         </div>
                     </div>
                     
                     ${warningNote}
                     ${successNote}
                     ${noChangeNote}
+                    
+                    <!-- Toggle Details (Optional Debug) -->
+                    <div class="mt-4 text-center">
+                         <button type="button" onclick="document.getElementById('cmd-output-details').classList.toggle('hidden')" class="text-xs text-gray-500 hover:text-gray-700 underline">
+                            Lihat Detail Output
+                         </button>
+                         <pre id="cmd-output-details" class="hidden mt-2 p-3 bg-gray-100 rounded text-xs text-left overflow-auto max-h-40 whitespace-pre-wrap font-mono border border-gray-300">${data.output}</pre>
+                    </div>
                 </div>
                 <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
-                    <button onclick="closeManifestResultModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    <button onclick="closeManifestResultModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-sm transition-colors">
                         Tutup
                     </button>
-                    ${isDryRun && data.total_with_changes > 0 ? 
-                        '<button onclick="closeManifestResultModal(); updateManifest(false);" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Update Sekarang</button>' : 
+                    ${isDryRun && hasAnyChanges ? 
+                        '<button onclick="closeManifestResultModal(); updateManifest(false);" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm transition-colors flex items-center font-medium"><i class="fas fa-sync-alt mr-2"></i>Update Sekarang</button>' : 
                         ''}
                 </div>
             </div>
