@@ -249,14 +249,14 @@
                         <p class="text-xs text-orange-600 mt-1">Proses</p>
                     </div>
 
-                    <!-- Ban Dikirim Ke Kapal -->
+                    <!-- Ban Dikirim Ke Batam -->
                     @php
-                        $banDikirim = $stockBans->where('status', 'Dikirim Ke Kapal')->count();
+                        $banDikirim = $stockBans->where('status', 'Dikirim Ke Batam')->count();
                     @endphp
                     <div id="card-dikirim" onclick="setCardFilter('dikirim')" class="cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-medium text-cyan-600 uppercase">Dikirim Kapal</span>
-                            <i class="fas fa-ship text-cyan-400 text-lg"></i>
+                            <span class="text-xs font-medium text-cyan-600 uppercase">Dikirim Batam</span>
+                            <i class="fas fa-map-marked-alt text-cyan-400 text-lg"></i>
                         </div>
                         <div class="text-2xl font-bold text-cyan-900">{{ $banDikirim }}</div>
                         <p class="text-xs text-cyan-600 mt-1">Transit</p>
@@ -419,7 +419,7 @@
                                         {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
-                                           ($ban->status == 'Dikirim Ke Kapal' ? 'bg-cyan-100 text-cyan-800' : 'bg-gray-100 text-gray-800'))) }}">
+                                           ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 'bg-gray-100 text-gray-800'))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -447,7 +447,7 @@
                                         <div class="text-xs text-gray-500 mt-1">
                                             {{ $ban->alatBerat->jenis }} {{ $ban->alatBerat->warna ? '- '.$ban->alatBerat->warna : '' }}
                                         </div>
-                                    @elseif($ban->status == 'Dikirim Ke Kapal' && $ban->kapal)
+                                    @elseif($ban->status == 'Dikirim Ke Batam' && $ban->kapal)
                                         <span class="text-cyan-600 font-medium">
                                             <i class="fas fa-ship mr-1"></i> {{ $ban->kapal->nama_kapal }}
                                         </span>
@@ -506,8 +506,8 @@
                                                  class="btn-kirim-modal text-blue-500 hover:text-blue-700" 
                                                  data-id="{{ $ban->id }}" 
                                                  data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                 title="Kirim Ban">
-                                                 <i class="fas fa-ship"></i>
+                                                 title="Kirim Ke Batam">
+                                                 <i class="fas fa-truck-loading"></i>
                                              </button>
                                              @endif
                                          @elseif($ban->status == 'Terpakai')
@@ -1799,7 +1799,7 @@
                     } else if (currentCardFilter === 'asli-stok') {
                         filterMatch = kondisi === 'asli' && status === 'stok';
                     } else if (currentCardFilter === 'dikirim') {
-                        filterMatch = status === 'dikirim ke kapal';
+                        filterMatch = status === 'dikirim ke batam';
                     }
                 }
 
@@ -1968,7 +1968,7 @@
 
 </script>
 
-<!-- Modal Kirim Ban -->
+<!-- Modal Kirim Ke Batam -->
 <div id="kirimBanModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeKirimBanModal()"></div>
@@ -1983,11 +1983,11 @@
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <i class="fas fa-ship text-blue-600"></i>
+                            <i class="fas fa-truck-loading text-blue-600"></i>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                Kirim Ban: <span id="kirim_nomor_seri" class="text-blue-600 font-bold"></span>
+                                Kirim Ke Batam: <span id="kirim_nomor_seri" class="text-blue-600 font-bold"></span>
                             </h3>
                             <div class="mt-4 space-y-4">
                                 <div>

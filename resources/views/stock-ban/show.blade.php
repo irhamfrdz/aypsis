@@ -105,9 +105,9 @@
             @endif
 
             <!-- Kapal / Pengiriman -->
-            @if($stockBan->status == 'Dikirim Ke Kapal' || $stockBan->kapal)
+            @if($stockBan->status == 'Dikirim Ke Batam' || $stockBan->kapal)
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <label class="block text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Informasi Pengiriman Kapal</label>
+                <label class="block text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Informasi Pengiriman Batam</label>
                 <p class="text-base font-medium text-blue-900">
                     <i class="fas fa-ship mr-1"></i> {{ $stockBan->kapal->nama_kapal ?? '-' }}
                 </p>
