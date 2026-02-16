@@ -4842,18 +4842,32 @@
             </div>
             
             <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-rose-300">
-                <div class="flex items-center justify-between mb-3">
-                    <label class="block text-sm font-semibold text-gray-800">Pilih Tanda Terima <span class="text-red-500">*</span></label>
-                    <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="px-4 py-2.5 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2">
-                        <i class="fas fa-plus"></i> Tambah Tanda Terima
-                    </button>
-                </div>
-                <div class="stuffing-tt-container" data-stuffing-section="${sectionIndex}">
-                    <div class="text-center py-6 text-gray-400 text-sm">
-                        <i class="fas fa-file-alt text-3xl mb-2"></i>
-                        <p>Belum ada tanda terima dipilih. Klik tombol di atas untuk menambahkan.</p>
+                <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Tanda Terima <span class="text-red-500">*</span></label>
+                
+                <div class="relative stuffing-multiselect-container">
+                    <!-- Chips and Input Container -->
+                    <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-text flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-rose-500 focus-within:border-rose-500 transition-all shadow-sm"
+                         onclick="this.querySelector('.tt-search-input').focus()">
+                         
+                        <div class="selected-chips flex flex-wrap gap-2"></div>
+                        
+                        <input type="text" 
+                               class="tt-search-input border-none outline-none bg-transparent flex-1 min-w-[200px] text-sm focus:ring-0 p-1"
+                               placeholder="Cari No. Surat Jalan / Kontainer / Pengirim..."
+                               autocomplete="off">
+                    </div>
+                    
+                    <!-- Dropdown Results -->
+                    <div class="tt-results-dropdown hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                        <div class="p-4 text-center text-gray-400 text-sm">
+                            <i class="fas fa-search mb-1"></i>
+                            <p>Ketik minimal 2 karakter untuk mencari</p>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Hidden Inputs for Form Submission -->
+                <div class="hidden-inputs-container"></div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
@@ -4941,12 +4955,133 @@
             // Update Grand Total
             calculateTotalFromAllStuffingSections();
         });
+
+        // --- SEARCHABLE MULTI-SELECT LOGIC ---
+        const multiselectContainer = section.querySelector('.stuffing-multiselect-container');
+        const searchInput = section.querySelector('.tt-search-input');
+        const resultsDropdown = section.querySelector('.tt-results-dropdown');
+        const selectedChipsContainer = section.querySelector('.selected-chips');
+        const hiddenInputsContainer = section.querySelector('.hidden-inputs-container');
+        
+        let searchTimeout;
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!multiselectContainer.contains(e.target)) {
+                resultsDropdown.classList.add('hidden');
+            }
+        });
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value;
+            
+            if (query.length < 2) {
+                resultsDropdown.classList.add('hidden');
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                resultsDropdown.classList.remove('hidden');
+                resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Mencari...</div>';
+                
+                fetch(`{{ url('biaya-kapal/search-tanda-terima') }}?search=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                         resultsDropdown.innerHTML = '';
+                         if (data.length > 0) {
+                             let foundAny = false;
+                             data.forEach(tt => {
+                                 // Check if already selected
+                                 if (hiddenInputsContainer.querySelector(`input[value="${tt.id}"]`)) return;
+                                 
+                                 foundAny = true;
+                                 const item = document.createElement('div');
+                                 item.className = 'p-3 hover:bg-rose-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors';
+                                 
+                                 let typeBadge = '';
+                                 if (tt.type === 'tanda_terima_tanpa_surat_jalan') {
+                                     typeBadge = '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-2">Tanpa SJ</span>';
+                                 } else if (tt.type === 'tanda_terima_lcl') {
+                                     typeBadge = '<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">LCL</span>';
+                                 }
+
+                                 item.innerHTML = `
+                                     <div class="flex items-start gap-2">
+                                         <div class="flex-1">
+                                             <div class="font-medium text-sm text-gray-800 flex items-center">
+                                                 ${tt.display_text || tt.no_surat_jalan}
+                                                 ${typeBadge}
+                                             </div>
+                                             <div class="text-xs text-gray-500 mt-1">
+                                                 <span class="mr-2"><i class="fas fa-box text-orange-400 mr-1"></i>${tt.no_kontainer || '-'}</span>
+                                                 <span><i class="fas fa-user-check text-green-400 mr-1"></i>${tt.penerima}</span>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 `; 
+
+                                 item.addEventListener('click', () => {
+                                     addChip(tt);
+                                     searchInput.value = '';
+                                     resultsDropdown.classList.add('hidden');
+                                     searchInput.focus();
+                                 });
+                                 resultsDropdown.appendChild(item);
+                             });
+                             
+                             if (!foundAny) {
+                                  resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500">Semua hasil sudah dipilih</div>';
+                             }
+                         } else {
+                             resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500">Tidak ditemukan</div>';
+                         }
+                    })
+                    .catch(e => {
+                        console.error(e);
+                        resultsDropdown.innerHTML = '<div class="p-3 text-center text-red-500">Gagal memuat data</div>';
+                    });
+            }, 300);
+        });
+
+        function addChip(tt) {
+            const chip = document.createElement('div');
+            // Styling similar to proses-naik-kapal but adjusted
+            chip.className = 'inline-flex items-center bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full border border-blue-200 shadow-sm gap-2';
+            
+            const label = tt.display_text || tt.no_surat_jalan;
+            chip.innerHTML = `
+                <span class="font-medium text-xs">${label}</span>
+                <button type="button" class="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none rounded-full flex items-center justify-center bg-blue-200 hover:bg-blue-300 h-4 w-4 transition-colors">
+                    <i class="fas fa-times text-[10px]"></i>
+                </button>
+            `;
+            
+            chip.querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation(); // prevent focusing input
+                chip.remove();
+                const hiddenInput = hiddenInputsContainer.querySelector(`.tt-input-group-${tt.id}`);
+                if (hiddenInput) hiddenInput.remove();
+            });
+            
+            selectedChipsContainer.appendChild(chip);
+            
+            // Add hidden inputs
+            const hiddenGroup = document.createElement('div');
+            hiddenGroup.className = `tt-input-group-${tt.id}`;
+            hiddenGroup.innerHTML = `
+                <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][][id]" value="${tt.id}">
+                <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][][type]" value="${tt.type || 'tanda_terima'}">
+            `;
+            hiddenInputsContainer.appendChild(hiddenGroup);
+        }
     }
     
     window.removeStuffingSection = function(sectionIndex) {
         const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
         if (section) {
             section.remove();
+            calculateTotalFromAllStuffingSections();
         }
     };
     
@@ -4981,227 +5116,6 @@
                 console.error('Error fetching voyages for Stuffing:', error);
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
             });
-    }
-
-    window.addTandaTerimaToSection = function(sectionIndex) {
-        const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
-        const container = section.querySelector('.stuffing-tt-container');
-        
-        // Remove placeholder message if it exists
-        const placeholder = container.querySelector('.text-center.py-6');
-        if (placeholder) {
-            placeholder.remove();
-        }
-        
-        const ttIndex = container.querySelectorAll('.tt-search-wrapper').length;
-        
-        const wrapper = document.createElement('div');
-        wrapper.className = 'tt-search-wrapper mb-3 border-2 border-gray-200 p-4 rounded-lg bg-gradient-to-r from-gray-50 to-white shadow-sm hover:border-rose-300 transition-all';
-        wrapper.innerHTML = `
-            <div class="flex items-center gap-2 mb-2">
-                <div class="relative flex-1">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </div>
-                    <input type="text" class="tt-search-input w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all" placeholder="Cari No. Surat Jalan / No. Kontainer / Pengirim...">
-                    <div class="tt-results-dropdown hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto"></div>
-                </div>
-                <button type="button" onclick="removeTtFromSection(this)" class="px-3 py-2.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-400" title="Hapus Tanda Terima">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-            <div class="tt-selected-details hidden text-xs text-gray-700 bg-green-50 border border-green-200 p-3 rounded-lg mt-2">
-                <!-- Selected TT details show here -->
-            </div>
-            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" class="selected-tt-id">
-            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][type]" class="selected-tt-type">
-        `;
-        
-        container.appendChild(wrapper);
-        
-        // Calculate totals after adding tanda terima
-        calculateStuffingTotals(sectionIndex);
-        
-        const searchInput = wrapper.querySelector('.tt-search-input');
-        const resultsDropdown = wrapper.querySelector('.tt-results-dropdown');
-        const selectedIdInput = wrapper.querySelector('.selected-tt-id');
-        const selectedTypeInput = wrapper.querySelector('.selected-tt-type');
-        const detailsDiv = wrapper.querySelector('.tt-selected-details');
-        
-        let timeout = null;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(timeout);
-            const query = this.value;
-            if (query.length < 2) {
-                resultsDropdown.classList.add('hidden');
-                return;
-            }
-            
-            timeout = setTimeout(() => {
-                // Show loading indicator
-                resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Mencari...</div>';
-                resultsDropdown.classList.remove('hidden');
-                
-                fetch(`{{ url('biaya-kapal/search-tanda-terima') }}?search=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        resultsDropdown.innerHTML = '';
-                        if (data.length > 0) {
-                            data.forEach((tt, index) => {
-                                const item = document.createElement('div');
-                                item.className = 'p-3 hover:bg-gradient-to-r hover:from-rose-50 hover:to-pink-50 cursor-pointer border-b last:border-b-0 transition-all duration-150';
-                                
-                                let typeIcon = '<i class="fas fa-file text-gray-400"></i>';
-                                let typeBadge = '';
-                                if (tt.type === 'tanda_terima_tanpa_surat_jalan') {
-                                    typeIcon = '<i class="fas fa-file-alt text-blue-500"></i>';
-                                    typeBadge = '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Tanpa SJ</span>';
-                                } else if (tt.type === 'tanda_terima_lcl') {
-                                    typeIcon = '<i class="fas fa-boxes text-green-500"></i>';
-                                    typeBadge = '<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">LCL</span>';
-                                }
-                                
-                                item.innerHTML = `
-                                    <div class="flex items-start gap-3">
-                                        <div class="text-lg mt-0.5">${typeIcon}</div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-2 mb-1">
-                                                <div class="font-semibold text-sm text-gray-800 truncate">${tt.display_text || tt.no_surat_jalan}</div>
-                                                ${typeBadge}
-                                            </div>
-                                            <div class="text-xs text-gray-600 flex items-center gap-2">
-                                                <span><i class="fas fa-box text-orange-400 mr-1"></i>${tt.no_kontainer || '-'}</span>
-                                                <span class="text-gray-300">|</span>
-                                                <span class="truncate"><i class="fas fa-user text-blue-400 mr-1"></i>${tt.pengirim}</span>
-                                                <span class="text-gray-300">→</span>
-                                                <span class="truncate"><i class="fas fa-user-check text-green-400 mr-1"></i>${tt.penerima}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                                item.addEventListener('click', () => {
-                                    searchInput.value = tt.display_text || tt.no_surat_jalan;
-                                    selectedIdInput.value = tt.id;
-                                    selectedTypeInput.value = tt.type || 'tanda_terima';
-                                    resultsDropdown.classList.add('hidden');
-                                    searchInput.disabled = true;
-                                    searchInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-                                    showTtDetails(tt.id, detailsDiv, tt.type);
-                                });
-                                resultsDropdown.appendChild(item);
-                            });
-                            resultsDropdown.classList.remove('hidden');
-                        } else {
-                            resultsDropdown.innerHTML = `
-                                <div class="p-6 text-center text-gray-400">
-                                    <i class="fas fa-search text-3xl mb-2"></i>
-                                    <p class="text-sm">Tidak ada tanda terima ditemukan</p>
-                                    <p class="text-xs mt-1">Coba dengan kata kunci lain</p>
-                                </div>
-                            `;
-                            resultsDropdown.classList.remove('hidden');
-                        }
-                    });
-            }, 300);
-        });
-        
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!wrapper.contains(e.target)) {
-                resultsDropdown.classList.add('hidden');
-            }
-        });
-    }
-    
-    function showTtDetails(id, container, type = 'tanda_terima') {
-        fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${id}?type=${type}`)
-            .then(response => response.json())
-            .then(res => {
-                if (res.success) {
-                    const tt = res.data;
-                    let typeLabel = '';
-                    let typeBadgeClass = 'bg-gray-100 text-gray-800';
-                    
-                    if (res.type === 'tanda_terima_tanpa_surat_jalan') {
-                        typeLabel = '<i class="fas fa-file-alt mr-1"></i>Tanpa Surat Jalan';
-                        typeBadgeClass = 'bg-blue-100 text-blue-800';
-                    } else if (res.type === 'tanda_terima_lcl') {
-                        typeLabel = '<i class="fas fa-boxes mr-1"></i>LCL';
-                        typeBadgeClass = 'bg-green-100 text-green-800';
-                    } else {
-                        typeLabel = '<i class="fas fa-file-invoice mr-1"></i>Dengan Surat Jalan';
-                    }
-                    
-                    container.innerHTML = `
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2 pb-2 border-b border-green-300">
-                                <span class="inline-flex items-center ${typeBadgeClass} text-xs font-medium px-3 py-1 rounded-full">${typeLabel}</span>
-                                <span class="text-xs text-gray-500"><i class="fas fa-check-circle text-green-600 mr-1"></i>Terpilih</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 text-xs">
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-user text-blue-500 mt-0.5"></i>
-                                    <div>
-                                        <div class="text-gray-500 text-[10px]">Pengirim</div>
-                                        <div class="font-semibold">${tt.pengirim}</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-user-check text-green-500 mt-0.5"></i>
-                                    <div>
-                                        <div class="text-gray-500 text-[10px]">Penerima</div>
-                                        <div class="font-semibold">${tt.penerima}</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-box text-orange-500 mt-0.5"></i>
-                                    <div>
-                                        <div class="text-gray-500 text-[10px]">No. Kontainer</div>
-                                        <div class="font-semibold">${tt.no_kontainer || '-'}</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-shapes text-purple-500 mt-0.5"></i>
-                                    <div>
-                                        <div class="text-gray-500 text-[10px]">Tipe</div>
-                                        <div class="font-semibold">${tt.tipe_kontainer || '-'} ${tt.size ? '(' + tt.size + ')' : ''}</div>
-                                    </div>
-                                </div>
-                                ${tt.tujuan_pengiriman ? `<div class="col-span-2 flex items-start gap-2">
-                                    <i class="fas fa-map-marker-alt text-red-500 mt-0.5"></i>
-                                    <div>
-                                        <div class="text-gray-500 text-[10px]">Tujuan Pengiriman</div>
-                                        <div class="font-semibold">${tt.tujuan_pengiriman}</div>
-                                    </div>
-                                </div>` : ''}
-                            </div>
-                        </div>
-                    `;
-                    container.classList.remove('hidden');
-                }
-            });
-    }
-    
-    window.removeTtFromSection = function(btn) {
-        const wrapper = btn.closest('.tt-search-wrapper');
-        const container = wrapper.closest('.stuffing-tt-container');
-        
-        wrapper.remove();
-        
-        // If no more tanda terima items, show placeholder message
-        const remainingItems = container.querySelectorAll('.tt-search-wrapper');
-        if (remainingItems.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-6 text-gray-400 text-sm">
-                    <i class="fas fa-file-alt text-3xl mb-2"></i>
-                    <p>Belum ada tanda terima dipilih. Klik tombol di atas untuk menambahkan.</p>
-                </div>
-            `;
-        }
-        
-        // Recalculate totals after removing tanda terima
-        const sectionIndex = container.getAttribute('data-stuffing-section');
-        calculateStuffingTotals(sectionIndex);
     }
 
     function calculateStuffingTotals(sectionIndex) {
