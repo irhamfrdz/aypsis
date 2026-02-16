@@ -34,6 +34,7 @@ class CekKendaraan extends Model
         'kebersihan_eksterior',
         'kotak_p3k',
         'plat_no_belakang',
+        'lampu_besar_dekat_kanan',
         'odometer',
         'masa_berlaku_stnk',
         'masa_berlaku_kir',

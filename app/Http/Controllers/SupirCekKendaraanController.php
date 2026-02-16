@@ -71,6 +71,7 @@ class SupirCekKendaraanController extends Controller
             'masa_berlaku_kir' => 'nullable|date',
             'kotak_p3k' => 'required|string',
             'plat_no_belakang' => 'required|string',
+            'lampu_besar_dekat_kanan' => 'required|string',
             'foto_sebelum' => 'nullable|image|max:2048',
             'foto_sesudah' => 'nullable|image|max:2048',
         ]);
