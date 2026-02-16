@@ -246,8 +246,8 @@
                                                             <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="alat-{{ $alat->id }}" 
                                                                  data-name="{{ $alat->kode_alat }} {{ $alat->nama }}"
-                                                                 onclick="selectMobil('alat-{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }} ({{ $alat->warna ?? 'Tidak ada warna' }})')">
-                                                                <span class="block truncate font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }} <span class="text-sm text-gray-500">({{ $alat->warna ?? 'Tidak ada warna' }})</span></span>
+                                                                 onclick="selectMobil('alat-{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }} ({{ $alat->warna ?? 'Tidak ada warna' }}, {{ $alat->lokasi ?? 'Tidak ada lokasi' }})')">
+                                                                <span class="block truncate font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }} <span class="text-sm text-gray-500">({{ $alat->warna ?? 'Tidak ada warna' }}, {{ $alat->lokasi ?? 'Tidak ada lokasi' }})</span></span>
                                                             </div>
                                                         @endforeach
                                                     @endif
