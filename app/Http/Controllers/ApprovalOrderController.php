@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Term;
-use App\Models\MasterPengirimPenerima;
+use App\Models\Penerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class ApprovalOrderController extends Controller
@@ -27,13 +29,7 @@ class ApprovalOrderController extends Controller
                 $q->where('nomor_order', 'like', "%{$search}%")
                   ->orWhere('tujuan_ambil', 'like', "%{$search}%")
                   ->orWhere('tujuan_kirim', 'like', "%{$search}%")
-                  ->orWhereHas('suratJalans', function ($subQ) use ($search) {
-                      $subQ->where('no_surat_jalan', 'like', "%{$search}%")
-                           ->orWhere('no_kontainer', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('pengirim', function ($subQ) use ($search) {
-                      $subQ->where('nama_pengirim', 'like', "%{$search}%");
-                  });
+                  ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
         }
 
@@ -58,8 +54,9 @@ class ApprovalOrderController extends Controller
         $perPage = $request->get('per_page', 50);
         $orders = $query->paginate($perPage)->withQueryString();
 
-        $lastUpdate = \Illuminate\Support\Facades\Cache::get('last_tanda_terima_update');
-        $lastUpdateStr = $lastUpdate ? $lastUpdate->format('H:i') : '--:--';
+        // Get last update time from cache
+        $lastUpdate = Cache::get('last_tanda_terima_update');
+        $lastUpdateStr = $lastUpdate ? Carbon::parse($lastUpdate)->format('H:i') : '--:--';
 
         return view('approval-order.index', compact('orders', 'lastUpdateStr'));
     }
@@ -125,7 +122,7 @@ class ApprovalOrderController extends Controller
      */
     public function show($id)
     {
-        $order = Order::with(['pengirim', 'term', 'jenisBarang', 'suratJalans'])
+        $order = Order::with(['pengirim', 'term', 'jenisBarang'])
                      ->findOrFail($id);
 
         return view('approval-order.show', compact('order'));
@@ -138,9 +135,9 @@ class ApprovalOrderController extends Controller
     {
         $order = Order::with(['pengirim', 'jenisBarang', 'term'])->findOrFail($id);
         $terms = Term::orderBy('kode')->get();
-        $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
 
-        return view('approval-order.edit', compact('order', 'terms', 'penerimas') + ['return_url' => request('return_url')]);
+        return view('approval-order.edit', compact('order', 'terms', 'penerimas'));
     }
 
     /**
@@ -150,7 +147,6 @@ class ApprovalOrderController extends Controller
     {
         $request->validate([
             'term_id' => 'required|exists:terms,id',
-            'penerima_id' => 'nullable|exists:master_pengirim_penerima,id',
             'penerima' => 'nullable|string|max:255',
             'kontak_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
@@ -164,20 +160,7 @@ class ApprovalOrderController extends Controller
             $order->term_id = $request->term_id;
             
             // Update Informasi Penerima
-            if ($request->filled('penerima_id')) {
-                $penerimaData = MasterPengirimPenerima::find($request->penerima_id);
-                if ($penerimaData) {
-                    $order->penerima_id = $request->penerima_id;
-                    $order->penerima = $penerimaData->nama;
-                }
-            } else {
-                // Fallback if penerima name text is sent directly or to clear if needed
-                // But prioritizing the ID
-                if ($request->filled('penerima')) {
-                    $order->penerima = $request->penerima;
-                }
-            }
-
+            $order->penerima = $request->penerima;
             $order->kontak_penerima = $request->kontak_penerima;
             $order->alamat_penerima = $request->alamat_penerima;
             
@@ -195,7 +178,7 @@ class ApprovalOrderController extends Controller
             
             $order->save();
 
-            return redirect($request->input('return_url', route('approval-order.index')))
+            return redirect()->route('approval-order.index')
                            ->with('success', 'Data Order berhasil diupdate');
 
         } catch (\Exception $e) {
@@ -267,7 +250,7 @@ class ApprovalOrderController extends Controller
     }
 
     /**
-     * Update data penerima pada tanda terima berdasarkan data order
+     * Update data penerima dan alamat pada tanda terima via Artisan Command
      */
     public function updateTandaTerima(Request $request)
     {
@@ -275,14 +258,14 @@ class ApprovalOrderController extends Controller
             $dryRun = $request->input('dry_run', false);
             
             // Prepare command arguments
-            $arguments = [];
+            $arguments = ['--all' => true];
             if ($dryRun) {
                 $arguments['--dry-run'] = true;
             }
             
             // Run artisan command and capture output
-            \Artisan::call('tanda-terima:update-penerima', $arguments);
-            $output = \Artisan::output();
+            Artisan::call('tanda-terima:update-penerima', $arguments);
+            $output = Artisan::output();
             
             // Parse output to get statistics
             $totalOrders = 0;
@@ -290,16 +273,22 @@ class ApprovalOrderController extends Controller
             $totalWithChanges = 0;
             $totalUpdated = 0;
             
-            // Extract numbers from output
-            if (preg_match('/Total Order diproses: (\d+)/', $output, $matches)) {
+            if (preg_match('/Ditemukan (\d+) order dengan data penerima/', $output, $matches)) {
                 $totalOrders = (int) $matches[1];
             }
+            
             if (preg_match('/Total Tanda Terima ditemukan: (\d+)/', $output, $matches)) {
                 $totalTandaTerima = (int) $matches[1];
             }
-            if (preg_match('/Total Tanda Terima (?:yang akan diupdate|dengan perubahan): (\d+)/', $output, $matches)) {
+            
+            if (preg_match('/Total Tanda Terima dengan perubahan: (\d+)/', $output, $matches)) {
                 $totalWithChanges = (int) $matches[1];
             }
+            
+            if (preg_match('/Total Tanda Terima yang akan diupdate: (\d+)/', $output, $matches)) {
+                $totalWithChanges = (int) $matches[1]; // dry run
+            }
+            
             if (preg_match('/Total Tanda Terima berhasil diupdate: (\d+)/', $output, $matches)) {
                 $totalUpdated = (int) $matches[1];
             }
@@ -310,11 +299,12 @@ class ApprovalOrderController extends Controller
                 'total_orders' => $totalOrders,
                 'total_tanda_terima' => $totalTandaTerima,
                 'total_with_changes' => $totalWithChanges,
-                'total_updated' => $totalUpdated,
+                'total_updated' => $dryRun ? 0 : $totalUpdated,
                 'output' => $output
             ]);
             
         } catch (\Exception $e) {
+            Log::error('Error updating tanda terima: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
