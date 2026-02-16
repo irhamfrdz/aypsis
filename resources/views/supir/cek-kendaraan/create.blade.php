@@ -66,11 +66,7 @@
                                 <input type="number" name="odometer" placeholder="Contoh: 125000" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Bahan Bakar (%)</label>
-                                <input type="range" name="bahan_bakar" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" oninput="this.nextElementSibling.value = this.value + '%'">
-                                <output class="text-sm font-semibold text-indigo-600">50%</output>
-                            </div>
+
                         </div>
                     </div>
 

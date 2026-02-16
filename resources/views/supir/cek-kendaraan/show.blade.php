@@ -42,15 +42,7 @@
                             <span class="text-gray-500">Merek</span>
                             <span class="font-semibold">{{ $cekKendaraan->mobil->merek }}</span>
                         </div>
-                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span class="text-gray-500">Bahan Bakar</span>
-                            <div class="flex items-center space-x-2">
-                                <span class="font-bold text-indigo-600">{{ $cekKendaraan->bahan_bakar }}%</span>
-                                <div class="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div class="h-full bg-indigo-500" style="width: {{ $cekKendaraan->bahan_bakar }}%"></div>
-                                </div>
-                            </div>
-                        </div>
+
                         <div class="py-2">
                             <span class="text-gray-500 block mb-1">Pemeriksa</span>
                             <span class="font-semibold block">{{ $cekKendaraan->karyawan->nama_lengkap }}</span>

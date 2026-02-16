@@ -32,7 +32,6 @@ class CekKendaraan extends Model
         'fungsi_kopling',
         'kebersihan_interior',
         'kebersihan_eksterior',
-        'bahan_bakar',
         'odometer',
         'catatan',
         'foto_sebelum',
@@ -42,7 +41,6 @@ class CekKendaraan extends Model
     protected $casts = [
         'tanggal' => 'date',
         'jam' => 'string', // time is usually cast differently but string is okay for display
-        'bahan_bakar' => 'integer',
         'odometer' => 'integer',
     ];
 
