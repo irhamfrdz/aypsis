@@ -73,6 +73,7 @@ class SupirCekKendaraanController extends Controller
             'plat_no_belakang' => 'required|string',
             'lampu_besar_dekat_kanan' => 'required|string',
             'lampu_besar_dekat_kiri' => 'required|string',
+            'lampu_rem_kanan' => 'required|string',
             'foto_sebelum' => 'nullable|image|max:2048',
             'foto_sesudah' => 'nullable|image|max:2048',
         ]);
