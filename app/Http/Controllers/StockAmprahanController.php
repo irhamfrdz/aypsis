@@ -8,6 +8,7 @@ use App\Models\MasterGudangAmprahan;
 use App\Models\StockAmprahanUsage;
 use App\Models\Karyawan;
 use App\Models\Mobil;
+use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,8 +22,9 @@ class StockAmprahanController extends Controller
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'kapals'));
     }
 
     public function create()
@@ -107,6 +109,7 @@ class StockAmprahanController extends Controller
             'keterangan' => 'required|string',
             'penerima_id' => 'required|exists:karyawans,id',
             'mobil_id' => 'nullable|exists:mobils,id',
+            'kapal_id' => 'nullable|exists:master_kapals,id',
         ]);
 
         $penerima = Karyawan::findOrFail($request->penerima_id);
@@ -121,6 +124,7 @@ class StockAmprahanController extends Controller
             'stock_amprahan_id' => $item->id,
             'penerima_id' => $request->penerima_id,
             'mobil_id' => $request->mobil_id,
+            'kapal_id' => $request->kapal_id,
             'jumlah' => $request->jumlah,
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
@@ -139,7 +143,7 @@ class StockAmprahanController extends Controller
     public function history(Request $request, $id)
     {
         $item = StockAmprahan::with('masterNamaBarangAmprahan')->findOrFail($id);
-        $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'createdBy'])
+        $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'kapal', 'createdBy'])
             ->where('stock_amprahan_id', $id)
             ->latest('tanggal_pengambilan')
             ->get();
@@ -147,11 +151,13 @@ class StockAmprahanController extends Controller
         if ($request->ajax()) {
             $formattedUsages = $usages->map(function ($usage) {
                 $mobilInfo = $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-';
+                $kapalInfo = $usage->kapal ? $usage->kapal->nama_kapal : '-';
                 return [
                     'tanggal' => date('d-m-Y', strtotime($usage->tanggal_pengambilan)),
                     'jumlah' => $usage->jumlah,
                     'penerima' => $usage->penerima->nama_lengkap ?? '-',
                     'mobil' => $mobilInfo,
+                    'kapal' => $kapalInfo,
                     'keterangan' => $usage->keterangan,
                     'created_by' => $usage->createdBy->name ?? '-',
                 ];
@@ -164,7 +170,7 @@ class StockAmprahanController extends Controller
 
     public function allHistory()
     {
-        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'createdBy'])
+        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'kapal', 'createdBy'])
             ->latest('tanggal_pengambilan')
             ->paginate(20);
 

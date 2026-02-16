@@ -240,6 +240,34 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Kapal (Opsional)</label>
+                                            <div class="relative" id="kapal_dropdown">
+                                                <input type="hidden" name="kapal_id" id="kapal_id_hidden">
+                                                
+                                                <div class="relative">
+                                                    <input type="text" id="kapal_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Kapal..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleKapalDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="kapal_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                <div id="kapal_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
+                                                    @foreach($kapals as $kapal)
+                                                        <div class="kapal-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                             data-value="{{ $kapal->id }}" 
+                                                             data-name="{{ $kapal->nama_kapal }}"
+                                                             onclick="selectKapal('{{ $kapal->id }}', '{{ $kapal->nama_kapal }}')">
+                                                            <span class="block truncate font-medium">{{ $kapal->nama_kapal }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                    <div id="kapal_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada kapal yang cocok</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div>
                                             <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Ambil</label>
                                             <input type="number" name="jumlah" id="jumlah_ambil" required min="1" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan jumlah barang...">
@@ -312,13 +340,14 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
                                             </tr>
                                         </thead>
                                         <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
                                             <tr>
-                                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
+                                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -373,7 +402,7 @@
     function openHistoryModal(id, name) {
         document.getElementById('historyModal').classList.remove('hidden');
         document.getElementById('historyItemName').textContent = name;
-        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
+        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
         
         // Update full history link
         const fullHistoryLink = document.getElementById('fullHistoryLink');
@@ -386,7 +415,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
                     return;
                 }
 
@@ -397,6 +426,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.jumlah}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.penerima}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kapal || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.keterangan || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.created_by}</td>
                     `;
@@ -405,7 +435,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
+                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
             });
     }
 
@@ -508,6 +538,12 @@
         mobilInput.value = '';
         filterMobilOptions('');
         closeMobilDropdown();
+
+        // Reset kapal dropdown state
+        kapalHidden.value = '';
+        kapalInput.value = '';
+        filterKapalOptions('');
+        closeKapalDropdown();
     };
 
     // SEARCHABLE DROPDOWN MOBIL LOGIC
@@ -592,6 +628,78 @@
                 mobilHidden.value = '';
             }
         }
+
+        // Kapal Dropdown
+        const kapalDropdown = document.getElementById('kapal_dropdown');
+        if (kapalDropdown && !kapalDropdown.contains(e.target)) {
+            closeKapalDropdown();
+            if (kapalInput.value === '') {
+                kapalHidden.value = '';
+            }
+        }
     });
+
+    // SEARCHABLE DROPDOWN KAPAL LOGIC
+    const kapalInput = document.getElementById('kapal_search_input');
+    const kapalList = document.getElementById('kapal_options_list');
+    const kapalHidden = document.getElementById('kapal_id_hidden');
+    const kapalDropdownArrow = document.getElementById('kapal_dropdown_arrow');
+    const kapalOptions = document.querySelectorAll('.kapal-option');
+    const kapalNoResults = document.getElementById('kapal_no_results');
+
+    function toggleKapalDropdown() {
+        const isHidden = kapalList.classList.contains('hidden');
+        if (isHidden) {
+            openKapalDropdown();
+        } else {
+            closeKapalDropdown();
+        }
+    }
+
+    function openKapalDropdown() {
+        kapalList.classList.remove('hidden');
+        kapalDropdownArrow.style.transform = 'rotate(180deg)';
+        kapalInput.focus();
+    }
+
+    function closeKapalDropdown() {
+        kapalList.classList.add('hidden');
+        kapalDropdownArrow.style.transform = 'rotate(0deg)';
+    }
+
+    function selectKapal(id, name) {
+        kapalHidden.value = id;
+        kapalInput.value = name;
+        closeKapalDropdown();
+    }
+
+    kapalInput.addEventListener('focus', function() {
+        openKapalDropdown();
+    });
+
+    kapalInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        filterKapalOptions(value);
+        openKapalDropdown();
+    });
+
+    function filterKapalOptions(value) {
+        let hasVisible = false;
+        kapalOptions.forEach(option => {
+            const name = option.getAttribute('data-name').toLowerCase();
+            if (name.includes(value)) {
+                option.classList.remove('hidden');
+                hasVisible = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        if (!hasVisible) {
+            kapalNoResults.classList.remove('hidden');
+        } else {
+            kapalNoResults.classList.add('hidden');
+        }
+    }
 </script>
 @endsection
