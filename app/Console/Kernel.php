@@ -38,6 +38,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\BackfillPranotaObItems::class,
     CheckTagihanPerbaikanPermissions::class,
     ValidateDuplicateKontainers::class,
+    \App\Console\Commands\FixPenerimaTirtaInvestama::class,
     ];
 
     /**
