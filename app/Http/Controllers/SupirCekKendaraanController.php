@@ -67,6 +67,7 @@ class SupirCekKendaraanController extends Controller
             'tanggal' => 'required|date',
             'jam' => 'required',
             'odometer' => 'nullable|integer',
+            'masa_berlaku_stnk' => 'nullable|date',
             'foto_sebelum' => 'nullable|image|max:2048',
             'foto_sesudah' => 'nullable|image|max:2048',
         ]);

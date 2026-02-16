@@ -43,7 +43,9 @@
                                 <select name="mobil_id" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all" required>
                                     <option value="">-- Pilih Kendaraan --</option>
                                     @foreach($mobils as $mobil)
-                                        <option value="{{ $mobil->id }}" {{ $defaultMobilId == $mobil->id ? 'selected' : '' }}>
+                                        <option value="{{ $mobil->id }}" 
+                                                {{ $defaultMobilId == $mobil->id ? 'selected' : '' }}
+                                                data-stnk="{{ $mobil->pajak_stnk ? $mobil->pajak_stnk->format('Y-m-d') : '' }}">
                                             {{ $mobil->nomor_polisi }} ({{ $mobil->merek }})
                                         </option>
                                     @endforeach
@@ -61,9 +63,15 @@
                                 </div>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Odometer (KM)</label>
-                                <input type="number" name="odometer" placeholder="Contoh: 125000" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Odometer (KM)</label>
+                                    <input type="number" name="odometer" placeholder="KM" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Berlaku STNK</label>
+                                    <input type="date" name="masa_berlaku_stnk" id="masa_berlaku_stnk" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
                             </div>
 
 
@@ -153,5 +161,26 @@
             </div>
         </form>
     </div>
+    <script>
+        document.querySelector('select[name="mobil_id"]').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const stnkDate = selectedOption.getAttribute('data-stnk');
+            if (stnkDate) {
+                document.getElementById('masa_berlaku_stnk').value = stnkDate;
+            }
+        });
+
+        // Trigger on load for default selection
+        window.addEventListener('DOMContentLoaded', () => {
+            const select = document.querySelector('select[name="mobil_id"]');
+            if (select.value) {
+                const selectedOption = select.options[select.selectedIndex];
+                const stnkDate = selectedOption.getAttribute('data-stnk');
+                if (stnkDate) {
+                    document.getElementById('masa_berlaku_stnk').value = stnkDate;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
