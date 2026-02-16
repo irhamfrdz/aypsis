@@ -65,7 +65,7 @@ class UpdateTandaTerimaPenerima extends Command
 
             $orders = $query->with([
                 'suratJalans.tandaTerima',
-                'penerima'
+                'recipient'
             ])->get();
 
             if ($orders->isEmpty()) {
@@ -89,27 +89,23 @@ class UpdateTandaTerimaPenerima extends Command
 
             foreach ($orders as $index => $order) {
                 // Ambil data penerima dari order
-                // penerima bisa berupa string (attribute) atau relationship ke MasterPengirimPenerima
                 $penerimaName = null;
                 
-                // Cek jika ada penerima_id, maka load relationship
+                // Cek jika ada penerima_id, maka load relationship recipient
                 if ($order->penerima_id) {
                     try {
-                        $penerimaRelation = $order->penerima;  // This triggers the relationship
-                        if (is_object($penerimaRelation) && isset($penerimaRelation->nama)) {
-                            $penerimaName = $penerimaRelation->nama;
+                        $penerimaRelation = $order->recipient;  // Use the new relationship name
+                        if (is_object($penerimaRelation) && isset($penerimaRelation->nama_penerima)) {
+                            $penerimaName = $penerimaRelation->nama_penerima;
                         }
                     } catch (\Exception $e) {
-                        // Jika relationship gagal, fallback ke attribute
+                        // fallback
                     }
                 }
                 
                 // Jika masih null, coba ambil dari attribute penerima (string)
                 if (!$penerimaName) {
-                    $penerimaAttr = $order->getAttributes()['penerima'] ?? null;
-                    if ($penerimaAttr && is_string($penerimaAttr)) {
-                        $penerimaName = $penerimaAttr;
-                    }
+                    $penerimaName = $order->penerima;
                 }
                 
                 $alamatPenerima = $order->alamat_penerima;
