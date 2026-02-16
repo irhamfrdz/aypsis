@@ -300,11 +300,14 @@
                                     @if($prospek->status == 'sudah_muat' && $prospek->no_voyage)
                                         <div class="mt-1">
                                             @if($prospek->bls && $prospek->bls->count() > 0)
-                                                <a href="{{ route('bl.index', ['search' => $prospek->no_voyage]) }}" 
+                                                @php
+                                                    $blVoyage = $prospek->bls->last()->no_voyage ?? $prospek->no_voyage;
+                                                @endphp
+                                                <a href="{{ route('bl.index', ['search' => $blVoyage]) }}" 
                                                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 border border-blue-200 transition-colors duration-150"
                                                    title="Lihat data BL">
                                                     <i class="fas fa-file-alt mr-1"></i>
-                                                    Voyage: {{ $prospek->no_voyage }}
+                                                    Voyage: {{ $blVoyage }}
                                                     <i class="fas fa-external-link-alt ml-1 text-[10px]"></i>
                                                 </a>
                                             @else
