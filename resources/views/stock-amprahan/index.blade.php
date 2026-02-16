@@ -230,29 +230,46 @@
 
                                                 <div id="mobil_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
                                                     @if($mobils->count() > 0)
-                                                        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Mobil</div>
                                                         @foreach($mobils as $mobil)
                                                             <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
-                                                                 data-value="mobil-{{ $mobil->id }}" 
+                                                                 data-value="{{ $mobil->id }}" 
                                                                  data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
-                                                                 onclick="selectMobil('mobil-{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}')">
+                                                                 onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}')">
                                                                 <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
                                                             </div>
                                                         @endforeach
                                                     @endif
-                                                    
+                                                    <div id="mobil_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada mobil yang cocok</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Alat Berat (Opsional)</label>
+                                            <div class="relative" id="alat_berat_dropdown">
+                                                <input type="hidden" name="alat_berat_id" id="alat_berat_id_hidden">
+                                                
+                                                <div class="relative">
+                                                    <input type="text" id="alat_berat_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Alat Berat..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleAlatBeratDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="alat_berat_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                <div id="alat_berat_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
                                                     @if($alatBerats->count() > 0)
-                                                        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50 {{ $mobils->count() > 0 ? 'mt-1' : '' }}">Alat Berat</div>
                                                         @foreach($alatBerats as $alat)
-                                                            <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
-                                                                 data-value="alat-{{ $alat->id }}" 
+                                                            <div class="alat-berat-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="{{ $alat->id }}" 
                                                                  data-name="{{ $alat->kode_alat }} {{ $alat->nama }}"
-                                                                 onclick="selectMobil('alat-{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }} ({{ $alat->warna ?? 'Tidak ada warna' }}, {{ $alat->lokasi ?? 'Tidak ada lokasi' }})')">
-                                                                <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }} <span class="text-sm text-gray-500">({{ $alat->warna ?? 'Tidak ada warna' }}, {{ $alat->lokasi ?? 'Tidak ada lokasi' }})</span></span>
+                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}')">
+                                                                <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}</span>
                                                             </div>
                                                         @endforeach
                                                     @endif
-                                                    <div id="mobil_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada mobil yang cocok</div>
+                                                    <div id="alat_berat_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada alat berat yang cocok</div>
                                                 </div>
                                             </div>
                                         </div>
