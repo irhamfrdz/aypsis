@@ -82,7 +82,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Penerima</label>
-                            <p class="mt-1 text-sm text-gray-900 font-medium">{{ $order->penerima ?: '-' }}</p>
+                            <p class="mt-1 text-sm text-gray-900 font-medium">{{ $order->recipient->nama_penerima ?? $order->penerima ?: '-' }}</p>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Kontak</label>
@@ -92,6 +92,14 @@
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Alamat Penerima</label>
                             <p class="mt-1 text-sm text-gray-900">{{ $order->alamat_penerima ?: '-' }}</p>
                         </div>
+
+                        @if($order->notifyParty)
+                        <div class="md:col-span-2 pt-4 border-t border-gray-100">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Notify Party</label>
+                            <p class="mt-1 text-sm text-gray-900 font-medium">{{ $order->notifyParty->nama_penerima }}</p>
+                            <p class="mt-1 text-xs text-gray-600">{{ $order->notifyParty->alamat }}</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

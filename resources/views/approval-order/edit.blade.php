@@ -160,8 +160,9 @@
                                         @foreach($penerimas as $penerima)
                                             <option value="{{ $penerima->id }}" 
                                                     data-alamat="{{ $penerima->alamat }}"
+                                                    data-kontak="{{ $penerima->contact_person }}"
                                                     {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
-                                                {{ $penerima->nama }}
+                                                {{ $penerima->nama_penerima }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -231,7 +232,7 @@
                                             @foreach($penerimas as $penerima)
                                                 <option value="{{ $penerima->id }}" 
                                                         {{ old('notify_party_id', $order->notify_party_id ?? '') == $penerima->id ? 'selected' : '' }}>
-                                                    {{ $penerima->nama }}
+                                                    {{ $penerima->nama_penerima }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -406,6 +407,7 @@
                     div.textContent = option.text;
                     div.setAttribute('data-value', option.value);
                     div.setAttribute('data-alamat', option.getAttribute('data-alamat') || '');
+                    div.setAttribute('data-kontak', option.getAttribute('data-kontak') || '');
 
                     // Add selected class if it matches the current select value
                     if (option.value === selectElement.value && option.value !== '') {
@@ -416,6 +418,7 @@
                         const value = this.getAttribute('data-value');
                         const text = this.textContent;
                         const alamat = this.getAttribute('data-alamat');
+                        const kontak = this.getAttribute('data-kontak');
 
                         // Set the select value
                         selectElement.value = value;
@@ -428,9 +431,12 @@
                             searchInput.value = text;
                         }
 
-                        // Auto-fill alamat if exist
+                        // Auto-fill field if exist
                         if (config.alamatId && document.getElementById(config.alamatId) && alamat) {
                             document.getElementById(config.alamatId).value = alamat;
+                        }
+                        if (config.kontakId && document.getElementById(config.kontakId) && kontak) {
+                            document.getElementById(config.kontakId).value = kontak;
                         }
 
                         // Hide dropdown
@@ -472,7 +478,8 @@
             searchId: 'search_penerima',
             dropdownId: 'dropdown_options_penerima',
             containerClass: 'dropdown-container-penerima',
-            alamatId: 'alamat_penerima'
+            alamatId: 'alamat_penerima',
+            kontakId: 'kontak_penerima'
         });
 
         // Initialize Notify Party dropdown

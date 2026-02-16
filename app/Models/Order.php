@@ -93,9 +93,14 @@ class Order extends Model
         return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_ambil_id');
     }
 
-    public function penerima(): BelongsTo
+    public function recipient(): BelongsTo
     {
-        return $this->belongsTo(MasterPengirimPenerima::class, 'penerima_id');
+        return $this->belongsTo(Penerima::class, 'penerima_id');
+    }
+
+    public function notifyParty(): BelongsTo
+    {
+        return $this->belongsTo(Penerima::class, 'notify_party_id');
     }
 
     public function suratJalans()

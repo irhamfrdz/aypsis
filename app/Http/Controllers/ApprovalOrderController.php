@@ -122,7 +122,7 @@ class ApprovalOrderController extends Controller
      */
     public function show($id)
     {
-        $order = Order::with(['pengirim', 'term', 'jenisBarang'])
+        $order = Order::with(['pengirim', 'term', 'jenisBarang', 'recipient', 'notifyParty'])
                      ->findOrFail($id);
 
         return view('approval-order.show', compact('order'));
@@ -147,7 +147,8 @@ class ApprovalOrderController extends Controller
     {
         $request->validate([
             'term_id' => 'required|exists:terms,id',
-            'penerima' => 'nullable|string|max:255',
+            'penerima_id' => 'nullable|exists:penerimas,id',
+            'notify_party_id' => 'nullable|exists:penerimas,id',
             'kontak_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
             'ftz03_option' => 'required|in:exclude,include,none',
@@ -160,7 +161,16 @@ class ApprovalOrderController extends Controller
             $order->term_id = $request->term_id;
             
             // Update Informasi Penerima
-            $order->penerima = $request->penerima;
+            $order->penerima_id = $request->penerima_id;
+            $order->notify_party_id = $request->notify_party_id;
+            
+            if ($request->filled('penerima_id')) {
+                $penerima = \App\Models\Penerima::find($request->penerima_id);
+                $order->penerima = $penerima ? $penerima->nama_penerima : null;
+            } else {
+                $order->penerima = null;
+            }
+            
             $order->kontak_penerima = $request->kontak_penerima;
             $order->alamat_penerima = $request->alamat_penerima;
             
