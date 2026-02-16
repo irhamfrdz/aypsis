@@ -186,7 +186,7 @@ class Order extends Model
             'remaining' => $this->sisa,
             'note' => $note,
             'processed_at' => now()->toISOString(),
-            'processed_by' => auth()->user()?->id ?? null
+            'processed_by' => \Illuminate\Support\Facades\Auth::id()
         ];
         $this->processing_history = $history;
 
