@@ -1966,9 +1966,15 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
-                    <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
-                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
+                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                        </select>
+                        <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
+                        <button type="button" class="voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -2011,6 +2017,37 @@
             console.log('Voyage changed in section:', currentIndex, 'Kapal:', kapalNama, 'Voyage:', voyageValue);
             if (kapalNama && voyageValue) {
                 autoFillBarangForSection(currentIndex, kapalNama, voyageValue);
+            }
+        });
+
+        // Setup manual voyage toggle
+        const voyageInput = section.querySelector('.voyage-input');
+        const voyageManualBtn = section.querySelector('.voyage-manual-btn');
+
+        voyageManualBtn.addEventListener('click', function() {
+            if (voyageInput.classList.contains('hidden')) {
+                // Switch to manual input
+                voyageSelect.classList.add('hidden');
+                voyageSelect.disabled = true;
+                
+                voyageInput.classList.remove('hidden');
+                voyageInput.disabled = false;
+                voyageInput.focus();
+                
+                this.classList.remove('bg-gray-200', 'text-gray-600');
+                this.classList.add('bg-blue-200', 'text-blue-700');
+                this.innerHTML = '<i class="fas fa-list"></i>';
+            } else {
+                // Switch to select list
+                voyageInput.classList.add('hidden');
+                voyageInput.disabled = true;
+                
+                voyageSelect.classList.remove('hidden');
+                voyageSelect.disabled = false;
+                
+                this.classList.add('bg-gray-200', 'text-gray-600');
+                this.classList.remove('bg-blue-200', 'text-blue-700');
+                this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
         

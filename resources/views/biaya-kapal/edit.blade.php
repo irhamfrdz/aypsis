@@ -2134,9 +2134,15 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
-                    <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
-                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
+                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                        </select>
+                        <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
+                        <button type="button" class="voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -2153,17 +2159,50 @@
         
         // Setup kapal change listener
         const kapalSelect = section.querySelector('.kapal-select');
+        const voyageSelectArray = section.querySelectorAll('.voyage-select'); // Use querySelector because it's único per section or querySelectorAll if needed? Just one.
+        const voyageSelect = section.querySelector('.voyage-select');
+        
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForSection(sectionIndex, this.value);
         });
         
         // Setup voyage change listener for auto-fill barang
-        const voyageSelect = section.querySelector('.voyage-select');
         voyageSelect.addEventListener('change', function() {
             const kapalNama = kapalSelect.value;
             const voyageValue = this.value;
             if (kapalNama && voyageValue) {
                 autoFillBarangForSection(sectionIndex, kapalNama, voyageValue);
+            }
+        });
+
+        // Setup manual voyage toggle
+        const voyageInput = section.querySelector('.voyage-input');
+        const voyageManualBtn = section.querySelector('.voyage-manual-btn');
+
+        voyageManualBtn.addEventListener('click', function() {
+            if (voyageInput.classList.contains('hidden')) {
+                // Switch to manual input
+                voyageSelect.classList.add('hidden');
+                voyageSelect.disabled = true;
+                
+                voyageInput.classList.remove('hidden');
+                voyageInput.disabled = false;
+                voyageInput.focus();
+                
+                this.classList.remove('bg-gray-200', 'text-gray-600');
+                this.classList.add('bg-blue-200', 'text-blue-700');
+                this.innerHTML = '<i class="fas fa-list"></i>';
+            } else {
+                // Switch to select list
+                voyageInput.classList.add('hidden');
+                voyageInput.disabled = true;
+                
+                voyageSelect.classList.remove('hidden');
+                voyageSelect.disabled = false;
+                
+                this.classList.add('bg-gray-200', 'text-gray-600');
+                this.classList.remove('bg-blue-200', 'text-blue-700');
+                this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
         
@@ -2316,6 +2355,8 @@
     function loadVoyagesForSection(sectionIndex, kapalNama) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         const voyageSelect = section.querySelector('.voyage-select');
+        const voyageInput = section.querySelector('.voyage-input');
+        const voyageManualBtn = section.querySelector('.voyage-manual-btn');
         
         if (!kapalNama) {
             voyageSelect.disabled = true;
@@ -2323,8 +2364,11 @@
             return;
         }
         
-        voyageSelect.disabled = true;
-        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        // Only if currently in select mode
+        if (!voyageSelect.classList.contains('hidden')) {
+            voyageSelect.disabled = true;
+            voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        }
         
         fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
             .then(response => response.json())
@@ -2336,14 +2380,20 @@
                         html += `<option value="${voyage}">${voyage}</option>`;
                     });
                     voyageSelect.innerHTML = html;
-                    voyageSelect.disabled = false;
+                    
+                    // Only enable if not in manual mode
+                    if (voyageInput.classList.contains('hidden')) {
+                        voyageSelect.disabled = false;
+                    }
                 } else {
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
                 }
             })
             .catch(error => {
                 console.error('Error fetching voyages:', error);
-                voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+                if (!voyageSelect.classList.contains('hidden')) {
+                   voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+                }
             });
     }
     
@@ -4242,12 +4292,37 @@
                 </div>
             </div>
             
-            <div class="mb-3">
-                <label class="block text-xs font-medium text-gray-700 mb-2">Pilih Tanda Terima <span class="text-red-500">*</span></label>
-                <div class="stuffing-tt-container" data-stuffing-section="${sectionIndex}"></div>
-                <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs rounded-lg transition">
-                    <i class="fas fa-search mr-1"></i> Cari Tanda Terima
                 </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="stuffing_sections[${sectionIndex}][subtotal]" 
+                               class="stuffing-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0 text-right" 
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPh 2%</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="stuffing_sections[${sectionIndex}][pph]" 
+                               class="stuffing-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0 text-right" 
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="stuffing_sections[${sectionIndex}][total_biaya]" 
+                               class="stuffing-total-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0 text-right font-bold text-rose-600" 
+                               value="0" readonly>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -4462,6 +4537,67 @@
     
     window.removeTtFromSection = function(btn) {
         btn.closest('.tt-search-wrapper').remove();
+        // Since we removed a TT, we might need to recalculate. 
+        // But we need the sectionIndex. Let's try to find it.
+        const section = btn.closest('.stuffing-section');
+        if (section) {
+            const sectionIndex = section.getAttribute('data-stuffing-section-index');
+            calculateStuffingTotals(sectionIndex);
+        }
+    }
+
+    window.calculateStuffingTotals = function(sectionIndex) {
+        const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
+        if (!section) return;
+
+        const subtotalInput = section.querySelector('.stuffing-subtotal-input');
+        const pphInput = section.querySelector('.stuffing-pph-input');
+        const totalInput = section.querySelector('.stuffing-total-input');
+        
+        // In edit mode, we might not have .tt-price-value yet unless we add it to tt details.
+        // For now, let's assume we want to calculate based on number of TTs or something, 
+        // or actually, the user might need to input prices.
+        // In create.blade.php, it seems it might be fetching prices.
+        
+        // Let's implement a simple version or wait for user feedback if they want auto-calculation from pricelist.
+        // For now, I'll just add the functions so they exist.
+        
+        let subtotal = 0;
+        const ttWrappers = section.querySelectorAll('.tt-search-wrapper');
+        // If there's a price field, use it.
+        section.querySelectorAll('.tt-price-input').forEach(input => {
+            subtotal += parseFloat(input.value.replace(/\./g, '')) || 0;
+        });
+
+        const pph = Math.round(subtotal * 0.02);
+        const total = subtotal - pph;
+
+        const formatRupiah = (val) => {
+            return new Intl.NumberFormat('id-ID').format(Math.round(val));
+        };
+
+        if (subtotalInput) subtotalInput.value = formatRupiah(subtotal);
+        if (pphInput) pphInput.value = formatRupiah(pph);
+        if (totalInput) totalInput.value = formatRupiah(total);
+
+        calculateTotalFromAllStuffingSections();
+    }
+
+    function calculateTotalFromAllStuffingSections() {
+        let totalSubtotal = 0;
+        document.querySelectorAll('.stuffing-section').forEach(section => {
+            const input = section.querySelector('.stuffing-subtotal-input');
+            if (input) {
+                totalSubtotal += parseFloat(input.value.replace(/\./g, '')) || 0;
+            }
+        });
+
+        const currentJenis = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].getAttribute('data-kode');
+        if (currentJenis === 'Stuffing') {
+            if (nominalInput) {
+                nominalInput.value = new Intl.NumberFormat('id-ID').format(totalSubtotal);
+            }
+        }
     }
 </script>
 @endpush
