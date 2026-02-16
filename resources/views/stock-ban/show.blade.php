@@ -103,6 +103,26 @@
                 </p>
             </div>
             @endif
+
+            <!-- Kapal / Pengiriman -->
+            @if($stockBan->status == 'Dikirim Ke Kapal' || $stockBan->kapal)
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <label class="block text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Informasi Pengiriman Kapal</label>
+                <p class="text-base font-medium text-blue-900">
+                    <i class="fas fa-ship mr-1"></i> {{ $stockBan->kapal->nama_kapal ?? '-' }}
+                </p>
+                @if($stockBan->tanggal_kirim)
+                    <p class="text-xs text-blue-600 mt-1">
+                        Dikirim pada: {{ \Carbon\Carbon::parse($stockBan->tanggal_kirim)->format('d M Y') }}
+                    </p>
+                @endif
+                @if($stockBan->penerima)
+                    <p class="text-xs text-blue-600 mt-1">
+                        Penerima: {{ $stockBan->penerima->nama_lengkap }}
+                    </p>
+                @endif
+            </div>
+            @endif
             
             <!-- Masak Info -->
             @if($stockBan->status_masak && $stockBan->jumlah_masak > 0)

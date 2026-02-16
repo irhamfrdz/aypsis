@@ -45,8 +45,9 @@ class StockBanController extends Controller
         $pricelistKanisirBans = \App\Models\MasterPricelistKanisirBan::whereIn('status', ['active', 'aktif'])
             ->orderBy('vendor')
             ->get();
+        $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals'));
     }
 
     /**
@@ -272,7 +273,7 @@ class StockBanController extends Controller
      */
     public function show($id)
     {
-        $stockBan = StockBan::with(['mobil', 'penerima', 'namaStockBan'])->findOrFail($id);
+        $stockBan = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal'])->findOrFail($id);
         return view('stock-ban.show', compact('stockBan'));
     }
 
@@ -450,6 +451,43 @@ class StockBanController extends Controller
 
         $unitName = $isAlatBerat ? 'alat berat' : 'mobil';
         return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dipasang pada ' . $unitName . '.');
+    }
+
+    /**
+     * Send ban to ship.
+     */
+    public function kirim(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        // Informative check: only Stok can be sent
+        if ($stockBan->status !== 'Stok') {
+            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikirim ke kapal.')->withInput();
+        }
+
+        $request->validate([
+            'penerima_id' => 'required|exists:karyawans,id',
+            'kapal_id' => 'required|exists:master_kapals,id',
+            'tanggal_kirim' => 'required|date',
+            'keterangan' => 'nullable|string',
+        ], [
+            'penerima_id.required' => 'Wajib memilih Penerima.',
+            'penerima_id.exists' => 'Penerima tidak valid.',
+            'kapal_id.required' => 'Wajib memilih Kapal.',
+            'kapal_id.exists' => 'Kapal tidak valid.',
+            'tanggal_kirim.required' => 'Tanggal kirim harus diisi.',
+        ]);
+
+        $stockBan->update([
+            'status' => 'Dikirim Ke Kapal',
+            'penerima_id' => $request->penerima_id,
+            'kapal_id' => $request->kapal_id,
+            'tanggal_kirim' => $request->tanggal_kirim,
+            'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Kirim ke Kapal: " . $request->keterangan . "]") : $stockBan->keterangan,
+        ]);
+
+        $kapalName = \App\Models\MasterKapal::find($request->kapal_id)->nama_kapal ?? '-';
+        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dikirim ke kapal ' . $kapalName . '.');
     }
 
     /**

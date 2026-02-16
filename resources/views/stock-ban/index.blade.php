@@ -405,7 +405,8 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
-                                           ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800')) }}">
+                                           ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
+                                           ($ban->status == 'Dikirim Ke Kapal' ? 'bg-cyan-100 text-cyan-800' : 'bg-gray-100 text-gray-800'))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -468,16 +469,26 @@
                                                 <i class="fas fa-wrench"></i>
                                             </button>
                                             
-                                            @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
-                                            <form action="{{ route('stock-ban.masak', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin masak ban ini jadi kanisir?')">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit" class="text-orange-600 hover:text-orange-900" title="Masak Kanisir">
-                                                    <i class="fas fa-fire"></i>
-                                                </button>
-                                            </form>
-                                            @endif
-                                        @elseif($ban->status == 'Terpakai')
+                                             @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
+                                             <form action="{{ route('stock-ban.masak', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin masak ban ini jadi kanisir?')">
+                                                 @csrf
+                                                 @method('PUT')
+                                                 <button type="submit" class="text-orange-600 hover:text-orange-900" title="Masak Kanisir">
+                                                     <i class="fas fa-fire"></i>
+                                                 </button>
+                                             </form>
+                                             @endif
+
+                                             @if($ban->kondisi != 'afkir')
+                                             <button type="button" 
+                                                 class="btn-kirim-modal text-blue-500 hover:text-blue-700" 
+                                                 data-id="{{ $ban->id }}" 
+                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 title="Kirim Ban">
+                                                 <i class="fas fa-ship"></i>
+                                             </button>
+                                             @endif
+                                         @elseif($ban->status == 'Terpakai')
                                             <button type="button" 
                                                 class="btn-return-modal text-indigo-600 hover:text-indigo-900"
                                                 data-id="{{ $ban->id }}"
@@ -1319,8 +1330,8 @@
         selectedCheckboxes.forEach(cb => {
             const row = cb.closest('tr');
             // Clone data from row and checkbox attributes
-            const noSeriContent = row.cells[1].innerHTML;
-            const merkUkuranContent = row.cells[2].innerHTML;
+            const noSeriContent = row.cells[2].innerHTML; // Corrected index for Nomor Seri
+            const merkUkuranContent = row.cells[4].innerHTML; // Corrected index for Merk & Ukuran
             const typeValue = cb.getAttribute('data-type') || '-';
             const banId = cb.value;
 
@@ -1412,6 +1423,62 @@
 
         form.submit();
     }
+
+    // KIRIM BAN FUNCTIONS
+    function openKirimModal(id, seri) {
+        const modal = document.getElementById('kirimBanModal');
+        const modalBanId = document.getElementById('kirim_ban_id');
+        const modalNomorSeri = document.getElementById('kirim_nomor_seri');
+        
+        if (!modal) return;
+        
+        modalBanId.value = id;
+        modalNomorSeri.textContent = seri || '-';
+        
+        // Reset dropdowns
+        document.getElementById('kirim_penerima_id').value = '';
+        document.getElementById('text-kirim_penerima').textContent = '-- Pilih Penerima --';
+        document.getElementById('kirim_kapal_id').value = '';
+        document.getElementById('text-kirim_kapal').textContent = '-- Pilih Kapal --';
+        document.getElementById('kirim_tanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('kirim_keterangan').value = '';
+
+        modal.classList.remove('hidden');
+        
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+    }
+
+    function closeKirimBanModal() {
+        const modal = document.getElementById('kirimBanModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style');
+        }
+        DropdownManager.close();
+    }
+
+    function submitKirimBanForm() {
+        const banId = document.getElementById('kirim_ban_id').value;
+        const penerimaId = document.getElementById('kirim_penerima_id').value;
+        const kapalId = document.getElementById('kirim_kapal_id').value;
+        const tanggal = document.getElementById('kirim_tanggal').value;
+        
+        if (!penerimaId) { alert('Mohon pilih penerima!'); return; }
+        if (!kapalId) { alert('Mohon pilih kapal!'); return; }
+        if (!tanggal) { alert('Mohon isi tanggal kirim!'); return; }
+
+        const form = document.getElementById('kirimBanForm');
+        form.action = `{{ url('stock-ban') }}/${banId}/kirim`;
+        form.submit();
+    }
+
+    window.openKirimModal = openKirimModal;
+    window.closeKirimBanModal = closeKirimBanModal;
+    window.submitKirimBanForm = submitKirimBanForm;
 
     function updateKanisirPrices(vendorName) {
         if (!vendorName) return;
@@ -1863,5 +1930,106 @@
     window.closeReturnMasakModal = closeReturnMasakModal;
     window.submitReturnMasakForm = submitReturnMasakForm;
 
+    // Additional event listener for the new Kirim button
+    document.addEventListener('click', function(e) {
+        const kirimBtn = e.target.closest('.btn-kirim-modal');
+        if (kirimBtn) {
+            e.preventDefault();
+            const id = kirimBtn.getAttribute('data-id');
+            const seri = kirimBtn.getAttribute('data-seri');
+            openKirimModal(id, seri);
+        }
+    });
+
 </script>
+
+<!-- Modal Kirim Ban -->
+<div id="kirimBanModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeKirimBanModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="kirimBanForm" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="ban_id" id="kirim_ban_id">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-ship text-blue-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Kirim Ban: <span id="kirim_nomor_seri" class="text-blue-600 font-bold"></span>
+                            </h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label class="form-label-premium">Penerima <span class="text-red-500">*</span></label>
+                                    <input type="hidden" name="penerima_id" id="kirim_penerima_id" required>
+                                    <button type="button" id="btn-kirim_penerima" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('kirim_penerima', this)">
+                                        <span class="block truncate" id="text-kirim_penerima">-- Pilih Penerima --</span>
+                                        <i class="fas fa-chevron-down text-gray-400"></i>
+                                    </button>
+                                    <div id="dropdown-content-kirim_penerima" class="hidden">
+                                        <div class="dropdown-search-container">
+                                            <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari penerima..." onkeyup="DropdownManager.filter(this)">
+                                        </div>
+                                        <div class="dropdown-list">
+                                            @foreach($karyawans as $karyawan)
+                                                <div class="dropdown-item" onclick="DropdownManager.select('kirim_penerima', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')">
+                                                    {{ $karyawan->nama_lengkap }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label-premium">Kapal <span class="text-red-500">*</span></label>
+                                    <input type="hidden" name="kapal_id" id="kirim_kapal_id" required>
+                                    <button type="button" id="btn-kirim_kapal" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('kirim_kapal', this)">
+                                        <span class="block truncate" id="text-kirim_kapal">-- Pilih Kapal --</span>
+                                        <i class="fas fa-chevron-down text-gray-400"></i>
+                                    </button>
+                                    <div id="dropdown-content-kirim_kapal" class="hidden">
+                                        <div class="dropdown-search-container">
+                                            <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari kapal..." onkeyup="DropdownManager.filter(this)">
+                                        </div>
+                                        <div class="dropdown-list">
+                                            @foreach($kapals as $kapal)
+                                                <div class="dropdown-item" onclick="DropdownManager.select('kirim_kapal', '{{ $kapal->id }}', '{{ $kapal->nama_kapal }}')">
+                                                    {{ $kapal->nama_kapal }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="kirim_tanggal" class="form-label-premium">Tanggal Kirim <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_kirim" id="kirim_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                                </div>
+
+                                <div>
+                                    <label for="kirim_keterangan" class="form-label-premium">Keterangan</label>
+                                    <textarea name="keterangan" id="kirim_keterangan" class="form-input-premium" rows="2" placeholder="Catatan tambahan..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="button" onclick="submitKirimBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Kirim
+                    </button>
+                    <button type="button" onclick="closeKirimBanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endpush

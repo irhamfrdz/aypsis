@@ -30,6 +30,8 @@ class StockBan extends Model
         'mobil_id',
         'alat_berat_id',
         'penerima_id',
+        'kapal_id',
+        'tanggal_kirim',
         'status_ban_luar',
         'status_masak',
         'jumlah_masak',
@@ -55,6 +57,11 @@ class StockBan extends Model
         return $this->belongsTo(AlatBerat::class, 'alat_berat_id');
     }
 
+    public function kapal()
+    {
+        return $this->belongsTo(MasterKapal::class, 'kapal_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -70,6 +77,7 @@ class StockBan extends Model
         'tanggal_masuk' => 'date',
         'tanggal_keluar' => 'date',
         'tanggal_kembali' => 'date',
+        'tanggal_kirim' => 'date',
     ];
 
     public static function generateNextInvoice()
