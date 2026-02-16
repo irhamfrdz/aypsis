@@ -11,7 +11,13 @@
             <h1 class="text-2xl font-bold text-gray-800">Manajemen Stock Amprahan</h1>
             <p class="text-gray-500 text-sm mt-1">Kelola ketersediaan barang operasional dan kantor.</p>
         </div>
-        <div class="mt-4 md:mt-0">
+        <div class="mt-4 md:mt-0 flex space-x-2">
+            <a href="{{ route('stock-amprahan.all-history') }}" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Riwayat Pemakaian
+            </a>
             <a href="{{ route('stock-amprahan.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -288,8 +294,14 @@
                             </svg>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                Riwayat Pengambilan: <span id="historyItemName"></span>
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 flex justify-between items-center" id="modal-title">
+                                <span>Riwayat Pengambilan: <span id="historyItemName"></span></span>
+                                <a id="fullHistoryLink" href="#" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold flex items-center shadow-sm px-2 py-1 bg-indigo-50 rounded border border-indigo-100 transition-colors">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    Halaman Penuh
+                                </a>
                             </h3>
                             <div class="mt-4">
                                 <div class="overflow-x-auto">
@@ -362,6 +374,10 @@
         document.getElementById('historyModal').classList.remove('hidden');
         document.getElementById('historyItemName').textContent = name;
         document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
+        
+        // Update full history link
+        const fullHistoryLink = document.getElementById('fullHistoryLink');
+        fullHistoryLink.href = `/stock-amprahan/${id}/history`;
 
         fetch(`/stock-amprahan/${id}/history`)
             .then(response => response.json())

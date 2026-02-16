@@ -136,13 +136,16 @@ class StockAmprahanController extends Controller
         return redirect()->route('stock-amprahan.index')
             ->with('success', 'Pengambilan barang berhasil dicatat. Sisa stock: ' . $item->jumlah . ' ' . $item->satuan);
     }
-    public function history($id)
+    public function history(Request $request, $id)
     {
+        $item = StockAmprahan::with('masterNamaBarangAmprahan')->findOrFail($id);
         $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'createdBy'])
             ->where('stock_amprahan_id', $id)
             ->latest('tanggal_pengambilan')
-            ->get()
-            ->map(function ($usage) {
+            ->get();
+
+        if ($request->ajax()) {
+            $formattedUsages = $usages->map(function ($usage) {
                 $mobilInfo = $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-';
                 return [
                     'tanggal' => date('d-m-Y', strtotime($usage->tanggal_pengambilan)),
@@ -153,7 +156,18 @@ class StockAmprahanController extends Controller
                     'created_by' => $usage->createdBy->name ?? '-',
                 ];
             });
+            return response()->json($formattedUsages);
+        }
 
-        return response()->json($usages);
+        return view('stock-amprahan.history', compact('item', 'usages'));
+    }
+
+    public function allHistory()
+    {
+        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'createdBy'])
+            ->latest('tanggal_pengambilan')
+            ->paginate(20);
+
+        return view('stock-amprahan.history', compact('usages'));
     }
 }

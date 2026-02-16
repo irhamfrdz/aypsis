@@ -4293,10 +4293,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           ]);
 
     // 📦 Stock Amprahan
-    Route::post('stock-amprahan/{stock_amprahan}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
+    Route::get('stock-amprahan/history/all', [\App\Http\Controllers\StockAmprahanController::class, 'allHistory'])
+        ->name('stock-amprahan.all-history')
+        ->middleware('can:stock-amprahan-view');
+    Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
         ->name('stock-amprahan.usage')
         ->middleware('can:stock-amprahan-update');
-    Route::get('stock-amprahan/{stock_amprahan}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')
+    Route::get('stock-amprahan/{id}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')
         ->middleware('can:stock-amprahan-view');
     Route::resource('stock-amprahan', \App\Http\Controllers\StockAmprahanController::class)
           ->names('stock-amprahan')
