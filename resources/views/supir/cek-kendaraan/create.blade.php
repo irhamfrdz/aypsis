@@ -234,6 +234,20 @@
                                     </label>
                                 </div>
                             </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                                <span class="text-sm font-medium text-gray-700">Lampu Alarm Mundur</span>
+                                <div class="flex space-x-2">
+                                    <label class="cursor-pointer group">
+                                        <input type="radio" name="lampu_alarm_mundur" value="berfungsi" checked class="hidden peer">
+                                        <span class="px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-400 peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:border-green-200 transition-all">Berfungsi</span>
+                                    </label>
+                                    <label class="cursor-pointer group">
+                                        <input type="radio" name="lampu_alarm_mundur" value="tidak_berfungsi" class="hidden peer">
+                                        <span class="px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-400 peer-checked:bg-red-100 peer-checked:text-red-700 peer-checked:border-red-200 transition-all">Tidak Berfungsi</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-8">

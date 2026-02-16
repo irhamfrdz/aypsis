@@ -75,6 +75,7 @@ class SupirCekKendaraanController extends Controller
             'lampu_besar_dekat_kiri' => 'required|string',
             'lampu_rem_kanan' => 'required|string',
             'lampu_rem_kiri' => 'required|string',
+            'lampu_alarm_mundur' => 'required|string',
             'foto_sebelum' => 'nullable|image|max:2048',
             'foto_sesudah' => 'nullable|image|max:2048',
         ]);
