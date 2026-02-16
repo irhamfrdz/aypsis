@@ -309,7 +309,7 @@
                                                 $displayVoyage = $blVoyage ?? $prospek->no_voyage;
                                             @endphp
 
-                                            @if($displayVoyage)
+                                            @if($blVoyage)
                                                 <a href="{{ route('bl.index', ['search' => $displayVoyage]) }}" 
                                                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 border border-blue-200 transition-colors duration-150"
                                                    title="Lihat data BL">
@@ -317,7 +317,7 @@
                                                     Voyage: {{ $displayVoyage }}
                                                     <i class="fas fa-external-link-alt ml-1 text-[10px]"></i>
                                                 </a>
-                                            @endif
+                                            @else
                                                 <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-50 rounded border border-gray-200">
                                                     <i class="fas fa-ship mr-1"></i>
                                                     Voyage: {{ $prospek->no_voyage }}
