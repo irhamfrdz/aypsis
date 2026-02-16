@@ -179,6 +179,7 @@
                                     Pengambilan Barang
                                 </h3>
                                 <div class="mt-2">
+                                    <div id="errorMessage" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700"></div>
                                     <p class="text-sm text-gray-500 mb-4">
                                         Silakan isi detail pengambilan untuk barang <strong id="modalItemName"></strong>.
                                         Sisa stock saat ini: <strong id="modalCurrentStock"></strong> <span id="modalUnit"></span>
@@ -716,5 +717,62 @@
             kapalNoResults.classList.add('hidden');
         }
     }
+
+    // Handle form submission with AJAX
+    document.getElementById('usageForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const errorDiv = document.getElementById('errorMessage');
+        
+        // Hide previous error
+        errorDiv.classList.add('hidden');
+        errorDiv.textContent = '';
+        
+        // Disable submit button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Menyimpan...';
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                // Success redirect
+                window.location.href = response.url;
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.errors) {
+                // Validation errors
+                let errorMessages = [];
+                for (let field in data.errors) {
+                    errorMessages.push(data.errors[field].join(', '));
+                }
+                errorDiv.textContent = 'Pengambilan barang gagal: ' + errorMessages.join('; ');
+                errorDiv.classList.remove('hidden');
+            } else if (data && data.message) {
+                errorDiv.textContent = data.message;
+                errorDiv.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            errorDiv.textContent = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
+            errorDiv.classList.remove('hidden');
+        })
+        .finally(() => {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        });
+    });
 </script>
 @endsection

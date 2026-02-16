@@ -105,7 +105,7 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
 
-        $request->validate([
+        $validator = \Validator::make($request->all(), [
             'jumlah' => 'required|numeric|min:0.01|max:' . $item->jumlah,
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',
@@ -113,6 +113,13 @@ class StockAmprahanController extends Controller
             'mobil_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
         ]);
+
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         $penerima = Karyawan::findOrFail($request->penerima_id);
 
@@ -132,12 +139,14 @@ class StockAmprahanController extends Controller
             'keterangan' => $request->keterangan,
             'created_by' => Auth::id(),
         ]);
-        
-        // Append log to keterangan (OPTIONAL: Keep for backward compatibility or remove? Let's remove to avoid clutter)
-        // $usageNote = ... 
-        // $item->keterangan = ...
-        // user requirement is just "feature history", now we have a table. We don't need double storage.
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengambilan barang berhasil dicatat. Sisa stock: ' . $item->jumlah . ' ' . $item->satuan,
+                'redirect' => route('stock-amprahan.index')
+            ]);
+        }
 
         return redirect()->route('stock-amprahan.index')
             ->with('success', 'Pengambilan barang berhasil dicatat. Sisa stock: ' . $item->jumlah . ' ' . $item->satuan);
