@@ -4862,8 +4862,8 @@
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
                         <input type="text" name="stuffing_sections[${sectionIndex}][subtotal]" 
-                               class="stuffing-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
-                               value="0" readonly>
+                               class="stuffing-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" 
+                               value="0">
                     </div>
                 </div>
                 <div>
@@ -4915,6 +4915,31 @@
                 voyageSelect.disabled = false;
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
+        });
+
+        // Setup manual subtotal calculation
+        const subtotalInput = section.querySelector('.stuffing-subtotal-input');
+        subtotalInput.addEventListener('input', function() {
+            // Remove non-numeric chars
+            let rawValue = this.value.replace(/[^0-9]/g, '');
+            const numericValue = parseFloat(rawValue) || 0;
+            
+            // Format back to rupiah
+            if (rawValue) {
+                this.value = new Intl.NumberFormat('id-ID').format(numericValue);
+            } else {
+                this.value = '';
+            }
+            
+            // Recalculate PPh (2%) & Total
+            const pph = Math.round(numericValue * 0.02);
+            const total = numericValue - pph;
+            
+            section.querySelector('.stuffing-pph-input').value = new Intl.NumberFormat('id-ID').format(pph);
+            section.querySelector('.stuffing-total-input').value = new Intl.NumberFormat('id-ID').format(total);
+            
+            // Update Grand Total
+            calculateTotalFromAllStuffingSections();
         });
     }
     
@@ -5190,9 +5215,12 @@
 
         console.log(`[Stuffing Calculation Section ${sectionIndex}]`);
 
-        let subtotal = 0;
+        // Read manual subtotal instead of auto-calculating
+        let subtotal = parseFloat(subtotalInput.value.replace(/[^0-9]/g, '')) || 0;
+        
+        // Remove automatic calculation logic
+        /*
         const ttItems = ttContainer.querySelectorAll('.tt-search-wrapper');
-
         ttItems.forEach((item, index) => {
             // For now, we'll use a fixed price per tanda terima
             // In the future, this could be based on pricelist or other factors
@@ -5200,6 +5228,7 @@
             subtotal += pricePerTt;
             console.log(`  - Tanda Terima ${index + 1}: ${pricePerTt}`);
         });
+        */
 
         const pph = Math.round(subtotal * 0.02);
         const total = subtotal - pph;
@@ -5212,7 +5241,9 @@
             return new Intl.NumberFormat('id-ID').format(Math.round(val));
         };
 
-        subtotalInput.value = formatRupiah(subtotal);
+        // Don't overwrite subtotalInput value as it is user input now
+        // subtotalInput.value = formatRupiah(subtotal);
+        
         pphInput.value = formatRupiah(pph);
         totalInput.value = formatRupiah(total);
 

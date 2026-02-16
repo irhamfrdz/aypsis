@@ -228,6 +228,16 @@ class BiayaKapalController extends Controller
             }
             unset($section);
         }
+
+        // Stuffing Sections
+        if (isset($data['stuffing_sections']) && is_array($data['stuffing_sections'])) {
+            foreach ($data['stuffing_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
         
         $request->replace($data);
         
