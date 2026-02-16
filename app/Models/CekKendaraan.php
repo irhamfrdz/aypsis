@@ -35,6 +35,7 @@ class CekKendaraan extends Model
         'kotak_p3k',
         'plat_no_belakang',
         'lampu_besar_dekat_kanan',
+        'lampu_besar_dekat_kiri',
         'odometer',
         'masa_berlaku_stnk',
         'masa_berlaku_kir',
