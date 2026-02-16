@@ -26,14 +26,14 @@ class UpdateManifestPenerima extends Command
      *
      * @var string
      */
-    protected $description = 'Update data penerima dan alamat pada manifest berdasarkan data dari tanda terima melalui prospek_id';
+    protected $description = 'Update data penerima dan alamat pada manifest berdasarkan data dari tanda terima melalui prospek_id, serta update table prospek';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('=== Update Manifest Penerima ===');
+        $this->info('=== Update Manifest & Prospek ===');
         $this->newLine();
 
         $manifestId = $this->option('manifest-id');
@@ -47,6 +47,83 @@ class UpdateManifestPenerima extends Command
         try {
             DB::beginTransaction();
 
+            $totalProspekUpdated = 0;
+            $totalProspekWithChanges = 0;
+            $totalProspek = 0;
+
+            // --- 1. Update Prospek dari Tanda Terima ---
+            $this->info('--- Memproses Update Prospek ---');
+            
+            // Query prospek yang memiliki tanda_terima_id
+            $prospeks = Prospek::whereNotNull('tanda_terima_id')->with('tandaTerima')->get();
+
+            if ($prospeks->isNotEmpty()) {
+                $bar = $this->output->createProgressBar($prospeks->count());
+                $bar->start();
+
+                foreach ($prospeks as $prospek) {
+                    $totalProspek++;
+                    $tandaTerima = $prospek->tandaTerima;
+
+                    if (!$tandaTerima) {
+                        $bar->advance();
+                        continue;
+                    }
+
+                    $hasChanges = false;
+
+                    // Update fields
+                    // pt_pengirim
+                    if ($tandaTerima->pengirim && $prospek->pt_pengirim != $tandaTerima->pengirim) {
+                        $prospek->pt_pengirim = $tandaTerima->pengirim;
+                        $hasChanges = true;
+                    }
+
+                    // tujuan_pengiriman
+                    if ($tandaTerima->tujuan_pengiriman && $prospek->tujuan_pengiriman != $tandaTerima->tujuan_pengiriman) {
+                        $prospek->tujuan_pengiriman = $tandaTerima->tujuan_pengiriman;
+                        $hasChanges = true;
+                    }
+
+                    // nama_supir
+                    if ($tandaTerima->supir && $prospek->nama_supir != $tandaTerima->supir) {
+                        $prospek->nama_supir = $tandaTerima->supir;
+                        $hasChanges = true;
+                    }
+
+                    // barang / jenis_barang
+                    if ($tandaTerima->jenis_barang && $prospek->barang != $tandaTerima->jenis_barang) {
+                        $prospek->barang = $tandaTerima->jenis_barang;
+                        $hasChanges = true;
+                    }
+                    
+                    // nama_kapal / estimasi_nama_kapal
+                    if ($tandaTerima->estimasi_nama_kapal && $prospek->nama_kapal != $tandaTerima->estimasi_nama_kapal) {
+                        $prospek->nama_kapal = $tandaTerima->estimasi_nama_kapal;
+                        $hasChanges = true;
+                    }
+
+                    if ($hasChanges) {
+                        $totalProspekWithChanges++;
+                        if (!$dryRun) {
+                            $prospek->save();
+                            $totalProspekUpdated++;
+                        }
+                    }
+
+                    $bar->advance();
+                }
+                $bar->finish();
+                $this->newLine();
+            } else {
+                $this->info('Tidak ada prospek dengan tanda terima yang ditemukan.');
+            }
+
+            $this->newLine();
+
+            // --- 2. Update Manifest dari Prospek -> Tanda Terima ---
+            $this->info('--- Memproses Update Manifest ---');
+
             // Query manifest yang memiliki prospek_id
             $query = Manifest::whereNotNull('prospek_id')
                 ->with(['prospek.tandaTerima']);
@@ -57,79 +134,75 @@ class UpdateManifestPenerima extends Command
 
             $manifests = $query->get();
 
+            $totalUpdated = 0;
+            $totalManifestCount = 0; // Renamed to avoid confusion with loop var
+            $totalWithChanges = 0;
+
             if ($manifests->isEmpty()) {
                 $this->warn('Tidak ada manifest dengan prospek_id yang ditemukan');
-                return 0;
-            }
+            } else {
+                $this->info("Ditemukan {$manifests->count()} manifest dengan prospek_id");
+                
+                $bar = $this->output->createProgressBar($manifests->count());
+                $bar->start();
 
-            $this->info("Ditemukan {$manifests->count()} manifest dengan prospek_id");
-            $this->newLine();
-
-            $totalUpdated = 0;
-            $totalManifest = 0;
-            $totalWithChanges = 0;
-            $manifestCount = $manifests->count();
-
-            $this->info("Memproses {$manifestCount} manifest...");
-            $this->newLine();
-            
-            $bar = $this->output->createProgressBar($manifestCount);
-            $bar->start();
-
-            foreach ($manifests as $manifest) {
-                $totalManifest++;
-                
-                // Cek apakah prospek memiliki tanda terima
-                if (!$manifest->prospek || !$manifest->prospek->tandaTerima) {
-                    $bar->advance();
-                    continue;
-                }
-
-                $tandaTerima = $manifest->prospek->tandaTerima;
-                
-                // Ambil data penerima dari tanda terima
-                $penerimaName = $tandaTerima->penerima;
-                $alamatPenerima = $tandaTerima->alamat_penerima;
-                
-                // Cek apakah ada perubahan
-                $hasChanges = false;
-                
-                if ($penerimaName && $manifest->penerima != $penerimaName) {
-                    $hasChanges = true;
-                }
-                
-                if ($alamatPenerima && $manifest->alamat_penerima != $alamatPenerima) {
-                    $hasChanges = true;
-                }
-                
-                if ($hasChanges) {
-                    $totalWithChanges++;
+                foreach ($manifests as $manifest) {
+                    $totalManifestCount++;
                     
-                    if (!$dryRun) {
-                        // Update manifest
-                        if ($penerimaName) {
-                            $manifest->penerima = $penerimaName;
-                        }
-                        if ($alamatPenerima) {
-                            $manifest->alamat_penerima = $alamatPenerima;
-                        }
-                        $manifest->save();
-                        $totalUpdated++;
+                    // Cek apakah prospek memiliki tanda terima
+                    if (!$manifest->prospek || !$manifest->prospek->tandaTerima) {
+                        $bar->advance();
+                        continue;
                     }
+
+                    $tandaTerima = $manifest->prospek->tandaTerima;
+                    
+                    // Ambil data penerima dari tanda terima
+                    $penerimaName = $tandaTerima->penerima;
+                    $alamatPenerima = $tandaTerima->alamat_penerima;
+                    
+                    // Cek apakah ada perubahan
+                    $hasChanges = false;
+                    
+                    if ($penerimaName && $manifest->penerima != $penerimaName) {
+                        $hasChanges = true;
+                    }
+                    
+                    if ($alamatPenerima && $manifest->alamat_penerima != $alamatPenerima) {
+                        $hasChanges = true;
+                    }
+                    
+                    if ($hasChanges) {
+                        $totalWithChanges++;
+                        
+                        if (!$dryRun) {
+                            // Update manifest
+                            if ($penerimaName) {
+                                $manifest->penerima = $penerimaName;
+                            }
+                            if ($alamatPenerima) {
+                                $manifest->alamat_penerima = $alamatPenerima;
+                            }
+                            $manifest->save();
+                            $totalUpdated++;
+                        }
+                    }
+                    
+                    $bar->advance();
                 }
                 
-                $bar->advance();
+                $bar->finish();
+                $this->newLine(2);
             }
-            
-            $bar->finish();
-            $this->newLine(2);
 
             if (!$dryRun) {
                 DB::commit();
                 $this->newLine();
                 $this->info('=== SELESAI ===');
+                $this->info("Total Prospek diproses: {$totalProspek}");
+                $this->info("Total Prospek updated: {$totalProspekUpdated}");
+                $this->line("------------------------------------------------");
                 $this->info("Total Manifest diproses: {$manifests->count()}");
-                $this->info("Total Manifest dengan Tanda Terima: {$totalManifest}");
                 $this->info("Total Manifest dengan perubahan: {$totalWithChanges}");
                 $this->info("Total Manifest berhasil diupdate: {$totalUpdated}");
                 
@@ -139,11 +212,13 @@ class UpdateManifestPenerima extends Command
                 DB::rollBack();
                 $this->newLine();
                 $this->info('=== DRY RUN SELESAI ===');
+                $this->info("Total Prospek diproses: {$totalProspek}");
+                $this->info("Total Prospek changes preview: {$totalProspekWithChanges}");
+                $this->line("------------------------------------------------");
                 $this->info("Total Manifest diproses: {$manifests->count()}");
-                $this->info("Total Manifest dengan Tanda Terima: {$totalManifest}");
-                $this->info("Total Manifest yang akan diupdate: {$totalWithChanges}");
+                $this->info("Total Manifest changes preview: {$totalWithChanges}");
                 $this->newLine();
-                if ($totalWithChanges > 0) {
+                if ($totalWithChanges > 0 || $totalProspekWithChanges > 0) {
                     $this->warn('Gunakan perintah tanpa --dry-run untuk melakukan update sebenarnya');
                 } else {
                     $this->info('Tidak ada data yang perlu diupdate (semua data sudah sama)');
