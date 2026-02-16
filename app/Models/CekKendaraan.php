@@ -37,6 +37,7 @@ class CekKendaraan extends Model
         'lampu_besar_dekat_kanan',
         'lampu_besar_dekat_kiri',
         'lampu_rem_kanan',
+        'lampu_rem_kiri',
         'odometer',
         'masa_berlaku_stnk',
         'masa_berlaku_kir',
