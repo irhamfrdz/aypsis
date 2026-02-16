@@ -33,6 +33,7 @@ class CekKendaraan extends Model
         'kebersihan_interior',
         'kebersihan_eksterior',
         'kotak_p3k',
+        'plat_no_belakang',
         'odometer',
         'masa_berlaku_stnk',
         'masa_berlaku_kir',

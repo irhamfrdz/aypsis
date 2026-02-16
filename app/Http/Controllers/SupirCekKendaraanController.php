@@ -70,6 +70,7 @@ class SupirCekKendaraanController extends Controller
             'masa_berlaku_stnk' => 'nullable|date',
             'masa_berlaku_kir' => 'nullable|date',
             'kotak_p3k' => 'required|string',
+            'plat_no_belakang' => 'required|string',
             'foto_sebelum' => 'nullable|image|max:2048',
             'foto_sesudah' => 'nullable|image|max:2048',
         ]);
