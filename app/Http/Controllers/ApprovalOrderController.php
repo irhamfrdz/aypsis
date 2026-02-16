@@ -29,9 +29,9 @@ class ApprovalOrderController extends Controller
                 $q->where('nomor_order', 'like', "%{$search}%")
                   ->orWhere('tujuan_ambil', 'like', "%{$search}%")
                   ->orWhere('tujuan_kirim', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
                   ->orWhereHas('suratJalans', function($query) use ($search) {
-                      $query->where('no_surat_jalan', 'like', "%{$search}%");
+                      $query->where('no_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('no_kontainer', 'like', "%{$search}%");
                   });
             });
         }
