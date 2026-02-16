@@ -105,22 +105,7 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
 
-        // Parse mobil_id
-        $requestData = $request->all();
-        $alatBeratId = null;
-        $mobilId = null;
-        if (isset($requestData['mobil_id'])) {
-            if (str_starts_with($requestData['mobil_id'], 'alat-')) {
-                $alatBeratId = substr($requestData['mobil_id'], 5);
-                $requestData['alat_berat_id'] = $alatBeratId;
-                $requestData['mobil_id'] = null;
-            } elseif (str_starts_with($requestData['mobil_id'], 'mobil-')) {
-                $mobilId = substr($requestData['mobil_id'], 6);
-                $requestData['mobil_id'] = $mobilId;
-            }
-        }
-
-        $validator = \Validator::make($requestData, [
+        $validator = \Validator::make($request->all(), [
             'jumlah' => 'required|numeric|min:0.01|max:' . $item->jumlah,
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',
@@ -129,6 +114,21 @@ class StockAmprahanController extends Controller
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $mobilId = $request->mobil_id;
+            $alatBeratId = $request->alat_berat_id;
+
+            if (empty($mobilId) && empty($alatBeratId)) {
+                $validator->errors()->add('mobil_id', 'Pilih mobil atau alat berat.');
+                $validator->errors()->add('alat_berat_id', 'Pilih mobil atau alat berat.');
+            }
+
+            if (!empty($mobilId) && !empty($alatBeratId)) {
+                $validator->errors()->add('mobil_id', 'Pilih salah satu: mobil atau alat berat.');
+                $validator->errors()->add('alat_berat_id', 'Pilih salah satu: mobil atau alat berat.');
+            }
+        });
 
         if ($validator->fails()) {
             if ($request->ajax()) {
@@ -148,9 +148,9 @@ class StockAmprahanController extends Controller
         StockAmprahanUsage::create([
             'stock_amprahan_id' => $item->id,
             'penerima_id' => $request->penerima_id,
-            'mobil_id' => $requestData['mobil_id'],
-            'kapal_id' => $requestData['kapal_id'],
-            'alat_berat_id' => $requestData['alat_berat_id'],
+            'mobil_id' => $request->mobil_id,
+            'kapal_id' => $request->kapal_id,
+            'alat_berat_id' => $request->alat_berat_id,
             'jumlah' => $request->jumlah,
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
@@ -171,7 +171,7 @@ class StockAmprahanController extends Controller
     public function history(Request $request, $id)
     {
         $item = StockAmprahan::with('masterNamaBarangAmprahan')->findOrFail($id);
-        $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'kapal', 'createdBy'])
+        $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'kapal', 'alatBerat', 'createdBy'])
             ->where('stock_amprahan_id', $id)
             ->latest('tanggal_pengambilan')
             ->get();

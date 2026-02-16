@@ -562,6 +562,12 @@
         kapalInput.value = '';
         filterKapalOptions('');
         closeKapalDropdown();
+
+        // Reset alat berat dropdown state
+        alatBeratHidden.value = '';
+        alatBeratInput.value = '';
+        filterAlatBeratOptions('');
+        closeAlatBeratDropdown();
     };
 
     // SEARCHABLE DROPDOWN MOBIL LOGIC
@@ -595,6 +601,9 @@
     function selectMobil(id, name) {
         mobilHidden.value = id;
         mobilInput.value = name;
+        // Clear alat berat selection
+        alatBeratHidden.value = '';
+        alatBeratInput.value = '';
         closeMobilDropdown();
     }
 
@@ -606,6 +615,11 @@
         const value = this.value.toLowerCase();
         filterMobilOptions(value);
         openMobilDropdown();
+    });
+
+    // Add click event for dropdown arrow
+    document.getElementById('mobil_dropdown_arrow').addEventListener('click', function() {
+        toggleMobilDropdown();
     });
 
     function filterMobilOptions(value) {
@@ -655,6 +669,15 @@
                 kapalHidden.value = '';
             }
         }
+
+        // Alat Berat Dropdown
+        const alatBeratDropdown = document.getElementById('alat_berat_dropdown');
+        if (alatBeratDropdown && !alatBeratDropdown.contains(e.target)) {
+            closeAlatBeratDropdown();
+            if (alatBeratInput.value === '') {
+                alatBeratHidden.value = '';
+            }
+        }
     });
 
     // SEARCHABLE DROPDOWN KAPAL LOGIC
@@ -701,6 +724,11 @@
         openKapalDropdown();
     });
 
+    // Add click event for dropdown arrow
+    document.getElementById('kapal_dropdown_arrow').addEventListener('click', function() {
+        toggleKapalDropdown();
+    });
+
     function filterKapalOptions(value) {
         let hasVisible = false;
         kapalOptions.forEach(option => {
@@ -717,6 +745,87 @@
             kapalNoResults.classList.remove('hidden');
         } else {
             kapalNoResults.classList.add('hidden');
+        }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!kapalInput.contains(event.target) && !kapalList.contains(event.target)) {
+            closeKapalDropdown();
+        }
+        if (!alatBeratInput.contains(event.target) && !alatBeratList.contains(event.target)) {
+            closeAlatBeratDropdown();
+        }
+    });
+
+    // SEARCHABLE DROPDOWN ALAT BERAT LOGIC
+    const alatBeratInput = document.getElementById('alat_berat_search_input');
+    const alatBeratList = document.getElementById('alat_berat_options_list');
+    const alatBeratHidden = document.getElementById('alat_berat_id_hidden');
+    const alatBeratDropdownArrow = document.getElementById('alat_berat_dropdown_arrow');
+    const alatBeratOptions = document.querySelectorAll('.alat-berat-option');
+    const alatBeratNoResults = document.getElementById('alat_berat_no_results');
+
+    function toggleAlatBeratDropdown() {
+        const isHidden = alatBeratList.classList.contains('hidden');
+        if (isHidden) {
+            openAlatBeratDropdown();
+        } else {
+            closeAlatBeratDropdown();
+        }
+    }
+
+    function openAlatBeratDropdown() {
+        alatBeratList.classList.remove('hidden');
+        alatBeratDropdownArrow.style.transform = 'rotate(180deg)';
+        alatBeratInput.focus();
+    }
+
+    function closeAlatBeratDropdown() {
+        alatBeratList.classList.add('hidden');
+        alatBeratDropdownArrow.style.transform = 'rotate(0deg)';
+    }
+
+    function selectAlatBerat(id, name) {
+        alatBeratHidden.value = id;
+        alatBeratInput.value = name;
+        // Clear mobil selection
+        mobilHidden.value = '';
+        mobilInput.value = '';
+        closeAlatBeratDropdown();
+    }
+
+    alatBeratInput.addEventListener('focus', function() {
+        openAlatBeratDropdown();
+    });
+
+    alatBeratInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        filterAlatBeratOptions(value);
+        openAlatBeratDropdown();
+    });
+
+    // Add click event for dropdown arrow
+    document.getElementById('alat_berat_dropdown_arrow').addEventListener('click', function() {
+        toggleAlatBeratDropdown();
+    });
+
+    function filterAlatBeratOptions(value) {
+        let hasVisible = false;
+        alatBeratOptions.forEach(option => {
+            const name = option.getAttribute('data-name').toLowerCase();
+            if (name.includes(value)) {
+                option.classList.remove('hidden');
+                hasVisible = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        if (!hasVisible) {
+            alatBeratNoResults.classList.remove('hidden');
+        } else {
+            alatBeratNoResults.classList.add('hidden');
         }
     }
 
