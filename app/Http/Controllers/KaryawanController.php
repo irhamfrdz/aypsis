@@ -241,7 +241,7 @@ class KaryawanController extends Controller
         $isTemplate = $request->query('template', false);
 
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
         ];
 
         $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_' . date('Ymd_His') . '.csv';
@@ -374,7 +374,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
         
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
         ];
 
         $fileName = 'karyawans_excel_export_' . date('Ymd_His') . '.csv';
@@ -485,7 +485,7 @@ class KaryawanController extends Controller
     {
         // Generate template manually to ensure proper formatting
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
         ];
 
         $sampleData = [
@@ -613,7 +613,7 @@ class KaryawanController extends Controller
     public function downloadExcelTemplate()
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
         ];
 
         $instructionData = [
@@ -697,7 +697,7 @@ class KaryawanController extends Controller
     public function downloadSimpleExcelTemplate()
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
         ];
 
         // Create simple Excel-compatible CSV file with headers only
@@ -742,7 +742,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
         
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
         ];
 
         $fileName = 'karyawans_excel_indonesia_' . date('Ymd_His') . '.csv';
@@ -884,6 +884,9 @@ class KaryawanController extends Controller
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'no_sim' => 'nullable|string|max:255',
+            'sim_berlaku_mulai' => 'nullable|date',
+            'sim_berlaku_sampai' => 'nullable|date',
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
@@ -1194,6 +1197,10 @@ class KaryawanController extends Controller
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'no_sim' => 'nullable|string|max:255',
+            'sim_berlaku_mulai' => 'nullable|date',
+            'sim_berlaku_sampai' => 'nullable|date',
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
@@ -1582,7 +1589,7 @@ class KaryawanController extends Controller
                     'nik','nama_lengkap','nama_panggilan','email','tempat_lahir','tanggal_lahir','jenis_kelamin','agama','status_perkawinan','no_hp',
                     'ktp','kk','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','nik_supervisor','supervisor','cabang','plat',
                     'alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap',
-                    'nama_bank','bank_cabang','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan'
+                    'nama_bank','bank_cabang','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan'
                 ];
                 $payload = [];
                 // Build payload using case-insensitive header names

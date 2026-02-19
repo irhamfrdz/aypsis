@@ -157,6 +157,24 @@
                     <div id="kkError" class="text-xs text-red-600 mt-1 hidden">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="kkWarning" class="text-xs mt-1 hidden"></div>
                 </div>
+
+                <div class="col-span-2 border-t pt-4 mt-2">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Informasi SIM (Surat Izin Mengemudi)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="no_sim" class="{{ $labelClasses }}">Nomor SIM</label>
+                            <input type="text" name="no_sim" id="no_sim" class="{{ $inputClasses }}" placeholder="Masukkan Nomor SIM" value="{{ old('no_sim', $karyawan->no_sim) }}">
+                        </div>
+                        <div>
+                            <label for="sim_berlaku_mulai" class="{{ $labelClasses }}">Berlaku Mulai</label>
+                            <input type="date" name="sim_berlaku_mulai" id="sim_berlaku_mulai" class="{{ $inputClasses }}" value="{{ old('sim_berlaku_mulai', $karyawan->sim_berlaku_mulai ? (\is_object($karyawan->sim_berlaku_mulai) ? $karyawan->sim_berlaku_mulai->format('Y-m-d') : $karyawan->sim_berlaku_mulai) : '') }}">
+                        </div>
+                        <div>
+                            <label for="sim_berlaku_sampai" class="{{ $labelClasses }}">Berlaku Sampai</label>
+                            <input type="date" name="sim_berlaku_sampai" id="sim_berlaku_sampai" class="{{ $inputClasses }}" value="{{ old('sim_berlaku_sampai', $karyawan->sim_berlaku_sampai ? (\is_object($karyawan->sim_berlaku_sampai) ? $karyawan->sim_berlaku_sampai->format('Y-m-d') : $karyawan->sim_berlaku_sampai) : '') }}">
+                        </div>
+                    </div>
+                </div>
             </div>
         </fieldset>
 
@@ -621,6 +639,8 @@
             };
 
             flatpickr("#tanggal_lahir", dateConfig);
+            flatpickr("#sim_berlaku_mulai", dateConfig);
+            flatpickr("#sim_berlaku_sampai", dateConfig);
             flatpickr("#tanggal_masuk", dateConfig);
             flatpickr("#tanggal_berhenti", dateConfig);
             flatpickr("#tanggal_masuk_sebelumnya", dateConfig);
