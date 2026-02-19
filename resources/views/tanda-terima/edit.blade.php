@@ -129,50 +129,50 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="nomor_kontainer" class="block text-xs font-medium text-gray-500 mb-2">No. Kontainer</label>
-                            @if($sudahMasukBl)
-                                <!-- Hidden input to preserve value when sudah masuk BL -->
-                                <input type="hidden" name="nomor_kontainer[]" value="{{ old('nomor_kontainer.0', $tandaTerima->no_kontainer) }}">
-                                <select id="nomor_kontainer"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-mono bg-gray-100 cursor-not-allowed"
-                                        disabled>
-                                    <option value="{{ $tandaTerima->no_kontainer }}" selected>{{ $tandaTerima->no_kontainer }}</option>
-                                </select>
-                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
-                            @else
-                                <select name="nomor_kontainer[]" id="nomor_kontainer"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
-                                    <option value="">-- Pilih atau Ketik Nomor Kontainer --</option>
-                                    @foreach($stockKontainers as $stock)
-                                        <option value="{{ $stock->nomor_seri_gabungan }}"
-                                                {{ old('nomor_kontainer.0', $tandaTerima->no_kontainer) == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
-                                            {{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})
-                                        </option>
-                                    @endforeach
-                                    @if(old('nomor_kontainer.0', $tandaTerima->no_kontainer))
-                                        <option value="{{ old('nomor_kontainer.0', $tandaTerima->no_kontainer) }}" selected>
-                                            {{ old('nomor_kontainer.0', $tandaTerima->no_kontainer) }}
+                            
+                            <select name="nomor_kontainer[]" id="nomor_kontainer"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
+                                <option value="">-- Pilih atau Ketik Nomor Kontainer --</option>
+                                @foreach($stockKontainers as $stock)
+                                    <option value="{{ $stock->nomor_seri_gabungan }}"
+                                            {{ old('nomor_kontainer.0', $tandaTerima->no_kontainer) == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
+                                        {{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})
+                                    </option>
+                                @endforeach
+                                @if(old('nomor_kontainer.0', $tandaTerima->no_kontainer))
+                                    @php
+                                        // Check if the current value is already in the stock list to avoid duplicate options
+                                        $currentVal = old('nomor_kontainer.0', $tandaTerima->no_kontainer);
+                                        $exists = $stockKontainers->contains('nomor_seri_gabungan', $currentVal);
+                                    @endphp
+                                    @if(!$exists)
+                                        <option value="{{ $currentVal }}" selected>
+                                            {{ $currentVal }}
                                         </option>
                                     @endif
-                                </select>
-                            @endif
+                                @endif
+                            </select>
+                            
                             @error('nomor_kontainer.0')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
-
+                            @if($sudahMasukBl)
+                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Perhatian: Kontainer ini sudah masuk BL.</p>
+                            @endif
                         </div>
                         <div>
                             <label for="no_seal" class="block text-xs font-medium text-gray-500 mb-2">No. Seal</label>
                             <input type="text" name="no_seal[]" id="no_seal"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror {{ $sudahMasukBl ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror"
                                    placeholder="Nomor seal"
-                                   value="{{ old('no_seal.0', $tandaTerima->no_seal) }}"
-                                   {{ $sudahMasukBl ? 'readonly' : '' }}>
-                            @if($sudahMasukBl)
-                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-lock mr-1"></i>Tidak dapat diubah (sudah masuk BL)</p>
-                            @endif
+                                   value="{{ old('no_seal.0', $tandaTerima->no_seal) }}">
+                            
                             @error('no_seal.0')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
+                            @if($sudahMasukBl)
+                                <p class="mt-1 text-xs text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Perhatian: Kontainer ini sudah masuk BL.</p>
+                            @endif
 
                         </div>
                     </div>

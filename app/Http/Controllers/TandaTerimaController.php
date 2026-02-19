@@ -1041,32 +1041,9 @@ class TandaTerimaController extends Controller
         // Check if tanda terima sudah masuk BL
         $sudahMasukBl = $tandaTerima->sudahMasukBl();
 
-        // Jika sudah masuk BL, cek apakah ada perubahan pada field yang dilindungi (Hanya Nomor Kontainer dan Seal)
-        if ($sudahMasukBl) {
-            $protectedFields = [];
-            
-            // Check nomor kontainer
-            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
-                $newNoKontainer = implode(',', array_filter($request->nomor_kontainer));
-                if ($newNoKontainer !== $tandaTerima->no_kontainer) {
-                    $protectedFields[] = 'Nomor Kontainer';
-                }
-            }
-            
-            // Check nomor seal
-            if ($request->has('no_seal') && is_array($request->no_seal)) {
-                $newNoSeal = implode(',', array_filter($request->no_seal));
-                if ($newNoSeal !== $tandaTerima->no_seal) {
-                    $protectedFields[] = 'Nomor Seal';
-                }
-            }
-            
-            if (!empty($protectedFields)) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', 'Tanda terima sudah masuk BL. Field berikut tidak dapat diubah: ' . implode(', ', $protectedFields));
-            }
-        }
+        // Check if tanda terima sudah masuk BL
+        // Note: Validation removed to allow editing even if masuk BL as requested
+        // if ($sudahMasukBl) { ... }
 
 
         $request->validate([
