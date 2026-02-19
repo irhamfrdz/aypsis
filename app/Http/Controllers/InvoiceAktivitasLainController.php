@@ -166,7 +166,11 @@ class InvoiceAktivitasLainController extends Controller
             ->orderBy('nomor_akun')
             ->get();
         
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas'));
+        // Get latest LWBP Lama value
+        $latestLwbpLama = \App\Models\MasterLwbpLama::where('status', 'active')->orderBy('created_at', 'desc')->first();
+        $latestLwbpValue = $latestLwbpLama ? $latestLwbpLama->biaya : 0;
+
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue'));
     }
 
     /**
@@ -400,6 +404,23 @@ class InvoiceAktivitasLainController extends Controller
                 // Add invoice_aktivitas_lain_id to each entry
                 $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
                 \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
+            }
+        
+            // NEW: Create MasterLwbpLama record based on the first entry's lwbp_baru
+            if ($isBiayaListrik) {
+                // Use the first entry as reference for the new master record
+                $firstEntry = $biayaListrikEntries[0]; // Arrays are 0-indexed in PHP if sequential, validation keeps keys but here it's likely sequential
+                // Actually validation might keep keys like [0=>..., 1=>...]. safest is reset or foreach break.
+                $firstEntry = reset($biayaListrikEntries);
+                
+                if (isset($firstEntry['lwbp_baru']) && is_numeric($firstEntry['lwbp_baru'])) {
+                    \App\Models\MasterLwbpLama::create([
+                        'tahun' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('Y'),
+                        'bulan' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('m'),
+                        'biaya' => $firstEntry['lwbp_baru'],
+                        'status' => 'active'
+                    ]);
+                }
             }
         }
 

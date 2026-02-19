@@ -14,232 +14,172 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
-            line-height: 1.4;
             color: #333;
-            padding: 15px;
-            font-weight: bold;
+            padding: 20px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            margin-bottom: 20px;
         }
         
         .header h1 {
             font-size: 18px;
-            margin-bottom: 4px;
-            color: #1a1a1a;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
         }
         
         .header p {
-            font-size: 9px;
-            color: #666;
-            line-height: 1.2;
-        }
-        
-        .invoice-info {
-            margin-bottom: 12px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 20px;
-        }
-        
-        .info-item {
-            display: flex;
-            padding: 3px 0;
-        }
-        
-        .info-label {
-            width: 120px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        
-        .info-separator {
-            margin: 0 5px;
-            flex-shrink: 0;
-        }
-        
-        .info-value {
-            flex: 1;
-            font-weight: bold;
-        }
-        
-        .section-title {
             font-size: 12px;
             font-weight: bold;
-            margin-top: 10px;
-            margin-bottom: 8px;
-            padding: 6px 10px;
-            background-color: #f0f0f0;
-            border-left: 3px solid #2563eb;
         }
         
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 12px;
-            font-size: 10px;
-        }
-        
-        .details-table th,
-        .details-table td {
-            padding: 6px 8px;
-            border: 2px solid #333;
-            text-align: left;
-            font-weight: bold;
-        }
-        
-        .details-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #1a1a1a;
-            font-size: 10px;
-        }
-        
-        .details-table tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        
-        .details-table .label-col {
-            width: 60%;
-            font-weight: bold;
-        }
-        
-        .details-table .value-col {
-            width: 40%;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        .calculation-row {
-            background-color: #e3f2fd !important;
-        }
-        
-        .total-row {
-            background-color: #fff3cd !important;
-            font-weight: bold;
-        }
-        
-        .grand-total-row {
-            background-color: #d4edda !important;
-            font-weight: bold;
+        .info-section {
+            margin-bottom: 20px;
             font-size: 11px;
         }
         
-        .number {
-            text-align: right;
-            font-family: 'Courier New', monospace;
+        .info-table {
+            width: 100%;
+        }
+        
+        .info-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 130px;
+        }
+        
+        .section-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+        
+        .custom-table th, 
+        .custom-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            vertical-align: middle;
+        }
+        
+        .custom-table th {
+            text-align: center;
+            font-weight: bold;
+            background-color: #fff;
+            border-bottom: 2px solid #000; /* Thicker border for header */
+        }
+        
+        .custom-table tr.total-row td {
+            background-color: #e9ecef;
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        
+        .keterangan-box {
+            border: 2px solid #000;
+            padding: 10px;
+            margin-top: 20px;
+            min-height: 60px;
+        }
+        
+        .keterangan-title {
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         
         .footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
+            margin-top: 30px;
         }
         
-        .signatures {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 12px;
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
         }
         
-        .signature-box {
+        .signature-table td {
+            border: none;
             text-align: center;
-            font-size: 10px;
+            padding: 5px;
+            width: 33.33%;
         }
         
-        .signature-line {
-            margin-top: 50px;
-            border-top: 1px solid #333;
-            padding-top: 3px;
-            font-weight: bold;
-        }
-        
-        .notes {
-            margin-top: 10px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-left: 3px solid #ffc107;
-            font-size: 9px;
-            font-weight: bold;
-        }
-        
-        .notes-title {
-            font-weight: bold;
-            margin-bottom: 3px;
+        .signature-space {
+            height: 60px;
+            vertical-align: bottom !important;
         }
         
         @media print {
-            body {
-                padding: 10px;
-            }
-            
-            .no-print {
-                display: none;
-            }
-            
-            @page {
-                margin: 1cm;
-                size: 21.6cm 33cm;
-            }
+            .no-print { display: none !important; }
+            body { padding: 0; }
+            @page { margin: 1cm; size: auto; }
         }
         
-        .print-button {
+        .btn-print {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            padding: 8px 16px;
-            background-color: #2563eb;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 12px;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .print-button:hover {
-            background-color: #1d4ed8;
+        .btn-back {
+            position: fixed;
+            top: 10px;
+            right: 70px;
+            padding: 5px 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <button class="print-button no-print" onclick="window.print()">🖨️ Cetak Invoice</button>
+    <button class="btn-print no-print" onclick="window.print()">Print</button>
+    <a href="{{ route('invoice-aktivitas-lain.index') }}" class="btn-back no-print">Kembali</a>
 
     <div class="header">
         <h1>PERMOHONAN TRANSFER</h1>
     </div>
 
-    <div class="invoice-info">
-        <div class="info-item">
-            <span class="info-label">Nomor Invoice</span>
-            <span class="info-separator">:</span>
-            <span class="info-value"><strong>{{ $invoice->nomor_invoice }}</strong></span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Tanggal Invoice</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->tanggal_invoice->format('d/M/Y') }}</span>
-        </div>
-        @if($invoice->vendor_listrik)
-        <div class="info-item">
-            <span class="info-label">Vendor</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->vendor_listrik }}</span>
-        </div>
-        @endif
-        @if($invoice->referensi)
-        <div class="info-item">
-            <span class="info-label">Referensi</span>
-            <span class="info-separator">:</span>
-            <span class="info-value">{{ $invoice->referensi }}</span>
-        </div>
-        @endif
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td class="info-label">Nomor Invoice</td>
+                <td>: <strong>{{ $invoice->nomor_invoice }}</strong></td>
+                <td class="info-label">Tanggal Invoice</td>
+                <td>: {{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Vendor</td>
+                <td>: {{ $invoice->vendor_listrik ?? '-' }}</td>
+                <td class="info-label">Referensi</td>
+                <td>: {{ $invoice->referensi ?? '-' }}</td>
+            </tr>
+        </table>
     </div>
 
     @php
@@ -248,8 +188,9 @@
         $totalGrandTotal = 0;
     @endphp
 
-    <!-- Summary Table -->
-    <table class="details-table">
+    <!-- TABLE: DETAIL BIAYA LISTRIK -->
+    <div class="section-header">Detail Biaya Listrik:</div>
+    <table class="custom-table">
         <thead>
             <tr>
                 <th style="width: 25%;">Referensi</th>
@@ -264,11 +205,11 @@
             @foreach($biayaListrikEntries as $biayaListrik)
                 <tr>
                     <td>{{ $biayaListrik->referensi ?? '-' }}</td>
-                    <td>{{ $biayaListrik->tanggal ? $biayaListrik->tanggal->format('d/M/Y') : '-' }}</td>
+                    <td class="text-center">{{ $biayaListrik->tanggal ? $biayaListrik->tanggal->format('d/M/Y') : '-' }}</td>
                     <td>{{ $biayaListrik->penerima ?? '-' }}</td>
-                    <td class="number">Rp {{ number_format($biayaListrik->dpp, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($biayaListrik->pph, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($biayaListrik->grand_total, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($biayaListrik->dpp, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($biayaListrik->pph, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($biayaListrik->grand_total, 0, ',', '.') }}</td>
                 </tr>
                 @php
                     $totalDPP += $biayaListrik->dpp;
@@ -277,61 +218,61 @@
                 @endphp
             @endforeach
             
-            @if($biayaListrikEntries->count() > 1)
-                <!-- Total Keseluruhan Row -->
-                <tr class="grand-total-row" style="background-color: #d4edda; font-weight: bold;">
-                    <td colspan="3" style="text-align: center; font-weight: bold;">TOTAL KESELURUHAN</td>
-                    <td class="number">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-                    <td class="number">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
-                </tr>
-            @endif
+            <tr class="total-row">
+                <td colspan="3" style="text-align: left; padding-left: 10px;">TOTAL KESELURUHAN</td>
+                <td class="text-right">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+            </tr>
         </tbody>
     </table>
 
+    <!-- KETERANGAN BOX -->
     @if($invoice->deskripsi || $invoice->catatan)
-    <div class="notes">
-        @if($invoice->deskripsi)
+    <div class="keterangan-box">
+        <div class="keterangan-title">Keterangan:</div>
         <div>
-            <span class="notes-title">Deskripsi:</span> {{ $invoice->deskripsi }}
+            @if($invoice->deskripsi)
+            <div style="margin-bottom: 5px;">
+                <span class="font-bold">Deskripsi:</span> {{ $invoice->deskripsi }}
+            </div>
+            @endif
+            
+            @if($invoice->catatan)
+            <div>
+                <span class="font-bold">Catatan:</span> {{ $invoice->catatan }}
+            </div>
+            @endif
         </div>
-        @endif
-        
-        @if($invoice->catatan)
-        <div style="margin-top: 5px;">
-            <span class="notes-title">Catatan:</span> {{ $invoice->catatan }}
-        </div>
-        @endif
     </div>
     @endif
-
+    
+    <!-- FOOTER SIGNATURES -->
     <div class="footer">
-        <div class="signatures">
-            <div class="signature-box">
-                <div>Dibuat Oleh</div>
-                <div class="signature-line">
-                    {{ $invoice->creator->name ?? '-' }}
-                </div>
-            </div>
-            
-            <div class="signature-box">
-                <div>Diperiksa Oleh</div>
-                <div class="signature-line">
-                    &nbsp;
-                </div>
-            </div>
-            
-            <div class="signature-box">
-                <div>Disetujui Oleh</div>
-                <div class="signature-line">
-                    {{ $invoice->approver->name ?? '-' }}
-                </div>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
-            Dicetak: {{ now()->format('d/m/Y H:i') }}
-        </div>
+        <table class="signature-table">
+            <tr>
+                <td><strong>Dibuat Oleh:</strong></td>
+                <td><strong>Diperiksa Oleh:</strong></td>
+                <td><strong>Disetujui Oleh:</strong></td>
+            </tr>
+            <tr>
+                <td class="signature-space">
+                    @if($invoice->creator)
+                        <br>{{ $invoice->creator->name }}
+                    @else
+                        ___________
+                    @endif
+                </td>
+                <td class="signature-space">___________</td>
+                <td class="signature-space">
+                    @if($invoice->approver)
+                        <br>{{ $invoice->approver->name }}
+                    @else
+                        ___________
+                    @endif
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>

@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+<script>
+    // Pass latest LWBP value from server to JS
+    const latestLwbpValue = {{ $latestLwbpValue ?? 0 }};
+</script>
 <div class="container mx-auto px-4 py-6">
     <div class="mb-6">
         <div class="flex justify-between items-center">
@@ -2411,7 +2415,7 @@ console.log('Akun COAs data:', akunCoasData);
                            class="bl-lwbp-lama w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            placeholder="0"
                            step="0.01"
-                           value="${existingData.lwbp_lama || ''}"
+                           value="${existingData.lwbp_lama || (index === 0 ? latestLwbpValue : '')}"
                            required>
                 </div>
                 
