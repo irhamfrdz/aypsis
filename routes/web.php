@@ -78,6 +78,7 @@ use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
 use App\Http\Controllers\MasterNamaBarangAmprahanController;
 use App\Http\Controllers\MasterGudangAmprahanController;
+use App\Http\Controllers\MasterLwbpLamaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -280,6 +281,17 @@ Route::middleware([
         Route::get('alat-berat/template', [\App\Http\Controllers\AlatBeratController::class, 'downloadTemplate'])->name('alat-berat.template');
         Route::post('alat-berat/import', [\App\Http\Controllers\AlatBeratController::class, 'import'])->name('alat-berat.import');
         Route::resource('alat-berat', \App\Http\Controllers\AlatBeratController::class);
+
+        // Master LWBP Lama
+        Route::resource('lwbp-lama', MasterLwbpLamaController::class)->middleware([
+            'index'   => 'can:master-lwbp-lama-view',
+            'show'    => 'can:master-lwbp-lama-view',
+            'create'  => 'can:master-lwbp-lama-create',
+            'store'   => 'can:master-lwbp-lama-create',
+            'edit'    => 'can:master-lwbp-lama-update',
+            'update'  => 'can:master-lwbp-lama-update',
+            'destroy' => 'can:master-lwbp-lama-delete',
+        ]);
 
 
         // ═══════════════════════════════════════════════════════════════════════
