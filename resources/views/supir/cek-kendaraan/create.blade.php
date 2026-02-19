@@ -5,334 +5,384 @@
 @section('page_title', 'Pengecekan Kendaraan')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div class="flex items-center space-x-3 sm:space-x-4">
-            <a href="{{ route('supir.dashboard') }}" class="p-2 sm:p-2.5 bg-white hover:bg-gray-100 rounded-xl transition-all border border-gray-200 shadow-sm text-gray-400 hover:text-gray-600">
-                <i class="fas fa-chevron-left sm:text-lg"></i>
-            </a>
-            <div>
-                <h1 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Cek Kendaraan</h1>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Formulir pemeriksaan rutin unit</p>
-            </div>
-        </div>
+<div class="container mx-auto px-4 py-6 max-w-lg">
+    <!-- Header Simple -->
+    <div class="flex items-center justify-between mb-6">
+        <a href="{{ route('supir.dashboard') }}" class="p-2 -ml-2 text-gray-600 hover:text-gray-900">
+            <i class="fas fa-chevron-left text-lg"></i>
+        </a>
+        <h1 class="text-lg font-bold text-gray-900">Cek Kendaraan</h1>
+        <div class="w-8"></div> <!-- Spacer for center alignment -->
     </div>
 
     <!-- Alerts -->
     @if(session('success'))
-    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
-        <div class="flex items-center">
-            <i class="fas fa-check-circle text-green-400 text-xl mr-3"></i>
-            <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-        </div>
+    <div class="bg-green-50 text-green-700 p-4 rounded-xl mb-6 text-sm flex items-center shadow-sm">
+        <i class="fas fa-check-circle mr-3 text-lg"></i>
+        {{ session('success') }}
     </div>
     @endif
 
     @if($errors->any())
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-        <div class="flex">
-            <i class="fas fa-exclamation-circle text-red-400 text-xl mr-3"></i>
-            <div>
-                <h3 class="text-sm font-medium text-red-800">Terdapat kesalahan:</h3>
-                <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
+    <div class="bg-red-50 text-red-700 p-4 rounded-xl mb-6 text-sm shadow-sm">
+        <p class="font-bold mb-2 flex items-center"><i class="fas fa-exclamation-circle mr-2"></i> Error:</p>
+        <ul class="list-disc list-inside space-y-1">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
     </div>
     @endif
 
-    <form action="{{ route('supir.cek-kendaraan.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('supir.cek-kendaraan.store') }}" method="POST" enctype="multipart/form-data" id="cekForm">
         @csrf
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Basic Info -->
-            <div class="space-y-8">
-                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
-                    <h2 class="text-lg font-black text-gray-900 mb-6 flex items-center">
-                        <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
-                        Informasi Dasar
-                    </h2>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kendaraan <span class="text-red-500">*</span></label>
-                            <select name="mobil_id" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 transition-all text-sm px-4 py-3 bg-gray-50" required>
-                                <option value="">-- Pilih Kendaraan --</option>
-                                @foreach($mobils as $mobil)
-                                    <option value="{{ $mobil->id }}" 
-                                            {{ $defaultMobilId == $mobil->id ? 'selected' : '' }}
-                                            data-stnk="{{ $mobil->pajak_stnk ? $mobil->pajak_stnk->format('Y-m-d') : '' }}"
-                                            data-kir="{{ $mobil->pajak_kir ? $mobil->pajak_kir->format('Y-m-d') : '' }}">
-                                        {{ $mobil->nomor_polisi }} ({{ $mobil->merek }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Jam</label>
-                                <input type="time" name="jam" value="{{ date('H:i') }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50" required>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Odometer (KM)</label>
-                            <div class="relative">
-                                <input type="number" name="odometer" placeholder="KM" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">KM</span>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku STNK</label>
-                                <input type="date" name="masa_berlaku_stnk" id="masa_berlaku_stnk" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku KIR</label>
-                                <input type="date" name="masa_berlaku_kir" id="masa_berlaku_kir" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
-                            </div>
+        <!-- Step 1: Info Dasar (Card Style) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+            <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center uppercase tracking-wider">
+                <i class="fas fa-info-circle text-indigo-500 mr-2"></i> Info Unit
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase mb-1 block">Unit Kendaraan</label>
+                    <div class="relative">
+                        <select name="mobil_id" class="w-full appearance-none rounded-xl border-gray-200 bg-gray-50 text-sm font-bold text-gray-800 py-3 pl-4 pr-10 focus:border-indigo-500 focus:ring-0 transition-all" required>
+                            <option value="">-- Pilih Unit --</option>
+                            @foreach($mobils as $mobil)
+                                <option value="{{ $mobil->id }}" 
+                                        {{ $defaultMobilId == $mobil->id ? 'selected' : '' }}
+                                        data-stnk="{{ $mobil->pajak_stnk ? $mobil->pajak_stnk->format('Y-m-d') : '' }}"
+                                        data-kir="{{ $mobil->pajak_kir ? $mobil->pajak_kir->format('Y-m-d') : '' }}">
+                                    {{ $mobil->nomor_polisi }} ({{ $mobil->merek }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
                         </div>
                     </div>
                 </div>
 
-
-            </div>
-
-            <!-- Middle & Right Columns: Checklist -->
-            <div class="lg:col-span-2 space-y-8">
-                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
-                            Checklist Pemeriksaan
-                        </h2>
-                        <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 uppercase tracking-wider">
-                            Total 57 Item
-                        </span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @php
-                            $items = [
-                                ['name' => 'kotak_p3k', 'label' => 'Kotak P3K', 'type' => 'status_kadaluarsa'],
-                                ['name' => 'racun_api', 'label' => 'Racun Api / APAR', 'type' => 'status_kadaluarsa'],
-                                ['name' => 'plat_no_depan', 'label' => 'Plat No Depan', 'type' => 'status_ada'],
-                                ['name' => 'plat_no_belakang', 'label' => 'Plat No Belakang', 'type' => 'status_ada'],
-                                ['name' => 'lampu_jauh_kanan', 'label' => 'Lampu Besar Jauh Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_jauh_kiri', 'label' => 'Lampu Besar Jauh Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_dekat_kanan', 'label' => 'Lampu Besar Dekat Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_dekat_kiri', 'label' => 'Lampu Besar Dekat Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_depan_kanan', 'label' => 'Lampu Belok Depan Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_depan_kiri', 'label' => 'Lampu Belok Depan Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_belakang_kanan', 'label' => 'Lampu Belok Belakang Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_belakang_kiri', 'label' => 'Lampu Belok Belakang Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_rem_kanan', 'label' => 'Lampu Rem Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_rem_kiri', 'label' => 'Lampu Rem Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_mundur_kanan', 'label' => 'Lampu Alarm Mundur Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_mundur_kiri', 'label' => 'Lampu Alarm Mundur Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'sabuk_pengaman_kanan', 'label' => 'Sabuk Pengaman Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'sabuk_pengaman_kiri', 'label' => 'Sabuk Pengaman Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_depan_kanan', 'label' => 'Kamvas Rem Depan Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_depan_kiri', 'label' => 'Kamvas Rem Depan Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_belakang_kanan', 'label' => 'Kamvas Rem Belakang Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_belakang_kiri', 'label' => 'Kamvas Rem Belakang Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'spion_kanan', 'label' => 'Kaca Spion Luar Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'spion_kiri', 'label' => 'Kaca Spion Luar Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_depan_kanan', 'label' => 'Tekanan Ban Depan Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_depan_kiri', 'label' => 'Tekanan Ban Depan Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_belakang_kanan', 'label' => 'Tekanan Ban Belakang Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_belakang_kiri', 'label' => 'Tekanan Ban Belakang Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'ganjelan_ban', 'label' => 'Ganjelan Ban', 'type' => 'status_ada'],
-                                ['name' => 'trakel_sabuk', 'label' => 'Trakel Sabuk', 'type' => 'status_ada'],
-                                ['name' => 'twist_lock_kontainer', 'label' => 'Twist Lock Kontainer', 'type' => 'status_fungsi'],
-                                ['name' => 'landing_buntut', 'label' => 'Landing Buntut', 'type' => 'status_fungsi'],
-                                ['name' => 'patok_besi', 'label' => 'Patok Besi', 'type' => 'status_ada'],
-                                ['name' => 'tutup_tangki', 'label' => 'Tutup Tangki', 'type' => 'status_ada'],
-                                ['name' => 'lampu_no_plat', 'label' => 'Lampu No Plat', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_bahaya', 'label' => 'Lampu Bahaya', 'type' => 'status_fungsi'],
-                                ['name' => 'klakson', 'label' => 'Klakson', 'type' => 'status_fungsi'],
-                                ['name' => 'radio', 'label' => 'Radio', 'type' => 'status_fungsi'],
-                                ['name' => 'rem_tangan', 'label' => 'Rem Tangan', 'type' => 'status_fungsi'],
-                                ['name' => 'pedal_gas', 'label' => 'Pedal Gas', 'type' => 'status_fungsi'],
-                                ['name' => 'pedal_rem', 'label' => 'Pedal Rem', 'type' => 'status_fungsi'],
-                                ['name' => 'porseneling', 'label' => 'Porseneling', 'type' => 'status_fungsi'],
-                                ['name' => 'antena_radio', 'label' => 'Antena Radio', 'type' => 'status_ada'],
-                                ['name' => 'speaker', 'label' => 'Speaker', 'type' => 'status_fungsi'],
-                                ['name' => 'spion_dalam', 'label' => 'Kaca Spion Dalam', 'type' => 'status_fungsi'],
-                                ['name' => 'dongkrak', 'label' => 'Dongkrak', 'type' => 'status_ada'],
-                                ['name' => 'tangkai_dongkrak', 'label' => 'Tangkai Dongkrak', 'type' => 'status_ada'],
-                                ['name' => 'kunci_roda', 'label' => 'Kunci Roda', 'type' => 'status_ada'],
-                                ['name' => 'dop_roda', 'label' => 'Dop Roda', 'type' => 'status_ada'],
-                                ['name' => 'wiper_depan', 'label' => 'Wiper Depan', 'type' => 'status_fungsi'],
-                                ['name' => 'oli_mesin', 'label' => 'Oli Mesin', 'type' => 'status_baik'],
-                                ['name' => 'air_radiator', 'label' => 'Air Radiator', 'type' => 'status_baik'],
-                                ['name' => 'minyak_rem', 'label' => 'Minyak Rem', 'type' => 'status_baik'],
-                                ['name' => 'air_wiper', 'label' => 'Air Wiper', 'type' => 'status_baik'],
-                                ['name' => 'kondisi_aki', 'label' => 'Kondisi Aki', 'type' => 'status_baik'],
-                                ['name' => 'pengukur_tekanan_ban', 'label' => 'Pengukur Tekanan Ban', 'type' => 'status_ada'],
-                                ['name' => 'segitiga_pengaman', 'label' => 'Segitiga Pengaman', 'type' => 'status_ada'],
-                                ['name' => 'jumlah_ban_serep', 'label' => 'Jumlah Ban Serep', 'type' => 'status_jumlah'],
-                            ];
-                        @endphp
-
-                        @foreach($items as $item)
-                        <div class="p-4 sm:p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200 group">
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1 group-hover:text-indigo-600 transition-colors">{{ $item['label'] }}</label>
-                            <div class="flex flex-row gap-2 sm:gap-3">
-                                @if($item['type'] == 'status_kadaluarsa')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_kadaluarsa" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all">
-                                            TIDAK KADALUARSA
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="kadaluarsa" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all">
-                                            KADALUARSA
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_ada')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="ada" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all uppercase">
-                                            Ada
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_ada" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all uppercase">
-                                            Tidak Ada
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_fungsi')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="berfungsi" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all uppercase">
-                                            Berfungsi
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_berfungsi" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all uppercase">
-                                            Rusak
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_baik')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="baik" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all uppercase">
-                                            Baik
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_baik" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all uppercase">
-                                            Buruk
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_jumlah')
-                                    <div class="w-full">
-                                        <input type="number" name="{{ $item['name'] }}" value="0" min="0" 
-                                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm font-medium bg-white"
-                                            placeholder="Masukan jumlah pcs...">
-                                    </div>
-                                @else
-                                    <div class="w-full text-center text-red-400 py-2 border-2 border-dashed border-red-50 rounded-xl text-xs">
-                                        Error: Tipe input tidak valid
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-
-                    <div class="mt-8 pt-8 border-t border-gray-50">
-                        <label class="block text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Pernyataan</label>
-                        <div class="space-y-4">
-                            <label class="flex items-start p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:bg-indigo-50 hover:border-indigo-100 transition-all group">
-                                <div class="flex items-center h-5">
-                                    <input type="radio" name="pernyataan" value="layak" class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" checked>
-                                </div>
-                                <div class="ml-4 text-sm">
-                                    <span class="font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">Layak Jalan</span>
-                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Dengan ini saya menyatakan bahwa seluruh pengecekan kendaraan telah dilakukan dengan seksama, dan kendaraan dinyatakan dalam kondisi layak serta aman untuk dioperasikan.</p>
-                                </div>
-                            </label>
-
-                            <label class="flex items-start p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:bg-red-50 hover:border-red-100 transition-all group">
-                                <div class="flex items-center h-5">
-                                    <input type="radio" name="pernyataan" value="tidak_layak" class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                                </div>
-                                <div class="ml-4 text-sm">
-                                    <span class="font-bold text-gray-900 group-hover:text-red-700 transition-colors">Tidak Layak Jalan</span>
-                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Dengan ini saya menyatakan bahwa hasil pengecekan menunjukkan kendaraan dalam kondisi tidak layak atau tidak aman untuk dioperasikan. Saya menolak untuk mengendarai kendaraan ini sampai perbaikan atau pemeriksaan lanjutan dilakukan.</p>
-                                </div>
-                            </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase mb-1 block">Tgl & Jam</label>
+                        <div class="bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
+                            <input type="hidden" name="tanggal" value="{{ date('Y-m-d') }}">
+                            <input type="hidden" name="jam" value="{{ date('H:i') }}">
+                            <div class="text-sm font-bold text-gray-800">{{ date('d M Y') }}</div>
+                            <div class="text-xs text-gray-500">{{ date('H:i') }} WIB</div>
                         </div>
                     </div>
-
-                    <div class="mt-8">
-                        <label class="block text-sm font-black text-gray-900 uppercase tracking-widest mb-3">Keterangan</label>
-                        <textarea name="catatan" rows="4" class="w-full rounded-2xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50 p-4 text-sm font-medium" placeholder="Tuliskan keterangan atau temuan tambahan di sini..."></textarea>
-                    </div>
-                    
-                    <div class="mt-10 flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-gray-50 pt-8">
-                        <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto px-8 py-4 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 font-black rounded-2xl transition-all text-center uppercase tracking-widest text-[10px]">
-                            Batal
-                        </a>
-                        <button type="submit" class="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 transition-all active:scale-95 uppercase tracking-widest text-xs">
-                            Simpan Data Pengecekan
-                        </button>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase mb-1 block">Odometer</label>
+                         <div class="relative">
+                            <input type="number" name="odometer" placeholder="0" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-bold text-gray-800 py-3 pl-3 pr-8 focus:border-indigo-500 focus:ring-0 text-right">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">KM</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Hidden inputs for compatibility but keep value if needed -->
+                <input type="hidden" name="masa_berlaku_stnk" id="masa_berlaku_stnk">
+                <input type="hidden" name="masa_berlaku_kir" id="masa_berlaku_kir">
             </div>
         </div>
+
+        <!-- Step 2: Checklist with Tabs -->
+        @php
+            $items = [
+                ['name' => 'kotak_p3k', 'label' => 'Kotak P3K', 'type' => 'status_kadaluarsa'],
+                ['name' => 'racun_api', 'label' => 'APAR', 'type' => 'status_kadaluarsa'],
+                ['name' => 'plat_no_depan', 'label' => 'Plat Depan', 'type' => 'status_ada'],
+                ['name' => 'plat_no_belakang', 'label' => 'Plat Belakang', 'type' => 'status_ada'],
+                ['name' => 'lampu_jauh_kanan', 'label' => 'L. Jauh Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_jauh_kiri', 'label' => 'L. Jauh Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_dekat_kanan', 'label' => 'L. Dekat Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_dekat_kiri', 'label' => 'L. Dekat Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_sein_depan_kanan', 'label' => 'Sein Dpn Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_sein_depan_kiri', 'label' => 'Sein Dpn Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_sein_belakang_kanan', 'label' => 'Sein Blk Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_sein_belakang_kiri', 'label' => 'Sein Blk Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_rem_kanan', 'label' => 'Rem Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_rem_kiri', 'label' => 'Rem Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_mundur_kanan', 'label' => 'Mundur Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_mundur_kiri', 'label' => 'Mundur Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'sabuk_pengaman_kanan', 'label' => 'Sabuk Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'sabuk_pengaman_kiri', 'label' => 'Sabuk Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'kamvas_rem_depan_kanan', 'label' => 'Kanvas Dpn Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'kamvas_rem_depan_kiri', 'label' => 'Kanvas Dpn Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'kamvas_rem_belakang_kanan', 'label' => 'Kanvas Blk Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'kamvas_rem_belakang_kiri', 'label' => 'Kanvas Blk Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'spion_kanan', 'label' => 'Spion Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'spion_kiri', 'label' => 'Spion Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'tekanan_ban_depan_kanan', 'label' => 'Ban Dpn Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'tekanan_ban_depan_kiri', 'label' => 'Ban Dpn Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'tekanan_ban_belakang_kanan', 'label' => 'Ban Blk Kanan', 'type' => 'status_fungsi'],
+                ['name' => 'tekanan_ban_belakang_kiri', 'label' => 'Ban Blk Kiri', 'type' => 'status_fungsi'],
+                ['name' => 'ganjelan_ban', 'label' => 'Ganjelan Ban', 'type' => 'status_ada'],
+                ['name' => 'trakel_sabuk', 'label' => 'Trakel Sabuk', 'type' => 'status_ada'],
+                ['name' => 'twist_lock_kontainer', 'label' => 'Twist Lock', 'type' => 'status_fungsi'],
+                ['name' => 'landing_buntut', 'label' => 'Landing Buntut', 'type' => 'status_fungsi'],
+                ['name' => 'patok_besi', 'label' => 'Patok Besi', 'type' => 'status_ada'],
+                ['name' => 'tutup_tangki', 'label' => 'Tutup Tangki', 'type' => 'status_ada'],
+                ['name' => 'lampu_no_plat', 'label' => 'Lampu Plat', 'type' => 'status_fungsi'],
+                ['name' => 'lampu_bahaya', 'label' => 'Lampu Hazard', 'type' => 'status_fungsi'],
+                ['name' => 'klakson', 'label' => 'Klakson', 'type' => 'status_fungsi'],
+                ['name' => 'radio', 'label' => 'Radio', 'type' => 'status_fungsi'],
+                ['name' => 'rem_tangan', 'label' => 'Rem Tangan', 'type' => 'status_fungsi'],
+                ['name' => 'pedal_gas', 'label' => 'Pedal Gas', 'type' => 'status_fungsi'],
+                ['name' => 'pedal_rem', 'label' => 'Pedal Rem', 'type' => 'status_fungsi'],
+                ['name' => 'porseneling', 'label' => 'Porseneling', 'type' => 'status_fungsi'],
+                ['name' => 'antena_radio', 'label' => 'Antena', 'type' => 'status_ada'],
+                ['name' => 'speaker', 'label' => 'Speaker', 'type' => 'status_fungsi'],
+                ['name' => 'spion_dalam', 'label' => 'Spion Dalam', 'type' => 'status_fungsi'],
+                ['name' => 'dongkrak', 'label' => 'Dongkrak', 'type' => 'status_ada'],
+                ['name' => 'tangkai_dongkrak', 'label' => 'Tangkai Dongkrak', 'type' => 'status_ada'],
+                ['name' => 'kunci_roda', 'label' => 'Kunci Roda', 'type' => 'status_ada'],
+                ['name' => 'dop_roda', 'label' => 'Dop Roda', 'type' => 'status_ada'],
+                ['name' => 'wiper_depan', 'label' => 'Wiper Depan', 'type' => 'status_fungsi'],
+                ['name' => 'oli_mesin', 'label' => 'Oli Mesin', 'type' => 'status_baik'],
+                ['name' => 'air_radiator', 'label' => 'Air Radiator', 'type' => 'status_baik'],
+                ['name' => 'minyak_rem', 'label' => 'Minyak Rem', 'type' => 'status_baik'],
+                ['name' => 'air_wiper', 'label' => 'Air Wiper', 'type' => 'status_baik'],
+                ['name' => 'kondisi_aki', 'label' => 'Kondisi Aki', 'type' => 'status_baik'],
+                ['name' => 'pengukur_tekanan_ban', 'label' => 'Alat.Ukur Angin', 'type' => 'status_ada'],
+                ['name' => 'segitiga_pengaman', 'label' => 'Segitiga Pengaman', 'type' => 'status_ada'],
+                ['name' => 'jumlah_ban_serep', 'label' => 'Jml Ban Serep', 'type' => 'status_jumlah'],
+            ];
+
+            // Define Categories
+            $categories = [
+                'penting' => [
+                    'label' => 'Penting',
+                    'icon' => 'fas fa-exclamation-triangle',
+                    'items' => ['oli_mesin', 'air_radiator', 'minyak_rem', 'kondisi_aki', 'tekanan_ban_depan_kanan', 'tekanan_ban_depan_kiri', 'tekanan_ban_belakang_kanan', 'tekanan_ban_belakang_kiri', 'rem_tangan', 'pedal_rem', 'klakson', 'wiper_depan', 'ganjelan_ban']
+                ],
+                'lampu' => [
+                    'label' => 'Lampu',
+                    'icon' => 'fas fa-lightbulb',
+                    'items' => ['lampu_jauh_kanan', 'lampu_jauh_kiri', 'lampu_dekat_kanan', 'lampu_dekat_kiri', 'lampu_sein_depan_kanan', 'lampu_sein_depan_kiri', 'lampu_sein_belakang_kanan', 'lampu_sein_belakang_kiri', 'lampu_rem_kanan', 'lampu_rem_kiri', 'lampu_mundur_kanan', 'lampu_mundur_kiri', 'lampu_no_plat', 'lampu_bahaya']
+                ],
+                'kelengkapan' => [
+                    'label' => 'Alat',
+                    'icon' => 'fas fa-tools',
+                    'items' => ['kotak_p3k', 'racun_api', 'segitiga_pengaman', 'dongkrak', 'tangkai_dongkrak', 'kunci_roda', 'pengukur_tekanan_ban', 'jumlah_ban_serep', 'patok_besi', 'trakel_sabuk']
+                ],
+                'body' => [
+                    'label' => 'Body',
+                    'icon' => 'fas fa-car',
+                    'items' => ['plat_no_depan', 'plat_no_belakang', 'spion_kanan', 'spion_kiri', 'spion_dalam', 'tutup_tangki', 'dop_roda', 'landing_buntut', 'twist_lock_kontainer']
+                ],
+                'lainnya' => [
+                    'label' => 'Lainnya',
+                    'icon' => 'fas fa-list',
+                    'items' => ['air_wiper', 'sabuk_pengaman_kanan', 'sabuk_pengaman_kiri', 'kamvas_rem_depan_kanan', 'kamvas_rem_depan_kiri', 'kamvas_rem_belakang_kanan', 'kamvas_rem_belakang_kiri', 'radio', 'speaker', 'antena_radio', 'porseneling', 'pedal_gas']
+                ]
+            ];
+
+            // Map flat items to key for easy lookup
+            $itemMap = [];
+            foreach($items as $item) {
+                $itemMap[$item['name']] = $item;
+            }
+        @endphp
+
+        <!-- Tab Navigation (Scrollable) -->
+        <div class="flex overflow-x-auto gap-2 pb-4 pt-1 mb-2 scrollbar-hide snap-x" id="categoryTabs">
+            @php $i = 0; @endphp
+            @foreach($categories as $key => $cat)
+                <button type="button" 
+                    onclick="showTab('{{ $key }}')"
+                    class="tab-btn snap-start shrink-0 px-4 py-2.5 rounded-xl border flex items-center transition-all shadow-sm {{ $i === 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50' }}"
+                    data-target="{{ $key }}">
+                    <i class="{{ $cat['icon'] }} mr-2 text-xs"></i>
+                    <span class="text-sm font-bold">{{ $cat['label'] }}</span>
+                </button>
+                @php $i++; @endphp
+            @endforeach
+        </div>
+
+        <!-- Content Sections -->
+        @php $i = 0; @endphp
+        @foreach($categories as $key => $cat)
+            <div id="{{ $key }}-section" class="tab-content {{ $i === 0 ? '' : 'hidden' }}">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-700">{{ $cat['label'] }}</h3>
+                        <button type="button" onclick="checkAllGood('{{ $key }}-section')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+                            <i class="fas fa-check-double mr-1"></i> Semua OK
+                        </button>
+                    </div>
+
+                    <div class="divide-y divide-gray-50">
+                        @foreach($cat['items'] as $itemName)
+                             @php 
+                                $item = $itemMap[$itemName] ?? null; 
+                                if(!$item) continue;
+                             @endphp
+                             
+                             <div class="p-3 sm:p-4 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors">
+                                <label class="text-xs sm:text-sm font-medium text-gray-700 flex-1">{{ $item['label'] }}</label>
+                                
+                                <div class="flex items-center">
+                                    @if($item['type'] == 'status_jumlah')
+                                        <div class="flex items-center border border-gray-200 rounded-lg bg-gray-50 overflow-hidden w-24">
+                                            <input type="number" name="{{ $item['name'] }}" value="1" min="0" class="w-full text-center bg-transparent border-0 p-1 text-sm focus:ring-0 font-bold">
+                                        </div>
+                                    @else
+                                        <!-- Compact Toggle Switches -->
+                                        <div class="bg-gray-100 p-1 rounded-lg flex items-center">
+                                            @php
+                                                $valOk = 'ada'; $valBad = 'tidak_ada'; $labelOk = 'Ada'; $labelBad = 'Tdk';
+                                                
+                                                if($item['type'] == 'status_fungsi') { $valOk = 'berfungsi'; $valBad = 'tidak_berfungsi'; $labelOk = 'OK'; $labelBad = 'Rusak'; }
+                                                if($item['type'] == 'status_baik') { $valOk = 'baik'; $valBad = 'tidak_baik'; $labelOk = 'Baik'; $labelBad = 'Buruk'; }
+                                                if($item['type'] == 'status_kadaluarsa') { $valOk = 'tidak_kadaluarsa'; $valBad = 'kadaluarsa'; $labelOk = 'OK'; $labelBad = 'Exp'; } // Reversed logic for safety
+                                            @endphp
+
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="{{ $item['name'] }}" value="{{ $valOk }}" class="hidden peer status-ok" checked>
+                                                <div class="px-3 py-1.5 rounded-md text-[10px] font-bold text-gray-500 peer-checked:bg-white peer-checked:text-green-600 peer-checked:shadow-sm transition-all whitespace-nowrap">
+                                                    {{ $labelOk }}
+                                                </div>
+                                            </label>
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="{{ $item['name'] }}" value="{{ $valBad }}" class="hidden peer">
+                                                <div class="px-3 py-1.5 rounded-md text-[10px] font-bold text-gray-500 peer-checked:bg-white peer-checked:text-red-500 peer-checked:shadow-sm transition-all whitespace-nowrap">
+                                                    {{ $labelBad }}
+                                                </div>
+                                            </label>
+                                        </div>
+                                    @endif
+                                </div>
+                             </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @php $i++; @endphp
+        @endforeach
+
+        <!-- Declaration & Notes -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mt-6">
+            <h3 class="font-bold text-gray-900 mb-4 uppercase tracking-wider text-xs">Kesimpulan</h3>
+            
+            <div class="space-y-3 mb-6">
+                <label class="block p-3 border border-indigo-100 bg-indigo-50/50 rounded-xl cursor-pointer has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-300 transition-all">
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="pernyataan" value="layak" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" checked>
+                        <div>
+                            <span class="block text-sm font-bold text-indigo-900">Layak Jalan</span>
+                        </div>
+                    </div>
+                </label>
+                
+                <label class="block p-3 border border-gray-200 rounded-xl cursor-pointer has-[:checked]:bg-red-50 has-[:checked]:border-red-300 transition-all">
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="pernyataan" value="tidak_layak" class="w-4 h-4 text-red-600 focus:ring-red-500 border-gray-300">
+                        <div>
+                            <span class="block text-sm font-bold text-gray-900">Tidak Layak Jalan</span>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase mb-2 block">Catatan Tambahan</label>
+                <textarea name="catatan" rows="3" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-0 text-sm p-3 transition-all" placeholder="Ada kerusakan lain? Catat disini..."></textarea>
+            </div>
+        </div>
+
+        <!-- Sticky Bottom Action -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+            <div class="container mx-auto max-w-lg flex gap-3">
+                <a href="{{ route('supir.dashboard') }}" class="flex-1 py-3.5 bg-gray-100 text-gray-500 font-bold rounded-xl text-center text-sm">
+                    Batal
+                </a>
+                <button type="submit" class="flex-[2] py-3.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition-all text-sm">
+                    Kirim Laporan
+                </button>
+            </div>
+        </div>
+        <!-- Spacer for sticky bottom -->
+        <div class="h-24"></div> 
     </form>
 </div>
 @endsection
 
 @push('scripts')
 <script>
+    // Tab Switching Logic
+    function showTab(targetId) {
+        // Hide all contents
+        document.querySelectorAll('.tab-content').forEach(el => {
+            el.classList.add('hidden');
+        });
+        
+        // Show target content
+        document.getElementById(targetId + '-section').classList.remove('hidden');
+        
+        // Update button states
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if(btn.dataset.target === targetId) {
+                btn.className = 'tab-btn snap-start shrink-0 px-4 py-2.5 rounded-xl border flex items-center transition-all shadow-sm bg-indigo-600 text-white border-indigo-600';
+            } else {
+                btn.className = 'tab-btn snap-start shrink-0 px-4 py-2.5 rounded-xl border flex items-center transition-all shadow-sm bg-white text-gray-500 border-gray-200 hover:bg-gray-50';
+            }
+        });
+
+        // Scroll tab into view if needed
+        const activeTab = document.querySelector(`[data-target="${targetId}"]`);
+        if(activeTab) {
+            activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+
+    // "Check All Good" Feature
+    function checkAllGood(sectionId) {
+        const section = document.getElementById(sectionId);
+        const radioGroups = section.querySelectorAll('input[type="radio"].status-ok');
+        
+        radioGroups.forEach(radio => {
+            radio.checked = true;
+        });
+
+        // Optional: specific fields like quantities default to 1 or logic
+        const numberInputs = section.querySelectorAll('input[type="number"]');
+        numberInputs.forEach(input => {
+            if(input.value == 0 || input.value == '') input.value = 1; 
+        });
+    }
+
+    // Existing STNK/KIR Logic
     document.querySelector('select[name="mobil_id"]').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         
         const stnkDate = selectedOption.getAttribute('data-stnk');
-        if (stnkDate) {
-            document.getElementById('masa_berlaku_stnk').value = stnkDate;
-        }
+        if (stnkDate) document.getElementById('masa_berlaku_stnk').value = stnkDate;
 
         const kirDate = selectedOption.getAttribute('data-kir');
-        if (kirDate) {
-            document.getElementById('masa_berlaku_kir').value = kirDate;
-        }
+        if (kirDate) document.getElementById('masa_berlaku_kir').value = kirDate;
     });
 
-    // Trigger on load for default selection
+    // Initial Trigger
     window.addEventListener('DOMContentLoaded', () => {
         const select = document.querySelector('select[name="mobil_id"]');
         if (select && select.value) {
-            const selectedOption = select.options[select.selectedIndex];
-            
-            const stnkDate = selectedOption.getAttribute('data-stnk');
-            if (stnkDate) {
-                document.getElementById('masa_berlaku_stnk').value = stnkDate;
-            }
-
-            const kirDate = selectedOption.getAttribute('data-kir');
-            if (kirDate) {
-                document.getElementById('masa_berlaku_kir').value = kirDate;
-            }
+            select.dispatchEvent(new Event('change'));
         }
     });
 </script>
+<style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+</style>
 @endpush
