@@ -34,6 +34,18 @@ class StockBanController extends Controller
              return $item->namaStockBan && stripos($item->namaStockBan->nama, 'lock kontainer') !== false;
         });
         
+        $stockLainLains = $stockBanDalamsOriginal->filter(function($item) {
+             return $item->namaStockBan && (
+                stripos($item->namaStockBan->nama, 'cat') !== false || 
+                stripos($item->namaStockBan->nama, 'majun') !== false ||
+                (
+                    stripos($item->namaStockBan->nama, 'ban dalam') === false &&
+                    stripos($item->namaStockBan->nama, 'ban perut') === false &&
+                    stripos($item->namaStockBan->nama, 'lock kontainer') === false
+                )
+             );
+        });
+        
         $stockRingVelgs = StockRingVelg::with('namaStockBan')->latest()->get();
         $stockVelgs = StockVelg::with('namaStockBan')->latest()->get();
 
@@ -47,7 +59,7 @@ class StockBanController extends Controller
             ->get();
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals'));
     }
 
     /**
@@ -225,7 +237,7 @@ class StockBanController extends Controller
                 ]);
             }
 
-            return redirect()->route('stock-ban.index')->with('success', 'Data Stock berhasil ditambahkan');
+            return redirect()->route('stock-ban.index')->with('success', 'Data Stock berhasil ditambahkan')->with('active_tab', 'tab-barang-lainnya');
         }
 
         $request->validate([

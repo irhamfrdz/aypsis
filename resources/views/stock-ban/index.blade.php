@@ -657,6 +657,31 @@
                                     'url_detail' => url('stock-ban/velg/'.$item->id),
                                 ]);
                             }
+
+                            // Add Lain-lain (Cat, Majun, etc)
+                            foreach($stockLainLains as $item) {
+                                $jenisDisplay = 'Lainnya';
+                                $nama = $item->namaStockBan->nama ?? '';
+                                if (stripos($nama, 'cat') !== false) {
+                                    $jenisDisplay = 'Cat';
+                                } elseif (stripos($nama, 'majun') !== false) {
+                                    $jenisDisplay = 'Majun';
+                                }
+
+                                $allItems->push((object)[
+                                    'jenis' => $jenisDisplay,
+                                    'id' => $item->id,
+                                    'nama' => $nama ?? 'Unknown',
+                                    'ukuran' => $item->ukuran ?? '-',
+                                    'type' => $item->type ?? 'pcs',
+                                    'qty' => $item->qty,
+                                    'lokasi' => $item->lokasi ?? '-',
+                                    'tanggal_masuk' => $item->tanggal_masuk,
+                                    // Re-use ban dalam routes since they share the same model table
+                                    'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
+                                ]);
+                            }
                         @endphp
                         
                         @forelse($allItems as $item)
@@ -667,7 +692,10 @@
                                     {{ $item->jenis == 'Ban Perut' ? 'bg-purple-100 text-purple-800' : '' }}
                                     {{ $item->jenis == 'Lock Kontainer' ? 'bg-green-100 text-green-800' : '' }}
                                     {{ $item->jenis == 'Ring Velg' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                    {{ $item->jenis == 'Velg' ? 'bg-indigo-100 text-indigo-800' : '' }}">
+                                    {{ $item->jenis == 'Velg' ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                    {{ $item->jenis == 'Cat' ? 'bg-pink-100 text-pink-800' : '' }}
+                                    {{ $item->jenis == 'Majun' ? 'bg-gray-100 text-gray-800' : '' }}
+                                    {{ $item->jenis == 'Lainnya' ? 'bg-cyan-100 text-cyan-800' : '' }}">
                                     {{ $item->jenis }}
                                 </span>
                             </td>
@@ -1631,6 +1659,15 @@
         // Tab Logic
         const tabs = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
+
+        // Check for active tab from session
+        const activeTabSession = "{{ session('active_tab') }}";
+        if (activeTabSession) {
+             const targetTabBtn = document.querySelector(`.tab-btn[data-target="${activeTabSession}"]`);
+             if (targetTabBtn) {
+                 setTimeout(() => targetTabBtn.click(), 100);
+             }
+        }
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
