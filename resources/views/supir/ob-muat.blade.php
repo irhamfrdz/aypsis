@@ -1,313 +1,252 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>OB Muat - Pilih Kapal & Voyage - AYPSIS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-    </style>
-</head>
-<body class="flex flex-col min-h-screen">
-    <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <a href="{{ route('supir.dashboard') }}" class="text-gray-600 hover:text-gray-900">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                    </a>
-                    <h1 class="text-xl font-bold text-gray-800">OB Muat - Pilih Kapal & Voyage</h1>
+@extends('layouts.supir')
+
+@section('title', 'OB Muat - Pilih Kapal & Voyage - AYPSIS')
+
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-xl mx-auto">
+        <!-- Flash Messages -->
+        @if(session('success'))
+            <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center">
+                <i class="fas fa-check-circle mr-3"></i>
+                <span class="font-bold">{{ session('success') }}</span>
+            </div>
+        @endif
+        
+        @if(session('error'))
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center">
+                <i class="fas fa-exclamation-circle mr-3"></i>
+                <span class="font-bold">{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>
+                    <span class="font-bold">Terdapat kesalahan:</span>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <span class="hidden sm:block text-sm text-gray-600">Halo, {{ Auth::user()->name }}!</span>
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="text-xs text-red-500 hover:text-red-700">Logout</button>
-                    </form>
+                <ul class="list-disc list-inside ml-6 text-sm">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        
+        <!-- Header Container -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center border border-green-100">
+                        <i class="fas fa-ship text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-gray-900 tracking-tight">OB Muat (Step 1)</h2>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Pilih kapal dan nomor voyage</p>
+                    </div>
                 </div>
+                <a href="{{ route('supir.dashboard') }}" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
             </div>
         </div>
-    </header>
 
-    <main class="container mx-auto mt-4 px-4 flex-grow">
-        <div class="max-w-xl mx-auto">
-            <!-- Flash Messages -->
-            @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded mb-4 text-sm" role="alert">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="font-medium">{{ session('success') }}</span>
-                    </div>
-                </div>
-            @endif
-            
-            @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm" role="alert">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="font-medium">{{ session('error') }}</span>
-                    </div>
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm" role="alert">
-                    <div class="flex items-center mb-1">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="font-medium">Terdapat kesalahan:</span>
-                    </div>
-                    <ul class="list-disc list-inside ml-6">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-            
-            <!-- Header dengan Icon -->
-            <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="bg-green-100 p-2 rounded-lg">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414A1 1 0 0016 10v6a1 1 0 01-1 1z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-bold text-gray-900">OB Muat (Step 1)</h2>
-                            <p class="text-sm text-gray-600">Pilih kapal dan nomor voyage</p>
-                        </div>
-                    </div>
-                    <a href="{{ route('supir.dashboard') }}" class="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
-                        Kembali
-                    </a>
-                </div>
-            </div>
-
-            <!-- Form Pilih Kapal dan Voyage -->
-            <div class="bg-white rounded-lg shadow-sm p-4">
-                <form action="{{ url('supir/ob-muat/store') }}" method="POST" id="obMuatForm">
+        <!-- Form Container -->
+        <div class="bg-white rounded-3xl shadow-xl shadow-gray-100 border border-gray-200 overflow-hidden">
+            <div class="p-8">
+                <form action="{{ url('supir/ob-muat/store') }}" method="POST" id="obMuatForm" class="space-y-6">
                     @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-4">
                         <!-- Dropdown Kapal -->
                         <div>
-                            <label for="kapal" class="block text-sm font-medium text-gray-700 mb-1">
-                                Kapal <span class="text-red-500">*</span>
+                            <label for="kapal" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                                Kapal <span class="text-red-500 font-bold">*</span>
                             </label>
-                            <select id="kapal" name="kapal" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    onchange="updateVoyageOptions(); updateKapalDetails();">
-                                <option value="">--Pilih Kapal--</option>
-                                {{-- Use naik_kapals (naik kapal rows) to populate available ships so voyages are picked from the same data source --}}
-                                @php $shipGroups = $naikKapals->groupBy('nama_kapal')->keys(); @endphp
-                                @foreach($shipGroups as $kapalName)
-                                    <option value="{{ $kapalName }}" {{ $kapalName == ($selectedKapal ?? '') ? 'selected' : '' }}>{{ $kapalName }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative">
+                                <select id="kapal" name="kapal" required 
+                                        class="appearance-none w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all"
+                                        onchange="updateVoyageOptions(); updateKapalDetails();">
+                                    <option value="">--Pilih Kapal--</option>
+                                    @php $shipGroups = $naikKapals->groupBy('nama_kapal')->keys(); @endphp
+                                    @foreach($shipGroups as $kapalName)
+                                        <option value="{{ $kapalName }}" {{ $kapalName == ($selectedKapal ?? '') ? 'selected' : '' }}>{{ $kapalName }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-gray-400">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Dropdown Voyage -->
                         <div>
-                            <label for="voyage" class="block text-sm font-medium text-gray-700 mb-1">
-                                No Voyage <span class="text-red-500">*</span>
+                            <label for="voyage" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                                No Voyage <span class="text-red-500 font-bold">*</span>
                             </label>
-                            <select id="voyage" name="voyage" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    disabled>
-                                <option value="">-PILIH KAPAL DAHULU-</option>
-                            </select>
+                            <div class="relative">
+                                <select id="voyage" name="voyage" required 
+                                        class="appearance-none w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all disabled:opacity-50 disabled:bg-gray-100"
+                                        disabled>
+                                    <option value="">-PILIH KAPAL DAHULU-</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-gray-400">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Buttons -->
-                    <div class="mt-4">
+                    <!-- Action Button -->
+                    <div class="pt-4">
                         <button type="button" onclick="proceedToObMuat()" 
-                                class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                                class="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-2xl hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:shadow-none disabled:bg-gray-300 disabled:cursor-not-allowed uppercase tracking-widest text-xs"
                                 id="proceedBtn" disabled>
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                            Ke Index OB
+                            <i class="fas fa-arrow-right mr-3"></i> Lanjutkan ke Index OB
                         </button>
                     </div>
                 </form>
             </div>
+            <div class="bg-gray-50 p-6 border-t border-gray-100">
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 mr-4 shrink-0">
+                        <i class="fas fa-info-circle text-indigo-500 text-sm"></i>
+                    </div>
+                    <p class="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-relaxed">
+                        Pilih kapal dan nomor voyage yang sesuai dengan tugas pemuatan Anda. Data yang tampil berdasarkan jadwal keberangkatan kapal yang aktif di sistem.
+                    </p>
+                </div>
+            </div>
         </div>
-    </main>
+    </div>
+</div>
+@endsection
 
-    <script>
-        // Data voyage sudah diproses di controller supaya Blade tidak perlu mengeksekusi closures
-        const voyageData = @json($voyageData ?? []);
+@push('scripts')
+<script>
+    // Data voyage sudah diproses di controller supaya Blade tidak perlu mengeksekusi closures
+    const voyageData = @json($voyageData ?? []);
 
-        // Selected values passed from server (outside object literal)
-        const initialSelectedKapal = @json($selectedKapal ?? '');
-        const initialSelectedVoyage = @json($selectedVoyage ?? '');
+    // Selected values passed from server (outside object literal)
+    const initialSelectedKapal = @json($selectedKapal ?? '');
+    const initialSelectedVoyage = @json($selectedVoyage ?? '');
 
-        // Debug: Log voyage data to console
-        const voyageDataKeys = (voyageData && typeof voyageData === 'object') ? Object.keys(voyageData) : [];
-        console.log('Voyage Data (from Naik Kapal):', voyageData);
-        console.log('Total Kapal in voyageData:', voyageDataKeys.length);
-
-        function updateVoyageOptions() {
-            const kapalSelect = document.getElementById('kapal');
-            const voyageSelect = document.getElementById('voyage');
-            const proceedBtn = document.getElementById('proceedBtn');
-            
-            const selectedKapal = kapalSelect.value;
-            console.log('Selected Kapal:', selectedKapal);
-            
-            // Reset voyage dropdown
-            voyageSelect.innerHTML = '<option value="">-PILIH VOYAGE-</option>';
-            voyageSelect.disabled = !selectedKapal;
-            
-            // Disable button
-            proceedBtn.disabled = true;
-            
-            if (selectedKapal && voyageData && voyageData[selectedKapal]) {
-                console.log('Voyages for', selectedKapal, ':', voyageData[selectedKapal]);
-                
-                // Populate voyage options - hapus duplikat dan format dengan baik
-                const uniqueVoyages = {};
-                voyageData[selectedKapal].forEach(item => {
-                    if (!uniqueVoyages[item.voyage]) {
-                        uniqueVoyages[item.voyage] = item;
-                    }
-                });
-                
-                Object.values(uniqueVoyages).forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.voyage;
-                    
-                    // Format text dengan info yang ada
-                    let displayText = item.voyage;
-                    const additionalInfo = [];
-                    
-                    if (item.tanggal_muat && item.tanggal_muat !== '-') {
-                        additionalInfo.push(item.tanggal_muat);
-                    }
-                    if (item.pelabuhan_tujuan && item.pelabuhan_tujuan !== '-') {
-                        additionalInfo.push(item.pelabuhan_tujuan);
-                    }
-                    
-                    if (additionalInfo.length > 0) {
-                        displayText += ` (${additionalInfo.join(' - ')})`;
-                    }
-                    
-                    option.textContent = displayText;
-                    // mark selected if the server passed an initial selected voyage
-                    if (initialSelectedVoyage && item.voyage === initialSelectedVoyage) {
-                        option.selected = true;
-                    }
-                    voyageSelect.appendChild(option);
-                });
-                
-                // Enable voyage dropdown
-                voyageSelect.disabled = false;
-                // If a server-selected voyage exists, ensure the button state is updated
-                if (initialSelectedVoyage) {
-                    updateKapalDetails();
+    function updateVoyageOptions() {
+        const kapalSelect = document.getElementById('kapal');
+        const voyageSelect = document.getElementById('voyage');
+        const proceedBtn = document.getElementById('proceedBtn');
+        
+        const selectedKapal = kapalSelect.value;
+        
+        // Reset voyage dropdown
+        voyageSelect.innerHTML = '<option value="">-PILIH VOYAGE-</option>';
+        voyageSelect.disabled = !selectedKapal;
+        
+        // Disable button
+        proceedBtn.disabled = true;
+        
+        if (selectedKapal && voyageData && voyageData[selectedKapal]) {
+            // Populate voyage options - hapus duplikat dan format dengan baik
+            const uniqueVoyages = {};
+            voyageData[selectedKapal].forEach(item => {
+                if (!uniqueVoyages[item.voyage]) {
+                    uniqueVoyages[item.voyage] = item;
                 }
-                console.log('Voyage dropdown enabled with', Object.keys(uniqueVoyages).length, 'unique options');
-            } else if (selectedKapal) {
-                console.log('No voyages found for kapal:', selectedKapal);
-                console.log('Available kapals in voyageData:', Object.keys(voyageData));
-                
-                // Add message for no voyages
+            });
+            
+            Object.values(uniqueVoyages).forEach(item => {
                 const option = document.createElement('option');
-                option.value = '';
-                option.textContent = '-TIDAK ADA VOYAGE-';
-                option.disabled = true;
-                voyageSelect.appendChild(option);
-            }
-        }
-
-        function updateKapalDetails() {
-            const kapalSelect = document.getElementById('kapal');
-            const voyageSelect = document.getElementById('voyage');
-            const proceedBtn = document.getElementById('proceedBtn');
-            
-            const selectedKapal = kapalSelect.value;
-            const selectedVoyage = voyageSelect.value;
-            
-            console.log('Updating for:', selectedKapal, selectedVoyage);
-            
-            if (selectedKapal && selectedVoyage && voyageData[selectedKapal]) {
-                const voyageInfo = voyageData[selectedKapal].find(item => item.voyage === selectedVoyage);
+                option.value = item.voyage;
                 
-                if (voyageInfo) {
-                    console.log('Found voyage info:', voyageInfo);
-                    
-                    // Enable button
-                    proceedBtn.disabled = false;
-                } else {
-                    console.log('Voyage info not found');
-                    proceedBtn.disabled = true;
+                // Format text dengan info yang ada
+                let displayText = item.voyage;
+                const additionalInfo = [];
+                
+                if (item.tanggal_muat && item.tanggal_muat !== '-') {
+                    additionalInfo.push(item.tanggal_muat);
                 }
+                if (item.pelabuhan_tujuan && item.pelabuhan_tujuan !== '-') {
+                    additionalInfo.push(item.pelabuhan_tujuan);
+                }
+                
+                if (additionalInfo.length > 0) {
+                    displayText += ` (${additionalInfo.join(' - ')})`;
+                }
+                
+                option.textContent = displayText;
+                // mark selected if the server passed an initial selected voyage
+                if (initialSelectedVoyage && item.voyage === initialSelectedVoyage) {
+                    option.selected = true;
+                }
+                voyageSelect.appendChild(option);
+            });
+            
+            // Enable voyage dropdown
+            voyageSelect.disabled = false;
+            // If a server-selected voyage exists, ensure the button state is updated
+            if (initialSelectedVoyage) {
+                updateKapalDetails();
+            }
+        } else if (selectedKapal) {
+            // Add message for no voyages
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '-TIDAK ADA VOYAGE-';
+            option.disabled = true;
+            voyageSelect.appendChild(option);
+        }
+    }
+
+    function updateKapalDetails() {
+        const kapalSelect = document.getElementById('kapal');
+        const voyageSelect = document.getElementById('voyage');
+        const proceedBtn = document.getElementById('proceedBtn');
+        
+        const selectedKapal = kapalSelect.value;
+        const selectedVoyage = voyageSelect.value;
+        
+        if (selectedKapal && selectedVoyage && voyageData[selectedKapal]) {
+            const voyageInfo = voyageData[selectedKapal].find(item => item.voyage === selectedVoyage);
+            if (voyageInfo) {
+                proceedBtn.disabled = false;
             } else {
                 proceedBtn.disabled = true;
             }
+        } else {
+            proceedBtn.disabled = true;
+        }
+    }
+
+    function proceedToObMuat() {
+        const kapal = document.getElementById('kapal').value;
+        const voyage = document.getElementById('voyage').value;
+        
+        if (kapal && voyage) {
+            window.location.href = `/supir/ob-muat/index?kapal=${encodeURIComponent(kapal)}&voyage=${encodeURIComponent(voyage)}`;
+        }
+    }
+
+    // Event listener untuk voyage selection
+    const voyageSelectEl = document.getElementById('voyage');
+    if (voyageSelectEl) {
+        voyageSelectEl.addEventListener('change', updateKapalDetails);
+    }
+
+    // Preselect kapal and voyage if provided by the server
+    document.addEventListener('DOMContentLoaded', function() {
+        if (initialSelectedKapal) {
+            const kapalSelect = document.getElementById('kapal');
+            kapalSelect.value = initialSelectedKapal;
+            updateVoyageOptions();
         }
 
-        function proceedToObMuat() {
-            const kapal = document.getElementById('kapal').value;
-            const voyage = document.getElementById('voyage').value;
-            
-            if (kapal && voyage) {
-                // Redirect to OB Muat index page with selected kapal and voyage
-                window.location.href = `/supir/ob-muat/index?kapal=${encodeURIComponent(kapal)}&voyage=${encodeURIComponent(voyage)}`;
+        if (initialSelectedVoyage) {
+            const voyageSelect = document.getElementById('voyage');
+            if (voyageSelect.querySelector(`option[value="${initialSelectedVoyage}"]`)) {
+                voyageSelect.value = initialSelectedVoyage;
+                updateKapalDetails();
             }
         }
-
-        // Event listener untuk voyage selection
-        const voyageSelectEl = document.getElementById('voyage');
-        if (voyageSelectEl) {
-            voyageSelectEl.addEventListener('change', updateKapalDetails);
-        }
-
-        // Debug: Log initial state
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded. Available kapal in voyageData:', Object.keys(voyageData));
-
-            @if($naikKapals->count() == 0)
-            console.warn('No naik kapal data found. Using sample data.');
-            @endif
-
-            // Preselect kapal and voyage if provided by the server
-            try {
-                if (initialSelectedKapal) {
-                    const kapalSelect = document.getElementById('kapal');
-                    kapalSelect.value = initialSelectedKapal;
-                    updateVoyageOptions();
-                }
-
-                if (initialSelectedVoyage) {
-                    const voyageSelect = document.getElementById('voyage');
-                    // If options already exist and one is selected by updateVoyageOptions, updateKapalDetails will be called.
-                    // Otherwise, explicitly set and call updateKapalDetails
-                    if (voyageSelect.querySelector(`option[value="${initialSelectedVoyage}"]`)) {
-                        voyageSelect.value = initialSelectedVoyage;
-                        updateKapalDetails();
-                    }
-                }
-            } catch (e) {
-                console.warn('Failed applying initial selections:', e);
-            }
-        });
-    </script>
-</body>
-</html>
+    });
+</script>
+@endpush

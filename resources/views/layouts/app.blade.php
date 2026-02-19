@@ -141,11 +141,13 @@
     <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div class="px-6 py-4 flex justify-between items-center">
             <div class="flex items-center">
+                @if($showSidebar ?? true)
                 <button id="mobile-menu-button" class="lg:hidden mr-3 p-1 text-gray-600 hover:text-gray-900 focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
+                @endif
                 <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">@yield('page_title', 'Dashboard')</h1>
             </div>
             <div class="flex items-center space-x-4">
@@ -196,7 +198,10 @@
         $user = Auth::user();
         $hasKaryawan = $user && $user->karyawan;
         $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-        $showSidebar = $hasKaryawan || $isAdmin || $user; // Show sidebar for logged in users, especially admins
+        
+        // Hide sidebar for supir routes or if specifically requested
+        $isSupirRoute = Request::routeIs('supir.*');
+        $showSidebar = ($hasKaryawan || $isAdmin || $user) && !$isSupirRoute && !isset($hideSidebar);
     @endphp
 
     @if($showSidebar)
