@@ -79,6 +79,7 @@ class CekKendaraan extends Model
         'masa_berlaku_stnk',
         'masa_berlaku_kir',
         'catatan',
+        'pernyataan',
         'foto_sebelum',
         'foto_sesudah',
     ];

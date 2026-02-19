@@ -256,9 +256,34 @@
                         @endforeach
                     </div>
 
+                    <div class="mt-8 pt-8 border-t border-gray-50">
+                        <label class="block text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Pernyataan</label>
+                        <div class="space-y-4">
+                            <label class="flex items-start p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:bg-indigo-50 hover:border-indigo-100 transition-all group">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" name="pernyataan" value="layak" class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" checked>
+                                </div>
+                                <div class="ml-4 text-sm">
+                                    <span class="font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">Layak Jalan</span>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Dengan ini saya menyatakan bahwa seluruh pengecekan kendaraan telah dilakukan dengan seksama, dan kendaraan dinyatakan dalam kondisi layak serta aman untuk dioperasikan.</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:bg-red-50 hover:border-red-100 transition-all group">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" name="pernyataan" value="tidak_layak" class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                                </div>
+                                <div class="ml-4 text-sm">
+                                    <span class="font-bold text-gray-900 group-hover:text-red-700 transition-colors">Tidak Layak Jalan</span>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Dengan ini saya menyatakan bahwa hasil pengecekan menunjukkan kendaraan dalam kondisi tidak layak atau tidak aman untuk dioperasikan. Saya menolak untuk mengendarai kendaraan ini sampai perbaikan atau pemeriksaan lanjutan dilakukan.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="mt-8">
-                        <label class="block text-sm font-semibold text-gray-800 mb-3">Catatan Tambahan</label>
-                        <textarea name="catatan" rows="4" class="w-full rounded-2xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50 p-4 text-sm" placeholder="Contoh: Lampu depan kiri agak redup, butuh ganti bohlam..."></textarea>
+                        <label class="block text-sm font-black text-gray-900 uppercase tracking-widest mb-3">Keterangan</label>
+                        <textarea name="catatan" rows="4" class="w-full rounded-2xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50 p-4 text-sm font-medium" placeholder="Tuliskan keterangan atau temuan tambahan di sini..."></textarea>
                     </div>
                     
                     <div class="mt-10 flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-gray-50 pt-8">

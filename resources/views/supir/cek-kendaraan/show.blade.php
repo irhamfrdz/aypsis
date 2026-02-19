@@ -53,6 +53,27 @@
                 </div>
             </div>
 
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-6 flex items-center">
+                    <i class="fas fa-file-signature mr-2"></i> Pernyataan Driver
+                </h3>
+                @if($cekKendaraan->pernyataan == 'layak')
+                    <div class="bg-green-50 border border-green-100 rounded-2xl p-4">
+                        <div class="flex items-center text-green-700 font-black text-xs uppercase tracking-widest mb-2">
+                            <i class="fas fa-check-circle mr-2"></i> Layak Jalan
+                        </div>
+                        <p class="text-[10px] text-green-600/80 leading-relaxed font-medium">Driver menyatakan kendaraan dalam kondisi layak serta aman untuk dioperasikan.</p>
+                    </div>
+                @else
+                    <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
+                        <div class="flex items-center text-red-700 font-black text-xs uppercase tracking-widest mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i> Tidak Layak Jalan
+                        </div>
+                        <p class="text-[10px] text-red-600/80 leading-relaxed font-medium">Driver menyatakan kendaraan dalam kondisi tidak layak atau tidak aman untuk dioperasikan.</p>
+                    </div>
+                @endif
+            </div>
+
 
 
             @if($cekKendaraan->catatan)

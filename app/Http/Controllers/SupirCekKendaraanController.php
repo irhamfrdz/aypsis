@@ -127,6 +127,7 @@ class SupirCekKendaraanController extends Controller
             'pengukur_tekanan_ban' => 'required|string',
             'segitiga_pengaman' => 'required|string',
             'jumlah_ban_serep' => 'required|string',
+            'pernyataan' => 'required|string|in:layak,tidak_layak',
         ]);
 
         try {
