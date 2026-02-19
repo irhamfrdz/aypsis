@@ -33,7 +33,9 @@
             <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
             <h2 class="text-lg font-black text-gray-900">Data Inspeksi</h2>
         </div>
-        <div class="overflow-x-auto">
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left">
                 <thead class="bg-gray-50/50">
                     <tr>
@@ -77,8 +79,8 @@
                     @empty
                     <tr>
                         <td colspan="5" class="px-8 py-20 text-center">
-                            <div class="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-gray-100 border-dashed">
-                                <i class="fas fa-clipboard-list text-gray-300 text-3xl"></i>
+                            <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100 border-dashed">
+                                <i class="fas fa-clipboard-list text-gray-300 text-2xl"></i>
                             </div>
                             <p class="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Belum ada riwayat pengecekan</p>
                         </td>
@@ -87,8 +89,53 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile Card View -->
+        <div class="block md:hidden divide-y divide-gray-50">
+            @forelse($history as $row)
+            <div class="p-6 space-y-4">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
+                            <i class="fas fa-truck text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-black text-gray-900 tracking-tight">{{ $row->mobil->nomor_polisi }}</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ $row->mobil->merek }}</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 text-[8px] font-black rounded-full bg-green-50 text-green-600 border border-green-100 uppercase tracking-widest text-center truncate">
+                        Tersimpan
+                    </span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-3">
+                        <div class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Odometer</div>
+                        <div class="text-xs font-black text-gray-700">{{ number_format($row->odometer, 0, ',', '.') }} KM</div>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-3">
+                        <div class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Waktu Cek</div>
+                        <div class="text-xs font-black text-gray-700">{{ $row->tanggal->format('d/m/Y') }}</div>
+                    </div>
+                </div>
+
+                <a href="{{ route('supir.cek-kendaraan.show', $row->id) }}" class="flex items-center justify-center w-full py-4 bg-gray-50 border border-gray-200 text-gray-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-indigo-600 hover:text-white transition-all active:scale-95 shadow-sm">
+                    <i class="fas fa-eye mr-2"></i> Lihat Detail Lengkap
+                </a>
+            </div>
+            @empty
+            <div class="p-12 text-center">
+                <div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100 border-dashed">
+                    <i class="fas fa-clipboard-list text-gray-300 text-xl"></i>
+                </div>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Belum ada riwayat</p>
+            </div>
+            @endforelse
+        </div>
+
         @if($history->hasPages())
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+            <div class="px-8 py-6 bg-gray-50/50 border-t border-gray-100">
                 {{ $history->links() }}
             </div>
         @endif
