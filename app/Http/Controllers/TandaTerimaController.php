@@ -1103,6 +1103,7 @@ class TandaTerimaController extends Controller
             'lembur' => 'nullable|boolean',
             'nginap' => 'nullable|boolean',
             'tidak_lembur_nginap' => 'nullable|boolean',
+            'pengirim' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -1139,7 +1140,7 @@ class TandaTerimaController extends Controller
                     ];
                 }
             }
-            
+
             $updateData = [
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
@@ -1158,6 +1159,7 @@ class TandaTerimaController extends Controller
                 'catatan' => $request->catatan,
                 'supir_pengganti' => $request->supir_pengganti,
                 'kenek_pengganti' => $request->kenek_pengganti,
+                'pengirim' => $request->pengirim,
                 'updated_by' => Auth::id(),
             ];
 

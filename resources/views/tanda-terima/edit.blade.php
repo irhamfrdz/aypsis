@@ -374,19 +374,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="pengirim" class="block text-xs font-medium text-gray-500 mb-2">
-                                Pengirim
+                                Pengirim <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <!-- Hidden input for form submission (read-only, not disabled so value is sent) -->
-                                <input type="hidden" name="pengirim" id="pengirim" value="{{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) }}">
-
-                                <!-- Display input (disabled for UI) -->
-                                <input type="text" id="pengirimSearch"
-                                       placeholder="Pengirim dari order"
-                                       value="{{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 cursor-not-allowed @error('pengirim') border-red-500 @enderror"
-                                       disabled>
-                            </div>
+                            <select name="pengirim" id="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm select2-pengirim @error('pengirim') border-red-500 @enderror">
+                                <option value="">-- Pilih Pengirim --</option>
+                                @foreach($pengirims as $p)
+                                    <option value="{{ $p->nama_pengirim }}" {{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) == $p->nama_pengirim ? 'selected' : '' }}>
+                                        {{ $p->nama_pengirim }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('pengirim')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -920,7 +917,7 @@
         
         jQuery(document).ready(function($) {
             if (typeof $.fn.select2 !== 'undefined') {
-                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek, .select2-kenek-pengganti, .select2-krani-pengganti').select2({
+                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek, .select2-kenek-pengganti, .select2-krani-pengganti, .select2-pengirim').select2({
                     placeholder: function() {
                         return $(this).data('placeholder') || '-- Pilih --';
                     },
@@ -1007,8 +1004,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize pengirim dropdown (disabled)
-        initializePengirimDropdown();
+        
 
         const addButton = document.getElementById('add-dimensi-btn');
         const container = document.getElementById('dimensi-container');
