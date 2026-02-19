@@ -14,6 +14,7 @@ use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProspekExport;
+use Illuminate\Support\Facades\Log;
 
 class ProspekController extends Controller
 {
@@ -466,7 +467,7 @@ class ProspekController extends Controller
             \Log::info('Selected Prospek IDs:', $prospekIds);
             
             $prospeks = Prospek::whereIn('id', $prospekIds)
-                ->where('status', 'aktif')
+                ->whereIn('status', ['aktif', 'batal'])
                 ->get();
 
             \Log::info('Found ' . $prospeks->count() . ' active prospeks');
