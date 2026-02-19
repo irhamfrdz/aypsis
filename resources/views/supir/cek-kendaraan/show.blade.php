@@ -53,35 +53,7 @@
                 </div>
             </div>
 
-            @if($cekKendaraan->foto_sebelum || $cekKendaraan->foto_sesudah)
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-6 flex items-center">
-                    <i class="fas fa-camera mr-2"></i> Dokumentasi
-                </h3>
-                <div class="grid grid-cols-2 gap-4">
-                    @if($cekKendaraan->foto_sebelum)
-                    <div class="space-y-2">
-                        <div class="aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-inner group relative">
-                            <img src="{{ asset('storage/' . $cekKendaraan->foto_sebelum) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                                <span class="text-[10px] text-white font-bold uppercase">Sebelum</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                    @if($cekKendaraan->foto_sesudah)
-                    <div class="space-y-2">
-                        <div class="aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-inner group relative">
-                            <img src="{{ asset('storage/' . $cekKendaraan->foto_sesudah) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                                <span class="text-[10px] text-white font-bold uppercase">Sesudah</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            @endif
+
 
             @if($cekKendaraan->catatan)
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">

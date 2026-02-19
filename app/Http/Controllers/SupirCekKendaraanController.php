@@ -127,8 +127,6 @@ class SupirCekKendaraanController extends Controller
             'pengukur_tekanan_ban' => 'required|string',
             'segitiga_pengaman' => 'required|string',
             'jumlah_ban_serep' => 'required|string',
-            'foto_sebelum' => 'nullable|image|max:2048',
-            'foto_sesudah' => 'nullable|image|max:2048',
         ]);
 
         try {
@@ -136,14 +134,6 @@ class SupirCekKendaraanController extends Controller
 
             $data = $request->all();
             $data['karyawan_id'] = $user->karyawan_id;
-
-            // Handle file uploads if any
-            if ($request->hasFile('foto_sebelum')) {
-                $data['foto_sebelum'] = $request->file('foto_sebelum')->store('cek-kendaraan', 'public');
-            }
-            if ($request->hasFile('foto_sesudah')) {
-                $data['foto_sesudah'] = $request->file('foto_sesudah')->store('cek-kendaraan', 'public');
-            }
 
             CekKendaraan::create($data);
 

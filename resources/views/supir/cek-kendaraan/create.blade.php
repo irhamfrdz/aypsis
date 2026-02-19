@@ -104,38 +104,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                        <i class="fas fa-camera mr-2 text-indigo-600"></i>
-                        Lampiran Foto
-                    </h2>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Foto Sebelum</label>
-                            <div class="flex items-center justify-center w-full">
-                                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
-                                    <div class="flex flex-col items-center justify-center py-4">
-                                        <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                                        <p class="text-xs text-gray-500">Klik untuk upload foto</p>
-                                    </div>
-                                    <input type="file" name="foto_sebelum" accept="image/*" class="hidden" onchange="this.parentElement.querySelector('p').innerText = this.files[0].name">
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Foto Sesudah</label>
-                            <div class="flex items-center justify-center w-full">
-                                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
-                                    <div class="flex flex-col items-center justify-center py-4">
-                                        <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                                        <p class="text-xs text-gray-500">Klik untuk upload foto</p>
-                                    </div>
-                                    <input type="file" name="foto_sesudah" accept="image/*" class="hidden" onchange="this.parentElement.querySelector('p').innerText = this.files[0].name">
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Middle & Right Columns: Checklist -->
