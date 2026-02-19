@@ -175,7 +175,9 @@ use Illuminate\Support\Str;
                                 <div class="text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $order->penerima ?? '-' }}</div>
+                                <div class="text-sm text-gray-900">
+                                {{ $order->recipient?->nama_penerima ?? $order->penerima ?? '-' }}
+                            </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-900">{{ $order->tujuan_kirim ?? '-' }}</div>

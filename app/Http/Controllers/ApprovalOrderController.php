@@ -20,7 +20,7 @@ class ApprovalOrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Order::with(['pengirim', 'jenisBarang', 'term', 'suratJalans']);
+        $query = Order::with(['pengirim', 'jenisBarang', 'term', 'suratJalans', 'recipient']);
 
         // Search functionality
         if ($request->filled('search')) {
