@@ -26,19 +26,45 @@
     </div>
 
     {{-- Alert Messages --}}
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <i class="fas fa-check-circle mr-2"></i>
-            {{ session('success') }}
-        </div>
-    @endif
+    <div id="alert-container">
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <i class="fas fa-check-circle mr-2"></i>
+                {{ session('success') }}
+            </div>
+        @endif
 
-    @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <i class="fas fa-exclamation-circle mr-2"></i>
-            {{ session('error') }}
-        </div>
-    @endif
+        @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                    </div>
+                    <div>
+                        {{ session('error') }}
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold">Terjadi kesalahan:</p>
+                        <ul class="mt-1 list-disc list-inside text-sm">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
 
     @if($prospeksAktif->count() > 0)
         {{-- Form Naik Kapal --}}
@@ -308,6 +334,23 @@
 @endpush
 
             <style>
+                @keyframes fadeInDown {
+                    from {
+                        opacity: 0;
+                        transform: translate3d(0, -10px, 0);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translate3d(0, 0, 0);
+                    }
+                }
+                
+                .animate-fade-in-down {
+                    animation-name: fadeInDown;
+                    animation-duration: 0.3s;
+                    animation-fill-mode: both;
+                }
+
                 /* Searchable Multi-Select Styling */
                 #prospek_container {
                     transition: all 0.15s ease;
@@ -665,37 +708,70 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form validation
     const form = document.getElementById('naikKapalForm');
+    
+    function showErrorMessage(message) {
+        // Clear previous JS errors
+        document.querySelectorAll('.js-error-alert').forEach(el => el.remove());
+
+        const container = document.getElementById('alert-container');
+        if (container) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 js-error-alert flex items-start animate-fade-in-down';
+            errorDiv.innerHTML = `
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                </div>
+                <div>
+                    <strong>Perhatian!</strong>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            // Insert at top of container
+            container.prepend(errorDiv);
+            
+            // Scroll to error
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // Fallback if container not found
+            alert(message);
+        }
+    }
+
     form.addEventListener('submit', function(e) {
         const kapalId = kapalSelect.value;
         const voyage = voyageSelect.value;
         const pelabuhan = document.getElementById('pelabuhan_asal').value;
         
+        // Clear previous errors
+        document.querySelectorAll('.js-error-alert').forEach(el => el.remove());
+        
         if (selectedProspeks.length === 0) {
             e.preventDefault();
-            alert('Silakan pilih minimal 1 prospek untuk dimuat ke kapal');
+            showErrorMessage('Silakan pilih minimal 1 prospek untuk dimuat ke kapal. Gunakan kolom pencarian untuk memilih prospek.');
             return;
         }
         
         if (!kapalId) {
             e.preventDefault();
-            alert('Silakan pilih kapal');
+            showErrorMessage('Silakan pilih Kapal terlebih dahulu.');
             return;
         }
         
         if (!voyage) {
             e.preventDefault();
-            alert('Silakan pilih nomor voyage');
+            showErrorMessage('Silakan pilih Nomor Voyage.');
             return;
         }
         
         if (!pelabuhan) {
             e.preventDefault();
-            alert('Silakan pilih tujuan kirim asal');
+            showErrorMessage('Silakan pilih Pelabuhan Asal.');
             return;
         }
         
         // Confirmation
-        if (!confirm(`Apakah Anda yakin ingin memproses ${selectedProspeks.length} prospek?`)) {
+        if (!confirm(`Apakah Anda yakin ingin memproses ${selectedProspeks.length} prospek? Data akan disimpan sebagai muatan kapal.`)) {
             e.preventDefault();
         }
     });
@@ -704,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportExcelBtn = document.getElementById('exportExcelBtn');
     exportExcelBtn.addEventListener('click', function() {
         if (selectedProspeks.length === 0) {
-            alert('Silakan pilih minimal 1 prospek untuk di-export');
+            showErrorMessage('Silakan pilih minimal 1 prospek untuk di-export.');
             return;
         }
         
