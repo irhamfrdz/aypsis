@@ -281,7 +281,7 @@
                                         <option value="">Pilih Penerima</option>
                                         @foreach($penerimas as $penerima)
                                             <option value="{{ $penerima->id }}" {{ old('penerima_id', $order->penerima_id) == $penerima->id ? 'selected' : '' }}>
-                                                {{ $penerima->nama }}
+                                                {{ $penerima->nama_penerima }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -671,14 +671,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (penerimaSelect && event.data.data) {
                     const newOption = document.createElement('option');
                     newOption.value = event.data.data.id;
-                    newOption.textContent = event.data.data.nama;
+                    newOption.textContent = event.data.data.nama_penerima;
                     penerimaSelect.appendChild(newOption);
                     penerimaSelect.value = event.data.data.id;
-                    if (searchPenerimaInput) searchPenerimaInput.value = event.data.data.nama;
+                    if (searchPenerimaInput) searchPenerimaInput.value = event.data.data.nama_penerima;
                     if (dropdownOptionsPenerima) {
                         const newOptionDiv = document.createElement('div');
                         newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
-                        newOptionDiv.textContent = event.data.data.nama;
+                        newOptionDiv.textContent = event.data.data.nama_penerima;
                         newOptionDiv.setAttribute('data-value', event.data.data.id);
                         newOptionDiv.addEventListener('click', function() {
                             penerimaSelect.value = this.getAttribute('data-value');
@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window['refresh_penerima_id_options']();
                     }
                     penerimaSelect.dispatchEvent(new Event('change'));
-                    showNotification('Penerima "' + event.data.data.nama + '" berhasil ditambahkan dan dipilih!', 'success');
+                    showNotification('Penerima "' + event.data.data.nama_penerima + '" berhasil ditambahkan dan dipilih!', 'success');
                 }
             } else if (event.data.type === 'jenis-barang-added') {
                 const jenisBarangSelect = document.getElementById('jenis_barang_id');

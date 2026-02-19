@@ -269,7 +269,7 @@
                                         <option value="">Select an option</option>
                                         @foreach($penerimas as $penerima)
                                             <option value="{{ $penerima->id }}" {{ old('penerima_id') == $penerima->id ? 'selected' : '' }}>
-                                                {{ $penerima->nama }}
+                                                {{ $penerima->nama_penerima }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -1036,9 +1036,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 penerimaSelect.value = event.data.data.id;
 
                 // Update search input to show selected value
-                if (searchPenerimaInput) {
-                    searchPenerimaInput.value = event.data.data.nama;
-                }
+                if (searchPenerimaInput) searchPenerimaInput.value = event.data.data.nama_penerima;
 
                 // Update the dropdown options in the searchable dropdown
                 if (dropdownOptionsPenerima) {
@@ -1072,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 penerimaSelect.dispatchEvent(new Event('change'));
 
                 // Show success message
-                showNotification('Penerima "' + event.data.data.nama + '" berhasil ditambahkan dan dipilih!', 'success');
+                    showNotification('Penerima "' + event.data.data.nama_penerima + '" berhasil ditambahkan dan dipilih!', 'success');
             }
         } else if (event.data.type === 'jenis-barang-added') {
             // Handle Jenis Barang added

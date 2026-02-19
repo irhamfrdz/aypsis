@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\SuratJalan;
 use App\Models\Term;
 use App\Models\Pengirim;
-use App\Models\MasterPengirimPenerima;
+use App\Models\Penerima;
 use App\Models\JenisBarang;
 use App\Models\MasterTujuanKirim;
 use App\Models\TujuanKegiatanUtama;
@@ -15,6 +15,7 @@ use App\Models\StockKontainer;
 use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -51,7 +52,7 @@ class OrderController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
         $jenisBarangs = JenisBarang::where('status', 'active')->get();
         $tujuanKirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::where('aktif', true)->orderBy('ke')->get();
@@ -83,7 +84,7 @@ class OrderController extends Controller
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'penerima' => 'nullable|string|max:255',
-            'penerima_id' => 'nullable|exists:master_pengirim_penerima,id',
+            'penerima_id' => 'nullable|exists:penerimas,id',
             'alamat_penerima' => 'nullable|string',
             'kontak_penerima' => 'nullable|string|max:255',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
@@ -171,6 +172,12 @@ class OrderController extends Controller
         // Update nomor terakhir for ODS if nomor_order follows ODS format
         if (strpos($request->nomor_order, 'ODS') === 0) {
             $this->updateNomorTerakhir($request->nomor_order);
+        }
+
+        // Set penerima string field from penerimas table
+        if (!empty($data['penerima_id'])) {
+            $penerimaObj = Penerima::find($data['penerima_id']);
+            $data['penerima'] = $penerimaObj ? $penerimaObj->nama_penerima : null;
         }
 
         Order::create($data);
@@ -271,7 +278,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $penerimas = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
         $jenisBarangs = JenisBarang::where('status', 'active')->get();
         $tujuanKirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::where('aktif', true)->orderBy('ke')->get();
@@ -301,7 +308,7 @@ class OrderController extends Controller
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'penerima' => 'nullable|string|max:255',
-            'penerima_id' => 'nullable|exists:master_pengirim_penerima,id',
+            'penerima_id' => 'nullable|exists:penerimas,id',
             'alamat_penerima' => 'nullable|string',
             'kontak_penerima' => 'nullable|string|max:255',
             'size_kontainer' => 'required|string|max:255',
@@ -383,6 +390,12 @@ class OrderController extends Controller
                 'notes' => 'Units updated via order edit (synced with unit_kontainer)'
             ];
             $data['processing_history'] = json_encode($history);
+        }
+
+        // Set penerima string field from penerimas table
+        if (!empty($data['penerima_id'])) {
+            $penerimaObj = Penerima::find($data['penerima_id']);
+            $data['penerima'] = $penerimaObj ? $penerimaObj->nama_penerima : null;
         }
 
         $order->update($data);
