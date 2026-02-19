@@ -6,14 +6,14 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center space-x-4">
-            <a href="{{ route('supir.dashboard') }}" class="p-2 bg-white hover:bg-gray-100 rounded-full transition-all border shadow-sm">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center space-x-3 sm:space-x-4">
+            <a href="{{ route('supir.dashboard') }}" class="p-2 sm:p-2.5 bg-white hover:bg-gray-100 rounded-xl transition-all border border-gray-200 shadow-sm text-gray-400 hover:text-gray-600">
+                <i class="fas fa-chevron-left sm:text-lg"></i>
             </a>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Pengecekan Kendaraan</h1>
-                <p class="text-gray-600 mt-1">Formulir pemeriksaan rutin unit armada</p>
+                <h1 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Cek Kendaraan</h1>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Formulir pemeriksaan rutin unit</p>
             </div>
         </div>
     </div>
@@ -50,9 +50,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column: Basic Info -->
             <div class="space-y-8">
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                        <i class="fas fa-info-circle mr-2 text-indigo-600"></i>
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
+                    <h2 class="text-lg font-black text-gray-900 mb-6 flex items-center">
+                        <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
                         Informasi Dasar
                     </h2>
                     
@@ -109,7 +109,7 @@
 
             <!-- Middle & Right Columns: Checklist -->
             <div class="lg:col-span-2 space-y-8">
-                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
                     <div class="flex items-center justify-between mb-8">
                         <h2 class="text-xl font-bold text-gray-900 flex items-center">
                             <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
@@ -185,9 +185,9 @@
                         @endphp
 
                         @foreach($items as $item)
-                        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200">
-                            <label class="block text-sm font-bold text-gray-800 mb-4">{{ $item['label'] }}</label>
-                            <div class="flex gap-3">
+                        <div class="p-4 sm:p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200 group">
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1 group-hover:text-indigo-600 transition-colors">{{ $item['label'] }}</label>
+                            <div class="flex flex-row gap-2 sm:gap-3">
                                 @if($item['type'] == 'status_kadaluarsa')
                                     <label class="flex-1 cursor-pointer">
                                         <input type="radio" name="{{ $item['name'] }}" value="tidak_kadaluarsa" class="hidden peer" checked>
@@ -261,11 +261,11 @@
                         <textarea name="catatan" rows="4" class="w-full rounded-2xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50 p-4 text-sm" placeholder="Contoh: Lampu depan kiri agak redup, butuh ganti bohlam..."></textarea>
                     </div>
                     
-                    <div class="mt-10 flex flex-col sm:flex-row items-center justify-end gap-4 border-t border-gray-100 pt-8">
-                        <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-all text-center">
+                    <div class="mt-10 flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-gray-50 pt-8">
+                        <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto px-8 py-4 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 font-black rounded-2xl transition-all text-center uppercase tracking-widest text-[10px]">
                             Batal
                         </a>
-                        <button type="submit" class="w-full sm:w-auto px-10 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                        <button type="submit" class="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 transition-all active:scale-95 uppercase tracking-widest text-xs">
                             Simpan Data Pengecekan
                         </button>
                     </div>
