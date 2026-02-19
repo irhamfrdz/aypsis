@@ -4682,5 +4682,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->name('master-sertifikat-kapal.destroy')
                 ->middleware('can:master-sertifikat-kapal-delete');
 
+           // ═══════════════════════════════════════════════════════════════════════
+           // 📋 MONITORING CEK KENDARAAN (ADMIN)
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::prefix('admin')->name('admin.')->group(function() {
+               Route::get('cek-kendaraan', [\App\Http\Controllers\CekKendaraanController::class, 'index'])
+                   ->name('cek-kendaraan.index')
+                   ->middleware('can:master-mobil-view');
+
+               Route::get('cek-kendaraan/{cekKendaraan}', [\App\Http\Controllers\CekKendaraanController::class, 'show'])
+                   ->name('cek-kendaraan.show')
+                   ->middleware('can:master-mobil-view');
+           });
+
 });
 

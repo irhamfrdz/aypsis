@@ -805,6 +805,15 @@
         </div>
         @endif
 
+        {{-- Monitoring Cek Kendaraan --}}
+        @if($user && $user->can('master-mobil-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('admin.cek-kendaraan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Monitoring Cek Kendaraan</span>
+            </a>
+        </div>
+        @endif
+
         {{-- Master Alat Berat --}}
         @if($user && $user->can('master-alat-berat-view'))
         <div class="mx-2 mb-3">
