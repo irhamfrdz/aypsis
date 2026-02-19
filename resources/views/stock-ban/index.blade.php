@@ -1305,6 +1305,14 @@
     }
 
     function openReturnModal(banId, nomorSeri, mobilPolisi) {
+        console.log('openReturnModal called with:', banId, nomorSeri, mobilPolisi);
+        
+        const modal = document.getElementById('returnBanModal');
+        if (!modal) {
+            console.error('returnBanModal element NOT FOUND!');
+            return;
+        }
+
         document.getElementById('return_ban_id').value = banId;
         document.getElementById('return_nomor_seri').textContent = nomorSeri || '-';
         document.getElementById('return_mobil').textContent = mobilPolisi || '-';
@@ -1314,11 +1322,24 @@
         document.getElementById('return_keterangan').value = '';
         
         // Show modal
-        document.getElementById('returnBanModal').classList.remove('hidden');
+        modal.classList.remove('hidden');
+
+        // Move modal to body to avoid parent container issues
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        // Force show with highest priority
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
     }
 
     function closeReturnModal() {
-        document.getElementById('returnBanModal').classList.add('hidden');
+        console.log('closeReturnModal called');
+        const modal = document.getElementById('returnBanModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style'); // Remove inline styles
+        }
     }
 
     function submitReturnForm() {
@@ -1337,7 +1358,14 @@
 
     function openKanisirModal(e) {
         e.preventDefault();
+        console.log('openKanisirModal called');
         
+        const modal = document.getElementById('kanisirModal');
+        if (!modal) {
+            console.error('kanisirModal element NOT FOUND!');
+            return;
+        }
+
         // Reset vendor selection
         document.getElementById('kanisir_vendor').value = '';
         document.getElementById('text-kanisir_vendor').textContent = '-- Pilih Vendor --';
@@ -1393,11 +1421,24 @@
         const currentVendor = document.getElementById('kanisir_vendor').value;
         if (currentVendor) updateKanisirPrices(currentVendor);
 
-        document.getElementById('kanisirModal').classList.remove('hidden');
+        modal.classList.remove('hidden');
+
+        // Move modal to body
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        // Force show
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
     }
 
     function closeKanisirModal() {
-        document.getElementById('kanisirModal').classList.add('hidden');
+        console.log('closeKanisirModal called');
+        const modal = document.getElementById('kanisirModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style');
+        }
     }
 
     function submitKanisirForm(e) {
@@ -1501,6 +1542,11 @@
     window.openKirimModal = openKirimModal;
     window.closeKirimBanModal = closeKirimBanModal;
     window.submitKirimBanForm = submitKirimBanForm;
+    window.openReturnModal = openReturnModal;
+    window.closeReturnModal = closeReturnModal;
+    window.submitReturnForm = submitReturnForm;
+    window.openUsageModal = openUsageModal;
+    window.closeUsageModal = closeUsageModal;
 
     function updateKanisirPrices(vendorName) {
         if (!vendorName) return;
