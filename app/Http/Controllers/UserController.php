@@ -2101,6 +2101,27 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle master-lwbp-lama permissions explicitly
+                    if ($module === 'master-lwbp-lama' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-lwbp-lama-view',
+                            'create' => 'master-lwbp-lama-create',
+                            'update' => 'master-lwbp-lama-update',
+                            'delete' => 'master-lwbp-lama-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                continue;
+                            }
+                        }
+                    }
+
                     // DIRECT FIX: Handle master-pekerjaan permissions explicitly
                     if ($module === 'master-pekerjaan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                         // Map action to correct permission name

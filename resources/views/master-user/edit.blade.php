@@ -847,6 +847,22 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            {{-- Master LWBP Lama --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master LWBP Lama</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-lwbp-lama][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lwbp-lama']['view']) && $userMatrixPermissions['master-lwbp-lama']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lwbp-lama][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lwbp-lama']['create']) && $userMatrixPermissions['master-lwbp-lama']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lwbp-lama][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lwbp-lama']['update']) && $userMatrixPermissions['master-lwbp-lama']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lwbp-lama][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lwbp-lama']['delete']) && $userMatrixPermissions['master-lwbp-lama']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
