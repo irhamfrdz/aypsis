@@ -247,7 +247,7 @@ class StockBanController extends Controller
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'nullable|string|max:255',
-            'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
+            'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs,rusak',
 
             'harga_beli' => 'nullable|numeric|min:0',
             'tempat_beli' => 'nullable|string|max:255',
@@ -270,8 +270,8 @@ class StockBanController extends Controller
             }
         }
 
-        // Auto set status to 'Rusak' if kondisi is 'afkir'
-        if ($request->kondisi === 'afkir') {
+        // Auto set status to 'Rusak' if kondisi is 'afkir' or 'rusak'
+        if ($request->kondisi === 'afkir' || $request->kondisi === 'rusak') {
             $data['status'] = 'Rusak';
         }
         
@@ -317,7 +317,7 @@ class StockBanController extends Controller
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
             'ukuran' => 'nullable|string|max:255',
-            'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs',
+            'kondisi' => 'required|in:afkir,asli,kaleng,kanisir,karung,liter,pail,pcs,rusak',
 
             'harga_beli' => 'nullable|numeric|min:0',
             'tempat_beli' => 'nullable|string|max:255',

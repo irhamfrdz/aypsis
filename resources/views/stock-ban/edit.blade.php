@@ -193,6 +193,7 @@
                             <option value="liter" {{ old('kondisi', $stockBan->kondisi) == 'liter' ? 'selected' : '' }}>Liter</option>
                             <option value="pail" {{ old('kondisi', $stockBan->kondisi) == 'pail' ? 'selected' : '' }}>Pail</option>
                             <option value="pcs" {{ old('kondisi', $stockBan->kondisi) == 'pcs' ? 'selected' : '' }}>Pcs</option>
+                            <option value="rusak" {{ old('kondisi', $stockBan->kondisi) == 'rusak' ? 'selected' : '' }}>Rusak</option>
                         </select>
                         @error('kondisi')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
