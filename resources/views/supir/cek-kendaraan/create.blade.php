@@ -120,141 +120,166 @@
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @php
-                            $items = [
-                                ['name' => 'kotak_p3k', 'label' => 'Kotak P3K', 'type' => 'status_kadaluarsa'],
-                                ['name' => 'racun_api', 'label' => 'Racun Api / APAR', 'type' => 'status_kadaluarsa'],
-                                ['name' => 'plat_no_depan', 'label' => 'Plat No Depan', 'type' => 'status_ada'],
-                                ['name' => 'plat_no_belakang', 'label' => 'Plat No Belakang', 'type' => 'status_ada'],
-                                ['name' => 'lampu_jauh_kanan', 'label' => 'Lampu Besar Jauh Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_jauh_kiri', 'label' => 'Lampu Besar Jauh Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_dekat_kanan', 'label' => 'Lampu Besar Dekat Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_dekat_kiri', 'label' => 'Lampu Besar Dekat Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_depan_kanan', 'label' => 'Lampu Belok Depan Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_depan_kiri', 'label' => 'Lampu Belok Depan Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_belakang_kanan', 'label' => 'Lampu Belok Belakang Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_sein_belakang_kiri', 'label' => 'Lampu Belok Belakang Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_rem_kanan', 'label' => 'Lampu Rem Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_rem_kiri', 'label' => 'Lampu Rem Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_mundur_kanan', 'label' => 'Lampu Alarm Mundur Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_mundur_kiri', 'label' => 'Lampu Alarm Mundur Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'sabuk_pengaman_kanan', 'label' => 'Sabuk Pengaman Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'sabuk_pengaman_kiri', 'label' => 'Sabuk Pengaman Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_depan_kanan', 'label' => 'Kamvas Rem Depan Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_depan_kiri', 'label' => 'Kamvas Rem Depan Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_belakang_kanan', 'label' => 'Kamvas Rem Belakang Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'kamvas_rem_belakang_kiri', 'label' => 'Kamvas Rem Belakang Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'spion_kanan', 'label' => 'Kaca Spion Luar Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'spion_kiri', 'label' => 'Kaca Spion Luar Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_depan_kanan', 'label' => 'Tekanan Ban Depan Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_depan_kiri', 'label' => 'Tekanan Ban Depan Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_belakang_kanan', 'label' => 'Tekanan Ban Belakang Kanan', 'type' => 'status_fungsi'],
-                                ['name' => 'tekanan_ban_belakang_kiri', 'label' => 'Tekanan Ban Belakang Kiri', 'type' => 'status_fungsi'],
-                                ['name' => 'ganjelan_ban', 'label' => 'Ganjelan Ban', 'type' => 'status_ada'],
-                                ['name' => 'trakel_sabuk', 'label' => 'Trakel Sabuk', 'type' => 'status_ada'],
-                                ['name' => 'twist_lock_kontainer', 'label' => 'Twist Lock Kontainer', 'type' => 'status_fungsi'],
-                                ['name' => 'landing_buntut', 'label' => 'Landing Buntut', 'type' => 'status_fungsi'],
-                                ['name' => 'patok_besi', 'label' => 'Patok Besi', 'type' => 'status_ada'],
-                                ['name' => 'tutup_tangki', 'label' => 'Tutup Tangki', 'type' => 'status_ada'],
-                                ['name' => 'lampu_no_plat', 'label' => 'Lampu No Plat', 'type' => 'status_fungsi'],
-                                ['name' => 'lampu_bahaya', 'label' => 'Lampu Bahaya', 'type' => 'status_fungsi'],
-                                ['name' => 'klakson', 'label' => 'Klakson', 'type' => 'status_fungsi'],
-                                ['name' => 'radio', 'label' => 'Radio', 'type' => 'status_fungsi'],
-                                ['name' => 'rem_tangan', 'label' => 'Rem Tangan', 'type' => 'status_fungsi'],
-                                ['name' => 'pedal_gas', 'label' => 'Pedal Gas', 'type' => 'status_fungsi'],
-                                ['name' => 'pedal_rem', 'label' => 'Pedal Rem', 'type' => 'status_fungsi'],
-                                ['name' => 'porseneling', 'label' => 'Porseneling', 'type' => 'status_fungsi'],
-                                ['name' => 'antena_radio', 'label' => 'Antena Radio', 'type' => 'status_ada'],
-                                ['name' => 'speaker', 'label' => 'Speaker', 'type' => 'status_fungsi'],
-                                ['name' => 'spion_dalam', 'label' => 'Kaca Spion Dalam', 'type' => 'status_fungsi'],
-                                ['name' => 'dongkrak', 'label' => 'Dongkrak', 'type' => 'status_ada'],
-                                ['name' => 'tangkai_dongkrak', 'label' => 'Tangkai Dongkrak', 'type' => 'status_ada'],
-                                ['name' => 'kunci_roda', 'label' => 'Kunci Roda', 'type' => 'status_ada'],
-                                ['name' => 'dop_roda', 'label' => 'Dop Roda', 'type' => 'status_ada'],
-                                ['name' => 'wiper_depan', 'label' => 'Wiper Depan', 'type' => 'status_fungsi'],
-                                ['name' => 'oli_mesin', 'label' => 'Oli Mesin', 'type' => 'status_baik'],
-                                ['name' => 'air_radiator', 'label' => 'Air Radiator', 'type' => 'status_baik'],
-                                ['name' => 'minyak_rem', 'label' => 'Minyak Rem', 'type' => 'status_baik'],
-                                ['name' => 'air_wiper', 'label' => 'Air Wiper', 'type' => 'status_baik'],
-                                ['name' => 'kondisi_aki', 'label' => 'Kondisi Aki', 'type' => 'status_baik'],
-                                ['name' => 'pengukur_tekanan_ban', 'label' => 'Pengukur Tekanan Ban', 'type' => 'status_ada'],
-                                ['name' => 'segitiga_pengaman', 'label' => 'Segitiga Pengaman', 'type' => 'status_ada'],
-                                ['name' => 'jumlah_ban_serep', 'label' => 'Jumlah Ban Serep', 'type' => 'status_jumlah'],
+                            $categories = [
+                                'Dokumen & Perlengkapan' => [
+                                    ['name' => 'kotak_p3k', 'label' => 'Kotak P3K', 'type' => 'status_kadaluarsa'],
+                                    ['name' => 'racun_api', 'label' => 'Racun Api / APAR', 'type' => 'status_kadaluarsa'],
+                                    ['name' => 'plat_no_depan', 'label' => 'Plat No Depan', 'type' => 'status_ada'],
+                                    ['name' => 'plat_no_belakang', 'label' => 'Plat No Belakang', 'type' => 'status_ada'],
+                                    ['name' => 'ganjelan_ban', 'label' => 'Ganjelan Ban', 'type' => 'status_ada'],
+                                    ['name' => 'trakel_sabuk', 'label' => 'Trakel Sabuk', 'type' => 'status_ada'],
+                                    ['name' => 'patok_besi', 'label' => 'Patok Besi', 'type' => 'status_ada'],
+                                    ['name' => 'tutup_tangki', 'label' => 'Tutup Tangki', 'type' => 'status_ada'],
+                                    ['name' => 'dongkrak', 'label' => 'Dongkrak', 'type' => 'status_ada'],
+                                    ['name' => 'tangkai_dongkrak', 'label' => 'Tangkai Dongkrak', 'type' => 'status_ada'],
+                                    ['name' => 'kunci_roda', 'label' => 'Kunci Roda', 'type' => 'status_ada'],
+                                    ['name' => 'dop_roda', 'label' => 'Dop Roda', 'type' => 'status_ada'],
+                                    ['name' => 'segitiga_pengaman', 'label' => 'Segitiga Pengaman', 'type' => 'status_ada'],
+                                    ['name' => 'jumlah_ban_serep', 'label' => 'Jumlah Ban Serep', 'type' => 'status_jumlah'],
+                                ],
+                                'Lampu & Sinyal' => [
+                                    ['name' => 'lampu_jauh_kanan', 'label' => 'Lampu Besar Jauh Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_jauh_kiri', 'label' => 'Lampu Besar Jauh Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_dekat_kanan', 'label' => 'Lampu Besar Dekat Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_dekat_kiri', 'label' => 'Lampu Besar Dekat Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_sein_depan_kanan', 'label' => 'Lampu Belok Depan Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_sein_depan_kiri', 'label' => 'Lampu Belok Depan Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_sein_belakang_kanan', 'label' => 'Lampu Belok Belakang Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_sein_belakang_kiri', 'label' => 'Lampu Belok Belakang Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_rem_kanan', 'label' => 'Lampu Rem Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_rem_kiri', 'label' => 'Lampu Rem Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_mundur_kanan', 'label' => 'Lampu Alarm Mundur Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_mundur_kiri', 'label' => 'Lampu Alarm Mundur Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_no_plat', 'label' => 'Lampu No Plat', 'type' => 'status_fungsi'],
+                                    ['name' => 'lampu_bahaya', 'label' => 'Lampu Bahaya', 'type' => 'status_fungsi'],
+                                    ['name' => 'klakson', 'label' => 'Klakson', 'type' => 'status_fungsi'],
+                                ],
+                                'Mesin & Cairan' => [
+                                    ['name' => 'oli_mesin', 'label' => 'Oli Mesin', 'type' => 'status_baik'],
+                                    ['name' => 'air_radiator', 'label' => 'Air Radiator', 'type' => 'status_baik'],
+                                    ['name' => 'minyak_rem', 'label' => 'Minyak Rem', 'type' => 'status_baik'],
+                                    ['name' => 'air_wiper', 'label' => 'Air Wiper', 'type' => 'status_baik'],
+                                    ['name' => 'kondisi_aki', 'label' => 'Kondisi Aki', 'type' => 'status_baik'],
+                                ],
+                                'Ban & Rem' => [
+                                    ['name' => 'kamvas_rem_depan_kanan', 'label' => 'Kamvas Rem Depan Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'kamvas_rem_depan_kiri', 'label' => 'Kamvas Rem Depan Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'kamvas_rem_belakang_kanan', 'label' => 'Kamvas Rem Belakang Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'kamvas_rem_belakang_kiri', 'label' => 'Kamvas Rem Belakang Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'tekanan_ban_depan_kanan', 'label' => 'Tekanan Ban Depan Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'tekanan_ban_depan_kiri', 'label' => 'Tekanan Ban Depan Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'tekanan_ban_belakang_kanan', 'label' => 'Tekanan Ban Belakang Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'tekanan_ban_belakang_kiri', 'label' => 'Tekanan Ban Belakang Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'pengukur_tekanan_ban', 'label' => 'Pengukur Tekanan Ban', 'type' => 'status_ada'],
+                                ],
+                                'Interior & Lainnya' => [
+                                    ['name' => 'sabuk_pengaman_kanan', 'label' => 'Sabuk Pengaman Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'sabuk_pengaman_kiri', 'label' => 'Sabuk Pengaman Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'spion_kanan', 'label' => 'Kaca Spion Luar Kanan', 'type' => 'status_fungsi'],
+                                    ['name' => 'spion_kiri', 'label' => 'Kaca Spion Luar Kiri', 'type' => 'status_fungsi'],
+                                    ['name' => 'spion_dalam', 'label' => 'Kaca Spion Dalam', 'type' => 'status_fungsi'],
+                                    ['name' => 'radio', 'label' => 'Radio', 'type' => 'status_fungsi'],
+                                    ['name' => 'antena_radio', 'label' => 'Antena Radio', 'type' => 'status_ada'],
+                                    ['name' => 'speaker', 'label' => 'Speaker', 'type' => 'status_fungsi'],
+                                    ['name' => 'rem_tangan', 'label' => 'Rem Tangan', 'type' => 'status_fungsi'],
+                                    ['name' => 'pedal_gas', 'label' => 'Pedal Gas', 'type' => 'status_fungsi'],
+                                    ['name' => 'pedal_rem', 'label' => 'Pedal Rem', 'type' => 'status_fungsi'],
+                                    ['name' => 'porseneling', 'label' => 'Porseneling', 'type' => 'status_fungsi'],
+                                    ['name' => 'wiper_depan', 'label' => 'Wiper Depan', 'type' => 'status_fungsi'],
+                                    ['name' => 'twist_lock_kontainer', 'label' => 'Twist Lock Kontainer', 'type' => 'status_fungsi'],
+                                    ['name' => 'landing_buntut', 'label' => 'Landing Buntut', 'type' => 'status_fungsi'],
+                                ],
                             ];
                         @endphp
 
-                        @foreach($items as $item)
-                        <div class="p-4 sm:p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200 group">
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1 group-hover:text-indigo-600 transition-colors">{{ $item['label'] }}</label>
-                            <div class="flex flex-row gap-2 sm:gap-3">
-                                @if($item['type'] == 'status_kadaluarsa')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_kadaluarsa" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all">
-                                            TIDAK KADALUARSA
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="kadaluarsa" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all">
-                                            KADALUARSA
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_ada')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="ada" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all uppercase">
-                                            Ada
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_ada" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all uppercase">
-                                            Tidak Ada
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_fungsi')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="berfungsi" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all uppercase">
-                                            Berfungsi
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_berfungsi" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all uppercase">
-                                            Rusak
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_baik')
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="baik" class="hidden peer" checked>
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-green-600 peer-checked:border-green-600 peer-checked:text-white transition-all uppercase">
-                                            Baik
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="{{ $item['name'] }}" value="tidak_baik" class="hidden peer">
-                                        <div class="px-2 py-2 text-[11px] font-bold text-center rounded-lg border bg-white text-gray-400 peer-checked:bg-red-600 peer-checked:border-red-600 peer-checked:text-white transition-all uppercase">
-                                            Buruk
-                                        </div>
-                                    </label>
-                                @elseif($item['type'] == 'status_jumlah')
-                                    <div class="w-full">
-                                        <input type="number" name="{{ $item['name'] }}" value="0" min="0" 
-                                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm font-medium bg-white"
-                                            placeholder="Masukan jumlah pcs...">
+                        <!-- Tabs Header -->
+                        <div class="mb-6 overflow-x-auto scrollbar-hide pb-2 -mx-2 px-2 sm:px-0">
+                            <div class="flex space-x-2 min-w-max">
+                                @foreach($categories as $categoryName => $items)
+                                    <button type="button" 
+                                            onclick="switchTab('{{ Str::slug($categoryName) }}')"
+                                            class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all border {{ $loop->first ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:border-gray-300' }}"
+                                            data-target="{{ Str::slug($categoryName) }}">
+                                        {{ $categoryName }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Tabs Content -->
+                        @foreach($categories as $categoryName => $items)
+                        <div id="{{ Str::slug($categoryName) }}" class="tab-content {{ !$loop->first ? 'hidden' : '' }}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach($items as $item)
+                                <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200 group">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-xs font-black text-gray-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">{{ $item['label'] }}</label>
+                                        
+                                        <!-- Quick Check: Semua OK -->
+                                        @if($item['type'] != 'status_jumlah')
+                                            <!-- Indicator dot, optionally can be used for status -->
+                                        @endif
                                     </div>
+
+                                    <div class="flex flex-row gap-2">
+                                        @if($item['type'] == 'status_kadaluarsa')
+                                            @php $valOk = 'tidak_kadaluarsa'; $valBad = 'kadaluarsa'; $labelOk = 'AMAN'; $labelBad = 'EXP'; @endphp
+                                        @elseif($item['type'] == 'status_ada')
+                                            @php $valOk = 'ada'; $valBad = 'tidak_ada'; $labelOk = 'ADA'; $labelBad = 'TDK'; @endphp
+                                        @elseif($item['type'] == 'status_fungsi')
+                                            @php $valOk = 'berfungsi'; $valBad = 'tidak_berfungsi'; $labelOk = 'OK'; $labelBad = 'RUSAK'; @endphp
+                                        @elseif($item['type'] == 'status_baik')
+                                            @php $valOk = 'baik'; $valBad = 'tidak_baik'; $labelOk = 'BAIK'; $labelBad = 'BURUK'; @endphp
+                                        @endif
+
+                                        @if($item['type'] == 'status_jumlah')
+                                            <div class="w-full">
+                                                <input type="number" name="{{ $item['name'] }}" value="1" min="0" 
+                                                    class="w-full px-4 py-2 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm font-bold bg-white text-center"
+                                                    placeholder="Jml">
+                                            </div>
+                                        @else
+                                            <label class="flex-1 cursor-pointer">
+                                                <input type="radio" name="{{ $item['name'] }}" value="{{ $valOk }}" class="hidden peer status-ok" checked>
+                                                <div class="px-3 py-2 text-[10px] font-bold text-center rounded-xl border border-gray-200 bg-white text-gray-400 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white transition-all shadow-sm">
+                                                    {{ $labelOk }}
+                                                </div>
+                                            </label>
+                                            <label class="flex-1 cursor-pointer">
+                                                <input type="radio" name="{{ $item['name'] }}" value="{{ $valBad }}" class="hidden peer">
+                                                <div class="px-3 py-2 text-[10px] font-bold text-center rounded-xl border border-gray-200 bg-white text-gray-400 peer-checked:bg-red-500 peer-checked:border-red-500 peer-checked:text-white transition-all shadow-sm">
+                                                    {{ $labelBad }}
+                                                </div>
+                                            </label>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between mt-8 pt-4 border-t border-gray-100">
+                                @if(!$loop->first)
+                                <button type="button" onclick="switchTab('{{ Str::slug(array_keys($categories)[$loop->index - 1]) }}')" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-all">
+                                    &laquo; Sebelumnya
+                                </button>
                                 @else
-                                    <div class="w-full text-center text-red-400 py-2 border-2 border-dashed border-red-50 rounded-xl text-xs">
-                                        Error: Tipe input tidak valid
-                                    </div>
+                                <div></div>
+                                @endif
+
+                                @if(!$loop->last)
+                                <button type="button" onclick="switchTab('{{ Str::slug(array_keys($categories)[$loop->index + 1]) }}')" class="px-5 py-2.5 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-indigo-100 transition-all">
+                                    Selanjutnya &raquo;
+                                </button>
+                                @else
+                                <div class="text-xs font-bold text-green-600 bg-green-50 px-4 py-2 rounded-lg flex items-center">
+                                    <i class="fas fa-check mr-2"></i> SELESAI
+                                </div>
                                 @endif
                             </div>
                         </div>
                         @endforeach
-                    </div>
 
                     <div class="mt-8 pt-8 border-t border-gray-50">
                         <label class="block text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Pernyataan</label>
@@ -303,6 +328,40 @@
 
 @push('scripts')
 <script>
+    // Tab Switching Logic
+    function switchTab(targetId) {
+        // Hide all contents
+        document.querySelectorAll('.tab-content').forEach(el => {
+            el.classList.add('hidden');
+        });
+
+        // Show target content
+        const targetContent = document.getElementById(targetId);
+        if(targetContent) {
+            targetContent.classList.remove('hidden');
+        }
+
+        // Update button states
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if(btn.dataset.target === targetId) {
+                btn.classList.remove('bg-white', 'text-gray-500', 'border-gray-200', 'hover:bg-gray-50', 'hover:border-gray-300');
+                btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-lg', 'shadow-indigo-200');
+                
+                // Scroll button into view if needed
+                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+                btn.classList.add('bg-white', 'text-gray-500', 'border-gray-200', 'hover:bg-gray-50', 'hover:border-gray-300');
+                btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-lg', 'shadow-indigo-200');
+            }
+        });
+
+        // Scroll to top of checklist
+        const checklistContainer = document.querySelector('.lg\\:col-span-2');
+        if(checklistContainer) {
+            checklistContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
     document.querySelector('select[name="mobil_id"]').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         
