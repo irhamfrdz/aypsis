@@ -922,7 +922,9 @@
                 const isLockKontainer = selectedText.includes('lock kontainer');
                 const isRingVelg = selectedText.includes('ring velg');
                 const isVelg = selectedText.includes('velg');
-                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg;
+                const isCat = selectedText.includes('cat');
+                const isMajun = selectedText.includes('majun');
+                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun;
                 const isBanLuar = selectedText.includes('ban luar');
                 
                 const penerimaContainer = document.getElementById('penerima-container');
@@ -954,7 +956,12 @@
 
                 if (isBulk) {
                     nomorSeriContainer.classList.add('hidden');
-                    merkContainer.classList.add('hidden');
+                    // Hide merk for Ban Dalam, Cat items, and Majun
+                    if (isBanDalam || isCat || isMajun) {
+                        merkContainer.classList.add('hidden');
+                    } else {
+                        merkContainer.classList.remove('hidden');
+                    }
                     mobilContainer.classList.add('hidden');
                     qtyWrapper.classList.remove('hidden');
                     
@@ -967,7 +974,7 @@
                     const ukuranContainer = ukuranInput ? ukuranInput.closest('div') : null;
                     if (ukuranContainer) {
                         const label = ukuranContainer.querySelector('label');
-                        if (isBanDalam || isBanPerut) {
+                        if (isBanDalam || isBanPerut || isCat || isMajun) {
                             ukuranContainer.classList.add('hidden');
                         } else {
                             ukuranContainer.classList.remove('hidden');
@@ -987,6 +994,16 @@
                         opt.text = 'Pcs';
                         opt.selected = true;
                         typeSelect.appendChild(opt);
+                    } else if (isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun) {
+                         // Ban Perut, Lock Kontainer, Velg, Cat, or Majun: Allow selection (Pcs, Set, Liter, etc)
+                         // Show all original options
+                        originalTypeOptions.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt.value;
+                            option.text = opt.text;
+                            if (opt.value === "{{ old('type', $stockBan->type ?? 'pcs') }}") option.selected = true;
+                            typeSelect.appendChild(option);
+                        });
                     } else {
                         originalTypeOptions.forEach(opt => {
                             const option = document.createElement('option');

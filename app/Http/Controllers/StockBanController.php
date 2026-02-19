@@ -172,7 +172,7 @@ class StockBanController extends Controller
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Velg berhasil ditambahkan');
         }
 
-        $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false);
+        $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false || stripos($namaStockBan->nama, 'cat') !== false || stripos($namaStockBan->nama, 'majun') !== false);
 
         if ($isBulkItem) {
              $request->validate([
@@ -185,7 +185,7 @@ class StockBanController extends Controller
                 'keterangan' => 'nullable|string',
                 'nomor_bukti' => 'nullable|string|max:255',
                 // For Ban Perut/Lock Kontainer, allow 'type' input if provided, otherwise default to 'pcs'
-                'type' => 'nullable|string|in:pcs,set', // Add more if needed, or remove validation if dynamic
+                'type' => 'nullable|string', // Wide variety of types: pcs, set, liter, pail, etc.
             ]);
 
             // Determine type: if provided in request use it, else default to 'pcs'
